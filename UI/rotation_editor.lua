@@ -361,7 +361,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         addon:SetUIScript(self.validationButton,'OnClick',function()
             if not alive() or not addon.ShowConditionText then return end
             local lines={L['This rotation cannot run until its incomplete or unavailable data is resolved.']}
-            for _,problem in ipairs(self.validation and self.validation.diagnostics or {}) do lines[#lines+1]=problem.path..': '..problem.code end
+            for _,problem in ipairs(self.validation and self.validation.diagnostics or {}) do lines[#lines+1]=problem.path..': '..(addon.DescribeUnsupportedCondition and addon:DescribeUnsupportedCondition(problem) or problem.code) end
             for stepId in pairs(self.view.pendingFields or {}) do local reason=self:PendingFieldProblem(stepId);if reason then lines[#lines+1]=stepId..': '..reason end end
             addon:ShowConditionText(table.concat(lines,'\n'),L['Rotation validation'])
         end)

@@ -19,7 +19,7 @@ local eclipse=any(buff(48517),buff(48518))
 local aligned=any(buff(194223),buff(102560))
 local moonkin=any(buff(24858),buff(102560))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.druid.balance.guide',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.druid.balance.guide',revision=2,
  blocks={['retail.druid.boundaries']=1,['retail.druid.utility']=1},
  nameKey='Default.Retail.Druid.BalanceGuide.Name',descriptionKey='Default.Retail.Druid.BalanceGuide.Description',
  applicability={families={'retail'},actionContext='player',class='DRUID',specs={102},minLevel=10,maxLevel=90},
@@ -41,11 +41,11 @@ assert(addon:RegisterDefaultRotation({
   },
   rotation={
    block('baguide-boundaries','retail.druid.boundaries','baguide-'),
-   {id='baguide-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+   {id='baguide-pull',type='branch',conditions=combat(),onTrue={},onFalse={
     spell('baguide-pull-moonkin',24858,negate(moonkin)),spell('baguide-pull-wrath',5176),stop('baguide-pull-stop')}},
    spell('baguide-sunfire',93402,refresh(164815)),
    spell('baguide-moonfire',8921,refresh(164812)),
-   {id='baguide-eclipse',type='branch',conditions=negate(eclipse),onFalse={},onTrue={
+   {id='baguide-eclipse',type='branch',conditions=eclipse,onTrue={},onFalse={
     spell('baguide-lunar-eclipse',1233272,engaged(3)),spell('baguide-solar-eclipse',1233346)}},
    spell('baguide-starfall',191034,any(buff(393942),buff(450360),engaged(3))),
    spell('baguide-starsurge',78674,any({type='POWER',unit='player',operator='LESSTHAN',value=-20},buff(393944),buff(450360))),

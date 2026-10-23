@@ -8,7 +8,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id)return{id=id,type='none',suppress_attack=true,conditions={}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.mage.fire.wowhead',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.mage.fire.wowhead',revision=2,
  blocks={['tbc.mage.boundaries']=1,['tbc.mage.wand-finish']=1,['tbc.mage.moving-fire-blast']=1,['tbc.mage.fire-aoe']=1,
   ['tbc.mage.improved-scorch']=1,['tbc.mage.armor-molten']=1,['tbc.mage.upkeep']=1},
  nameKey='Default.TBC.Mage.FireWowhead.Name',descriptionKey='Default.TBC.Mage.FireWowhead.Description',
@@ -26,7 +26,7 @@ assert(addon:RegisterDefaultRotation({
   cooldowns={block('mage-firewh-armor','tbc.mage.armor-molten','mage-firewh-'),block('mage-firewh-upkeep','tbc.mage.upkeep','mage-firewh-')},
   rotation={
    block('mage-firewh-boundaries','tbc.mage.boundaries','mage-firewh-'),
-   {id='mage-firewh-pull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+   {id='mage-firewh-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell('mage-firewh-pull-fireball',133),stop('mage-firewh-pull-stop')}},
    block('mage-firewh-moving','tbc.mage.moving-fire-blast','mage-firewh-'),
    block('mage-firewh-aoe','tbc.mage.fire-aoe','mage-firewh-'),

@@ -26,7 +26,7 @@ test('presence is one exact pet existence query and optional name uses the exist
     s.exists=false;record,why=observe(p,true);assert(record.exists==false and record.name==nil and why==nil and #s.calls==4)
 end)
 test('mode guards and conservative policy precede native calls while nil defaults to presence',function()
-    for _,project in ipairs({1,18,999}) do local _,p,s=fixture(project);unavailable(p,true,'unsupported-policy');assert(#s.calls==0) end
+    for _,project in ipairs({999}) do local _,p,s=fixture(project);unavailable(p,true,'unsupported-policy');assert(#s.calls==0) end
     local f,p,s=fixture();local opaque={};f.env.canaccessvalue=function(v) return not rawequal(v,opaque) end
     for _,bad in ipairs({0,'false','',{},opaque}) do unavailable(p,bad,rawequal(bad,opaque) and 'restricted-value' or 'invalid-pet-query') end
     assert(#s.calls==0);local record=observe(p);assert(record.exists and record.name==nil and #s.calls==1)

@@ -87,7 +87,7 @@ test('complete cached record and nil reason snapshots separate mode self and pas
     assert(exists(node())==true and exists(node())==true and #s.calls==6 and next(a.longtermCache)==nil)
 end)
 test('unsupported policies and transient native failures cannot choose actions and recover next pass',function()
-    for _,project in ipairs({1,18,999}) do local _,a,s=fixture(project);unknown(a,node());unknown(a,node('PET_NAME'));assert(#s.calls==0) end
+    for _,project in ipairs({999}) do local _,a,s=fixture(project);unknown(a,node());unknown(a,node('PET_NAME'));assert(#s.calls==0) end
     for _,key in ipairs({'exists','name'}) do local _,a,s=fixture();s.throw=key;unknown(a,node('PET_NAME'));s.throw=nil;assert(a:evaluateConditionResult(node('PET_NAME')).status=='match') end
 end)
 test('fresh editable copies use shared normalized observations with mode-specific unknowns',function()

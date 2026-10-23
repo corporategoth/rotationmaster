@@ -78,8 +78,8 @@ assert(addon:RegisterDefaultBlock({
 -- of Corruption at six, plain Seed before Soulburn: Seed; then Agony, Corruption and Unstable Affliction
 -- refreshed late; inside Dark Soul: Misery every DoT is refreshed early in its Pandemic window.
 assert(addon:RegisterDefaultBlock({
- id='mop.warlock.affliction-dots',revision=1,families={'progression'},class='WARLOCK',steps={
- {id='pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+ id='mop.warlock.affliction-dots',revision=2,families={'progression'},class='WARLOCK',steps={
+ {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('pull-haunt',48181,negate(dot(48181))),
   spell('pull-unstable-affliction',30108,negate(dot(30108))),
   stop('pull-stop'),
@@ -137,8 +137,8 @@ assert(addon:RegisterDefaultBlock({
 }}))
 -- Demonology pull (both variants): pre-cast Soul Fire, or Shadow Bolt before 13, then stop.
 assert(addon:RegisterDefaultBlock({
- id='mop.warlock.demonology-pull',revision=1,families={'progression'},class='WARLOCK',steps={
- {id='pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+ id='mop.warlock.demonology-pull',revision=2,families={'progression'},class='WARLOCK',steps={
+ {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('pull-soul-fire',6353),
   spell('pull-shadow-bolt',686),
   stop('pull-stop'),

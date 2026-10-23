@@ -20,8 +20,8 @@ local clearcasting,berserk=own(135700),own(106951)
 local worth=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},
  {type='CLASSIFICATION',unit='target',value='worldboss'},{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=20})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.druid.feral.icyveins',revision=2,
- blocks={['mop.druid.boundaries']=2,['mop.druid.target']=1,['mop.druid.mark']=1,['mop.druid.feral-upkeep']=2,['mop.druid.feral-open']=2,['mop.druid.feral-aoe']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.druid.feral.icyveins',revision=3,
+ blocks={['mop.druid.boundaries']=2,['mop.druid.target']=1,['mop.druid.mark']=1,['mop.druid.feral-upkeep']=2,['mop.druid.feral-open']=3,['mop.druid.feral-aoe']=1},
  nameKey='Default.MoP.Druid.Feral.IcyVeins.Name',descriptionKey='Default.MoP.Druid.Feral.IcyVeins.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID',minLevel=10,maxLevel=90},
  tags={'feral','leveling','single-target','aoe','icy-veins','wowhead'},

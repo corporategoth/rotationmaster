@@ -9,7 +9,7 @@ local function negate(c)return{type='NOT',value=c}end
 local function own(id)return{type='BUFF',unit='player',spell=id,anyrank=true,ownbuff=true}end
 local function anySeal()local out={};for i,id in ipairs({21084,20375,31892,348700,31801,348704,21082,20166,20165,20164})do out[i]=own(id)end;return{type='OR',value=out}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.protection.icyveins',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.protection.icyveins',revision=3,
  blocks={['tbc.paladin.tank-upkeep']=2,['tbc.paladin.melee-opening']=1,['tbc.paladin.boundaries']=1},
  nameKey='Default.TBC.Paladin.Protection.IcyVeins.Name',descriptionKey='Default.TBC.Paladin.Protection.IcyVeins.Description',
  applicability={families={'tbc'},actionContext='player',class='PALADIN',minLevel=1,maxLevel=70},
@@ -20,11 +20,11 @@ assert(addon:RegisterDefaultRotation({
   cooldowns={{id='prot-icy-upkeep',type='block',block='tbc.paladin.tank-upkeep',prefix='prot-icy-'}},
   rotation={
    {id='prot-icy-opening',type='block',block='tbc.paladin.melee-opening',prefix='prot-icy-'},
-   {id='prot-icy-crusader',type='branch',conditions=negate({type='DEBUFF',unit='target',spell=21183,anyrank=true}),onFalse={},onTrue={
+   {id='prot-icy-crusader',type='branch',conditions={type='DEBUFF',unit='target',spell=21183,anyrank=true},onTrue={},onFalse={
     {id='prot-icy-crusader-judgement',type='spell',action=20271,ranked=false,conditions=own(21082)},
     {id='prot-icy-crusader-seal',type='spell',action=21082,ranked=false,conditions=negate(own(21082))},
    }},
-   {id='prot-icy-seal',type='branch',conditions=negate(anySeal()),onFalse={},onTrue={
+   {id='prot-icy-seal',type='branch',conditions=anySeal(),onTrue={},onFalse={
     {id='prot-icy-seal-wisdom',type='spell',action=20166,ranked=false,conditions={type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=3}},
     {id='prot-icy-seal-righteousness',type='spell',action=21084,ranked=false,conditions={}},
    }},

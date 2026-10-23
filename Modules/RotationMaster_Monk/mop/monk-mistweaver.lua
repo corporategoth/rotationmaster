@@ -27,7 +27,7 @@ local memory=own(139597)
 local capped=negate(chi('GREATERTHANOREQUALS',-1))
 local friendly={type='FRIENDLY',unit='target'}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.monk.mistweaver',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.monk.mistweaver',revision=3,
  blocks={['mop.monk.upkeep']=1},
  nameKey='Default.MoP.Monk.Mistweaver.Name',descriptionKey='Default.MoP.Monk.Mistweaver.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK',minLevel=10,maxLevel=90},
@@ -76,7 +76,7 @@ assert(addon:RegisterDefaultRotation({
     stop('mist-healthy')},
    onFalse={
     stop('mist-target',negate({type='ATTACKABLE',unit='target'})),
-    {id='mist-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+    {id='mist-pull',type='branch',conditions=combat(),onTrue={},onFalse={
      spell('mist-pull-renewing',RENEWING),
      spell('mist-pull-lightning',117952,{type='BEYOND_MELEE',unit='target'}),
      {id='mist-pull-stop',type='none',conditions={}}}},

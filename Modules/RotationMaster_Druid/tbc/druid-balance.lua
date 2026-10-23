@@ -12,7 +12,7 @@ local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
 local function dot(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
 local function combat()return{type='COMBAT',unit='player'}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.druid.balance',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.druid.balance',revision=3,
  blocks={['tbc.druid.boundaries']=2,['tbc.druid.feral-form-stop']=2,['tbc.druid.upkeep']=1},
  nameKey='Default.TBC.Druid.Balance.Name',descriptionKey='Default.TBC.Druid.Balance.Description',
  applicability={families={'tbc'},actionContext='player',class='DRUID',minLevel=1,maxLevel=70},
@@ -38,7 +38,7 @@ assert(addon:RegisterDefaultRotation({
     {id='balance-moving-moonfire',type='spell',action=8921,ranked=false,conditions=negate(dot(8921))},
     {id='balance-moving-stop',type='none',conditions={}},
    }},
-   {id='balance-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+   {id='balance-pull',type='branch',conditions=combat(),onTrue={},onFalse={
     {id='balance-pull-starfire',type='spell',action=2912,ranked=false,conditions={}},
     {id='balance-pull-wrath',type='spell',action=5176,ranked=false,conditions={}},
     {id='balance-pull-stop',type='none',conditions={}},

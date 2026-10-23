@@ -48,12 +48,12 @@ assert(addon:RegisterDefaultBlock({
 -- Builders, decided by what is known: Shiv saves a full Deadly Poison stack, Mutilate or Backstab
 -- (with a dagger) when the target is not attacking you, otherwise Hemorrhage or Sinister Strike.
 assert(addon:RegisterDefaultBlock({
- id='tbc.rogue.builders',revision=2,families={'tbc'},class='ROGUE',steps={
+ id='tbc.rogue.builders',revision=3,families={'tbc'},class='ROGUE',steps={
  spell('shiv',5938,all({type='DEBUFF_STACKS',unit='target',spell=2818,anyrank=true,owndebuff=true,operator='GREATERTHANOREQUALS',value=5},
   {type='DEBUFF_REMAIN',unit='target',spell=2818,anyrank=true,owndebuff=true,operator='LESSTHAN',value=2})),
  spell('ghostly-strike',14278),
  spell('hemorrhage',16511),
- {id='behind',type='branch',conditions=behind,onFalse={},onTrue={
+ {id='behind',type='branch',conditions={type='ISSAME',unit='targettarget',otherunit='player'},onTrue={},onFalse={
   spell('mutilate',1329),
   spell('backstab',53,{type='WEAPON_TYPE',slot='mainhand',subclass=15}),
  }},

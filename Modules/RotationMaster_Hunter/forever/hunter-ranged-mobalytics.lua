@@ -9,8 +9,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.ranged.mobalytics',revision=1,
- blocks={['forever.hunter.boundaries']=1,['forever.hunter.deadzone']=1,['forever.hunter.pull']=1,['forever.hunter.moving']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.ranged.mobalytics',revision=2,
+ blocks={['forever.hunter.boundaries']=1,['forever.hunter.deadzone']=2,['forever.hunter.pull']=2,['forever.hunter.moving']=1,
   ['forever.hunter.aspects-ranged']=1,['forever.hunter.pet-care']=1,['forever.hunter.burst']=1},
  nameKey='Default.Forever.Hunter.RangedMobalytics.Name',descriptionKey='Default.Forever.Hunter.RangedMobalytics.Description',
  applicability={families={'forever'},actionContext='player',class='HUNTER',minLevel=1,maxLevel=60},

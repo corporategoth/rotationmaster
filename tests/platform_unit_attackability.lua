@@ -25,7 +25,7 @@ test('exact player attacker and selected unit tuples preserve alive dead and fal
     s.exists=false;s.calls={};assert(observe(p)==false and #s.calls==1)
 end)
 test('policy and readable nonempty unit validation precede all native queries',function()
-    for _,project in ipairs({1,18,999}) do local _,p,s=fixture(project);unavailable(p,s,'unsupported-policy');assert(#s.calls==0) end
+    for _,project in ipairs({999}) do local _,p,s=fixture(project);unavailable(p,s,'unsupported-policy');assert(#s.calls==0) end
     local f,p,s=fixture();local opaque={};f.env.canaccessvalue=function(v) return not rawequal(v,opaque) end
     for _,unit in ipairs({'',false,0,{},opaque}) do local v,why=p:GetUnitAttackabilityObservation(unit);assert(v==nil and why==(unit==opaque and 'restricted-value' or 'invalid-unit')) end
     assert(p:GetUnitAttackabilityObservation(nil)==nil and #s.calls==0)

@@ -18,8 +18,8 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 local engaged={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.arms.colossus',revision=1,
- blocks={['retail.warrior.boundaries']=1,['retail.warrior.upkeep']=1,['retail.warrior.charge']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.arms.colossus',revision=2,
+ blocks={['retail.warrior.boundaries']=1,['retail.warrior.upkeep']=1,['retail.warrior.charge']=2},
  nameKey='Default.Retail.Warrior.Arms.Colossus.Name',descriptionKey='Default.Retail.Warrior.Arms.Colossus.Description',
  applicability={families={'retail'},actionContext='player',class='WARRIOR',specs={71},minLevel=10,maxLevel=90},
  tags={'arms','melee','reference','colossus','single-target','aoe','icy-veins','simulationcraft'},

@@ -10,7 +10,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local ranged={type='BEYOND_MELEE',unit='target'}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.unspecialized',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.unspecialized',revision=2,
  blocks={['mop.shaman.manual']=1,['mop.shaman.lightning-shield']=1},
  nameKey='Default.MoP.Shaman.Unspecialized.Name',descriptionKey='Default.MoP.Shaman.Unspecialized.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='SHAMAN',minLevel=1,maxLevel=90},
@@ -21,7 +21,7 @@ assert(addon:RegisterDefaultRotation({
  rotation={
  block('mop.shaman.manual','shaman-new-'),
  {id='shaman-new-no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
- {id='shaman-new-pull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+ {id='shaman-new-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
   spell('shaman-new-pull-bolt',403,ranged),
   {id='shaman-new-pull-stop',type='none',suppress_attack=false,conditions={}},
  }},

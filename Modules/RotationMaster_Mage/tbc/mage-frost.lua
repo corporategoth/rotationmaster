@@ -11,7 +11,7 @@ local function stop(id)return{id=id,type='none',suppress_attack=true,conditions=
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local frozen=any({type='DEBUFF',unit='target',spell=122,anyrank=true},{type='DEBUFF',unit='target',spell=33395},{type='DEBUFF',unit='target',spell=12494})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.mage.frost',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.mage.frost',revision=2,
  blocks={['tbc.mage.boundaries']=1,['tbc.mage.frostbolt']=1,['tbc.mage.wand-finish']=1,['tbc.mage.armor']=1,['tbc.mage.upkeep']=1},
  nameKey='Default.TBC.Mage.Frost.Name',descriptionKey='Default.TBC.Mage.Frost.Description',
  applicability={families={'tbc'},actionContext='player',class='MAGE',minLevel=1,maxLevel=70},
@@ -31,7 +31,7 @@ assert(addon:RegisterDefaultRotation({
   cooldowns={block('mage-frost-armor','tbc.mage.armor','mage-frost-'),block('mage-frost-upkeep','tbc.mage.upkeep','mage-frost-')},
   rotation={
    block('mage-frost-boundaries','tbc.mage.boundaries','mage-frost-'),
-   {id='mage-frost-pull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+   {id='mage-frost-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     block('mage-frost-pull-filler','tbc.mage.frostbolt','mage-frost-pull-'),stop('mage-frost-pull-stop')}},
    {id='mage-frost-moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
     spell('mage-frost-moving-ice-lance',30455),spell('mage-frost-moving-fire-blast',2136),stop('mage-frost-moving-stop')}},

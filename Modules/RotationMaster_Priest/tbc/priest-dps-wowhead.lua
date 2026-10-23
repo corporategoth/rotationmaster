@@ -12,7 +12,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local function healthy()return{type='HEALTHPCT',unit='player',operator='GREATERTHAN',value=.5}end
 local P='priest-wh-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.priest.dps.wowhead',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.priest.dps.wowhead',revision=3,
  blocks={['tbc.priest.boundaries']=2,['tbc.priest.enemy-target']=1,['tbc.priest.shadowform']=1,['tbc.priest.moving']=1,
   ['tbc.priest.dots']=1,['tbc.priest.filler']=1,['tbc.priest.upkeep']=1},
  nameKey='Default.TBC.Priest.DpsWowhead.Name',descriptionKey='Default.TBC.Priest.DpsWowhead.Description',
@@ -33,7 +33,7 @@ assert(addon:RegisterDefaultRotation({
    block(P..'boundaries','tbc.priest.boundaries',P),
    block(P..'target','tbc.priest.enemy-target',P),
    block(P..'form','tbc.priest.shadowform',P),
-   {id=P..'pull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+   {id=P..'pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell(P..'pull-blast',8092),spell(P..'pull-touch',34914),spell(P..'pull-holy-fire',14914,negate(known(15407))),spell(P..'pull-smite',585),stop(P..'pull-stop')}},
    block(P..'moving','tbc.priest.moving',P),
    {id=P..'dying',type='branch',conditions=all(negate({type='GROUP'}),{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=.2}),onFalse={},onTrue={

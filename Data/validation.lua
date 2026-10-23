@@ -98,13 +98,13 @@ local function validate(envelope, options, bodyOnly)
     options = options or {}
     local result = {valid=true, supported=true, resolved=true, diagnostics={},
         semanticStatus="not-evaluated", executionStatus="unchecked", qualityStatus="unreviewed"}
-    local function issue(code, path, severity, kind)
+    local function issue(code, path, severity, kind, condition, reason)
         severity = severity or "error"
         if severity == "error" then result.valid = false end
         if kind == "unsupported" then result.supported = false end
         if kind == "unresolved" then result.resolved = false end
         if #result.diagnostics < 100 then
-            result.diagnostics[#result.diagnostics+1] = {code=code, path=path, severity=severity or "error"}
+            result.diagnostics[#result.diagnostics+1] = {code=code, path=path, severity=severity or "error", condition=condition, reason=reason}
         end
     end
     local function finish()
@@ -258,6 +258,13 @@ local function validate(envelope, options, bodyOnly)
             end
             if definition.disabled then issue('disabled-condition',path..'.type','warning','unresolved') end
             if definition.functionUnavailable then issue('unavailable-function',path..'.type','warning','unresolved') end
+            -- Declared client capabilities (Core/condition_support.lua): a
+            -- condition that can never work on this client is unresolved.
+            local support = options.support
+            if type(support) == "function" then
+                local reason = support(value.type, definition, value)
+                if type(reason) == "string" then issue('unsupported-condition',path..'.type','warning','unresolved',value.type,reason) end
+            end
             for _, key in ipairs(sortedKeys(value)) do
                 if key ~= "type" and key ~= "disabled" then
                     if definition.fields[key] == nil then issue("unknown-field", path.."."..key, "warning", "unsupported")

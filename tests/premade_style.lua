@@ -1,0 +1,205 @@
+-- Built In premade style rules that hold for every edition. A Branch whose whole condition is a NOT
+-- is not allowed: test the condition itself and put the steps in the other arm ("you are in combat"
+-- with the pull in onFalse, never "you are not in combat"). NOT inside AND/OR stays allowed; Stops
+-- and switches are out of scope (a Stop has no false arm). Inverting is behaviour-identical,
+-- including when the condition is unavailable, which the last two tests prove on the real executor.
+local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
+local corpus=dofile('tests/fixtures/default_corpus.lua')
+local modules=dofile('tools/builtin_modules.lua')
+
+-- TEMPORARY: Classic Era (era/) is being converted on its own branch. These are exactly its
+-- offending Branches as "<block or pack id>/<step id>". Delete this table (leave it empty) when
+-- that branch merges; a listed step that no longer offends fails the test, so it cannot go stale.
+local ERA_PENDING={
+ 'era.druid.bear-pull/pull','era.druid.caster-pull/pull','sod.druid.caster-pull/pull','rm.sod.druid.balance.wowhead/sod-balance-wh-pull',
+ 'era.hunter.dead-zone/melee','era.hunter.opening/pull','rm.era.hunter.ranged/hunter-solo','rm.era.hunter.ranged.icyveins/hunter-solo',
+ 'rm.era.hunter.ranged.wowsims/hunter-solo','rm.sod.hunter.ranged/hunter-melee','rm.sod.hunter.ranged/hunter-pull','rm.sod.hunter.melee/hunter-pull',
+ 'rm.era.mage.frost/mage-frost-pull','rm.era.mage.frost.icyveins/mage-grind-pull','rm.era.mage.fire/mage-fire-pull','rm.era.mage.fire.warcrafttavern/mage-fire-wct-pull',
+ 'rm.sod.mage.fire/mage-sfire-pull','rm.sod.mage.frost/mage-sfrost-pull','rm.sod.mage.frost.warcrafttavern/mage-sfrost-wct-pull','rm.sod.mage.arcane/mage-sarcane-pull',
+ 'rm.sod.mage.healer/mage-sheal-pull','era.paladin.seal/seal','sod.paladin.seal/seal','sod.paladin.holy-hostile/seal',
+ 'rm.era.paladin.retribution/ret-pull','rm.era.paladin.retribution.twist/twist-seal','rm.era.paladin.retribution.twist/twist-pull','rm.era.paladin.protection/prot-seal',
+ 'rm.era.paladin.protection/prot-pull','rm.era.paladin.protection.icyveins/protw-seal','rm.era.paladin.protection.icyveins/protw-pull','rm.sod.paladin.retribution/sret-pull',
+ 'rm.sod.paladin.retribution.icyveins/sretiv-pull','rm.sod.paladin.retribution.twist/stwist-pull','rm.sod.paladin.retribution.stacking/sstack-pull','rm.sod.paladin.shockadin/shock-pull',
+ 'rm.sod.paladin.protection/sprot-pull','rm.sod.paladin.protection.wowsims/sprotws-pull','era.priest.pull/pull','sod.priest.pull/pull',
+ 'rm.era.priest.dps.warcrafttavern/priest-wct-pull','rm.era.priest.dps.warcrafttavern/priest-wct-solo','rm.era.priest.healer/priest-heal-prepull','rm.sod.priest.healer/priest-sod-heal-prepull',
+ 'rm.sod.priest.healer.warcrafttavern/priest-sod-wct-prepull','rm.era.shaman.enhancement/enh-pull','rm.era.shaman.enhancement.warcrafttavern/enh-wt-pull','rm.sod.shaman.tank/sod-tank-pull',
+ 'rm.sod.shaman.enhancement/sod-enh-pull','era.warlock.curse/curse-needed','era.warlock.sustain/solo','rm.era.warlock.dps.warcrafttavern/lock-wt-solo',
+ 'rm.sod.warlock.tank/sod-tank-curse','rm.sod.warlock.fire/sod-fire-curse','rm.sod.warlock.fire/sod-fire-solo','era.warrior.boundaries/pull',
+}
+
+local function negated(c) return type(c)=='table' and c.type=='NOT' end
+-- Every Branch in a step list, nested arms included: fn(step).
+local function branches(list,fn)
+    for _,step in ipairs(list or {}) do
+        if type(step)=='table' and step.type=='branch' then fn(step);branches(step.onTrue,fn);branches(step.onFalse,fn) end
+    end
+end
+-- Every authored block and pack (before expansion), with the module file that registered it.
+local function authored()
+    local f=corpus.load(5,1,'ROGUE',{modules=false});local a=f.addon;local out={blocks={},packs={}};local current
+    local registerBlock,registerRotation=a.RegisterDefaultBlock,a.RegisterDefaultRotation
+    a.RegisterDefaultBlock=function(self,b) out.blocks[#out.blocks+1]={def=a.RotationData.CopyData(b),path=current};return registerBlock(self,b) end
+    a.RegisterDefaultRotation=function(self,p) out.packs[#out.packs+1]={def=a.RotationData.CopyData(p),path=current};return registerRotation(self,p) end
+    for _,path in ipairs(modules.paths()) do current=path;f.load(path) end
+    assert(#out.blocks>0 and #out.packs>0)
+    return out,f
+end
+local function eraOnly(families) return #families==1 and families[1]=='era' end
+
+test('no Built In Branch has NOT as its whole condition (every edition, blocks, overrides and packs)',function()
+    local defs=authored();local pending={};for _,key in ipairs(ERA_PENDING) do assert(not pending[key],'duplicate '..key);pending[key]=true end
+    local offences,seen,scope={},{},{}
+    local function scan(owner,families,path,list)
+        scope[owner]=families
+        branches(list,function(step)
+            if negated(step.conditions) then
+                local key=owner..'/'..tostring(step.id);seen[key]=true
+                if not pending[key] then offences[#offences+1]=path..': '..key end
+            end
+        end)
+    end
+    for _,row in ipairs(defs.blocks) do local b=row.def
+        scan(b.id,b.families,row.path,b.steps)
+        for _,override in ipairs(b.overrides or {}) do scan(b.id,b.families,row.path,override.steps) end
+    end
+    for _,row in ipairs(defs.packs) do local p=row.def;scan(p.id,p.applicability.families,row.path,p.body.rotation);scan(p.id,p.applicability.families,row.path,p.body.cooldowns) end
+    assert(#offences==0,'Branch condition is a NOT (drop the outer NOT and swap onTrue/onFalse): '..table.concat(offences,', '))
+    for key in pairs(pending) do
+        local owner=key:match('^(.*)/[^/]*$')
+        assert(scope[owner] and eraOnly(scope[owner]),'ERA_PENDING may only name Classic Era steps: '..key)
+        assert(seen[key],'ERA_PENDING entry no longer offends; remove it: '..key)
+    end
+end)
+
+test('no composed Built In outside Classic Era expands to a Branch whose condition is a NOT',function()
+    local f,packs=corpus.load(5,1,'ROGUE');local bad={}
+    for _,p in ipairs(packs) do
+        if not corpus.contains(p.applicability.families,'era') then
+            branches(p.body.rotation,function(step) if negated(step.conditions) then bad[#bad+1]=p.id..'/'..step.id end end)
+            branches(p.body.cooldowns,function(step) if negated(step.conditions) then bad[#bad+1]=p.id..'/'..step.id end end)
+        end
+    end
+    assert(#bad==0,table.concat(bad,', '))
+end)
+
+-- The negated form of a Branch: NOT(its condition, the same table) with the arms swapped back.
+local function negatedCopy(a,body,id)
+    local copy=a.RotationData.CopyData(body);local original,target
+    branches(body.rotation,function(step) if step.id==id then original=step end end)
+    branches(copy.rotation,function(step) if step.id==id then target=step end end)
+    assert(original and target,'no branch '..id)
+    target.conditions={type='NOT',value=original.conditions};target.onTrue,target.onFalse=target.onFalse,target.onTrue
+    return copy,original.conditions
+end
+-- Leaves of a condition tree (identity), so a forced result reaches exactly this Branch.
+local function leaves(c,out,seen)
+    out,seen=out or {},seen or {}
+    if c.type=='AND' or c.type=='OR' then for _,child in ipairs(c.value) do leaves(child,out,seen) end
+    elseif c.type=='NOT' then leaves(c.value,out,seen) elseif not seen[c] then seen[c]=true;out[#out+1]=c end
+    return out
+end
+-- forced[leaf] is what a leaf condition callback returns: true, false or 'unavailable'.
+local forced={}
+local function force(leaf) local v=forced[leaf];if v=='unavailable' then return nil,'forced-unavailable' end;return v end
+-- Sets the leaves so the whole condition evaluates to status (match, no-match or unavailable),
+-- searching leaf assignments with the real evaluator (a NOT inside AND/OR flips a leaf).
+local function setter(a,condition)
+    local list=leaves(condition)
+    return function(status)
+        for k in pairs(forced) do forced[k]=nil end
+        if status=='unavailable' then for _,leaf in ipairs(list) do forced[leaf]='unavailable' end
+        else
+            assert(#list<=16,'too many leaves')
+            for bits=0,2^#list-1 do
+                local n=bits;for _,leaf in ipairs(list) do forced[leaf]=n%2==1;n=math.floor(n/2) end
+                if a:evaluateConditionResult(condition).status==status then break end
+            end
+        end
+        assert(a:evaluateConditionResult(condition).status==status,'cannot force '..status)
+    end
+end
+
+-- Every shipped Branch outside Classic Era, on the real sequence executor and condition evaluator:
+-- the walk (each step offered, then the outcome) is the same for the authored form and its negated
+-- form, when the condition is true, false and unavailable.
+test('negating any shipped Branch and swapping its arms gives the same walk when true, false or unavailable',function()
+    local f,packs=corpus.load(5,1,'ROGUE');local a=f.addon;f.load('Core/rotation_sequence.lua');local set
+    for _,definition in pairs(a.conditionDefinitions) do
+        definition.evaluate=function(value) if forced[value]~=nil then return force(value) end;return false end
+    end
+    local function walk(body)
+        local offered={};local result=a:EvaluateRotationSequence(body,function(c,ctx) return a:evaluateConditionResult(c,ctx) end,
+            function(step) offered[#offered+1]=step.id end)
+        return table.concat(offered,' ')..' => '..result.status..(result.suppressAttack and ' suppress' or '')
+    end
+    local count,decided=0,0
+    local function find(body,id) local found;branches(body.rotation,function(step) if step.id==id then found=step end end);return found end
+    for _,p in ipairs(packs) do
+        if not corpus.contains(p.applicability.families,'era') then
+            local ids={};branches(p.body.rotation,function(step) ids[#ids+1]=step.id end)
+            for _,id in ipairs(ids) do
+                local before,condition=negatedCopy(a,p.body,id);set=setter(a,condition);count=count+1
+                -- The whole premade (other conditions false), then the Branch alone, so a Stop ahead of
+                -- it cannot hide its arms.
+                local alone,aloneBefore={rotation={find(p.body,id)}},{rotation={find(before,id)}}
+                local outcomes={}
+                for _,m in ipairs({'match','no-match','unavailable'}) do
+                    set(m)
+                    for _,pair in ipairs({{p.body,before},{alone,aloneBefore}}) do
+                        local x,y=walk(pair[1]),walk(pair[2])
+                        assert(x==y,p.id..'/'..id..' '..m..': '..x..' | negated: '..y)
+                    end
+                    outcomes[m]=walk(alone)
+                end
+                assert(outcomes.unavailable==' => unavailable suppress',p.id..'/'..id..' unavailable did not pause: '..outcomes.unavailable)
+                if outcomes.match~=outcomes['no-match'] then decided=decided+1 end
+            end
+        end
+    end
+    assert(decided==count,(count-decided)..' of '..count..' branches walk the same either way')
+    assert(count>500,'only '..count..' branches walked')
+end)
+
+-- A few inverted TBC Branches on the full physical world model (real predicates, readiness and
+-- the spells the scenario suites train): the advice is the same spell, or the same stop, before
+-- and after, and the two arms really do advise differently.
+test('inverted TBC Branches give the same advice as their negated form (true, false, unavailable)',function()
+    local M=dofile('tests/fixtures/tbc_physical_premades.lua')
+    local cases={
+        {'WARRIOR','rm.tbc.warrior.dps.wowsims','warrior-dps-pull',function(s) M.know(s,6603,78,6673,100,772,6343,1715);s.range[6603]=true end},
+        {'ROGUE','rm.tbc.rogue.dps.wowsims','rogue-behind',function(s) M.know(s,6603,1752,2098,53,1329);s.range[6603]=true;s.usable[14251]=false end},
+        {'HUNTER','rm.tbc.hunter.ranged.wowsims','hunter-melee',function(s) M.know(s,75,6603,2973,1978,3044,2974);s.range[6603]=false;s.autorepeat=true;s.debuffs={{id=1130,source='party1'}} end},
+        {'HUNTER','rm.tbc.hunter.ranged.wowsims','hunter-pull',function(s) M.know(s,75,6603,2973,1978,3044);s.range[6603]=false;s.autorepeat=true;s.debuffs={{id=1130,source='party1'}} end},
+    }
+    for _,case in ipairs(cases) do
+        local f,s=M.fixture(case[1],{level=60});case[4](s);local a=f.addon
+        local body=M.body(a,case[2]);local id
+        branches(body.rotation,function(step) if step.id==case[3] then id=step.id end end)
+        assert(id,case[2]..' has no branch '..case[3]..'; branch ids: '..(function() local t={};branches(body.rotation,function(x) t[#t+1]=x.id end);return table.concat(t,' ') end)())
+        local before,condition=negatedCopy(a,body,id);local set=setter(a,condition);local wrapped={}
+        for _,leaf in ipairs(leaves(condition)) do
+            local definition=a.conditionDefinitions[leaf.type]
+            if not wrapped[definition] then
+                wrapped[definition]=true;local evaluate=definition.evaluate
+                definition.evaluate=function(value,...) if forced[value]~=nil then return force(value) end;return evaluate(value,...) end
+            end
+        end
+        local function advice(tree)
+            f.sync();local ready=a:NewActionReadiness(100);local selected
+            local result=a:EvaluateRotationSequence(tree,function(c,ctx) return a:evaluateConditionResult(c,ctx) end,function(step)
+                if a:evaluateCondition(step.conditions) then
+                    for _,spell in ipairs(a:GetSpellIds(step)) do if s.mapped[spell]~=false and ready(step.type,spell) then selected=spell;return false end end
+                end
+            end)
+            return tostring(selected)..' '..result.status..(result.suppressAttack and ' suppress' or '')
+        end
+        local seen={}
+        for _,m in ipairs({'match','no-match','unavailable'}) do
+            set(m);local x,y=advice(body),advice(before)
+            assert(x==y,case[2]..'/'..id..' '..m..': '..x..' | negated: '..y);seen[m]=x
+        end
+        assert(seen.match~=seen['no-match'],case[2]..'/'..id..' both arms advise '..seen.match)
+        assert(seen.unavailable=='nil unavailable suppress',case[2]..'/'..id..' unavailable: '..seen.unavailable)
+    end
+end)
+finish()

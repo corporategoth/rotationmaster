@@ -19,7 +19,7 @@ test('missing units and missing restricted failed or malformed observations rema
  end
 end)
 test('unsupported clients and invalid queries do not call native APIs',function()
- local _,a,s=fixture(1);assert(observe(a,'dead')==nil and #s.calls==0)
+ local _,a,s=fixture(999);assert(observe(a,'dead')==nil and #s.calls==0)
  local _,b,t=fixture();assert(b.Platform:GetUnitStateObservation('', 'dead')==nil);assert(observe(b,'enemy')==nil and #t.calls==0)
 end)
 test('new leaves use one evaluation cache and retry current state in a fresh pass',function()

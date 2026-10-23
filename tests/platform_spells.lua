@@ -212,7 +212,7 @@ test('auto-repeat input results and policy fail closed without uncertain native 
     end
     e.C_Spell.IsAutoRepeatSpell=function() return nil end;assert(p:IsAutoRepeatActive(5019)==nil)
     e.C_Spell.IsAutoRepeatSpell=function() error('policy must prevent query') end
-    e.WOW_PROJECT_ID=1;local value,why=p:IsAutoRepeatActive(5019);assert(value==nil and why=='unsupported-policy')
+    e.WOW_PROJECT_ID=999;local value,why=p:IsAutoRepeatActive(5019);assert(value==nil and why=='unsupported-policy')
     e.WOW_PROJECT_ID=nil;value,why=p:IsAutoRepeatActive(5019);assert(value==nil and why=='unsupported-policy')
 end)
 test('missing auto-repeat APIs and malformed legacy slots remain unavailable',function()

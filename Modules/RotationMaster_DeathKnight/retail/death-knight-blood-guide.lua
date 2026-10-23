@@ -17,7 +17,7 @@ local exterminate=any(buff(441416),buff(447954))
 local lowBones=any(negate(buff(195181)),{type='BUFF_STACKS',unit='player',spell=195181,ownbuff=true,operator='LESSTHAN',value=5},
  {type='BUFF_REMAIN',unit='player',spell=195181,ownbuff=true,operator='LESSTHAN',value=3},exterminate)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.blood.guide',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.blood.guide',revision=2,
  blocks={['retail.deathknight.boundaries']=1,['retail.deathknight.utility']=1},
  nameKey='Default.Retail.DeathKnight.BloodGuide.Name',descriptionKey='Default.Retail.DeathKnight.BloodGuide.Description',
  applicability={families={'retail'},actionContext='player',class='DEATHKNIGHT',specs={250},minLevel=8,maxLevel=90},
@@ -36,7 +36,7 @@ assert(addon:RegisterDefaultRotation({
   },
   rotation={
    block('bguide-boundaries','retail.deathknight.boundaries','bguide-'),
-   {id='bguide-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={spell('bguide-pull-caress',195292),stop('bguide-pull-stop')}},
+   {id='bguide-pull',type='branch',conditions=combat(),onTrue={},onFalse={spell('bguide-pull-caress',195292),stop('bguide-pull-stop')}},
    spell('bguide-death-strike',49998,any({type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.5},rp('GREATERTHANOREQUALS',75))),
    {id='bguide-bones',type='branch',conditions=lowBones,onFalse={},onTrue={spell('bguide-marrowrend',195182),spell('bguide-bones-caress',195292)}},
    {id='bguide-gift',type='branch',conditions=all(known(433895),buff(434153)),onFalse={},onTrue={

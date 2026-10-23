@@ -16,8 +16,8 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local tough=any(class('elite'),class('rareelite'),class('worldboss'))
 local P='warlock-wh-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.warlock.dps.wowhead',revision=1,
- blocks={['tbc.warlock.boundaries']=1,['tbc.warlock.procs']=1,['tbc.warlock.moving']=1,['tbc.warlock.curse']=1,['tbc.warlock.aoe']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.warlock.dps.wowhead',revision=2,
+ blocks={['tbc.warlock.boundaries']=1,['tbc.warlock.procs']=1,['tbc.warlock.moving']=1,['tbc.warlock.curse']=2,['tbc.warlock.aoe']=1,
   ['tbc.warlock.finishers']=1,['tbc.warlock.filler']=1,['tbc.warlock.armor']=1,['tbc.warlock.upkeep']=1},
  nameKey='Default.TBC.Warlock.DpsWowhead.Name',descriptionKey='Default.TBC.Warlock.DpsWowhead.Description',
  applicability={families={'tbc'},actionContext='player',class='WARLOCK',minLevel=1,maxLevel=70},
@@ -48,7 +48,7 @@ assert(addon:RegisterDefaultRotation({
      spell(P..'siphon',18265,all(negate(own(18265)),any({type='DEBUFF',unit='target',spell=17800},all(negate({type='GROUP'}),tough)))),
      spell(P..'immolate',348,all(refresh(348),any({type='GROUP'},tough))),
     }},
-   {id=P..'solo',type='branch',conditions=negate({type='GROUP'}),onFalse={},onTrue={
+   {id=P..'solo',type='branch',conditions={type='GROUP'},onTrue={},onFalse={
     spell(P..'solo-tap',1454,all(pct('MANAPCT','LESSTHAN',.5),pct('HEALTHPCT','GREATERTHAN',.6))),
     spell(P..'drain-life',689)}},
    block(P..'filler','tbc.warlock.filler',P),

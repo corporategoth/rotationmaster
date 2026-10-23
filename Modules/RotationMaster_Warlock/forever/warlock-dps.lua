@@ -29,7 +29,7 @@ local function pact()return all(known(19028),{type='LEVEL',unit='player',operato
 local function summon()return all(negate({type='PET'}),any(negate(combat()),buff(18708)),any(negate(sacrificed()),pact()))end
 local function ownCurse()return any(own(704),own(702),own(1714),own(18223))end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.warlock.dps',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.warlock.dps',revision=2,
  blocks={['forever.warlock.boundaries']=1,['forever.warlock.upkeep']=1,['forever.warlock.procs']=1,['forever.warlock.execute']=1,
   ['forever.warlock.moving']=1,['forever.warlock.aoe']=1,['forever.warlock.wand']=1},
  nameKey='Default.Forever.Warlock.DPS.Name',descriptionKey='Default.Forever.Warlock.DPS.Description',
@@ -51,7 +51,7 @@ assert(addon:RegisterDefaultRotation({
   spell('warlock-havoc-reminder',1225228,all(combat(),{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2},negate(havoc())))},
  rotation={
  block('forever.warlock.boundaries','warlock-'),
- {id='warlock-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+ {id='warlock-pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('warlock-pull-incinerate',412758),
   spell('warlock-pull-bolt',686,known(1293817)),
   spell('warlock-pull-immolate',348,negate(own(348))),
@@ -70,7 +70,7 @@ assert(addon:RegisterDefaultRotation({
  spell('warlock-siphon-life',18265,all(negate(own(18265)),any(big(),{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=20}))),
  spell('warlock-conflagrate',1293817,all(own(348),any(known(412758),{type='DEBUFF_REMAIN',unit='target',spell=348,anyrank=true,owndebuff=true,operator='LESSTHANOREQUALS',value=3}))),
  spell('warlock-shadowburn',17877,all(known(412758),{type='CARRYING',item={6265},operator='GREATERTHANOREQUALS',value=2})),
- {id='warlock-solo',type='branch',conditions=negate({type='GROUP'}),onFalse={},onTrue={
+ {id='warlock-solo',type='branch',conditions={type='GROUP'},onTrue={},onFalse={
   spell('warlock-solo-tap',1454,all(mana('LESSTHAN',.35),health('GREATERTHAN',.65))),
   spell('warlock-solo-drain',689,health('LESSTHAN',.7)),
   spell('warlock-solo-wrack',1316697),

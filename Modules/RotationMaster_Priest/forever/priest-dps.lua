@@ -19,7 +19,7 @@ local shadowform={type='BUFF',unit='player',spell=15473}
 local solo=negate({type='GROUP'})
 local unshielded=negate({type='DEBUFF',unit='player',spell=6788})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.priest.dps',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.priest.dps',revision=2,
  blocks={['forever.priest.boundaries']=1,['forever.priest.upkeep']=1,['forever.priest.dps-upkeep']=1,['forever.priest.wand']=1},
  nameKey='Default.Forever.Priest.Dps.Name',descriptionKey='Default.Forever.Priest.Dps.Description',
  applicability={families={'forever'},actionContext='player',class='PRIEST',minLevel=1,maxLevel=60},
@@ -46,10 +46,10 @@ assert(addon:RegisterDefaultRotation({
    {id='dps-emergency',type='branch',conditions=all(solo,health('player','LESSTHAN',.35)),onFalse={},onTrue={
     spell('dps-emergency-shield',17,unshielded),
     spell('dps-desperate-prayer',13908),
-    {id='dps-emergency-heal',type='branch',conditions=negate(shadowform),onFalse={},onTrue={
+    {id='dps-emergency-heal',type='branch',conditions=shadowform,onTrue={},onFalse={
      spell('dps-flash-heal',2061),spell('dps-heal',2054),spell('dps-lesser-heal',2050)}},
     stop('dps-emergency-stop')}},
-   {id='dps-pull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+   {id='dps-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell('dps-pull-shield',17,all(solo,unshielded)),
     spell('dps-pull-holy-fire',14914,negate(known(15473))),
     spell('dps-pull-mind-blast',8092),
@@ -70,7 +70,7 @@ assert(addon:RegisterDefaultRotation({
    spell('dps-pain',589,negate(own(589))),
    spell('dps-plague',2944,all(negate(own(2944)),health('target','GREATERTHAN',.4),any(shadowform,mana('GREATERTHANOREQUALS',.4)))),
    {id='dps-shadow',type='branch',conditions=shadowform,onFalse={},onTrue={spell('dps-shadow-flay',15407),stop('dps-shadow-stop')}},
-   {id='dps-solo',type='branch',conditions=solo,onFalse={},onTrue={
+   {id='dps-solo',type='branch',conditions={type='GROUP'},onTrue={},onFalse={
     spell('dps-holy-nova',15237,all({type='DISTANCE_COUNT',enemy=true,distance=10,operator='GREATERTHANOREQUALS',value=3},
      any({type='BUFF',unit='player',spell=1284536},mana('GREATERTHAN',.6)))),
     spell('dps-solo-flay',15407,mana('GREATERTHAN',.6)),

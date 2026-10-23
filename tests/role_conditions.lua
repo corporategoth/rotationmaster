@@ -64,7 +64,7 @@ test('canonical outer cache preserves nil tuples and isolates selected units rec
 end)
 test('registration branches unchanged while real non-probe policies deny without native calls and recover fresh',function()
  for _,shape in ipairs({{1,12,'inspect'},{18,12,'talent'},{11,2,'talent'},{14,3,'talent'},{19,4,'talent'},{5,1,false},{2,0,false},{999,12,'talent'}}) do local _,a,s=fixture(shape[1],shape[2],true);local definition=a.conditionDefinitions.ROLE
-  if shape[3] then assert(definition.builtinSourceVariant==shape[3] and (definition.fields.unit~=nil)==(shape[3]=='inspect'));if shape[1]==1 or shape[1]==18 or shape[1]==999 then unknown(a,node());assert(#s.calls==0) else assert(a:evaluateConditionResult(node()).status=='match') end
+  if shape[3] then assert(definition.builtinSourceVariant==shape[3] and (definition.fields.unit~=nil)==(shape[3]=='inspect'));if shape[1]==999 then unknown(a,node());assert(#s.calls==0) else assert(a:evaluateConditionResult(node()).status=='match') end
   else assert(definition==nil) end
  end
  for _,shape in ipairs(variants) do local _,a,s=fixture(shape[1],shape[2]);s.throw=shape[3]=='inspect' and 'modern' or 'talent';unknown(a,node());s.throw=nil;assert(a:evaluateConditionResult(node()).status=='match') end

@@ -91,7 +91,7 @@ test('normalized per-pass query identities share nil tuples and retry form chang
     local again,reason=a.conditionDefinitions.MANA.evaluate(node('MANA'),cache);assert(again==nil and reason==why);assert(a.conditionDefinitions.MANA.evaluate(node('MANA'),{}))
 end)
 test('restricted and unsupported combat policies cannot observe resources or authorize NOT',function()
-    for _,project in ipairs({1,18,999}) do local _,a,s=fixture(project);for _,tag in ipairs(tags) do unknown(a,node(tag)) end;assert(next(s.calls)==nil) end
+    for _,project in ipairs({999}) do local _,a,s=fixture(project);for _,tag in ipairs(tags) do unknown(a,node(tag)) end;assert(next(s.calls)==nil) end
 end)
 test('editable Built In clones use repaired observation and scale while saved raw custom code stays exact',function()
     local _,a,s=fixture();clones(a)

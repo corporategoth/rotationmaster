@@ -67,10 +67,10 @@ block('mop.paladin.prot-upkeep',{
 -- Wrath's Judgment in wings.
 block('mop.paladin.prot-open',{
  stop('target',negate({type='ATTACKABLE',unit='target'})),
- {id='pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+ {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('pull-avengers-shield',31935),spell('pull-judgment',20271,{type='BEYOND_MELEE',unit='target'}),stop('pull-stop')}},
  spell('wings-judgment',20271,all({type='TALENT',layout='grid',value=14},buff(31884))),
-})
+},2)
 -- Both Protection premades: three or more enemies on you (Icy Veins' AoE order), then stop.
 block('mop.paladin.prot-aoe',{
  {id='aoe',type='branch',conditions=enemies(3),onFalse={},onTrue={

@@ -28,7 +28,7 @@ test('three flags retain exact selected native tuples boolean false and mode iso
 end)
 test('probe families retain flag queries and unsupported policies cannot touch native state',function()
     for _,project in ipairs({2,5,11,14,19}) do local _,p=fixture(project);for _,kind in ipairs(kinds) do assert(observe(p,'target',kind)==true) end end
-    for _,project in ipairs({1,18,999}) do local _,p,s=fixture(project);for _,kind in ipairs(kinds) do unknown(p,kind,'unsupported-policy') end;assert(#s.calls==0) end
+    for _,project in ipairs({999}) do local _,p,s=fixture(project);for _,kind in ipairs(kinds) do unknown(p,kind,'unsupported-policy') end;assert(#s.calls==0) end
 end)
 test('query readability and closed kind validation precede native calls even for absent units',function()
     local f,p,s=fixture();s.exists=false;local opaque={};f.env.canaccessvalue=function(v) return not rawequal(v,opaque) end

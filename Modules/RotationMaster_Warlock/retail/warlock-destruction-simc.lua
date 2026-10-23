@@ -17,7 +17,7 @@ local function shards(op,v)return{type='POINT',unit='player',operator=op,value=v
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.destruction.simc',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.destruction.simc',revision=2,
  blocks={['retail.warlock.boundaries']=1,['retail.warlock.upkeep']=1},
  nameKey='Default.Retail.Warlock.Destruction.Simc.Name',descriptionKey='Default.Retail.Warlock.Destruction.Simc.Description',
  applicability={families={'retail'},actionContext='player',class='WARLOCK',specs={267},minLevel=10,maxLevel=90},
@@ -32,7 +32,7 @@ assert(addon:RegisterDefaultRotation({
   },
   rotation={
    block('retail.warlock.boundaries','destrosc-'),
-   {id='destrosc-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+   {id='destrosc-pull',type='branch',conditions=combat(),onTrue={},onFalse={
     spell('destrosc-pull-soul-fire',6353),
     spell('destrosc-pull-incinerate',29722),
     {id='destrosc-pull-stop',type='none',suppress_attack=true,conditions={}},

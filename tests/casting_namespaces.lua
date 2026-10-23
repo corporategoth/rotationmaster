@@ -70,9 +70,12 @@ test('canonical and legacy clones share repaired adapter records and exact per-k
 end)
 test('field-level nil and restricted observations preserve repaired active-name and NOT-branch behavior in both clone forms',function()
     for _,mode in ipairs({'nil-fields','restricted-fields','missing-api','nil-exists','restricted-name','policy'}) do local f,a,s=fixture();copies(a);local opaque={};f.env.canaccessvalue=function(v) return not rawequal(v,opaque) end
-        if mode=='nil-fields' then s.ending=nil;s.flag=nil elseif mode=='restricted-fields' then s.ending=opaque;s.flag=opaque elseif mode=='missing-api' then f.env.UnitCastingInfo=nil;f.env.UnitChannelInfo=nil elseif mode=='nil-exists' then s.exists=nil elseif mode=='restricted-name' then s.name=opaque else f.env.WOW_PROJECT_ID=1 end
+        if mode=='nil-fields' then s.ending=nil;s.flag=nil elseif mode=='restricted-fields' then s.ending=opaque;s.flag=opaque elseif mode=='missing-api' then f.env.UnitCastingInfo=nil;f.env.UnitChannelInfo=nil elseif mode=='nil-exists' then s.exists=nil elseif mode=='restricted-name' then s.name=opaque else f.env.WOW_PROJECT_ID=999 end
         for _,tag in ipairs(tags) do for _,prefix in ipairs({'COPY_','LEGACY_'}) do local v=node(tag);v.type=prefix..tag
-            if (mode=='nil-fields' or mode=='restricted-fields') and not tag:find('REMAIN',1,true) and not tag:find('INTERRUPTABLE',1,true) then assert(a:evaluateConditionResult(v).status=='match') else checkUnknown(a,v) end
+            if (mode=='nil-fields' or mode=='restricted-fields') and not tag:find('REMAIN',1,true) and not tag:find('INTERRUPTABLE',1,true) then assert(a:evaluateConditionResult(v).status=='match')
+            -- A secret name still proves the cast; only the spell named by text is unknown.
+            elseif mode=='restricted-name' and not tag:find('SPELL',1,true) then assert(a:evaluateConditionResult(v).status=='match',v.type)
+            else checkUnknown(a,v) end
         end end
     end
     local _,a,s=fixture();copies(a);s.name=nil

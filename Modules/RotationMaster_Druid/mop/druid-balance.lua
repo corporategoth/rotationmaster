@@ -27,7 +27,7 @@ local worth=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASS
  {type='CLASSIFICATION',unit='target',value='worldboss'},{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=25})
 local dream=all(talent(17),negate(own(DREAM)),negate(aligned))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.druid.balance',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.druid.balance',revision=3,
  blocks={['mop.druid.boundaries']=2,['mop.druid.target']=1,['mop.druid.mark']=1},
  nameKey='Default.MoP.Druid.Balance.Name',descriptionKey='Default.MoP.Druid.Balance.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID',minLevel=10,maxLevel=90},
@@ -59,7 +59,7 @@ assert(addon:RegisterDefaultRotation({
    block('balance-boundaries','mop.druid.boundaries','balance-'),
    {id='balance-forms',type='none',conditions=any(form(768),form(5487))},
    block('balance-target','mop.druid.target','balance-'),
-   {id='balance-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+   {id='balance-pull',type='branch',conditions=combat(),onTrue={},onFalse={
     spell('balance-pull-dream',5185,all(talent(17),negate(own(DREAM)))),
     spell('balance-pull-moonfire',8921,{type='MOVING'}),
     spell('balance-pull-wrath',5176),

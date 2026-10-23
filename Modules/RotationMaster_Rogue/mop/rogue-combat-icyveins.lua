@@ -17,8 +17,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local boss={type='CLASSIFICATION',unit='target',value='worldboss'}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.combat.icyveins',revision=2,
- blocks={['mop.rogue.boundaries']=1,['mop.rogue.combat-opener']=1,['mop.rogue.out-of-combat']=1,['mop.rogue.combat-aoe']=1,['mop.rogue.solo']=1,['mop.rogue.upkeep']=1,['mop.rogue.combat-upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.combat.icyveins',revision=3,
+ blocks={['mop.rogue.boundaries']=1,['mop.rogue.combat-opener']=1,['mop.rogue.out-of-combat']=2,['mop.rogue.combat-aoe']=1,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1,['mop.rogue.combat-upkeep']=1},
  nameKey='Default.MoP.Rogue.Combat.IcyVeins.Name',descriptionKey='Default.MoP.Rogue.Combat.IcyVeins.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE',minLevel=10,maxLevel=90},
  tags={'combat','dps','melee','leveling','endgame','icy-veins','warcraft-tavern','method','wowtbc'},

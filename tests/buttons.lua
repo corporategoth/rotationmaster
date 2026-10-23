@@ -265,5 +265,20 @@ test('unreadable macro attributes and failed button reads recover without a bar 
     a:RefreshMacroButtons();assert(not a:FindSpell({133}),'failed button read retained stale action')
     button.GetAttribute=read;a:RefreshMacroButtons();assert(a:FindSpell({133})==133)
 end)
+-- Restricted clients run complete rotations, so their bars are scanned too.
+-- Every slot read is guarded: a secret slot is skipped, never compared.
+test('restricted clients map action slots; secret slots are skipped',function()
+    local env,a,button=fixture({type='action'},{GetPagedID=function() return 73 end})
+    env.WOW_PROJECT_ID=1
+    assert(a.Platform:GetCombatDataPolicy()=='restricted')
+    assertMappedAndHighlighted(a,button)
+    local secret={}
+    local native=a.Platform.CanReadValue
+    a.Platform.CanReadValue=function(self,value) if value==secret then return false end return native(self,value) end
+    env.GetActionInfo=function() return 'spell',secret end
+    a:Fetch();assert(not a:FindSpell({133}),'a secret slot was mapped')
+    env.HasAction=function() return secret end
+    a:Fetch();assert(not a:FindSpell({133}),'a secret presence flag was tested')
+end)
 print(string.format('%d passed, %d failed', passed, failed))
 os.exit(failed == 0 and 0 or 1)

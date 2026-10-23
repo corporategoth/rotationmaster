@@ -116,11 +116,11 @@ test('Arcane: Barrage, Clearcasting, stack caps by target, Arcane Wrath, filler,
  s.near(0);s.moving=true;M.expect(a,s,ARCANE,2136,nil,'moving: Fire Blast')
  s.learn(12043,12042);s.moving=false;s.classification='elite';local lit=M.upkeep(a,s,ARCANE);assert(lit[12043]and lit[12042],'Presence of Mind and Arcane Power on elites')
 end)
-test('on the real restricted Forever client the Mage premades are listed but never auto-selected',function()
- local f,s=M.new('mage',{policy='restricted'});local a=f.addon;s.learn(133,11366)
+test('on the real restricted Forever client the Mage premades are listed but incomplete, never auto-selected',function()
+ local f,s=M.new('mage',{policy='restricted'});local a=f.addon;local support=dofile('tests/fixtures/client_support.lua');support.install(f);s.learn(133,11366)
  local rows=M.rows(a)
  for _,id in ipairs({FROST,FIRE,IVFIRE,ARCANE})do
-  assert(rows[id]and rows[id].readOnly,id..' not listed');assert(not rows[id].eligible and rows[id].eligibilityReason=='restricted-or-unsupported-client',id)
+  assert(rows[id]and rows[id].readOnly,id..' not listed');support.incomplete(rows[id],id)
  end
  assert(next(a:GetRuntimeRotations(0))==nil and M.selected(a)==nil,'a restricted client auto-selected a packaged rotation')
 end)

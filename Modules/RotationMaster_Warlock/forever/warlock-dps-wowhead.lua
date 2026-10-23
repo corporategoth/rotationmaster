@@ -27,7 +27,7 @@ local function bane()return all(negate(own(980)),negate(own(603)),negate(any(own
 local function tap()return all({type='MANAPCT',unit='player',operator='LESSTHAN',value=.35},health('GREATERTHAN',.5))end
 local destruction=known(1293817)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.warlock.dps.wowhead',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.warlock.dps.wowhead',revision=2,
  blocks={['forever.warlock.boundaries']=1,['forever.warlock.upkeep']=1,['forever.warlock.procs']=1,['forever.warlock.execute']=1,
   ['forever.warlock.moving']=1,['forever.warlock.wand']=1},
  nameKey='Default.Forever.Warlock.DPS.Wowhead.Name',descriptionKey='Default.Forever.Warlock.DPS.Wowhead.Description',
@@ -45,7 +45,7 @@ assert(addon:RegisterDefaultRotation({
   spell('warlock-wh-amplify-curse',18288,combat())},
  rotation={
  block('forever.warlock.boundaries','warlock-wh-'),
- {id='warlock-wh-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+ {id='warlock-wh-pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('warlock-wh-pull-corruption',172,negate(own(172))),
   spell('warlock-wh-pull-agony',980,all(bane(),any(negate(known(18708)),big()))),
   spell('warlock-wh-pull-immolate',348,all(destruction,negate(own(348)))),
@@ -62,11 +62,11 @@ assert(addon:RegisterDefaultRotation({
  {id='warlock-wh-destruction',type='branch',conditions=destruction,onTrue={
   spell('warlock-wh-destro-immolate',348,negate(own(348))),
   spell('warlock-wh-destro-conflagrate',1293817,all(own(348),{type='DEBUFF_REMAIN',unit='target',spell=348,anyrank=true,owndebuff=true,operator='LESSTHANOREQUALS',value=3})),
-  {id='warlock-wh-destro-solo',type='branch',conditions=negate({type='GROUP'}),onFalse={},onTrue={
+  {id='warlock-wh-destro-solo',type='branch',conditions={type='GROUP'},onTrue={},onFalse={
    block('forever.warlock.wand','warlock-wh-destro-'),
   }},
  },onFalse={
-  {id='warlock-wh-solo',type='branch',conditions=negate({type='GROUP'}),onFalse={},onTrue={
+  {id='warlock-wh-solo',type='branch',conditions={type='GROUP'},onTrue={},onFalse={
    spell('warlock-wh-solo-tap',1454,tap()),
    spell('warlock-wh-solo-drain',689,health('LESSTHAN',1)),
    block('forever.warlock.wand','warlock-wh-solo-'),

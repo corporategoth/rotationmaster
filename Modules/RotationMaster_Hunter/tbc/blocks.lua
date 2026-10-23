@@ -20,16 +20,16 @@ local worth=all(combat(),any(classified('worldboss'),classified('elite')))
 -- Boundaries every variant shares: casts/channels, no target, melee range, the pull, Auto Shot,
 -- Hunter's Mark and the multi-target branch.
 assert(addon:RegisterDefaultBlock({
- id='tbc.hunter.opening',revision=1,families={'tbc'},class='HUNTER',steps={
+ id='tbc.hunter.opening',revision=2,families={'tbc'},class='HUNTER',steps={
  {id='manual',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
  {id='no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
- {id='melee',type='branch',conditions=negate({type='BEYOND_MELEE',unit='target'}),onFalse={},onTrue={
+ {id='melee',type='branch',conditions={type='BEYOND_MELEE',unit='target'},onTrue={},onFalse={
   spell('raptor-strike',2973,negate({type='SPELL_ACTIVE',spell=2973,ranked=false})),
   spell('mongoose-bite',1495),
   spell('counterattack',19306),
   {id='melee-stop',type='none',suppress_attack=false,conditions={}},
  }},
- {id='pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+ {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('pull-mark',1130,unmarked),
   spell('pull-aimed-shot',19434,standing),
   {id='pull-auto-shot',type='spell',action=75,ranked=true,conditions=negate({type='SPELL_AUTOREPEAT',spell=75,ranked=true})},

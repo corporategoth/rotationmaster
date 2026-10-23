@@ -11,7 +11,7 @@ local function own(id)return{type='BUFF',unit='player',spell=id,anyrank=true,own
 local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v}end
 local function anySeal()local out={};for i,id in ipairs({21084,20375,31892,348700,31801,348704,21082,20166,20165,20164})do out[i]=own(id)end;return{type='OR',value=out}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.retribution.icyveins',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.retribution.icyveins',revision=3,
  blocks={['tbc.paladin.ret-upkeep']=2,['tbc.paladin.melee-opening']=1,['tbc.paladin.boundaries']=1},
  nameKey='Default.TBC.Paladin.Retribution.IcyVeins.Name',descriptionKey='Default.TBC.Paladin.Retribution.IcyVeins.Description',
  applicability={families={'tbc'},actionContext='player',class='PALADIN',minLevel=1,maxLevel=70},
@@ -28,7 +28,7 @@ assert(addon:RegisterDefaultRotation({
     {id='ret-icy-opener-judgement',type='spell',action=20271,ranked=false,conditions=own(21082)},
     {id='ret-icy-opener-crusader',type='spell',action=21082,ranked=false,conditions=negate(own(21082))},
    }},
-   {id='ret-icy-seal',type='branch',conditions=negate(anySeal()),onFalse={},onTrue={
+   {id='ret-icy-seal',type='branch',conditions=anySeal(),onTrue={},onFalse={
     {id='ret-icy-seal-blood',type='spell',action=31892,ranked=false,conditions={}},
     {id='ret-icy-seal-martyr',type='spell',action=348700,ranked=false,conditions={}},
     {id='ret-icy-seal-command',type='spell',action=20375,ranked=false,conditions={type='SWING_TIME',offhand=false,operator='GREATERTHANOREQUALS',value=3.5}},

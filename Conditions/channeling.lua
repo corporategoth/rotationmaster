@@ -70,7 +70,10 @@ addon:RegisterCondition("CHANNELING_SPELL", {
         local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitCastObservation,addon.Platform,value.unit,"channel")
         if not record then return nil,reason end
         if not record.active then return false end
-        if type(value.spell) ~= "number" then return record.name==value.spell end
+        if type(value.spell) ~= "number" then
+            if record.name==nil then return nil,record.nameReason or "cast-spell-unavailable" end
+            return record.name==value.spell
+        end
         -- By ID, any rank unless the exact rank was asked for (locale-safe).
         return addon.Platform:MatchSpellIdentity(record.spellID, record.spellReason, record.name, value.spell, value.ranked == true)
     end,

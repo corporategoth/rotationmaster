@@ -45,7 +45,7 @@ test('unknown snapshots and native errors recover on fresh or uncached passes wi
  s.throw='stat';unknown(a,node());s.throw=nil;assert(a:evaluateConditionResult(node()).status=='match')
 end)
 test('unsupported policies stay unknown and unused tuple values never become required metadata',function()
- for _,project in ipairs({1,18,999}) do local _,a,s=fixture(project);unknown(a,node());assert(#s.calls==0) end
+ for _,project in ipairs({999}) do local _,a,s=fixture(project);unknown(a,node());assert(#s.calls==0) end
  local f,a,s=fixture();local opaque={};s.unused=opaque;f.env.canaccessvalue=function(v) return not rawequal(v,opaque) end;assert(a:evaluateConditionResult(node()).status=='match' and a:evaluateConditionResult(node(6)).status=='match')
 end)
 test('actual current editable clone shares the adapter cache and saved raw source keeps its prior nil mismatch',function()

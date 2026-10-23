@@ -19,7 +19,7 @@ local howl=any(buff(471878),buff(472324),buff(472325))
 -- Kill Command just before a ready Takedown, without Twin Fangs and with no Tip of the Spear.
 local beforeTakedown=all(negate(known(1272139)),negate(tip),{type='SPELL_AVAIL',spell=TAKEDOWN})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.survival.guide',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.survival.guide',revision=2,
  blocks={['retail.hunter.boundaries']=1,['retail.hunter.utility']=1,['retail.hunter.mark']=1},
  nameKey='Default.Retail.Hunter.SurvivalGuide.Name',descriptionKey='Default.Retail.Hunter.SurvivalGuide.Description',
  applicability={families={'retail'},actionContext='player',class='HUNTER',specs={255},minLevel=10,maxLevel=90},
@@ -36,7 +36,7 @@ assert(addon:RegisterDefaultRotation({
   rotation={
    block('svguide-boundaries','retail.hunter.boundaries','svguide-'),
    spell('svguide-call-pet',883,negate({type='PET'})),
-   {id='svguide-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+   {id='svguide-pull',type='branch',conditions=combat(),onTrue={},onFalse={
     block('svguide-pull-mark','retail.hunter.mark','svguide-pull-'),spell('svguide-pull-bomb',BOMB),stop('svguide-pull-stop')}},
    {id='svguide-cleave',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
     spell('svguide-cleave-kill',KILL,negate(tip)),

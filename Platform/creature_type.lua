@@ -3,7 +3,8 @@ local platform=addon.Platform
 
 -- Identity is native return two, independent of the localized caption in one.
 function platform:GetUnitCreatureTypeID(unit)
-    if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
+    local policy=self:GetCombatDataPolicy()
+    if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end
     if type(UnitExists)~='function' then return nil,'missing-api' end

@@ -25,8 +25,8 @@ local boss={type='CLASSIFICATION',unit='target',value='worldboss'}
 local deep=own(84747)
 local charges=function(op,n)return any(stacks(115189,op,n),negate(own(115189)))end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.combat.hekili',revision=2,
- blocks={['mop.rogue.boundaries']=1,['mop.rogue.combat-opener']=1,['mop.rogue.out-of-combat']=1,['mop.rogue.solo']=1,['mop.rogue.upkeep']=1,['mop.rogue.combat-upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.combat.hekili',revision=3,
+ blocks={['mop.rogue.boundaries']=1,['mop.rogue.combat-opener']=1,['mop.rogue.out-of-combat']=2,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1,['mop.rogue.combat-upkeep']=1},
  nameKey='Default.MoP.Rogue.Combat.Hekili.Name',descriptionKey='Default.MoP.Rogue.Combat.Hekili.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE',minLevel=10,maxLevel=90},
  tags={'combat','dps','melee','endgame','hekili'},

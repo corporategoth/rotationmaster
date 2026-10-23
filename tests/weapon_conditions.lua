@@ -33,7 +33,11 @@ test('selected missing or restricted weapon observations remain unavailable unde
     f.env.GetWeaponEnchantInfo=function() return true,12000,4,1,true,3000,opaque,2 end
     assert(a:evaluateConditionResult({type='NOT',value=node('WEAPON_STACKS',true,0)}).status=='unavailable','restricted charges became a comparison')
     f.env.UnitAttackSpeed=function() return 3,nil end
-    for _,kind in ipairs({'SWING_TIME','SWING_TIME_REMAIN'}) do assert(a:evaluateConditionResult({type='NOT',value=node(kind,true,0)}).status=='unavailable','missing offhand speed fell back to mainhand') end
+    -- No off-hand weapon is a reading: off-hand checks are false, so NOT matches
+    -- (a fallback to the main hand's 3 seconds would not).
+    for _,kind in ipairs({'SWING_TIME','SWING_TIME_REMAIN'}) do assert(a:evaluateConditionResult({type='NOT',value=node(kind,true,0)}).status=='match','missing offhand speed fell back to mainhand') end
+    f.env.UnitAttackSpeed=function() return 3,opaque end
+    for _,kind in ipairs({'SWING_TIME','SWING_TIME_REMAIN'}) do assert(a:evaluateConditionResult({type='NOT',value=node(kind,true,0)}).status=='unavailable','restricted offhand speed became a comparison') end
     f.env.GetWeaponEnchantInfo=function() error('failed observation') end
     assert(a:evaluateConditionResult({type='NOT',value=node('WEAPON',false,0)}).status=='unavailable','failed observation escaped unavailable')
 end)

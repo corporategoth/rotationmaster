@@ -15,7 +15,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local stationary=negate({type='MOVING'})
 local ranged={type='BEYOND_MELEE',unit='target'}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.shaman.enhancement.wowhead',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.shaman.enhancement.wowhead',revision=2,
  blocks={['forever.shaman.manual']=1,['forever.shaman.upkeep']=1,['forever.shaman.imbue']=1},
  nameKey='Default.Forever.Shaman.Enhancement.Wowhead.Name',descriptionKey='Default.Forever.Shaman.Enhancement.Wowhead.Description',
  applicability={families={'forever'},actionContext='player',class='SHAMAN',minLevel=1,maxLevel=60},
@@ -28,7 +28,7 @@ assert(addon:RegisterDefaultRotation({
  rotation={
  block('forever.shaman.manual','shaman-wh-'),
  {id='shaman-wh-no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
- {id='shaman-wh-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+ {id='shaman-wh-pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('shaman-wh-pull-bolt',403,all(ranged,stationary)),
   spell('shaman-wh-pull-shock',8042),
   {id='shaman-wh-pull-stop',type='none',suppress_attack=false,conditions={}},

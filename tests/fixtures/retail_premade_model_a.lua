@@ -204,14 +204,16 @@ function M.expect(a,s,id,want,status,label)
  return result
 end
 -- Common checks for one class: every premade loads for its spec only, declares Retail, and is
--- listed but never auto-selected on the real restricted client.
+-- listed but incomplete (never auto-selected) on the real restricted client.
 function M.restricted(class,token,specs)
  for spec,ids in pairs(specs)do
   local f=M.new(class,token,spec,{policy='restricted'});local a=f.addon
+  local support=dofile('tests/fixtures/client_support.lua');support.install(f)
   local rows=M.rows(a)
   for _,id in ipairs(ids)do
    local row=assert(rows[id],id..' not listed on the restricted client')
-   assert(row.readOnly and row.builtin and not row.eligible,id..' eligible on the restricted client')
+   assert(row.readOnly and row.builtin,id..' not a Built In')
+   if row.eligibilityReason=='disabled' then assert(not row.eligible,id) else support.incomplete(row,id) end
   end
   assert(M.selected(a)==nil,'a Built In auto-selected on the restricted Retail client')
   assert(a:GetRuntimeRotations(spec)and next(a:GetRuntimeRotations(spec))==nil,'restricted runtime is not empty')

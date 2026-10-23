@@ -30,7 +30,7 @@ test('closed kinds preserve exact selected-unit query order and consumed fields'
     end end
 end)
 test('policy kind and unit guards precede all native queries',function()
-    for _,project in ipairs({1,18,999}) do local _,p,s=fixture(project);for kind in pairs(apis) do unavailable(p,kind,'unsupported-policy') end;assert(#s.calls==0) end
+    for _,project in ipairs({999}) do local _,p,s=fixture(project);for kind in pairs(apis) do unavailable(p,kind,'unsupported-policy') end;assert(#s.calls==0) end
     local f,p,s=fixture();local opaque={};f.env.canaccessvalue=function(v) return not rawequal(v,opaque) end
     for _,bad in ipairs({'',false,0,{},opaque}) do
         local value,why=p:GetUnitMetadataObservation(bad,'class');assert(value==nil and why==(rawequal(bad,opaque) and 'restricted-value' or 'invalid-unit'))

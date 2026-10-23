@@ -64,8 +64,13 @@ function addon:CreateDefaultRotationOptions(frame,spec,id,onClone,onRefresh)
         label(frame,row.name,'Heading');label(frame,L['Built In · read-only']);label(frame,row.description)
         local scope=row.applicability or {}
         label(frame,string.format(L['Level range: %s–%s; revision %s'],scope.minLevel or '1',scope.maxLevel or '?',row.revision or '?'))
+        -- Name the first condition this client cannot support, when that is why.
+        local unsupported
+        if not row.eligible and row.eligibilityReason=='invalid-or-unsupported' and type(row.validation)=='table' and addon.DescribeUnsupportedCondition then
+            for _,problem in ipairs(row.validation.diagnostics or {}) do unsupported=addon:DescribeUnsupportedCondition(problem);if unsupported then break end end
+        end
         local status=label(frame,row.eligible and L['Available for this character']
-            or string.format(L['Not available for this character: %s'],reasons[row.eligibilityReason] or L['Unavailable']))
+            or string.format(L['Not available for this character: %s'],unsupported or reasons[row.eligibilityReason] or L['Unavailable']))
         local enable=addon:CreateConditionCheckBox();enable:SetLabel(L['Enable Built In']);enable:SetValue(row.enabled)
         enable:SetCallback('OnValueChanged',function(_,_,value)
             if not valid() then return end

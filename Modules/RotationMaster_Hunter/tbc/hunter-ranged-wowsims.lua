@@ -16,8 +16,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local stingless=all(negate({type='DEBUFF',unit='target',spell=1978,anyrank=true,owndebuff=true}),negate({type='DEBUFF',unit='target',spell=3043,anyrank=true,owndebuff=true}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.hunter.ranged.wowsims',revision=1,
- blocks={['tbc.hunter.opening']=1,['tbc.hunter.leveling']=1,['tbc.hunter.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.hunter.ranged.wowsims',revision=2,
+ blocks={['tbc.hunter.opening']=2,['tbc.hunter.leveling']=1,['tbc.hunter.upkeep']=1},
  nameKey='Default.TBC.Hunter.Ranged.Wowsims.Name',descriptionKey='Default.TBC.Hunter.Ranged.Wowsims.Description',
  applicability={families={'tbc'},actionContext='player',class='HUNTER',minLevel=1,maxLevel=70},
  tags={'dps','ranged','leveling','endgame','wowsims','icy-veins'},

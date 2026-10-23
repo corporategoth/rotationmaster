@@ -70,9 +70,28 @@ local function itemsetEntries(shared,personal)
     end
     return result,count
 end
+-- Condition support (Core/condition_support.lua) depends on the client. The
+-- platform recomputes its client facts when GetClientInfo or the project
+-- changes (only test harnesses do either); the same change advances the
+-- condition registry version, so every validation stamp moves with it.
+local clientGetter,clientProject
+local function observeClient(owner)
+    local platform=rawget(addon,'Platform')
+    local getter=type(platform)=='table' and platform.GetClientInfo or nil
+    local project=WOW_PROJECT_ID
+    if getter==clientGetter and project==clientProject then return end
+    local first=clientGetter==nil and clientProject==nil
+    clientGetter,clientProject=getter,project
+    if not first then owner.conditionRegistryVersion=(owner.conditionRegistryVersion or 0)+1 end
+end
+local function support(tag,definition,value)
+    local check=addon.GetConditionSupport
+    if type(check)=='function' then return check(addon,tag,definition,value) end
+end
 -- Observe identities without copying maps on the common unchanged path.
 -- Normalized false markers keep malformed/NaN entries stable, as before.
 local function observeLegacy(owner)
+    observeClient(owner)
     local profile,global=owner.db.profile,owner.db.global
     local shared,personal=global.itemsets,profile.itemsets
     local conditions,effects=owner.conditionDefinitions,global.effects
@@ -96,6 +115,7 @@ local function observe(owner)
     if not dependencyReader or not dependencyIdentity(owner,addon) then
         observeLegacy(owner);return observed,stamp
     end
+    observeClient(owner)
     local epoch=dependencyReader(owner)
     local db=owner.db;local profile,global=db.profile,db.global
     local conditions,version=owner.conditionDefinitions,owner.conditionRegistryVersion or 0
@@ -193,7 +213,7 @@ function addon:GetRotationValidationOptions()
         itemsets=itemsetEntries(snapshot.shared,snapshot.personal)
     else itemsets=entries(snapshot.itemsets) end
     local effects=entries(snapshot.effects)
-    return {conditions=conditions,itemsets=itemsets,effects=effects},current
+    return {conditions=conditions,itemsets=itemsets,effects=effects,support=support},current
 end
 
 ownedOptions=addon.GetRotationValidationOptions

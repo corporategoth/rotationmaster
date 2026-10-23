@@ -27,8 +27,8 @@ local caster={type='MANA',unit='target',operator='GREATERTHAN',value=0}
 local unqueued=all(negate(queued(78)),negate(queued(845)))
 local function rend()return spell('warrior-prot-rend',772,all(negate(debuff(772,true)),target('GREATERTHAN',.3)))end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.warrior.protection',revision=1,
- blocks={['forever.warrior.boundaries']=1,['forever.warrior.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.warrior.protection',revision=2,
+ blocks={['forever.warrior.boundaries']=2,['forever.warrior.upkeep']=1},
  nameKey='Default.Forever.Warrior.Protection.Name',descriptionKey='Default.Forever.Warrior.Protection.Description',
  applicability={families={'forever'},actionContext='player',class='WARRIOR',minLevel=10,maxLevel=60},
  tags={'tank','melee','leveling','endgame','aoe','icy-veins','method'},

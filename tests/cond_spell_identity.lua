@@ -102,7 +102,7 @@ test('unreadable identity is unavailable, never guessed, including under NOT and
  expect(a,{type='CHANNELING_SPELL',unit='target',spell=15407},'match','any rank still decides by the readable name')
  s.restrictSpell=true;expect(a,{type='CHANNELING_SPELL',unit='target',spell=10},'unavailable','configured spell name unreadable')
  local _,b,t=fixture();t.channel,t.channelID,t.names='Mind Flay',17311,{};expect(b,{type='CHANNELING_SPELL',unit='target',spell=15407},'unavailable','unknown configured spell')
- for _,project in ipairs({1,18}) do local _,b,t=fixture(project);t.cast,t.castID='Mind Flay',15407;expect(b,{type='CASTING_SPELL',unit='target',spell=15407},'unavailable','restricted client '..project);assert(not t.calls.cast) end
+ for _,project in ipairs({999}) do local _,b,t=fixture(project);t.cast,t.castID='Mind Flay',15407;expect(b,{type='CASTING_SPELL',unit='target',spell=15407},'unavailable','restricted client '..project);assert(not t.calls.cast) end
 end)
 test('one native read serves the spell, remaining-time and interrupt conditions in one evaluation',function()
  local _,a,s=fixture();s.channel,s.channelID='Mind Flay',17311;s.ending=100500
@@ -160,7 +160,7 @@ test('FORM by spell is locale-safe and unavailable where the form cannot be read
  s.bar={2457,71};s.form=s.opaque;expect(a,{type='FORM',form=71},'unavailable','restricted form index')
  s.form=2;s.throw='info';expect(a,{type='FORM',form=71},'unavailable','native failure')
  s.throw=nil;s.form=1;s.bar={};s.formID=nil;expect(a,{type='FORM',form=71},'unavailable','no identity')
- for _,project in ipairs({1,18}) do local _,b,t=fixture(project,'WARRIOR');t.bar={71};t.form=1;expect(b,{type='FORM',form=71},'unavailable','restricted client '..project);assert(not t.calls.form) end
+ for _,project in ipairs({999}) do local _,b,t=fixture(project,'WARRIOR');t.bar={71};t.form=1;expect(b,{type='FORM',form=71},'unavailable','restricted client '..project);assert(not t.calls.form) end
  local _,c,u=fixture(nil,'WARRIOR');u.bar={2457};u.form=1;local cache={}
  local eval=c.conditionDefinitions.FORM.evaluate;assert(eval({form=2457},cache)==true and eval({form=71},cache)==false and u.calls.form==1 and u.calls.info==1,'form spell read once per evaluation')
 end)
@@ -227,7 +227,7 @@ test('progress is unavailable when the times cannot be read, including under NOT
   local v={type='CHANNELING_PROGRESS',unit='player',operator='LESSTHAN',value=0.5};expect(a,v,'unavailable',field)
   local chosen,result=branch(a,v);assert(chosen==nil and result.status=='unavailable')
  end
- for _,project in ipairs({1,18}) do local _,b,t=fixture(project);t.channel='Mind Flay';expect(b,{type='CHANNELING_PROGRESS',unit='player',operator='LESSTHAN',value=0.5},'unavailable','restricted client '..project);assert(not t.calls.channel) end
+ for _,project in ipairs({999}) do local _,b,t=fixture(project);t.channel='Mind Flay';expect(b,{type='CHANNELING_PROGRESS',unit='player',operator='LESSTHAN',value=0.5},'unavailable','restricted client '..project);assert(not t.calls.channel) end
 end)
 test('clip after the second tick reads the channel once',function()
  local _,a,s=fixture();s.channel,s.channelID='Mind Flay',17311;s.start,s.ending,s.now=99000,102000,101.1

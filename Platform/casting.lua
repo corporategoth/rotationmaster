@@ -38,9 +38,11 @@ end
 
 -- The timestamp/duration/flag/spell ID fields are independent observations.
 -- A readable name can still establish presence when the timer, duration,
--- interruptibility or spell ID is unavailable.
+-- interruptibility or spell ID is unavailable; so can a secret one, though
+-- the record then has no name (nameReason says why).
 function platform:GetUnitCastObservation(unit,kind)
-    if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
+    local policy=self:GetCombatDataPolicy()
+    if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(kind) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end
     if kind~='cast' and kind~='channel' then return nil,'invalid-cast-query' end
@@ -60,10 +62,18 @@ function platform:GetUnitCastObservation(unit,kind)
     local ok,tuple=pcall(function() return {fn(unit)} end)
     if not ok then return nil,'api-error' end
     local name=tuple[1]
-    if not self:CanReadValue(name) then return nil,'restricted-value' end
-    if name==nil then return {active=false} end
-    if type(name)~='string' or name=='' then return nil,'invalid-api-result' end
-    local record={active=true,name=name}
+    local record
+    if not self:CanReadValue(name) then
+        -- Retail and Forever make cast fields secret for a unit other than the
+        -- player or pet unless the spell is flagged never secret
+        -- (SecretWhenUnitSpellCastRestricted). A secret is a value, never nil:
+        -- the unit is casting, and only the name is hidden.
+        record={active=true,nameReason='restricted-value'}
+    else
+        if name==nil then return {active=false} end
+        if type(name)~='string' or name=='' then return nil,'invalid-api-result' end
+        record={active=true,name=name}
+    end
     record.remainingSeconds,record.remainingReason=remainingSeconds(tuple[5])
     record.durationSeconds,record.durationReason=durationSeconds(tuple[4],tuple[5])
     record.interruptible,record.interruptibleReason=interruptibility(tuple[kind=='cast' and 8 or 7])

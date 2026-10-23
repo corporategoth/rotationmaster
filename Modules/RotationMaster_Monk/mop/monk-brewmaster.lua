@@ -23,8 +23,8 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local SHUFFLE,KEG=115307,121253
 local stagger=function(id)return{type='DEBUFF',unit='player',spell=id}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.monk.brewmaster',revision=2,
- blocks={['mop.monk.boundaries']=1,['mop.monk.upkeep']=1,['mop.monk.brewmaster-upkeep']=2,['mop.monk.brewmaster-pull']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.monk.brewmaster',revision=3,
+ blocks={['mop.monk.boundaries']=1,['mop.monk.upkeep']=1,['mop.monk.brewmaster-upkeep']=2,['mop.monk.brewmaster-pull']=2},
  nameKey='Default.MoP.Monk.Brewmaster.Name',descriptionKey='Default.MoP.Monk.Brewmaster.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK',minLevel=10,maxLevel=90},
  tags={'brewmaster','tank','leveling','single-target','aoe','wowsims','wowhead'},

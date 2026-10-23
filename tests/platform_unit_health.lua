@@ -17,7 +17,7 @@ test('health records distinguish present zero and absent without unnecessary max
     s.exists=false;s.calls={};r=p:GetUnitHealthObservation('target',true);assert(r.exists==false and r.current==nil and s.calls.exists==1 and not s.calls.current and not s.calls.maximum)
 end)
 test('policy and readable typed query guards run before native access',function()
-    for _,project in ipairs({1,18,999}) do local _,p,s=fixture(project);local r,why=p:GetUnitHealthObservation('target');assert(r==nil and why=='unsupported-policy' and next(s.calls)==nil) end
+    for _,project in ipairs({999}) do local _,p,s=fixture(project);local r,why=p:GetUnitHealthObservation('target');assert(r==nil and why=='unsupported-policy' and next(s.calls)==nil) end
     local f,p,s=fixture();local opaque={};f.env.canaccessvalue=function(v) return not rawequal(v,opaque) end
     for _,unit in ipairs({'',0,false,{},opaque}) do assert(p:GetUnitHealthObservation(unit)==nil) end
     for _,query in ipairs({'true',1,{},opaque}) do assert(p:GetUnitHealthObservation('target',query)==nil) end

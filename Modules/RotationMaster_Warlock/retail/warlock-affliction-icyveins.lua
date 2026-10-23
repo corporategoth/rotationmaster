@@ -19,7 +19,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.affliction.icyveins',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.affliction.icyveins',revision=2,
  blocks={['retail.warlock.boundaries']=1,['retail.warlock.upkeep']=1},
  nameKey='Default.Retail.Warlock.Affliction.IcyVeins.Name',descriptionKey='Default.Retail.Warlock.Affliction.IcyVeins.Description',
  applicability={families={'retail'},actionContext='player',class='WARLOCK',specs={265},minLevel=10,maxLevel=90},
@@ -37,7 +37,7 @@ assert(addon:RegisterDefaultRotation({
   },
   rotation={
    block('retail.warlock.boundaries','affiv-'),
-   {id='affiv-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+   {id='affiv-pull',type='branch',conditions=combat(),onTrue={},onFalse={
     spell('affiv-pull-haunt',48181),
     {id='affiv-pull-stop',type='none',suppress_attack=true,conditions={}},
    }},

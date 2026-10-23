@@ -1169,11 +1169,18 @@ test('failed chat or sound output does not abort real cast bookkeeping',function
 end)
 test('reference-only clients retain metadata registration without combat observations',function()
     local observation={'NAME_PLATE_UNIT_ADDED','NAME_PLATE_UNIT_REMOVED','UNIT_COMBAT','UNIT_SPELLCAST_SENT','UNIT_SPELLCAST_START','UNIT_SPELLCAST_STOP','UNIT_SPELLCAST_SUCCEEDED','UNIT_SPELLCAST_INTERRUPTED','UNIT_SPELLCAST_FAILED','UNIT_SPELLCAST_DELAYED','UNIT_SPELLCAST_CHANNEL_START','UNIT_SPELLCAST_CHANNEL_STOP','COMBAT_LOG_EVENT_UNFILTERED'}
+    -- Restricted clients (Retail, Forever) observe only the events whose
+    -- payloads reach addons there: nameplates, unit combat and the player's
+    -- and pet's successful casts. The combat log is SecureOnly.
+    local restricted={NAME_PLATE_UNIT_ADDED=true,NAME_PLATE_UNIT_REMOVED=true,UNIT_COMBAT=true,UNIT_SPELLCAST_SUCCEEDED=true}
     for _,project in ipairs({1,18,98765}) do
-        local env,a,load=fixture();env.WOW_PROJECT_ID=project;env.WOW_PROJECT_CAMELOT=18;load('main.lua');initialize(a)
+        local env,a,load=fixture();env.WOW_PROJECT_ID=project;env.WOW_PROJECT_CAMELOT=18;env.CreateFrame=nil;load('main.lua');initialize(a)
         local registered={};a.RegisterEvent=function(_,event) registered[event]=true end;a.UpdateSkill=function() end;a.EnableRotation=function() end
         a:enable()
-        for _,event in ipairs(observation) do assert(not registered[event],'reference-only mode registered '..event) end
+        for _,event in ipairs(observation) do
+            local expected=project~=98765 and restricted[event] or false
+            assert(not registered[event]==not expected,(expected and 'restricted client lost ' or 'unexpected registration of ')..event..' on '..project)
+        end
         for _,event in ipairs({'SPELLS_CHANGED','SPELL_DATA_LOAD_RESULT','ITEM_DATA_LOAD_RESULT','PLAYER_ENTERING_WORLD','BAG_UPDATE'}) do assert(registered[event],'reference event missing: '..event) end
     end
     for _,project in ipairs({2,5,19}) do
@@ -1191,12 +1198,18 @@ test('reference-only combat callbacks ignore payloads before logging querying or
         local secret={};env.issecretvalue=function(value) return value==secret end
         local function forbidden() error('reference-only payload consumed') end
         a.debug=forbidden;env.UnitGUID=forbidden;env.CombatLogGetCurrentEventInfo=forbidden;env.GetTime=forbidden;a.GetSpellIds=forbidden;a.DispatchAnnouncement=forbidden
-        local combat,spells,damage,units=a.combatHistory,a.spellHistory,a.damageHistory,a.unitsInRange
+        local combat,spells,damage,units,plates=a.combatHistory,a.spellHistory,a.damageHistory,a.unitsInRange,a.nameplateUnits
+        -- Restricted clients dispatch (the event name is logged as on any client)
+        -- and read the unit first: a secret one ends the event.
+        local unit=project==98765 and 'player' or secret
+        if project~=98765 then a.debug=function() end end
         for _,event in ipairs(events) do
-            local ok,why=pcall(a[event],a,event,'player',secret,secret,secret,secret)
+            local ok,why=pcall(a[event],a,event,unit,secret,secret,secret,secret)
             assert(ok,event..': '..tostring(why))
         end
         assert(a.combatHistory==combat and next(combat)==nil and a.spellHistory==spells and #spells==0 and a.damageHistory==damage and next(damage)==nil and a.unitsInRange==units and next(units)==nil)
+        assert(a.nameplateUnits==plates and (plates==nil or next(plates)==nil),'secret nameplate token recorded')
+        assert(not a.Diagnostics or #a.Diagnostics:GetReports()==0,'a secret payload raised an error')
         local learned,items
         a.debug=function() end;a.SpellCatalog={UpdateSpell=function(_,id) learned=id end}
         a.UpdateReferenceItem=function(_,id) items=id end

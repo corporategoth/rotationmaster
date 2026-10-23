@@ -50,7 +50,7 @@ test('forecast clock is fresh zero-argument finite signed fractional data and is
  s.now=nil;unknown(function() return p:GetHealthForecastTimeObservation() end);s.now=100;s.throw='time';unknown(function() return p:GetHealthForecastTimeObservation() end);s.throw=nil;f.env.GetTime=nil;unknown(function() return p:GetHealthForecastTimeObservation() end)
 end)
 test('policy and unreadable queries stop before selected-unit native calls',function()
- for _,project in ipairs({1,18,999}) do local _,p,s=fixture(project);unknown(function() return identity(p) end);unknown(function() return value(p,'current') end);unknown(function() return provider(p) end);assert(#s.calls==0) end
+ for _,project in ipairs({999}) do local _,p,s=fixture(project);unknown(function() return identity(p) end);unknown(function() return value(p,'current') end);unknown(function() return provider(p) end);assert(#s.calls==0) end
  local _,p,s,opaque=fixture();assert(p.GetHealthForecastIdentityObservation,'forecast observer missing');unknown(function() return p:GetHealthForecastIdentityObservation(opaque) end);unknown(function() return p:GetHealthForecastValueObservation('target',opaque) end);assert(#s.calls==0)
 end)
 finish()

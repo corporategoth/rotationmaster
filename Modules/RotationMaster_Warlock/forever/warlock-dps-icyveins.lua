@@ -27,7 +27,7 @@ local function pact()return all(known(19028),level(40))end
 local function summon()return all(negate({type='PET'}),any(negate(combat()),buff(18708)),any(negate(sacrificed()),pact()))end
 local function bane()return all(negate(own(980)),negate(own(603)),negate(havoc()))end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.warlock.dps.icyveins',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.warlock.dps.icyveins',revision=2,
  blocks={['forever.warlock.boundaries']=1,['forever.warlock.upkeep']=1,['forever.warlock.procs']=1,['forever.warlock.execute']=1,
   ['forever.warlock.moving']=1,['forever.warlock.aoe']=1,['forever.warlock.wand']=1},
  nameKey='Default.Forever.Warlock.DPS.IcyVeins.Name',descriptionKey='Default.Forever.Warlock.DPS.IcyVeins.Description',
@@ -46,7 +46,7 @@ assert(addon:RegisterDefaultRotation({
   spell('warlock-iv-amplify-curse',18288,all(combat(),big(),negate(own(980))))},
  rotation={
  block('forever.warlock.boundaries','warlock-iv-'),
- {id='warlock-iv-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+ {id='warlock-iv-pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('warlock-iv-pull-bolt',686,known(1293817)),
   spell('warlock-iv-pull-immolate',348,all(negate(known(18708)),negate(own(348)))),
   {id='warlock-iv-pull-stop',type='none',suppress_attack=true,conditions={}},
@@ -73,7 +73,7 @@ assert(addon:RegisterDefaultRotation({
    spell('warlock-iv-aff-corruption',172,negate(own(172))),
   }},
  }},
- {id='warlock-iv-solo',type='branch',conditions=negate({type='GROUP'}),onFalse={},onTrue={
+ {id='warlock-iv-solo',type='branch',conditions={type='GROUP'},onTrue={},onFalse={
   spell('warlock-iv-solo-drain',689,health('LESSTHAN',.6)),
   spell('warlock-iv-solo-tap',1454,all({type='MANAPCT',unit='player',operator='LESSTHAN',value=.35},health('GREATERTHAN',.65))),
   block('forever.warlock.wand','warlock-iv-solo-'),

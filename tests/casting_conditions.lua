@@ -54,11 +54,16 @@ test('missing failed nil malformed and unreadable unit or cast observations rema
         local f,a,s=fixture();local opaque={};f.env.canaccessvalue=function(v) return not rawequal(v,opaque) end
         if mode=='missing-exists' then f.env.UnitExists=nil elseif mode=='nil-exists' then s.exists=nil elseif mode=='throw-exists' then s.throw='exists' elseif mode=='restricted-exists' then s.exists=opaque
         elseif mode=='missing-info' then f.env.UnitCastingInfo=nil;f.env.UnitChannelInfo=nil elseif mode=='restricted-name' then s.name=opaque elseif mode=='empty-name' then s.name='' elseif mode=='invalid-name' then s.name=12 end
-        for _,tag in ipairs(tags) do if mode=='throw-info' then s.throw=tag:find('CHANNEL',1,true) and 'channel' or 'cast' end;unavailable(a,node(tag)) end
+        for _,tag in ipairs(tags) do if mode=='throw-info' then s.throw=tag:find('CHANNEL',1,true) and 'channel' or 'cast' end
+            -- A secret name still proves a cast (Retail/Forever hide a hostile cast's
+            -- fields); only what is matched by that name stays unknown.
+            if mode=='restricted-name' and not tag:find('SPELL',1,true) then assert(a:evaluateConditionResult(node(tag)).status=='match',tag..' secret name hid the cast')
+            else unavailable(a,node(tag)) end
+        end
     end
 end)
 test('restricted and unsupported client policies cannot query native cast information or authorize NOT',function()
-    for _,project in ipairs({1,18,999}) do local _,a,s=fixture(project);for _,tag in ipairs(tags) do unavailable(a,node(tag)) end;assert(not s.calls.exists and not s.calls.cast and not s.calls.channel) end
+    for _,project in ipairs({999}) do local _,a,s=fixture(project);for _,tag in ipairs(tags) do unavailable(a,node(tag)) end;assert(not s.calls.exists and not s.calls.cast and not s.calls.channel) end
 end)
 test('compiled copies preserve the repaired observation contract validation and wording with unchanged private captures',function()
     local _,a,s=fixture();local cloned=copies(a)
@@ -80,8 +85,9 @@ test('public adapter source clones resolve real private helpers and preserve arg
     for _,name in ipairs({'remainingSeconds','interruptibility','finite','platform'}) do local binding='builtin:Platform/casting.lua:'..name;assert(a:ResolveFunctionBinding(binding)==a.builtinSourceModules['Platform/casting.lua'](name)) end
     local opaque={};f.env.canaccessvalue=function(v) return not rawequal(v,opaque) end;s.ending=opaque;s.flag=nil
     local record=copied(a.Platform,'target','cast');assert(record.active and record.remainingSeconds==nil and record.remainingReason=='restricted-value' and record.interruptibleReason=='interruptibility-unavailable')
-    s.name=opaque;local unavailable,why=copied(a.Platform,'target','cast');assert(unavailable==nil and why=='restricted-value')
-    f.env.WOW_PROJECT_ID=1;s.calls={};unavailable,why=copied(a.Platform,'target','cast');assert(unavailable==nil and why=='unsupported-policy' and next(s.calls)==nil)
+    -- A secret name is still a cast in progress; only the name is unavailable.
+    s.name=opaque;local hidden=copied(a.Platform,'target','cast');assert(hidden.active and hidden.name==nil and hidden.nameReason=='restricted-value')
+    f.env.WOW_PROJECT_ID=999;s.calls={};local unavailable,why=copied(a.Platform,'target','cast');assert(unavailable==nil and why=='unsupported-policy' and next(s.calls)==nil)
 end)
 test('saved original raw callback source and original addon helper APIs remain executable',function()
     local _,a=fixture();local source=assert(a:GetBuiltinConditionSource('CASTING_REMAIN'))

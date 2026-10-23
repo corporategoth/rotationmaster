@@ -31,16 +31,16 @@ assert(addon:RegisterDefaultBlock({
 -- Out of combat with a target and not stealthed (the opener Branch comes first): Stealth, then stop; Attack still
 -- shows when Stealth is not ready, so a body pull works.
 assert(addon:RegisterDefaultBlock({
- id='mop.rogue.out-of-combat',revision=1,families={'progression'},class='ROGUE',steps={
- {id='ooc',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+ id='mop.rogue.out-of-combat',revision=2,families={'progression'},class='ROGUE',steps={
+ {id='ooc',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('ooc-stealth',1784),
   {id='ooc-stop',type='none',suppress_attack=false,conditions={}},
  }},
 }}))
 -- Solo levelling (Icy Veins): Recuperate at three points when hurt, Kidney Shot when low and the mob is on you.
 assert(addon:RegisterDefaultBlock({
- id='mop.rogue.solo',revision=1,families={'progression'},class='ROGUE',steps={
- {id='solo',type='branch',conditions=negate({type='GROUP'}),onFalse={},onTrue={
+ id='mop.rogue.solo',revision=2,families={'progression'},class='ROGUE',steps={
+ {id='solo',type='branch',conditions={type='GROUP'},onTrue={},onFalse={
   spell('recuperate',73651,all(points('GREATERTHANOREQUALS',3),health('LESSTHAN',.9),negate(own(73651)))),
   spell('kidney-shot',408,all(points('GREATERTHANOREQUALS',3),health('LESSTHAN',.4),tanked)),
  }},
