@@ -4,12 +4,44 @@ local colors={green={.25,.7,.35},red={.85,.3,.25},gray={.4,.4,.4},neutral={.55,.
 local function finite(value) return type(value)=='number' and value==value and value>-math.huge and value<math.huge end
 local function zoom(value) return finite(value) and math.max(.25,math.min(2,value)) or 1 end
 local function location(path) return table.concat(path,'/') end
+-- The scene builder lays cards out at their 340 px design width. A diagram
+-- keeps that (it pans and zooms in two dimensions), but the vertical list and
+-- the cooldown grid fill the viewport: list cards reach the right edge less
+-- 8 px per nested branch, and grid columns share the row. Nothing narrows.
+local listIndent,gridGap,gridCardMaximum=24,24,600
+function addon:FitRotationSceneWidth(scene,viewport)
+    if type(scene)~='table' or not finite(viewport) then return scene end
+    local right=math.max(0,viewport-4);local widest=0
+    local function stretch(item,inset,base)
+        local depth=math.max(0,math.floor((item.x-base)/listIndent+.5))
+        item.width=math.max(item.width,right-depth*8-inset-item.x)
+    end
+    if scene.layout=='list' then
+        for _,card in ipairs(scene.cards) do stretch(card,0,0) end
+        for _,group in ipairs(scene.groups or {}) do if group.kind=='arm' then stretch(group,4,20) else stretch(group,0,0) end end
+        for _,target in ipairs(scene.dropTargets or {}) do stretch(target,0,0) end
+    elseif scene.layout=='grid' and #(scene.groups or {})==0 then
+        local design=340;local pitch=design+gridGap;local columns=0
+        for _,card in ipairs(scene.cards) do columns=math.max(columns,math.floor(card.x/pitch+.5)+1) end
+        if columns==0 then return scene end
+        local each=math.max(design,math.min(gridCardMaximum,(right-(columns-1)*gridGap)/columns))
+        local function place(item) local column=math.floor(item.x/pitch+.5);item.x=column*(each+gridGap);item.width=each end
+        for _,card in ipairs(scene.cards) do if card.width==design then place(card) end end
+        for _,target in ipairs(scene.dropTargets or {}) do
+            if target.width==design then place(target) elseif target.width>design then target.x=0;target.width=columns*each+(columns-1)*gridGap end
+        end
+    else return scene end
+    for _,card in ipairs(scene.cards) do widest=math.max(widest,card.x+card.width) end
+    for _,group in ipairs(scene.groups or {}) do widest=math.max(widest,group.x+group.width) end
+    scene.width=math.max(scene.width or 0,widest)
+    return scene
+end
 function addon:CreateRotationCanvas(parent,owner)
     local canvas={frame=addon:CreateWorkbenchScrollFrame(parent),cards={},lines={},labels={},zones={},groups={},armButtons={},generation=0}
     canvas.surface=CreateFrame('Frame',nil,canvas.frame);canvas.frame:SetScrollChild(canvas.surface)
-    canvas.cameraHost=CreateFrame('Frame',nil,canvas.surface)
-    canvas.child=CreateFrame('Frame',nil,canvas.cameraHost);canvas.child:SetPoint('TOPLEFT')
-    canvas.horizontal=addon:CreateWorkbenchScrollBar(parent,'HORIZONTAL')
+    canvas.cameraHost=self:TrackWorkbenchSize(CreateFrame('Frame',nil,canvas.surface))
+    canvas.child=self:TrackWorkbenchSize(CreateFrame('Frame',nil,canvas.cameraHost));canvas.child:SetPoint('TOPLEFT')
+    canvas.horizontal=addon:CreateWorkbenchScrollBar(parent,'HORIZONTAL');addon:TrackWorkbenchSize(canvas.horizontal)
     addon:SetUIScript(canvas.horizontal,'OnValueChanged',function(_,value) canvas.scrollX=value;canvas.frame:SetHorizontalScroll(value) end)
     canvas.ghost=addon:CreateWorkbenchDragCard()
     function canvas:CancelDrag()

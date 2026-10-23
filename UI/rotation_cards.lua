@@ -39,7 +39,7 @@ function addon:CreateRotationCard(parent)
         self.title:SetWidth((model.compact and model.width-52 or model.width-pillWidth-56)-(branch and 24 or 0));addon:AlignWorkbenchTextLeft(self.title,3)
         if branch then self.armToggle:Show();self.armToggle:SetSelected(model.collapsed) else self.armToggle:Hide() end
         self.name:ClearAllPoints();self.name:SetPoint('TOPLEFT',self.title,'TOPLEFT',0,0);self.name:SetSize(self.title:GetWidth(),self.title:GetHeight())
-        self.action:SetText(action);self.action:SetWidth(256);addon:AlignWorkbenchTextLeft(self.action,3)
+        self.action:SetText(action);self.action:SetWidth(math.max(256,model.width-84));addon:AlignWorkbenchTextLeft(self.action,3)
         self.condition:ClearAllPoints();self.condition:SetPoint('TOPLEFT',26,branch and -28 or -46)
         self.condition:SetText(addon:PlainWorkbenchName(model.pendingProblem and string.format(L['Incomplete input: %s'],model.pendingProblem) or addon:DescribeCardCondition(step.conditions or {},self.spec)))
         local ownHeader=model.headerHeight or 84
@@ -65,7 +65,7 @@ function addon:CreateRotationCard(parent)
             if effect and addon.Glow then addon:Glow(self.preview,'rotation-card-preview',effect,addon:ResolveHighlightColor(step.color),step.magnification or profile.magnification or 1,step.setpoint or profile.setpoint or 'CENTER',step.xoffs or profile.xoffs or 0,step.yoffs or profile.yoffs or 0,step.angle) end
         else
             self.preview:SetSize(18,18);self.preview:SetPoint('TOPLEFT',26,-27);self.action:SetPoint('TOPLEFT',48,-25)
-            self.condition:SetWidth(280);self.condition:GetFontString():SetWidth(274)
+            self.condition:SetWidth(math.max(280,model.width-60));self.condition:GetFontString():SetWidth(math.max(274,model.width-66))
         end
         if (model.conditionHeight or 0)>0 then
             self.condition:ClearAllPoints();self.condition:SetPoint('TOPLEFT',26,-model.height+model.conditionHeight+4);self.condition:SetSize(model.width-56,model.conditionHeight);self.condition:GetFontString():SetWidth(model.width-62)
