@@ -3046,6 +3046,11 @@ L['Help.General.memory_stop'] = "Stop the current memory capture and preserve it
 
 L['Silent'] = true
 
+
+-- Original condition artwork picker labels.
+L["Set Pieces"] = true
+L["Weapon Imbue"] = true
+
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true
 L["All original results, preserving nil positions and return count."] = true

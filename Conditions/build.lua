@@ -62,7 +62,7 @@ end
 
 addon:RegisterCondition("ACTION_CONTEXT", {
     description = L["Action Context"],
-    icon = addon.Artwork.condition["INCONTROL"],
+    icon = addon.Artwork.condition["ACTION_CONTEXT"],
     requiredFields = { "context" },
     fields = { context = "string" },
     valid = function(_, value)
@@ -102,7 +102,7 @@ addon:RegisterCondition("ACTION_CONTEXT", {
 
 addon:RegisterCondition("SET_PIECES", {
     description = L["Item Set Pieces Equipped"],
-    icon = addon.Artwork.condition["EQUIPPED"],
+    icon = addon.Artwork.condition["SET_PIECES"],
     requiredFields = { "set", "operator", "value" },
     fields = { set = "number", operator = "string", value = "number" },
     valid = function(_, value)
@@ -175,7 +175,7 @@ addon:RegisterCondition("SET_PIECES", {
 if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
     addon:RegisterCondition("WEAPON_IMBUE", {
         description = L["Weapon Enchant Type"],
-        icon = addon.Artwork.condition["WEAPON"],
+        icon = addon.Artwork.condition["WEAPON_IMBUE"],
         requiredFields = { "enchant" },
         fields = { offhand = "boolean", enchant = "number" },
         valid = function(_, value)
