@@ -1,3 +1,5 @@
+-- The Shaman starter retired with the TBC Shaman premades (tests/defaults_tbc_shaman.lua);
+-- only its Mage sibling remains here.
 -- Native API fixtures exercise the real catalog, predicates, sequence and readiness.
 -- Metadata/learned facts below are modeled observations, not trainer schedules.
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
@@ -76,28 +78,11 @@ local function upkeep(a,s)
  return table.concat(actions,',')
 end
 test('both current previews cover twenty-through-twenty-nine with matching runtime switches',function()
- for _,class in ipairs({'SHAMAN','MAGE'})do local f,s=fixture(class);local a=f.addon
+ for _,class in ipairs({'MAGE'})do local f,s=fixture(class);local a=f.addon
   for level=19,29 do s.setLevel(level);assert(row(a).eligible,'level'..level..' missing for '..class);assert(a:evaluateCondition(row(a).envelope.body.switch));assert(selected(a,s))end
   s.setLevel(30);assert(not row(a).eligible);assert(not a:evaluateCondition(row(a).envelope.body.switch))
   s.level=0;assert(not row(a).eligible)
  end
-end)
-test('higher Shaman Bolt and Shock observations retain priority and within-family readiness fallback',function()
- local f,s=fixture('SHAMAN');local a=f.addon;s.level=26
- s.known[915],s.known[943],s.known[8045],s.known[8046]=true,true,true,true
- assert(selected(a,s)==943);s.mapped[943]=false;assert(selected(a,s)==915)
- s.power[915]=true;assert(selected(a,s)==403);s.usable[403]=false;assert(not selected(a,s))
- s.usable={};s.power={};s.mapped={};s.combat=true;assert(selected(a,s)==8046)
- s.cooldown[8046]={startTime=90,duration=30,isEnabled=true,modRate=1};assert(selected(a,s)==8045)
- s.known[8046],s.known[8045],s.known[8042]=false,false,false;assert(not selected(a,s))
- s.near=false;assert(selected(a,s)==943);s.moving=true;assert(not selected(a,s))
-end)
-test('Shaman optional higher-rank upkeep recognizes owned Shield and respects any enchant',function()
- local f,s=fixture('SHAMAN');local a=f.addon;s.level=24;s.known[905],s.known[10399]=true,true
- assert(upkeep(a,s)=='10399,905');assert(selected(a,s)==403)
- s.enchanted=true;s.auras={{spellId=905,name=identity[905].name,sourceUnit='player'}};assert(upkeep(a,s)=='')
- s.auras[1].sourceUnit='party1';assert(upkeep(a,s)=='905','another caster shield counted as own')
- s.auras={};s.auraError=true;assert(upkeep(a,s)=='')
 end)
 test('Mage twenty-six Frost ranks do not enable the other family when unusable or unmapped',function()
  local f,s=fixture('MAGE');local a=f.addon;s.level=26;s.known[7322],s.known[8406]=true,true
@@ -116,24 +101,24 @@ test('Mage keeps Intellect and Frost Armor families through twenty-nine without 
  s.auras={};s.auraError=true;assert(upkeep(a,s)=='')
 end)
 test('both previews preserve motion engagement unknown learned-state and aura refusal',function()
- for _,class in ipairs({'SHAMAN','MAGE'})do local f,s=fixture(class);local a=f.addon;s.level=20
+ for _,class in ipairs({'MAGE'})do local f,s=fixture(class);local a=f.addon;s.level=20
   s.targetCombat=true;assert(not selected(a,s));s.targetCombat=false;s.hostile=false;assert(not selected(a,s));s.hostile=true
   if class=='MAGE'then s.moving=true;assert(not selected(a,s));s.moving=false end
   s.knownError=true;assert(not selected(a,s));assert(upkeep(a,s)=='');assert(a:evaluateConditionResult(row(a).envelope.body.switch).status=='unavailable')
  end
 end)
 test('unavailable spell metadata does not authorize higher-level upkeep under NOT',function()
- for _,class in ipairs({'SHAMAN','MAGE'})do local f,s=fixture(class);s.level=24;s.auras={{spellId=999,name='Other readable aura',sourceUnit='player'}};s.metadataError=true;local actions=upkeep(f.addon,s);assert(actions==(class=='SHAMAN'and'8017'or''),class..':'..actions)end
+ for _,class in ipairs({'MAGE'})do local f,s=fixture(class);s.level=24;s.auras={{spellId=999,name='Other readable aura',sourceUnit='player'}};s.metadataError=true;local actions=upkeep(f.addon,s);assert(actions==(class=='SHAMAN'and'8017'or''),class..':'..actions)end
 end)
 test('existing applicability still excludes nonplayer contexts foreign classes and other client families',function()
- for _,class in ipairs({'SHAMAN','MAGE'})do local f,s=fixture(class);local a,e=f.addon,f.env;s.level=20;assert(row(a).eligible)
+ for _,class in ipairs({'MAGE'})do local f,s=fixture(class);local a,e=f.addon,f.env;s.level=20;assert(row(a).eligible)
   s.vehicle=true;assert(not row(a).eligible);s.vehicle=false;s.petbattle=true;assert(not row(a).eligible);s.petbattle=false
   for _,family in ipairs({{1,12},{2,0},{19,4},{18,12}})do e.WOW_PROJECT_ID,e.LE_EXPANSION_LEVEL_CURRENT=family[1],family[2];assert(not row(a).eligible)end
   e.WOW_PROJECT_ID,e.LE_EXPANSION_LEVEL_CURRENT=5,1;e.UnitClass=function()return 'Warlock','WARLOCK'end;assert(#a:ListDefaultRotations(0)==0)
  end
 end)
 test('archived source clones keep their old cutoff and current clones require explicit adoption',function()
- for _,class in ipairs({'SHAMAN','MAGE'})do
+ for _,class in ipairs({'MAGE'})do
   local old,oldState=fixture(class,true);local a=old.addon;local pack=row(a);local id=assert(a:CloneDefaultRotation(0,pack.id,'Archived clone'))
   local edited=a:GetEditableRotation(0,id);local leaf=class=='SHAMAN'and edited.rotation[1]or edited.rotation[1].onTrue[1].onFalse[1];leaf.action=974
   local saved=a.RotationData.CopyData(edited);local previous=assert(a:GetSourcedRotationView(0,id))
@@ -147,7 +132,7 @@ test('archived source clones keep their old cutoff and current clones require ex
  end
 end)
 test('strict complete-pack inverse accepts only the approved current body and rejects unrelated bytes',function()
- for _,class in ipairs({'shaman','mage'})do local path='Defaults/tbc/'..class..'-starter.lua';local current=read(path);local old=restore(current,path)
+ for _,class in ipairs({'mage'})do local path='Defaults/tbc/'..class..'-starter.lua';local current=read(path);local old=restore(current,path)
   assert(old~=current and not pcall(restore,old,path));assert(not pcall(restore,current..'\n',path))
   assert(not pcall(restore,current:gsub('ranked=false','ranked=true',1),path))
  end

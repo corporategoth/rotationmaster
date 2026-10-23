@@ -146,7 +146,7 @@ test('sparse and overdeep skipped trees retain public compatibility instead of e
 end)
 test('actual shipped Shaman idle action and cooldown trees compile without LEVEL and cache only player aura',function()
  local f,s,prepare=fixture(function(f,state)f.env.UnitExists=function(unit)return unit=='player'end end);local a=f.addon;local pack
- a.RegisterDefaultRotation=function(_,value)pack=value;return true end;f.load('Defaults/tbc/shaman-starter.lua');local b=assert(pack).body;local token={}
+ a.RegisterDefaultRotation=function(_,value)pack=value;return true end;f.load('tests/fixtures/shaman_starter_pack.lua');local b=assert(pack).body;local token={}
  local validCalls,auraCalls=0,0
  local watched={};for _,tag in ipairs({'COMBAT','ATTACKABLE','WEAPON','BUFF'})do watched[a.conditionDefinitions[tag].valid]=true end
  local aura=a.conditionDefinitions.BUFF.evaluate
