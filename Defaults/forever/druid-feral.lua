@@ -1,0 +1,88 @@
+-- WoW Forever Feral Druid (Cat and Bear in one premade, by form), levels 10–60. Selected by a
+-- Feral talent spell (Feral Charge, Shifting Power, Primal Bite) or by being in Cat, Bear or Dire
+-- Bear Form, so an untalented Druid who shifts gets the form's list. Icy Veins' Feral leveling
+-- order as the spine, with Warcraft Tavern's Faerie Fire and Demoralizing Roar and Ferocious Bite
+-- only once Rip runs or the target is nearly dead. In caster form it suggests Cat Form (else Bear).
+local _,addon=...
+local function all(...)return{type='AND',value={...}}end
+local function any(...)return{type='OR',value={...}}end
+local function negate(c)return{type='NOT',value=c}end
+local function aura(id)return{type='BUFF',unit='player',spell=id}end
+local function own(id)return{type='BUFF',unit='player',spell=id,anyrank=true,ownbuff=true}end
+local function dot(id,mine)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=mine}end
+local function known(id)return{type='SPELL_KNOWN',spell=id}end
+local function combat()return{type='COMBAT',unit='player'}end
+local function power(op,v)return{type='POWER',unit='player',operator=op,value=v}end
+local function health(unit,op,v)return{type='HEALTHPCT',unit=unit,operator=op,value=v}end
+local function enemies(n)return{type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=n}end
+local function engaged(n)return{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=n}end
+local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
+local function stop(id,conditions,attack)return{id=id,type='none',suppress_attack=not attack,conditions=conditions or{}}end
+local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
+local cat,bear=aura(768),any(aura(5487),aura(9634))
+local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
+local faerie=negate(dot(770))
+local catSection={
+ {id='feral-stealth',type='branch',conditions={type='STEALTHED'},onFalse={},onTrue={
+  spell('feral-ravage',6785),spell('feral-opener-shred',5221),stop('feral-stealth-stop')}},
+ spell('feral-cat-faerie-fire',770,all(faerie,any(all(negate(combat()),{type='BEYOND_MELEE',unit='target'}),{type='GROUP'}))),
+ spell('feral-shifting-power',1322605,all(power('LESSTHANOREQUALS',60),{type='MANAPCT',unit='player',operator='GREATERTHANOREQUALS',value=.15})),
+ {id='feral-finisher',type='branch',conditions={type='POINT',unit='player',operator='GREATERTHANOREQUALS',value=4},onFalse={},onTrue={
+  spell('feral-rip',1079,all(negate(dot(1079,true)),health('target','GREATERTHAN',.35))),
+  -- Reached only with Rip running or the target nearly dead; Clearcasting goes to Shred.
+  spell('feral-bite',22568,negate(aura(16870)))}},
+ spell('feral-rake',1822,all(negate(dot(1822,true)),health('target','GREATERTHAN',.3))),
+ -- Behind the target, approximated by "it is not attacking me" (RM cannot see facing).
+ {id='feral-behind',type='branch',conditions=negate({type='ISSAME',unit='targettarget',otherunit='player'}),
+  onTrue={spell('feral-shred',5221)},onFalse={spell('feral-claw',1082)}},
+ stop('feral-cat-pool',nil,true),
+}
+local bearSection={
+ {id='feral-bear-range',type='branch',conditions={type='BEYOND_MELEE',unit='target'},onFalse={},onTrue={
+  spell('feral-bear-pull-faerie-fire',770,faerie),spell('feral-charge',16979),stop('feral-bear-range-stop',nil,true)}},
+ spell('feral-demoralizing-roar',99,all(negate(dot(99)),negate(dot(1160)),any(enemies(2),{type='GROUP'}))),
+ spell('feral-bear-faerie-fire',770,faerie),
+ spell('feral-primal-bite',407995),
+ {id='feral-bear-aoe',type='branch',conditions=engaged(3),onFalse={},onTrue={spell('feral-aoe-swipe',779),stop('feral-aoe-stop',nil,true)}},
+ spell('feral-lacerate',414644),
+ spell('feral-swipe',779),
+ stop('feral-bear-done',nil,true),
+}
+local casterSection={
+ spell('feral-regrowth',8936,all(negate(combat()),health('player','LESSTHAN',.5),negate(own(8936)))),
+ spell('feral-cat-form',768),
+ spell('feral-bear-form',5487,negate(known(768))),
+ stop('feral-caster-stop'),
+}
+assert(addon:RegisterDefaultRotation({
+ format='RotationMaster',schemaVersion=1,id='rm.forever.druid.feral',revision=1,
+ blocks={['forever.druid.boundaries']=1,['forever.druid.upkeep']=1},
+ nameKey='Default.Forever.Druid.Feral.Name',descriptionKey='Default.Forever.Druid.Feral.Description',
+ applicability={families={'forever'},actionContext='player',class='DRUID',minLevel=10,maxLevel=60},
+ tags={'feral','cat','bear','tank','melee','leveling','icy-veins'},
+ sources={
+  {url='https://www.icy-veins.com/wow-forever/feral-druid-leveling',title='Icy Veins: Forever Feral Druid leveling',reviewedAt='2026-10-23',revision='2026-10-18'},
+  {url='https://www.icy-veins.com/wow-forever/feral-druid-melee-dps-and-tank-pve-guide',title='Icy Veins: Forever Feral Druid PvE (DPS and tank)',reviewedAt='2026-10-23',revision='2026-10-18'},
+  {url='https://www.warcrafttavern.com/forever/guides/druid-leveling/',title='Warcraft Tavern: Forever Druid leveling',reviewedAt='2026-10-23',notes='Faerie Fire pull and upkeep; Demoralizing Roar.'},
+  {url='https://conquestcapped.com/guides/wow-forever/wow-forever-druid-overview/',title='conquestcapped: WoW Forever Druid overview',reviewedAt='2026-10-23',revision='2026-10-19',notes='Ferocious Bite as a finisher.'},
+  {url='https://worldofwarcraft.blizzard.com/en-us/news/24301515',title='Blizzard: Forever class deep dive, Hunter and Druid',reviewedAt='2026-10-23',revision='2026-09-30',notes='Shifting Power, Primal Bite, Berserk; no priority.'},
+  {url='https://github.com/simulationcraft/simc/blob/forever/SpellDataDump/druid.txt',title='SimulationCraft Forever spell data (1.60.1.70425)',reviewedAt='2026-10-23',revision='4dd64b4a21',notes='Spell IDs, ranks and GCDs only.'},
+ },
+ body={priority=20,
+  switch=any(known(16979),known(414924),known(1322605),known(407995),known(1238069),known(1238070),known(1238073),aura(768),aura(5487),aura(9634)),
+  cooldowns={
+   block('feral-upkeep','forever.druid.upkeep','feral-'),
+   spell('feral-maul',6807,all(bear,combat(),power('GREATERTHANOREQUALS',50),negate({type='SPELL_ACTIVE',spell=6807}))),
+   spell('feral-enrage',5229,all(bear,power('LESSTHAN',30),health('player','GREATERTHAN',.5))),
+   spell('feral-berserk',417141,all(any(cat,bear),combat(),any(enemies(3),elite))),
+   spell('feral-frenzied-regeneration',22842,all(bear,combat(),health('player','LESSTHAN',.4),power('GREATERTHANOREQUALS',20))),
+   spell('feral-innervate',29166,all(combat(),negate({type='GROUP'}),{type='MANAPCT',unit='player',operator='LESSTHAN',value=.25})),
+  },
+  rotation={
+   block('feral-boundaries','forever.druid.boundaries','feral-'),
+   stop('feral-target',negate({type='ATTACKABLE',unit='target'}),true),
+   {id='feral-cat',type='branch',conditions=cat,onTrue=catSection,onFalse={
+    {id='feral-bear',type='branch',conditions=bear,onTrue=bearSection,onFalse=casterSection}}},
+  },
+ },
+}))

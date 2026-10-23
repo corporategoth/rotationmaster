@@ -79,6 +79,8 @@ test('TOC includes every reviewed starter pack exactly once',function()
         'rm.forever.shaman.restoration','rm.forever.shaman.elemental','rm.forever.shaman.enhancement','rm.forever.shaman.enhancement.wowhead',
         'rm.forever.warlock.dps','rm.forever.warlock.dps.icyveins','rm.forever.warlock.dps.wowhead',
         'rm.forever.warrior.protection','rm.forever.warrior.protection.warcrafttavern','rm.forever.warrior.dps','rm.forever.warrior.dps.warcrafttavern'})do wanted[id]=true end
+    -- WoW Forever Druid, Hunter, Mage, Paladin and Priest premades.
+    for _,id in ipairs({'rm.forever.druid.balance','rm.forever.druid.balance.tavern','rm.forever.druid.feral','rm.forever.druid.restoration','rm.forever.druid.restoration.icyveins','rm.forever.hunter.ranged','rm.forever.hunter.ranged.mobalytics','rm.forever.hunter.survival','rm.forever.hunter.survival.weave','rm.forever.mage.frost','rm.forever.mage.fire','rm.forever.mage.fire.icyveins','rm.forever.mage.arcane','rm.forever.paladin.retribution','rm.forever.paladin.protection','rm.forever.paladin.protection.icyveins','rm.forever.paladin.holy','rm.forever.paladin.holy.wowhead','rm.forever.priest.dps','rm.forever.priest.dps.mobalytics','rm.forever.priest.healer'})do wanted[id]=true end
     for _,pack in ipairs(packs)do assert(wanted[pack.id],pack.id..' is unexpected or duplicated');wanted[pack.id]=nil end
     assert(not next(wanted),'reviewed starter pack missing from TOC')
 end)
