@@ -74,6 +74,22 @@ for path in sorted((root / 'UI').glob('*.lua')):
         if not icon.is_file():
             errors.append(f'Missing control texture: {icon.relative_to(root)} ({path.relative_to(root)})')
 
+# The release packager drops every .pkgmeta ignore path. Nothing the client
+# loads, and no texture the artwork catalog or a control names, may be among them.
+ignored = [line.strip()[2:].strip() for line in (root / '.pkgmeta').read_text().splitlines()
+           if line.startswith('  - ')]
+def packaged(relative):
+    return not any(relative == item or relative.startswith(item.rstrip('/') + '/') for item in ignored)
+runtime = {str(path.relative_to(root)) for path in entries}
+runtime |= {m.group(1).replace('\\\\', '/') + '.tga' for m in
+            re.finditer(r'root\.\."(Assets[^"]+)"', (root / 'Data/artwork.lua').read_text())}
+runtime |= {str(path.relative_to(root)) for path in (root / 'Assets' / 'Controls').glob('*.tga')}
+for relative in sorted(runtime):
+    if not packaged(relative):
+        errors.append(f'Release package would omit a runtime file: {relative}')
+    elif not (root / relative).is_file():
+        errors.append(f'Missing runtime file: {relative}')
+
 for error in errors:
     print(error)
 print(f'{len(sources)} Lua sources; {len(entries)} TOC/XML entries; {len(errors)} errors')
