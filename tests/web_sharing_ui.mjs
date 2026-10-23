@@ -30,7 +30,7 @@ const incoming=m=>id(m.root,'incoming-share');
 function fragments(initial=''){let value=initial,callback,cleanups=0;return {readFragment:()=>value,listenFragment(fn){callback=fn;return()=>{cleanups++;};},set(v){value=v;callback?.();},get callback(){return callback;},get cleanups(){return cleanups;}};}
 
 test('the sample real wire is a packaged premade that fits a wrapped share link',()=>{
- assert(sample&&/^rm\.(tbc|forever)\./.test(sample.id),'sample is a packaged premade');
+ assert(sample&&/^rm\.(tbc|forever|retail)\./.test(sample.id)&&facade().get(sample.id).ok,'sample is a packaged premade');
  assert(('https://example.invalid/viewer/#rm-import-v1='+encodeURIComponent(' \r\n'+wire+'\t')).length<=8192,sample.id);
 });
 test('sharing requires a current accepted source and preserves exact wrapped real wire',async()=>{
