@@ -121,17 +121,27 @@ function platform:IsMeleeAttackNeeded(unit)
         if type(value)~="boolean" then return nil,"invalid-api-result" end
         return value
     end
-    local checks={
-        {UnitAffectingCombat,true,"player"},{UnitExists,true,unit},
-        {UnitCanAttack,true,"player",unit},{UnitIsDeadOrGhost or UnitIsDead,false,unit},
-        {UnitHasVehicleUI or UnitInVehicle,false,"player"},
-    }
-    for _,check in ipairs(checks) do
-        local result,reason=boolean(check[1],unpack(check,3))
-        if result==nil then return nil,reason end
-        if result~=check[2] then return false end
-    end
-    local active,reason=self:IsCurrentSpell(6603)
+    -- Snapshot all five providers before calling any, as the former query
+    -- plan did, without building six temporary tables for each check.
+    local combat,exists,attackable,dead,vehicle=UnitAffectingCombat,UnitExists,UnitCanAttack,
+        UnitIsDeadOrGhost or UnitIsDead,UnitHasVehicleUI or UnitInVehicle
+    local result,reason=boolean(combat,"player")
+    if result==nil then return nil,reason end
+    if not result then return false end
+    result,reason=boolean(exists,unit)
+    if result==nil then return nil,reason end
+    if not result then return false end
+    result,reason=boolean(attackable,"player",unit)
+    if result==nil then return nil,reason end
+    if not result then return false end
+    result,reason=boolean(dead,unit)
+    if result==nil then return nil,reason end
+    if result then return false end
+    result,reason=boolean(vehicle,"player")
+    if result==nil then return nil,reason end
+    if result then return false end
+    local active
+    active,reason=self:IsCurrentSpell(6603)
     if active==nil then return nil,reason end
     if active then return false end
     local beyond,why=self:IsBeyondMeleeRange(unit)

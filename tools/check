@@ -706,6 +706,8 @@ def main():
             ['lua5.1', 'tests/totems.lua'],
             ['luajit', 'tests/totem_namespaces.lua'],
             ['lua5.1', 'tests/platform_actions.lua'],
+            ['lua5.1', 'tests/melee_attack_allocation.lua'],
+            ['luajit', 'tests/melee_attack_allocation.lua'],
             ['lua5.1', 'tests/window_style.lua'],
             ['lua5.1', 'tests/workbench_scroll.lua'],
             ['lua5.1', 'tests/settings_launcher.lua'],
