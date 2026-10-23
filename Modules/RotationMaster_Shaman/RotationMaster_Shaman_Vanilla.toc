@@ -1,0 +1,23 @@
+## Interface: 11509
+## Title: Rotation Master - Shaman
+## Notes: Rotation Master's Built In Shaman rotations. Rotation Master loads this itself, only for a Shaman, and only this edition's files.
+## Author: PreZ
+## Version: @project-version@
+## Dependencies: RotationMaster
+## LoadOnDemand: 1
+## Group: RotationMaster
+## X-Category: Action Bars
+## X-License: MIT
+
+bind.lua
+era/blocks.lua
+era/shaman-enhancement.lua
+era/shaman-enhancement-warcrafttavern.lua
+era/shaman-elemental.lua
+era/shaman-elemental-wowsims.lua
+era/shaman-restoration.lua
+era/shaman-restoration-warcrafttavern.lua
+era/sod-shaman-tank.lua
+era/sod-shaman-restoration.lua
+era/sod-shaman-elemental.lua
+era/sod-shaman-enhancement.lua
