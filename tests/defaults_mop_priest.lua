@@ -21,17 +21,18 @@ local function stopped(f,s,id,suppress,label)
  if suppress~=nil then assert(r.suppressAttack==suppress,label..': attack')end
 end
 
-test('every premade is scoped to Mists; the catch-all owns 1-9 and unspecced; each spec spell picks its premade',function()
+test('every premade is scoped to Mists; the catch-all owns 1-9 and unspecced; each specialization picks its premade',function()
  local f,s=priest(5,nil);assert(M.scoped(f,'PRIEST')==6)
  assert(M.selected(f,s)==UN and M.ordered(f,s)==UN,'level 5')
- s.level=12;assert(M.selected(f,s)==UN,'level 12 with no specialization')
- M.know(s,15407);assert(M.selected(f,s)==SH and M.ordered(f,s)==SH);s.known[15407]=false
- M.know(s,47540);assert(M.selected(f,s)==DI);s.known[47540]=false
- M.know(s,88625);assert(M.selected(f,s)==HO);s.known[88625]=false
- M.know(s,95861);assert(M.selected(f,s)==HO,'Holy Meditation while Chastise is transformed');s.known[95861]=false
- s.level=90;assert(M.selected(f,s)==UN)
- -- Dual spec: the second talent group stores its own selection and knows its own spec spell.
- M.know(s,47540);s.talentGroup=2;assert(M.selected(f,s)==DI and M.ordered(f,s)==DI)
+ s.specID(258);assert(M.selected(f,s)==UN and M.ordered(f,s)==UN,'levels 1-9 stay in the catch-all');s.spec=nil
+ s.level=12;assert(M.selected(f,s)==UN and M.ordered(f,s)==UN,'level 12 with no specialization')
+ M.know(s,15407,47540,88625);assert(M.selected(f,s)==UN,'known spells do not pick a specialization')
+ s.specID(258);assert(M.selected(f,s)==SH and M.ordered(f,s)==SH)
+ s.specID(256);assert(M.selected(f,s)==DI and M.ordered(f,s)==DI)
+ s.specID(257);assert(M.selected(f,s)==HO and M.ordered(f,s)==HO)
+ s.level=90;s.spec=nil;assert(M.selected(f,s)==UN)
+ -- Dual spec: the second talent group stores its own selection and reads its own specialization.
+ s.specID(256);s.talentGroup=2;assert(M.selected(f,s)==DI and M.ordered(f,s)==DI)
  local rows=f.addon:ListDefaultRotations(2);assert(#rows==6)
 end)
 
@@ -41,21 +42,25 @@ test('source variants ship disabled and select only once enabled and the recomme
  for _,row in ipairs(a:ListDefaultRotations(1))do if row.id==SHT or row.id==HOI then assert(not row.eligible and row.eligibilityReason=='disabled',row.id)end end
  assert(a:SetDefaultRotationEnabled(SHT,true));assert(M.selected(f,s)==SH,'recommended has the higher priority')
  assert(a:SetDefaultRotationEnabled(SH,false));assert(M.selected(f,s)==SHT and M.ordered(f,s)==SHT)
- s.known[15407]=false;M.know(s,88625);assert(M.selected(f,s)==HO);assert(a:SetDefaultRotationEnabled(HOI,true));assert(a:SetDefaultRotationEnabled(HO,false))
+ s.specID(257);assert(M.selected(f,s)==HO);assert(a:SetDefaultRotationEnabled(HOI,true));assert(a:SetDefaultRotationEnabled(HO,false))
  assert(M.selected(f,s)==HOI)
  for _,src in ipairs(a:GetDefaultRotation(SHT).envelope.sources)do assert(src.url:find('warcrafttavern'),src.url)end
  for _,src in ipairs(a:GetDefaultRotation(HOI).envelope.sources)do assert(src.url:find('icy%-veins'),src.url)end
 end)
 
-test('Shadow boundaries: casts stop; a Mind Flay is clipped only for Mind Blast or Death; no target stops',function()
+test('Shadow boundaries: casts stop; a Mind Flay is clipped for Mind Blast, Death or after its second tick; no target stops',function()
  local f,s=priest(90,3,shadowFull);s.debuffs={{id=589,expires=200},{id=34914,expires=200}}
  s.cast=true;stopped(f,s,SH,true,'cast');s.cast=false
- s.channel=true;s.history={{spell=48045,time=99}};cooling(s,8092,5);stopped(f,s,SH,true,'Mind Sear is never cut')
- s.history={{spell=15407,time=99}};stopped(f,s,SH,true,'Mind Flay with nothing worth clipping for')
- s.cooldown[8092]=nil;assert(first(f,s,SH)==8092,'clip Mind Flay for Mind Blast')
- s.history={{spell=129197,time=99}};assert(first(f,s,SH)==8092,'Insanity is clipped too')
+ s.channel=true;s.channelSpell=48045;cooling(s,8092,5);s.channelStart,s.channelEnd=97,100.1;stopped(f,s,SH,true,'Mind Sear is never cut, even near its end')
+ s.history={{spell=15407,time=99}};stopped(f,s,SH,true,'the last cast was Mind Flay, but the channel is Mind Sear')
+ s.history=nil;s.channelSpell=15407;s.channelStart,s.channelEnd=99,102;stopped(f,s,SH,true,'Mind Flay after one tick with nothing worth clipping for')
+ s.channelStart,s.channelEnd=98.05,101.05;stopped(f,s,SH,true,'just before the second tick (65%)')
+ s.channelStart,s.channelEnd=97.95,100.95;assert(first(f,s,SH)==15407,'past the second tick (68%): clip and recast')
+ s.channelStart,s.channelEnd=99,102;s.cooldown[8092]=nil;assert(first(f,s,SH)==8092,'clip Mind Flay for Mind Blast')
+ s.channelSpell=129197;assert(first(f,s,SH)==8092,'Insanity is clipped too')
  cooling(s,8092,5);s.targetHealth=15;assert(first(f,s,SH)==32379,'clip for Shadow Word: Death in execute')
- s.channel=false;s.history=nil;s.targetHealth=100;s.hostile=false;stopped(f,s,SH,true,'no enemy')
+ s.channelSpell=nil;s.targetHealth=100;stopped(f,s,SH,true,'an unnamed channel is not Mind Flay')
+ s.channel=false;s.targetHealth=100;s.hostile=false;stopped(f,s,SH,true,'no enemy')
  for _,id in ipairs({SH,SHT})do s.hostile=true;s.cast=true;stopped(f,s,id,true,id..' cast');s.cast=false end
 end)
 
@@ -116,7 +121,8 @@ test('Shadow reminders: Shadowform, Inner Fire, Silence, long-fight Shadowfiend,
  local f,s=priest(90,3,shadowFull,{588,21562,10060});local u=M.upkeep(f,s,SH)
  assert(u['priest-shadowform']==15473 and u['priest-inner-fire']==588 and not u['priest-fortitude'],'Fortitude only between pulls')
  s.combat=false;assert(M.upkeep(f,s,SH)['priest-fortitude']==21562);s.combat=true
- s.buffs={{id=15473},{id=73413},{id=21562,source='party1'}};u=M.upkeep(f,s,SH);assert(not u['priest-shadowform'] and not u['priest-inner-fire'],'Inner Will is respected')
+ s.buffs={{id=15473},{id=73413},{id=21562,source='party1'}};u=M.upkeep(f,s,SH);assert(u['priest-shadowform']==15473,'the Shadowform aura is not the form')
+ s.shift(15473);u=M.upkeep(f,s,SH);assert(not u['priest-shadowform'] and not u['priest-inner-fire'],'in Shadowform; Inner Will is respected')
  assert(not u['priest-silence']);s.targetCast='Frostbolt';assert(M.upkeep(f,s,SH)['priest-silence']==15487);s.targetInterruptible=false;assert(not M.upkeep(f,s,SH)['priest-silence'])
  assert(not u['priest-shadowfiend']);s.classification='elite';u=M.upkeep(f,s,SH);assert(u['priest-shadowfiend']==34433 and u['priest-power-infusion']==10060)
  s.classification='normal';s.ttd=30;assert(M.upkeep(f,s,SH)['priest-shadowfiend'],'a target that will live 15 s')

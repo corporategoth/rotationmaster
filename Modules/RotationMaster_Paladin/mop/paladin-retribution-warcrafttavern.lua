@@ -3,7 +3,7 @@
 -- every Art of War reset; Inquisition at any Holy Power when it is missing and refreshed at 3 in its
 -- last 20 seconds; Crusader Strike, Judgment, Templar's Verdict, Hammer of Wrath (first with
 -- Sanctified Wrath in wings). Avenging Wrath and Guardian are kept for elites. Its Seal of
--- Righteousness on any cleave needs a seal reading RM lacks, so seals stay as in the recommended pack.
+-- Righteousness on any cleave stays your call: the shared seal upkeep keeps a Righteousness you chose.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
@@ -18,15 +18,15 @@ local INQ,WINGS=84963,31884
 local inquisition=any(buff(INQ),negate(known(INQ)))
 local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.retribution.warcrafttavern',revision=1,
- blocks={['mop.paladin.boundaries']=1,['mop.paladin.upkeep']=1,['mop.paladin.seal-truth']=1,['mop.paladin.defensives']=1,['mop.paladin.ret-survival']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.retribution.warcrafttavern',revision=2,
+ blocks={['mop.paladin.boundaries']=1,['mop.paladin.upkeep']=1,['mop.paladin.seal-truth']=2,['mop.paladin.defensives']=1,['mop.paladin.ret-survival']=1},
  nameKey='Default.MoP.Paladin.Retribution.WarcraftTavern.Name',descriptionKey='Default.MoP.Paladin.Retribution.WarcraftTavern.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN',minLevel=10,maxLevel=90},
  tags={'retribution','leveling','single-target','aoe','warcraft-tavern'},
  sources={
   {url='https://www.warcrafttavern.com/mop/guides/pve-retribution-paladin-dps-rotations-cooldowns/',title='Warcraft Tavern: MoP Retribution Paladin rotation',reviewedAt='2026-10-23'},
  },
- body={priority=20,disabled=true,switch=known(85256),
+ body={priority=20,disabled=true,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=70}}},
   cooldowns={
    block('rettav-seal','mop.paladin.seal-truth','rettav-'),
    block('rettav-upkeep','mop.paladin.upkeep','rettav-'),

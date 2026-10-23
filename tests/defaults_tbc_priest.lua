@@ -53,6 +53,19 @@ test('cast and channel stop every Priest premade; damage needs a hostile target'
  s.hostile=true;s.combat=false;assert(stopped(select(2,M.first(a,s,DIV))),'pulled a mob someone else is fighting')
 end)
 
+test('a Mind Flay past its first tick is clipped for Mind Blast or a safe Death; other channels run out',function()
+ local a,s,f=shadow();cd(s,32379,5);s.channel=true;s.channelSpell=15407
+ s.channelStart,s.channelEnd=99.5,102.5;assert(stopped(select(2,M.first(a,s,DIV))),'Mind Blast ready, but the first tick has not landed')
+ s.channelStart,s.channelEnd=98.8,101.8;local x,r=M.first(a,s,DIV);assert(x and r.status=='selected','past the first tick with Mind Blast ready: clip')
+ assert(M.first(a,s,DWH),'the Wowhead variant shares the rule')
+ cd(s,8092,4);assert(stopped(select(2,M.first(a,s,DIV))),'nothing worth clipping for')
+ s.cooldown[32379]=nil;assert(M.first(a,s,DIV),'Shadow Word: Death ready');s.health.player=40;assert(stopped(select(2,M.first(a,s,DIV))),'not with the backlash dangerous')
+ s.health.player=100;s.channelSpell=605;assert(stopped(select(2,M.first(a,s,DIV))),'Mind Control is never cut')
+ -- Rank 7 (25387) carries the same localized name as rank 1, which is how any rank matches.
+ f.env.UnitChannelInfo=function()return 'Spell 15407','Spell 15407',1,98800,101800,false,false,25387 end
+ s.channelSpell=25387;assert(M.first(a,s,DIV),'any rank of Mind Flay')
+end)
+
 test('damage training stages: Smite, Pain, Mind Blast, Mind Flay or Holy Fire',function()
  local a,s=fixture(1);assert(M.first(a,s,DIV)==585)
  s.learn(589);assert(M.first(a,s,DIV)==589);s.debuff('target',589);assert(M.first(a,s,DIV)==585)

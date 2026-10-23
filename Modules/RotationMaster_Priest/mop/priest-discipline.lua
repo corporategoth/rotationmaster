@@ -1,6 +1,6 @@
 -- Mists of Pandaria Classic Discipline Priest, levels 10-90: Icy Veins' single-target and Atonement lists joined
--- by your target, with Warcraft Tavern's shield triggers and Hekili's health thresholds. Selected while Penance is
--- known (Discipline's own spell). A friendly target is healed: under Spirit Shell Prayer of Healing (three hurt
+-- by your target, with Warcraft Tavern's shield triggers and Hekili's health thresholds. Selected in the Discipline
+-- specialization (256). A friendly target is healed: under Spirit Shell Prayer of Healing (three hurt
 -- allies) or Greater Heal; Power Word: Shield without Weakened Soul when low, before the pull or every 12 s for
 -- Rapture; Flash Heal on Surge of Light; Penance; Flash Heal when very low; Binding Heal; Prayer of Mending;
 -- Prayer of Healing; the tier-6 talent; Greater Heal; Renew while moving; Heal. An enemy target runs Atonement:
@@ -25,7 +25,7 @@ local group={type='GROUP'}
 local unshielded=negate({type='DEBUFF',unit='target',spell=6788})
 local tierSix=any(enemies('GREATERTHANOREQUALS',3),hurt(3,.85))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.priest.discipline',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.priest.discipline',revision=2,
  blocks={['mop.priest.upkeep']=1,['mop.priest.healer-boundaries']=1,['mop.priest.healer-cooldowns']=1},
  nameKey='Default.MoP.Priest.Discipline.Name',descriptionKey='Default.MoP.Priest.Discipline.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PRIEST',minLevel=10,maxLevel=90},
@@ -36,7 +36,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://wowtbc.gg/mop/class-guides/discipline-priest/',title='wowtbc.gg: Discipline Priest (MoP Classic)',reviewedAt='2026-10-23'},
  {url='https://www.method.gg/mop-classic/discipline-priest-class-guide-mop-classic',title='Method: Discipline Priest guide (MoP Classic)',reviewedAt='2026-10-23'},
  {url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/PriestDiscipline.simc',title='Hekili (MoP fork): Discipline Priest priority',reviewedAt='2026-10-23',revision='0750b5dd98005481baf828cce26149b9abca875b'}},
- body={priority=30,switch={type='SPELL_KNOWN',spell=47540},
+ body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=256}}},
  cooldowns={block('mop.priest.upkeep','priest-'),block('mop.priest.healer-cooldowns','priest-'),
   spell('priest-disc-archangel',81700,all(friendly,{type='BUFF_STACKS',unit='player',spell=81661,ownbuff=true,operator='GREATERTHANOREQUALS',value=5})),
   spell('priest-disc-inner-focus',89485,all(combat(),friendly)),

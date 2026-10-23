@@ -3,8 +3,10 @@
 -- .protection.wowsims, .holy and .unspecialized. A content change needs a block revision bump,
 -- every consumer's pin and revision bumped, and both recorded in
 -- tests/fixtures/builtin_composition_ledger.lua.
--- Seals are stances in MoP: FORM 0 means no seal. RM's FORM compares the stance index, which
--- depends on the seals a character knows, so only "no seal" is tested; a seal you chose is kept.
+-- Seals are stances in MoP, read by spell (FORM form: Command 105361, Truth 31801, Righteousness 20154,
+-- Insight 20165), so the stance-bar order the seals were learned in does not matter. The wanted seal is
+-- asked for whenever another is up (Seal of Command left over from levelling, say), except Seal of
+-- Righteousness, the deliberate choice for packs, which is kept.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
@@ -16,8 +18,8 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function health(op,v)return{type='HEALTHPCT',unit='player',operator=op,value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
-local function block(id,steps)assert(addon:RegisterDefaultBlock({id=id,revision=1,families={'progression'},class='PALADIN',steps=steps}))end
-local noSeal={type='FORM',value=0}
+local function block(id,steps,revision)assert(addon:RegisterDefaultBlock({id=id,revision=revision or 1,families={'progression'},class='PALADIN',steps=steps}))end
+local function sealed(id)return{type='FORM',form=id}end
 local enemies=function(n)return{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=n}end
 -- Casts and channels end advice; damage premades also stop on a target that is not attackable.
 block('mop.paladin.boundaries',{
@@ -33,15 +35,15 @@ block('mop.paladin.upkeep',{
 })
 -- Damage seal: Seal of Truth once learned (24), Seal of Command before.
 block('mop.paladin.seal-truth',{
- spell('seal-truth',31801,noSeal),
- spell('seal-command',105361,all(noSeal,negate(known(31801)))),
-})
+ spell('seal-truth',31801,all(negate(sealed(31801)),negate(sealed(20154)))),
+ spell('seal-command',105361,all(negate(known(31801)),negate(sealed(105361)))),
+},2)
 -- Tank and healer seal: Seal of Insight (32), else Truth, else Command while leveling.
 block('mop.paladin.seal-insight',{
- spell('seal-insight',20165,noSeal),
- spell('seal-truth',31801,all(noSeal,negate(known(20165)))),
- spell('seal-command',105361,all(noSeal,negate(known(20165)),negate(known(31801)))),
-})
+ spell('seal-insight',20165,all(negate(sealed(20165)),negate(sealed(20154)))),
+ spell('seal-truth',31801,all(negate(known(20165)),negate(sealed(31801)))),
+ spell('seal-command',105361,all(negate(known(20165)),negate(known(31801)),negate(sealed(105361)))),
+},2)
 -- Solo damage defensives: Divine Protection below 60%, Lay on Hands below 20% without Forbearance.
 block('mop.paladin.defensives',{
  spell('divine-protection',498,all(combat(),negate({type='GROUP'}),health('LESSTHAN',.6))),

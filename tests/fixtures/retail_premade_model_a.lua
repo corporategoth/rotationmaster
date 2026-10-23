@@ -83,10 +83,11 @@ function M.new(class,token,spec,options)
  e.UnitPowerMax=function(_,kind)if kind==nil then kind=s.powerType end;if kind==4 or kind==12 or kind==19 then return 5 elseif kind==5 then return 6 elseif kind==16 then return 4 end;return 100 end
  e.UnitGUID=function(unit)if unit=='player'then return 'Player-test'end;local entry=enemy(unit);if entry then return entry.guid end;return 'Creature-'..unit end
  e.UnitCastingInfo=function(unit)
-  if unit=='player'and s.cast then return 'Manual cast','Manual cast',1,99000,102000,false,'cast-guid',false,1 end
+  -- s.castSpell / s.channelSpell name the spell in progress (CASTING_SPELL / CHANNELING_SPELL by ID).
+  if unit=='player'and s.cast then local name=s.castSpell and('Spell '..s.castSpell)or'Manual cast';return name,name,1,99000,102000,false,'cast-guid',false,s.castSpell or 1 end
   if unit=='target'and s.targetCast then return 'Enemy cast','Enemy cast',1,99000,102000,false,'enemy-guid',hidden(false),2 end
  end
- e.UnitChannelInfo=function(unit)if unit=='player'and s.channel then return 'Manual channel','Manual channel',1,99000,102000,false,false,1 end end
+ e.UnitChannelInfo=function(unit)if unit=='player'and s.channel then local name=s.channelSpell and('Spell '..s.channelSpell)or'Manual channel';return name,name,1,99000,102000,false,false,s.channelSpell or 1 end end
  e.Enum.SpellBookSpellBank={Player=0,Pet=1}
  e.C_SpellBook={IsSpellKnown=function(id,bank)return bank~=1 and s.known[id]==true end}
  e.C_CVar={GetCVar=function(name)assert(name=='nameplateMaxDistance');return '40'end}

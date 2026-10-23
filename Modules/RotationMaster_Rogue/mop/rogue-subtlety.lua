@@ -1,10 +1,10 @@
 -- Mists of Pandaria Classic Subtlety Rogue, levels 10-90 (the recommended variant): wowsims' Phase 5 order with Shadow
--- Focus, which Wowhead's Phase 5 page agrees with. Selected while Hemorrhage or Master of Subtlety is known (Hemorrhage
--- overrides Sinister Strike, so the passive backs it up). In Stealth or Shadow Dance: Premeditation, Slice and Dice before
+-- Focus, which Wowhead's Phase 5 page agrees with. Selected in the Subtlety specialization (261) from
+-- level 10. In Stealth or Shadow Dance: Premeditation, Slice and Dice before
 -- the pull, five-point finishers in combat, Ambush, Garrote. Three or more engaged enemies: Slice and Dice, Crimson
 -- Tempest, Eviscerate, Fan of Knives. One target: Slice and Dice; at five points Slice and Dice and Rupture refreshes
--- under 2 s and Eviscerate while both last; Marked for Death; Hemorrhage for its bleed; Backstab when the target is not
--- on you, else Hemorrhage. Reminders: Shadow Dance at 75 energy with both buffs up, Vanish when Find Weakness is ending,
+-- under 2 s and Eviscerate while both last; Marked for Death; Hemorrhage for its bleed; Backstab with a dagger when the
+-- target is not on you, else Hemorrhage. Reminders: Shadow Dance at 75 energy with both buffs up, Vanish when Find Weakness is ending,
 -- Preparation, Shadow Blades outside the windows. Shared parts: mop/blocks.lua; Warcraft Tavern's Subterfuge play is
 -- its own premade.
 local _,addon=...
@@ -28,15 +28,15 @@ local boss={type='CLASSIFICATION',unit='target',value='worldboss'}
 local hidden={type='STEALTHED'}
 local worth=any(boss,lifetime('GREATERTHAN',8))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.subtlety',revision=1,
- blocks={['mop.rogue.boundaries']=1,['mop.rogue.out-of-combat']=1,['mop.rogue.solo']=1,['mop.rogue.upkeep']=1,['mop.rogue.subtlety-builders']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.subtlety',revision=2,
+ blocks={['mop.rogue.boundaries']=1,['mop.rogue.out-of-combat']=1,['mop.rogue.solo']=1,['mop.rogue.upkeep']=1,['mop.rogue.subtlety-builders']=2},
  nameKey='Default.MoP.Rogue.Subtlety.Name',descriptionKey='Default.MoP.Rogue.Subtlety.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE',minLevel=10,maxLevel=90},
  tags={'subtlety','dps','melee','leveling','endgame','wowsims','wowhead','icy-veins'},
  sources={{url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/rogue/subtlety/apls/subtlety.apl.json',title='wowsims/mop: Subtlety Rogue APL',reviewedAt='2026-10-23',revision='ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9'},
  {url='https://www.wowhead.com/mop-classic/guide/classes/rogue/subtlety/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Subtlety Rogue rotation (MoP Classic, Phase 5)',reviewedAt='2026-10-23',revision='2026-06-29'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/subtlety-rogue-leveling',title='Icy Veins: Subtlety Rogue levelling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-09-23'}},
- body={priority=30,switch=any(known(16511),known(31223)),
+ body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=261}}},
  cooldowns={block('mop.rogue.upkeep','rogue-'),
   spell('rogue-subtlety-shadow-dance',51713,all(combat(),negate(hidden),energy('GREATERTHANOREQUALS',75),sliced,mine(1943),worth)),
   spell('rogue-subtlety-vanish',1856,all(combat(),negate(hidden),negate(own(51713)),points('LESSTHAN',3),energy('GREATERTHANOREQUALS',60),

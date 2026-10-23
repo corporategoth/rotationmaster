@@ -1,6 +1,6 @@
 -- Mists of Pandaria Classic Paladin before a specialization: levels 1–9, and any paladin who has
--- not chosen one (no Templar's Verdict, Avenger's Shield or Holy Shock). Lowest priority, so a
--- specialization premade wins as soon as its spell is known. Judgment to pull, Word of Glory and
+-- not chosen one. Lowest priority, so a
+-- specialization premade wins as soon as one is chosen. Judgment to pull, Word of Glory and
 -- Hammer of Justice when in danger, Crusader Strike, Judgment; the start of Icy Veins' leveling list.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
@@ -11,8 +11,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.unspecialized',revision=1,
- blocks={['mop.paladin.boundaries']=1,['mop.paladin.upkeep']=1,['mop.paladin.seal-truth']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.unspecialized',revision=2,
+ blocks={['mop.paladin.boundaries']=1,['mop.paladin.upkeep']=1,['mop.paladin.seal-truth']=2},
  nameKey='Default.MoP.Paladin.Unspecialized.Name',descriptionKey='Default.MoP.Paladin.Unspecialized.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN',minLevel=1,maxLevel=90},
  tags={'leveling','single-target','icy-veins'},

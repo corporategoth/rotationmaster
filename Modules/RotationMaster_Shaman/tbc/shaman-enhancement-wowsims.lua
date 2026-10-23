@@ -8,8 +8,8 @@ local function negate(c)return{type='NOT',value=c}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function windfuryWithin(s)return{type='SPELL_HISTORY_TIME',spell=8512,operator='LESSTHAN',value=s}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.enhancement.wowsims',revision=1,
- blocks={['tbc.shaman.enhancement-upkeep']=1,['tbc.shaman.mainhand-imbue']=1,['tbc.shaman.shield']=1,['tbc.shaman.bloodlust']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.enhancement.wowsims',revision=2,
+ blocks={['tbc.shaman.enhancement-upkeep']=2,['tbc.shaman.mainhand-imbue']=1,['tbc.shaman.shield']=1,['tbc.shaman.bloodlust']=1,
   ['tbc.shaman.enhancement-opening']=1,['tbc.shaman.boundaries']=1,['tbc.shaman.interrupt']=1},
  nameKey='Default.TBC.Shaman.Enhancement.Wowsims.Name',descriptionKey='Default.TBC.Shaman.Enhancement.Wowsims.Description',
  applicability={families={'tbc'},actionContext='player',class='SHAMAN',minLevel=1,maxLevel=70},

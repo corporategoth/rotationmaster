@@ -1,5 +1,5 @@
 -- Mists of Pandaria Classic Mage before a specialization: levels 1–9, and any Mage who has not
--- chosen one (the spec premades switch on their level-10 spec spells and outrank this). Frostfire
+-- chosen one (the spec premades switch on the specialization and outrank this). Frostfire
 -- Bolt, Fire Blast to finish or on the move, Ice Lance on the move, Arcane Explosion on packs,
 -- Frost Nova when a mob reaches you. RM policy assembled from the spells' training levels; no source
 -- writes a level 1–9 list.

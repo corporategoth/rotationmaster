@@ -1,7 +1,7 @@
 -- Mists of Pandaria Classic Assassination Rogue, Icy Veins and Method variant (Phase 2 text; off by default): Vanish on
 -- cooldown for a stealthed Mutilate, Vendetta on cooldown when a fight is long enough, Envenom only at five points.
 -- Four to eight engaged enemies: Fan of Knives with Rupture at three or more on each target; nine or more: Fan of Knives
--- and Envenom only. Same switch as the recommended Assassination premade (Mutilate known), lower priority; enable it and
+-- and Envenom only. Same switch as the recommended Assassination premade (Assassination specialization), lower priority; enable it and
 -- disable the recommended one to use it. Shared parts: mop/blocks.lua.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
@@ -22,15 +22,15 @@ local sliced=own(5171)
 local boss={type='CLASSIFICATION',unit='target',value='worldboss'}
 local dying=all(points('GREATERTHANOREQUALS',2),lifetime('LESSTHAN',4))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.assassination.icyveins',revision=1,
- blocks={['mop.rogue.boundaries']=1,['mop.rogue.assassination-opener']=1,['mop.rogue.out-of-combat']=1,['mop.rogue.solo']=1,['mop.rogue.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.assassination.icyveins',revision=2,
+ blocks={['mop.rogue.boundaries']=1,['mop.rogue.assassination-opener']=2,['mop.rogue.out-of-combat']=1,['mop.rogue.solo']=1,['mop.rogue.upkeep']=1},
  nameKey='Default.MoP.Rogue.Assassination.IcyVeins.Name',descriptionKey='Default.MoP.Rogue.Assassination.IcyVeins.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE',minLevel=10,maxLevel=90},
  tags={'assassination','dps','melee','leveling','endgame','icy-veins','method'},
  sources={{url='https://www.icy-veins.com/mists-of-pandaria-classic/assassination-rogue-pve-rotation-cooldowns-abilities',title='Icy Veins: Assassination Rogue rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2025-09-23'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/assassination-rogue-leveling',title='Icy Veins: Assassination Rogue levelling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-09-23'},
  {url='https://www.method.gg/mop-classic/assassination-rogue-class-guide-mop-classic',title='Method: Assassination Rogue guide (MoP Classic)',reviewedAt='2026-10-23'}},
- body={priority=20,disabled=true,switch=known(1329),
+ body={priority=20,disabled=true,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=259}}},
  cooldowns={block('mop.rogue.upkeep','rogue-'),
   spell('rogue-assassination-iv-vendetta',79140,all(combat(),any(boss,lifetime('GREATERTHAN',20)))),
   spell('rogue-assassination-iv-shadow-blades',121471,all(combat(),mine(79140))),
@@ -58,7 +58,7 @@ assert(addon:RegisterDefaultRotation({
   {id='rogue-assassination-iv-pool',type='none',suppress_attack=false,conditions={}}}},
  spell('rogue-assassination-iv-dying-envenom',32645,dying),
  spell('rogue-assassination-iv-dying-eviscerate',2098,dying),
- spell('rogue-assassination-iv-dispatch',111240,any(target('LESSTHAN',.35),own(121153))),
+ spell('rogue-assassination-iv-dispatch',111240,all({type='WEAPON_TYPE',slot='mainhand',subclass=15},any(target('LESSTHAN',.35),own(121153)))),
  spell('rogue-assassination-iv-mutilate',1329),
  spell('rogue-assassination-iv-shuriken-toss',114014,{type='BEYOND_MELEE',unit='target'}),
  }},

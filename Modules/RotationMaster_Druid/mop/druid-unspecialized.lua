@@ -6,7 +6,6 @@ local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
-local function buff(id)return{type='BUFF',unit='player',spell=id}end
 local function cp(op,v)return{type='POINT',unit='player',operator=op,value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
@@ -16,8 +15,8 @@ local lives=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASS
  {type='HEALTHPCT',unit='target',operator='GREATERTHANOREQUALS',value=.3},{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=6})
 local moving={type='MOVING'}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.druid.unspecialized',revision=1,
- blocks={['mop.druid.boundaries']=1,['mop.druid.target']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.druid.unspecialized',revision=2,
+ blocks={['mop.druid.boundaries']=2,['mop.druid.target']=1},
  nameKey='Default.MoP.Druid.Unspecialized.Name',descriptionKey='Default.MoP.Druid.Unspecialized.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID',minLevel=1,maxLevel=90},
  tags={'leveling','single-target','warcraft-tavern'},
@@ -29,12 +28,12 @@ assert(addon:RegisterDefaultRotation({
   rotation={
    block('none-boundaries','mop.druid.boundaries','none-'),
    block('none-target','mop.druid.target','none-'),
-   {id='none-cat',type='branch',conditions=buff(768),onFalse={},onTrue={
+   {id='none-cat',type='branch',conditions={type='FORM',form=768},onFalse={},onTrue={
     spell('none-cat-rake',1822,all(negate({type='DEBUFF',unit='target',spell=1822,owndebuff=true}),lives)),
     spell('none-cat-bite',22568,any(cp('GREATERTHANOREQUALS',5),all(cp('GREATERTHANOREQUALS',2),{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=.3}))),
     spell('none-cat-mangle',33917),
     swing('none-cat-stop')}},
-   {id='none-bear',type='branch',conditions=buff(5487),onFalse={},onTrue={
+   {id='none-bear',type='branch',conditions={type='FORM',form=5487},onFalse={},onTrue={
     spell('none-bear-mangle',33917),
     spell('none-bear-maul',6807,{type='POWER',unit='player',operator='GREATERTHANOREQUALS',value=30}),
     swing('none-bear-stop')}},

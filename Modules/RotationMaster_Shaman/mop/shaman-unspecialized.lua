@@ -1,5 +1,5 @@
 -- Mists of Pandaria Classic Shaman catch-all, levels 1-9 or any Shaman without a specialization (lowest priority;
--- every specialization premade outranks it once its own spell is known). RM policy built from the 1-9 kit in the
+-- every specialization premade outranks it once a specialization is chosen). RM policy built from the 1-9 kit in the
 -- Enhancement-leveling shape (Wowhead): Lightning Bolt to pull from range, Healing Surge when low and solo,
 -- Primal Strike, Earth Shock, Lightning Bolt while out of melee. Lightning Shield is kept up. Shared parts:
 -- mop/blocks.lua.

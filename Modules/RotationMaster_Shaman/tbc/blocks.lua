@@ -14,7 +14,7 @@ local function solo()return negate({type='GROUP'})end
 local function totem(slot)return{type='TOTEM',spell=slot}end -- 1 fire, 2 earth, 3 water, 4 air
 local function enemies(n,yards)return{type='DISTANCE_COUNT',enemy=true,distance=yards,operator='GREATERTHANOREQUALS',value=n}end
 local function boss()return all({type='GROUP'},{type='CLASSIFICATION',unit='target',value='worldboss'})end
-local function shaman(id,steps)assert(addon:RegisterDefaultBlock({id=id,revision=1,families={'tbc'},class='SHAMAN',steps=steps}))end
+local function shaman(id,steps,revision)assert(addon:RegisterDefaultBlock({id=id,revision=revision or 1,families={'tbc'},class='SHAMAN',steps=steps}))end
 -- Casts, channels and Ghost Wolf halt advice and implicit Attack.
 shaman('tbc.shaman.boundaries',{
  {id='casting',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
@@ -38,10 +38,11 @@ shaman('tbc.shaman.bloodlust',{
  {id='bloodlust',type='spell',action=2825,ranked=false,conditions=all(combat(),boss())},
  {id='heroism',type='spell',action=32182,ranked=false,conditions=all(combat(),boss())},
 })
--- Enhancement upkeep both Enhancement sources agree on.
+-- Enhancement upkeep both Enhancement sources agree on; Windfury goes on an off-hand weapon too (read by
+-- item type, so a shield never asks for it).
 shaman('tbc.shaman.enhancement-upkeep',{
  {id='mainhand',type='block',block='tbc.shaman.mainhand-imbue'},
- {id='offhand-windfury',type='spell',action=8232,ranked=false,conditions=all(known(674),negate({type='WEAPON',offhand=true}))},
+ {id='offhand-windfury',type='spell',action=8232,ranked=false,conditions=all({type='WEAPON_TYPE',slot='offhand',kind='weapon'},negate({type='WEAPON',offhand=true}))},
  {id='shield',type='block',block='tbc.shaman.shield'},
  {id='strength-of-earth',type='spell',action=8075,ranked=false,conditions=all(combat(),negate(totem(2)))},
  {id='mana-spring',type='spell',action=5675,ranked=false,conditions=all(combat(),{type='GROUP'},negate(totem(3)))},
@@ -50,7 +51,7 @@ shaman('tbc.shaman.enhancement-upkeep',{
  {id='earth-elemental',type='spell',action=2062,ranked=false,conditions=all(combat(),solo(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=0.35})},
  {id='lust',type='block',block='tbc.shaman.bloodlust'},
  {id='fire-elemental',type='spell',action=2894,ranked=false,disabled=true,conditions=all(combat(),boss())},
-})
+},2)
 -- Enhancement opening both sources agree on: protect casts, pull with a ranged
 -- Bolt, interrupt, then Fire Nova and Magma for packs.
 shaman('tbc.shaman.enhancement-opening',{

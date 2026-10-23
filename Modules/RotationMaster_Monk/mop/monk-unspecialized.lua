@@ -11,7 +11,7 @@ local function hurt()return{type='HEALTHPCT',unit='player',operator='LESSTHAN',v
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.monk.unspecialized',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.monk.unspecialized',revision=2,
  blocks={['mop.monk.boundaries']=1,['mop.monk.upkeep']=1},
  nameKey='Default.MoP.Monk.Unspecialized.Name',descriptionKey='Default.MoP.Monk.Unspecialized.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK',minLevel=1,maxLevel=90},
@@ -22,7 +22,7 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=0,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
   cooldowns={
-   spell('monk-tiger-stance',103985,negate(own(103985))),
+   spell('monk-tiger-stance',103985,negate({type='FORM',form=103985})),
    block('monk-class','mop.monk.upkeep','monk-'),
   },
   rotation={

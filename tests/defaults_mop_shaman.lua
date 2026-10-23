@@ -9,10 +9,12 @@ local starter={403,73899,8042,8004,324}
 local ele={51490,8024,8050,3599,57994,421,51505,8190,61882,30823,2894,2825,120668,73680,79206,114049}
 local enh={60103,8024,8050,3599,57994,17364,115356,421,8232,8190,1535,51533,30823,2894,73680,114049}
 local resto={61295,77130,331,52127,974,5394,51730,1064,16190,73920,77472,108280,73680,8050,51505}
+-- The specialization follows its signature spell in the kit (as choosing one teaches it).
 local function shaman(level,...)
  local f,s=M.fixture('SHAMAN',{level=level});M.know(s,6603)
  for _,set in ipairs({...})do M.know(s,unpack(set))end
  s.range[6603]=true
+ if level>=10 then for _,pair in ipairs({{51490,262},{60103,263},{61295,264}})do if s.known[pair[1]] then s.specID(pair[2])end end end
  return f,s
 end
 local function first(f,s,id)return(M.first(f,s,id))end
@@ -20,22 +22,23 @@ local function cd(s,id,left)s.cooldown[id]={startTime=100-(10-(left or 5)),durat
 local function stopped(f,s,id,suppress,label)local x,r=M.first(f,s,id);assert(not x and r.status=='stopped'and r.suppressAttack==suppress,(label or id)..': '..tostring(x)..' '..tostring(r.status))end
 local function swing(f,elapsed)f.addon.lastMainSwing=100-elapsed end
 
-test('the specialization spell picks the premade; the catch-all owns levels 1-9 and an unspecialized character',function()
+test('the specialization picks the premade; the catch-all owns levels 1-9 and an unspecialized character',function()
  local f,s=shaman(5,starter);assert(M.scoped(f,'SHAMAN')==7)
  assert(M.selected(f,s)==NEW and M.ordered(f,s)==NEW,'level 5')
- s.level=20;assert(M.selected(f,s)==NEW,'level 20 without a specialization')
- for _,case in ipairs({{51490,ELE},{60103,ENH},{61295,RESTO}})do
-  M.know(s,case[1]);assert(M.selected(f,s)==case[2]and M.ordered(f,s)==case[2],case[2]);s.known[case[1]]=false
+ s.specID(263);assert(M.selected(f,s)==NEW and M.ordered(f,s)==NEW,'levels 1-9 stay in the catch-all');s.spec=nil
+ s.level=20;M.know(s,51490,60103,61295);assert(M.selected(f,s)==NEW and M.ordered(f,s)==NEW,'level 20 without a specialization')
+ for _,case in ipairs({{262,ELE},{263,ENH},{264,RESTO}})do
+  s.specID(case[1]);assert(M.selected(f,s)==case[2]and M.ordered(f,s)==case[2],case[2])
  end
- -- Dual spec: the second talent group knows its own specialization's spell, not the first's.
- s.talentGroup=2;M.know(s,61295);assert(M.ordered(f,s)==RESTO);s.known[61295]=false;M.know(s,51490);assert(M.ordered(f,s)==ELE)
- s.talentGroup=1;s.known[51490]=false
- local a=f.addon;M.know(s,60103)
+ -- Dual spec: the second talent group reads its own specialization.
+ s.talentGroup=2;s.specID(264);assert(M.ordered(f,s)==RESTO);s.specID(262);assert(M.ordered(f,s)==ELE)
+ s.talentGroup=1
+ local a=f.addon;s.specID(263)
  for _,id in ipairs({SIM,IV,HK})do assert(not a:GetDefaultRotation(id).enabled,id..' ships disabled')end
  assert(a:SetDefaultRotationEnabled(SIM,true));assert(M.ordered(f,s)==ENH,'the recommended premade still outranks an enabled variant')
  assert(a:SetDefaultRotationEnabled(ENH,false));assert(M.ordered(f,s)==SIM)
  assert(a:SetDefaultRotationEnabled(SIM,false));assert(a:SetDefaultRotationEnabled(IV,true));assert(M.ordered(f,s)==IV)
- s.known[60103]=false;M.know(s,61295);assert(a:SetDefaultRotationEnabled(HK,true));assert(a:SetDefaultRotationEnabled(RESTO,false));assert(M.ordered(f,s)==HK)
+ s.specID(264);assert(a:SetDefaultRotationEnabled(HK,true));assert(a:SetDefaultRotationEnabled(RESTO,false));assert(M.ordered(f,s)==HK)
 end)
 
 test('every premade is listed but ineligible on a Wrath progression client',function()
@@ -139,7 +142,9 @@ end)
 test('Enhancement reminders: imbues per hand, Feral Spirit, Ascendance after Stormstrike, Ancestral Swiftness, Shamanistic Rage',function()
  local f,s=shaman(20,starter,{60103,8024});local u=M.upkeep(f,s,ENH)
  assert(u['shaman-enh-flametongue-main']==8024 and not u['shaman-enh-flametongue-off'],'no off-hand weapon')
- s.offSpeed=2.6;s.mainEnchant=5;u=M.upkeep(f,s,ENH);assert(not u['shaman-enh-flametongue-main']and u['shaman-enh-flametongue-off']==8024)
+ s.gear={[16]=M.SWORD,[17]=M.SHIELD};s.mainEnchant=5;u=M.upkeep(f,s,ENH);assert(not u['shaman-enh-flametongue-off'],'a shield takes no imbue')
+ s.offSpeed=2.6;assert(not M.upkeep(f,s,ENH)['shaman-enh-flametongue-off'],'an off-hand swing alone is not a weapon')
+ s.gear[17]=M.SWORD;u=M.upkeep(f,s,ENH);assert(not u['shaman-enh-flametongue-main']and u['shaman-enh-flametongue-off']==8024,'dual wielding')
  M.know(s,8232);u=M.upkeep(f,s,ENH);assert(u['shaman-enh-windfury-weapon']==8232 and not u['shaman-enh-flametongue-off'],'Windfury first on the main hand')
  s.mainEnchant=283;u=M.upkeep(f,s,ENH);assert(u['shaman-enh-flametongue-off']==8024);s.offEnchant=5;u=M.upkeep(f,s,ENH)
  assert(not u['shaman-enh-windfury-weapon']and not u['shaman-enh-flametongue-off'])
@@ -210,7 +215,7 @@ test('catch-all: Primal Strike, Earth Shock, Healing Surge when low and solo, Li
  assert(M.upkeep(f,s,NEW)['shaman-new-lightning-shield']==324);s.buffs={{id=324,stacks=3}};assert(not M.upkeep(f,s,NEW)['shaman-new-lightning-shield'])
 end)
 
-test('real publisher auto-selects by specialization spell and highlights',function()
+test('real publisher auto-selects by specialization and highlights',function()
  local f,s=shaman(90,starter,ele);s.ttd=60;local poll,selected,glow=M.publisher(f,s)
  poll();assert(selected()==ELE and f.addon.currentSpell==8050,tostring(selected())..' '..tostring(f.addon.currentSpell))
  s.debuffs={{id=8050,expires=130}};poll();assert(f.addon.currentSpell==51505);assert(#glow>0)

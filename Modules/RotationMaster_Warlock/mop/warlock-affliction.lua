@@ -1,6 +1,6 @@
 -- Mists of Pandaria Classic Affliction Warlock, levels 10-90 (the recommended variant): wowsims' order with
--- Hekili's one-shard Haunt reserve. Selected while Unstable Affliction is known (Affliction's own spell; RM
--- stores MoP rotations per talent group and has no specialization condition). Pre-cast Haunt or Unstable
+-- Hekili's one-shard Haunt reserve. Selected in the Affliction specialization (265)
+-- from level 10 (RM stores MoP rotations per talent group). Pre-cast Haunt or Unstable
 -- Affliction; Soulburn + Soul Swap on a fresh target; Seed of Corruption on packs; Agony, Corruption and
 -- Unstable Affliction kept up and refreshed early inside Dark Soul: Misery; Drain Soul for a shard when
 -- Haunt is ending with none; Haunt at two or more shards (or in Dark Soul); Drain Soul below 20%; Malefic
@@ -16,8 +16,8 @@ local function shards(op,n)return{type='POINT',unit='player',operator=op,value=n
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.warlock.affliction',revision=1,
- blocks={['mop.warlock.boundaries']=1,['mop.warlock.upkeep']=1,['mop.warlock.pet-felhunter']=1,['mop.warlock.affliction-upkeep']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.warlock.affliction',revision=2,
+ blocks={['mop.warlock.boundaries']=2,['mop.warlock.upkeep']=1,['mop.warlock.pet-felhunter']=1,['mop.warlock.affliction-upkeep']=1,
   ['mop.warlock.affliction-dots']=1,['mop.warlock.affliction-filler']=1},
  nameKey='Default.MoP.Warlock.Affliction.Name',descriptionKey='Default.MoP.Warlock.Affliction.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARLOCK',minLevel=10,maxLevel=90},
@@ -26,7 +26,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/WarlockAffliction.simc',title='Hekili (MoP fork): Affliction Warlock priority',reviewedAt='2026-10-23',revision='0750b5dd98005481baf828cce26149b9abca875b'},
  {url='https://wowtbc.gg/mop/class-guides/affliction-warlock/',title='wowtbc.gg: Affliction Warlock (MoP Classic)',reviewedAt='2026-10-23'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/affliction-warlock-leveling',title='Icy Veins: Affliction Warlock levelling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-06-10'}},
- body={priority=30,switch={type='SPELL_KNOWN',spell=30108},
+ body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=265}}},
  cooldowns={block('mop.warlock.upkeep','warlock-'),block('mop.warlock.pet-felhunter','warlock-'),block('mop.warlock.affliction-upkeep','warlock-aff-')},
  rotation={
  block('mop.warlock.boundaries','warlock-'),

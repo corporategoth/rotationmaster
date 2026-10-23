@@ -1,4 +1,4 @@
--- Mists of Pandaria Classic Restoration Druid, levels 10–90, once Swiftmend is known. Wowhead's
+-- Mists of Pandaria Classic Restoration Druid, levels 10–90, in the Restoration specialization (105). Wowhead's
 -- Phase 5 group healing (Icy Veins, Method, wowtbc and Warcraft Tavern order the same tools): three
 -- Lifeblooms on the focus tank, Wild Mushroom kept down, Swiftmend for emergencies and Harmony (and
 -- into Wild Growth with Soul of the Forest), Wild Growth on group damage, Regrowth on Clearcasting,
@@ -17,8 +17,8 @@ local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local still=negate({type='MOVING'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.druid.restoration',revision=1,
- blocks={['mop.druid.boundaries']=1,['mop.druid.mark']=1,['mop.druid.healer-upkeep']=1,['mop.druid.healer-open']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.druid.restoration',revision=2,
+ blocks={['mop.druid.boundaries']=2,['mop.druid.mark']=1,['mop.druid.healer-upkeep']=1,['mop.druid.healer-open']=2},
  nameKey='Default.MoP.Druid.Restoration.Name',descriptionKey='Default.MoP.Druid.Restoration.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID',minLevel=10,maxLevel=90},
  tags={'restoration','healer','leveling','wowhead','icy-veins'},
@@ -28,7 +28,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.method.gg/mop-classic/restoration-druid-class-guide-mop-classic',title='Method: MoP Classic Restoration Druid',reviewedAt='2026-10-23',revision='2025-07-22',notes='Harmony from a direct heal.'},
   {url='https://www.warcrafttavern.com/mop/guides/pve-restoration-druid-rotations-cooldowns/',title='Warcraft Tavern: MoP Classic Restoration Druid',reviewedAt='2026-10-23',notes='Damage in downtime.'},
  },
- body={priority=30,switch={type='SPELL_KNOWN',spell=18562},
+ body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=105}}},
   cooldowns={
    block('resto-mark','mop.druid.mark','resto-'),
    block('resto-upkeep','mop.druid.healer-upkeep','resto-'),
@@ -40,8 +40,8 @@ assert(addon:RegisterDefaultRotation({
     all({type='TALENT',layout='grid',value=10},group(.9,3),{type='SPELL_AVAIL',spell=48438})))),
    spell('resto-wild-growth',48438,group(.9,3)),
    spell('resto-swift-touch',5185,own(132158)),
-   spell('resto-regrowth',8936,any(all(hurt(.9),any(own(16870),own(33891))),hurt(.35))),
-   spell('resto-tree-lifebloom',33763,all(own(33891),negate(hot(33763)))),
+   spell('resto-regrowth',8936,any(all(hurt(.9),any(own(16870),{type='FORM',form=33891})),hurt(.35))),
+   spell('resto-tree-lifebloom',33763,all({type='FORM',form=33891},negate(hot(33763)))),
    spell('resto-rejuvenation',774,all(negate(hot(774)),hurt(.95))),
    spell('resto-healing-touch',5185,all(hurt(.5),still)),
    spell('resto-nourish',50464,all(hurt(.85),still)),

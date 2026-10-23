@@ -3,7 +3,8 @@
 -- subtlety.warcrafttavern,unspecialized}. A content change needs a block revision bump, every consumer's pin and
 -- revision bumped, and both recorded in tests/fixtures/builtin_composition_ledger.lua. Policy and sources are the
 -- consumers'; see premade-research progression/rogue.md. MoP poisons are player auras, not weapon enchants (the
--- 5.5.4 SpellItemEnchantment table has none), so poison upkeep reads BUFF.
+-- 5.5.4 SpellItemEnchantment table has none), so poison upkeep reads BUFF. Backstab and Dispatch need a dagger in
+-- the main hand (5.5.4 tooltips), read as weapon subclass 15; Ambush and Mutilate do not.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
@@ -61,12 +62,13 @@ assert(addon:RegisterDefaultBlock({
  off('tricks',57934,all(combat(),{type='GROUP'})),
  off('expose-armor',8647,all({type='GROUP'},{type='CLASSIFICATION',unit='target',value='worldboss'},negate({type='DEBUFF',unit='target',spell=113746}))),
 }}))
--- Assassination stealth opener: Cheap Shot on a solo pull, Dispatch on Blindside, Mutilate (raid and after Vanish).
+-- Assassination stealth opener: Cheap Shot on a solo pull, Dispatch on Blindside with a dagger, Mutilate (raid and
+-- after Vanish).
 assert(addon:RegisterDefaultBlock({
- id='mop.rogue.assassination-opener',revision=1,families={'progression'},class='ROGUE',steps={
+ id='mop.rogue.assassination-opener',revision=2,families={'progression'},class='ROGUE',steps={
  {id='stealth',type='branch',conditions={type='STEALTHED'},onFalse={},onTrue={
   spell('stealth-cheap-shot',1833,all(negate({type='GROUP'}),negate(combat()))),
-  spell('stealth-dispatch',111240,own(121153)),
+  spell('stealth-dispatch',111240,all({type='WEAPON_TYPE',slot='mainhand',subclass=15},own(121153))),
   spell('stealth-mutilate',1329),
   {id='stealth-stop',type='none',suppress_attack=true,conditions={}},
  }},
@@ -106,12 +108,12 @@ assert(addon:RegisterDefaultBlock({
   {id='aoe-stop',type='none',suppress_attack=false,conditions={}},
  }},
 }}))
--- Subtlety builders: Marked for Death at no points, Hemorrhage to keep its bleed, Backstab when the target is not on
--- you (the "behind" proxy), Hemorrhage from the front (and the only builder before 40).
+-- Subtlety builders: Marked for Death at no points, Hemorrhage to keep its bleed, Backstab with a dagger when the
+-- target is not on you (the "behind" proxy), Hemorrhage from the front (and the only builder before 40).
 assert(addon:RegisterDefaultBlock({
- id='mop.rogue.subtlety-builders',revision=1,families={'progression'},class='ROGUE',steps={
+ id='mop.rogue.subtlety-builders',revision=2,families={'progression'},class='ROGUE',steps={
  spell('marked-for-death',137619,points('LESSTHANOREQUALS',0)),
  spell('hemorrhage-bleed',16511,any(negate(mine(89775)),remain(89775,'LESSTHANOREQUALS',3))),
- spell('backstab',53,negate(tanked)),
+ spell('backstab',53,all({type='WEAPON_TYPE',slot='mainhand',subclass=15},negate(tanked))),
  spell('hemorrhage',16511),
 }}))

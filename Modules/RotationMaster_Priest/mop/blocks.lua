@@ -58,14 +58,16 @@ assert(addon:RegisterDefaultBlock({
  stop('damage-stop'),
 }}))
 -- Shadow boundaries, pull, movement and packs, shared by both Shadow premades. A cast stops the list; a channel
--- stops it too unless it is Mind Flay and Mind Blast (or Shadow Word: Death on a target below 20%) is ready to
--- clip it (Icy Veins). Out of combat: Mind Spike, Mind Blast, Vampiric Touch, Shadow Word: Pain, Mind Flay, then
+-- stops it too unless it is Mind Flay (or Mind Flay: Insanity) and either Mind Blast (or Shadow Word: Death on a
+-- target below 20%) is ready to clip it (Icy Veins) or its second of three ticks is done (wowsims clips at two
+-- ticks; ticks are evenly spaced, so that is two thirds of the channel whatever the haste). Out of combat: Mind Spike, Mind Blast, Vampiric Touch, Shadow Word: Pain, Mind Flay, then
 -- stop. Moving: instants only (Hekili's moving list). Five or more engaged enemies: the tier-6 talent, DoTs on
 -- the current target, Mind Sear from 76 (guide consensus), then stop; before Mind Sear the single-target list runs.
-local flayed=any({type='SPELL_HISTORY',spell=15407,operator='LESSTHANOREQUALS',value=1},{type='SPELL_HISTORY',spell=129197,operator='LESSTHANOREQUALS',value=1})
-local clip=all(flayed,any({type='SPELL_AVAIL',spell=8092},all(execute,{type='SPELL_AVAIL',spell=32379})))
+local flaying=any({type='CHANNELING_SPELL',unit='player',spell=15407},{type='CHANNELING_SPELL',unit='player',spell=129197})
+local clip=all(flaying,any({type='SPELL_AVAIL',spell=8092},all(execute,{type='SPELL_AVAIL',spell=32379}),
+ {type='CHANNELING_PROGRESS',unit='player',operator='GREATERTHANOREQUALS',value=.67}))
 assert(addon:RegisterDefaultBlock({
- id='mop.priest.shadow-shell',revision=1,families={'progression'},class='PRIEST',steps={
+ id='mop.priest.shadow-shell',revision=2,families={'progression'},class='PRIEST',steps={
  stop('cast',{type='CASTING',unit='player'}),
  stop('channel',all({type='CHANNELING',unit='player'},negate(clip))),
  stop('no-target',negate({type='ATTACKABLE',unit='target'})),
@@ -102,8 +104,8 @@ assert(addon:RegisterDefaultBlock({
 -- cooldowns for Shadow), Vampiric Embrace, Desperate Prayer and Dispersion when low (RM policy), Psychic Scream
 -- (off: levelling safety when three enemies are on you).
 assert(addon:RegisterDefaultBlock({
- id='mop.priest.shadow-cooldowns',revision=1,families={'progression'},class='PRIEST',steps={
- spell('shadowform',15473,negate(own(15473))),
+ id='mop.priest.shadow-cooldowns',revision=2,families={'progression'},class='PRIEST',steps={
+ spell('shadowform',15473,negate({type='FORM',form=15473})),
  spell('silence',15487,any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})),
  spell('shadowfiend',34433,all(combat(),worth)),
  spell('mindbender',123040,all(combat(),worth)),

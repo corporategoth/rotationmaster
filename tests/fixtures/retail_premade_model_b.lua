@@ -73,8 +73,9 @@ function M.new(class,options)
  end
  e.UnitPowerMax=function(_,kind)if kind==4 or kind==7 or kind==9 then return s.maxPoints end;return 100 end
  e.UnitGUID=function(unit)if unit=='player'then return 'Player-test'end;local entry=enemy(unit);if entry then return entry.guid end;return 'Creature-'..unit end
- e.UnitCastingInfo=function(unit)if unit=='player'and s.cast then return 'Manual cast','Manual cast',1,99000,102000,false,'cast-guid',false,1 end end
- e.UnitChannelInfo=function(unit)if unit=='player'and s.channel then return 'Manual channel','Manual channel',1,99000,102000,false,false,1 end end
+ -- s.castSpell / s.channelSpell name the spell in progress (CASTING_SPELL / CHANNELING_SPELL by ID).
+ e.UnitCastingInfo=function(unit)if unit=='player'and s.cast then local name=s.castSpell and('Spell '..s.castSpell)or'Manual cast';return name,name,1,99000,102000,false,'cast-guid',false,s.castSpell or 1 end end
+ e.UnitChannelInfo=function(unit)if unit=='player'and s.channel then local name=s.channelSpell and('Spell '..s.channelSpell)or'Manual channel';return name,name,1,99000,102000,false,false,s.channelSpell or 1 end end
  e.GetWeaponEnchantInfo=function()return s.enchants.main==true,60000,0,1,s.enchants.off==true,60000,0,2 end
  e.Enum.SpellBookSpellBank={Player=0,Pet=1}
  e.Enum.PowerType.HolyPower,e.Enum.PowerType.Maelstrom,e.Enum.PowerType.Insanity,e.Enum.PowerType.Focus=9,11,13,2

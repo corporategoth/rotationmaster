@@ -1,19 +1,17 @@
 -- Mists of Pandaria Classic Paladin premades: switches, priorities, boundaries and reminders through
 -- the real catalog, predicates, composition and sequence executor on a modeled 5.5.4 client
--- (tests/fixtures/mop_premade_model_a.lua). Holy Power is POINT (s.resource[9]); seals are stances,
--- so FORM 0 is "no seal".
+-- (tests/fixtures/mop_premade_model_a.lua). Holy Power is POINT (s.resource[9]); seals are stances read
+-- by spell (FORM form), on a stance bar in the order they were learned (Command, Truth, Righteousness,
+-- Insight here), with none active by default.
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local M=dofile('tests/fixtures/mop_premade_model_a.lua')
 local RET,RETTAV,PROT,PROTSIM,HOLY,START='rm.mop.paladin.retribution','rm.mop.paladin.retribution.warcrafttavern','rm.mop.paladin.protection',
  'rm.mop.paladin.protection.wowsims','rm.mop.paladin.holy','rm.mop.paladin.unspecialized'
 local HP=M.POWER.HolyPower
--- Seals occupy the shapeshift bar; the model has none, so these natives fall through to _G.
-local seal=1
-_G.GetNumShapeshiftForms=function()return 4 end
-_G.GetShapeshiftForm=function()return seal end
+local COMMAND,TRUTH,RIGHTEOUSNESS,INSIGHT=105361,31801,20154,20165
 local function paladin(level)
- local f,s=M.new('paladin');local a=f.addon;seal=1
- s.setLevel(level or 90);s.resource[HP]=0
+ local f,s=M.new('paladin');local a=f.addon
+ s.setLevel(level or 90);s.resource[HP]=0;s.bar={COMMAND,TRUTH,RIGHTEOUSNESS,INSIGHT};s.form=0
  return a,s,f
 end
 test('the Paladin premades load, validate and declare Mists of Pandaria only',function()
@@ -29,16 +27,17 @@ test('the Paladin premades load, validate and declare Mists of Pandaria only',fu
  assert(rows[RETTAV].envelope.body.disabled and rows[PROTSIM].envelope.body.disabled,'source variants ship disabled')
  assert(not rows[RET].envelope.body.disabled and not rows[PROT].envelope.body.disabled and not rows[HOLY].envelope.body.disabled and not rows[START].envelope.body.disabled)
 end)
-test('switch: the catch-all owns levels 1-9 and an unspecialized paladin; each spec spell picks its premade',function()
+test('switch: the catch-all owns levels 1-9 and an unspecialized paladin; each specialization picks its premade',function()
  local a,s=paladin(1);s.learn(35395);assert(M.selected(a)==START,'level 1')
- s.setLevel(9);s.learn(20271,85673);assert(M.selected(a)==START,'level 9')
- s.setLevel(10);s.learn(85256);assert(M.selected(a)==RET,'Templar\'s Verdict is Retribution')
+ s.setLevel(9);s.learn(20271,85673);s.specID(70);assert(M.selected(a)==START,'level 9 stays in the catch-all');s.spec=nil
+ s.setLevel(10);s.learn(85256,31935,20473);assert(M.selected(a)==START,'level 10 without a specialization')
+ s.specID(70);assert(M.selected(a)==RET,'Retribution')
  assert(M.switch(a,RETTAV)=='match','the Warcraft Tavern variant shares the switch')
- s.forget(85256);s.learn(31935);assert(M.selected(a)==PROT,'Avenger\'s Shield is Protection')
+ s.specID(66);assert(M.selected(a)==PROT,'Protection')
  assert(M.switch(a,PROTSIM)=='match','the wowsims variant shares the switch')
- s.forget(31935);s.learn(20473);assert(M.selected(a)==HOLY,'Holy Shock is Holy')
- s.setLevel(90);s.known={};assert(M.selected(a)==START,'a level-90 paladin without a specialization still gets a premade')
- a:SetDefaultRotationEnabled(RETTAV,true);a:SetDefaultRotationEnabled(RET,false);s.learn(85256)
+ s.specID(65);assert(M.selected(a)==HOLY,'Holy')
+ s.setLevel(90);s.known={};s.spec=nil;assert(M.selected(a)==START,'a level-90 paladin without a specialization still gets a premade')
+ a:SetDefaultRotationEnabled(RETTAV,true);a:SetDefaultRotationEnabled(RET,false);s.specID(70)
  assert(M.selected(a)==RETTAV,'enabling the variant and disabling the recommended pack switches to it')
 end)
 test('unspecialized: boundaries, pull, danger and generators',function()
@@ -50,7 +49,8 @@ test('unspecialized: boundaries, pull, danger and generators',function()
  M.expect(a,s,START,35395,nil,'Crusader Strike');s.cooling(35395,3);M.expect(a,s,START,20271,nil,'Judgment');s.cooldown={}
  s.health.player=45;M.expect(a,s,START,853,nil,'solo and hurt: Hammer of Justice')
  s.health.player=30;M.expect(a,s,START,85673,nil,'in danger: Word of Glory')
- seal=0;s.learn(105361,19750);s.combat=false;local lit=M.upkeep(a,s,START);assert(lit[105361]and lit[19750],'Seal of Command and an out-of-combat Flash of Light')
+ s.learn(105361,19750);s.combat=false;local lit=M.upkeep(a,s,START);assert(lit[105361]and lit[19750],'Seal of Command and an out-of-combat Flash of Light')
+ s.shift(COMMAND);assert(not M.upkeep(a,s,START)[105361],'in Seal of Command')
 end)
 test('Retribution: boundaries, pull, early training',function()
  local a,s=paladin(10);s.maximum={[HP]=3};s.learn(35395,20271,85673,85256)
@@ -93,8 +93,13 @@ test('Retribution: two or more enemies',function()
 end)
 test('Retribution reminders: seal, blessing, Rebuke, wings, Guardian, Holy Avenger, defensives',function()
  local a,s=paladin();s.learn(31801,105361,20217,19740,96231,31884,86698,105809,114157,498,633,84963)
- seal=0;s.combat=false;local lit=M.upkeep(a,s,RET);assert(lit[31801]and not lit[105361]and lit[20217]and not lit[19740],'Seal of Truth and Kings')
- seal=1;s.buff('player',20217,{sourceUnit='party1'});lit=M.upkeep(a,s,RET);assert(not lit[31801]and not lit[20217]and lit[19740],'a seal you chose; Might over another paladin\'s Kings')
+ s.combat=false;local lit=M.upkeep(a,s,RET);assert(lit[31801]and not lit[105361]and lit[20217]and not lit[19740],'Seal of Truth and Kings')
+ s.shift(COMMAND);assert(M.upkeep(a,s,RET)[31801],'Seal of Command left over from levelling: Seal of Truth')
+ s.shift(INSIGHT);assert(M.upkeep(a,s,RET)[31801],'the wrong seal: Seal of Truth')
+ s.shift(TRUTH);assert(not M.upkeep(a,s,RET)[31801],'in Seal of Truth')
+ s.bar={TRUTH,COMMAND,INSIGHT,RIGHTEOUSNESS};s.form=1;assert(not M.upkeep(a,s,RET)[31801],'Seal of Truth wherever it sits on the bar')
+ s.form=4;s.buff('player',20217,{sourceUnit='party1'});lit=M.upkeep(a,s,RET);assert(not lit[31801]and not lit[20217]and lit[19740],'Seal of Righteousness you chose is kept; Might over another paladin\'s Kings')
+ s.bar[4]={};lit=M.upkeep(a,s,RET);assert(not lit[31801],'an unreadable seal skips the reminder')
  s.clearAuras();s.combat=true;lit=M.upkeep(a,s,RET);assert(not lit[31884]and not lit[114157],'no wings or Execution Sentence without Inquisition')
  s.buff('player',84963);s.classification='elite';lit=M.upkeep(a,s,RET);assert(lit[31884]and lit[86698]and lit[114157],'Inquisition and an elite: wings, Guardian, Execution Sentence')
  s.buff('player',31884);s.resource[HP]=2;lit=M.upkeep(a,s,RET);assert(lit[105809],'Holy Avenger in wings at 2 or less');s.resource[HP]=3;assert(not M.upkeep(a,s,RET)[105809],'not at 3')
@@ -134,8 +139,9 @@ test('Protection: three enemies use Icy Veins\' AoE order',function()
 end)
 test('Protection reminders: Righteous Fury, Insight, Shield of the Righteous, Eternal Flame, wings, defensives',function()
  local a,s,f=paladin();s.learn(25780,20165,31801,53600,114163,85673,20925,31884,105809,86659,31850,498,633)
- seal=0;s.combat=false;local lit=M.upkeep(a,s,PROT);assert(lit[25780]and lit[20165]and not lit[31801]and lit[20925]and not lit[53600],'out of combat: Fury, Insight, Sacred Shield')
- seal=1;s.buff('player',25780);s.buff('player',65148,{expirationTime=130,duration=30});s.combat=true
+ s.combat=false;local lit=M.upkeep(a,s,PROT);assert(lit[25780]and lit[20165]and not lit[31801]and lit[20925]and not lit[53600],'out of combat: Fury, Insight, Sacred Shield')
+ s.shift(TRUTH);assert(M.upkeep(a,s,PROT)[20165],'Seal of Truth from before 32: Insight');s.shift(RIGHTEOUSNESS);assert(not M.upkeep(a,s,PROT)[20165],'Righteousness for a pack is kept')
+ s.shift(INSIGHT);s.buff('player',25780);s.buff('player',65148,{expirationTime=130,duration=30});s.combat=true
  lit=M.upkeep(a,s,PROT);assert(lit[53600]and not lit[25780]and not lit[20925],'Shield of the Righteous whenever usable')
  assert(not lit[114163],'no Eternal Flame without Holy Power');s.resource[HP]=3;assert(not M.upkeep(a,s,PROT)[114163],'nor without Bastion of Glory')
  s.buff('player',114637,{applications=3});lit=M.upkeep(a,s,PROT);assert(lit[114163],'3 Holy Power and 3 Bastion: Eternal Flame')
@@ -187,7 +193,7 @@ test('Holy: an enemy target gets the damage arm',function()
 end)
 test('Holy reminders: Insight, Beacon and Sacred Shield on focus, Divine Plea, cooldowns, Lay on Hands',function()
  local a,s,f=healer();s.learn(20165,53563,20925,54428,31884,31842,86669,633,114158)
- seal=0;local lit=M.upkeep(a,s,HOLY);assert(lit[20165]and not lit[53563],'Insight; no Beacon without a focus');seal=1
+ s.form=0;local lit=M.upkeep(a,s,HOLY);assert(lit[20165]and not lit[53563],'Insight; no Beacon without a focus');s.shift(INSIGHT)
  s.focus='party1';f.env.UnitIsFriend=function(_,unit)return unit=='player'or unit=='focus'or unit=='target'end
  lit=M.upkeep(a,s,HOLY);assert(lit[53563]and lit[20925],'Beacon and Sacred Shield on the focus')
  s.mana.player=50;assert(M.upkeep(a,s,HOLY)[54428],'Divine Plea below 60% mana')

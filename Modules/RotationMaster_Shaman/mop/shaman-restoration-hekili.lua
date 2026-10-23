@@ -1,5 +1,5 @@
 -- Mists of Pandaria Classic Restoration Shaman, Hekili ladder variant (player-chosen, off by default, low
--- value). Same switch as the recommended premade (Riptide known). Keeps Riptide on the target, Healing Stream
+-- value). Same switch as the recommended premade (Restoration specialization). Keeps Riptide on the target, Healing Stream
 -- and Healing Rain up whenever they are down (Rain is assumed down 10 s after you cast it), then heals by the
 -- group's average health within 40 yd: Chain Heal below 80%, Healing Wave on a target below 70%, Greater
 -- Healing Wave below 60%, Healing Surge below 40%; Healing Tide, Ancestral Guidance and Mana Tide by the same
@@ -15,13 +15,13 @@ local function group(v)return{type='PROXIMITY_HEALTHPCT',unit='player',operation
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.restoration.hekili',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.restoration.hekili',revision=2,
  blocks={['mop.shaman.manual']=1,['mop.shaman.group']=1,['mop.shaman.restoration-upkeep']=1,['mop.shaman.restoration-damage']=1},
  nameKey='Default.MoP.Shaman.Restoration.Hekili.Name',descriptionKey='Default.MoP.Shaman.Restoration.Hekili.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='SHAMAN',minLevel=10,maxLevel=90},
  tags={'restoration','healer','caster','endgame','hekili'},
  sources={{url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/ShamanRestoration.simc',title='Hekili (MoP fork): Restoration Shaman priority',reviewedAt='2026-10-23',revision='0750b5dd98005481baf828cce26149b9abca875b'}},
- body={priority=20,disabled=true,switch={type='SPELL_KNOWN',spell=61295},
+ body={priority=20,disabled=true,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=264}}},
  cooldowns={block('mop.shaman.restoration-upkeep','shaman-resto-hk-'),
   spell('shaman-resto-hk-healing-stream',5394,all(combat(),negate({type='TOTEM',spell=3}))),
   spell('shaman-resto-hk-spiritwalkers-grace',79206,all(combat(),{type='MOVING'})),

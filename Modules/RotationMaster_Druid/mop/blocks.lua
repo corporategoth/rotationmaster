@@ -2,14 +2,15 @@
 -- Consumers: rm.mop.druid.unspecialized, .balance, .feral, .feral.icyveins, .guardian, .restoration
 -- and .restoration.wowhead. A content change needs a block revision bump, every consumer's pin and
 -- revision bumped, and both recorded in tests/fixtures/builtin_composition_ledger.lua.
--- Forms are read from their auras (Cat 768, Bear 5487, travel 783/1066/33943/40120), never the
--- shapeshift index. Actions name the spellbook IDs (Mangle 33917, Thrash 106832, Swipe 106785,
+-- Forms are read by their spell (FORM form: Cat 768, Bear 5487, travel 783/1066/33943/40120, Moonkin
+-- 24858, Tree of Life 33891), never the shapeshift index, which shifts as forms are learned. Actions name the spellbook IDs (Mangle 33917, Thrash 106832, Swipe 106785,
 -- Berserk 106952); buffs and debuffs name the form's own aura.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function buff(id)return{type='BUFF',unit='player',spell=id}end
+local function form(id)return{type='FORM',form=id}end
 local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
 local function bleed(id)return{type='DEBUFF',unit='target',spell=id,owndebuff=true}end
 local function remain(id,op,v)return{type='DEBUFF_REMAIN',unit='target',spell=id,owndebuff=true,operator=op,value=v}end
@@ -22,9 +23,9 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function off(id,action,conditions)local step=spell(id,action,conditions);step.disabled=true;return step end
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
 local function swing(id,conditions)return{id=id,type='none',conditions=conditions or{}}end
-local function block(id,steps)assert(addon:RegisterDefaultBlock({id=id,revision=1,families={'progression'},class='DRUID',steps=steps}))end
+local function block(id,steps,revision)assert(addon:RegisterDefaultBlock({id=id,revision=revision or 1,families={'progression'},class='DRUID',steps=steps}))end
 local CAT,BEAR=768,5487
-local travelling=any(buff(783),buff(1066),buff(33943),buff(40120))
+local travelling=any(form(783),form(1066),form(33943),form(40120))
 local hurt=function(v)return{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=v}end
 local group=function(pct,n,yards)return{type='PROXIMITY_HEALTHPCT_COUNT',unit='player',distance=yards or 40,healthoperator='LESSTHAN',health=pct,operator='GREATERTHANOREQUALS',value=n}end
 local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
@@ -37,7 +38,7 @@ block('mop.druid.boundaries',{
  stop('cast',{type='CASTING',unit='player'}),
  stop('channel',{type='CHANNELING',unit='player'}),
  stop('travel',travelling),
-})
+},2)
 -- Damage and tank premades: nothing to do without an attackable target.
 block('mop.druid.target',{
  stop('target',negate({type='ATTACKABLE',unit='target'})),
@@ -50,7 +51,7 @@ block('mop.druid.mark',{
 -- Force of Nature with Tiger's Fury or at three charges, Nature's Vigil, Nature's Swiftness for a
 -- Dream of Cenarius heal, interrupts and defensives. Heart of the Wild's Wrath weave stays manual.
 block('mop.druid.feral-upkeep',{
- spell('tigers-fury',5217,all(combat(),own(CAT),power('LESSTHAN',35),negate(own(106951)))),
+ spell('tigers-fury',5217,all(combat(),form(CAT),power('LESSTHAN',35),negate(own(106951)))),
  spell('incarnation',102543,own(106951)),
  spell('force-of-nature',102703,all(combat(),any({type='SPELL_CHARGES',spell=102703,operator='EQUALS',value=3},own(5217)))),
  spell('natures-vigil',124974,any(own(106951),own(5217))),
@@ -59,19 +60,19 @@ block('mop.druid.feral-upkeep',{
  spell('survival-instincts',61336,all(combat(),health('LESSTHAN',.4))),
  spell('barkskin',22812,all(combat(),health('LESSTHAN',.6))),
  off('heart-of-the-wild',108288,combat()),
-})
+},2)
 -- Both Feral premades: a short Bear arm (Might of Ursoc, off-tanking), Cat Form (Dream of Cenarius
 -- Healing Touch first before a pull), the stealth opener, then Savage Roar, Faerie Fire on elites
 -- without full Weakened Armor, and Healing Touch on Predatory Swiftness for Dream of Cenarius (or
 -- below half health).
 block('mop.druid.feral-open',{
- {id='bear',type='branch',conditions=buff(BEAR),onFalse={},onTrue={
+ {id='bear',type='branch',conditions=form(BEAR),onFalse={},onTrue={
   spell('bear-thrash',106832,negate(bleed(77758))),
   spell('bear-mangle',33917),
   spell('bear-lacerate',33745),
   spell('bear-maul',6807,power('GREATERTHANOREQUALS',60)),
   swing('bear-stop')}},
- {id='cat',type='branch',conditions=negate(buff(CAT)),onFalse={},onTrue={
+ {id='cat',type='branch',conditions=negate(form(CAT)),onFalse={},onTrue={
   spell('cat-dream',5185,all(negate(combat()),talent(17),negate(own(145152)))),
   spell('cat-form',768),
   stop('cat-stop')}},
@@ -90,7 +91,7 @@ block('mop.druid.feral-open',{
   all(talent(17),any(cp('GREATERTHANOREQUALS',4),{type='BUFF_REMAIN',unit='player',spell=69369,ownbuff=true,operator='LESSTHANOREQUALS',value=2}),
    any(negate(own(106951)),cp('EQUALS',5))),
   health('LESSTHAN',.5)))),
-})
+},2)
 -- Both Feral premades: four or more enemies on you, Thrash then Swipe.
 block('mop.druid.feral-aoe',{
  {id='aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=4},onFalse={},onTrue={
@@ -122,10 +123,10 @@ block('mop.druid.healer-upkeep',{
 -- Both Restoration premades: Cat or Bear is your choice (no heals), damage on an attackable target
 -- while soloing, then heal the friendly target (or yourself with none).
 block('mop.druid.healer-open',{
- swing('forms',any(buff(CAT),buff(BEAR))),
+ swing('forms',any(form(CAT),form(BEAR))),
  {id='hostile',type='branch',conditions={type='ATTACKABLE',unit='target'},onFalse={},onTrue={
   spell('hostile-moonfire',8921,all(negate(bleed(8921)),lives)),
   spell('hostile-wrath',5176),
   stop('hostile-stop')}},
  stop('enemy',{type='ENEMY',unit='target'}),
-})
+},2)

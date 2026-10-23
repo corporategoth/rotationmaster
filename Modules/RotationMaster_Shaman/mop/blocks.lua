@@ -48,15 +48,15 @@ assert(addon:RegisterDefaultBlock({
  {id='earth-elemental',type='spell',action=2062,ranked=false,disabled=true,conditions=all(combat(),classified('worldboss'),negate({type='TOTEM_SPELL',spell=2894}))},
 }}))
 -- Enhancement upkeep for every source: Windfury on the main hand (Flametongue before Windfury is learned),
--- Flametongue on an off-hand weapon once the main hand is done; Feral Spirit; Ascendance right after
+-- Flametongue on an off-hand weapon (read by item type) once the main hand is done; Feral Spirit; Ascendance right after
 -- Stormstrike; Elemental Mastery when Ascendance or Fire Elemental is just about ready or far away;
 -- Ancestral Swiftness for an instant spender when Maelstrom Weapon is low.
 local function sync(id)return any(negate(known(id)),{type='SPELL_COOLDOWN',spell=id,operator='LESSTHAN',value=4},{type='SPELL_COOLDOWN',spell=id,operator='GREATERTHAN',value=85})end
 assert(addon:RegisterDefaultBlock({
- id='mop.shaman.enhancement-upkeep',revision=1,families={'progression'},class='SHAMAN',steps={
+ id='mop.shaman.enhancement-upkeep',revision=2,families={'progression'},class='SHAMAN',steps={
  spell('windfury-weapon',8232,negate(imbue(283))),
  spell('flametongue-main',8024,all(negate(known(8232)),negate(imbue(5)))),
- spell('flametongue-off',8024,all({type='SWING_TIME',offhand=true,operator='GREATERTHAN',value=0},negate(imbue(5,true)),
+ spell('flametongue-off',8024,all({type='WEAPON_TYPE',slot='offhand',kind='weapon'},negate(imbue(5,true)),
   any(imbue(283),all(negate(known(8232)),imbue(5))))),
  spell('feral-spirit',51533,combat()),
  spell('ascendance',114049,all(combat(),negate(own(114051)),{type='SPELL_COOLDOWN',spell=17364,operator='GREATERTHANOREQUALS',value=3})),

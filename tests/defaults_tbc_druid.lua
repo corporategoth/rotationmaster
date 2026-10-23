@@ -4,6 +4,10 @@ local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local H=dofile('tests/fixtures/tbc_hybrid_premades.lua')
 local BAL,FER,FWH,RESTO='rm.tbc.druid.balance','rm.tbc.druid.feral.icyveins','rm.tbc.druid.feral.wowhead','rm.tbc.druid.restoration'
 local CAT,BEAR,DIRE,TRAVEL=768,5487,9634,783
+-- Forms are stances read by spell (FORM form): wear() puts the form IDs of an aura list on the modeled stance
+-- bar (s.shift) and the rest on the player as buffs, so a scenario reads as the druid's state.
+local FORMS={[CAT]=true,[BEAR]=true,[DIRE]=true,[TRAVEL]=true,[24858]=true,[33891]=true,[1066]=true,[33943]=true,[40120]=true}
+local function wear(s,list)local rest={};s.form=0;for _,x in ipairs(list)do if FORMS[x.id]then s.shift(x.id)else rest[#rest+1]=x end end;s.buffs=rest end
 local function fixture(level,talents)
  local f,s=H.new('DRUID');s.level=level or 70;s.talents=talents or {0,0,0}
  H.learn(f,s,6603,5176,8921);return f,s,f.addon
@@ -19,7 +23,7 @@ test('four sourced, localized, valid premades replace the caster-only previews',
   local r=H.row(a,id);local e=r.envelope
   assert(r.validation.valid and r.validation.supported and r.validation.resolved,id)
   assert(f.translations[r.nameKey]and f.translations[r.descriptionKey],id..' localization')
-  assert(#e.sources>0 and e.revision==1 and e.applicability.class=='DRUID'and e.applicability.maxLevel==70 and e.applicability.families[1]=='tbc')
+  assert(#e.sources>0 and e.revision==2 and e.applicability.class=='DRUID'and e.applicability.maxLevel==70 and e.applicability.families[1]=='tbc')
   assert(a:GetDefaultRotationComposition(id),id..' uses the shared Druid blocks')
  end
  for _,old in ipairs({'rm.tbc.druid.caster.starter','rm.tbc.druid.caster.starter.20-29','rm.tbc.druid.caster.starter.30-39','rm.tbc.druid.caster.starter.40-49'})do assert(not a:GetDefaultRotation(old),old)end
@@ -47,22 +51,22 @@ test('Balance at 70: Starfire pull and filler, Faerie Fire in groups, Hurricane,
  s.ttd=5;s.debuffs={};assert(H.first(f,s,BAL)==2912,'no Moonfire on a target about to die');s.ttd=nil
  s.group=true;s.debuffs={{id=8921}};assert(H.first(f,s,BAL)==770,'Faerie Fire in a group');s.debuffs={{id=8921},{id=16857,mine=false}};assert(H.first(f,s,BAL)==2912,'any Faerie Fire counts')
  s.enemies=3;assert(H.first(f,s,BAL)==16914);s.enemies=0
- s.near=true;assert(H.first(f,s,BAL)==5176,'Wrath against a target in melee');s.buffs={{id=16886}};assert(H.first(f,s,BAL)==2912,'Nature\'s Grace goes into Starfire')
- s.moving=true;s.buffs={};assert(H.first(f,s,BAL)==5570,'Insect Swarm while moving')
+ s.near=true;assert(H.first(f,s,BAL)==5176,'Wrath against a target in melee');wear(s,{{id=16886}});assert(H.first(f,s,BAL)==2912,'Nature\'s Grace goes into Starfire')
+ s.moving=true;wear(s,{});assert(H.first(f,s,BAL)==5570,'Insect Swarm while moving')
 end)
 test('Druid Stop boundaries: casts, channels and travel forms suppress Attack; Cat or Bear stops caster advice',function()
  local f,s=fixture(70,{40,0,21});fight(s)
  s.channel=true;assert(stopped(f,s,BAL,true));s.channel=nil;s.cast=true;assert(stopped(f,s,RESTO,true));s.cast=nil
- s.buffs={{id=TRAVEL}};assert(stopped(f,s,BAL,true)and stopped(f,s,FER,true))
- s.buffs={{id=CAT}};assert(stopped(f,s,BAL,false),'a Balance druid in Cat Form keeps auto-attack')
- s.buffs={};s.target={hostile=false,health=1};assert(stopped(f,s,BAL))
+ wear(s,{{id=TRAVEL}});assert(stopped(f,s,BAL,true)and stopped(f,s,FER,true))
+ wear(s,{{id=CAT}});assert(stopped(f,s,BAL,false),'a Balance druid in Cat Form keeps auto-attack')
+ wear(s,{});s.target={hostile=false,health=1};assert(stopped(f,s,BAL))
 end)
 test('Balance upkeep: Mark, Thorns while solo, Omen, Moonkin Form, Force of Nature on a long fight, Innervate',function()
  local f,s=fixture(70,{40,0,21});H.learn(f,s,24858,33831,29166,1126,467,16864)
  assert(lit(f,s,BAL)=='467,1126,16864,24858')
- s.buffs={{id=21849,mine=false},{id=467},{id=16864},{id=24858}};assert(lit(f,s,BAL)=='','Gift of the Wild covers Mark')
- s.buffs={{id=CAT}};s.group=true;assert(lit(f,s,BAL)=='1126,16864','no Moonkin reminder in Cat Form; no Thorns in a group')
- s.buffs={{id=1126},{id=16864},{id=24858}};fight(s);assert(lit(f,s,BAL)=='');s.ttd=30;assert(lit(f,s,BAL)=='33831');s.mana=0.2;assert(lit(f,s,BAL)=='29166,33831')
+ wear(s,{{id=21849,mine=false},{id=467},{id=16864},{id=24858}});assert(lit(f,s,BAL)=='','Gift of the Wild covers Mark')
+ wear(s,{{id=CAT}});s.group=true;assert(lit(f,s,BAL)=='1126,16864','no Moonkin reminder in Cat Form; no Thorns in a group')
+ wear(s,{{id=1126},{id=16864},{id=24858}});fight(s);assert(lit(f,s,BAL)=='');s.ttd=30;assert(lit(f,s,BAL)=='33831');s.mana=0.2;assert(lit(f,s,BAL)=='29166,33831')
 end)
 test('Feral in caster form shifts: Bear before Cat Form is learned, Cat after; caster filler before 10',function()
  local f,s=fixture(15,{0,5,0});fight(s);s.near=true
@@ -70,7 +74,7 @@ test('Feral in caster form shifts: Bear before Cat Form is learned, Cat after; c
  H.learn(f,s,CAT);assert(H.first(f,s,FER)==CAT)
 end)
 test('Cat: stealth openers, Faerie Fire pull, Rip on a living target, bite-weave, Mangle and positional builders',function()
- local f,s=fixture(70,{0,47,14});H.learn(f,s,unpack(CATKIT));s.buffs={{id=CAT}};s.powerType=3;s.power=60
+ local f,s=fixture(70,{0,47,14});H.learn(f,s,unpack(CATKIT));wear(s,{{id=CAT}});s.powerType=3;s.power=60
  s.stealthed=true;f.env.IsStealthed=function()return true end
  assert(H.first(f,s,FER)==9005,'Pounce from stealth');f.env.IsStealthed=function()return false end
  s.near=false;assert(H.first(f,s,FER)==16857,'Faerie Fire (Feral) pull');s.near=true
@@ -80,19 +84,19 @@ test('Cat: stealth openers, Faerie Fire pull, Rip on a living target, bite-weave
  s.combo=4;assert(H.first(f,s,FER)==1079,'Rip at four points')
  s.ttd=6;assert(H.first(f,s,FER)==5221,'no Rip on a dying target; energy above 57 shreds again');s.power=40;assert(H.first(f,s,FER)==22568,'Bite instead')
  s.ttd=nil;s.debuffs={{id=16857},{id=33878},{id=1079}};assert(H.first(f,s,FER)==22568,'bite-weave while Rip runs')
- s.buffs={{id=CAT},{id=16870}};assert(H.first(f,s,FER)==5221,'Clearcasting goes into Shred, never Bite')
- assert(H.first(f,s,FWH)==5221);s.buffs={{id=CAT}};assert(H.first(f,s,FWH)==5221,'Wowhead never bite-weaves')
+ wear(s,{{id=CAT},{id=16870}});assert(H.first(f,s,FER)==5221,'Clearcasting goes into Shred, never Bite')
+ assert(H.first(f,s,FWH)==5221);wear(s,{{id=CAT}});assert(H.first(f,s,FWH)==5221,'Wowhead never bite-weaves')
  s.ttd=6;assert(H.first(f,s,FWH)==22568,'Wowhead bites a target about to die')
  for _,id in ipairs({5221,1082,33876})do s.usable[id]=false end;s.ttd=nil;s.combo=0;assert(stopped(f,s,FER,false),'wait for energy with auto-attack')
  assert(H.step(H.body(f.addon,FER),'feral-icy-powershift').disabled==true,'powershifting is opt-in')
 end)
 test('Cat leveling: Claw before Shred and Mangle are learned, Ravage before Pounce',function()
- local f,s=fixture(30,{0,21,0});H.learn(f,s,CAT,1082,1079,5215,6785);s.buffs={{id=CAT}};s.powerType=3;s.power=60
+ local f,s=fixture(30,{0,21,0});H.learn(f,s,CAT,1082,1079,5215,6785);wear(s,{{id=CAT}});s.powerType=3;s.power=60
  f.env.IsStealthed=function()return true end;assert(H.first(f,s,FER)==6785);f.env.IsStealthed=function()return false end
  fight(s);assert(H.first(f,s,FER)==1082,'Claw from behind until Shred');s.target.targetsMe=true;assert(H.first(f,s,FER)==1082)
 end)
 test('Bear: Faerie Fire, Lacerate save, Demoralizing Roar unless Shouted, Swipe for packs, Mangle, Lacerate stacks, filler by source',function()
- local f,s=fixture(70,{0,47,14});H.learn(f,s,unpack(CATKIT));s.buffs={{id=DIRE}};s.powerType=1;s.power=40;fight(s)
+ local f,s=fixture(70,{0,47,14});H.learn(f,s,unpack(CATKIT));wear(s,{{id=DIRE}});s.powerType=1;s.power=40;fight(s)
  assert(H.first(f,s,FER)==16857);s.debuffs={{id=16857}};assert(H.first(f,s,FER)==99)
  s.debuffs={{id=16857},{id=1160,mine=false}};assert(H.first(f,s,FER)==33878,'a warrior\'s Shout replaces the Roar')
  s.enemies=3;assert(H.first(f,s,FER)==779,'Swipe for three enemies');s.enemies=0
@@ -101,29 +105,29 @@ test('Bear: Faerie Fire, Lacerate save, Demoralizing Roar unless Shouted, Swipe 
  s.debuffs[3].remain=10;assert(H.first(f,s,FER)==779 and H.first(f,s,FWH)==33745,'filler: Icy Veins Swipe, Wowhead Lacerate')
 end)
 test('Feral upkeep: Maul for spare rage, Tiger\'s Fury before a pull, Frenzied Regeneration or Innervate by source',function()
- local f,s=fixture(70,{0,47,14});H.learn(f,s,unpack(CATKIT));s.buffs={{id=1126},{id=DIRE}};s.powerType=1;s.power=60;s.group=true
+ local f,s=fixture(70,{0,47,14});H.learn(f,s,unpack(CATKIT));wear(s,{{id=1126},{id=DIRE}});s.powerType=1;s.power=60;s.group=true
  assert(lit(f,s,FER)=='');fight(s);assert(lit(f,s,FER)=='6807');s.active=6807;assert(lit(f,s,FER)=='','Maul already queued');s.active=nil
  s.health=0.3;assert(lit(f,s,FER)=='6807,22842'and lit(f,s,FWH)=='6807','Frenzied Regeneration is an Icy Veins cooldown')
- s.buffs={{id=1126},{id=CAT}};s.powerType=3;s.power=100;s.combat=false;assert(lit(f,s,FER)=='5217','Tiger\'s Fury at full energy before a pull')
+ wear(s,{{id=1126},{id=CAT}});s.powerType=3;s.power=100;s.combat=false;assert(lit(f,s,FER)=='5217','Tiger\'s Fury at full energy before a pull')
  fight(s);s.mana=0.2;assert(lit(f,s,FWH)=='29166'and lit(f,s,FER)=='','Innervate is the Wowhead variant\'s')
 end)
 test('Restoration: Swiftness, Swiftmend, rolling Lifebloom, HoTs, then Regrowth in Tree or Healing Touch',function()
  local f,s=fixture(70,{11,0,50});H.learn(f,s,774,8936,5185,33763,18562,17116,740,33891,20484,29166)
- s.target={hostile=false,health=0.9};s.buffs={{id=33891}}
+ s.target={hostile=false,health=0.9};wear(s,{{id=33891}})
  assert(H.first(f,s,RESTO)==774,'Rejuvenation out of combat');fight(s)
  assert(H.first(f,s,RESTO)==33763,'Lifebloom in combat');s.targetBuffs={{id=33763,stacks=3,remain=5}}
  assert(H.first(f,s,RESTO)==774);s.targetBuffs[1].remain=1;assert(H.first(f,s,RESTO)==33763,'roll before it blooms')
  s.targetBuffs={{id=33763,stacks=3,remain=5},{id=774}};s.target.health=0.75;assert(H.first(f,s,RESTO)==8936,'Regrowth HoT')
  s.targetBuffs={{id=33763,stacks=3,remain=5},{id=774},{id=8936}};s.target.health=0.6;assert(H.first(f,s,RESTO)==8936,'Regrowth filler in Tree')
- s.buffs={};s.target.health=0.45;assert(H.first(f,s,RESTO)==5185,'Healing Touch outside Tree')
+ wear(s,{});s.target.health=0.45;assert(H.first(f,s,RESTO)==5185,'Healing Touch outside Tree')
  s.target.health=0.3;assert(H.first(f,s,RESTO)==18562,'Swiftmend a dying target with a HoT')
- s.buffs={{id=17116}};assert(H.first(f,s,RESTO)==5185,'Nature\'s Swiftness Healing Touch')
- s.buffs={{id=33891}};s.target.health=1;assert(stopped(f,s,RESTO,true))
+ wear(s,{{id=17116}});assert(H.first(f,s,RESTO)==5185,'Nature\'s Swiftness Healing Touch')
+ wear(s,{{id=33891}});s.target.health=1;assert(stopped(f,s,RESTO,true))
  s.target={hostile=true,health=1,combat=true};assert(H.first(f,s,RESTO)==8921,'solo damage')
 end)
 test('Restoration upkeep: Tree of Life, Swiftness, Tranquility, Rebirth',function()
- local f,s=fixture(70,{11,0,50});H.learn(f,s,17116,740,33891,20484,1126);s.buffs={{id=1126}};s.target={hostile=false,health=1}
- assert(lit(f,s,RESTO)=='33891');s.buffs={{id=1126},{id=33891}};assert(lit(f,s,RESTO)=='')
+ local f,s=fixture(70,{11,0,50});H.learn(f,s,17116,740,33891,20484,1126);wear(s,{{id=1126}});s.target={hostile=false,health=1}
+ assert(lit(f,s,RESTO)=='33891');wear(s,{{id=1126},{id=33891}});assert(lit(f,s,RESTO)=='')
  fight(s);s.target.health=0.2;assert(lit(f,s,RESTO)=='17116');s.party={0.5,0.4,0.3};assert(lit(f,s,RESTO)=='740,17116')
  s.target.dead=true;s.target.health=0;s.party={};assert(lit(f,s,RESTO)=='17116,20484')
 end)

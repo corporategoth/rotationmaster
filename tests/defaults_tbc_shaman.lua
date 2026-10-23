@@ -20,7 +20,7 @@ test('six sourced, localized, valid premades replace the bounded Shaman starters
   assert(r.validation.valid and r.validation.supported and r.validation.resolved,id)
   assert(f.translations[r.nameKey]and f.translations[r.descriptionKey],id..' localization')
   assert(#e.sources>0 and e.sources[1].reviewedAt=='2026-10-23',id..' sources')
-  assert(e.revision==1 and e.applicability.class=='SHAMAN'and e.applicability.maxLevel==70 and e.applicability.actionContext=='player',id)
+  assert(e.revision==((id==ENH or id==SIM)and 2 or 1)and e.applicability.class=='SHAMAN'and e.applicability.maxLevel==70 and e.applicability.actionContext=='player',id)
   assert(e.applicability.families[1]=='tbc'and #e.applicability.families==1)
   assert(a:GetDefaultRotationComposition(id),id..' uses the shared Shaman blocks')
  end
@@ -92,7 +92,9 @@ test('Enhancement upkeep reminders stay independent of the damage priority',func
  H.learn(f,s,324);assert(lit(f,s,ENH)=='324,8017')
  s.enchant.main=true;s.buffs={{id=324}};assert(lit(f,s,ENH)=='')
  f,s=fixture(70);H.learn(f,s,unpack(ENH70));assert(lit(f,s,ENH)=='8232,24398','Windfury and Water Shield out of combat; Rockbiter is superseded')
- s.enchant.main=true;assert(lit(f,s,ENH)=='8232,24398','off hand missing once Dual Wield is learned');s.enchant.off=true
+ s.enchant.main=true;assert(lit(f,s,ENH)=='24398','Dual Wield known, a shield or nothing in the off hand');s.gear={[16]=H.GEAR.SWORD,[17]=H.GEAR.SHIELD}
+ assert(lit(f,s,ENH)=='24398','a shield takes no Windfury');s.gear[17]=H.GEAR.SWORD
+ assert(lit(f,s,ENH)=='8232,24398','an off-hand weapon without its enchant');s.enchant.off=true
  s.buffs={{id=324}};assert(lit(f,s,ENH)=='','a Lightning Shield you chose is respected')
  fight(s);assert(lit(f,s,ENH)=='8075,8835,30823','solo: Strength of Earth, Grace of Air, Shamanistic Rage')
  s.ttd=40;assert(lit(f,s,ENH)=='3599,5394,8075,8835,30823','a long fight adds Searing and Healing Stream')

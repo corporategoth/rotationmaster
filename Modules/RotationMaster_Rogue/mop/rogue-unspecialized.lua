@@ -1,5 +1,5 @@
 -- Mists of Pandaria Classic Rogue before a specialization (levels 1-9, or a rogue who has not picked one): the catch-all
--- at the lowest priority, so each spec premade wins once its own spell is known. Stealth opens with Cheap Shot solo,
+-- at the lowest priority, so each spec premade wins once a specialization is chosen. Stealth opens with Cheap Shot solo,
 -- Ambush, or Sinister Strike; out of combat Stealth; Slice and Dice from two points, Recuperate and Kidney Shot solo,
 -- Eviscerate at four points (two when the target is about to die), Sinister Strike. Built from the 5.5.4 kit (Sinister
 -- Strike 1, Eviscerate 3, Stealth 5, Ambush 6) and Warcraft Tavern's and Icy Veins' levelling advice. Shared parts:

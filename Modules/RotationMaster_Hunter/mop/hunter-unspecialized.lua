@@ -1,7 +1,7 @@
 -- Mists of Pandaria Classic Hunter before a specialization: levels 1–9, and any Hunter with no
 -- specialization chosen (Warcraft Tavern's leveling list). The lowest priority, so the Beast
--- Mastery, Marksmanship and Survival premades take over as soon as their signature spell is
--- known. Hunter's Mark and Arcane Shot to pull; Serpent Sting, Multi-Shot on three or more,
+-- Mastery, Marksmanship and Survival premades take over as soon as a specialization is
+-- chosen. Hunter's Mark and Arcane Shot to pull; Serpent Sting, Multi-Shot on three or more,
 -- Arcane Shot, Steady Shot, Auto Shot.
 local _,addon=...
 local function negate(c)return{type='NOT',value=c}end

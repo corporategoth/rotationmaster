@@ -1,4 +1,4 @@
--- Mists of Pandaria Classic Feral Druid, levels 10–90, once Tiger's Fury is known. wowsims' measured
+-- Mists of Pandaria Classic Feral Druid, levels 10–90, in the Feral specialization (103). wowsims' measured
 -- order, which Wowhead's Phase 5 list matches except for Ferocious Bite: Savage Roar never drops,
 -- Healing Touch on Predatory Swiftness at four or five combo points for Dream of Cenarius, Rip at
 -- five points (Ferocious Bite refreshes it below 25%), Bite at five points while Rip and Roar both
@@ -26,8 +26,8 @@ local roar6=any({type='BUFF_REMAIN',unit='player',spell=52610,ownbuff=true,opera
 local worth=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},
  {type='CLASSIFICATION',unit='target',value='worldboss'},{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=20})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.druid.feral',revision=1,
- blocks={['mop.druid.boundaries']=1,['mop.druid.target']=1,['mop.druid.mark']=1,['mop.druid.feral-upkeep']=1,['mop.druid.feral-open']=1,['mop.druid.feral-aoe']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.druid.feral',revision=2,
+ blocks={['mop.druid.boundaries']=2,['mop.druid.target']=1,['mop.druid.mark']=1,['mop.druid.feral-upkeep']=2,['mop.druid.feral-open']=2,['mop.druid.feral-aoe']=1},
  nameKey='Default.MoP.Druid.Feral.Name',descriptionKey='Default.MoP.Druid.Feral.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID',minLevel=10,maxLevel=90},
  tags={'feral','leveling','single-target','aoe','wowsims','wowhead'},
@@ -37,11 +37,11 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.method.gg/mop-classic/feral-druid-class-guide-mop-classic',title='Method: MoP Classic Feral Druid',reviewedAt='2026-10-23',revision='2025-07-22',notes='Bite at five points when safe.'},
   {url='https://wowtbc.gg/mop/class-guides/feral-druid/',title='wowtbc.gg: MoP Feral Druid',reviewedAt='2026-10-23'},
  },
- body={priority=30,switch=known(5217),
+ body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=103}}},
   cooldowns={
    block('feral-mark','mop.druid.mark','feral-'),
    block('feral-upkeep','mop.druid.feral-upkeep','feral-'),
-   spell('feral-berserk',106952,all(combat(),own(768),any(own(5217),all(power('GREATERTHANOREQUALS',90),{type='SPELL_COOLDOWN',spell=5217,operator='GREATERTHANOREQUALS',value=15})),worth)),
+   spell('feral-berserk',106952,all(combat(),{type='FORM',form=768},any(own(5217),all(power('GREATERTHANOREQUALS',90),{type='SPELL_COOLDOWN',spell=5217,operator='GREATERTHANOREQUALS',value=15})),worth)),
   },
   rotation={
    block('feral-boundaries','mop.druid.boundaries','feral-'),

@@ -11,8 +11,8 @@ local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
 local function rip()return{type='DEBUFF',unit='target',spell=1079,anyrank=true,owndebuff=true}end
 local function energy(op,v)return{type='POWER',unit='player',operator=op,value=v}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.druid.feral.icyveins',revision=1,
- blocks={['tbc.druid.boundaries']=1,['tbc.druid.upkeep']=1,['tbc.druid.feral-cooldowns']=1,['tbc.druid.cat-opening']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.druid.feral.icyveins',revision=2,
+ blocks={['tbc.druid.boundaries']=2,['tbc.druid.upkeep']=1,['tbc.druid.feral-cooldowns']=2,['tbc.druid.cat-opening']=1,
   ['tbc.druid.cat-builders']=1,['tbc.druid.bear-core']=1,['tbc.druid.feral-humanoid']=1},
  nameKey='Default.TBC.Druid.Feral.IcyVeins.Name',descriptionKey='Default.TBC.Druid.Feral.IcyVeins.Description',
  applicability={families={'tbc'},actionContext='player',class='DRUID',minLevel=10,maxLevel=70},
@@ -27,11 +27,11 @@ assert(addon:RegisterDefaultRotation({
   cooldowns={
    {id='feral-icy-upkeep',type='block',block='tbc.druid.upkeep',prefix='feral-icy-'},
    {id='feral-icy-cooldowns',type='block',block='tbc.druid.feral-cooldowns',prefix='feral-icy-'},
-   {id='feral-icy-frenzied-regeneration',type='spell',action=22842,ranked=false,conditions=all(any(own(5487),own(9634)),{type='COMBAT',unit='player'},{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=0.4})},
+   {id='feral-icy-frenzied-regeneration',type='spell',action=22842,ranked=false,conditions=all(any({type='FORM',form=5487},{type='FORM',form=9634}),{type='COMBAT',unit='player'},{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=0.4})},
   },
   rotation={
    {id='feral-icy-boundaries',type='block',block='tbc.druid.boundaries',prefix='feral-icy-'},
-   {id='feral-icy-cat',type='branch',conditions=own(768),onFalse={},onTrue={
+   {id='feral-icy-cat',type='branch',conditions={type='FORM',form=768},onFalse={},onTrue={
     {id='feral-icy-cat-opening',type='block',block='tbc.druid.cat-opening',prefix='feral-icy-cat-'},
     {id='feral-icy-finisher',type='branch',conditions={type='POINT',unit='player',operator='GREATERTHANOREQUALS',value=4},onFalse={},onTrue={
      {id='feral-icy-rip',type='spell',action=1079,ranked=false,conditions=all(negate(rip()),negate({type='TT_HEALTH',unit='target',health=0,operator='LESSTHAN',value=10}))},
@@ -41,7 +41,7 @@ assert(addon:RegisterDefaultRotation({
     {id='feral-icy-powershift',type='spell',action=768,ranked=false,disabled=true,conditions=all({type='GROUP'},energy('LESSTHANOREQUALS',22),negate(own(16870)),{type='MANAPCT',unit='player',operator='GREATERTHANOREQUALS',value=0.1})},
     {id='feral-icy-wait',type='none',conditions={}},
    }},
-   {id='feral-icy-bear',type='branch',conditions=any(own(5487),own(9634)),onFalse={},onTrue={
+   {id='feral-icy-bear',type='branch',conditions=any({type='FORM',form=5487},{type='FORM',form=9634}),onFalse={},onTrue={
     {id='feral-icy-bear-core',type='block',block='tbc.druid.bear-core',prefix='feral-icy-bear-'},
     {id='feral-icy-lacerate',type='spell',action=33745,ranked=false,conditions=negate({type='DEBUFF_STACKS',unit='target',spell=33745,owndebuff=true,operator='GREATERTHANOREQUALS',value=5})},
     {id='feral-icy-swipe',type='spell',action=779,ranked=false,conditions={}},

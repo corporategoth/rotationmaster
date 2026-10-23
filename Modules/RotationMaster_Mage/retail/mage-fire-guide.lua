@@ -1,5 +1,5 @@
 -- Retail (Midnight 12.x) Fire Mage after SimulationCraft, Icy Veins and Wowhead (optimal reference):
--- Combustion as a hard cast finishes; Fire Blast while casting to turn Heating Up into Hot Streak;
+-- Combustion as a Fire hard cast finishes; Fire Blast while hard-casting to turn Heating Up into Hot Streak;
 -- Pyroblast (Flamestrike on four or more) on Hyperthermia, Meteor, then Hot Streak, Fire Blast on
 -- Heating Up inside Combustion, Pyroclasm, Scorch on Heat Shimmer or on the move, Fire Blast on
 -- Heating Up, Frostfire Bolt or Fireball. Disabled: Hot Streak, Heating Up, Pyroclasm and Fire Blast
@@ -13,6 +13,10 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local heating,combustion=buff(48107),buff(190319)
+-- A Fire hard cast in progress (Fireball, Frostfire Bolt, Pyroblast, Flamestrike), read by spell, so a
+-- mount, Hearthstone or Polymorph cast is not one.
+local hardcast={type='OR',value={{type='CASTING_SPELL',unit='player',spell=133},{type='CASTING_SPELL',unit='player',spell=431044},
+ {type='CASTING_SPELL',unit='player',spell=11366},{type='CASTING_SPELL',unit='player',spell=2120}}}
 -- One priority, written for a spender: Pyroblast on one to three enemies, Flamestrike on four or more.
 local function priority(p,spender)return{
  spell(p..'hyperthermia',spender,buff(383874)),
@@ -24,7 +28,7 @@ local function priority(p,spender)return{
  spell(p..'moving-scorch',2948,{type='MOVING'}),
  spell(p..'fire-blast',108853,heating)}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.mage.fire.guide',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.mage.fire.guide',revision=2,
  blocks={['retail.mage.boundaries']=1,['retail.mage.utility']=1},
  nameKey='Default.Retail.Mage.FireGuide.Name',descriptionKey='Default.Retail.Mage.FireGuide.Description',
  applicability={families={'retail'},actionContext='player',class='MAGE',specs={63},minLevel=10,maxLevel=90},
@@ -38,10 +42,10 @@ assert(addon:RegisterDefaultRotation({
   cooldowns={
    block('fguide-utility','retail.mage.utility','fguide-'),
    spell('fguide-barrier',235313,all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.5})),
-   spell('fguide-combustion',190319,all(combat(),{type='CASTING_REMAIN',unit='player',operator='LESSTHAN',value=1})),
+   spell('fguide-combustion',190319,all(combat(),hardcast,{type='CASTING_REMAIN',unit='player',operator='LESSTHAN',value=1})),
   },
   rotation={
-   spell('fguide-casting-fire-blast',108853,all({type='CASTING',unit='player'},heating)),
+   spell('fguide-casting-fire-blast',108853,all(hardcast,heating)),
    block('fguide-boundaries','retail.mage.boundaries','fguide-'),
    {id='fguide-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={spell('fguide-pull-pyroblast',11366),stop('fguide-pull-stop')}},
    {id='fguide-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=4},

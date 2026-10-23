@@ -6,14 +6,13 @@
 local _,addon=...
 local function any(...)return{type='OR',value={...}}end
 local function buff(id)return{type='BUFF',unit='player',spell=id}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
 local function rp(op,v)return{type='POWER',unit='player',operator=op,value=v}end
 local function rune(kind,n)return{type='RUNE',rune=kind,operator='EQUALS',value=n}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.deathknight.frost',revision=1,
- blocks={['mop.deathknight.boundaries']=1,['mop.deathknight.upkeep']=1,['mop.deathknight.frost-upkeep']=1,['mop.deathknight.frost-open']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.deathknight.frost',revision=2,
+ blocks={['mop.deathknight.boundaries']=1,['mop.deathknight.upkeep']=1,['mop.deathknight.frost-upkeep']=2,['mop.deathknight.frost-open']=1,
   ['mop.deathknight.frost-tail']=1,['mop.deathknight.survival']=1,['mop.deathknight.spread']=1},
  nameKey='Default.MoP.DeathKnight.Frost.Name',descriptionKey='Default.MoP.DeathKnight.Frost.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DEATHKNIGHT',minLevel=55,maxLevel=90},
@@ -24,7 +23,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.warcrafttavern.com/mop/guides/death-knight-leveling-guide/',title='Warcraft Tavern: MoP Death Knight leveling',reviewedAt='2026-10-23',notes='Two-handers while leveling; Obliterate on Killing Machine.'},
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/frost-death-knight-leveling',title='Icy Veins: MoP Classic Frost Death Knight leveling',reviewedAt='2026-10-23',revision='2025-09-23',notes='Shared opening: Pillar, diseases, Death Strike at low health.'},
  },
- body={priority=20,switch=known(49184),
+ body={priority=20,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=251}}},
   cooldowns={
    block('frost-upkeep','mop.deathknight.frost-upkeep','frost-'),
    block('frost-class','mop.deathknight.upkeep','frost-'),
