@@ -148,6 +148,56 @@ addon:RegisterCondition("CASTING_REMAIN", {
     end
 })
 
+-- Share of the cast done (0..1, shown as a percentage), from the same cached
+-- observation as CASTING_REMAIN: haste-proof, so a tick threshold is N/K.
+if addon.Artwork and addon.Artwork.condition and addon.Artwork.condition["CASTING_PROGRESS"] == nil then
+    addon.Artwork.condition["CASTING_PROGRESS"] = addon.Artwork.condition["CASTING_REMAIN"]
+end
+addon:RegisterCondition("CASTING_PROGRESS", {
+    description = L["Cast Progress"],
+    icon = addon.Artwork.condition["CASTING_PROGRESS"],
+    fields = { unit = "string", operator = "string", value = "number" },
+    valid = function(_, value)
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
+                value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
+                value.value ~= nil and value.value >= 0 and value.value <= 1)
+    end,
+    evaluate = function(value, cache)
+        local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitCastObservation,addon.Platform,value.unit,"cast")
+        if not record then return nil,reason end
+        if not record.active then return false end
+        if record.remainingSeconds==nil then return nil,record.remainingReason end
+        if record.durationSeconds==nil then return nil,record.durationReason end
+        local done=1-record.remainingSeconds/record.durationSeconds
+        if done<0 then done=0 end
+        return Functions.values.compare(value.operator,done,value.value)
+    end,
+    print = function(_, value)
+        local v = value.value
+        if v ~= nil then v = v * 100 end
+        return Functions.presentation.compareString(value.operator, string.format(L["%s cast progress"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(v) .. "%")
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+
+        local unit = addon:Widget_UnitWidget(value, addon.units,
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(unit)
+
+        local operator_group = addon:Widget_OperatorPercentWidget(value, L["Progress"],
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(operator_group)
+    end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+        frame:AddChild(helpers.Gap())
+        addon.layout_condition_operatorpercentwidget_help(frame, L["Cast Progress"], L["Progress"],
+            (L["How much of the current cast of {unit} is done, from 0% when it starts to 100% when it completes. It follows haste and pushback, because it is measured against the cast's own start and end. If the unit is not casting, this condition is not successful, whatever the operator; if the cast's times cannot be read, it is unavailable, including under NOT."]:gsub("{unit}", color.BLIZ_YELLOW .. L["Unit"] .. color.RESET)))
+    end
+})
+
 addon:RegisterCondition("CAST_INTERRUPTABLE", {
     description = L["Cast Interruptable"],
     icon = addon.Artwork.condition["CAST_INTERRUPTABLE"],

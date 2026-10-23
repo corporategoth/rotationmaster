@@ -15,6 +15,14 @@ local function remainingSeconds(ending)
     if not finite(now) or now<0 then return nil,'invalid-api-result' end
     return math.max(0,ending/1000-now)
 end
+-- Full length of the cast, from its own start and end; with the remaining
+-- seconds it gives the share done without a second clock read.
+local function durationSeconds(starting,ending)
+    if not platform:CanReadValue(starting) or not platform:CanReadValue(ending) then return nil,'restricted-value' end
+    if starting==nil or ending==nil then return nil,'cast-time-unavailable' end
+    if not finite(starting) or not finite(ending) or starting<0 or ending<=starting then return nil,'invalid-api-result' end
+    return (ending-starting)/1000
+end
 local function spellIdentity(id)
     if not platform:CanReadValue(id) then return nil,'restricted-value' end
     if id==nil then return nil,'cast-spell-unavailable' end
@@ -28,9 +36,9 @@ local function interruptibility(flag)
     return not flag
 end
 
--- The timestamp/flag/spell ID fields are independent observations. A readable
--- name can still establish presence when the timer, interruptibility or spell
--- ID is unavailable.
+-- The timestamp/duration/flag/spell ID fields are independent observations.
+-- A readable name can still establish presence when the timer, duration,
+-- interruptibility or spell ID is unavailable.
 function platform:GetUnitCastObservation(unit,kind)
     if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(kind) then return nil,'restricted-value' end
@@ -57,6 +65,7 @@ function platform:GetUnitCastObservation(unit,kind)
     if type(name)~='string' or name=='' then return nil,'invalid-api-result' end
     local record={active=true,name=name}
     record.remainingSeconds,record.remainingReason=remainingSeconds(tuple[5])
+    record.durationSeconds,record.durationReason=durationSeconds(tuple[4],tuple[5])
     record.interruptible,record.interruptibleReason=interruptibility(tuple[kind=='cast' and 8 or 7])
     record.spellID,record.spellReason=spellIdentity(tuple[kind=='cast' and 9 or 8])
     return record
@@ -66,6 +75,7 @@ end
 do
     local function sourceGetter(name)
         if name=="Platform_GetUnitCastObservation" then return addon.Platform.GetUnitCastObservation end
+        if name=="durationSeconds" then return durationSeconds end
         if name=="finite" then return finite end
         if name=="interruptibility" then return interruptibility end
         if name=="platform" then return platform end

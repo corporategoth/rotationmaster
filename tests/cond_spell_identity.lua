@@ -10,11 +10,11 @@ local ranks={[15407]='Rank 1',[17311]='Rank 2',[465]='Rank 1',[10293]='Rank 7'}
 
 local function fixture(project,class)
  local f=F.new(project or 2,nil,class or 'PRIEST');local a,e=f.addon,f.env
- local s={names=english,exists=true,cast=nil,castID=nil,channel=nil,channelID=nil,ending=103000,flag=false,form=0,bar={},formID=nil,calls={}}
+ local s={names=english,exists=true,cast=nil,castID=nil,channel=nil,channelID=nil,start=99000,ending=103000,now=100,flag=false,form=0,bar={},formID=nil,calls={}}
  local function call(key) s.calls[key]=(s.calls[key] or 0)+1;if s.throw==key then error('native '..key..' failed') end end
- e.UnitExists=function() call('exists');return s.exists end;e.GetTime=function() return 100 end
- e.UnitCastingInfo=function() call('cast');if s.cast==nil then return nil end;return s.cast,'display',1,99000,s.ending,false,'cast-guid',s.flag,s.castID end
- e.UnitChannelInfo=function() call('channel');if s.channel==nil then return nil end;return s.channel,'display',1,99000,s.ending,false,s.flag,s.channelID,false,0 end
+ e.UnitExists=function() call('exists');return s.exists end;e.GetTime=function() return s.now end
+ e.UnitCastingInfo=function() call('cast');if s.cast==nil then return nil end;return s.cast,'display',1,s.start,s.ending,false,'cast-guid',s.flag,s.castID end
+ e.UnitChannelInfo=function() call('channel');if s.channel==nil then return nil end;return s.channel,'display',1,s.start,s.ending,false,s.flag,s.channelID,false,0 end
  e.GetShapeshiftForm=function() call('form');return s.form end
  e.GetNumShapeshiftForms=function() return #s.bar end
  e.GetShapeshiftFormInfo=function(i) call('info');local id=s.bar[i];return 900+i,i==s.form,true,id end
@@ -195,5 +195,62 @@ test('editor keeps a saved slot selectable and shows a saved spell it does not l
  local _,a,s=fixture(2,'WARRIOR');s.bar={2457,71};local v={type='FORM',value=2};local _,dropdown,parent=mount(a,v)
  assert(dropdown:GetValue()=='2' and dropdown.list['2']=='Stance bar slot 2 (Defensive Stance)');choose(dropdown,'spell:71');assert(v.form==71 and v.value==nil);parent:Release()
  local w={type='FORM',form=99999};local _,d,p=mount(a,w);assert(d:GetValue()=='spell:99999' and d.list['spell:99999']:find('99999',1,true));p:Release()
+end)
+-- Cast and channel progress -------------------------------------------------
+test('cast observation carries the full duration from start and end, with independent reasons',function()
+ local _,a,s=fixture();s.channel='Mind Flay';s.start,s.ending=99000,102000
+ local r=a.Platform:GetUnitCastObservation('player','channel');assert(r.durationSeconds==3 and r.remainingSeconds==2 and not r.durationReason)
+ s.start=s.opaque;r=a.Platform:GetUnitCastObservation('player','channel');assert(r.active and r.durationSeconds==nil and r.durationReason=='restricted-value' and r.remainingSeconds==2)
+ s.start=nil;r=a.Platform:GetUnitCastObservation('player','channel');assert(r.durationReason=='cast-time-unavailable')
+ for _,bad in ipairs({102000,103000,-1,'99000',0/0,math.huge}) do s.start=bad;r=a.Platform:GetUnitCastObservation('player','channel');assert(r.durationReason=='invalid-api-result',tostring(bad)) end
+end)
+test('channel progress is the share done, so a tick threshold N/K holds at any haste',function()
+ local _,a,s=fixture();s.channel,s.channelID='Mind Flay',15407
+ local function at(start,ending,now) s.start,s.ending,s.now=start,ending,now end
+ local secondTick={type='CHANNELING_PROGRESS',unit='player',operator='GREATERTHANOREQUALS',value=0.66}
+ at(99000,102000,100);expect(a,secondTick,'no-match','after one tick of three')
+ at(99000,102000,101.05);expect(a,secondTick,'match','after two ticks of three')
+ at(99000,101400,100.2);expect(a,secondTick,'no-match','hasted, after one tick')
+ at(99000,101400,100.65);expect(a,secondTick,'match','hasted, after two ticks')
+ at(99000,102000,103);expect(a,{type='CHANNELING_PROGRESS',unit='player',operator='EQUALS',value=1},'match','ended channel is all done')
+ at(99500,102000,99);expect(a,{type='CHANNELING_PROGRESS',unit='player',operator='EQUALS',value=0},'match','clock before start clamps to none done')
+ s.channel=nil;expect(a,secondTick,'no-match','not channeling')
+end)
+test('cast progress is the casting counterpart on the same observation',function()
+ local _,a,s=fixture();s.cast,s.castID='Frostbolt',116;s.start,s.ending,s.now=99000,101500,100.5
+ expect(a,{type='CASTING_PROGRESS',unit='target',operator='GREATERTHAN',value=0.5},'match')
+ expect(a,{type='CASTING_PROGRESS',unit='target',operator='GREATERTHAN',value=0.7},'no-match')
+ expect(a,{type='CHANNELING_PROGRESS',unit='target',operator='GREATERTHAN',value=0},'no-match','a cast is not a channel')
+end)
+test('progress is unavailable when the times cannot be read, including under NOT and in branches',function()
+ for _,field in ipairs({'start','ending'}) do local _,a,s=fixture();s.channel='Mind Flay';s[field]=s.opaque
+  local v={type='CHANNELING_PROGRESS',unit='player',operator='LESSTHAN',value=0.5};expect(a,v,'unavailable',field)
+  local chosen,result=branch(a,v);assert(chosen==nil and result.status=='unavailable')
+ end
+ for _,project in ipairs({1,18}) do local _,b,t=fixture(project);t.channel='Mind Flay';expect(b,{type='CHANNELING_PROGRESS',unit='player',operator='LESSTHAN',value=0.5},'unavailable','restricted client '..project);assert(not t.calls.channel) end
+end)
+test('clip after the second tick reads the channel once',function()
+ local _,a,s=fixture();s.channel,s.channelID='Mind Flay',17311;s.start,s.ending,s.now=99000,102000,101.1
+ local clip={type='AND',value={{type='CHANNELING_SPELL',unit='player',spell=15407},{type='CHANNELING_PROGRESS',unit='player',operator='GREATERTHANOREQUALS',value=0.66}}}
+ assert(status(a,clip)=='match' and s.calls.channel==1)
+end)
+test('progress validation, summaries and compiled copies',function()
+ local _,a,s=fixture();s.channel='Mind Flay';s.start,s.ending,s.now=99000,102000,101.1
+ for _,tag in ipairs({'CASTING_PROGRESS','CHANNELING_PROGRESS'}) do local d=a.conditionDefinitions[tag]
+  assert(d.valid(0,{unit='player',operator='LESSTHAN',value=0}) and d.valid(0,{unit='target',operator='GREATERTHAN',value=1}))
+  assert(not d.valid(0,{unit='player',operator='LESSTHAN',value=1.5}) and not d.valid(0,{unit='player',operator='LESSTHAN',value=-0.1}) and not d.valid(0,{unit='player',operator='NOPE',value=.5}) and not d.valid(0,{unit='player',operator='LESSTHAN'}))
+  a:RegisterCondition('COPY_'..tag,assert(a:CompileCustomCondition('COPY_'..tag,assert(a:GetBuiltinConditionSource(tag)))))
+  local v={type=tag,unit='player',operator='GREATERTHANOREQUALS',value=.66};assert(status(a,v)==status(a,{type='COPY_'..tag,unit='player',operator='GREATERTHANOREQUALS',value=.66}))
+ end
+ local text=a:printCondition({type='CHANNELING_PROGRESS',unit='player',operator='GREATERTHANOREQUALS',value=.66},7);assert(text:find('channel progress',1,true) and text:find('66%',1,true),text)
+end)
+test('existing profiles receive the progress conditions once, removals stay, defaults list them',function()
+ local _,a=fixture();local combat={id='b3d7df2c-f257-4a2d-961e-66e49336d109',conditions={'CASTING'}};local db={profile={condition_groups={{id='other',conditions={}},combat}}}
+ a:InitializeCastProgressConditions(nil,db);assert(db.profile.castProgressConditionsSeeded and table.concat(combat.conditions,',')=='CASTING,CASTING_PROGRESS,CHANNELING_PROGRESS' and #db.profile.condition_groups[1].conditions==0)
+ table.remove(combat.conditions);a:InitializeCastProgressConditions(nil,db);assert(#combat.conditions==2,'a removed seed came back')
+ local malformed={profile={}};a:InitializeCastProgressConditions(nil,malformed);assert(malformed.profile.castProgressConditionsSeeded)
+ local f2,b=fixture();f2.load('Core/profile_data.lua');assert(b:ValidateProfileTransfer({castProgressConditionsSeeded=true}) and not b:ValidateProfileTransfer({castProgressConditionsSeeded='yes'}))
+ local h=assert(io.open('init.lua'));local init=h:read('*a');h:close()
+ assert(init:find('"CASTING_REMAIN", "CASTING_PROGRESS"',1,true) and init:find('"CHANNELING_REMAIN", "CHANNELING_PROGRESS"',1,true) and init:find('InstallCastProgressConditions',1,true))
 end)
 finish()

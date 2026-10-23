@@ -148,6 +148,56 @@ addon:RegisterCondition("CHANNELING_REMAIN", {
     end
 })
 
+-- Share of the channel done (0..1, shown as a percentage), from the same cached
+-- observation as CHANNELING_REMAIN: haste-proof, so a tick threshold is N/K.
+if addon.Artwork and addon.Artwork.condition and addon.Artwork.condition["CHANNELING_PROGRESS"] == nil then
+    addon.Artwork.condition["CHANNELING_PROGRESS"] = addon.Artwork.condition["CHANNELING_REMAIN"]
+end
+addon:RegisterCondition("CHANNELING_PROGRESS", {
+    description = L["Channel Progress"],
+    icon = addon.Artwork.condition["CHANNELING_PROGRESS"],
+    fields = { unit = "string", operator = "string", value = "number" },
+    valid = function(_, value)
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
+                value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
+                value.value ~= nil and value.value >= 0 and value.value <= 1)
+    end,
+    evaluate = function(value, cache)
+        local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitCastObservation,addon.Platform,value.unit,"channel")
+        if not record then return nil,reason end
+        if not record.active then return false end
+        if record.remainingSeconds==nil then return nil,record.remainingReason end
+        if record.durationSeconds==nil then return nil,record.durationReason end
+        local done=1-record.remainingSeconds/record.durationSeconds
+        if done<0 then done=0 end
+        return Functions.values.compare(value.operator,done,value.value)
+    end,
+    print = function(_, value)
+        local v = value.value
+        if v ~= nil then v = v * 100 end
+        return Functions.presentation.compareString(value.operator, string.format(L["%s channel progress"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(v) .. "%")
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+
+        local unit = addon:Widget_UnitWidget(value, addon.units,
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(unit)
+
+        local operator_group = addon:Widget_OperatorPercentWidget(value, L["Progress"],
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(operator_group)
+    end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+        frame:AddChild(helpers.Gap())
+        addon.layout_condition_operatorpercentwidget_help(frame, L["Channel Progress"], L["Progress"],
+            (L["How much of the current channel of {unit} is done, from 0% when it starts to 100% when it ends. Ticks are evenly spaced through a channel, so tick N of a K-tick channel lands at N/K whatever your haste: to clip Mind Flay (3 ticks) after its second tick, use at least 66%. Pushback shortens a channel and the progress follows it. If the unit is not channeling, this condition is not successful, whatever the operator; if the channel's times cannot be read, it is unavailable, including under NOT."]:gsub("{unit}", color.BLIZ_YELLOW .. L["Unit"] .. color.RESET)))
+    end
+})
+
 addon:RegisterCondition("CHANNEL_INTERRUPTABLE", {
     description = L["Channel Interruptable"],
     icon = addon.Artwork.condition["CHANNEL_INTERRUPTABLE"],
@@ -178,6 +228,33 @@ addon:RegisterCondition("CHANNEL_INTERRUPTABLE", {
         addon.layout_condition_unitwidget_help(frame)
     end
 })
+
+-- Cold, one-time seed for profiles created before the progress conditions
+-- existed: add them to the Combat category once. Removing them later stays
+-- saved; new and reset profiles get them from the packaged defaults.
+local combatCategory="b3d7df2c-f257-4a2d-961e-66e49336d109"
+function addon:InitializeCastProgressConditions(_, db)
+    local profile = db and db.profile
+    if type(profile) ~= "table" or profile.castProgressConditionsSeeded then return end
+    for _, category in ipairs(type(profile.condition_groups) == "table" and profile.condition_groups or {}) do
+        if type(category) == "table" and category.id == combatCategory and type(category.conditions) == "table" then
+            for _, tag in ipairs({"CASTING_PROGRESS", "CHANNELING_PROGRESS"}) do
+                local found = false
+                for _, existing in ipairs(category.conditions) do if existing == tag then found = true;break end end
+                if not found then category.conditions[#category.conditions + 1] = tag end
+            end
+        end
+    end
+    profile.castProgressConditionsSeeded = true
+end
+local seedOwner = {}
+function addon:InstallCastProgressConditions(db)
+    if type(db) ~= "table" or type(db.RegisterCallback) ~= "function" then return end
+    for _, event in ipairs({"OnNewProfile", "OnProfileReset", "OnProfileChanged", "OnProfileCopied"}) do
+        db.RegisterCallback(seedOwner, event, function(_, currentDB) addon:InitializeCastProgressConditions(nil, currentDB) end)
+    end
+    self:InitializeCastProgressConditions(nil, db)
+end
 
 -- Source-owned volatile observations; only configuration-only validators memoize.
 if addon.DeclareOwnedConditionRuntime then
