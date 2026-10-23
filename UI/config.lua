@@ -121,9 +121,12 @@ local function newShell()
     shell.version:SetText(version)
     shell.edition=text(window);shell.edition:SetPoint("TOPRIGHT",-62,-23);shell.edition:SetJustifyH("RIGHT");shell.edition:SetWordWrap(false);shell.edition:SetWidth(230)
     shell.edition:SetText(edition..(client.version and " "..client.version or ""))
-    local paneHeader=addon:TrackWorkbenchSize(CreateFrame('Frame',nil,window));shell.paneHeader=paneHeader
-    shell.pageHelp=addon:CreateWorkbenchHelpButton(paneHeader,L['Help']);shell.pageHelp:SetPoint('TOPRIGHT',-2,-2);shell.pageHelp:SetSize(20,20);shell.pageHelp.icon:SetSize(18,18)
     local content=addon:TrackWorkbenchSize(CreateFrame("Frame",nil,window));shell.content=content;content:EnableMouse(true)
+    -- The page "?" sits in the top-right corner of the content, on the page's
+    -- first row; panes leave that corner free (content.rmHelpReserve).
+    content.rmHelpReserve=addon.WorkbenchLayout.helpReserve
+    local paneHeader=addon:TrackWorkbenchSize(CreateFrame('Frame',nil,window));shell.paneHeader=paneHeader
+    shell.pageHelp=addon:CreateWorkbenchHelpButton(paneHeader,L['Help']);shell.pageHelp:SetPoint('TOPRIGHT',0,0);shell.pageHelp:SetSize(20,20);shell.pageHelp.icon:SetSize(18,18)
     addon:SetUIScript(content,"OnMouseDown",function(_,button)
         if button=="RightButton" and not shell.rightDown and contentHasFocus(content) then shell:Hide() end
     end)
@@ -228,8 +231,10 @@ local function newShell()
         addon:SetUIScript(self.pageHelp,'OnClick',addon:GuardWorkbenchHelp(current,function()self:ShowHelp(key,current)end))
         addon:BindWorkbenchHelp(self.pageHelp,{brief=L['Help.Brief.page'],valid=current})
         local existing=pane.fields and pane.fields.announce_help
-        if existing and existing:IsShown()then self.pageHelp:Hide();self.paneHeader:Hide();self.paneHeaderHeight=0
-        else self.pageHelp:Show();self.paneHeader:Show();self.paneHeaderHeight=24 end
+        -- The page "?" shares the first row; it never adds header height.
+        self.paneHeaderHeight=0
+        if existing and existing:IsShown()then self.pageHelp:Hide();self.paneHeader:Hide()
+        else self.pageHelp:Show();self.paneHeader:Show() end
         self:Layout()
     end
     function shell:ReleasePane()
@@ -254,9 +259,10 @@ local function newShell()
             x=x+tabWidth+2
         end
         local top=-y+28
-        paneHeader:ClearAllPoints();paneHeader:SetPoint('TOPLEFT',window,'TOPLEFT',12,-top);paneHeader:SetSize(math.max(1,width-24),math.max(1,self.paneHeaderHeight or 24))
-        content:ClearAllPoints();content:SetPoint("TOPLEFT",window,"TOPLEFT",12,-top-(self.paneHeaderHeight or 24))
-        local contentWidth,contentHeight=math.max(1,width-24),math.max(1,height-top-28-(self.paneHeaderHeight or 24))
+        content:ClearAllPoints();content:SetPoint("TOPLEFT",window,"TOPLEFT",12,-top)
+        local contentWidth,contentHeight=math.max(1,width-24),math.max(1,height-top-28)
+        paneHeader:ClearAllPoints();paneHeader:SetPoint('TOPRIGHT',content,'TOPRIGHT',0,0);paneHeader:SetSize(20,20)
+        paneHeader:SetFrameLevel(content:GetFrameLevel()+50)
         content:SetSize(contentWidth,contentHeight)
         -- Status text ends before the centred footer links.
         self.status:SetWidth(math.max(1,width/2-(self.footerLinksWidth or 0)/2-174-8))

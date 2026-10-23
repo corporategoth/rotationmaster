@@ -184,7 +184,7 @@ function addon:InstallSettingsLayout(p)
         if r.footerActions then local width=(side-6)/2;for i,button in ipairs(r.actionButtons) do button:ClearAllPoints();button:SetPoint('BOTTOMLEFT',((i-1)%2)*(width+6),(r.footerManage and 30 or 0)+(math.ceil(#r.footerActions/2)-1-math.floor((i-1)/2))*28);button:SetWidth(width);addon:AlignWorkbenchTextLeft(button,24) end end
         local top=filterTop+(r.options.categories and 32 or 4);r.scroll:ClearAllPoints();r.scroll:SetPoint('TOPLEFT',0,-top);r.scroll:SetHeight(math.max(1,sidebarHeight-top-footerHeight))
         r.scroll:SetWorkbenchColumnWidth(side);r.child:SetWidth(r.scroll:GetWidth());r.empty:SetWidth(math.max(1,r.child:GetWidth()-12));r.splitter:Place(geometry)
-        self.scroll:ClearAllPoints();self.scroll:SetPoint('TOPLEFT',geometry.detailX,0);self.scroll:SetSize(geometry.detailWidth-18,height);self.message:SetWidth(math.max(1,self.frame:GetWidth()-(self.creationUsed and 340 or 20)))
+        self.scroll:ClearAllPoints();self.scroll:SetPoint('TOPLEFT',geometry.detailX,0);self.scroll:SetSize(geometry.detailWidth-math.max(18,addon:GetWorkbenchHelpReserve(self.frame)),height);addon:ReserveWorkbenchHelpCorner(self.frame,self.scroll,0);self.message:SetWidth(math.max(1,self.frame:GetWidth()-(self.creationUsed and 340 or 20)))
         self:RefreshRosterViewport()
     end
     -- A divider drag changes the detail width without resizing the page, so

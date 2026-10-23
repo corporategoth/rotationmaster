@@ -264,8 +264,9 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     function pane:LayoutGeometry()
         if not self.ready then return end
         local width,height=self.frame:GetWidth(),self.frame:GetHeight();local x,y=8,34
-        self.name:ClearAllPoints();self.name:SetPoint('TOPLEFT',86,-4);self.name:SetWidth(math.max(100,width-94-self.info:GetWidth()-8))
-        self.info:ClearAllPoints();self.info:SetPoint('TOPRIGHT',self.frame,'TOPRIGHT',-8,-4)
+        local reserve=addon:GetWorkbenchHelpReserve(self.frame)
+        self.name:ClearAllPoints();self.name:SetPoint('TOPLEFT',86,-4);self.name:SetWidth(math.max(100,width-94-self.info:GetWidth()-8-reserve))
+        self.info:ClearAllPoints();self.info:SetPoint('TOPRIGHT',self.frame,'TOPRIGHT',-8-reserve,-4)
         for _,control in ipairs(self.tools) do
                 if x+control:GetWidth()>width-112 then x=8;y=y+24 end
             control:ClearAllPoints();control:SetPoint('TOPLEFT',self.frame,'TOPLEFT',x,-y);x=x+control:GetWidth()+4

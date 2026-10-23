@@ -184,10 +184,15 @@ for _,key in ipairs({'General','Effects','ItemSets','Announces','Profiles','Cond
             layout.userResize(shell.frame,size[1],size[2]);layout.settle()
             local content=size[1]-24;local p=shell.pane
             assert(shell.content:GetWidth()==content and p.frame:GetWidth()==content,key..' pane did not follow the window to '..size[1])
-            if p.roster then assert(p.width==p.scroll:GetWidth() and p.scroll.point[2]+p.scroll:GetWidth()+18==content,key..' detail did not follow the window')
+            if p.roster then assert(p.width==p.scroll:GetWidth() and p.scroll.point[2]+p.scroll:GetWidth()+math.max(18,shell.content.rmHelpReserve)==content,key..' detail did not follow the window')
             elseif p.columnMode or p.fullWidth then assert(p.fullWidth==math.max(340,content-40),key..' columns did not follow the window')
             else assert(p.width==math.max(340,content-40),key..' form did not follow the window') end
             audit.assertContained(shell.frame,frames,key..' at '..size[1],{captions=true})
+            -- The page "?" shares the first row: content starts right under the tabs
+            -- and nothing drawn on that row reaches under the "?".
+            local help=shell.pageHelp;local box=audit.resolver(shell.frame)(help)
+            assert(shell.paneHeaderHeight==0 and box.top==audit.resolver(shell.frame)(shell.content).top,key..' page Help takes its own row')
+            audit.assertCornerFree(shell.frame,frames,box,key..' first row runs under the page Help at '..size[1],function(frame) return frame==help or frame.parent==help end)
         end
         local p=shell.pane
         if p.roster then
@@ -203,7 +208,7 @@ local function browserScene(f,width)
     a.db.profile.rotations[0].one.rotation={{id='s1',type='spell',action=403,ranked=true,conditions={}},{id='s2',type='item',action={1,2},conditions={}},
         {id='b1',type='branch',conditions={},onTrue={{id='s3',type='spell',action=403,conditions={}}},onFalse={}}}
     a.db.profile.rotations[0].one.cooldowns={{id='c1',type='spell',action=403,conditions={}},{id='c2',type='spell',action=403,conditions={}}}
-    local host=a:TrackWorkbenchSize(layout.create('Frame'));host:SetSize(width,640);layout.settle()
+    local host=a:TrackWorkbenchSize(layout.create('Frame'));host.rmHelpReserve=a.WorkbenchLayout.helpReserve;host:SetSize(width,640);layout.settle()
     local browser=a:CreateRotationBrowser(host,{spec=0,id='one'});layout.settle()
     for _,id in ipairs({'s1','s2','b1','s3','c1','c2'}) do browser.pane.view.cardStates[id]='expanded' end
     browser.pane:Render();layout.settle();return browser
@@ -213,6 +218,7 @@ local function assertEditor(browser,frames,message)
     assert(pane.frame:GetWidth()==browser.detail:GetWidth() and pane.canvas.frame:GetWidth()==pane.frame:GetWidth()-40,message..': editor did not follow its pane')
     assert(pane.view.viewportWidth==pane.canvas.frame:GetWidth(),message..': cards were laid out for a stale viewport')
     audit.assertContained(browser.frame,frames,message,{captions=true,container=function(frame) return cards[frame] end,horizontalScroll={[pane.canvas.frame]=true}})
+    local w=browser.frame:GetWidth();audit.assertCornerFree(browser.frame,frames,{left=w-20,right=w,top=0,bottom=-20},message..': editor runs under the page Help corner')
 end
 
 test('the rotation editor reflows live and list or grid cards fill the canvas',function()
@@ -250,15 +256,16 @@ test('inline function and condition editors follow window and divider changes wi
             local source=a:CopySettingsData(a.empty_condition);source.description='Inline';source.fields={spell='number',unit='string'};a.db.global.custom_conditions.INLINE=source;a.conditionDefinitions.INLINE={description='Inline',fields=source.fields}
         end
         local layout=f.layout;local state=pointer(f)
-        local host=a:TrackWorkbenchSize(layout.create('Frame'));host:SetSize(1000,600);layout.settle()
+        local host=a:TrackWorkbenchSize(layout.create('Frame'));host.rmHelpReserve=a.WorkbenchLayout.helpReserve;host:SetSize(1000,600);layout.settle()
         local p=a:OpenNativeSettings(host,which);layout.settle()
         local function editor() return which=='Functions' and p.inlineFunction or p.inlineCondition end
         local d=editor();d.code.edit:SetText('return 7');d.code.edit.scripts.OnTextChanged(d.code.edit,true)
         local function check(message)
             d=editor();local side=p.roster.frame:GetWidth()
-            assert(d.frame.point[2]==side+18 and d.frame:GetWidth()==host:GetWidth()-side-18,which..' editor did not follow: '..message)
+            assert(d.frame.point[2]==side+18 and d.frame:GetWidth()==host:GetWidth()-side-18-host.rmHelpReserve,which..' editor did not follow: '..message)
             assert(d.code.frame:GetWidth()>=d.frame:GetWidth()-40 and d.code:GetText()=='return 7',which..' code editor lost width or text: '..message)
             audit.assertContained(host,f.frames,which..' '..message,{captions=true})
+            local w=host:GetWidth();audit.assertCornerFree(host,f.frames,{left=w-20,right=w,top=0,bottom=-20},which..' runs under the page Help corner: '..message)
         end
         check('open')
         for _,width in ipairs({1600,776,1200}) do host:SetSize(width,600);p:SetWidth(width);layout.settle();check('width '..width) end
@@ -280,10 +287,12 @@ end)
 
 test('Integrations cards and editor rows follow the page width live',function()
     local f,a,p=integrationFixture({width=1000});local layout=f.layout;layout.settle();local parent=p.frame:GetParent()
+    parent.rmHelpReserve=a.WorkbenchLayout.helpReserve
     for _,width in ipairs({1600,776,1200}) do
         parent:SetSize(width,600);p:SetWidth(width);layout.settle()
         assert(p.width==width-40 and p.fields.integration_card_editor_native:GetWidth()==p.width,'Integrations did not follow '..width)
         audit.assertContained(parent,f.frames,'Integrations at '..width,{captions=true})
+        audit.assertCornerFree(parent,f.frames,{left=width-20,right=width,top=0,bottom=-20},'Integrations runs under the page Help corner at '..width)
     end
 end)
 
@@ -316,6 +325,27 @@ test('capture buttons follow captures started, stopped or finished elsewhere onl
     capture:Click();assert(state.running and capture:GetText()=='Stop CPU capture')
     capture:Click();assert(not state.running and state.report=='kept' and report:IsEnabled(),'Stop did not keep the report')
     shell.frame:Hide();local reads=state.reads;state.running=true;layout.settle(20);assert(state.reads==reads,'hidden page polled capture state')
+end)
+
+test('custom condition flags share one row in thirds and wrap instead of clipping',function()
+    local f,a=authoringFixture(true);local layout=f.layout
+    local source=a:CopySettingsData(a.empty_condition);source.description='Inline';source.fields={spell='number'};a.db.global.custom_conditions.INLINE=source;a.conditionDefinitions.INLINE={description='Inline',fields=source.fields}
+    local host=a:TrackWorkbenchSize(layout.create('Frame'));host:SetSize(1400,600);layout.settle()
+    local p=a:OpenNativeSettings(host,'Conditions');layout.settle()
+    for _,case in ipairs({{1400,nil},{776,99999}}) do
+        a.db.global.workbenchSidebarWidth=case[2];host:SetSize(case[1],600);p:SetWidth(case[1]);layout.settle()
+        local form=p.inlineCondition.form;local flags={form.fields.hidden,form.fields.switch,form.fields.announcement}
+        local row=form.width-148
+        for _,flag in ipairs(flags) do
+            assert(flag:GetFontString():GetStringWidth()+22<=flag:GetWidth()+.01,'flag caption clipped at '..case[1])
+            assert(flag.point[2]+flag:GetWidth()<=row+.01,'flag runs into the Enabled and Delete controls')
+        end
+        if case[1]==1400 then assert(flags[1].point[3]==flags[3].point[3],'wide page did not keep the flags on one row') end
+        if flags[1].point[3]==flags[3].point[3] then
+            assert(math.abs(flags[1]:GetWidth()-(row-8)/3)<.01 and flags[2].point[3]==flags[1].point[3],'one-row flags are not thirds')
+        else assert(flags[3].point[3]<flags[1].point[3],'narrow flags overlap instead of wrapping') end
+        audit.assertContained(host,f.frames,'flags at '..case[1],{captions=true})
+    end
 end)
 
 finish()

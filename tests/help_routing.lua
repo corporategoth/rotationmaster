@@ -40,7 +40,9 @@ test('top tabs keep navigation briefs without Help icons while window and pane H
   function pane:SetWidth(n)self.frame:SetWidth(n)end;function pane:SetHeight(n)self.frame:SetHeight(n)end;function pane:Release()self.frame:Hide()end
   pane.frame:Show();return pane
  end
- assert(shell.paneHeader:GetWidth()==shell.content:GetWidth() and shell.paneHeader:GetHeight()==24 and shell.pageHelp:GetWidth()==20 and shell.pageHelp.icon:GetWidth()==18)
+ -- The page "?" sits in the content's top-right corner on the first row; it adds no row of its own.
+ local corner=shell.paneHeader.point;assert(corner[1]=='TOPRIGHT' and corner[2]==shell.content and corner[3]=='TOPRIGHT' and corner[4]==0 and corner[5]==0,'page Help is not in the content corner')
+ assert(shell.paneHeader:GetWidth()==20 and shell.pageHelp:GetWidth()==20 and shell.pageHelp.icon:GetWidth()==18 and shell.content.rmHelpReserve>=shell.pageHelp:GetWidth())
  local stalePage=shell.pageHelp:GetScript('OnClick');shell:SelectSection('Profiles',true);a.helpWindow:Hide();stalePage();assert(not a.helpWindow.frame:IsShown(),'old pane Help reopened after navigation')
  for _,entry in ipairs(shell.tabs)do shell:SelectSection(entry.section,true);local pane=shell.pane;local existing=pane.fields and pane.fields.announce_help;local help=existing or shell.pageHelp;assert(help:IsShown(),'missing '..entry.section..' pane Help');if existing then assert(not shell.pageHelp:IsShown(),'duplicate Announces page Help');assert(shell.paneHeader:GetHeight()>=1 and shell.paneHeaderHeight==0,'existing Help created an unusable zero-height anchor')end;assert(shell.content.point[2]==shell.frame and shell.content.point[3]=='TOPLEFT','pane content depends on a hidden helper anchor');help:Click();assert(a.helpWindow.heading==(entry.section=='ItemSets' and 'Item Sets' or entry.section),'wrong pane topic '..entry.section)end
  shell:SelectSection('General',true);shell.pane:Draw();shell.pageHelp:Click();assert(a.helpWindow.heading=='General','same-page redraw retired page Help')

@@ -147,4 +147,27 @@ function audit.assertContained(root,frames,message,options)
         error((message or 'controls extend outside their pane')..' ('..#problems..'):\n  '..table.concat(lines,'\n  '),2)
     end
 end
+-- Drawn controls (not containers or decoration) intersecting rect, a
+-- rectangle in root coordinates; exclude(frame) skips the corner's owner.
+local controls={Button=true,CheckButton=true,EditBox=true,Slider=true,FontString=true}
+function audit.intersecting(root,frames,rect,exclude)
+    local resolve=audit.resolver(root);local found={}
+    for _,frame in ipairs(frames) do
+        if controls[frame.kind] and frame.visible and descends(frame,root) and not (exclude and exclude(frame))
+            and not (frame.kind=='FontString' and (frame.text or '')=='') then
+            local box=resolve(frame)
+            if box and box.right-box.left>0 and box.left<rect.right-.5 and rect.left<box.right-.5 and box.bottom<rect.top-.5 and rect.bottom<box.top-.5 then
+                found[#found+1]={frame=frame,rect=box,limit=rect,owner=root}
+            end
+        end
+    end
+    return found
+end
+function audit.assertCornerFree(root,frames,rect,message,exclude)
+    local found=audit.intersecting(root,frames,rect,exclude)
+    if #found>0 then
+        local lines={};for index=1,math.min(#found,8) do lines[#lines+1]=audit.describe(found[index]) end
+        error((message or 'controls under the page Help corner')..' ('..#found..'):\n  '..table.concat(lines,'\n  '),2)
+    end
+end
 return audit

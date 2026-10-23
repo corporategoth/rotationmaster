@@ -54,7 +54,7 @@ function addon:BuildInlineFunction(p,key,source,readOnly)
     local token,session=p.generation,d.session
     local function valid() return not d.closed and d.session==session and p:Valid(token) end;d.OwnerValid=valid
     local geometry=self:GetWorkbenchRosterGeometry(p.frame:GetWidth(),p.frame:GetHeight())
-    d.frame:SetParent(p.frame);d.frame:ClearAllPoints();d.frame:SetPoint('TOPLEFT',geometry.detailX,0);d.frame:SetSize(geometry.detailWidth,math.max(160,p.frame:GetHeight()-36))
+    d.frame:SetParent(p.frame);d.frame:ClearAllPoints();d.frame:SetPoint('TOPLEFT',geometry.detailX,0);d.frame:SetSize(geometry.detailWidth-self:GetWorkbenchHelpReserve(p.frame),math.max(160,p.frame:GetHeight()-36))
     d.form=d.form or self:CreateSettingsForm(d.frame);local form=d.form;form.unsavedDefaults={};form:SetWidth(d.frame:GetWidth());form:SetHeight(d.frame:GetHeight())
     function d:PendingSource() local value=addon:CopySettingsData(self.value);if not self.readOnly and self.code and not self.code.released then value.code=self.code:GetText() end;return value end
     function d:CaptureDraft()

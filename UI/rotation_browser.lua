@@ -21,6 +21,8 @@ local function create(parent)
     local specs=addon:TrackWorkbenchSize(CreateFrame("Frame",nil,frame));browser.specs=specs
     local left=addon:TrackWorkbenchSize(CreateFrame("Frame",nil,frame));browser.left=left
     local detail=addon:TrackWorkbenchSize(CreateFrame("Frame",nil,frame));browser.detail=detail
+    -- The editor touches the page "?" corner; it inherits the reserve.
+    detail.rmHelpReserve=addon:GetWorkbenchHelpReserve(frame)
     local search=addon:CreateWorkbenchEditBox(left);browser.search=search
     search:SetAutoFocus(false);search:SetMaxLetters(128);search:SetFontObject("GameFontHighlightSmall")
     search:SetSize(240,24);search:SetTextInsets(5,5,0,0)

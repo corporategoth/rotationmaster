@@ -507,7 +507,21 @@ end
 -- Shared workbench sizing. The window minimum is the smallest width at which
 -- every page keeps its controls inside the pane; list/detail pages share one
 -- divider position, which each page clamps to its own width.
-addon.WorkbenchLayout={windowMinWidth=800,windowMinHeight=500,sidebarMin=200,detailMin=440,splitGap=18,scrollReserve=14}
+addon.WorkbenchLayout={windowMinWidth=800,windowMinHeight=500,sidebarMin=200,detailMin=440,splitGap=18,scrollReserve=14,helpReserve=22}
+-- A workbench page's gold "?" sits in the top-right corner of the page
+-- content, on the page's first row. The content frame carries the reserve;
+-- panes reaching that corner leave it free on their first row.
+function addon:GetWorkbenchHelpReserve(frame)
+    local parent=frame and frame.GetParent and frame:GetParent()
+    return parent and parent.rmHelpReserve or 0
+end
+-- A detail scroll bar in that corner (with its 10 px arrow above the
+-- track) starts below the "?".
+function addon:ReserveWorkbenchHelpCorner(owner,scroll,scrollTop)
+    local reserve=self:GetWorkbenchHelpReserve(owner);local bar=scroll and scroll.workbenchBar
+    if not bar then return end
+    bar:ClearAllPoints();bar:SetPoint('TOPLEFT',scroll,'TOPRIGHT',4,-math.max(10,reserve>0 and reserve+12-(scrollTop or 0) or 10));bar:SetPoint('BOTTOMLEFT',scroll,'BOTTOMRIGHT',4,10)
+end
 function addon:GetWorkbenchSidebarBounds(width)
     local layout=self.WorkbenchLayout
     local maximum=math.min(math.floor(width*.5),width-layout.splitGap-layout.detailMin)

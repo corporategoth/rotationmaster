@@ -340,6 +340,7 @@ function addon:CreateSettingsForm(parent)
         if self.fixedViewport then
             self.scroll:Hide();self.child:SetParent(self.frame);self.child:ClearAllPoints();self.child:SetPoint('TOPLEFT',0,0);self.child:SetWidth(self.frame:GetWidth());return
         end
+        addon:ReserveWorkbenchHelpCorner(self.frame,self.scroll,8)
         self.scroll:SetSize(math.max(1,self.frame:GetWidth()-34),math.max(1,self.frame:GetHeight()-(self.creationUsed and 66 or 38)));self.message:SetWidth(math.max(1,self.frame:GetWidth()-(self.creationUsed and 340 or 20)))
     end
     -- Geometry alone changed: draw again at the new width, carrying every
