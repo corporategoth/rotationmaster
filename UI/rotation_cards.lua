@@ -75,13 +75,25 @@ function addon:CreateRotationCard(parent)
         for key,control in pairs(self.controls) do if (readOnly and key~='help') or (key=='up' and not model.canMoveUp) or (key=='down' and not model.canMoveDown) then control:Disable() else control:Enable() end end
         frame:SetAlpha(model.inactive and .6 or 1);frame:Show()
     end
+    -- A selected card wears a gold outline over its border.
+    function card:SetSelected(selected)
+        if selected and not self.selection then
+            self.selection={}
+            for _,side in ipairs({{'TOPLEFT','TOPRIGHT','h'},{'BOTTOMLEFT','BOTTOMRIGHT','h'},{'TOPLEFT','BOTTOMLEFT','v'},{'TOPRIGHT','BOTTOMRIGHT','v'}}) do
+                local edge=frame:CreateTexture(nil,'OVERLAY');edge:SetColorTexture(1,.82,.2,.95);edge:SetPoint(side[1]);edge:SetPoint(side[2])
+                if side[3]=='h' then edge:SetHeight(2) else edge:SetWidth(2) end;self.selection[#self.selection+1]=edge
+            end
+        end
+        self.selected=selected==true
+        for _,edge in ipairs(self.selection or {}) do if self.selected then edge:Show() else edge:Hide() end end
+    end
     function card:SetValidation(invalid)
         self.model.invalid=invalid
         local tone=invalid and tones.red or tones[self.model.border] or tones.green
         self.decoration:SetColors(tone[1],tone[2],tone[3],.75,.06)
     end
     function card:Release()
-        self.token=nil;self.frame:Hide();self.name:ClearFocus()
+        self.token=nil;self.frame:Hide();self.name:ClearFocus();self:SetSelected(false)
         if addon.HideGlow then addon:HideGlow(self.preview,'rotation-card-preview') end
         if self.fieldSpellIcon then self.fieldSpellIcon:Hide() end
         if self.releaseFields then self.releaseFields();self.releaseFields=nil end

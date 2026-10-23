@@ -23,9 +23,12 @@ return function(env,create)
     function layout.create(...) return defer(create(...)) end
     env.CreateFrame=layout.create
     if env.UIParent then defer(env.UIParent) end
+    -- layout.sizeHandlers counts OnSizeChanged handler invocations (script
+    -- and hooks), for the reflow cost benchmark.
+    layout.sizeHandlers=0
     local function fire(frame,event,...)
-        local script=frame.scripts[event];if script then script(frame,...) end
-        for _,hook in ipairs(frame.hooks and frame.hooks[event] or {}) do hook(frame,...) end
+        local script=frame.scripts[event];if script then if event=='OnSizeChanged' then layout.sizeHandlers=layout.sizeHandlers+1 end;script(frame,...) end
+        for _,hook in ipairs(frame.hooks and frame.hooks[event] or {}) do if event=='OnSizeChanged' then layout.sizeHandlers=layout.sizeHandlers+1 end;hook(frame,...) end
     end
     local function visible(frame)
         for _=1,200 do if not frame then return true end;if not frame.visible then return false end;frame=frame.parent end

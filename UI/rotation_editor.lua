@@ -161,6 +161,46 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     pane.hint=text(pane.frame);pane.hint:SetPoint('BOTTOMLEFT',8,12);pane.hint:SetText(L['Click condition text on any card to view or edit its conditions.'])
     pane.apply=self:CreateWorkbenchButton(pane.frame,L['Apply'],86);pane.apply:SetPoint('BOTTOMRIGHT',-100,8)
     pane.discard=self:CreateWorkbenchButton(pane.frame,L['Discard'],86);pane.discard:SetPoint('BOTTOMRIGHT',-8,8)
+    -- Bulk actions on the selected cards, left of Apply. Each is one command,
+    -- so one Undo reverses it.
+    local bar=CreateFrame('Frame',nil,pane.frame);pane.selectionBar=bar;bar:SetSize(196,22);bar:SetPoint('BOTTOMRIGHT',-194,8);bar:Hide()
+    bar.label=text(bar);bar.label:SetPoint('LEFT',0,0);bar.label:SetWidth(84);bar.label:SetJustifyH('RIGHT')
+    bar.buttons={}
+    for i,entry in ipairs({{'duplicate','copy',L['Duplicate selected cards']},{'enable','check',L['Enable selected cards']},{'disable','minus',L['Disable selected cards']},{'remove','trash',L['Delete selected cards']},{'clear','close',L['Clear selection']}}) do
+        local button=self:CreateWorkbenchIconButton(bar,entry[2],entry[3]);button:SetSize(20,20);button:SetPoint('LEFT',88+(i-1)*22,0);bar.buttons[entry[1]]=button
+        if entry[1]=='remove' then button.icon:SetVertexColor(1,.3,.3,1) end
+        addon:SetUIScript(button,'OnClick',function() if pane.active then pane:BulkCommand(entry[1]) end end)
+    end
+    function pane:SelectionChanged()
+        local count=#self.canvas:SelectedIds(false);local width=self.frame:GetWidth()
+        if count==0 or not self.active then bar:Hide() else
+            bar.label:SetText(string.format(L['%d selected'],count));bar:Show()
+            local editable=not self.workspace.readOnly
+            for key,button in pairs(bar.buttons) do if key=='clear' or editable then button:Enable() else button:Disable() end end
+        end
+        local reserve=bar:IsShown() and 200 or 0
+        self.status:SetWidth(math.max(1,width-330-reserve));self.hint:SetWidth(math.max(1,width-330-reserve))
+    end
+    function pane:BulkCommand(kind)
+        if not self.active then return end
+        if kind=='clear' then self.canvas:ClearSelection();return end
+        if self.workspace.readOnly then return end
+        local index=addon.RotationData.IndexRotationSteps(self.workspace:Snapshot());if not index then return end
+        local operations={}
+        if kind=='duplicate' or kind=='remove' then
+            for _,id in ipairs(self.canvas:SelectedIds(true)) do operations[#operations+1]={kind=='duplicate' and 'Duplicate' or 'Remove',id} end
+        else
+            -- Branches keep their Evaluate / Always mode; only steps toggle.
+            local disabled=kind=='disable'
+            for _,id in ipairs(self.canvas:SelectedIds(false)) do
+                local row=index.byId[id];if row and row.step.type~='branch' and (row.step.disabled==true)~=disabled then operations[#operations+1]={'UpdateStep',id,{disabled=disabled}} end
+            end
+        end
+        if #operations==0 then return end
+        local ok=self:Command('Batch',operations)
+        if ok and kind=='remove' then self.canvas:ClearSelection() end
+        return ok
+    end
     function pane:RefreshAdvice(previous,previousId)
         local change=beginActive(addon)
         local function current() return activeCurrent(addon,change) end
@@ -286,7 +326,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         self.switch:Show()
         local top=self:LayoutViewControls(switchTop+22+math.min(72,switchHeight)+18,width)
         self.canvas.frame:ClearAllPoints();self.canvas.frame:SetPoint('TOPLEFT',8,-top)
-        self.canvas.frame:SetSize(math.max(1,width-40),math.max(1,height-top-48));self.canvas:LayoutScrollBar();self.status:SetWidth(math.max(1,width-330));self.hint:SetWidth(math.max(1,width-330));if (self.status:GetText() or '')=='' then self.hint:Show() else self.hint:Hide() end
+        self.canvas.frame:SetSize(math.max(1,width-40),math.max(1,height-top-48));self.canvas:LayoutScrollBar();local barReserve=self.selectionBar and self.selectionBar:IsShown() and 200 or 0;self.status:SetWidth(math.max(1,width-330-barReserve));self.hint:SetWidth(math.max(1,width-330-barReserve));if (self.status:GetText() or '')=='' then self.hint:Show() else self.hint:Hide() end
     end
     function pane:Layout() self:LayoutGeometry();self:Render() end
     function pane:SetWidth(value) self.frame:SetWidth(value) end
@@ -296,6 +336,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         if self.leavePrompt then self.leavePrompt.frame:Hide() end
         if self.deletePrompt then self.deletePrompt.frame:Hide() end
         if self.metadataWindow then self.metadataWindow:Close(true) end
+        if addon.CancelWorkbenchReflow then addon:CancelWorkbenchReflow(self) end
         self.active=false;self.generation=(self.generation or 0)+1;self.canvas:Release();self.name:ClearFocus();self.description:ClearFocus();self.frame:Hide()
     end
     function pane:Open(nextSpec,nextId,nextSelect)
@@ -343,7 +384,31 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         self.name:EnableMouse(not workspace.readOnly and not workspace.fallback);self.canvas.frame:Show();self.frame:Show();self:Message('')
         self.frame:SetSize(parent:GetWidth(),parent:GetHeight());self:Layout();return self
     end
-    addon:SetUIScript(pane.frame,'OnSizeChanged',function() pane:Layout() end)
+    -- A resize lays out the header and viewport at once. Cards follow through
+    -- the shared reflow driver, once per rendered frame at most, by geometry
+    -- alone: bound cards are re-placed, never released and bound again. The
+    -- diagram keeps its card widths, so that is all it needs. List and
+    -- cooldown cards take the viewport width, which rewraps their text, so
+    -- once the size has settled they are bound again (measured) in one render.
+    function pane:Resized()
+        if not self.active then return end
+        self:LayoutGeometry()
+        local canvas=self.canvas
+        local function stale() return canvas.frame:GetWidth()~=canvas.reflowedWidth or canvas.frame:GetHeight()~=canvas.reflowedHeight end
+        if not stale() then return end
+        if not addon.RequestWorkbenchReflow then return self:Render() end
+        local token=self.generation
+        local function current() return self.active and self.generation==token end
+        addon:RequestWorkbenchReflow(self,self.frame,function()
+            if not current() or not stale() then return end
+            if not canvas:IsDiagram() and canvas.frame:GetWidth()~=canvas.reflowedWidth then canvas:ReleaseExpandedCards() end
+            canvas:Reflow()
+        end)
+        if not canvas:IsDiagram() then
+            addon:RequestWorkbenchSettle(self,self.frame,function() if current() and not canvas:IsDiagram() and canvas.frame:GetWidth()~=canvas.renderedWidth then self:Render() end end)
+        end
+    end
+    addon:SetUIScript(pane.frame,'OnSizeChanged',function() pane:Resized() end)
     addon:InstallRotationMetadata(pane)
     addon:InstallRotationUnsaved(pane);addon:InstallRotationChangeReview(pane)
     pane.ready=true;parent.rmRotationEditor=pane

@@ -207,19 +207,31 @@ function addon:CreateSettingsForm(parent)
         end
         paint();c.dropHint=c.dropHint or label(c);c.dropHint:ClearAllPoints();c.dropHint:SetPoint('LEFT',28,0);c.dropHint:SetPoint('RIGHT',-4,0);c.dropHint:SetText(provider.kind=='item' and L['Search or drag an item here'] or L['Search or drag a spell here']);c.dropHint:SetTextColor(.5,.5,.5);if c:GetText()=='' then c.dropHint:Show() else c.dropHint:Hide() end
         local textChanged=c:GetScript('OnTextChanged');local escape=c:GetScript('OnEscapePressed')
+        local function choose(id)
+            if not self:Valid(self.generation) or not accepted(id) then return end
+            c:SetText(display(id));c.dropHint:Hide();selected=id;record.dirty=true;if self.transactionKeys and self.fields.apply then self.fields.apply:Enable() end;paint();if self:FlushEdits() then c:ClearFocus() end
+        end
         local function query()
             local rows={};local input=c:GetText();if input==provider.missing then input='' end
             for _,entry in ipairs(provider.search(input,settings) or {}) do rows[#rows+1]={value=entry.id,text=entry.display or entry.name,icon=entry.icon} end
             if #rows==0 then if self.menu then self.menu.frame:Hide() end;return end
-            self:ShowChoices(c,rows,function(id)
-                if not self:Valid(self.generation) or not accepted(id) then return end
-                c:SetText(display(id));selected=id;record.dirty=true;if self.transactionKeys and self.fields.apply then self.fields.apply:Enable() end;paint();if self:FlushEdits() then c:ClearFocus() end
-            end,true)
+            self:ShowChoices(c,rows,choose,true)
+        end
+        -- Right-click: what the game offers right now (target or focus cast,
+        -- recent casts, equipped trinkets), chosen like a suggestion.
+        local function insertMenu()
+            local rows={}
+            for _,entry in ipairs(addon:GetReferenceContextEntries(provider.kind)) do
+                local id=provider.resolve(tostring(entry.id),settings)
+                if id and accepted(id) then local info=provider.info(id);rows[#rows+1]={value=id,text=string.format(entry.context,provider.name(id,settings.norank) or tostring(id)),icon=info and info.icon} end
+            end
+            if #rows==0 then self:Message(provider.kind=='item' and L['No equipped trinket to insert.'] or L['Nothing to insert: no target or focus cast and no recent casts.']);return end
+            self:ShowChoices(c,rows,choose,true)
         end
         addon:SetUIScript(c,'OnTextChanged',self:Guard(function(control,user) textChanged(control,user);if c:GetText()=='' then c.dropHint:Show() else c.dropHint:Hide() end;if user then query() end end))
         addon:SetUIScript(c,'OnEditFocusGained',self:Guard(function() if selected and not record.dirty then c:SetText(display(selected));record.baseline=c:GetText();paint() end;query() end))
         addon:SetUIScript(c,'OnEscapePressed',self:Guard(function() if self.menu then self.menu.frame:Hide() end;escape(c) end))
-        addon:SetUIScript(c,'OnEnter',self:HelpGuard(function() if selected and GameTooltip then GameTooltip:SetOwner(c,'ANCHOR_RIGHT');GameTooltip:SetHyperlink(provider.kind..':'..selected);GameTooltip:AddLine(provider.kind=='item' and L['Search or drag an item here'] or L['Search or drag a spell here']);GameTooltip:Show() elseif GameTooltip then GameTooltip:SetOwner(c,'ANCHOR_RIGHT');GameTooltip:SetText(c.dropHint:GetText()) end end))
+        addon:SetUIScript(c,'OnEnter',self:HelpGuard(function() if selected and GameTooltip then GameTooltip:SetOwner(c,'ANCHOR_RIGHT');GameTooltip:SetHyperlink(provider.kind..':'..selected);GameTooltip:AddLine(provider.kind=='item' and L['Search or drag an item here'] or L['Search or drag a spell here']);GameTooltip:AddLine(provider.kind=='item' and L['Right-click to insert an equipped trinket.'] or L["Right-click to insert your target's cast or a recent cast."]);GameTooltip:Show() elseif GameTooltip then GameTooltip:SetOwner(c,'ANCHOR_RIGHT');GameTooltip:SetText(c.dropHint:GetText());GameTooltip:AddLine(provider.kind=='item' and L['Right-click to insert an equipped trinket.'] or L["Right-click to insert your target's cast or a recent cast."]);GameTooltip:Show() end end))
         addon:SetUIScript(c,'OnLeave',function() if GameTooltip and GameTooltip:IsOwned(c) then GameTooltip:Hide() end end)
         local function drop()
             if type(GetCursorInfo)~='function' then return end
@@ -230,7 +242,7 @@ function addon:CreateSettingsForm(parent)
             selected=id;c:SetText(display(id));c.dropHint:Hide();record.dirty=true;if self.transactionKeys and self.fields.apply then self.fields.apply:Enable() end;paint()
             if self:FlushEdits() then if self.menu then self.menu.frame:Hide() end;if type(ClearCursor)=='function' then ClearCursor() end;c:ClearFocus() end
         end
-        addon:SetUIScript(c,'OnReceiveDrag',self:Guard(drop));addon:SetUIScript(c,'OnMouseDown',self:Guard(drop))
+        addon:SetUIScript(c,'OnReceiveDrag',self:Guard(drop));addon:SetUIScript(c,'OnMouseDown',self:Guard(function(_,button) if button=='RightButton' then insertMenu() else drop() end end))
         return c
     end
     function p:Spell(key,caption,id,spec,changed) return self:Reference(key,caption,id,'Spell_EditBox',{spec=spec,norank=false},changed) end
@@ -371,6 +383,7 @@ function addon:CreateSettingsForm(parent)
         self.creationUsed=false;self.creationUsedForNew=false;self.counts={};self.fields={};self.edits={};if self.ResetLayout then self:ResetLayout() end;self.y=4;self.width=math.max(340,self.frame:GetWidth()-40);self.child:SetWidth(self.width)
         self.labelScopes={};self.labelScope=nil;self:BeginLabelScope()
         self.builder(self);if self.DraftActions then self:DraftActions() end;while self.labelScope do self:EndLabelScope() end;self:BindHelpBriefs();if not self.creationUsedForNew then self.creationBaseline=nil;self.creationApply=nil end;self.child:SetHeight(self.y+12);self.scroll:UpdateWorkbenchScroll()
+        self.drawnReflowKey=self:ReflowKey();self.drawnColumnSingle=self.usedColumns and self.columnSingle or nil
     end
     function p:Open(builder)
         if self.profile~=addon.db.profile or self.global~=addon.db.global or self.char~=addon.db.char then self.selection=nil;self.creating=false;self.rosterQuery=nil;self.condition=nil;self.category=nil;self.conditionSource=nil;self.newAnnounce=nil;self.newEffectName=nil;self.newItem=nil;self.newItemSetName=nil;self.newGroupName=nil end
@@ -415,9 +428,24 @@ function addon:CreateSettingsForm(parent)
             end end
         end
     end
-    function p:SetWidth(n) local changed=n~=self.frame:GetWidth();self.frame:SetWidth(n);self:Layout();if changed then self:Relayout() end end
+    -- The widths a drawing depends on: the page and its detail viewport.
+    function p:ReflowKey() return tostring(self.frame:GetWidth())..'/'..tostring(self.scroll:GetWidth()) end
+    -- Geometry is laid out at once; drawing again waits for the shared
+    -- reflow driver (once per rendered frame at most, never while hidden)
+    -- and is skipped when the widths are those last drawn.
+    function p:RequestRelayout()
+        if not self.active then return end
+        if self:ReflowKey()==self.drawnReflowKey then if addon.CancelWorkbenchReflow then addon:CancelWorkbenchReflow(self) end;return end
+        if not addon.RequestWorkbenchReflow then return self:Relayout() end
+        -- Crossing the one- or two-column breakpoint changes structure: draw
+        -- on the next frame, whatever the previous drawing cost.
+        if self.drawnColumnSingle~=nil and (math.max(340,self.frame:GetWidth()-40)<960)~=self.drawnColumnSingle then self.rmReflowAfter=nil end
+        addon:RequestWorkbenchReflow(self,self.frame,function() if self.active and self:ReflowKey()~=self.drawnReflowKey then self:Relayout() end end)
+    end
+    function p:SetWidth(n) self.frame:SetWidth(n);self:Layout();self:RequestRelayout() end
     function p:SetHeight(n) self.frame:SetHeight(n);self:Layout() end
     function p:Release()
+        if addon.CancelWorkbenchReflow then addon:CancelWorkbenchReflow(self) end
         if self.ClearSettingsHistory then self:ClearSettingsHistory() end
         self.draft=nil;self.draftBaseline=nil;self.draftEffects=nil;self.active=false;self.generation=self.generation+1;if self.menu then self.menu.frame:Hide() end
         if self.prompt then self.prompt.frame:Hide() end

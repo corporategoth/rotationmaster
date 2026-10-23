@@ -282,6 +282,34 @@ function data.NewConditionDraft(original,definitions)
             current.disabled=nil;node.disabled=disabled or nil;return candidate
         end)
     end
+    -- Selection-wide Duplicate and Enable/Disable: one transaction, so one
+    -- undo step, keeping the selection on the copies or the same nodes.
+    function draft:DuplicateSelection(paths)
+        return transaction(function(candidate)
+            local records,why=selected(candidate,paths);if not records then return nil,why end
+            local copies={}
+            for i=#records,1,-1 do
+                local record=records[i];local child=assert(copy(record.node))
+                if record.relation=="list" then table.insert(record.container,record.key+1,child)
+                else candidate=replace(record.container,record.key,{type="AND",value={record.node,child}},candidate) end
+                table.insert(copies,1,child)
+            end
+            return candidate,nil,locations(candidate,copies)
+        end)
+    end
+    function draft:SetSelectionDisabled(paths,disabled)
+        if type(disabled)~="boolean" then return nil,"invalid-disabled-flag" end
+        return transaction(function(candidate)
+            local records,why=selected(candidate,paths);if not records then return nil,why end
+            local nodes={}
+            for _,record in ipairs(records) do
+                local node=record.node;local current=node
+                while current.type=="NOT" and type(current.value)=="table" do current.disabled=nil;current=current.value end
+                current.disabled=nil;node.disabled=disabled or nil;nodes[#nodes+1]=node
+            end
+            return candidate,nil,locations(candidate,nodes)
+        end)
+    end
     function draft:RemoveSelection(paths)
         return transaction(function(candidate)
             local records,why=selected(candidate,paths);if not records then return nil,why end

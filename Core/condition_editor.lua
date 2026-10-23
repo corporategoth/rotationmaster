@@ -1,7 +1,7 @@
 local _,addon=...
 local data=addon.RotationData
 local commands={Replace=true,Wrap=true,Unwrap=true,Add=true,Remove=true,Move=true,SetDisabled=true,
-    GroupSelection=true,NegateSelection=true,RemoveSelection=true,Transfer=true,Insert=true,Duplicate=true,AddSibling=true,SetName=true,SetGroupType=true,SetProjectedDisabled=true}
+    GroupSelection=true,NegateSelection=true,RemoveSelection=true,DuplicateSelection=true,SetSelectionDisabled=true,Transfer=true,Insert=true,Duplicate=true,AddSibling=true,SetName=true,SetGroupType=true,SetProjectedDisabled=true}
 
 local function unchanged(left,right)
     if not data.CheckPortable(left) or not data.CheckPortable(right) then return false end

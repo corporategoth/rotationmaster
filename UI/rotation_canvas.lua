@@ -46,7 +46,7 @@ function addon:CreateRotationCanvas(parent,owner)
     canvas.ghost=addon:CreateWorkbenchDragCard()
     function canvas:CancelDrag()
         local moving=self.drag or self.pan
-        self.drag=nil;self.pan=nil;self.ghost:Hide();addon:SetUIScript(self.frame,'OnUpdate',nil)
+        self.drag=nil;self.pan=nil;self.box=nil;if self.boxFrame then self.boxFrame:Hide() end;self.ghost:Hide();addon:SetUIScript(self.frame,'OnUpdate',nil)
         for _,zone in ipairs(self.zones) do zone.marker:Hide();zone:Hide() end
         if moving and self.RefreshVisibleCards then
             if self.deferredMeasure then self.deferredMeasure=nil;self:Reflow() else self:RefreshVisibleCards() end
@@ -77,6 +77,85 @@ function addon:CreateRotationCanvas(parent,owner)
         updateScroll(self)
         if canvas:IsDiagram() then self.workbenchBar:Hide() end
     end
+    -- Several cards can be selected: Ctrl-click toggles a card, Shift-click
+    -- selects the sibling range from the last clicked card, a plain click on
+    -- a card's body selects only it, and a plain click on empty canvas clears
+    -- the selection. Shift-drag on empty canvas draws a box that selects the
+    -- cards it touches (Ctrl+Shift adds to the selection). The selection is
+    -- view state: it survives renders and drops cards that no longer exist.
+    function canvas:SelectionSet() owner.view.selection=owner.view.selection or {};return owner.view.selection end
+    -- Selected ids in document order; with topLevel, a card inside another
+    -- selected card is left out (it travels with its parent).
+    function canvas:SelectedIds(topLevel)
+        local selection=self:SelectionSet();local result={}
+        if next(selection)==nil then return result end
+        local index=addon.RotationData.IndexRotationSteps(owner.workspace:Snapshot())
+        if not index then return result end
+        local chosen={}
+        for _,row in ipairs(index.rows) do if selection[row.step.id] then chosen[#chosen+1]=row end end
+        for _,row in ipairs(chosen) do
+            local nested=false
+            if topLevel then for _,other in ipairs(chosen) do if other~=row and #other.path<#row.path then
+                local inside=true;for i=1,#other.path do if other.path[i]~=row.path[i] then inside=false;break end end
+                if inside then nested=true;break end
+            end end end
+            if not nested then result[#result+1]=row.step.id end
+        end
+        return result
+    end
+    function canvas:PaintSelection()
+        local selection=self:SelectionSet()
+        for _,card in ipairs(self.cards) do if card.token and card.model and card.SetSelected then card:SetSelected(selection[card.model.id]==true) end end
+        if owner.SelectionChanged then owner:SelectionChanged() end
+    end
+    function canvas:ClearSelection()
+        if next(self:SelectionSet())==nil then return end
+        owner.view.selection={};self.anchor=nil;self:PaintSelection()
+    end
+    function canvas:Select(id,toggle,range)
+        if not owner.active or not self.scene then return end
+        local selection=self:SelectionSet();local byId={};for _,model in ipairs(self.scene.cards) do byId[model.id]=model end
+        local model=byId[id];if not model then return end
+        local anchor=self.anchor and byId[self.anchor]
+        if range and anchor and anchor.parentId==model.parentId and #anchor.path==#model.path and anchor.path[1]==model.path[1] then
+            if not toggle then selection={} end
+            local depth=#model.path;local low,high=math.min(anchor.path[depth],model.path[depth]),math.max(anchor.path[depth],model.path[depth])
+            for _,other in ipairs(self.scene.cards) do
+                if other.parentId==model.parentId and #other.path==depth and other.path[1]==model.path[1] and other.path[depth]>=low and other.path[depth]<=high then selection[other.id]=true end
+            end
+        elseif toggle then selection[id]=not selection[id] or nil
+        else selection={[id]=true} end
+        owner.view.selection=selection;if not range then self.anchor=id end
+        self:PaintSelection()
+    end
+    -- Selects the cards touching a box given in canvas (child) coordinates.
+    function canvas:SelectBox(left,top,right,bottom,additive)
+        if not owner.active or not self.scene then return end
+        local selection=additive and self:SelectionSet() or {}
+        for _,model in ipairs(self.scene.cards) do
+            if model.x<=right and model.x+model.width>=left and model.y<=bottom and model.y+model.height>=top then selection[model.id]=true end
+        end
+        owner.view.selection=selection;self:PaintSelection()
+    end
+    function canvas:BeginBoxSelect()
+        if not owner.active or self.drag then return false end
+        local x,y=addon:WorkbenchPointerIn(self.child);if not x then return false end
+        self:CancelDrag()
+        local box={x=x,y=y,additive=IsControlKeyDown and IsControlKeyDown() or false,generation=self.generation};self.box=box
+        self.boxFrame=self.boxFrame or addon:CreateWorkbenchSelectionBox(self.child);self.boxFrame:Place(x,y,x,y)
+        addon:SetUIScript(self.frame,'OnUpdate',function()
+            if self.box~=box then return end
+            if not owner.active or box.generation~=self.generation then self:CancelDrag();return end
+            local cx,cy=addon:WorkbenchPointerIn(self.child);if cx then box.cx,box.cy=cx,cy;self.boxFrame:Place(box.x,box.y,cx,cy) end
+            if IsMouseButtonDown and not IsMouseButtonDown('LeftButton') then self:EndBoxSelect() end
+        end)
+        return true
+    end
+    function canvas:EndBoxSelect()
+        local box=self.box;if not box then return end
+        local cx,cy=box.cx or box.x,box.cy or box.y;self:CancelDrag()
+        self:SelectBox(math.min(box.x,cx),math.min(box.y,cy),math.max(box.x,cx),math.max(box.y,cy),box.additive)
+    end
     function canvas:BeginPan()
         if not owner.active or not self:IsDiagram() or self.drag or type(GetCursorPosition)~='function' then return false end
         if owner.zoomBar and owner.zoomBar:IsShown() and addon:IsWorkbenchDropZoneUnderPointer(owner.zoomBar,self.frame) then return false end
@@ -93,12 +172,13 @@ function addon:CreateRotationCanvas(parent,owner)
             if not owner.active or request.generation~=self.generation or IsMouseButtonDown and not IsMouseButtonDown('LeftButton') then self:CancelDrag();return end
             local valid,cx,cy=pcall(GetCursorPosition)
             if not valid or not finite(cx) or not finite(cy) then self:CancelDrag();return end
+            if math.abs(cx-request.x)+math.abs(cy-request.y)>3 then request.moved=true end
             self.horizontal:SetValue(request.scrollX-(cx-request.x)/request.scale)
             self.frame.workbenchBar:SetValue(request.scrollY+(cy-request.y)/request.scale)
         end)
         return true
     end
-    function canvas:BindViewportInput(control,pan,alive)
+    function canvas:BindViewportInput(control,pan,alive,click)
         control:EnableMouse(true);control:EnableMouseWheel(true)
         addon:SetUIScript(control,'OnMouseWheel',function(_,delta)
             if not owner.active or alive and not alive() then return end
@@ -108,28 +188,44 @@ function addon:CreateRotationCanvas(parent,owner)
         addon:SetUIScript(control,'OnMouseUp',function(_,button)
             if not owner.active or alive and not alive() then return end
             if button=='MiddleButton' then self:SetZoom(1)
-            elseif button=='LeftButton' and self.pan then self:CancelDrag() end
+            elseif button=='LeftButton' and self.box then self:EndBoxSelect()
+            elseif button=='LeftButton' then
+                -- A click (not a pan or drag) on a card selects; on empty
+                -- canvas it clears the selection.
+                local request=self.pan;local moved=request and request.moved;if request then self:CancelDrag() end
+                if click then if not control.rmDragged then click() end
+                elseif pan and not moved then self:ClearSelection() end
+            end
         end)
         if pan then
             control:RegisterForDrag('LeftButton')
-            addon:SetUIScript(control,'OnMouseDown',function(_,button) if button=='LeftButton' then self:BeginPan() end end)
-            addon:SetUIScript(control,'OnDragStart',function() self:BeginPan() end)
-            addon:SetUIScript(control,'OnDragStop',function() if self.pan then self:CancelDrag() end end)
+            local function begin() if IsShiftKeyDown and IsShiftKeyDown() then self:BeginBoxSelect() else self:BeginPan() end end
+            addon:SetUIScript(control,'OnMouseDown',function(_,button) if button=='LeftButton' then begin() end end)
+            addon:SetUIScript(control,'OnDragStart',function() if not self.box and not self.pan then begin() end end)
+            addon:SetUIScript(control,'OnDragStop',function() if self.box then self:EndBoxSelect() elseif self.pan then self:CancelDrag() end end)
         end
     end
     for _,surface in ipairs({canvas.frame,canvas.child,canvas.cameraHost,canvas.surface}) do
         canvas:BindViewportInput(surface,true)
         addon:SetUIScript(surface,'OnHide',function() canvas:CancelDrag() end)
     end
+    local function dragCommand(drag) return drag.insert and 'Insert' or drag.ids and 'MoveMany' or (drag.tail and 'MoveTail' or 'Move') end
     function canvas:CanDrop(target)
         local drag=self.drag
         if not drag or not owner.active or owner.workspace.readOnly or drag.generation~=self.generation then return false end
         local d=target.destination;local key=location(d.path)..':'..d.index..':'..(d.parentId or '')
         if drag.valid[key]~=nil then return drag.valid[key] end
         local draft=addon.RotationData.NewRotationDraft(owner.workspace:Snapshot(),addon.uuid)
-        local command=drag.insert and 'Insert' or (drag.tail and 'MoveTail' or 'Move')
-        local ok=draft and draft:Command(command,drag.insert and d or drag.id,drag.insert or d)
-        if ok and not drag.insert then
+        local command=dragCommand(drag)
+        local ok=draft and draft:Command(command,drag.insert and d or drag.ids or drag.id,drag.insert or d)
+        if ok and drag.ids then
+            -- A gap that leaves every carried card where it was is no move.
+            local before=addon.RotationData.IndexRotationSteps(owner.workspace:Snapshot()).byId
+            local after=addon.RotationData.IndexRotationSteps(draft:Snapshot()).byId
+            local moved=false
+            for _,id in ipairs(drag.ids) do if not before[id] or not after[id] or location(before[id].path)~=location(after[id].path) then moved=true;break end end
+            ok=moved
+        elseif ok and not drag.insert then
             local before=addon.RotationData.IndexRotationSteps(owner.workspace:Snapshot()).byId[drag.id]
             local after=addon.RotationData.IndexRotationSteps(draft:Snapshot()).byId[drag.id]
             if before and after and location(before.path)==location(after.path) then ok=false end
@@ -145,8 +241,7 @@ function addon:CreateRotationCanvas(parent,owner)
     function canvas:Drop(target)
         local drag=self.drag;local valid=self:CanDrop(target);self:CancelDrag()
         if not valid or not drag or drag.generation~=self.generation then return end
-        local command=drag.insert and 'Insert' or (drag.tail and 'MoveTail' or 'Move')
-        return owner:Command(command,drag.insert and target.destination or drag.id,drag.insert or target.destination)
+        return owner:Command(dragCommand(drag),drag.insert and target.destination or drag.ids or drag.id,drag.insert or target.destination)
     end
     function canvas:EndDrag()
         if not self.drag then return end
@@ -159,7 +254,20 @@ function addon:CreateRotationCanvas(parent,owner)
         local title=step.name or (step.type=='branch' and L['Add branch'] or step.type=='none' and L['Stop'] or addon:SpellLabel(step.action))
         if self.drag.tail then title=L['Move this and following entries']..': '..title end
         local count=1;local selected={}
-        if id then
+        -- Dragging a selected card carries the whole selection.
+        local carriedIds=id and not self.drag.tail and self:SelectionSet()[id] and self:SelectedIds(true)
+        if carriedIds and #carriedIds>1 then
+            self.drag.ids=carriedIds;title=string.format(L['Move %d selected cards'],#carriedIds)
+            count=0;local index=addon.RotationData.IndexRotationSteps(owner.workspace:Snapshot())
+            for _,carried in ipairs(carriedIds) do
+                local source=index.byId[carried]
+                for _,row in ipairs(index.rows) do
+                    local inside=#row.path>=#source.path
+                    for i=1,#source.path do if row.path[i]~=source.path[i] then inside=false;break end end
+                    if inside and not selected[row.step.id] then selected[row.step.id]=true;count=count+1 end
+                end
+            end
+        elseif id then
             count=0;local index=addon.RotationData.IndexRotationSteps(owner.workspace:Snapshot());local source=index.byId[id];local base={}
             for i=1,#source.path-1 do base[i]=source.path[i] end
             for _,row in ipairs(index.rows) do
@@ -196,6 +304,8 @@ function addon:CreateRotationCanvas(parent,owner)
         if not owner.active then return end
         local scene=owner:BuildScene();self.scene=scene
         if not scene then return end
+        -- The viewport this layout was made for (see the editor's resize).
+        self.reflowedWidth,self.reflowedHeight=self.frame:GetWidth(),self.frame:GetHeight()
         self.reflowing=true
         local ok,problem=pcall(function()
         local key=self:ModeKey();self:RememberViewport()
@@ -225,6 +335,10 @@ function addon:CreateRotationCanvas(parent,owner)
         for i=#(scene.groups or {})+1,#self.groups do self.groups[i]:Hide() end
         local byId={};for _,model in ipairs(scene.cards) do byId[model.id]=model end
         for _,card in ipairs(self.cards) do if card.token and card.model and byId[card.model.id] then card:Place(byId[card.model.id],owner.workspace.readOnly) end end
+        -- Cards that left the scene (removed, or under a folded branch) leave
+        -- the selection.
+        local selection=self:SelectionSet();for selected in pairs(selection) do if not byId[selected] then selection[selected]=nil end end
+        if owner.SelectionChanged then owner:SelectionChanged() end
         local n=0
         for _,edge in ipairs(scene.connectors) do
             local tone=colors[edge.tone] or colors.neutral
@@ -342,10 +456,24 @@ function addon:CreateRotationCanvas(parent,owner)
         end
         addon:SetUIScript(card.controls.help,'OnClick',function() if alive() then owner:ShowCardHelp(model) end end)
         addon:SetUIScript(card.armToggle,'OnClick',function() if alive() then owner.view.hiddenChildren[model.id]=not owner.view.hiddenChildren[model.id];self:Render() end end)
+        local function modifiers() return IsControlKeyDown and IsControlKeyDown() or false,IsShiftKeyDown and IsShiftKeyDown() or false end
+        local function clickBody() if not alive() then return end;local ctrl,shift=modifiers();self:Select(model.id,ctrl,shift) end
         for _,source in ipairs({card.title,card.action,card.condition,card.frame}) do
-            self:BindViewportInput(source,false,alive)
+            self:BindViewportInput(source,false,alive,source==card.frame and clickBody or nil)
             addon:BindWorkbenchDragSource(source,function() if writable() then self:BeginDrag(model.id) end end,function() if alive() then self:EndDrag() end end)
         end
+        -- Ctrl-click anywhere on a card toggles it; Shift-click on its title
+        -- or condition extends the range (Shift-click on the action still
+        -- links the spell). Other clicks keep their own meaning.
+        for _,source in ipairs({card.title,card.action,card.condition}) do
+            local original=source:GetScript('OnClick')
+            addon:SetUIScript(source,'OnClick',function(...)
+                local ctrl,shift=modifiers()
+                if alive() and (ctrl or shift and source~=card.action) then if not source.rmDragged then self:Select(model.id,ctrl,shift) end;source.rmDragged=false;return end
+                if original then return original(...) end
+            end)
+        end
+        if card.SetSelected then card:SetSelected(self:SelectionSet()[model.id]==true) end
         if model.expanded and owner.BuildFields then owner:BuildFields(card,model,alive) end
         return math.abs(priorSummary-math.max(0,(owner.view.summaryHeights[model.id] or 0)-28))>.5 or
             priorDetails~=(owner.view.detailsHeights or {})[model.id]
@@ -356,6 +484,14 @@ function addon:CreateRotationCanvas(parent,owner)
             if input.HasFocus and input:HasFocus() then return true end
         end
         return false
+    end
+    -- Expanded cards lay their fields out for the card width when bound. A
+    -- width change releases them (unless one holds focus) so the next reflow
+    -- binds them at the new width; every other card is only re-placed.
+    function canvas:ReleaseExpandedCards()
+        for _,card in ipairs(self.cards) do
+            if card.token and card.model and card.model.expanded and not focused(card) and card.frame:GetParent()~=self.ghost then card:Release();card.model=nil end
+        end
     end
     function canvas:RefreshVisibleCards()
         if not owner.active or not self.scene or self.refreshing then return end
@@ -407,6 +543,7 @@ function addon:CreateRotationCanvas(parent,owner)
         for _,card in ipairs(self.cards) do card:Release();card.model=nil end
         if not owner.active then return end
         self.scene=owner:BuildScene();if not self.scene then return end
+        self.renderedWidth=self.frame:GetWidth()
         self:Reflow()
     end
     function canvas:Release()

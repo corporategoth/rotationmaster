@@ -3,7 +3,9 @@ local function find(list,id) for _,value in ipairs(list or {}) do if value.id==i
 local function contains(list,value) for _,entry in ipairs(list or {}) do if entry==value then return true end end;return false end
 local function context(p,store,id)
     store=store or {};local profile,global=store.profile or {},store.global or {};id=id or (p.mode=='categories' and p.categorySelection or p.settingsKey=='Conditions' and p.condition or p.selection)
-    if p.settingsKey=='General' then local result=addon:CopySettingsData(profile);result.minimap=not (profile.minimap or {}).hide;for i,v in ipairs((store.char or {}).specs or {}) do result['spec'..i]=v end;return result end
+    -- General reads single keys: a view over the profile, not a deep copy of
+    -- it (every rotation included) for each bound control on every draw.
+    if p.settingsKey=='General' then local result={minimap=not (profile.minimap or {}).hide};for i,v in ipairs((store.char or {}).specs or {}) do result['spec'..i]=v end;return setmetatable(result,{__index=profile}) end
     if p.settingsKey=='Integrations' then return profile end
     if p.settingsKey=='Effects' then return (global.effects or {})[id] end
     if p.settingsKey=='ItemSets' then local entry=(profile.itemsets or {})[id] or (global.itemsets or {})[id];if entry then local copy=addon:CopySettingsData(entry);copy.global=(global.itemsets or {})[id]~=nil;return copy end end

@@ -72,11 +72,13 @@ local function pointer(f)
     f.env.IsMouseButtonDown=function() return state.down end
     return state
 end
-local function drag(splitter,state,delta)
+-- No client frames run here, so the coalesced relayout is flushed at once.
+local function drag(splitter,state,delta,a)
     state.down=true;state.x=0;splitter.scripts.OnMouseDown(splitter,'LeftButton')
     state.x=delta;splitter.scripts.OnUpdate(splitter,.01)
     state.down=false;splitter.scripts.OnUpdate(splitter,.01)
     assert(not splitter.drag and splitter.scripts.OnUpdate==nil,'divider drag did not end on release')
+    if a then a:FlushWorkbenchReflow() end
 end
 local function rightEdge(root,frame) return audit.resolver(root)(frame).right end
 
@@ -151,10 +153,10 @@ test('rotation list rows fill their column and the divider resizes both panes wi
     local host,browser=browserScene(f,1000,640)
     assertBrowser(host,browser,frames,'default split');assert(browser.left:GetWidth()==260 and #browser.rowButtons>0)
     local splitter=browser.splitter;assert(splitter:IsShown() and splitter.point[4]==264,'divider is not in the pane gap')
-    drag(splitter,state,100);assert(browser.left:GetWidth()==360 and a.db.global.workbenchSidebarWidth==360,'drag did not move or persist the divider')
+    drag(splitter,state,100,a);assert(browser.left:GetWidth()==360 and a.db.global.workbenchSidebarWidth==360,'drag did not move or persist the divider')
     assertBrowser(host,browser,frames,'after widening the list')
-    drag(splitter,state,-5000);assert(browser.left:GetWidth()==200,'drag passed the list minimum');assertBrowser(host,browser,frames,'list minimum')
-    drag(splitter,state,5000);assert(browser.left:GetWidth()==500 and browser.detail:GetWidth()==482,'drag passed the page limit');assertBrowser(host,browser,frames,'list maximum')
+    drag(splitter,state,-5000,a);assert(browser.left:GetWidth()==200,'drag passed the list minimum');assertBrowser(host,browser,frames,'list minimum')
+    drag(splitter,state,5000,a);assert(browser.left:GetWidth()==500 and browser.detail:GetWidth()==482,'drag passed the page limit');assertBrowser(host,browser,frames,'list maximum')
     -- Whole-window resizing keeps the preference but never the detail minimum.
     browser:SetWidth(776);assert(browser.left:GetWidth()==318 and browser.detail:GetWidth()==440);assertBrowser(host,browser,frames,'narrow window')
     browser:SetWidth(1600);assert(browser.left:GetWidth()==500);assertBrowser(host,browser,frames,'wide window')
@@ -188,19 +190,19 @@ test('settings rosters fill their column and the divider redraws the detail form
     local f,frames,create=settingsFixture();local a=f.addon;local state=pointer(f)
     local parent,p=itemSetsPage(f,create,1000)
     assert(p.roster.scroll.workbenchBar:IsShown(),'30 sets should scroll');assertRoster(parent,p,frames,'default')
-    local before=p.width;drag(p.roster.splitter,state,120)
+    local before=p.width;drag(p.roster.splitter,state,120,a)
     assert(p.roster.frame:GetWidth()==380 and p.width==before-120 and a.db.global.workbenchSidebarWidth==380,'settings divider did not redraw the detail')
     assertRoster(parent,p,frames,'wider list')
-    drag(p.roster.splitter,state,-5000);assert(p.roster.frame:GetWidth()==200);assertRoster(parent,p,frames,'list minimum')
-    drag(p.roster.splitter,state,5000);assert(p.roster.frame:GetWidth()==500);assertRoster(parent,p,frames,'list maximum')
-    parent:SetSize(776,600);p:SetWidth(776);assert(p.roster.frame:GetWidth()==318);assertRoster(parent,p,frames,'narrow page')
-    parent:SetSize(1600,600);p:SetWidth(1600);assert(p.roster.frame:GetWidth()==500);assertRoster(parent,p,frames,'wide page')
+    drag(p.roster.splitter,state,-5000,a);assert(p.roster.frame:GetWidth()==200);assertRoster(parent,p,frames,'list minimum')
+    drag(p.roster.splitter,state,5000,a);assert(p.roster.frame:GetWidth()==500);assertRoster(parent,p,frames,'list maximum')
+    parent:SetSize(776,600);p:SetWidth(776);a:FlushWorkbenchReflow();assert(p.roster.frame:GetWidth()==318);assertRoster(parent,p,frames,'narrow page')
+    parent:SetSize(1600,600);p:SetWidth(1600);a:FlushWorkbenchReflow();assert(p.roster.frame:GetWidth()==500);assertRoster(parent,p,frames,'wide page')
     p.roster.rows[3]:Click();assertRoster(parent,p,frames,'after selection')
     -- A divider drag redraws the detail but carries an invalid pending input.
     local key;for name,control in pairs(p.fields) do for _,record in ipairs(p.edits) do if record.control==control and record.parse('not an item')==nil then key=name end end end
     assert(key,'Item Sets has no validated input to edit');local edit=p.fields[key]
     edit:SetText('not an item');edit.scripts.OnTextChanged(edit,true)
-    local side=p.roster.frame:GetWidth();drag(p.roster.splitter,state,-100)
+    local side=p.roster.frame:GetWidth();drag(p.roster.splitter,state,-100,a)
     edit=p.fields[key];local dirty=false;for _,record in ipairs(p.edits) do if record.control==edit then dirty=record.dirty end end
     assert(p.roster.frame:GetWidth()==side-100 and edit:GetText()=='not an item' and dirty and edit.textColor[2]<1,'divider drag lost an invalid input')
 end)
@@ -258,7 +260,7 @@ test('a divider drag keeps an inline function editor and its unsaved code in the
     local p=a:OpenNativeSettings(host,'Functions');local d=p.inlineFunction
     d.code.edit:SetText('return value + 1');d.code.edit.scripts.OnTextChanged(d.code.edit,true);d:UpdateActions()
     for _,delta in ipairs({150,-5000}) do
-        drag(p.roster.splitter,state,delta);d=p.inlineFunction;local side=p.roster.frame:GetWidth()
+        drag(p.roster.splitter,state,delta,a);d=p.inlineFunction;local side=p.roster.frame:GetWidth()
         assert(d.frame.point[2]==side+18 and d.frame:GetWidth()==1000-side-18,'inline editor did not follow the divider')
         assert(d.code:GetText()=='return value + 1' and d:IsDirty(),'divider drag lost unsaved code')
         audit.assertContained(host,frames,'functions after drag '..delta,{captions=true})

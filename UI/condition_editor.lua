@@ -548,6 +548,17 @@ local function createShell()
     shell.groupAll=button(L["Group as All"],100,function() shell:SelectedCommand("GroupSelection","AND") end,true)
     shell.groupAny=button(L["Group as Any"],100,function() shell:SelectedCommand("GroupSelection","OR") end,true)
     shell.selectionLabel=window:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+    -- The same selection-wide actions as the rotation editor, one undo step each.
+    shell.selectionActions={}
+    for _,entry in ipairs({{"duplicate","copy",L["Duplicate selected cards"],function() shell:SelectedCommand("DuplicateSelection") end},
+        {"enable","check",L["Enable selected cards"],function() shell:SelectedCommand("SetSelectionDisabled",false) end},
+        {"disable","minus",L["Disable selected cards"],function() shell:SelectedCommand("SetSelectionDisabled",true) end},
+        {"remove","trash",L["Delete selected cards"],function() shell:SelectedCommand("RemoveSelection") end}}) do
+        local control=addon:CreateWorkbenchIconButton(window,entry[2],entry[3]);control:SetSize(20,20);control:Hide()
+        if entry[1]=="remove" then control.icon:SetVertexColor(1,.3,.3,1) end
+        addon:SetUIScript(control,"OnClick",function() if shell.active then entry[4]() end end)
+        shell.selectionActions[#shell.selectionActions+1]=control;shell["selection_"..entry[1]]=control
+    end
     shell.apply=button(L["Apply"],100,function()
         if not shell.active or not shell:SyncWorking() then return end
         local ok,why=shell.active.session:Apply();if not ok then shell:Message(why);return end
@@ -578,7 +589,11 @@ local function createShell()
             self.selectionLabel:ClearAllPoints();self.selectionLabel:SetPoint("TOPLEFT",16,-top+26);self.selectionLabel:Show()
             self.groupAll:ClearAllPoints();self.groupAll:SetPoint("TOPLEFT",140,-top+34);self.groupAll:Show()
             self.groupAny:ClearAllPoints();self.groupAny:SetPoint("TOPLEFT",244,-top+34);self.groupAny:Show()
-        else self.selectionLabel:Hide();self.groupAll:Hide();self.groupAny:Hide() end
+            for i,control in ipairs(self.selectionActions) do
+                control:ClearAllPoints();control:SetPoint("TOPLEFT",352+(i-1)*22,-top+32);control:Show()
+                if self.active and self.active.readOnly then control:Disable() else control:Enable() end
+            end
+        else self.selectionLabel:Hide();self.groupAll:Hide();self.groupAny:Hide();for _,control in ipairs(self.selectionActions) do control:Hide() end end
         self.canvas.frame:ClearAllPoints();self.canvas.frame:SetPoint("TOPLEFT",16,-top)
         self.bodyTop=top;self:LayoutBody();self.status:SetWidth(math.max(1,width-392))
         if self.active then self.canvas:Render();self:UpdateDescription() end

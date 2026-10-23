@@ -175,7 +175,12 @@ function addon:CreateRoundedCardDecoration(frame)
             decoration[layer.key][#decoration[layer.key]+1]=texture
         end end
     end
+    -- Repainting the same colors (every redraw does) costs eighteen texture
+    -- calls; skip it.
     function decoration:SetColors(r,g,b,alpha,fillAlpha)
+        local last=self.painted
+        if last and last[1]==r and last[2]==g and last[3]==b and last[4]==alpha and last[5]==fillAlpha then return end
+        self.painted={r,g,b,alpha,fillAlpha}
         for _,part in ipairs(self.border) do part:SetVertexColor(r,g,b,alpha) end
         for _,part in ipairs(self.fill) do part:SetVertexColor(.15,.15,.15,fillAlpha) end
     end
@@ -482,6 +487,114 @@ function addon:SetUIScript(frame,event,callback)
     if handler and self.Diagnostics then handler=self.Diagnostics:Wrap({module='ui',operation=event},handler) end
     frame:SetScript(event,handler)
     return handler
+end
+
+-- Live reflow, coalesced. A window grip or divider drag reports a new size
+-- every rendered frame, often through several nested frames. Owners do the
+-- cheap geometry at once and request their expensive relayout here: one
+-- shared driver runs each pending owner at most once per rendered frame,
+-- the latest request winning, and then stops itself so idle frames cost
+-- nothing. An owner that is not visible is dropped (it draws when opened
+-- again). Each run is timed, and the owner's next run waits twice that long,
+-- so a relayout that is slow on this machine takes at most a third of the
+-- frames of a drag; the last request always runs once the waiting is over.
+-- A settle request runs once its owner has had no reflow request for a few
+-- rendered frames: the full drawing after a drag that reflowed cheaply.
+local reflowQueue,settleQueue,reflowDriver={},{},nil
+local function reflowClock()
+    if type(debugprofilestop)=='function' then return debugprofilestop()/1000 end
+    if type(GetTime)=='function' then return GetTime() end
+    return 0
+end
+local function reflowVisible(frame)
+    if not frame then return true end
+    if frame.IsVisible then return frame:IsVisible() and true or false end
+    for _=1,64 do
+        if not frame then return true end
+        if frame.IsShown and not frame:IsShown() then return false end
+        frame=frame.GetParent and frame:GetParent() or nil
+    end
+    return true
+end
+local function driveReflow(driver)
+    local batch=reflowQueue;reflowQueue={}
+    for owner,request in pairs(batch) do
+        if reflowQueue[owner] then
+            -- Requested again by a relayout that already ran this frame.
+        elseif not reflowVisible(request.frame) then
+            owner.rmReflowAfter=nil
+        elseif (owner.rmReflowAfter or 0)>reflowClock() then
+            reflowQueue[owner]=request
+        else
+            local start=reflowClock()
+            local ok,why=pcall(request.run)
+            local finish=reflowClock();owner.rmReflowAfter=finish+math.min(.25,math.max(0,finish-start)*2)
+            if not ok then local handler=geterrorhandler and geterrorhandler();if handler then pcall(handler,why) end end
+        end
+    end
+    local due={}
+    for owner,request in pairs(settleQueue) do
+        if not reflowQueue[owner] then
+            request.wait=request.wait-1
+            if request.wait<=0 then settleQueue[owner]=nil;if reflowVisible(request.frame) then due[#due+1]=request end end
+        end
+    end
+    for _,request in ipairs(due) do
+        local ok,why=pcall(request.run)
+        if not ok then local handler=geterrorhandler and geterrorhandler();if handler then pcall(handler,why) end end
+    end
+    if next(reflowQueue)==nil and next(settleQueue)==nil then driver:SetScript('OnUpdate',nil) end
+end
+function addon:RequestWorkbenchReflow(owner,frame,run)
+    if type(owner)~='table' or type(run)~='function' then return end
+    reflowQueue[owner]={frame=frame,run=run}
+    reflowDriver=reflowDriver or CreateFrame('Frame')
+    if not reflowDriver:GetScript('OnUpdate') then reflowDriver:SetScript('OnUpdate',driveReflow) end
+end
+function addon:RequestWorkbenchSettle(owner,frame,run,frames)
+    if type(owner)~='table' or type(run)~='function' then return end
+    settleQueue[owner]={frame=frame,run=run,wait=frames or 6}
+    reflowDriver=reflowDriver or CreateFrame('Frame')
+    if not reflowDriver:GetScript('OnUpdate') then reflowDriver:SetScript('OnUpdate',driveReflow) end
+end
+-- Runs every pending relayout and settle now, without waiting for a frame
+-- or a cost window (for code and tests that need the final layout at once).
+function addon:FlushWorkbenchReflow()
+    for _=1,8 do
+        if next(reflowQueue)==nil and next(settleQueue)==nil then break end
+        for owner in pairs(reflowQueue) do if type(owner)=='table' then owner.rmReflowAfter=nil end end
+        for _,request in pairs(settleQueue) do request.wait=1 end
+        driveReflow(reflowDriver)
+    end
+end
+-- A released owner leaves both queues.
+function addon:CancelWorkbenchReflow(owner) reflowQueue[owner]=nil;settleQueue[owner]=nil;if type(owner)=='table' then owner.rmReflowAfter=nil end end
+function addon:IsWorkbenchReflowPending(owner) return reflowQueue[owner]~=nil or settleQueue[owner]~=nil end
+
+-- Box selection on a card canvas. The pointer in a canvas child's own
+-- coordinates (x right, y down from its top-left, zoom included), or nil when
+-- the client cannot tell.
+function addon:WorkbenchPointerIn(child)
+    if type(GetCursorPosition)~='function' or not child or not child.GetLeft or not child.GetTop or not child.GetEffectiveScale then return end
+    local ok,x,y=pcall(GetCursorPosition);local scale=child:GetEffectiveScale();local left,top=child:GetLeft(),child:GetTop()
+    local function finite(value) return type(value)=='number' and value==value and value>-math.huge and value<math.huge end
+    if not ok or not finite(x) or not finite(y) or not finite(scale) or scale<=0 or not finite(left) or not finite(top) then return end
+    return x/scale-left,top-y/scale
+end
+-- The drawn box: a faint gold fill with a 1px outline, placed in child
+-- coordinates with :Place(x1,y1,x2,y2).
+function addon:CreateWorkbenchSelectionBox(child)
+    local frame=CreateFrame('Frame',nil,child);frame:EnableMouse(false);frame:Hide()
+    frame.fill=frame:CreateTexture(nil,'OVERLAY');frame.fill:SetAllPoints(frame);frame.fill:SetColorTexture(.9,.75,.3,.12)
+    for _,side in ipairs({{'TOPLEFT','TOPRIGHT','h'},{'BOTTOMLEFT','BOTTOMRIGHT','h'},{'TOPLEFT','BOTTOMLEFT','v'},{'TOPRIGHT','BOTTOMRIGHT','v'}}) do
+        local edge=frame:CreateTexture(nil,'OVERLAY');edge:SetColorTexture(.9,.75,.3,.9);edge:SetPoint(side[1]);edge:SetPoint(side[2])
+        if side[3]=='h' then edge:SetHeight(1) else edge:SetWidth(1) end
+    end
+    function frame:Place(x1,y1,x2,y2)
+        self:ClearAllPoints();self:SetPoint('TOPLEFT',child,'TOPLEFT',math.min(x1,x2),-math.min(y1,y2))
+        self:SetSize(math.max(1,math.abs(x2-x1)),math.max(1,math.abs(y2-y1)));self:SetFrameLevel(child:GetFrameLevel()+200);self:Show()
+    end
+    return frame
 end
 
 -- One tightly packed position pad for profile and per-card highlight settings.

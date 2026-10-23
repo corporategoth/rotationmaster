@@ -213,7 +213,7 @@ test('General keeps whole categories in responsive columns and sliders accept nu
     local f,parent=fixture();local a=f.addon;local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildGeneralSettings(form) end)
     assert(p.columns and p.fields.enable:GetParent()==p.columns[1] and p.fields.effect:GetParent()==p.columns[2])
     local raw=assert(p.fields.poll_value,'slider has no numeric field');raw:SetText('0.25');raw.scripts.OnTextChanged(raw,true);raw.scripts.OnEnterPressed(raw);assert(a.db.profile.poll==.25)
-    p:SetWidth(700);assert(p.fields.enable:GetParent()==p.child and p.fields.effect:GetParent()==p.child)
+    p:SetWidth(700);a:FlushWorkbenchReflow();assert(p.fields.enable:GetParent()==p.child and p.fields.effect:GetParent()==p.child)
 end)
 test('native spell and item references display names icons and commit exact IDs',function()
     local f,parent=fixture();local a=f.addon
@@ -873,7 +873,7 @@ test('spell rank options share wide inputs and align underneath narrow inputs',f
     p:Open(build);local input,check=p.fields.spell,p.fields.ranked
     assert(input.point[3]==check.point[3] and check.point[2]>input.point[2]+input:GetWidth(),'wide rank option is not to the right')
     assert(input:GetWidth()>=200);check:Click();assert(rank==true and not spell,'rank toggled the selected spell')
-    p:SetWidth(500);input,check=p.fields.spell,p.fields.ranked
+    p:SetWidth(500);f.addon:FlushWorkbenchReflow();input,check=p.fields.spell,p.fields.ranked
     assert(check.point[2]==input.point[2] and check.point[3]<input.point[3],'narrow rank option does not align with the input')
 end)
 test('item set Global shares the wide Name row without mutating scope on open',function()
