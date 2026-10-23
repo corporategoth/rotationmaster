@@ -2361,10 +2361,20 @@ addon.UPDATE_STEALTH = wrapEvent(addon.SwitchRotation)
 function addon:UnbindItemSet(id,expectedItems)
     if InCombatLockdown and InCombatLockdown() then return false end
     local slots=self.db.char.bindings[id] or {};self.db.char.bindings[id]=nil
-    for _,slot in ipairs(slots) do
-        local kind,item=GetActionInfo(slot)
-        if kind=='item' and (expectedItems and self:FindItemInItems(expectedItems,item) or self:FindItemInItemSet(id,item)) and type(PickupAction)=='function' and type(ClearCursor)=='function' then PickupAction(slot);ClearCursor() end
+    -- Clearing a slot picks its item up; never swap with or discard what the
+    -- cursor already holds. Clear the slots once the cursor is empty.
+    local function clearSlots()
+        if type(GetCursorInfo)=='function' and GetCursorInfo() then
+            if C_Timer and C_Timer.After then C_Timer.After(.5,clearSlots) end
+            return
+        end
+        if InCombatLockdown and InCombatLockdown() then return end
+        for _,slot in ipairs(slots) do
+            local kind,item=GetActionInfo(slot)
+            if kind=='item' and (expectedItems and self:FindItemInItems(expectedItems,item) or self:FindItemInItemSet(id,item)) and type(PickupAction)=='function' and type(ClearCursor)=='function' then PickupAction(slot);ClearCursor() end
+        end
     end
+    clearSlots()
     if self.bindingItemSet==id then self.bindingItemSet=nil end
     if self.EndHighlightSlot then self:EndHighlightSlot() end
     self:ButtonFetch()
