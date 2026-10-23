@@ -18,12 +18,15 @@ local function rune(kind,op,n)return{type='RUNE',rune=kind,operator=op,value=n}e
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function off(id,action,conditions)local step=spell(id,action,conditions);step.disabled=true;return step end
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
-local function block(id,steps)assert(addon:RegisterDefaultBlock({id=id,revision=1,families={'progression'},class='DEATHKNIGHT',steps=steps}))end
+local function block(id,steps,revision)assert(addon:RegisterDefaultBlock({id=id,revision=revision or 1,families={'progression'},class='DEATHKNIGHT',steps=steps}))end
 local FEVER,PLAGUE=55095,55078
 local both=all(disease(FEVER),disease(PLAGUE))
 local missing=any(negate(disease(FEVER)),negate(disease(PLAGUE)))
 local B,F,U,D=1,2,3,4
 local noRunes=all(rune(B,'EQUALS',0),rune(F,'EQUALS',0),rune(U,'EQUALS',0),rune(D,'EQUALS',0))
+-- Presences are stances, read by spell (Blood 48263, Frost 48266, Unholy 48265): none active asks for the
+-- specialization's own; one you chose by hand is kept.
+local noPresence=all(negate({type='FORM',form=48263}),negate({type='FORM',form=48266}),negate({type='FORM',form=48265}))
 local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
 -- Casts and channels (Army of the Dead) and a target that is not attackable end advice.
 block('mop.deathknight.boundaries',{
@@ -49,8 +52,8 @@ block('mop.deathknight.survival',{
 })
 -- Both Blood premades: presence, Bone Shield, defensive cooldowns by health.
 block('mop.deathknight.blood-upkeep',{
- spell('blood-presence',48263,all(negate(buff(48263)),negate(buff(48266)),negate(buff(48265)))),
- spell('frost-presence',48266,all(negate(buff(48263)),negate(buff(48266)),negate(buff(48265)),negate(known(48263)))),
+ spell('blood-presence',48263,noPresence),
+ spell('frost-presence',48266,all(noPresence,negate(known(48263)))),
  spell('bone-shield',49222,any(negate(buff(49222)),{type='BUFF_STACKS',unit='player',spell=49222,operator='LESSTHANOREQUALS',value=1})),
  spell('rune-tap',48982,all(combat(),any(buff(96171),all(health('LESSTHAN',.6),any(rune(B,'GREATERTHANOREQUALS',1),rune(D,'GREATERTHANOREQUALS',1)))))),
  spell('vampiric-blood',55233,all(combat(),health('LESSTHAN',.5))),
@@ -59,7 +62,7 @@ block('mop.deathknight.blood-upkeep',{
  spell('empower',47568,all(combat(),health('LESSTHAN',.45),rune(F,'EQUALS',0),rune(U,'EQUALS',0),rune(D,'EQUALS',0))),
  spell('death-pact',48743,all(combat(),health('LESSTHAN',.3))),
  off('anti-magic-shell',48707,combat()),
-})
+},2)
 -- Both Blood premades open from range with Outbreak, Icy Touch or Death Grip.
 block('mop.deathknight.blood-pull',{
  {id='pull',type='branch',conditions=all(negate(combat()),{type='BEYOND_MELEE',unit='target'}),onFalse={},onTrue={
@@ -67,13 +70,13 @@ block('mop.deathknight.blood-pull',{
 })
 -- Both Frost premades (dual-wield and two-hand): presence and cooldowns.
 block('mop.deathknight.frost-upkeep',{
- spell('frost-presence',48266,all(negate(buff(48263)),negate(buff(48266)),negate(buff(48265)))),
+ spell('frost-presence',48266,noPresence),
  spell('pillar',51271,combat()),
  spell('raise-dead',46584,combat()),
  spell('empower',47568,all(combat(),noRunes,{type='POWER',unit='player',operator='LESSTHAN',value=70})),
  spell('icebound',48792,all(combat(),health('LESSTHAN',.35))),
  spell('death-pact',48743,all(combat(),health('LESSTHAN',.3))),
-})
+},2)
 -- Both Frost premades: pull, survival, Blood Tap, diseases, the AoE arm and Soul Reaper. Icy Veins'
 -- order; Howling Blast carries Frost Fever, Plague Strike Blood Plague.
 block('mop.deathknight.frost-open',{
@@ -102,8 +105,8 @@ block('mop.deathknight.frost-tail',{
 -- Both Unholy premades: presence, a permanent ghoul, Gargoyle, Unholy Frenzy and defensives.
 local lust=any(buff(2825),buff(32182),buff(80353),buff(90355))
 block('mop.deathknight.unholy-upkeep',{
- spell('unholy-presence',48265,all(negate(buff(48263)),negate(buff(48266)),negate(buff(48265)))),
- spell('frost-presence',48266,all(negate(buff(48263)),negate(buff(48266)),negate(buff(48265)),negate(known(48265)))),
+ spell('unholy-presence',48265,noPresence),
+ spell('frost-presence',48266,all(noPresence,negate(known(48265)))),
  spell('raise-dead',46584,negate({type='PET'})),
  spell('gargoyle',49206,all(combat(),any(lust,all(elite,{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=30})))),
  spell('unholy-frenzy',49016,combat()),
@@ -111,7 +114,7 @@ block('mop.deathknight.unholy-upkeep',{
  spell('icebound',48792,all(combat(),health('LESSTHAN',.35))),
  spell('death-pact',48743,all(combat(),health('LESSTHAN',.3),{type='PET'})),
  off('anti-magic-shell',48707,combat()),
-})
+},2)
 -- Both Unholy premades: pull, survival, diseases (Plague Strike applies both from 68 with Ebon
 -- Plaguebringer; Icy Touch before), and the AoE arm.
 block('mop.deathknight.unholy-open',{

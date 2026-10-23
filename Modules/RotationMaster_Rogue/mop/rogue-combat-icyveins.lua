@@ -2,13 +2,12 @@
 -- default): how Combat played before the Siege of Orgrimmar patch raised Sinister Strike to 50 energy on 2026-06-02,
 -- superseded for Phase 5. Slice and Dice, Revealing Strike kept up, five-point Rupture on a long single fight and
 -- Eviscerate, Sinister Strike as the builder; same reminders and pack play as the recommended Combat premade. Same switch
--- (Blade Flurry known), lower priority. Shared parts: mop/blocks.lua.
+-- (Combat specialization), lower priority. Shared parts: mop/blocks.lua.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
 local function points(op,n)return{type='POINT',unit='player',operator=op,value=n}end
 local function mine(id)return{type='DEBUFF',unit='target',spell=id,owndebuff=true}end
 local function remain(id,op,n)return{type='DEBUFF_REMAIN',unit='target',spell=id,owndebuff=true,operator=op,value=n}end
@@ -18,7 +17,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local boss={type='CLASSIFICATION',unit='target',value='worldboss'}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.combat.icyveins',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.combat.icyveins',revision=2,
  blocks={['mop.rogue.boundaries']=1,['mop.rogue.combat-opener']=1,['mop.rogue.out-of-combat']=1,['mop.rogue.combat-aoe']=1,['mop.rogue.solo']=1,['mop.rogue.upkeep']=1,['mop.rogue.combat-upkeep']=1},
  nameKey='Default.MoP.Rogue.Combat.IcyVeins.Name',descriptionKey='Default.MoP.Rogue.Combat.IcyVeins.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE',minLevel=10,maxLevel=90},
@@ -27,7 +26,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://www.warcrafttavern.com/mop/guides/pve-combat-rogue-dps-rotations-cooldowns/',title='Warcraft Tavern: Combat Rogue rotation (MoP Classic)',reviewedAt='2026-10-23'},
  {url='https://www.method.gg/mop-classic/combat-rogue-class-guide-mop-classic',title='Method: Combat Rogue guide (MoP Classic)',reviewedAt='2026-10-23'},
  {url='https://wowtbc.gg/mop/class-guides/combat-rogue/',title='wowtbc.gg: Combat Rogue (MoP Classic)',reviewedAt='2026-10-23'}},
- body={priority=20,disabled=true,switch=known(13877),
+ body={priority=20,disabled=true,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=260}}},
  cooldowns={block('mop.rogue.upkeep','rogue-'),block('mop.rogue.combat-upkeep','rogue-')},
  rotation={
  block('mop.rogue.boundaries','rogue-'),

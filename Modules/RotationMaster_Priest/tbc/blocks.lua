@@ -14,9 +14,14 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function pct(kind,unit,op,v)return{type=kind,unit=unit,operator=op,value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or {}}end
-assert(addon:RegisterDefaultBlock({id='tbc.priest.boundaries',revision=1,families={'tbc'},class='PRIEST',steps={
+-- A cast stops the list; a channel too, unless it is Mind Flay (any rank) past its first tick (a third
+-- of the channel: ticks are evenly spaced) and Mind Blast, or Shadow Word: Death while you can take the
+-- backlash, is ready to clip it (Icy Veins, Wowhead). Other channels are never cut.
+local clip=all({type='CHANNELING_SPELL',unit='player',spell=15407},{type='CHANNELING_PROGRESS',unit='player',operator='GREATERTHANOREQUALS',value=.34},
+ any({type='SPELL_AVAIL',spell=8092},all(known(32379),pct('HEALTHPCT','player','GREATERTHAN',.5),{type='SPELL_AVAIL',spell=32379})))
+assert(addon:RegisterDefaultBlock({id='tbc.priest.boundaries',revision=2,families={'tbc'},class='PRIEST',steps={
  stop('cast',{type='CASTING',unit='player'}),
- stop('channel',{type='CHANNELING',unit='player'}),
+ stop('channel',all({type='CHANNELING',unit='player'},negate(clip))),
 }}))
 -- Damage needs a living hostile target that is not someone else's fight.
 assert(addon:RegisterDefaultBlock({id='tbc.priest.enemy-target',revision=1,families={'tbc'},class='PRIEST',steps={

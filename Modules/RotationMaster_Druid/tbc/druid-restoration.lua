@@ -13,8 +13,8 @@ local function hot(id)return{type='BUFF',unit='target',spell=id,anyrank=true,own
 local function hurt(v)return{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=v}end
 local function combat()return{type='COMBAT',unit='player'}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.druid.restoration',revision=1,
- blocks={['tbc.druid.boundaries']=1,['tbc.druid.feral-form-stop']=1,['tbc.druid.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.druid.restoration',revision=2,
+ blocks={['tbc.druid.boundaries']=2,['tbc.druid.feral-form-stop']=2,['tbc.druid.upkeep']=1},
  nameKey='Default.TBC.Druid.Restoration.Name',descriptionKey='Default.TBC.Druid.Restoration.Description',
  applicability={families={'tbc'},actionContext='player',class='DRUID',minLevel=10,maxLevel=70},
  tags={'leveling','endgame','restoration','healer','icy-veins','wowhead','warcraft-tavern'},
@@ -25,7 +25,7 @@ assert(addon:RegisterDefaultRotation({
  body={priority=30,switch={type='PRIMARY_TALENT_TREE',tree=3},
   cooldowns={
    {id='resto-upkeep',type='block',block='tbc.druid.upkeep',prefix='resto-'},
-   {id='resto-tree-of-life',type='spell',action=33891,ranked=false,conditions=negate(any(own(33891),own(768),own(5487),own(9634),own(783),own(1066),own(33943),own(40120)))},
+   {id='resto-tree-of-life',type='spell',action=33891,ranked=false,conditions=negate(any({type='FORM',form=33891},{type='FORM',form=768},{type='FORM',form=5487},{type='FORM',form=9634},{type='FORM',form=783},{type='FORM',form=1066},{type='FORM',form=33943},{type='FORM',form=40120}))},
    {id='resto-swiftness',type='spell',action=17116,ranked=false,conditions=all(combat(),{type='FRIENDLY',unit='target'},hurt(0.3))},
    {id='resto-tranquility',type='spell',action=740,ranked=false,conditions=all(combat(),{type='PROXIMITY_HEALTHPCT_COUNT',unit='player',healthoperator='LESSTHAN',health=0.6,operator='GREATERTHANOREQUALS',value=3,distance=30})},
    {id='resto-innervate',type='spell',action=29166,ranked=false,conditions=all(combat(),{type='MANAPCT',unit='player',operator='LESSTHAN',value=0.25})},
@@ -45,7 +45,7 @@ assert(addon:RegisterDefaultRotation({
      any(negate(hot(33763)),{type='BUFF_STACKS',unit='target',spell=33763,ownbuff=true,operator='LESSTHAN',value=3},{type='BUFF_REMAIN',unit='target',spell=33763,ownbuff=true,operator='LESSTHANOREQUALS',value=1.5}))},
     {id='resto-rejuvenation',type='spell',action=774,ranked=false,conditions=all(hurt(0.95),negate(hot(774)))},
     {id='resto-regrowth-hot',type='spell',action=8936,ranked=false,conditions=all(hurt(0.8),negate(hot(8936)))},
-    {id='resto-tree',type='branch',conditions=own(33891),onTrue={
+    {id='resto-tree',type='branch',conditions={type='FORM',form=33891},onTrue={
      {id='resto-tree-regrowth',type='spell',action=8936,ranked=false,conditions=hurt(0.7)},
     },onFalse={
      {id='resto-touch',type='spell',action=5185,ranked=false,conditions=hurt(0.5)},

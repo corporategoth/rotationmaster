@@ -1,5 +1,5 @@
--- Mists of Pandaria Classic Beast Mastery Hunter, levels 10–90, once Kill Command (the Beast
--- Mastery signature spell) is known. Wowhead's Phase 5 order, which the wowsims APL matches, with
+-- Mists of Pandaria Classic Beast Mastery Hunter, levels 10–90, in the Beast Mastery
+-- specialization (253). Wowhead's Phase 5 order, which the wowsims APL matches, with
 -- wowsims' Beast Cleave and pack Kill Command gates and Hekili's Bestial Wrath focus floor: Kill
 -- Shot, Kill Command (held in the 3 s before Bestial Wrath), talents, Focus Fire at five Frenzy
 -- outside Bestial Wrath, Serpent Sting kept up by Cobra Shot, Arcane Shot as a focus dump, Cobra
@@ -30,7 +30,7 @@ local frenzy=any({type='BUFF_STACKS',unit='pet',spell=19615,operator='GREATERTHA
 local focusFire=all(negate(wrath),frenzy)
 local thrill=buff(34720)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.beastmastery',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.beastmastery',revision=2,
  blocks={['mop.hunter.boundaries']=1,['mop.hunter.mark']=1,['mop.hunter.pet']=1,['mop.hunter.aspect']=1,['mop.hunter.utility']=1,
   ['mop.hunter.talents']=1,['mop.hunter.talent-shots']=1,['mop.hunter.serpent']=1,['mop.hunter.filler']=1},
  nameKey='Default.MoP.Hunter.BeastMastery.Name',descriptionKey='Default.MoP.Hunter.BeastMastery.Description',
@@ -43,7 +43,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/HunterBeastMastery.simc',title='Hekili MoP Classic Beast Mastery priority',reviewedAt='2026-10-23',revision='0750b5dd98',notes='Bestial Wrath at 50 focus; no Focus Fire during Bestial Wrath.'},
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/beast-mastery-hunter-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Beast Mastery Hunter rotation',reviewedAt='2026-10-23',revision='2026-05-29',notes='Same abilities; Kill Command before Kill Shot.'},
  },
- body={priority=10,switch=known(34026),
+ body={priority=10,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=253}}},
   cooldowns={
    block('bm-pet','mop.hunter.pet','bm-'),
    block('bm-aspect','mop.hunter.aspect','bm-'),

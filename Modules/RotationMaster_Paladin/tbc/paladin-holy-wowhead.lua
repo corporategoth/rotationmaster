@@ -5,8 +5,8 @@
 local _,addon=...
 local function hurt(v)return{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=v}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.holy.wowhead',revision=1,
- blocks={['tbc.paladin.holy-upkeep']=1,['tbc.paladin.boundaries']=1,['tbc.paladin.holy-hostile']=1,['tbc.paladin.holy-emergency']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.holy.wowhead',revision=2,
+ blocks={['tbc.paladin.holy-upkeep']=2,['tbc.paladin.boundaries']=1,['tbc.paladin.holy-hostile']=1,['tbc.paladin.holy-emergency']=1},
  nameKey='Default.TBC.Paladin.Holy.Wowhead.Name',descriptionKey='Default.TBC.Paladin.Holy.Wowhead.Description',
  applicability={families={'tbc'},actionContext='player',class='PALADIN',minLevel=10,maxLevel=70},
  tags={'endgame','raid','holy','healer','tank-healing','wowhead'},

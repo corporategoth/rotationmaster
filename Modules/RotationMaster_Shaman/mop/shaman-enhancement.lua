@@ -1,6 +1,6 @@
 -- Mists of Pandaria Classic Enhancement Shaman, levels 10-90 (the recommended variant): Wowhead's Phase 5
--- order, which Warcraft Tavern, Method and Hekili follow. Selected while Lava Lash is known (Enhancement's own
--- spell; RM stores MoP rotations per talent group and has no specialization condition). Out of combat Unleash
+-- order, which Warcraft Tavern, Method and Hekili follow. Selected in the Enhancement specialization (263)
+-- from level 10 (RM stores MoP rotations per talent group). Out of combat Unleash
 -- Elements while running in (Lightning Bolt from range before it is learned). Two or more engaged enemies:
 -- Magma at six, Fire Nova at four once Flame Shock is spread, Chain Lightning at five Maelstrom Weapon (three
 -- when it lands before the next swing), Lava Lash on a Flame Shocked target. Then Unleash Elements with
@@ -22,9 +22,9 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local flame={type='DEBUFF',unit='target',spell=8050,owndebuff=true}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.enhancement',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.enhancement',revision=2,
  blocks={['mop.shaman.manual']=1,['mop.shaman.lightning-shield']=1,['mop.shaman.group']=1,['mop.shaman.fire-totems']=1,
-  ['mop.shaman.enhancement-upkeep']=1,['mop.shaman.enhancement-aoe']=1},
+  ['mop.shaman.enhancement-upkeep']=2,['mop.shaman.enhancement-aoe']=1},
  nameKey='Default.MoP.Shaman.Enhancement.Name',descriptionKey='Default.MoP.Shaman.Enhancement.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='SHAMAN',minLevel=10,maxLevel=90},
  tags={'enhancement','dps','melee','leveling','endgame','wowhead','warcraft-tavern'},
@@ -32,7 +32,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://www.wowhead.com/mop-classic/guide/classes/shaman/enhancement/dps-leveling-talent-builds-tips',title='Wowhead: Enhancement Shaman levelling (MoP Classic)',reviewedAt='2026-10-23',revision='2026-06-29'},
  {url='https://www.warcrafttavern.com/mop/guides/pve-enhancement-shaman-rotation-cooldowns/',title='Warcraft Tavern: Enhancement Shaman rotation (MoP)',reviewedAt='2026-10-23'},
  {url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/ShamanEnhancement.simc',title='Hekili (MoP fork): Enhancement Shaman priority',reviewedAt='2026-10-23',revision='0750b5dd98005481baf828cce26149b9abca875b'}},
- body={priority=30,switch={type='SPELL_KNOWN',spell=60103},
+ body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=263}}},
  cooldowns={block('mop.shaman.lightning-shield','shaman-enh-'),block('mop.shaman.enhancement-upkeep','shaman-enh-'),block('mop.shaman.fire-totems','shaman-enh-'),
   block('mop.shaman.group','shaman-enh-'),
   spell('shaman-enh-shamanistic-rage',30823,all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.6})),

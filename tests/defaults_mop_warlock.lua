@@ -25,15 +25,16 @@ local function first(f,s,id)return(M.first(f,s,id))end
 local function dots(s,...)s.debuffs={};for _,id in ipairs({...})do s.debuffs[#s.debuffs+1]={id=id,expires=130}end end
 local function stopped(f,s,id,label)local x,r=M.first(f,s,id);assert(not x and r.status=='stopped'and r.suppressAttack,label..' '..id..': '..tostring(x)..' '..tostring(r.status))end
 
-test('switch: the catch-all below 10 and without a spec; each spec spell picks its premade; variants off; dual spec',function()
+test('switch: the catch-all below 10 and without a spec; each specialization picks its premade; variants off; dual spec',function()
  local f,s=lock(5);assert(M.scoped(f,'WARLOCK')==6);assert(M.selected(f,s)==UN and M.ordered(f,s)==UN)
- s.level=40;assert(M.selected(f,s)==UN,'level 40 with no specialization chosen')
- M.know(s,30108);assert(M.selected(f,s)==AFF and M.ordered(f,s)==AFF)
+ s.specID(265);assert(M.ordered(f,s)==UN,'levels 1-9 stay in the catch-all');s.spec=nil
+ s.level=40;M.know(s,30108,17962,103958);assert(M.selected(f,s)==UN and M.ordered(f,s)==UN,'level 40 with no specialization chosen')
+ s.specID(265);assert(M.selected(f,s)==AFF and M.ordered(f,s)==AFF)
  assert(M.switches(f,TAV)and not f.addon:GetDefaultRotation(TAV).enabled,'the Haunt pooling variant shares the switch, off by default')
  local a=f.addon;assert(a:SetDefaultRotationEnabled(TAV,true));assert(M.ordered(f,s)==AFF,'the recommended premade has the higher priority')
  assert(a:SetDefaultRotationEnabled(AFF,false));assert(M.ordered(f,s)==TAV);assert(a:SetDefaultRotationEnabled(AFF,true))
- s.talentGroup=2;s.known[30108]=false;M.know(s,17962);assert(M.selected(f,s)==DESTRO and M.ordered(f,s)==DESTRO,'second talent group')
- s.known[17962]=false;M.know(s,103958);assert(M.ordered(f,s)==DEMO and not f.addon:GetDefaultRotation(GUIDE).enabled)
+ s.talentGroup=2;s.specID(267);assert(M.selected(f,s)==DESTRO and M.ordered(f,s)==DESTRO,'second talent group')
+ s.specID(266);assert(M.ordered(f,s)==DEMO and not f.addon:GetDefaultRotation(GUIDE).enabled)
  assert(f.addon:GetDefaultRotation(GUIDE).envelope.body.priority<f.addon:GetDefaultRotation(DEMO).envelope.body.priority)
  for _,id in ipairs({AFF,DEMO,DESTRO})do assert(f.addon:GetDefaultRotation(id).envelope.body.priority>f.addon:GetDefaultRotation(UN).envelope.body.priority)end
  for _,src in ipairs(f.addon:GetDefaultRotation(TAV).envelope.sources)do assert(src.url:find('warcrafttavern')or src.url:find('method'),src.url)end
@@ -43,8 +44,10 @@ test('boundaries: casts, channels and no target stop; Malefic Grasp and Drain So
  for _,id in ipairs(ALL)do local f,s=lock(90,1,AFFKIT);M.know(s,unpack(DEMOKIT));M.know(s,unpack(DESTROKIT))
   s.cast=true;stopped(f,s,id,'cast');s.cast=false;s.channel=true;stopped(f,s,id,'channel')
   if id==AFF or id==TAV then
-   s.debuffs={{id=103103,expires=102}};assert(first(f,s,id),'Malefic Grasp channel: next action shown')
-   s.debuffs={{id=1120,expires=102}};assert(first(f,s,id),'Drain Soul channel: next action shown')
+   s.debuffs={{id=103103,expires=102}};stopped(f,s,id,'a Malefic Grasp debuff is not the channel')
+   s.debuffs={};s.channelSpell=103103;assert(first(f,s,id),'Malefic Grasp channel: next action shown')
+   s.channelSpell=1120;assert(first(f,s,id),'Drain Soul channel: next action shown');s.channelSpell=689;stopped(f,s,id,'Drain Life runs to the end')
+   s.channelSpell=nil
   end
   s.channel=false;s.debuffs={};s.hostile=false;stopped(f,s,id,'no target');s.hostile=true;assert(first(f,s,id),id)
  end
@@ -111,6 +114,7 @@ end)
 
 test('demonology: in Metamorphosis, leave cue, Doom, Touch of Chaos, Soul Fire, packs',function()
  local f,s=lock(90,2,DEMOKIT);dots(s,172);s.buffs={{id=103958,expires=200}};s.fury=200
+ assert(first(f,s,DEMO)~=103958,'the Metamorphosis aura alone is not the form');s.shift(103958)
  assert(first(f,s,DEMO)==103958,'no Dark Soul, 300 fury or less: leave');s.buffs[2]={id=113861,expires=120};assert(first(f,s,DEMO)==603,'in Dark Soul stay: Doom')
  s.buffs[2]=nil;s.fury=500;s.debuffs[2]={id=603,expires=160};assert(first(f,s,DEMO)==103964,'Touch of Chaos')
  s.debuffs[2].expires=120;assert(first(f,s,DEMO)==103964,'Doom ending, no forecast: not refreshed');s.ttd=60;assert(first(f,s,DEMO)==603);s.ttd=nil;s.debuffs[2].expires=160
@@ -118,7 +122,7 @@ test('demonology: in Metamorphosis, leave cue, Doom, Touch of Chaos, Soul Fire, 
  assert(first(f,s,DEMO)==104027,'Soul Fire on any Molten Core');s.buffs[2]=nil
  s.enemies={0,0,0};assert(first(f,s,DEMO)==104025,'Immolation Aura on three');s.buffs[2]={id=104025,expires=110};assert(first(f,s,DEMO)==103964)
  s.enemies={0,0,0,0,0,0,0};assert(first(f,s,DEMO)==115422,'Void Ray on seven');s.enemies={}
- local g,t=lock(20,2,{103958,6353,105174});dots(t,172);t.buffs={{id=103958}};t.fury=500;stopped(g,t,DEMO,'no demon spells yet: the caster list does not apply')
+ local g,t=lock(20,2,{103958,6353,105174});dots(t,172);t.shift(103958);t.fury=500;stopped(g,t,DEMO,'no demon spells yet: the caster list does not apply')
 end)
 
 test('demonology variant: Molten Core pooled to eight, Metamorphosis at 900 fury or with Dark Soul',function()
@@ -177,7 +181,7 @@ test('reminders: pets by spec and talent, Healthstone, shared upkeep, spec coold
  local d,v=lock(90,2,DEMOKIT);M.know(v,30146,112870,697,111898,104316,113861,755);v.combat=false;assert(M.upkeep(d,v,DEMO)['warlock-demo-felguard']==30146)
  v.pet=true;v.combat=true;u=M.upkeep(d,v,DEMO);assert(u['warlock-demo-dark-soul']and u['warlock-demo-grimoire-felguard']and not u['warlock-demo-imp-swarm'],'Imp Swarm waits for Dark Soul')
  v.buffs={{id=113861,expires=115}};assert(M.upkeep(d,v,DEMO)['warlock-demo-imp-swarm']==104316);v.mana=20;assert(M.upkeep(d,v,DEMO)['warlock-demo-life-tap'])
- v.buffs[2]={id=103958};assert(not M.upkeep(d,v,DEMO)['warlock-demo-life-tap'],'no Life Tap in demon form');v.petHealth=20;assert(M.upkeep(d,v,DEMO)['warlock-demo-health-funnel']==755)
+ v.shift(103958);assert(not M.upkeep(d,v,DEMO)['warlock-demo-life-tap'],'no Life Tap in demon form');v.petHealth=20;assert(M.upkeep(d,v,DEMO)['warlock-demo-health-funnel']==755)
  local x,w=lock(90,3,DESTROKIT);M.know(w,113858,120451);w.pet=false;u=M.upkeep(x,w,DESTRO);assert(u['warlock-destro-dark-soul']and not u['warlock-destro-havoc']and not u['warlock-destro-flames-of-xoroth'])
  w.enemies={0,0};assert(M.upkeep(x,w,DESTRO)['warlock-destro-havoc']==80240,'Havoc on two');w.talents[15]=true;assert(M.upkeep(x,w,DESTRO)['warlock-destro-flames-of-xoroth']==120451)
  w.health=40;assert(M.upkeep(x,w,DESTRO)['warlock-destro-ember-tap']==114635)

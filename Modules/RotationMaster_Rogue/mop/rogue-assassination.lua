@@ -1,10 +1,10 @@
 -- Mists of Pandaria Classic Assassination Rogue, levels 10-90 (the recommended variant): wowsims' Phase 5 APL, which
--- Hekili mirrors and Wowhead's Phase 5 page describes, with Icy Veins' levelling additions. Selected while Mutilate is
--- known (RM stores MoP rotations per talent group and has no specialization condition). Stealth opens with Cheap Shot
+-- Hekili mirrors and Wowhead's Phase 5 page describes, with Icy Veins' levelling additions. Selected in the Assassination
+-- specialization (259) from level 10 (RM stores MoP rotations per talent group). Stealth opens with Cheap Shot
 -- solo, else Dispatch on Blindside or Mutilate. Four or more engaged enemies: Slice and Dice, Crimson Tempest at
 -- seven, Rupture, Envenom, Fan of Knives. One target: Slice and Dice (Envenom keeps it from 60), Rupture when neither
 -- bleed is up or at five points under 2 s, Envenom at five with Rupture lasting, the 4-point Envenom-buff rule without
--- Anticipation, Marked for Death, Dispatch below 35% or on Blindside, Mutilate up to three points (four with
+-- Anticipation, Marked for Death, Dispatch below 35% or on Blindside (dagger in the main hand), Mutilate up to three points (four with
 -- Anticipation or Shadow Blades). Eviscerate stands in for Envenom before 20. Shared parts: mop/blocks.lua.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
@@ -34,8 +34,8 @@ local dying=all(points('GREATERTHANOREQUALS',2),lifetime('LESSTHAN',4))
 local four1,four2=spend('rogue-assassination-four',fourPoint)
 local dying1,dying2=spend('rogue-assassination-dying',dying)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.assassination',revision=1,
- blocks={['mop.rogue.boundaries']=1,['mop.rogue.assassination-opener']=1,['mop.rogue.out-of-combat']=1,['mop.rogue.solo']=1,['mop.rogue.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.assassination',revision=2,
+ blocks={['mop.rogue.boundaries']=1,['mop.rogue.assassination-opener']=2,['mop.rogue.out-of-combat']=1,['mop.rogue.solo']=1,['mop.rogue.upkeep']=1},
  nameKey='Default.MoP.Rogue.Assassination.Name',descriptionKey='Default.MoP.Rogue.Assassination.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE',minLevel=10,maxLevel=90},
  tags={'assassination','dps','melee','leveling','endgame','wowsims','wowhead','icy-veins'},
@@ -43,7 +43,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://www.wowhead.com/mop-classic/guide/classes/rogue/assassination/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Assassination Rogue rotation (MoP Classic, Phase 5)',reviewedAt='2026-10-23',revision='2026-06-29'},
  {url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/RogueAssassination.simc',title='Hekili MoP fork: Assassination Rogue priority',reviewedAt='2026-10-23',revision='0750b5dd98005481baf828cce26149b9abca875b'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/assassination-rogue-leveling',title='Icy Veins: Assassination Rogue levelling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-09-23'}},
- body={priority=30,switch=known(1329),
+ body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=259}}},
  cooldowns={block('mop.rogue.upkeep','rogue-'),
   spell('rogue-assassination-vendetta',79140,all(combat(),any(sliced,mine(1943)),any(boss,lifetime('GREATERTHAN',20)))),
   spell('rogue-assassination-shadow-blades',121471,all(combat(),mine(79140))),
@@ -74,7 +74,7 @@ assert(addon:RegisterDefaultRotation({
  four1,four2,
  dying1,dying2,
  spell('rogue-assassination-marked-for-death',137619,all(points('LESSTHANOREQUALS',0),sliced,mine(1943))),
- spell('rogue-assassination-dispatch',111240,all(any(target('LESSTHAN',.35),own(121153)),any(points('LESSTHANOREQUALS',4),talent(18)))),
+ spell('rogue-assassination-dispatch',111240,all({type='WEAPON_TYPE',slot='mainhand',subclass=15},any(target('LESSTHAN',.35),own(121153)),any(points('LESSTHANOREQUALS',4),talent(18)))),
  spell('rogue-assassination-mutilate',1329,any(points('LESSTHANOREQUALS',3),all(points('LESSTHANOREQUALS',4),any(talent(18),own(121471))))),
  spell('rogue-assassination-shuriken-toss',114014,{type='BEYOND_MELEE',unit='target'}),
  }},

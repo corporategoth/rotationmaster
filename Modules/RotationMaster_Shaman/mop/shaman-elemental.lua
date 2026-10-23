@@ -1,7 +1,7 @@
 -- Mists of Pandaria Classic Elemental Shaman, levels 10-90: Wowhead's Phase 5 order (Icy Veins agrees once
 -- its talent steps are removed), with wowsims' Flame Shock gate on Earth Shock and its Flame Shock refresh
--- before Ascendance. Selected while Thunderstorm is known (Elemental's own spell; RM stores MoP rotations per
--- talent group and has no specialization condition). Out of combat a Lightning Bolt (Lava Burst with Unleashed
+-- before Ascendance. Selected in the Elemental specialization (262)
+-- from level 10 (RM stores MoP rotations per talent group). Out of combat a Lightning Bolt (Lava Burst with Unleashed
 -- Fury) opens. Four or more engaged enemies: Magma in melee, free Lava Burst on Lava Surge, Lava Beam in
 -- Ascendance, Chain Lightning. On the move: instants only. Otherwise Unleash Elements with Unleashed Fury,
 -- Flame Shock when missing or under 3 s, Lava Burst into Flame Shock, Elemental Blast, Earth Shock at six
@@ -27,7 +27,7 @@ local refresh=any(all(any(negate(flame),shock('LESSTHAN',3)),any(classified('wor
 local lava=any(shock('GREATERTHAN',2),own(77762),ascended)
 local fulminate=all({type='BUFF_STACKS',unit='player',spell=324,ownbuff=true,operator='GREATERTHANOREQUALS',value=6},shock('GREATERTHANOREQUALS',6))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.elemental',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.elemental',revision=2,
  blocks={['mop.shaman.manual']=1,['mop.shaman.lightning-shield']=1,['mop.shaman.group']=1,['mop.shaman.fire-totems']=1},
  nameKey='Default.MoP.Shaman.Elemental.Name',descriptionKey='Default.MoP.Shaman.Elemental.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='SHAMAN',minLevel=10,maxLevel=90},
@@ -37,7 +37,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/shaman/elemental/apls/p5.apl.json',title='wowsims/mop: Elemental Shaman P5 APL',reviewedAt='2026-10-23',revision='ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9'},
  {url='https://www.warcrafttavern.com/mop/guides/pve-elemental-shaman-rotation-cooldowns/',title='Warcraft Tavern: Elemental Shaman rotation (MoP)',reviewedAt='2026-10-23'},
  {url='https://wowtbc.gg/mop/class-guides/elemental-shaman/',title='wowtbc.gg: Elemental Shaman (MoP Classic)',reviewedAt='2026-10-23'}},
- body={priority=30,switch={type='SPELL_KNOWN',spell=51490},
+ body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=262}}},
  cooldowns={block('mop.shaman.lightning-shield','shaman-ele-'),
   spell('shaman-ele-flametongue',8024,negate({type='WEAPON_IMBUE',enchant=5})),
   block('mop.shaman.fire-totems','shaman-ele-'),

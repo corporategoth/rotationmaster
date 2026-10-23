@@ -11,6 +11,12 @@
 --  WEAPON_IMBUE / WEAPON: s.mainEnchant / s.offEnchant = enchant ID (or false); s.offSpeed for an off hand.
 --  Totems: s.totems[slot]={left,name} or a number (remaining seconds); slots 1 Fire 2 Earth 3 Water 4 Air.
 --  Party: s.members(...) party1..n at the given health percentages, all in range (PROXIMITY_*).
+--  SPECIALIZATION: s.spec indexes the class's specialization IDs (M.SPECS); s.specID(id) sets it by ID.
+--  FORM by spell: s.bar lists the stance-bar spells in slot order, s.form the active slot (0 none);
+--   s.shift(id) activates a form by spell, adding it to the bar if missing.
+--  WEAPON_TYPE: s.gear[16]/s.gear[17]={itemID,classID,subClassID,equipLoc} (M.DAGGER, M.SHIELD, ...).
+--  Cast/channel identity and progress: s.castSpell / s.channelSpell (spell IDs), the channel running from
+--   s.channelStart to s.channelEnd (seconds; GetTime is 100, default 99..101, so half done).
 local F=dofile('tests/fixtures/addon.lua')
 local M={F=F}
 local MISTS=19
@@ -19,6 +25,13 @@ local POWER={Mana=0,Rage=1,Focus=2,Energy=3,ComboPoints=4,Runes=5,RunicPower=6,S
  Alternate=10,Maelstrom=11,Chi=12,Insanity=13,BurningEmbers=14,DemonicFury=15,ArcaneCharges=16,Fury=17,Pain=18,Essence=19,
  Balance=26,ShadowOrbs=28}
 local primary={WARRIOR=1,ROGUE=3,SHAMAN=0,WARLOCK=0,PRIEST=0}
+-- Specialization IDs by index (C_SpecializationInfo.GetSpecializationInfo), Blizzard's order.
+local SPECS={WARRIOR={71,72,73},PALADIN={65,66,70},HUNTER={253,254,255},ROGUE={259,260,261},PRIEST={256,257,258},
+ DEATHKNIGHT={250,251,252},SHAMAN={262,263,264},MAGE={62,63,64},WARLOCK={265,266,267},MONK={268,270,269},DRUID={102,103,104,105}}
+M.SPECS=SPECS
+-- Equipment records {itemID, item class, subclass, equip location}: weapons are class 2, shields class 4/6.
+M.DAGGER={7001,2,15,'INVTYPE_WEAPON'};M.SWORD={7002,2,7,'INVTYPE_WEAPON'};M.AXE2H={7003,2,1,'INVTYPE_2HWEAPON'}
+M.SHIELD={7004,4,6,'INVTYPE_SHIELD'};M.STAFF={7005,2,10,'INVTYPE_2HWEAPON'};M.OFFHAND={7006,4,0,'INVTYPE_HOLDABLE'}
 -- The class's Mists module files, in TOC order (tools/builtin_modules.lua).
 function M.packs(class)return dofile('tools/builtin_modules.lua').paths({family='progression',class=class})end
 -- Every spell an action or a condition of the class's premades names, collected from the expanded bodies.
@@ -51,7 +64,10 @@ function M.fixture(class,options)
   stealth=false,cast=false,channel=false,castSpell=nil,channelSpell=nil,
   targetCast=nil,targetInterruptible=true,form=0,forms=3,group=false,raid=false,party={},classification='normal',creature=7,targetLevel=nil,targettarget='player',
   threat=nil,enemies={},autorepeat=false,active={},mainEnchant=false,offEnchant=false,offSpeed=nil,
-  pet=false,petDead=false,petHealth=100,petFamily=nil,ttd=nil}
+  pet=false,petDead=false,petHealth=100,petFamily=nil,ttd=nil,bar={},gear={},channelStart=99,channelEnd=101}
+ if class=='WARRIOR'then s.bar={2457,71,2458}end
+ s.specID=function(id)s.spec=nil;for index,known in ipairs(SPECS[class]or{})do if known==id then s.spec=index end end;assert(s.spec,'not a '..class..' specialization: '..tostring(id))end
+ s.shift=function(id)if id==0 then s.form=0;return end;for index,known in ipairs(s.bar)do if known==id then s.form=index;return end end;s.bar[#s.bar+1]=id;s.form=#s.bar end
  local names={}
  local function aura(list,index)local x=list[index];if not x then return end
   return {spellId=x.id,name=names[x.id] or ('Spell '..x.id),sourceUnit=x.source==nil and 'player' or x.source or nil,expirationTime=x.expires or 0,duration=x.duration or 0,
@@ -92,6 +108,7 @@ function M.fixture(class,options)
   if kind==4 then return 5 elseif kind==28 then return 3 elseif kind==7 then return 4 elseif kind==15 then return 1000
   elseif kind==14 then return fragments and 40 or 4 end;return s.maxPower end
  e.C_SpecializationInfo={GetSpecialization=function()return s.spec end,GetActiveSpecGroup=function()return s.talentGroup end,
+  GetSpecializationInfo=function(index)return SPECS[class]and SPECS[class][index]end,
   GetTalentInfo=function(query)
    local index=(query.tier-1)*3+query.column
    return {name='Talent '..index,icon=136000,talentID=1000+index,spellID=2000+index,selected=s.talents[index]==true}
@@ -99,6 +116,11 @@ function M.fixture(class,options)
  e.GetNumTalentGroups=function()return 2 end
  e.IsStealthed=function()return s.stealth end
  e.GetShapeshiftForm=function()return s.form end;e.GetNumShapeshiftForms=function()return s.forms end
+ e.GetShapeshiftFormInfo=function(index)local id=s.bar[index];if id then return 136000,index==s.form,true,id end end
+ -- Equipment (WEAPON_TYPE): item IDs per slot and their instant class/subclass/equip location.
+ e.GetInventoryItemID=function(_,slot)local item=s.gear[slot];return item and item[1]end
+ e.GetInventoryItemLink=function(_,slot)local item=s.gear[slot];return item and('|Hitem:'..item[1]..':0:0:0:0:0:0|h')end
+ e.GetItemInfoInstant=function(id)for _,item in pairs(s.gear)do if item[1]==id then return id,'Type','Subtype',item[4],1,item[2],item[3]end end end
  e.IsInGroup=function()return s.group or s.raid end;e.IsInRaid=function()return s.raid end
  e.UnitPlayerOrPetInParty=function(unit)return(s.group or s.raid)and(unit=='player'or member(unit)~=nil or unit=='target'and s.friend)end
  e.UnitPlayerOrPetInRaid=function()return false end
@@ -109,7 +131,7 @@ function M.fixture(class,options)
   if unit=='target'and s.targetCast then return s.targetCast,nil,nil,99000,101000,false,'cast',not s.targetInterruptible end
  end
  e.UnitChannelInfo=function(unit)
-  if unit=='player'and s.channel then local name=s.channelSpell and('Spell '..s.channelSpell)or'Channel in progress';return name,nil,nil,99000,101000,false,false,s.channelSpell end
+  if unit=='player'and s.channel then local name=s.channelSpell and('Spell '..s.channelSpell)or'Channel in progress';return name,nil,nil,s.channelStart*1000,s.channelEnd*1000,false,false,s.channelSpell end
   if unit=='target'and s.targetChannel then return s.targetChannel,nil,nil,99000,101000,false,not s.targetInterruptible end
  end
  e.GetWeaponEnchantInfo=function()
@@ -156,7 +178,7 @@ function M.fixture(class,options)
   'Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/validation.lua','Data/catalog.lua','Data/diff.lua','Core/rotation_library.lua','Core/rotation_tags.lua',
   'Conditions/common.lua','Conditions/spell.lua','Conditions/known_spell.lua','Conditions/character.lua','Conditions/buffs.lua','Conditions/debuffs.lua',
   'Conditions/combat.lua','Conditions/casting.lua','Conditions/channeling.lua','Conditions/stats.lua','Conditions/range.lua','Conditions/spatial.lua','Conditions/spatial_stats.lua',
-  'Conditions/weapon.lua','Conditions/build.lua','Conditions/unit_states.lua','Conditions/totem.lua','Conditions/talent.lua','Conditions/petspell.lua','Conditions/misc.lua',
+  'Conditions/weapon.lua','Conditions/build.lua','Core/build_context.lua','Conditions/specialization.lua','Conditions/equipment.lua','Conditions/unit_states.lua','Conditions/totem.lua','Conditions/talent.lua','Conditions/petspell.lua','Conditions/misc.lua',
   'Platform/inventory.lua','Conditions/item.lua'}) do f.load(path) end
  local get=a.Platform.GetClientInfo
  a.Platform.GetClientInfo=function(self)local info=get(self);assert(info.family=='progression'and info.expansion==(options.expansion or 4));
@@ -177,6 +199,8 @@ function M.fixture(class,options)
  for id in pairs(names)do a.SpellCatalog:UpdateSpell(id)end
  local function sync()
   a.spellHistory=s.history or {};a.longtermCache={};a.currentSpec=s.talentGroup
+  -- Specialization and equipment are cached until their notifications; the model changes them directly.
+  a:InvalidateBuildContext()
   a.unitsInRange={};for n in pairs(s.enemies)do a.unitsInRange['Creature-'..n]={unit='nameplate'..n}end
  end
  -- Party members party1..n at the given health percentages (group implied).

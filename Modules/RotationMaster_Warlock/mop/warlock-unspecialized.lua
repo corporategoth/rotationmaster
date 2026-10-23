@@ -13,8 +13,8 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local corrupted={type='DEBUFF',unit='target',spell=172,anyrank=true,owndebuff=true}
 local petless=all(negate(combat()),negate({type='PET'}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.warlock.unspecialized',revision=1,
- blocks={['mop.warlock.boundaries']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.warlock.unspecialized',revision=2,
+ blocks={['mop.warlock.boundaries']=2},
  nameKey='Default.MoP.Warlock.Unspecialized.Name',descriptionKey='Default.MoP.Warlock.Unspecialized.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARLOCK',minLevel=1,maxLevel=90},
  tags={'dps','caster','ranged','leveling'},

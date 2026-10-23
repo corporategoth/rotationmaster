@@ -1,6 +1,6 @@
 -- Mists of Pandaria Classic Protection Warrior, levels 10-90: wowsims' Phase 5 Generic order, with Weakened Armor
--- kept only on elites and bosses so trash pulls do not waste globals. Selected while Shield Slam is known
--- (Protection's own spell). Rage goes to Shield Block whenever it is down and Shield Barrier when hurt with rage to
+-- kept only on elites and bosses so trash pulls do not waste globals. Selected in the Protection
+-- specialization (73). Rage goes to Shield Block whenever it is down and Shield Barrier when hurt with rage to
 -- spare; Heroic Strike / Cleave on Ultimatum, Incite or near the cap. Rotation: Devastate for three Weakened Armor
 -- on elites, Dragon Roar, Bladestorm, Shockwave on three; Thunder Clap on cooldown on three or more engaged enemies;
 -- Revenge for the last rage of a Block, Shield Slam, Revenge on Hold the Line, Devastate for Deep Wounds, Victory
@@ -26,7 +26,7 @@ local dump=all(combat(),{type='HEALTHPCT',unit='target',operator='GREATERTHAN',v
 local armor={type='DEBUFF',unit='target',spell=113746}
 local function devastate(id,conditions)return{id=id,type='branch',conditions={type='SPELL_KNOWN',spell=20243},onTrue={spell(id..'-devastate',20243,conditions)},onFalse={spell(id..'-sunder',7386,conditions)}}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.protection',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.protection',revision=2,
  blocks={['mop.warrior.boundaries']=1},
  nameKey='Default.MoP.Warrior.Protection.Name',descriptionKey='Default.MoP.Warrior.Protection.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARRIOR',minLevel=10,maxLevel=90},
@@ -35,9 +35,9 @@ assert(addon:RegisterDefaultRotation({
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/protection-warrior-pve-rotation-cooldowns-abilities',title='Icy Veins: Protection Warrior rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/protection-warrior-leveling',title='Icy Veins: Protection Warrior levelling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'},
  {url='https://www.warcrafttavern.com/mop/guides/pve-protection-warrior-tank-rotation-cooldowns/',title='Warcraft Tavern: Protection Warrior rotation (MoP)',reviewedAt='2026-10-23'}},
- body={priority=30,switch={type='SPELL_KNOWN',spell=23922},
+ body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=73}}},
  cooldowns={
-  spell('warrior-prot-stance',71,negate({type='FORM',value=2})),
+  spell('warrior-prot-stance',71,negate({type='FORM',form=71})),
   spell('warrior-prot-shout',6673,all(negate(buff(6673)),negate(buff(469)))),
   spell('warrior-prot-shield-block',2565,all(combat(),negate(blocking))),
   spell('warrior-prot-shield-barrier',112048,all(combat(),negate(own(112048)),any(all(health('LESSTHANOREQUALS',.5),rage('GREATERTHANOREQUALS',80)),all(health('LESSTHANOREQUALS',.8),blocking)))),

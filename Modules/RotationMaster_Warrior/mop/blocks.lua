@@ -12,6 +12,7 @@ local function buff(id)return{type='BUFF',unit='player',spell=id}end
 local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
 local function health(op,n)return{type='HEALTHPCT',unit='player',operator=op,value=n}end
 local function classified(kind)return{type='CLASSIFICATION',unit='target',value=kind}end
+local function form(id)return{type='FORM',form=id}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local smashed={type='DEBUFF',unit='target',spell=86346,owndebuff=true}
 -- Boundaries for every Warrior premade: manual casts/channels and no attackable target stop with
@@ -36,13 +37,13 @@ assert(addon:RegisterDefaultBlock({
  {id='sustain',type='branch',conditions=health('LESSTHAN',.7),onFalse={},onTrue={spell('impending-victory',103840),spell('victory-rush',34428)}},
 }}))
 -- Independent reminders every damage dealer shares: a shout when neither is up, Battle Stance (Berserker
--- is left alone), the shout during Bladestorm, Skull Banner under Recklessness in a group, Heroic Leap in
+-- is left alone; stances are read by spell, so the stance bar order does not matter), the shout during Bladestorm, Skull Banner under Recklessness in a group, Heroic Leap in
 -- Colossus Smash, Pummel, Die by the Sword and Enraged Regeneration when low. Shattering Throw (usually a
 -- raid assignment) ships off.
 assert(addon:RegisterDefaultBlock({
- id='mop.warrior.dps-upkeep',revision=1,families={'progression'},class='WARRIOR',steps={
+ id='mop.warrior.dps-upkeep',revision=2,families={'progression'},class='WARRIOR',steps={
  spell('shout',6673,all(negate(buff(6673)),negate(buff(469)))),
- spell('stance',2457,all(negate({type='FORM',value=1}),negate({type='FORM',value=3}))),
+ spell('stance',2457,all(negate(form(2457)),negate(form(2458)))),
  spell('bladestorm-shout',6673,own(46924)),
  spell('skull-banner',114207,all(combat(),{type='GROUP'},own(1719))),
  spell('leap',6544,all(combat(),smashed)),

@@ -36,6 +36,7 @@ test('stealth opener adapts by spell known and group, then stops without breakin
   local f,s=rogue(10);s.stealth=true;s.combat=false;assert(first(f,s,id)==1752,'nothing learned yet: Sinister Strike')
   M.know(s,703);s.group=true;assert(first(f,s,id)==703);s.group=false;assert(first(f,s,id)==703,'Garrote fallback before Cheap Shot')
   M.know(s,8676);assert(first(f,s,id)==703,'Ambush needs the target not facing you');s.targettarget=nil;assert(first(f,s,id)==8676)
+  s.gear[16]=M.GEAR.SWORD;assert(first(f,s,id)==703,'Ambush needs a dagger in the main hand');s.gear[16]=M.GEAR.DAGGER
   M.know(s,1833);assert(first(f,s,id)==1833,'solo Cheap Shot');s.group=true;assert(first(f,s,id)==703,'group Garrote')
   M.know(s,14183);assert(first(f,s,id)==14183,'Premeditation first')
   for spell in pairs(s.known)do s.nopower[spell]=true end;local x,r=M.first(f,s,id);assert(not x and r.status=='stopped'and r.suppressAttack)
@@ -72,6 +73,7 @@ test('builders follow what is known and whether the target is facing you',functi
  for _,id in ipairs({RS,RH})do
   local f,s=rogue(50,mid,{1329});assert(first(f,s,id)==1752,'targeted: Mutilate falls back to Sinister Strike')
   s.targettarget='party1';assert(first(f,s,id)==1329);s.known[1329]=false;assert(first(f,s,id)==53,'Backstab when not tanked')
+  s.gear[16]=M.GEAR.SWORD;assert(first(f,s,id)==1752,'no dagger: Sinister Strike instead of Backstab');s.gear[16]=M.GEAR.DAGGER
   M.know(s,16511);assert(first(f,s,id)==16511);M.know(s,14278);assert(first(f,s,id)==14278)
   M.know(s,1757,1759);s.known[16511],s.known[14278],s.known[53]=false,false,false;assert(first(f,s,id)==1759,'highest learned Sinister rank')
   s.mapped[1759]=false;assert(first(f,s,id)==1757)
@@ -93,7 +95,9 @@ end)
 test('reminders: poisons per weapon, Kick, Cold Blood and Evasion',function()
  local f,s=rogue(40,mid,{14177});local u=M.upkeep(f,s,RS)
  assert(u['rogue-mainhand-poison']and not u['rogue-offhand-poison'],'no off-hand weapon, no off-hand poison')
- s.offSpeed=1.8;assert(M.upkeep(f,s,RS)['rogue-offhand-poison']);s.offEnchant=true;s.mainEnchant=true;u=M.upkeep(f,s,RS)
+ s.offSpeed=1.8;assert(not M.upkeep(f,s,RS)['rogue-offhand-poison'],'an off-hand swing alone is not a weapon')
+ s.gear[17]=M.GEAR.OFFHAND;assert(not M.upkeep(f,s,RS)['rogue-offhand-poison'],'a held item takes no poison')
+ s.gear[17]=M.GEAR.DAGGER;assert(M.upkeep(f,s,RS)['rogue-offhand-poison']);s.offEnchant=true;s.mainEnchant=true;u=M.upkeep(f,s,RS)
  assert(not u['rogue-mainhand-poison']and not u['rogue-offhand-poison'])
  local items=M.body(f.addon,RS).cooldowns;for _,step in ipairs(items)do if step.id=='rogue-offhand-poison'then assert(step.action[1]==22054 and step.action[8]==21927)end end
  assert(not u['rogue-kick']);s.targetCast='Fireball';assert(M.upkeep(f,s,RS)['rogue-kick']==1766);s.targetInterruptible=false;assert(not M.upkeep(f,s,RS)['rogue-kick'])

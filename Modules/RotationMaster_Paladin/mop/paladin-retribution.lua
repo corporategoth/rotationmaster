@@ -1,4 +1,4 @@
--- Mists of Pandaria Classic Retribution Paladin, levels 10–90, once Templar's Verdict is known.
+-- Mists of Pandaria Classic Retribution Paladin, levels 10–90, in the Retribution specialization (70).
 -- wowsims' measured order (Hekili ports it, Wowhead's guide matches it) with Icy Veins' leveling
 -- advice: Inquisition kept up at 3 Holy Power, Templar's Verdict at full Holy Power before any
 -- generator, Hammer of Wrath > Crusader Strike > Judgment > Exorcism, no pooling in Avenging Wrath,
@@ -22,8 +22,8 @@ local free=any(buff(90174),buff(105809))
 local inquisition=any(buff(INQ),negate(known(INQ)))
 local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.retribution',revision=1,
- blocks={['mop.paladin.boundaries']=1,['mop.paladin.upkeep']=1,['mop.paladin.seal-truth']=1,['mop.paladin.defensives']=1,['mop.paladin.ret-survival']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.retribution',revision=2,
+ blocks={['mop.paladin.boundaries']=1,['mop.paladin.upkeep']=1,['mop.paladin.seal-truth']=2,['mop.paladin.defensives']=1,['mop.paladin.ret-survival']=1},
  nameKey='Default.MoP.Paladin.Retribution.Name',descriptionKey='Default.MoP.Paladin.Retribution.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN',minLevel=10,maxLevel=90},
  tags={'retribution','leveling','single-target','aoe','wowsims','hekili','wowhead','icy-veins'},
@@ -33,7 +33,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.wowhead.com/mop-classic/guide/classes/paladin/retribution/dps-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Retribution Paladin rotation',reviewedAt='2026-10-23',revision='2025-07-27',notes='Read from a Wayback snapshot; Divine Storm at 2+, Hammer of the Righteous at 4+.'},
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/retribution-paladin-leveling',title='Icy Veins: MoP Classic Retribution Paladin leveling',reviewedAt='2026-10-23',revision='2025-09-23',notes='Word of Glory when in danger; Inquisition only from 81.'},
  },
- body={priority=30,switch=known(85256),
+ body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=70}}},
   cooldowns={
    block('ret-seal','mop.paladin.seal-truth','ret-'),
    block('ret-upkeep','mop.paladin.upkeep','ret-'),

@@ -1,5 +1,5 @@
 -- Mists of Pandaria Classic Fury Warrior, cooldowns inside Colossus Smash (Icy Veins; off by default). Same switch
--- as the recommended Fury premade (Bloodthirst known), lower priority. Differs by spending Bladestorm or Dragon Roar
+-- as the recommended Fury premade (Fury specialization), lower priority. Differs by spending Bladestorm or Dragon Roar
 -- first inside the Colossus Smash window and Execute ahead of Bloodthirst below 20%. In the window: tier-4 talent,
 -- Raging Blow at two charges, Bloodthirst, Raging Blow, Wild Strike. Outside: Colossus Smash, Bloodthirst, Raging
 -- Blow only at two charges, Wild Strike on Bloodsurge, shout, Wild Strike. Below 20%: Dragon Roar outside the window,
@@ -25,14 +25,14 @@ local worth=any(classified('worldboss'),classified('elite'),{type='TT_HEALTH',un
 local burst=all(combat(),any(negate({type='SPELL_KNOWN',spell=86346}),smashed),worth)
 local function shout(prefix)return{id=prefix..'shout',type='branch',conditions=rage('LESSTHAN',30),onFalse={},onTrue={spell(prefix..'commanding',469,own(469)),spell(prefix..'battle',6673)}}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.fury.icyveins',revision=1,
- blocks={['mop.warrior.boundaries']=1,['mop.warrior.gap']=1,['mop.warrior.dps-upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.fury.icyveins',revision=2,
+ blocks={['mop.warrior.boundaries']=1,['mop.warrior.gap']=1,['mop.warrior.dps-upkeep']=2},
  nameKey='Default.MoP.Warrior.Fury.IcyVeins.Name',descriptionKey='Default.MoP.Warrior.Fury.IcyVeins.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARRIOR',minLevel=10,maxLevel=90},
  tags={'fury','dps','melee','leveling','endgame','icy-veins'},
  sources={{url='https://www.icy-veins.com/mists-of-pandaria-classic/fury-warrior-pve-rotation-cooldowns-abilities',title='Icy Veins: Fury Warrior rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/fury-warrior-leveling',title='Icy Veins: Fury Warrior levelling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'}},
- body={priority=20,disabled=true,switch={type='SPELL_KNOWN',spell=23881},
+ body={priority=20,disabled=true,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=72}}},
  cooldowns={block('mop.warrior.dps-upkeep','warrior-'),
   spell('warrior-fury-iv-berserker-rage',18499,all(combat(),negate(enraged))),
   spell('warrior-fury-iv-recklessness',1719,burst),

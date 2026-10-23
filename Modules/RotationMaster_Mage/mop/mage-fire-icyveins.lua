@@ -13,7 +13,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local PYRO,HEAT,ALTER=48108,48107,110909
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.mage.fire.icyveins',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.mage.fire.icyveins',revision=2,
  blocks={['mop.mage.boundaries']=1,['mop.mage.upkeep']=1,['mop.mage.armor-molten']=1,['mop.mage.bombs']=1,['mop.mage.fire-open']=1,['mop.mage.fire-spend']=1,['mop.mage.fire-filler']=1},
  nameKey='Default.MoP.Mage.Fire.IcyVeins.Name',descriptionKey='Default.MoP.Mage.Fire.IcyVeins.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE',minLevel=10,maxLevel=90},
@@ -23,7 +23,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.method.gg/mop-classic/fire-mage-class-guide-mop-classic',title='Method: MoP Classic Fire Mage guide',reviewedAt='2026-10-23',notes='Phase 1 text.'},
   {url='https://wowtbc.gg/mop/class-guides/fire-mage',title='wowtbc.gg: MoP Classic Fire Mage PvE guide',reviewedAt='2026-10-23'},
  },
- body={priority=25,disabled=true,switch={type='SPELL_KNOWN',spell=11366},
+ body={priority=25,disabled=true,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=63}}},
   cooldowns={
    block('fireiv-armor','mop.mage.armor-molten','fireiv-'),
    block('fireiv-upkeep','mop.mage.upkeep','fireiv-'),

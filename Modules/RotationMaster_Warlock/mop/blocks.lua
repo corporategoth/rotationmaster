@@ -27,12 +27,12 @@ local function lust()return any(buff(2825),buff(32182),buff(80353),buff(90355))e
 -- No pet, out of combat (a summon is a 6 s cast), and not sacrificed to Grimoire of Sacrifice.
 local petless=all(negate(combat()),negate({type='PET'}),negate(buff(108503)))
 -- Hard casts, and channels other than Malefic Grasp and Drain Soul (wowsims clips those at every GCD, so
--- the next action stays visible; both leave their own debuff on the target while channelled), run to the
--- end; no target to attack, no advice.
+-- the next action stays visible; the channel is read by spell), run to the end; no target to attack, no
+-- advice.
 assert(addon:RegisterDefaultBlock({
- id='mop.warlock.boundaries',revision=1,families={'progression'},class='WARLOCK',steps={
+ id='mop.warlock.boundaries',revision=2,families={'progression'},class='WARLOCK',steps={
  stop('cast',{type='CASTING',unit='player'}),
- stop('channel',all({type='CHANNELING',unit='player'},negate(dot(103103)),negate(dot(1120)))),
+ stop('channel',all({type='CHANNELING',unit='player'},negate({type='CHANNELING_SPELL',unit='player',spell=103103}),negate({type='CHANNELING_SPELL',unit='player',spell=1120}))),
  stop('no-target',negate({type='ATTACKABLE',unit='target'})),
 }}))
 -- Reminders every specialization shares: Dark Intent, Curse of the Elements in a group when nobody has it
@@ -124,7 +124,7 @@ assert(addon:RegisterDefaultBlock({
 -- when it is more than 10 s away; Dark Soul: Knowledge (again at two charges); Life Tap at 30% mana
 -- outside Metamorphosis; Health Funnel solo when the pet is low.
 assert(addon:RegisterDefaultBlock({
- id='mop.warlock.demonology-upkeep',revision=1,families={'progression'},class='WARLOCK',steps={
+ id='mop.warlock.demonology-upkeep',revision=2,families={'progression'},class='WARLOCK',steps={
  spell('wrathguard',112870,all(petless,talent(13))),
  spell('felguard',30146,all(petless,negate(talent(13)))),
  spell('early-voidwalker',697,all(petless,negate(known(30146)),negate({type='GROUP'}))),
@@ -132,7 +132,7 @@ assert(addon:RegisterDefaultBlock({
  spell('grimoire-felguard',111898,combat()),
  spell('imp-swarm',104316,all(combat(),any(own(113861),{type='SPELL_COOLDOWN',spell=113861,operator='GREATERTHAN',value=10}))),
  spell('dark-soul',113861,all(combat(),any(negate(own(113861)),{type='SPELL_CHARGES',spell=113861,operator='GREATERTHANOREQUALS',value=2}))),
- spell('life-tap',1454,all({type='MANAPCT',unit='player',operator='LESSTHANOREQUALS',value=.3},negate(own(103958)))),
+ spell('life-tap',1454,all({type='MANAPCT',unit='player',operator='LESSTHANOREQUALS',value=.3},negate({type='FORM',form=103958}))),
  spell('health-funnel',755,all(negate({type='GROUP'}),{type='PET'},{type='HEALTHPCT',unit='pet',operator='LESSTHAN',value=.35},health('GREATERTHAN',.5))),
 }}))
 -- Demonology pull (both variants): pre-cast Soul Fire, or Shadow Bolt before 13, then stop.

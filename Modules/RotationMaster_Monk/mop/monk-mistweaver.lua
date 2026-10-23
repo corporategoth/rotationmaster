@@ -1,10 +1,10 @@
--- Mists of Pandaria Classic Mistweaver Monk, levels 10–90, once Soothing Mist (Mistweaver-only,
--- learned at 10) is known. Icy Veins' and Wowhead's modes as one Branch on the target: a friendly
+-- Mists of Pandaria Classic Mistweaver Monk, levels 10–90, in the Mistweaver specialization
+-- (270). Icy Veins' and Wowhead's modes as one Branch on the target: a friendly
 -- target is healed (Renewing Mist, Uplift on a hurt group, Expel Harm, Chi talents, Soothing Mist
 -- with instant Enveloping and Surging Mist inside the channel); an enemy target is fistweaved
 -- (Muscle Memory Tiger Palm and Blackout Kick for Tiger Power and Serpent's Zeal, Surging Mist at
 -- five Vital Mists, Jab). Choosing whom to heal stays with the player. Soothing Mist is recognised
--- by its own heal on the target while you channel, so the channel does not end advice.
+-- by the channel's own spell, so that channel does not end advice.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
@@ -27,7 +27,7 @@ local memory=own(139597)
 local capped=negate(chi('GREATERTHANOREQUALS',-1))
 local friendly={type='FRIENDLY',unit='target'}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.monk.mistweaver',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.monk.mistweaver',revision=2,
  blocks={['mop.monk.upkeep']=1},
  nameKey='Default.MoP.Monk.Mistweaver.Name',descriptionKey='Default.MoP.Monk.Mistweaver.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK',minLevel=10,maxLevel=90},
@@ -38,9 +38,9 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.wowhead.com/mop-classic/guide/classes/monk/mistweaver/healer-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Mistweaver Monk rotation (Phase 1)',reviewedAt='2026-10-23',revision='2025-08-10',notes='Read from a Wayback snapshot; group, single-target and downtime modes.'},
   {url='https://www.warcrafttavern.com/mop/guides/pve-mistweaver-monk-rotations-cooldowns/',title='Warcraft Tavern: MoP Mistweaver Monk rotation',reviewedAt='2026-10-23',notes='Thunder Focus Tea with Uplift, statue, fistweaving spenders.'},
  },
- body={priority=30,switch={type='SPELL_KNOWN',spell=SOOTHING},
+ body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=270}}},
   cooldowns={
-   spell('mist-serpent-stance',115070,negate(own(115070))),
+   spell('mist-serpent-stance',115070,negate({type='FORM',form=115070})),
    block('mist-class','mop.monk.upkeep','mist-'),
    spell('mist-statue',115313,all({type='GROUP'},negate({type='SPELL_HISTORY_TIME',spell=115313,operator='LESSTHAN',value=900}))),
    spell('mist-mana-tea',115294,all({type='BUFF_STACKS',unit='player',spell=115867,ownbuff=true,operator='GREATERTHANOREQUALS',value=2},
@@ -56,7 +56,7 @@ assert(addon:RegisterDefaultRotation({
    spell('mist-dampen-harm',122278,all(combat(),health('player','LESSTHAN',.4))),
   },
   rotation={
-   {id='mist-soothing',type='branch',conditions=all({type='CHANNELING',unit='player'},mine(SOOTHING)),onFalse={},onTrue={
+   {id='mist-soothing',type='branch',conditions={type='CHANNELING_SPELL',unit='player',spell=SOOTHING},onFalse={},onTrue={
     spell('mist-soothing-enveloping',124682,all(negate(mine(132120)),negate(mine(124682)),health('target','LESSTHAN',.8))),
     spell('mist-soothing-surging',SURGING,any(health('target','LESSTHAN',.6),vital)),
     stop('mist-soothing-stop')}},

@@ -1,6 +1,6 @@
 -- Mists of Pandaria Classic Shadow Priest, levels 10-90 (the recommended variant): wowsims' order with the
--- guides' simplifications. Selected while Mind Flay is known (Shadow's own spell; RM stores MoP rotations per
--- talent group and has no specialization condition). Devouring Plague at three Shadow Orbs when Mind Blast is
+-- guides' simplifications. Selected in the Shadow specialization (258) from level 10 (RM stores MoP rotations
+-- per talent group, so the switch reads the specialization). Devouring Plague at three Shadow Orbs when Mind Blast is
 -- ready or six seconds away; Mind Blast; Shadow Word: Death below 20%; Mind Flay under your Devouring Plague with
 -- Solace and Insanity; Shadow Word: Pain and Vampiric Touch refreshed in their last tick on a target that lives;
 -- Mind Spike on Surge of Darkness; the tier-6 talent at its range; Mind Flay. Shared parts (boundaries, pull,
@@ -17,8 +17,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local function far(n)return negate({type='DISTANCE',unit='target',value=n})end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.priest.shadow',revision=1,
- blocks={['mop.priest.upkeep']=1,['mop.priest.shadow-shell']=1,['mop.priest.shadow-cooldowns']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.priest.shadow',revision=2,
+ blocks={['mop.priest.upkeep']=1,['mop.priest.shadow-shell']=2,['mop.priest.shadow-cooldowns']=2},
  nameKey='Default.MoP.Priest.Shadow.Name',descriptionKey='Default.MoP.Priest.Shadow.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PRIEST',minLevel=10,maxLevel=90},
  tags={'shadow','dps','caster','leveling','endgame','wowsims','icy-veins','method','wowtbc'},
@@ -28,7 +28,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://www.method.gg/mop-classic/shadow-priest-class-guide-mop-classic',title='Method: Shadow Priest guide (MoP Classic)',reviewedAt='2026-10-23'},
  {url='https://wowtbc.gg/mop/class-guides/shadow-priest/',title='wowtbc.gg: Shadow Priest (MoP Classic)',reviewedAt='2026-10-23'},
  {url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/PriestShadow.simc',title='Hekili (MoP fork): Shadow Priest priority',reviewedAt='2026-10-23',revision='0750b5dd98005481baf828cce26149b9abca875b'}},
- body={priority=30,switch={type='SPELL_KNOWN',spell=15407},
+ body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=258}}},
  cooldowns={block('mop.priest.upkeep','priest-'),block('mop.priest.shadow-cooldowns','priest-')},
  rotation={
  block('mop.priest.shadow-shell','priest-'),

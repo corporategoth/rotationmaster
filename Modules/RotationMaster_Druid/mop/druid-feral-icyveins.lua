@@ -20,8 +20,8 @@ local clearcasting,berserk=own(135700),own(106951)
 local worth=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},
  {type='CLASSIFICATION',unit='target',value='worldboss'},{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=20})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.druid.feral.icyveins',revision=1,
- blocks={['mop.druid.boundaries']=1,['mop.druid.target']=1,['mop.druid.mark']=1,['mop.druid.feral-upkeep']=1,['mop.druid.feral-open']=1,['mop.druid.feral-aoe']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.druid.feral.icyveins',revision=2,
+ blocks={['mop.druid.boundaries']=2,['mop.druid.target']=1,['mop.druid.mark']=1,['mop.druid.feral-upkeep']=2,['mop.druid.feral-open']=2,['mop.druid.feral-aoe']=1},
  nameKey='Default.MoP.Druid.Feral.IcyVeins.Name',descriptionKey='Default.MoP.Druid.Feral.IcyVeins.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID',minLevel=10,maxLevel=90},
  tags={'feral','leveling','single-target','aoe','icy-veins','wowhead'},
@@ -30,11 +30,11 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/feral-druid-leveling',title='Icy Veins: MoP Classic Feral Druid leveling',reviewedAt='2026-10-23',revision='2025-06-22'},
   {url='https://www.wowhead.com/mop-classic/guide/classes/druid/feral/dps-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Feral Druid rotation',reviewedAt='2026-10-23',revision='2026-06-20',notes='Ferocious Bite only below 25% with Rip up.'},
  },
- body={priority=20,disabled=true,switch=known(5217),
+ body={priority=20,disabled=true,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=103}}},
   cooldowns={
    block('fivy-mark','mop.druid.mark','fivy-'),
    block('fivy-upkeep','mop.druid.feral-upkeep','fivy-'),
-   spell('fivy-berserk',106952,all(combat(),own(768),power('GREATERTHANOREQUALS',90),{type='SPELL_COOLDOWN',spell=5217,operator='GREATERTHANOREQUALS',value=15},worth)),
+   spell('fivy-berserk',106952,all(combat(),{type='FORM',form=768},power('GREATERTHANOREQUALS',90),{type='SPELL_COOLDOWN',spell=5217,operator='GREATERTHANOREQUALS',value=15},worth)),
   },
   rotation={
    block('fivy-boundaries','mop.druid.boundaries','fivy-'),

@@ -107,8 +107,10 @@ end)
 test('Fire reference: Fire Blast while casting, pull, procs by spender, Combustion window, Scorch, filler',function()
  local a,s,f=mage(FIRE);local G=P..'fire.guide';enable(a,G)
  s.learn(11366,2120,108853,2948,133,431044,153561)
- s.cast=true;M.expect(a,s,G,nil,'stopped','casting without Heating Up')
- s.buff('player',48107);M.expect(a,s,G,108853,nil,'Fire Blast while casting with Heating Up');s.cast=false;s.clearAuras()
+ s.cast=true;s.castSpell=133;M.expect(a,s,G,nil,'stopped','casting without Heating Up')
+ s.buff('player',48107);M.expect(a,s,G,108853,nil,'Fire Blast while casting with Heating Up')
+ s.castSpell=8690;M.expect(a,s,G,nil,'stopped','a Hearthstone cast is no Fire hard cast');s.castSpell=nil
+ M.expect(a,s,G,nil,'stopped','an unnamed cast either');s.cast=false;s.clearAuras()
  s.combat=false;M.expect(a,s,G,11366,nil,'pull: Pyroblast');s.combat=true
  M.expect(a,s,G,153561,nil,'Meteor');s.cooling(153561,30)
  M.expect(a,s,G,431044,nil,'Frostfire Bolt filler');s.known[431044]=nil;M.expect(a,s,G,133,nil,'Fireball without Frostfire')
@@ -120,7 +122,7 @@ test('Fire reference: Fire Blast while casting, pull, procs by spender, Combusti
  s.moving=true;M.expect(a,s,G,2948,nil,'Scorch on the move');s.moving=false
  s.buff('player',383874);M.expect(a,s,G,11366,nil,'Pyroblast on Hyperthermia');s.clearAuras()
  s.learn(190319);local lit=M.upkeep(a,s,G);assert(not lit[190319],'Combustion outside a hard cast')
- s.cast=true;lit=M.upkeep(a,s,G);assert(not lit[190319],'Combustion with two seconds of the cast left')
+ s.cast=true;s.castSpell=11366;lit=M.upkeep(a,s,G);assert(not lit[190319],'Combustion with two seconds of the cast left')
  -- The model's cast ends at 102 s; a cast ending in half a second is the Combustion window.
  f.env.UnitCastingInfo=function(unit)if unit=='player'then return 'Fireball','Fireball',1,99000,100500,false,'cast-guid',false,133 end end
  lit=M.upkeep(a,s,G);assert(lit[190319],'Combustion as a hard cast finishes')

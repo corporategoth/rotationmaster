@@ -1,5 +1,5 @@
--- Mists of Pandaria Classic Arcane Mage, levels 10–90, once Arcane Blast (Arcane's level-10 spec
--- spell) is known. wowsims' measured list (Hekili matches it): Arcane Blast builds four Arcane
+-- Mists of Pandaria Classic Arcane Mage, levels 10–90, in the Arcane specialization
+-- (62). wowsims' measured list (Hekili matches it): Arcane Blast builds four Arcane
 -- Charges; with four, a single Arcane Missiles! proc is spent above 95% mana and Barrage comes out
 -- below 90%, so between 90% and 95% it keeps blasting. Arcane Power and Alter Time at four charges
 -- with a proc, Missiles never left at two procs, Barrage every four charges with two or more enemies.
@@ -18,7 +18,7 @@ local function off(id,action,conditions)local step=spell(id,action,conditions);s
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local MISSILES=79683
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.mage.arcane',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.mage.arcane',revision=2,
  blocks={['mop.mage.boundaries']=1,['mop.mage.upkeep']=1,['mop.mage.armor-frost']=1,['mop.mage.bombs']=1,['mop.mage.arcane-open']=1,['mop.mage.arcane-aoe-moving']=1},
  nameKey='Default.MoP.Mage.Arcane.Name',descriptionKey='Default.MoP.Mage.Arcane.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE',minLevel=10,maxLevel=90},
@@ -29,7 +29,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/arcane-mage-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Arcane Mage rotation',reviewedAt='2026-10-23',revision='2025-06-17',notes='Bomb upkeep, AoE and Alter Time handling, talent rows.'},
   {url='https://www.wowhead.com/mop-classic/guide/classes/mage/arcane/dps-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Arcane Mage rotation (Phase 5)',reviewedAt='2026-10-23',revision='2026-06-20',notes='Barrage every four charges in cleave; Frost Armor.'},
  },
- body={priority=30,switch={type='SPELL_KNOWN',spell=30451},
+ body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=62}}},
   cooldowns={
    block('arcane-armor','mop.mage.armor-frost','arcane-'),
    block('arcane-upkeep','mop.mage.upkeep','arcane-'),

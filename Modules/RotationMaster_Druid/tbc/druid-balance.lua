@@ -12,8 +12,8 @@ local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
 local function dot(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
 local function combat()return{type='COMBAT',unit='player'}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.druid.balance',revision=1,
- blocks={['tbc.druid.boundaries']=1,['tbc.druid.feral-form-stop']=1,['tbc.druid.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.druid.balance',revision=2,
+ blocks={['tbc.druid.boundaries']=2,['tbc.druid.feral-form-stop']=2,['tbc.druid.upkeep']=1},
  nameKey='Default.TBC.Druid.Balance.Name',descriptionKey='Default.TBC.Druid.Balance.Description',
  applicability={families={'tbc'},actionContext='player',class='DRUID',minLevel=1,maxLevel=70},
  tags={'leveling','endgame','balance','caster','single-target','aoe','icy-veins','wowhead','warcraft-tavern','wowsims'},
@@ -25,7 +25,7 @@ assert(addon:RegisterDefaultRotation({
  body={priority=0,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
   cooldowns={
    {id='balance-upkeep',type='block',block='tbc.druid.upkeep',prefix='balance-'},
-   {id='balance-moonkin',type='spell',action=24858,ranked=false,conditions=negate(any(own(24858),own(768),own(5487),own(9634),own(783),own(1066),own(33943),own(40120)))},
+   {id='balance-moonkin',type='spell',action=24858,ranked=false,conditions=negate(any({type='FORM',form=24858},{type='FORM',form=768},{type='FORM',form=5487},{type='FORM',form=9634},{type='FORM',form=783},{type='FORM',form=1066},{type='FORM',form=33943},{type='FORM',form=40120}))},
    {id='balance-force-of-nature',type='spell',action=33831,ranked=false,conditions=all(combat(),{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=20})},
    {id='balance-innervate',type='spell',action=29166,ranked=false,conditions=all(combat(),{type='MANAPCT',unit='player',operator='LESSTHAN',value=0.25})},
   },

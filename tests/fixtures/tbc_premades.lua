@@ -16,7 +16,7 @@ function M.new(class,product)
   vehicle=false,known={},usable={},range={},cooldown={},mapped={},power={},talents={0,0,0},talent={},pet=false,
   cast=false,channel=false,repeatActive=false,classification='normal',enemies={},items={},
   health={player=100,target=100,pet=100},mana={player=100},
-  auras={player={HELPFUL={},HARMFUL={}},target={HELPFUL={},HARMFUL={}}}}
+  auras={player={HELPFUL={},HARMFUL={}},target={HELPFUL={},HARMFUL={}}},channelSpell=nil,channelStart=99,channelEnd=102}
  local units={player=true,target=true}
  local function exists(unit)
   if unit=='player'then return true elseif unit=='target'then return s.exists elseif unit=='pet'then return s.pet end
@@ -40,7 +40,8 @@ function M.new(class,product)
  e.UnitGUID=function(unit)if unit=='player'then return 'Player-test'end;for _,enemy in ipairs(s.enemies)do if enemy.unit==unit then return enemy.guid end end;return 'Creature-'..unit end
  e.UnitThreatSituation=function(_,unit)for _,enemy in ipairs(s.enemies)do if enemy.unit==unit then return enemy.threat end end end
  e.UnitCastingInfo=function(unit)if unit=='player'and s.cast then return 'Manual cast','Manual cast',1,99000,102000,false,'cast-guid',false,1 end end
- e.UnitChannelInfo=function(unit)if unit=='player'and s.channel then return 'Manual channel','Manual channel',1,99000,102000,false,false,1 end end
+ -- Channel identity and progress: s.channelSpell (a rank of it), running s.channelStart..s.channelEnd (GetTime is 100).
+ e.UnitChannelInfo=function(unit)if unit=='player'and s.channel then local name=s.channelSpell and('Spell '..s.channelSpell)or'Manual channel';return name,name,1,s.channelStart*1000,s.channelEnd*1000,false,false,s.channelSpell or 1 end end
  e.IsSpellKnown=function(id)if s.knownError then error('learning unavailable')end;return s.known[id]==true end
  e.GetNumTalentTabs=function()return 3 end
  e.C_SpecializationInfo={GetSpecializationInfo=function(index)return 100+index,'Tree '..index,'Description',136048,nil,nil,s.talents[index],'Background',99,true end}

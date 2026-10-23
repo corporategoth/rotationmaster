@@ -1,5 +1,5 @@
--- Mists of Pandaria Classic Windwalker Monk, levels 10–90, once Fists of Fury (Windwalker-only,
--- learned at 10) is known. wowsims' Phase 5 order, which Wowhead's Phase 5 list mirrors: Touch of
+-- Mists of Pandaria Classic Windwalker Monk, levels 10–90, in the Windwalker specialization
+-- (269). wowsims' Phase 5 order, which Wowhead's Phase 5 list mirrors: Touch of
 -- Death, Tiger Power, Rising Sun Kick, Chi Wave, Combo Breaker procs, Fists of Fury when the
 -- channel will not cap energy, Jab at a two-Chi deficit, Blackout Kick. Cleave and AoE from two
 -- engaged enemies. Tigereye Brew is held to 19 stacks (15 with Chi to spend, 10 under Bloodlust).
@@ -24,8 +24,8 @@ local TEB,RSK=1247275,107428
 local lust=any(buff(2825),buff(32182),buff(80353),buff(90355))
 local tigerPower=any(negate(own(125359)),remain(125359,'LESSTHANOREQUALS',1))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.monk.windwalker',revision=1,
- blocks={['mop.monk.boundaries']=1,['mop.monk.upkeep']=1,['mop.monk.windwalker-upkeep']=1,['mop.monk.windwalker-open']=1,['mop.monk.windwalker-tail']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.monk.windwalker',revision=2,
+ blocks={['mop.monk.boundaries']=1,['mop.monk.upkeep']=1,['mop.monk.windwalker-upkeep']=2,['mop.monk.windwalker-open']=1,['mop.monk.windwalker-tail']=1},
  nameKey='Default.MoP.Monk.Windwalker.Name',descriptionKey='Default.MoP.Monk.Windwalker.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK',minLevel=10,maxLevel=90},
  tags={'windwalker','leveling','single-target','aoe','wowsims','wowhead'},
@@ -34,7 +34,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.wowhead.com/mop-classic/guide/classes/monk/windwalker/dps-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Windwalker Monk rotation (Phase 5)',reviewedAt='2026-10-23',revision='2026-06-20',notes='Read from a Wayback snapshot; Tigereye Brew at 19, 15 with Chi or 10 with a burst buff.'},
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/windwalker-monk-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Windwalker Monk rotation',reviewedAt='2026-10-23',revision='2025-06-17',notes='Fists of Fury gates and Expel Harm instead of Jab when hurt; leveling order.'},
  },
- body={priority=30,switch={type='SPELL_KNOWN',spell=113656},
+ body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=269}}},
   cooldowns={
    block('ww-upkeep','mop.monk.windwalker-upkeep','ww-'),
    block('ww-class','mop.monk.upkeep','ww-'),

@@ -14,15 +14,21 @@ local packs={
 H.packs=packs
 -- Rank families (base id first) for spells whose higher ranks the scenarios exercise.
 local families={[403]={403,529,548,915,943,6041,10391,10392,15207,15208,25448,25449},[8042]={8042,8044,8045,8046,10412,10413,10414,25454},
- [5176]={5176,5177,5178,5179,5180,6780,8905,9912,26984,26985},[635]={635,639,647,1026,1042,3472,10328,10329,25292,27135,27136},[21084]={21084,20287,20288,20289}}
+ [5176]={5176,5177,5178,5179,5180,6780,8905,9912,26984,26985},[635]={635,639,647,1026,1042,3472,10328,10329,25292,27135,27136},[21084]={21084,20287,20288,20289},
+ [465]={465,10290,643,10291,1032,10292,10293,27149}}
 H.families=families
+-- Equipment records {itemID, item class, subclass, equip location} for WEAPON_TYPE (s.gear[slot]).
+H.GEAR={DAGGER={7001,2,15,'INVTYPE_WEAPON'},SWORD={7002,2,7,'INVTYPE_WEAPON'},AXE2H={7003,2,1,'INVTYPE_2HWEAPON'},SHIELD={7004,4,6,'INVTYPE_SHIELD'},
+ STAFF={7005,2,10,'INVTYPE_2HWEAPON'},OFFHAND={7006,4,0,'INVTYPE_HOLDABLE'}}
+-- FORM by spell: s.bar lists the stance-bar spells in slot order, s.form the active slot (0 none); s.shift(id).
 function H.new(class,opts)
  opts=opts or {}
  local f=F.new(5,1,class);local a,e=f.addon,f.env
  a.db.profile.rotations={};a.db.profile.itemsets={};a.db.global.effects={};a.delayed_condition={}
  local s={level=70,talents={0,0,0},known={},combat=false,moving=false,near=true,group=false,raid=false,mana=1,power=0,powerMax=100,health=1,
   buffs={},debuffs={},target={hostile=true,health=1,level=70,classification='normal',creature=7},focus=nil,totems={},enchant={},speed=3.6,swing=nil,
-  enemies=0,ttd=nil,history={},party={},combo=0,usable={},mapped={},cooldown={},now=100}
+  enemies=0,ttd=nil,history={},party={},combo=0,usable={},mapped={},cooldown={},now=100,form=0,bar={},gear={}}
+ s.shift=function(id)if id==0 then s.form=0;return end;for index,known in ipairs(s.bar)do if known==id then s.form=index;return end end;s.bar[#s.bar+1]=id;s.form=#s.bar end
  H.state=s
  local names={}
  local function name(id)for base,ids in pairs(families)do for _,x in ipairs(ids)do if x==id then return 'Spell '..base end end end;return 'Spell '..id end
@@ -76,6 +82,12 @@ function H.new(class,opts)
  e.UnitAttackSpeed=function()return s.speed,nil end
  e.IsSpellKnown=function(id)return s.known[id]==true end
  e.GetNumTalentTabs=function()return 3 end
+ e.GetShapeshiftForm=function()return s.form end;e.GetNumShapeshiftForms=function()return #s.bar end
+ e.GetShapeshiftFormInfo=function(index)local id=s.bar[index];if id then return 136000,index==s.form,true,id end end
+ e.GetInventoryItemID=function(_,slot)local item=s.gear[slot];return item and item[1]end
+ e.GetInventoryItemLink=function(_,slot)local item=s.gear[slot];return item and('|Hitem:'..item[1]..':0:0:0:0:0:0|h')end
+ e.GetItemInfoInstant=function(id)for _,item in pairs(s.gear)do if item[1]==id then return id,'Type','Subtype',item[4],1,item[2],item[3]end end end
+ e.GetInventorySlotInfo=function(name)assert(name=='RANGEDSLOT');return 18 end
  e.C_SpecializationInfo={GetSpecializationInfo=function(index)return 200+index,'Tree '..index,'Description',1,nil,nil,s.talents[index],'Background',99,true end}
  e.C_CVar={GetCVar=function(key)if key=='nameplateMaxDistance'then return '41'end end}
  local function auraList(unit,filter)
@@ -97,6 +109,7 @@ function H.new(class,opts)
  f.libraries['LibRangeCheck-3.0'].GetRange=function(_,unit)if s.rangeUncertain then return 5,30 end;return 0,5 end
  for _,path in ipairs({'Diagnostics/errors.lua','Platform/spells.lua','Platform/auras.lua','Platform/range.lua','Platform/actions.lua','Platform/talents.lua','Platform/totems.lua','Platform/unit_states.lua','Core/action_policy.lua','Core/conditions.lua','Core/aura_conditions.lua',
   'Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/validation.lua','Data/catalog.lua','Data/diff.lua','Core/rotation_library.lua'})do f.load(path)end
+ f.load('Core/build_context.lua')
  for line in io.lines('RotationMaster.toc')do local path=line:gsub('\r',''):match('^(Conditions/.-%.lua)$');if path then f.load(path)end end
  for _,path in ipairs(opts.packs or packs[class])do f.load(path)end
  f.load('Core/rotation_sequence.lua')
@@ -111,6 +124,7 @@ end
 -- Lua 5.1 has no __pairs: give DISTANCE_COUNT a plain snapshot rebuilt from the state.
 function H.sync(f,s)
  f.addon.longtermCache.conditionPlayerLevel=nil -- what PLAYER_LEVEL_UP does
+ f.addon:InvalidateBuildContext() -- equipment and talents change without their notifications here
  local list={};for i=1,s.enemies do list['GUID-nameplate'..i]={unit='nameplate'..i}end;f.addon.unitsInRange=list
  f.addon.lastMainSwing=s.swing and (s.now-(s.speed-s.swing))or nil
  for _,ids in pairs(families)do for _,id in ipairs(ids)do f.addon.SpellCatalog:UpdateSpell(id)end end

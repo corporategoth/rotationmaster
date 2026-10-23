@@ -6,10 +6,12 @@ local M=dofile('tests/fixtures/mop_premade_model_b.lua');local test,finish=M.F.s
 local ASSA,ASSA_IV,COMBAT,COMBAT_IV,COMBAT_HK='rm.mop.rogue.assassination','rm.mop.rogue.assassination.icyveins','rm.mop.rogue.combat','rm.mop.rogue.combat.icyveins','rm.mop.rogue.combat.hekili'
 local SUB,SUB_WT,START='rm.mop.rogue.subtlety','rm.mop.rogue.subtlety.warcrafttavern','rm.mop.rogue.unspecialized'
 local ALL={ASSA,ASSA_IV,COMBAT,COMBAT_IV,COMBAT_HK,SUB,SUB_WT,START}
+-- The specialization follows its signature spell in the kit (as choosing one teaches it); daggers in both hands.
 local function rogue(level,...)
  local f,s=M.fixture('ROGUE',{level=level});M.know(s,6603,1752,2098,1784)
  for _,set in ipairs({...})do M.know(s,unpack(set))end
- s.range[6603]=true;s.usable[1784]=false
+ s.range[6603]=true;s.usable[1784]=false;s.gear={[16]=M.DAGGER,[17]=M.DAGGER}
+ if level>=10 then for _,pair in ipairs({{1329,259},{13877,260},{16511,261},{31223,261}})do if s.known[pair[1]] then s.specID(pair[2])end end end
  return f,s
 end
 local assassination={1329,5171,73651,32645,1833,111240,408,1943,703,51723,1856,14185,79140,121411,121471,1766,2823,3408}
@@ -22,13 +24,14 @@ local function stopped(f,s,id,suppress,label)
  if suppress~=nil then assert((r.suppressAttack==true)==suppress,(label or id)..': suppressAttack '..tostring(r.suppressAttack))end
 end
 
-test('switches: catch-all below 10 and without a spec, one premade per spec spell, Subterfuge picks the Tavern premade',function()
+test('switches: catch-all below 10 and without a spec, one premade per specialization, Subterfuge picks the Tavern premade',function()
  local f,s=rogue(5)
  assert(M.scoped(f,'ROGUE')==8)
  assert(M.selected(f,s)==START and M.ordered(f,s)==START,'level 5')
- s.level=12;assert(M.selected(f,s)==START,'level 12 without a specialization')
- for _,case in ipairs({{1329,ASSA},{13877,COMBAT},{16511,SUB},{31223,SUB}})do
-  local g,t=rogue(40);M.know(t,case[1]);assert(M.selected(g,t)==case[2]and M.ordered(g,t)==case[2],'spell '..case[1])
+ s.specID(261);assert(M.selected(f,s)==START and M.ordered(f,s)==START,'levels 1-9 stay in the catch-all');s.spec=nil
+ s.level=12;M.know(s,1329,13877,16511);assert(M.selected(f,s)==START and M.ordered(f,s)==START,'level 12 without a specialization')
+ for _,case in ipairs({{259,ASSA},{260,COMBAT},{261,SUB}})do
+  local g,t=rogue(40);t.specID(case[1]);assert(M.selected(g,t)==case[2]and M.ordered(g,t)==case[2],'specialization '..case[1])
   for _,other in ipairs({ASSA,COMBAT,SUB})do if other~=case[2]then assert(not M.switches(g,other),other..' also matches '..case[1])end end
  end
  local g,t=rogue(90,{16511});t.talents[2]=true;assert(M.selected(g,t)==SUB_WT and M.ordered(g,t)==SUB_WT,'Subterfuge talented')
@@ -49,10 +52,10 @@ test('variants ship disabled at a lower priority and take over only when chosen'
  s.talents[18]=false;assert(M.selected(f,s)==START,'Hekili needs Anticipation; with every other Combat premade off the catch-all is left')
 end)
 
-test('dual spec: each talent group selects by the spell known in it',function()
+test('dual spec: each talent group selects by its own specialization',function()
  local f,s=rogue(90,{1329});assert(M.selected(f,s)==ASSA)
- s.talentGroup=2;s.known[1329]=false;M.know(s,16511);assert(M.selected(f,s)==SUB and M.ordered(f,s)==SUB,'group 2')
- s.talentGroup=1;s.known[16511]=false;M.know(s,1329);assert(M.selected(f,s)==ASSA)
+ s.talentGroup=2;s.specID(261);assert(M.selected(f,s)==SUB and M.ordered(f,s)==SUB,'group 2')
+ s.talentGroup=1;s.specID(259);assert(M.selected(f,s)==ASSA)
 end)
 
 test('casts, channels and a missing target stop with Attack suppressed in every premade',function()
@@ -67,6 +70,18 @@ test('out of combat: Stealth, then stop and let Attack start a body pull',functi
  for _,id in ipairs(ALL)do local f,s=rogue(90,assassination,combat,subtlety);s.combat=false;s.usable[1784]=nil
   assert(first(f,s,id)==1784,id);s.usable[1784]=false;stopped(f,s,id,false,id..' Stealth not ready')
  end
+end)
+
+test('Backstab and Dispatch need a dagger in the main hand; Ambush and Mutilate do not',function()
+ local f,s=rogue(90,subtlety);sliced(s);s.debuffs={{id=89775,expires=120}};s.targettarget='party1'
+ assert(first(f,s,SUB)==53 and first(f,s,SUB_WT)==53,'dagger: Backstab from behind')
+ s.gear={[16]=M.SWORD,[17]=M.DAGGER};assert(first(f,s,SUB)==16511 and first(f,s,SUB_WT)==16511,'a sword in the main hand: Hemorrhage')
+ s.gear={};assert(first(f,s,SUB)==16511,'no weapon: Hemorrhage');s.gear={[16]={7099,2,15,'INVTYPE_WEAPON'}}
+ f.env.GetItemInfoInstant=function()end;assert(first(f,s,SUB)==16511,'an unreadable weapon skips Backstab, never guesses')
+ local g,t=rogue(90,assassination);sliced(t);t.debuffs={{id=1943,expires=120}};t.targetHealth=30;t.points=2
+ assert(first(g,t,ASSA)==111240);t.gear={[16]=M.SWORD};assert(first(g,t,ASSA)==1329,'no dagger: Mutilate instead of Dispatch')
+ t.stealth=true;t.combat=false;t.group=true;t.buffs[#t.buffs+1]={id=121153,expires=110};assert(first(g,t,ASSA)==1329,'Blindside opener without a dagger: Mutilate')
+ local h,u=rogue(90,combat);u.stealth=true;u.group=true;u.gear={[16]=M.SWORD};assert(first(h,u,COMBAT)==8676,'Ambush with a sword')
 end)
 
 test('stealth openers by spec, each ending in a Stop',function()
@@ -234,7 +249,7 @@ test('unavailable combo points halt the rotation rather than guessing',function(
  local x,r=M.first(f,s,ASSA);assert(not x and r.status=='unavailable',tostring(x)..' '..tostring(r.status))
 end)
 
-test('real publisher auto-selects by spec spell and highlights across combo points',function()
+test('real publisher auto-selects by specialization and highlights across combo points',function()
  local f,s=rogue(90,combat);sliced(s);s.debuffs={{id=84617,expires=120}};local poll,selected,glow=M.publisher(f,s)
  poll();assert(selected()==COMBAT and f.addon.currentSpell==84617,tostring(selected())..' '..tostring(f.addon.currentSpell))
  s.points=5;poll();assert(f.addon.currentSpell==2098);assert(#glow>0)

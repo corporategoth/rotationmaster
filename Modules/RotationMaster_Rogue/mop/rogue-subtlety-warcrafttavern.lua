@@ -3,7 +3,7 @@
 -- Dice before the pull; in Stealth, Shadow Dance or the Subterfuge linger: finishers at five points, then Ambush as
 -- often as it lands. Two or three engaged enemies keep Rupture up and spend five points on Crimson Tempest instead of
 -- Eviscerate; four or more add Fan of Knives. One target: Slice and Dice, Rupture, Eviscerate, Hemorrhage for its
--- bleed, Backstab when the target is not on you, else Hemorrhage. Shadow Dance and Vanish are reminders with Slice and
+-- bleed, Backstab with a dagger when the target is not on you, else Hemorrhage. Shadow Dance and Vanish are reminders with Slice and
 -- Dice up and 60 energy (Tavern times them to trinket procs, which RM cannot generalise). Shared parts: mop/blocks.lua.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
@@ -11,7 +11,6 @@ local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
 local function points(op,n)return{type='POINT',unit='player',operator=op,value=n}end
 local function energy(op,n)return{type='POWER',unit='player',operator=op,value=n}end
 local function mine(id)return{type='DEBUFF',unit='target',spell=id,owndebuff=true}end
@@ -27,14 +26,14 @@ local hidden={type='STEALTHED'}
 local worth=any(boss,lifetime('GREATERTHAN',8))
 local ruptureDue=any(negate(mine(1943)),remain(1943,'LESSTHANOREQUALS',2))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.subtlety.warcrafttavern',revision=1,
- blocks={['mop.rogue.boundaries']=1,['mop.rogue.out-of-combat']=1,['mop.rogue.solo']=1,['mop.rogue.upkeep']=1,['mop.rogue.subtlety-builders']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.subtlety.warcrafttavern',revision=2,
+ blocks={['mop.rogue.boundaries']=1,['mop.rogue.out-of-combat']=1,['mop.rogue.solo']=1,['mop.rogue.upkeep']=1,['mop.rogue.subtlety-builders']=2},
  nameKey='Default.MoP.Rogue.Subtlety.WarcraftTavern.Name',descriptionKey='Default.MoP.Rogue.Subtlety.WarcraftTavern.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE',minLevel=15,maxLevel=90},
  tags={'subtlety','dps','melee','leveling','endgame','subterfuge','warcraft-tavern'},
  sources={{url='https://www.warcrafttavern.com/mop/guides/pve-subtlety-rogue-dps-rotations-cooldowns/',title='Warcraft Tavern: Subtlety Rogue rotation (MoP Classic)',reviewedAt='2026-10-23'},
  {url='https://www.warcrafttavern.com/mop/guides/pve-subtlety-rogue-dps-talents-builds-glyphs/',title='Warcraft Tavern: Subtlety Rogue talents (MoP Classic)',reviewedAt='2026-10-23'}},
- body={priority=35,switch=all(any(known(16511),known(31223)),{type='TALENT',layout='grid',value=2}),
+ body={priority=35,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=261},{type='TALENT',layout='grid',value=2}}},
  cooldowns={block('mop.rogue.upkeep','rogue-'),
   spell('rogue-subtlety-wt-shadow-dance',51713,all(combat(),negate(hidden),sliced,energy('GREATERTHANOREQUALS',60))),
   spell('rogue-subtlety-wt-vanish',1856,all(combat(),negate(hidden),negate(own(51713)),negate(own(115192)),sliced,energy('GREATERTHANOREQUALS',60))),

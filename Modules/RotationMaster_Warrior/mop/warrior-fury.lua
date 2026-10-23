@@ -1,8 +1,10 @@
 -- Mists of Pandaria Classic Fury Warrior, levels 10-90 (the recommended variant): wowsims' Phase 5 order,
--- simplified. Selected while Bloodthirst is known (Fury's own spell). Titan's Grip and Single-Minded Fury play
--- the same here (RM cannot read the weapon type). Colossus Smash when two Raging Blow charges are banked (one
--- with Recklessness); Raging Blow to spend charges as the window closes; Bloodthirst; Colossus Smash; Storm Bolt
--- with it; Dragon Roar outside it; Execute; Bladestorm outside the window while Bloodthirst is cooling; Wild
+-- simplified. Selected in the Fury specialization (72). The off hand tells Titan's Grip (a two-hander) from
+-- Single-Minded Fury (a one-hander) where wowsims plays them apart. Colossus Smash when two Raging Blow charges
+-- are banked (one with Recklessness); Raging Blow to spend charges as the window closes; Bloodthirst; Colossus
+-- Smash; Storm Bolt with it; Dragon Roar outside it; Execute here with Single-Minded Fury; Bladestorm outside the
+-- window while Bloodthirst is cooling; with Titan's Grip one more Raging Blow outside the window and Recklessness;
+-- Execute; Wild
 -- Strike on Bloodsurge; Raging Blow keeping one charge for the next window; Wild Strike as the filler; Heroic
 -- Throw; Battle Shout for rage. Two or more engaged enemies add Bladestorm, Dragon Roar, Whirlwind for Meat
 -- Cleaver and Raging Blow cleaves. Before Colossus Smash (81) the "not known" arms keep Raging Blow and Wild
@@ -27,8 +29,8 @@ local worth=any(classified('worldboss'),classified('elite'),{type='TT_HEALTH',un
 -- Heroic Strike / Cleave dump: 60 rage in the window, 90 outside it (not in execute).
 local dump=any(all(smashed,rage('GREATERTHANOREQUALS',60)),all(target('GREATERTHANOREQUALS',.2),rage('GREATERTHANOREQUALS',90)))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.fury',revision=1,
- blocks={['mop.warrior.boundaries']=1,['mop.warrior.gap']=1,['mop.warrior.dps-upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.fury',revision=2,
+ blocks={['mop.warrior.boundaries']=1,['mop.warrior.gap']=1,['mop.warrior.dps-upkeep']=2},
  nameKey='Default.MoP.Warrior.Fury.Name',descriptionKey='Default.MoP.Warrior.Fury.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARRIOR',minLevel=10,maxLevel=90},
  tags={'fury','dps','melee','leveling','endgame','wowsims'},
@@ -36,7 +38,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://wowtbc.gg/mop/class-guides/fury-warrior/',title='wowtbc.gg: Fury Warrior (MoP Classic)',reviewedAt='2026-10-23'},
  {url='https://www.warcrafttavern.com/mop/guides/pve-fury-warrior-dps-rotation-cooldowns/',title='Warcraft Tavern: Fury Warrior rotation (MoP)',reviewedAt='2026-10-23'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/fury-warrior-leveling',title='Icy Veins: Fury Warrior levelling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'}},
- body={priority=30,switch={type='SPELL_KNOWN',spell=23881},
+ body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=72}}},
  cooldowns={block('mop.warrior.dps-upkeep','warrior-'),
   spell('warrior-fury-berserker-rage',18499,all(combat(),any(negate({type='BUFF',unit='player',spell=12880}),all(smashed,charges('EQUALS',0),target('GREATERTHANOREQUALS',.2))))),
   spell('warrior-fury-recklessness',1719,all(combat(),any(unsmashed,smashed,smash('LESSTHANOREQUALS',1.5),enemies('GREATERTHANOREQUALS',4)),worth)),
@@ -64,8 +66,10 @@ assert(addon:RegisterDefaultRotation({
  spell('warrior-fury-smash',86346,negate(smashed)),
  spell('warrior-fury-storm-bolt',107570,any(smashed,smash('GREATERTHAN',1.5))),
  spell('warrior-fury-dragon-roar',118000,negate(smashed)),
- spell('warrior-fury-execute',5308),
+ spell('warrior-fury-execute-single-minded',5308,{type='WEAPON_TYPE',slot='offhand',kind='onehand'}),
  spell('warrior-fury-bladestorm',46924,all(negate(smashed),{type='SPELL_COOLDOWN',spell=23881,operator='GREATERTHANOREQUALS',value=2.5})),
+ spell('warrior-fury-raging-blow-titans-grip',85288,all({type='WEAPON_TYPE',slot='offhand',kind='twohand'},negate(smashed),negate(own(1719)))),
+ spell('warrior-fury-execute',5308),
  spell('warrior-fury-bloodsurge',100130,all(own(46916),charges('LESSTHANOREQUALS',1))),
  spell('warrior-fury-raging-blow',85288,any(unsmashed,charges('EQUALS',2),smashed,smash('GREATERTHAN',1.5))),
  spell('warrior-fury-wild-strike',100130,all(target('GREATERTHANOREQUALS',.2),any(unsmashed,smashed,smash('GREATERTHAN',3),rage('GREATERTHANOREQUALS',80)))),

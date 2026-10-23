@@ -1,7 +1,7 @@
 -- Mists of Pandaria Classic Destruction Warlock, levels 10-90: the guide consensus order (Warcraft Tavern,
 -- Method, wowtbc.gg, Wowhead; Hekili's single-target list matches) with wowsims' Backdraft and Immolate
--- refinements. Selected while Conflagrate is known (Destruction's own spell; RM stores MoP rotations per
--- talent group and has no specialization condition). Pre-cast Incinerate. Moving without Kil'jaeden's
+-- refinements. Selected in the Destruction specialization (267)
+-- from level 10 (RM stores MoP rotations per talent group). Pre-cast Incinerate. Moving without Kil'jaeden's
 -- Cunning: Shadowburn, Conflagrate, Fel Flame. Shadowburn a target about to die. Three or more engaged
 -- enemies: Rain of Fire on four, Fire and Brimstone on four with an ember (toggled off again with none),
 -- Immolate, Conflagrate, Incinerate. Otherwise Immolate kept up (refreshed early in Dark Soul), Shadowburn
@@ -25,8 +25,8 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local soul=own(113858)
 local backdraft=own(117828)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.warlock.destruction',revision=1,
- blocks={['mop.warlock.boundaries']=1,['mop.warlock.upkeep']=1,['mop.warlock.pet-felhunter']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.warlock.destruction',revision=2,
+ blocks={['mop.warlock.boundaries']=2,['mop.warlock.upkeep']=1,['mop.warlock.pet-felhunter']=1},
  nameKey='Default.MoP.Warlock.Destruction.Name',descriptionKey='Default.MoP.Warlock.Destruction.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARLOCK',minLevel=10,maxLevel=90},
  tags={'destruction','dps','caster','ranged','leveling','endgame','warcraft-tavern','method','wowtbc','wowsims'},
@@ -35,7 +35,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://wowtbc.gg/mop/class-guides/destruction-warlock/',title='wowtbc.gg: Destruction Warlock (MoP Classic)',reviewedAt='2026-10-23'},
  {url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/warlock/destruction/apls/default.apl.json',title='wowsims/mop: Destruction Warlock APL',reviewedAt='2026-10-23',revision='ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9'},
  {url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/WarlockDestruction.simc',title='Hekili (MoP fork): Destruction Warlock priority',reviewedAt='2026-10-23',revision='0750b5dd98005481baf828cce26149b9abca875b'}},
- body={priority=30,switch={type='SPELL_KNOWN',spell=17962},
+ body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=267}}},
  cooldowns={block('mop.warlock.upkeep','warlock-'),block('mop.warlock.pet-felhunter','warlock-'),
   spell('warlock-destro-dark-soul',113858,all(combat(),any(negate(soul),{type='SPELL_CHARGES',spell=113858,operator='GREATERTHANOREQUALS',value=2}))),
   spell('warlock-destro-grimoire-felhunter',111897,combat()),

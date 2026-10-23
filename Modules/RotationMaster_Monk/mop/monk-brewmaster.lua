@@ -1,5 +1,5 @@
--- Mists of Pandaria Classic Brewmaster Monk, levels 10–90, once Stance of the Sturdy Ox (a
--- Brewmaster-only spell learned at 10) is known. wowsims' Phase 5 Generic order with Wowhead's
+-- Mists of Pandaria Classic Brewmaster Monk, levels 10–90, in the Brewmaster specialization
+-- (268). wowsims' Phase 5 Generic order with Wowhead's
 -- Shuffle-first purify rule: Shuffle through Blackout Kick, Keg Smash under the Chi cap, Expel
 -- Harm when hurt, Jab at 80 energy, Tiger Power, Tiger Palm filler; Breath of Fire and Spinning
 -- Crane Kick on packs only while Shuffle is safe. Purifying Brew, Elusive Brew, Guard and Chi Brew
@@ -23,8 +23,8 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local SHUFFLE,KEG=115307,121253
 local stagger=function(id)return{type='DEBUFF',unit='player',spell=id}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.monk.brewmaster',revision=1,
- blocks={['mop.monk.boundaries']=1,['mop.monk.upkeep']=1,['mop.monk.brewmaster-upkeep']=1,['mop.monk.brewmaster-pull']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.monk.brewmaster',revision=2,
+ blocks={['mop.monk.boundaries']=1,['mop.monk.upkeep']=1,['mop.monk.brewmaster-upkeep']=2,['mop.monk.brewmaster-pull']=1},
  nameKey='Default.MoP.Monk.Brewmaster.Name',descriptionKey='Default.MoP.Monk.Brewmaster.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK',minLevel=10,maxLevel=90},
  tags={'brewmaster','tank','leveling','single-target','aoe','wowsims','wowhead'},
@@ -33,7 +33,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.wowhead.com/mop-classic/guide/classes/monk/brewmaster/tank-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Brewmaster Monk rotation (Phase 5)',reviewedAt='2026-10-23',revision='2026-06-20',notes='Read from a Wayback snapshot; Shuffle before Purifying Brew.'},
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/brewmaster-monk-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Brewmaster Monk rotation',reviewedAt='2026-10-23',revision='2025-07-09',notes='Elusive Brew from six stacks, Breath of Fire only with Shuffle safe; leveling equals the cap rotation.'},
  },
- body={priority=30,switch={type='SPELL_KNOWN',spell=115069},
+ body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=268}}},
   cooldowns={
    block('brew-upkeep','mop.monk.brewmaster-upkeep','brew-'),
    block('brew-class','mop.monk.upkeep','brew-'),

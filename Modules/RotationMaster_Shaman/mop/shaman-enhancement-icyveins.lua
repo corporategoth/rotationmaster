@@ -1,5 +1,5 @@
 -- Mists of Pandaria Classic Enhancement Shaman, Icy Veins variant (player-chosen, off by default). Same switch
--- as the recommended premade (Lava Lash known). Stormstrike (Stormblast in Ascendance), then Lava Lash ahead of
+-- as the recommended premade (Enhancement specialization). Stormstrike (Stormblast in Ascendance), then Lava Lash ahead of
 -- the spender; Lightning Bolt at five Maelstrom Weapon or from three when it lands before the next swing;
 -- Unleash Elements then Flame Shock; Earth Shock. Packs: Fire Nova at four once Flame Shock is spread, Flame
 -- Shock and Lava Lash to spread it, Chain Lightning in place of Lightning Bolt. Shamanistic Rage on cooldown in
@@ -18,15 +18,15 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local flame={type='DEBUFF',unit='target',spell=8050,owndebuff=true}
 local spend=any(maelstrom(5),all(maelstrom(3),{type='SWING_TIME_REMAIN',operator='GREATERTHANOREQUALS',value=1.1}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.enhancement.icyveins',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.enhancement.icyveins',revision=2,
  blocks={['mop.shaman.manual']=1,['mop.shaman.lightning-shield']=1,['mop.shaman.group']=1,['mop.shaman.fire-totems']=1,
-  ['mop.shaman.enhancement-upkeep']=1},
+  ['mop.shaman.enhancement-upkeep']=2},
  nameKey='Default.MoP.Shaman.Enhancement.IcyVeins.Name',descriptionKey='Default.MoP.Shaman.Enhancement.IcyVeins.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='SHAMAN',minLevel=10,maxLevel=90},
  tags={'enhancement','dps','melee','leveling','endgame','icy-veins'},
  sources={{url='https://www.icy-veins.com/mists-of-pandaria-classic/enhancement-shaman-pve-rotation-cooldowns-abilities',title='Icy Veins: Enhancement Shaman rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2025-06-22'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/enhancement-shaman-leveling',title='Icy Veins: Enhancement Shaman levelling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-06-22'}},
- body={priority=20,disabled=true,switch={type='SPELL_KNOWN',spell=60103},
+ body={priority=20,disabled=true,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=263}}},
  cooldowns={block('mop.shaman.lightning-shield','shaman-enh-iv-'),block('mop.shaman.enhancement-upkeep','shaman-enh-iv-'),block('mop.shaman.fire-totems','shaman-enh-iv-'),
   block('mop.shaman.group','shaman-enh-iv-'),
   spell('shaman-enh-iv-shamanistic-rage',30823,combat()),

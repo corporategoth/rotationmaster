@@ -18,6 +18,11 @@ M.packs=packs
 local ids={WARRIOR={6603,6673,469,2687,6552,72,845,78,12328,12292,1719,100,34428,20252,29801,1680,6343,5308,7384,772,23881,12294,1715,20243,7386,23922,6572,1160,99,2565,12975,871},
  ROGUE={6603,1752,2098,5171,1943,53,8676,703,1833,5938,1766,5277,14251,13877,13750,14177,1329,16511,14278,14183,2818},
  HUNTER={75,6603,2973,1495,19306,1130,19434,1978,3043,3044,2643,34120,13163,13165,5118,13159,13161,20043,34074,19506,883,982,136,34026,19574,3045,23989,34490}}
+-- Equipment records {itemID, item class, subclass, equip location} for WEAPON_TYPE (s.gear[slot]).
+M.GEAR={DAGGER={7001,2,15,'INVTYPE_WEAPON'},SWORD={7002,2,7,'INVTYPE_WEAPON'},AXE2H={7003,2,1,'INVTYPE_2HWEAPON'},SHIELD={7004,4,6,'INVTYPE_SHIELD'},
+ STAFF={7005,2,10,'INVTYPE_2HWEAPON'},OFFHAND={7006,4,0,'INVTYPE_HOLDABLE'}}
+-- FORM by spell: s.bar lists the stance-bar spells in slot order (a Warrior's three stances by default),
+-- s.form the active slot; s.shift(id) activates a form by spell.
 function M.fixture(class,options)
  options=options or {}
  local f=F.new(5,1,class);local a,e=f.addon,f.env
@@ -27,7 +32,10 @@ function M.fixture(class,options)
   health=100,targetHealth=100,power=class=='ROGUE'and 100 or 0,maxPower=100,mana=100,points=0,stealth=false,cast=false,channel=false,
   targetCast=nil,targetInterruptible=true,form=1,forms=3,group=false,classification='normal',targetLevel=nil,targettarget='player',
   enemies={},autorepeat=false,active={},sinceAuto=nil,mainEnchant=false,offEnchant=false,offSpeed=nil,
-  pet=false,petDead=false,petHealth=100,ttd=nil}
+  pet=false,petDead=false,petHealth=100,ttd=nil,bar={},gear={},channelSpell=nil,channelStart=99,channelEnd=101}
+ if class=='WARRIOR'then s.bar={2457,71,2458};s.gear={[16]=M.GEAR.SWORD,[17]=M.GEAR.SHIELD}end
+ if class=='ROGUE'then s.gear={[16]=M.GEAR.DAGGER}end
+ s.shift=function(id)if id==0 then s.form=0;return end;for index,known in ipairs(s.bar)do if known==id then s.form=index;return end end;s.bar[#s.bar+1]=id;s.form=#s.bar end
  for _,id in ipairs(ids[class])do s.known[id]=false end
  local names,ranks={},{}
  for _,id in ipairs(ids[class])do names[id]='Spell '..id;ranks[id]='Rank 1' end
@@ -60,13 +68,18 @@ function M.fixture(class,options)
  e.GetComboPoints=function(unit,target)assert(unit=='player'and target=='target');return s.points end
  e.IsStealthed=function()return s.stealth end
  e.GetShapeshiftForm=function()return s.form end;e.GetNumShapeshiftForms=function()return s.forms end
+ e.GetShapeshiftFormInfo=function(index)local id=s.bar[index];if id then return 136000,index==s.form,true,id end end
+ e.GetInventoryItemID=function(_,slot)local item=s.gear[slot];return item and item[1]end
+ e.GetInventoryItemLink=function(_,slot)local item=s.gear[slot];return item and('|Hitem:'..item[1]..':0:0:0:0:0:0|h')end
+ e.GetItemInfoInstant=function(id)for _,item in pairs(s.gear)do if item[1]==id then return id,'Type','Subtype',item[4],1,item[2],item[3]end end end
+ e.GetInventorySlotInfo=function(name)assert(name=='RANGEDSLOT');return 18 end
  e.IsInGroup=function()return s.group end;e.IsInRaid=function()return false end
  e.GetUnitName=function()return 'Pet'end
  e.UnitCastingInfo=function(unit)
   if unit=='player'then if s.cast then return 'Cast in progress',nil,nil,99000,101000 end;return end
   if unit=='target'and s.targetCast then return s.targetCast,nil,nil,99000,101000,false,'cast',not s.targetInterruptible end
  end
- e.UnitChannelInfo=function(unit)if unit=='player'and s.channel then return 'Channel in progress',nil,nil,99000,101000,false,false end end
+ e.UnitChannelInfo=function(unit)if unit=='player'and s.channel then return s.channelSpell and('Spell '..s.channelSpell)or'Channel in progress',nil,nil,s.channelStart*1000,s.channelEnd*1000,false,false,s.channelSpell end end
  e.GetWeaponEnchantInfo=function()return s.mainEnchant,1000,0,1,s.offEnchant,1000,0,1 end
  e.UnitAttackSpeed=function()return 2.6,s.offSpeed end
  -- Enemies with nameplates: each entry is that enemy's native threat status for you (false = not on its table).
@@ -89,7 +102,7 @@ function M.fixture(class,options)
   'Core/unit_state_conditions.lua','Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/validation.lua','Data/catalog.lua','Data/diff.lua','Core/rotation_library.lua','Core/rotation_tags.lua',
   'Conditions/common.lua','Conditions/spell.lua','Conditions/known_spell.lua','Conditions/character.lua','Conditions/buffs.lua','Conditions/debuffs.lua',
   'Conditions/combat.lua','Conditions/casting.lua','Conditions/channeling.lua','Conditions/stats.lua','Conditions/range.lua','Conditions/spatial.lua',
-  'Conditions/weapon.lua','Conditions/unit_states.lua'}) do f.load(path) end
+  'Conditions/weapon.lua','Conditions/unit_states.lua','Core/build_context.lua','Conditions/specialization.lua','Conditions/equipment.lua'}) do f.load(path) end
  for _,path in ipairs(options.packs or packs[class])do f.load(path)end
  e.BOOKTYPE_SPELL,e.BOOKTYPE_PET='spell','pet';e.GetAddOnMetadata=function() return 'Rotation Master test' end
  f.libraries['AceAddon-3.0']={NewAddon=function(_,object) return object end};f.libraries['AceEvent-3.0']={}
@@ -105,6 +118,7 @@ function M.fixture(class,options)
  -- The nameplate snapshot is rebuilt from the modeled enemies.
  local function sync()
   a.spellHistory=s.sinceAuto and {{spell=75,time=100-s.sinceAuto}} or {};a.longtermCache={}
+  a:InvalidateBuildContext()
   a.unitsInRange={};for n in pairs(s.enemies)do a.unitsInRange['Creature-'..n]={unit='nameplate'..n}end
  end
  f.sync=sync

@@ -26,7 +26,7 @@ test('four premades register valid, scoped 1/10–70, and cite only their own so
  end
  for id,host in pairs({[DI]='icy%-veins%.com',[PI]='icy%-veins%.com'})do for _,src in ipairs(a:GetDefaultRotation(id).envelope.sources)do assert(src.url:find(host),id..' cites '..src.url)end end
  for _,src in ipairs(a:GetDefaultRotation(PW).envelope.sources)do assert(not src.url:find('icy%-veins'),PW..' cites Icy Veins')end
- for _,id in ipairs({DW,DI,PW,PI})do local v=a:GetDefaultRotation(id);assert(v.validation.valid and v.readOnly and v.revision==1)end
+ for _,id in ipairs({DW,DI,PW,PI})do local v=a:GetDefaultRotation(id);assert(v.validation.valid and v.readOnly and v.revision==((id==PW or id==PI)and 2 or 1))end
 end)
 
 test('variants share their sibling switch; Defensive Stance selects the tank, anything else DPS, recommended first',function()
@@ -39,6 +39,9 @@ test('variants share their sibling switch; Defensive Stance selects the tank, an
  s.level,s.form,s.forms=10,1,1;poll();assert(selected()==DW)
  s.forms=3;assert(f.addon:SetDefaultRotationEnabled(DW,false));s.form=1;poll();assert(selected()==DI)
  assert(f.addon:SetDefaultRotationEnabled(PW,false));s.form=2;poll();assert(selected()==PI)
+ -- Stances are read by spell: Defensive Stance selects the tank wherever it sits on the bar.
+ assert(f.addon:SetDefaultRotationEnabled(PW,true));s.bar={2457,2458,71};s.form=3;poll();assert(selected()==PW,'Defensive Stance in slot 3')
+ s.form=2;poll();assert(selected()==DI and not M.switches(f,PW),'Berserker Stance in slot 2 is not Defensive (the recommended DPS premade is off here)')
 end)
 
 test('casting, channeling and a missing target stop without melee; out of combat only Charge then stop',function()
@@ -140,7 +143,9 @@ test('tank reminders: Shield Block by source policy, Heroic Strike from 30 rage,
  assert(M.upkeep(f,s,PW)['warrior-prot-heroic-strike']==78)
  t.targettarget='player';assert(not M.upkeep(f,s,PW)['warrior-prot-shield-block']and M.upkeep(g,t,PI)['warrior-prot-shield-block']==2565)
  t.targettarget='party1';assert(not M.upkeep(g,t,PI)['warrior-prot-shield-block'])
- s.targetLevel=63;assert(M.upkeep(f,s,PW)['warrior-prot-shield-block']==2565);s.buffs={{id=2565}};assert(not M.upkeep(f,s,PW)['warrior-prot-shield-block'])
+ s.targetLevel=63;assert(M.upkeep(f,s,PW)['warrior-prot-shield-block']==2565);s.gear[17]=nil
+ assert(not M.upkeep(f,s,PW)['warrior-prot-shield-block'],'no shield, no Shield Block');s.gear[17]=M.GEAR.AXE2H;assert(not M.upkeep(f,s,PW)['warrior-prot-shield-block'])
+ s.gear[17]=M.GEAR.SHIELD;s.buffs={{id=2565}};assert(not M.upkeep(f,s,PW)['warrior-prot-shield-block'])
  s.targetLevel=nil;s.buffs={};s.classification='worldboss';assert(M.upkeep(f,s,PW)['warrior-prot-shield-block'])
  s.health=25;local u=M.upkeep(f,s,PW);assert(u['warrior-prot-last-stand']==12975 and not u['warrior-prot-shield-wall'])
  s.health=15;assert(M.upkeep(f,s,PW)['warrior-prot-shield-wall']==871)

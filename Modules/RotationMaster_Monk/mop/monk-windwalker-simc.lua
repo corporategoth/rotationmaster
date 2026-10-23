@@ -21,8 +21,8 @@ local debuff={type='DEBUFF',unit='target',spell=130320,owndebuff=true}
 local capped=negate(chi('GREATERTHANOREQUALS',-1))
 local fists=all(negate({type='MOVING'}),energy('LESSTHANOREQUALS',50))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.monk.windwalker.simc',revision=1,
- blocks={['mop.monk.boundaries']=1,['mop.monk.upkeep']=1,['mop.monk.windwalker-upkeep']=1,['mop.monk.windwalker-open']=1,['mop.monk.windwalker-tail']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.monk.windwalker.simc',revision=2,
+ blocks={['mop.monk.boundaries']=1,['mop.monk.upkeep']=1,['mop.monk.windwalker-upkeep']=2,['mop.monk.windwalker-open']=1,['mop.monk.windwalker-tail']=1},
  nameKey='Default.MoP.Monk.Windwalker.Simc.Name',descriptionKey='Default.MoP.Monk.Windwalker.Simc.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK',minLevel=10,maxLevel=90},
  tags={'windwalker','single-target','aoe','simulationcraft','hekili','maxdps'},
@@ -30,7 +30,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/MonkWindwalker.simc',title='Hekili MoP fork: Windwalker priority (SimC 5.4.8)',reviewedAt='2026-10-23',revision='0750b5dd98'},
   {url='https://github.com/kaminaris/MaxDps-Monk/blob/d286e7b14011e920aebe2acf2adda9d82a1c270f/Specialization/Mop/Windwalker.lua',title='MaxDps-Monk: MoP Windwalker',reviewedAt='2026-10-23',revision='d286e7b140',notes='Same list; Tigereye Brew at 10 or more.'},
  },
- body={priority=20,disabled=true,switch={type='SPELL_KNOWN',spell=113656},
+ body={priority=20,disabled=true,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=269}}},
   cooldowns={
    block('wwsc-upkeep','mop.monk.windwalker-upkeep','wwsc-'),
    block('wwsc-class','mop.monk.upkeep','wwsc-'),

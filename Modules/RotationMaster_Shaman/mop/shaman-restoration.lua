@@ -1,6 +1,6 @@
 -- Mists of Pandaria Classic Restoration Shaman, levels 10-90: Icy Veins' order with Wowhead's group block.
--- Selected while Riptide is known (Restoration's own spell; RM stores MoP rotations per talent group and has no
--- specialization condition). Heals act on your friendly target (or none); RM cannot choose whom to heal. An
+-- Selected in the Restoration specialization (264)
+-- from level 10 (RM stores MoP rotations per talent group). Heals act on your friendly target (or none); RM cannot choose whom to heal. An
 -- attackable target gets the damage filler (Flame Shock, Lava Burst, Elemental Blast, Lightning Bolt), any other
 -- enemy target stops. Healing: Greater Healing Wave under Ancestral Swiftness, Healing Surge below 35%, Purify
 -- Spirit on Magic or Curses, Unleash Elements then Healing Rain when three nearby allies are hurt, Riptide,
@@ -22,7 +22,7 @@ local someone=any(hurt(.95),around(.9,1))
 local heavy=around(.6,3)
 local rain=all({type='SPELL_AVAIL',spell=73920},around(.9,3))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.restoration',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.restoration',revision=2,
  blocks={['mop.shaman.manual']=1,['mop.shaman.group']=1,['mop.shaman.restoration-upkeep']=1,['mop.shaman.restoration-damage']=1},
  nameKey='Default.MoP.Shaman.Restoration.Name',descriptionKey='Default.MoP.Shaman.Restoration.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='SHAMAN',minLevel=10,maxLevel=90},
@@ -30,7 +30,7 @@ assert(addon:RegisterDefaultRotation({
  sources={{url='https://www.icy-veins.com/mists-of-pandaria-classic/restoration-shaman-pve-rotation-cooldowns-abilities',title='Icy Veins: Restoration Shaman rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2025-06-22'},
  {url='https://www.wowhead.com/mop-classic/guide/classes/shaman/restoration/healer-rotation-cooldowns-abilities-pve',title='Wowhead: Restoration Shaman healing (MoP Classic)',reviewedAt='2026-10-23',revision='2026-06-21'},
  {url='https://www.warcrafttavern.com/mop/guides/pve-restoration-shaman-rotation-cooldowns/',title='Warcraft Tavern: Restoration Shaman rotation (MoP)',reviewedAt='2026-10-23'}},
- body={priority=30,switch={type='SPELL_KNOWN',spell=61295},
+ body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=264}}},
  cooldowns={block('mop.shaman.restoration-upkeep','shaman-resto-'),
   spell('shaman-resto-healing-stream',5394,all(combat(),negate({type='TOTEM',spell=3}),someone)),
   spell('shaman-resto-mana-tide',16190,all(combat(),{type='MANAPCT',unit='player',operator='LESSTHAN',value=.8})),

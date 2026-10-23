@@ -4,7 +4,8 @@
 -- Touch, both DoTs refreshed in the last 30%, Shadow Word: Madness when it is ending, Insanity is
 -- 35 from full or in Voidform, Void Blast during Madness, Tentacle Slam at two charges, Void
 -- Torrent, Mind Blast, Tentacle Slam, Mind Flay: Insanity during Madness, Shadow Word: Death
--- below 20%, Void Volley; moving: Death and Pain; Mind Flay, clipped for a ready Mind Blast.
+-- below 20%, Void Volley; moving: Death and Pain; Mind Flay, clipped for a ready Mind Blast (the
+-- channel is read by spell, so Void Torrent and other channels run out).
 -- Reminders: Halo, Voidform with both DoTs up, Power Infusion in Voidform, Desperate Prayer.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
@@ -19,7 +20,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 local madness=dot(335467)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.priest.shadow.icyveins',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.priest.shadow.icyveins',revision=2,
  blocks={['retail.priest.upkeep']=1},
  nameKey='Default.Retail.Priest.Shadow.IcyVeins.Name',descriptionKey='Default.Retail.Priest.Shadow.IcyVeins.Description',
  applicability={families={'retail'},actionContext='player',class='PRIEST',specs={258},minLevel=10,maxLevel=90},
@@ -40,7 +41,7 @@ assert(addon:RegisterDefaultRotation({
   rotation={
    {id='shadowiv-casting',type='none',suppress_attack=true,conditions={type='CASTING',unit='player'}},
    {id='shadowiv-channel',type='none',suppress_attack=true,conditions=all({type='CHANNELING',unit='player'},
-    negate(all({type='SPELL_AVAIL',spell=8092},negate({type='SPELL_HISTORY_TIME',spell=263165,operator='LESSTHAN',value=3}))))},
+    negate(all(any({type='CHANNELING_SPELL',unit='player',spell=15407},{type='CHANNELING_SPELL',unit='player',spell=391403}),{type='SPELL_AVAIL',spell=8092})))},
    {id='shadowiv-no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
    {id='shadowiv-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
     spell('shadowiv-pull-vampiric-touch',34914,negate(dot(34914))),

@@ -1,5 +1,6 @@
 -- Mists of Pandaria Classic Death Knight premades: switches, priorities, boundaries and reminders
--- through the real catalog, predicates (RUNE, grid TALENT, pet auras, SWING_TIME), composition and
+-- through the real catalog, predicates (RUNE, grid TALENT, pet auras, SPECIALIZATION, WEAPON_TYPE, FORM by
+-- spell), composition and
 -- sequence executor on a modeled 5.5.4 client (tests/fixtures/mop_premade_model_a.lua).
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local M=dofile('tests/fixtures/mop_premade_model_a.lua')
@@ -26,16 +27,18 @@ test('the Death Knight premades load, validate and declare Mists of Pandaria onl
  M.scope('death-knight',ALL,55)
 end)
 
-test('switch: Blood by its passive or Dark Command, Frost by Howling Blast and the off hand, Unholy catches the rest',function()
+test('switch: Blood and Frost by specialization (Frost by the off hand too), Unholy catches the rest',function()
  local a,s=dk(55);s.learn(unpack(BASE))
  assert(M.selected(a)==UNHOLY,'an unspecialized knight runs Unholy')
- s.learn(52143);assert(M.selected(a)==UNHOLY,'Unholy 55 (passive only)')
- s.known={};s.learn(DC,HB,FS);assert(M.selected(a)==FROST,'Frost with a two-hander (no off-hand speed)')
- s.offhand=2.6;assert(M.selected(a)==DW,'Frost with two weapons')
+ assert(M.switch(a,BLOOD)=='unavailable'and M.switch(a,FROST)=='unavailable','no specialization reads unavailable, never a match')
+ s.specID(252);assert(M.selected(a)==UNHOLY,'Unholy')
+ s.learn(HB,FS,50034);assert(M.selected(a)==UNHOLY,'spells of other specializations do not matter')
+ s.specID(251);s.gear={[16]=M.AXE2H};assert(M.selected(a)==FROST,'Frost with a two-hander')
+ s.gear={[16]=M.SWORD,[17]=M.SWORD};assert(M.selected(a)==DW,'Frost with two weapons')
  assert(M.switch(a,FROST)=='match','the two-hand pack still matches underneath')
- s.offhand=nil;assert(M.switch(a,DW)=='unavailable','a two-hander leaves the dual-wield switch unreadable, never a match')
- s.known={};s.learn(DC,50034);assert(M.selected(a)==BLOOD,'Blood Rites at 55')
- s.known={};s.learn(DC,56222);assert(M.selected(a)==BLOOD,'Dark Command at 58 if the passive is not reported')
+ s.gear={[16]=M.SWORD,[17]=M.OFFHAND};assert(M.switch(a,DW)=='no-match'and M.selected(a)==FROST,'an off-hand item that is no weapon')
+ s.gear={[16]=M.AXE2H};assert(M.switch(a,DW)=='no-match','a two-hander leaves the off hand empty')
+ s.specID(250);assert(M.selected(a)==BLOOD,'Blood')
  assert(M.switch(a,BSIM)=='match'and M.switch(a,UCAP)=='match','variants share their switches')
  assert(M.row(a,BSIM).envelope.body.disabled and M.row(a,UCAP).envelope.body.disabled,'variants ship disabled')
 end)
@@ -95,7 +98,9 @@ test('Blood reminders: presence, Bone Shield, Rune Tap, defensives by health, Ar
  s.combat=false;s.group=true;s.classification='worldboss'
  local lit=M.upkeep(a,s,BLOOD);assert(lit[BLOODP]and not lit[FROSTP]and lit[BONE]and lit[HORN]and lit[ARMY],'between pulls')
  s.buff('player',FROSTP);s.buff('player',BONE,{applications=4});s.buff('player',57330)
- lit=M.upkeep(a,s,BLOOD);assert(not lit[BLOODP]and not lit[BONE]and not lit[HORN],'a presence you chose is kept; shield charged; horn up')
+ lit=M.upkeep(a,s,BLOOD);assert(lit[BLOODP]and not lit[BONE]and not lit[HORN],'the Frost Presence aura alone is no presence; shield charged; horn up')
+ s.bar={FROSTP,BLOODP};s.form=1;lit=M.upkeep(a,s,BLOOD);assert(not lit[BLOODP],'a presence you chose is kept, wherever it sits on the bar')
+ s.form=2;assert(not M.upkeep(a,s,BLOOD)[BLOODP],'in Blood Presence');s.form=0
  s.clearAuras();s.buff('player',BONE,{applications=1});lit=M.upkeep(a,s,BLOOD);assert(lit[BONE],'one charge left')
  s.combat=true;s.classification='normal';s.group=false;lit=M.upkeep(a,s,BLOOD);assert(not lit[TAP]and not lit[VB]and not lit[DRW]and not lit[ARMY])
  s.buff('player',96171);lit=M.upkeep(a,s,BLOOD);assert(lit[TAP],'Will of the Necropolis: free Rune Tap')
@@ -140,7 +145,7 @@ test('Frost two-hand: Killing Machine Obliterate, caps, Rime, leveling Death Str
 end)
 
 test('Frost dual-wield: Killing Machine Frost Strike, Howling Blast spends Frost and Death runes',function()
- local a,s=dk(90);s.offhand=2.6;s.learn(DC,DS,PS,DND,OUTBREAK,HORN,HB,FS,OBL,SR_F,BTAP,LEECH);diseased(s)
+ local a,s=dk(90);s.specID(251);s.gear={[16]=M.SWORD,[17]=M.SWORD};s.learn(DC,DS,PS,DND,OUTBREAK,HORN,HB,FS,OBL,SR_F,BTAP,LEECH);diseased(s)
  assert(M.selected(a)==DW)
  s.buff('player',51124);M.expect(a,s,DW,FS,nil,'Killing Machine: Frost Strike');s.clearAuras();diseased(s)
  M.expect(a,s,DW,HB,nil,'two Frost runes: Howling Blast')
@@ -176,7 +181,7 @@ end)
 test('Unholy reminders: presence, ghoul, Gargoyle on lust or a long elite, Frenzy, Empower, Army',function()
  local a,s=dk(90);s.learn(UNHOLYP,FROSTP,RAISE,GARG,FRENZY,ERW,IBF,48743,HORN,FREEZE,ARMY)
  s.combat=false;local lit=M.upkeep(a,s,UNHOLY);assert(lit[UNHOLYP]and lit[RAISE]and not lit[GARG]and not lit[FRENZY],'between pulls')
- s.pet=true;s.buff('player',UNHOLYP);lit=M.upkeep(a,s,UNHOLY);assert(not lit[RAISE]and not lit[UNHOLYP])
+ s.pet=true;s.shift(UNHOLYP);lit=M.upkeep(a,s,UNHOLY);assert(not lit[RAISE]and not lit[UNHOLYP])
  s.combat=true;lit=M.upkeep(a,s,UNHOLY);assert(lit[FRENZY]and not lit[GARG],'Frenzy on cooldown; no Gargoyle on trash')
  s.buff('player',2825);lit=M.upkeep(a,s,UNHOLY);assert(lit[GARG],'Gargoyle under Bloodlust')
  s.setRunes('bbuuff');s.energy=30;lit=M.upkeep(a,s,UNHOLY);assert(lit[ERW],'Empower with no runes and little runic power')

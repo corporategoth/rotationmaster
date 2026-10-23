@@ -44,9 +44,11 @@ test('Shadow Icy Veins reference: pre-pull Touch, DoT upkeep, Madness, procs, Mi
  M.expect(a,s,258,SHADOWIV,15407,nil,'Mind Flay')
  s.health.target=15;M.expect(a,s,258,SHADOWIV,32379,nil,'Death below 20%');s.health.target=100
  s.clearAuras();s.debuff('target',589,{expirationTime=110,duration=16});s.debuff('target',34914,{expirationTime=104,duration=21});M.expect(a,s,258,SHADOWIV,34914,nil,'Vampiric Touch in its last 30%')
- s.channel=true;s.cooldown={};M.expect(a,s,258,SHADOWIV,34914,nil,'channelling with Mind Blast ready: clip')
- s.history(263165,1);M.expect(a,s,258,SHADOWIV,nil,'stopped','a fresh Void Torrent is not clipped')
- s.cooling(8092,5);M.expect(a,s,258,SHADOWIV,nil,'stopped','Mind Blast cooling: let the channel run');s.channel=false
+ s.channel=true;s.cooldown={};s.channelSpell=263165;M.expect(a,s,258,SHADOWIV,nil,'stopped','Void Torrent runs out, Mind Blast or not')
+ s.channelSpell=15407;M.expect(a,s,258,SHADOWIV,34914,nil,'Mind Flay with Mind Blast ready: clip')
+ s.channelSpell=391403;M.expect(a,s,258,SHADOWIV,34914,nil,'Mind Flay: Insanity too')
+ s.channelSpell=263165;s.history(263165,1);M.expect(a,s,258,SHADOWIV,nil,'stopped','a fresh Void Torrent is not clipped')
+ s.channelSpell=15407;s.cooling(8092,5);M.expect(a,s,258,SHADOWIV,nil,'stopped','Mind Blast cooling: let the channel run');s.channel=false;s.channelSpell=nil
  s.learn(228260,10060,120644);s.cooldown={};s.clearAuras();local lit=M.upkeep(a,s,258,SHADOWIV);assert(lit[120644]and not lit[228260]and not lit[10060],'Halo; Voidform waits for both DoTs')
  s.debuff('target',34914);s.debuff('target',589);lit=M.upkeep(a,s,258,SHADOWIV);assert(lit[228260],'Voidform with both DoTs')
  s.buff('player',194249);lit=M.upkeep(a,s,258,SHADOWIV);assert(lit[10060],'Power Infusion in Voidform')

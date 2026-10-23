@@ -1,6 +1,6 @@
 -- Mists of Pandaria Classic Arms Warrior, levels 10-90 (the recommended variant): wowsims' Phase 5 order in
--- wowtbc.gg's simpler shape. Selected while Mortal Strike is known (Arms' own spell; RM stores MoP rotations
--- per talent group and has no specialization condition). Colossus Smash is the window: refreshed when it is
+-- wowtbc.gg's simpler shape. Selected in the Arms specialization (71) from level 10 (RM stores MoP
+-- rotations per talent group, so the switch reads the specialization). Colossus Smash is the window: refreshed when it is
 -- missing or about to end, Mortal Strike, Storm Bolt with it, Dragon Roar and Bladestorm outside it; below
 -- 20% Execute in the window, at 100 rage or to keep Sudden Execute, Overpower on Taste for Blood; otherwise
 -- Slam in the window, Overpower at four stacks, Slam at 100 rage, Overpower, Slam as the filler. Two or more
@@ -25,8 +25,8 @@ local taste=own(60503)
 local worth=any(classified('worldboss'),classified('elite'),{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=15})
 local burst=all(combat(),any(negate({type='SPELL_KNOWN',spell=86346}),smashed),worth)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.arms',revision=1,
- blocks={['mop.warrior.boundaries']=1,['mop.warrior.gap']=1,['mop.warrior.dps-upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.arms',revision=2,
+ blocks={['mop.warrior.boundaries']=1,['mop.warrior.gap']=1,['mop.warrior.dps-upkeep']=2},
  nameKey='Default.MoP.Warrior.Arms.Name',descriptionKey='Default.MoP.Warrior.Arms.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARRIOR',minLevel=10,maxLevel=90},
  tags={'arms','dps','melee','leveling','endgame','wowsims','wowtbc'},
@@ -34,7 +34,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://wowtbc.gg/mop/class-guides/arms-warrior/',title='wowtbc.gg: Arms Warrior (MoP Classic)',reviewedAt='2026-10-23'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/arms-warrior-leveling',title='Icy Veins: Arms Warrior levelling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'},
  {url='https://www.method.gg/mop-classic/arms-warrior-class-guide-mop-classic',title='Method: Arms Warrior guide (MoP Classic)',reviewedAt='2026-10-23',revision='2025-07-22'}},
- body={priority=30,switch={type='SPELL_KNOWN',spell=12294},
+ body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=71}}},
  cooldowns={block('mop.warrior.dps-upkeep','warrior-'),
   spell('warrior-arms-berserker-rage',18499,all(combat(),negate({type='BUFF',unit='player',spell=12880}),any(smashed,{type='SPELL_AVAIL',spell=118000},own(46924)))),
   spell('warrior-arms-recklessness',1719,burst),

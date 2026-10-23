@@ -1,5 +1,5 @@
 -- Mists of Pandaria Classic Arms Warrior, pool rage for Colossus Smash (Icy Veins, Wowhead Phase 1, MaxDps;
--- off by default). Same switch as the recommended Arms premade (Mortal Strike known), lower priority. Differs by
+-- off by default). Same switch as the recommended Arms premade (Arms specialization), lower priority. Differs by
 -- rage policy: outside the Colossus Smash window Slam only above 80 rage and Overpower before it, so rage is
 -- banked for the window; inside it Mortal Strike, Slam, Overpower, Heroic Throw. Below 20%: Colossus Smash,
 -- Mortal Strike, Execute, Overpower, Dragon Roar, shout. Two enemies add Sweeping Strikes; three or more
@@ -23,15 +23,15 @@ local worth=any(classified('worldboss'),classified('elite'),{type='TT_HEALTH',un
 local burst=all(combat(),any(negate({type='SPELL_KNOWN',spell=86346}),smashed),worth)
 local function shout(prefix)return{id=prefix..'shout',type='branch',conditions=rage('LESSTHAN',30),onFalse={},onTrue={spell(prefix..'commanding',469,own(469)),spell(prefix..'battle',6673)}}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.arms.icyveins',revision=1,
- blocks={['mop.warrior.boundaries']=1,['mop.warrior.gap']=1,['mop.warrior.dps-upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.arms.icyveins',revision=2,
+ blocks={['mop.warrior.boundaries']=1,['mop.warrior.gap']=1,['mop.warrior.dps-upkeep']=2},
  nameKey='Default.MoP.Warrior.Arms.IcyVeins.Name',descriptionKey='Default.MoP.Warrior.Arms.IcyVeins.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARRIOR',minLevel=10,maxLevel=90},
  tags={'arms','dps','melee','leveling','endgame','icy-veins','wowhead'},
  sources={{url='https://www.icy-veins.com/mists-of-pandaria-classic/arms-warrior-pve-rotation-cooldowns-abilities',title='Icy Veins: Arms Warrior rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'},
  {url='https://www.wowhead.com/mop-classic/guide/classes/warrior/arms/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Arms Warrior rotation (MoP Classic, Phase 1 text)',reviewedAt='2026-10-23',revision='2025-07-14'},
  {url='https://github.com/kaminaris/MaxDps-Warrior/blob/c3bf773f3709514aae9aad8647cd6a4ae7fc8756/Specialization/Mop/Arms.lua',title='MaxDps-Warrior: MoP Arms',reviewedAt='2026-10-23',revision='c3bf773f3709514aae9aad8647cd6a4ae7fc8756'}},
- body={priority=20,disabled=true,switch={type='SPELL_KNOWN',spell=12294},
+ body={priority=20,disabled=true,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=71}}},
  cooldowns={block('mop.warrior.dps-upkeep','warrior-'),
   spell('warrior-arms-iv-berserker-rage',18499,all(combat(),negate({type='BUFF',unit='player',spell=12880}))),
   spell('warrior-arms-iv-recklessness',1719,burst),

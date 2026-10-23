@@ -5,6 +5,11 @@
 -- policy, rotations stored per talent group (dual spec 1/2), grid talents, POINT per class
 -- (Holy Power, Chi, Combo Points), Runes for Death Knights. Every spell is its own family
 -- ('Spell <id>'), so learned state is per ID.
+-- SPECIALIZATION: s.spec indexes the class's specialization IDs (M.SPECS; nil below 10); s.specID(id).
+-- FORM by spell: s.bar lists stance-bar spells in slot order, s.form the active slot (0 none); s.shift(id).
+-- WEAPON_TYPE: s.gear[16]/s.gear[17]={itemID,classID,subClassID,equipLoc} (M.DAGGER, M.SHIELD, ...).
+-- Cast/channel identity and progress: s.castSpell / s.channelSpell, the channel running from s.channelStart
+-- to s.channelEnd (seconds; GetTime is 100, default 99..102).
 local F=dofile('tests/fixtures/addon.lua')
 local M={}
 -- PowerTypeConstantsDocumentation.lua at 5.5.4.70531 (as tests/progression_points.lua).
@@ -12,6 +17,13 @@ local POWER={Mana=0,Rage=1,Focus=2,Energy=3,ComboPoints=4,Runes=5,RunicPower=6,S
  Alternate=10,Maelstrom=11,Chi=12,Insanity=13,BurningEmbers=14,DemonicFury=15,ArcaneCharges=16,Fury=17,Pain=18,Essence=19,
  Balance=26,ShadowOrbs=28}
 M.POWER=POWER
+-- Specialization IDs by index (C_SpecializationInfo.GetSpecializationInfo), Blizzard's order.
+local SPECS={WARRIOR={71,72,73},PALADIN={65,66,70},HUNTER={253,254,255},ROGUE={259,260,261},PRIEST={256,257,258},
+ DEATHKNIGHT={250,251,252},SHAMAN={262,263,264},MAGE={62,63,64},WARLOCK={265,266,267},MONK={268,270,269},DRUID={102,103,104,105}}
+M.SPECS=SPECS
+-- Equipment records {itemID, item class, subclass, equip location}: weapons are class 2, shields class 4/6.
+M.DAGGER={7001,2,15,'INVTYPE_WEAPON'};M.SWORD={7002,2,7,'INVTYPE_WEAPON'};M.AXE2H={7003,2,1,'INVTYPE_2HWEAPON'}
+M.SHIELD={7004,4,6,'INVTYPE_SHIELD'};M.STAFF={7005,2,10,'INVTYPE_2HWEAPON'};M.OFFHAND={7006,4,0,'INVTYPE_HOLDABLE'}
 -- RM's rune types (constants.lua addon.runes; 5.5.4 RuneFrame_Shared.lua): B Blood, F Frost, U Unholy, D Death.
 local RUNES={B=1,F=2,U=3,D=4}
 local function packPaths(class)
@@ -30,7 +42,10 @@ function M.new(class,options)
   health={player=100,target=100,pet=100},mana={player=100},energy=100,energyMax=100,powerType=0,resource={},targetTarget='player',focus=nil,
   targetRange={0,5},targetLevel=90,swing=2.6,offhand=nil,instance=nil,
   runes={{1,true},{1,true},{3,true},{3,true},{2,true},{2,true}},
-  auras={player={HELPFUL={},HARMFUL={}},target={HELPFUL={},HARMFUL={}},pet={HELPFUL={},HARMFUL={}}}}
+  auras={player={HELPFUL={},HARMFUL={}},target={HELPFUL={},HARMFUL={}},pet={HELPFUL={},HARMFUL={}}},
+  form=0,bar={},gear={},castSpell=nil,channelSpell=nil,channelStart=99,channelEnd=102}
+ s.specID=function(id)s.spec=nil;for index,known in ipairs(SPECS[token]or{})do if known==id then s.spec=index end end;assert(s.spec,'not a '..token..' specialization: '..tostring(id))end
+ s.shift=function(id)if id==0 then s.form=0;return end;for index,known in ipairs(s.bar)do if known==id then s.form=index;return end end;s.bar[#s.bar+1]=id;s.form=#s.bar end
  local function enemy(unit)for _,entry in ipairs(s.enemies)do if entry.unit==unit then return entry end end end
  local function member(unit)return s.party[unit]end
  local function exists(unit)
@@ -82,8 +97,13 @@ function M.new(class,options)
   return s.maximum and s.maximum[kind]or maxima[kind]or 100
  end
  e.UnitGUID=function(unit)if unit=='player'then return 'Player-test'end;local entry=enemy(unit);if entry then return entry.guid end;return 'Creature-'..unit end
- e.UnitCastingInfo=function(unit)if unit=='player'and s.cast then return 'Manual cast','Manual cast',1,99000,102000,false,'cast-guid',false,1 end end
- e.UnitChannelInfo=function(unit)if unit=='player'and s.channel then return 'Manual channel','Manual channel',1,99000,102000,false,false,1 end end
+ e.UnitCastingInfo=function(unit)if unit=='player'and s.cast then local name=s.castSpell and('Spell '..s.castSpell)or'Manual cast';return name,name,1,99000,102000,false,'cast-guid',false,s.castSpell or 1 end end
+ e.UnitChannelInfo=function(unit)if unit=='player'and s.channel then local name=s.channelSpell and('Spell '..s.channelSpell)or'Manual channel';return name,name,1,s.channelStart*1000,s.channelEnd*1000,false,false,s.channelSpell or 1 end end
+ e.GetShapeshiftForm=function()return s.form end;e.GetNumShapeshiftForms=function()return #s.bar end
+ e.GetShapeshiftFormInfo=function(index)local id=s.bar[index];if id then return 136000,index==s.form,true,id end end
+ e.GetInventoryItemID=function(_,slot)local item=s.gear[slot];return item and item[1]end
+ e.GetInventoryItemLink=function(_,slot)local item=s.gear[slot];return item and('|Hitem:'..item[1]..':0:0:0:0:0:0|h')end
+ e.GetItemInfoInstant=function(id)for _,item in pairs(s.gear)do if item[1]==id then return id,'Type','Subtype',item[4],1,item[2],item[3]end end end
  e.Enum.SpellBookSpellBank={Player=0,Pet=1}
  e.C_SpellBook={IsSpellKnown=function(id,bank)if s.knownError then error('learning unavailable')end;return bank~=1 and s.known[id]==true end}
  e.C_CVar={GetCVar=function(name)assert(name=='nameplateMaxDistance');return '40'end}
@@ -92,6 +112,7 @@ function M.new(class,options)
  e.C_SpecializationInfo={
   GetActiveSpecGroup=function()return s.talentGroup end,
   GetSpecialization=function()return s.spec end,
+  GetSpecializationInfo=function(index)return SPECS[token]and SPECS[token][index]end,
   GetTalentInfo=function(query)
    local index=(query.tier-1)*3+query.column
    return{name='Talent '..index,icon=1,talentID=index,spellID=900000+index,selected=s.talents[index]==true}
@@ -121,7 +142,8 @@ function M.new(class,options)
   'Core/conditions.lua','Core/aura_conditions.lua','Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/validation.lua','Data/catalog.lua','Data/diff.lua',
   'Core/rotation_library.lua','Conditions/common.lua','Conditions/spell.lua','Conditions/known_spell.lua','Conditions/character.lua','Conditions/buffs.lua',
   'Conditions/debuffs.lua','Conditions/combat.lua','Conditions/casting.lua','Conditions/channeling.lua','Conditions/stats.lua','Conditions/talent.lua',
-  'Conditions/item.lua','Conditions/spatial.lua','Conditions/spatial_stats.lua','Conditions/unit_states.lua','Conditions/range.lua','Conditions/misc.lua','Conditions/weapon.lua'})do f.load(path)end
+  'Conditions/item.lua','Conditions/spatial.lua','Conditions/spatial_stats.lua','Conditions/unit_states.lua','Conditions/range.lua','Conditions/misc.lua','Conditions/weapon.lua',
+  'Core/build_context.lua','Conditions/specialization.lua','Conditions/equipment.lua'})do f.load(path)end
  for _,path in ipairs(packPaths(class))do f.load(path)end
  e.BOOKTYPE_SPELL,e.BOOKTYPE_PET='spell','pet';e.GetAddOnMetadata=function()return 'Rotation Master test'end
  f.libraries['AceAddon-3.0']={NewAddon=function(_,object)return object end};f.libraries['AceEvent-3.0']={}
@@ -167,10 +189,12 @@ local GROUP=1
 M.GROUP=GROUP
 function M.rows(a)local byId={};for _,row in ipairs(a:ListDefaultRotations(GROUP))do byId[row.id]=row end;return byId end
 function M.row(a,id)local row=M.rows(a)[id];assert(row,'missing premade '..id);return row end
-function M.switch(a,id)return a:evaluateConditionResult(M.row(a,id).envelope.body.switch).status end
+-- Specialization and equipment are cached until their notifications; the model changes them directly.
+local function fresh(a)a:InvalidateBuildContext()end
+function M.switch(a,id)fresh(a);return a:evaluateConditionResult(M.row(a,id).envelope.body.switch).status end
 -- Auto-select exactly as main does: built-in order by priority, first matching switch wins.
 function M.selected(a)
- local rows=a:GetRuntimeRotations(GROUP);local byKey={}
+ fresh(a);local rows=a:GetRuntimeRotations(GROUP);local byKey={}
  for _,row in ipairs(a:ListDefaultRotations(GROUP))do byKey[row.runtimeKey]=row.id end
  for _,key in ipairs(a:GetOrderedAutoSwitchRotations(GROUP,rows))do
   if a:evaluateConditionResult(rows[key].switch).status=='match'then return byKey[key]end
@@ -178,7 +202,7 @@ function M.selected(a)
 end
 -- First recommended action of a premade's rotation; returns the action ID and the result.
 function M.first(a,s,id)
- local ready=a:NewActionReadiness(100);local chosen
+ fresh(a);local ready=a:NewActionReadiness(100);local chosen
  local result=a:EvaluateRotationSequence(M.row(a,id).envelope.body,function(c)return a:evaluateConditionResult(c)end,function(step)
   if a:evaluateCondition(step.conditions)then for _,spell in ipairs(a:GetSpellIds(step)or{})do
    if s.mapped[spell]~=false and ready(step.type,spell)then chosen=spell;return false end
@@ -188,7 +212,7 @@ function M.first(a,s,id)
 end
 -- Independent reminders that would light: a set of action IDs.
 function M.upkeep(a,s,id)
- local lit={};local ready=a:NewActionReadiness(100)
+ fresh(a);local lit={};local ready=a:NewActionReadiness(100)
  for _,step in ipairs(M.row(a,id).envelope.body.cooldowns)do
   if not step.disabled and a:evaluateConditionResult(step.conditions).status=='match'then
    for _,spell in ipairs(a:GetSpellIds(step)or{})do if s.mapped[spell]~=false and ready(step.type,spell)then lit[spell]=true;break end end

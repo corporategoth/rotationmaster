@@ -18,14 +18,17 @@ local armsFull={MS,SLAM,OP,57755,6343,1680,12328,CS,118000,107570,46924,6673,469
 local fury={BT,WS,RB,57755,1680,6673}
 local function smash(s,left)s.debuffs={{id=CS,expires=100+(left or 5)}}end
 
-test('switch: the catch-all owns levels 1-9 and a spec-less 10+; each spec spell picks its premade; variants are off',function()
+test('switch: the catch-all owns levels 1-9 and a spec-less 10+; each specialization picks its premade; variants are off',function()
  local f,s=warrior(5)
  assert(M.scoped(f,'WARRIOR')==6);assert(M.selected(f,s)==BASE and M.ordered(f,s)==BASE)
- s.level=20;assert(M.selected(f,s)==BASE,'no specialization yet')
- M.know(s,MS);assert(M.selected(f,s)==ARMS and M.ordered(f,s)==ARMS)
- s.known[MS]=false;M.know(s,BT);assert(M.selected(f,s)==FURY)
- s.known[BT]=false;M.know(s,SS);assert(M.selected(f,s)==PROT)
- s.talentGroup=2;s.known[SS]=false;M.know(s,MS);assert(M.selected(f,s)==ARMS,'second talent group, another spec')
+ assert(f.addon:evaluateConditionResult(M.body(f.addon,ARMS).switch).status=='no-match','below 10 the level test ends the switch before the specialization')
+ s.specID(72);assert(M.selected(f,s)==BASE and M.ordered(f,s)==BASE,'levels 1-9 stay in the catch-all whatever the client reports')
+ s.level=20;s.spec=nil;assert(M.selected(f,s)==BASE and M.ordered(f,s)==BASE,'no specialization yet')
+ assert(f.addon:evaluateConditionResult(M.body(f.addon,FURY).switch).status=='unavailable','no specialization reads unavailable, never a match')
+ s.specID(71);assert(M.selected(f,s)==ARMS and M.ordered(f,s)==ARMS)
+ s.specID(72);M.know(s,MS,SS);assert(M.selected(f,s)==FURY and M.ordered(f,s)==FURY,'spells of other specializations do not matter')
+ s.specID(73);assert(M.selected(f,s)==PROT and M.ordered(f,s)==PROT)
+ s.talentGroup=2;s.specID(71);assert(M.selected(f,s)==ARMS,'second talent group, another spec')
  local a=f.addon
  for _,id in ipairs({ARMSIV,FURYIV})do assert(M.body(a,id).disabled and M.body(a,id).priority<M.body(a,ARMS).priority,id)end
  assert(a:SetDefaultRotationEnabled(ARMSIV,true));assert(M.selected(f,s)==ARMS,'the recommended premade outranks an enabled variant')
@@ -144,14 +147,34 @@ test('reminders: shouts, stances, burst with Colossus Smash on long fights, rage
  assert(not u['warrior-prot-taunt'],'taunt is off by default')
 end)
 
+test('stances are read by spell: the reminders follow Battle, Defensive and Berserker Stance wherever they sit on the bar',function()
+ local f,s=warrior(90,armsFull,{2457,71});s.bar={71,2457};s.form=2
+ local u=M.upkeep(f,s,ARMS);assert(not u['warrior-stance'],'Battle Stance in slot 2 is Battle Stance');assert(M.upkeep(f,s,PROT)['warrior-prot-stance']==71)
+ s.form=1;assert(M.upkeep(f,s,ARMS)['warrior-stance']==2457,'Defensive Stance in slot 1 asks for Battle Stance');assert(not M.upkeep(f,s,PROT)['warrior-prot-stance'])
+ s.bar={2458,2457,71};s.form=1;assert(not M.upkeep(f,s,ARMS)['warrior-stance'],'Berserker Stance learned first is still Berserker')
+ s.bar[1]={};s.form=1;assert(not M.upkeep(f,s,ARMS)['warrior-stance'],'an unreadable stance skips the reminder')
+ s.bar={2457};s.form=0;assert(M.upkeep(f,s,BASE)['warrior-starter-stance']==2457);s.form=1;assert(not M.upkeep(f,s,BASE)['warrior-starter-stance'])
+end)
+
+test("Fury weapons: Single-Minded Fury Executes before Bladestorm, Titan's Grip spends a Raging Blow outside the window first",function()
+ local f,s=warrior(90,fury,{CS,46924});s.cooldown[BT]={startTime=99,duration=4.5,isEnabled=true,modRate=1};s.cooldown[CS]={startTime=99,duration=20,isEnabled=true,modRate=1}
+ s.cooldown[107570]={startTime=99,duration=30,isEnabled=true,modRate=1};s.targetHealth=15;s.usable[EXEC]=true;s.buffs={{id=131116,stacks=1}}
+ s.gear={[16]=M.SWORD,[17]=M.SWORD};assert(first(f,s,FURY)==EXEC,'one-handers: Execute ahead of Bladestorm')
+ s.gear={[16]=M.AXE2H,[17]=M.AXE2H};assert(first(f,s,FURY)==46924,"two-handers: Bladestorm first");s.cooldown[46924]={startTime=99,duration=60,isEnabled=true,modRate=1}
+ assert(first(f,s,FURY)==RB,"Titan's Grip: Raging Blow before Execute outside the window");s.buffs[2]={id=1719}
+ assert(first(f,s,FURY)==EXEC,'not with Recklessness up');s.buffs[2]=nil;smash(s);assert(first(f,s,FURY)==EXEC,'not in the window')
+ s.debuffs={};s.gear={[16]=M.AXE2H};s.cooldown[46924]=nil;assert(first(f,s,FURY)==46924,'a lone two-hander has neither passive')
+ s.cooldown[46924]={startTime=99,duration=60,isEnabled=true,modRate=1};assert(first(f,s,FURY)==EXEC)
+end)
+
 test('Unspecialized: Victory Rush, Execute, Heroic Strike at 30 rage, a stance reminder with no stance',function()
  local f,s=warrior(7,{2457});s.power=20;local x,r=M.first(f,s,BASE);assert(x==nil and r.status~='stopped')
  s.power=30;assert(first(f,s,BASE)==78);s.targetHealth=15;s.usable[EXEC]=true;assert(first(f,s,BASE)==EXEC);s.usable[34428]=true;assert(first(f,s,BASE)==34428)
  s.form=0;assert(M.upkeep(f,s,BASE)['warrior-starter-stance']==2457);s.form=2;assert(not M.upkeep(f,s,BASE)['warrior-starter-stance'])
 end)
 
-test('real publisher auto-selects by the known spec spell and highlights',function()
- local f,s=warrior(90,armsFull);local poll,selected,glow=M.publisher(f,s)
+test('real publisher auto-selects by specialization and highlights',function()
+ local f,s=warrior(90,armsFull);s.specID(71);local poll,selected,glow=M.publisher(f,s)
  poll();assert(selected()==ARMS and f.addon.currentSpell==CS,tostring(selected())..' '..tostring(f.addon.currentSpell));assert(#glow>0)
  smash(s);poll();assert(f.addon.currentSpell==MS)
 end)

@@ -1,5 +1,5 @@
--- Mists of Pandaria Classic Frost Mage, levels 10–90, once Summon Water Elemental (Frost's level-10
--- spec spell) is known. wowsims' order, which Method and wowtbc.gg share: Ice Lance at two Fingers of
+-- Mists of Pandaria Classic Frost Mage, levels 10–90, in the Frost specialization
+-- (64). wowsims' order, which Method and wowtbc.gg share: Ice Lance at two Fingers of
 -- Frost, Frostfire Bolt on Brain Freeze, the bomb, Frozen Orb, Ice Lance on one Fingers of Frost,
 -- Frostbolt. From 87 a proc is held for Alter Time when it is less than 10 s away (spent anyway in
 -- its last 3 s). Freeze is a highlight for the Water Elemental's ground-targeted root.
@@ -23,7 +23,7 @@ local ALTER,FLOES=108978,108839
 local function spend(proc)return any(negate(known(ALTER)),{type='SPELL_COOLDOWN',spell=ALTER,operator='GREATERTHANOREQUALS',value=10},
  {type='BUFF_REMAIN',unit='player',spell=proc,operator='LESSTHAN',value=3})end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.mage.frost',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.mage.frost',revision=2,
  blocks={['mop.mage.boundaries']=1,['mop.mage.upkeep']=1,['mop.mage.armor-frost']=1,['mop.mage.bombs']=1},
  nameKey='Default.MoP.Mage.Frost.Name',descriptionKey='Default.MoP.Mage.Frost.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE',minLevel=10,maxLevel=90},
@@ -35,7 +35,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/frost-mage-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Frost Mage rotation',reviewedAt='2026-10-23',revision='2025-06-17',notes='Freeze on rootable targets, AoE and Blizzard, talent rows.'},
   {url='https://www.wowhead.com/mop-classic/guide/classes/mage/frost/dps-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Frost Mage rotation (Phase 5)',reviewedAt='2026-10-23',revision='2026-06-20'},
  },
- body={priority=30,switch=known(31687),
+ body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=64}}},
   cooldowns={
    spell('frost-water-elemental',31687,negate({type='PET'})),
    block('frost-armor','mop.mage.armor-frost','frost-'),

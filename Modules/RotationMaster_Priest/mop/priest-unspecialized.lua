@@ -1,6 +1,6 @@
 -- Mists of Pandaria Classic Priest before a specialization (levels 1-9, or a priest who has not chosen one yet):
--- the catch-all, lowest priority, so it applies only when none of Mind Flay, Penance or Holy Word: Chastise is
--- known. A friendly target gets Flash Heal when low or a Power Word: Shield; an enemy gets Shadow Word: Pain when
+-- the catch-all, lowest priority, so it applies only when no specialization switch
+-- matches. A friendly target gets Flash Heal when low or a Power Word: Shield; an enemy gets Shadow Word: Pain when
 -- it will live, then Smite. Reminders: Inner Fire, and a shield on yourself when solo and hurt. RM policy built
 -- from the 1-9 kit (Smite 1, Shadow Word: Pain 3, Power Word: Shield 5, Flash Heal 7, Inner Fire 9).
 local _,addon=...

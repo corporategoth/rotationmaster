@@ -12,8 +12,8 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local function healthy()return{type='HEALTHPCT',unit='player',operator='GREATERTHAN',value=.5}end
 local P='priest-wh-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.priest.dps.wowhead',revision=1,
- blocks={['tbc.priest.boundaries']=1,['tbc.priest.enemy-target']=1,['tbc.priest.shadowform']=1,['tbc.priest.moving']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.priest.dps.wowhead',revision=2,
+ blocks={['tbc.priest.boundaries']=2,['tbc.priest.enemy-target']=1,['tbc.priest.shadowform']=1,['tbc.priest.moving']=1,
   ['tbc.priest.dots']=1,['tbc.priest.filler']=1,['tbc.priest.upkeep']=1},
  nameKey='Default.TBC.Priest.DpsWowhead.Name',descriptionKey='Default.TBC.Priest.DpsWowhead.Description',
  applicability={families={'tbc'},actionContext='player',class='PRIEST',minLevel=1,maxLevel=70},

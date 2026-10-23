@@ -15,8 +15,8 @@ local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='priest-heal-wh-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.priest.healer.wowhead',revision=1,
- blocks={['tbc.priest.boundaries']=1,['tbc.priest.dispels']=1,['tbc.priest.group-heal']=1,['tbc.priest.big-heal']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.priest.healer.wowhead',revision=2,
+ blocks={['tbc.priest.boundaries']=2,['tbc.priest.dispels']=1,['tbc.priest.group-heal']=1,['tbc.priest.big-heal']=1,
   ['tbc.priest.healer-damage']=1,['tbc.priest.upkeep']=1},
  nameKey='Default.TBC.Priest.HealerWowhead.Name',descriptionKey='Default.TBC.Priest.HealerWowhead.Description',
  applicability={families={'tbc'},actionContext='player',class='PRIEST',minLevel=10,maxLevel=70},
