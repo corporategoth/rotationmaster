@@ -13,6 +13,7 @@ def main():
     root = Path(__file__).resolve().parents[1]
     commands = [[sys.executable, 'tests/verify.py'],
                 [sys.executable, 'tools/catalog_check.py'],
+                [sys.executable, 'tools/locales.py', 'check'],
                 [sys.executable, 'tools/lint.py'],
                 [sys.executable, 'tools/generate_builtin_sources.py'],
                 [sys.executable, 'tools/generate_artwork_catalog.py'],
