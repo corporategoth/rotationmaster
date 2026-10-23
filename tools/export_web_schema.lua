@@ -80,7 +80,7 @@ function M.build()
   for _,entry in ipairs(record.declarations)do entry.signature=nil end
   records[#records+1]=record
  end
- assert(#records==118,'review curated declaration inventory deliberately')
+ assert(#records==124,'review curated declaration inventory deliberately')
  for _,id in ipairs(sorted(curated))do local path=curated[id].module;local found=false;for _,v in ipairs(inputs)do if v==path then found=true end end;if not found then inputs[#inputs+1]=path end end
  for _,path in ipairs(inputs)do output.sourceFiles[path]=sha(path)end
  return output

@@ -1,0 +1,30 @@
+{
+ "sections": [
+  {"id": "start", "title": "Start here"},
+  {"id": "workbench", "title": "The settings window"},
+  {"id": "more", "title": "Sharing and reference"}
+ ],
+ "pages": [
+  {"slug": "index", "section": "start", "title": "Help home", "summary": "A player's guide to Rotation Master: what it does, where to start and where to find each feature."},
+  {"slug": "getting-started", "section": "start", "title": "Getting started", "summary": "Install Rotation Master, open the settings, pick or build a rotation and see your first highlight."},
+  {"slug": "how-it-works", "section": "start", "title": "How recommendations work", "summary": "How Rotation Master picks the one action to highlight, what it checks automatically, and the implicit Attack fallback."},
+  {"slug": "workbench", "section": "workbench", "title": "Using the settings window", "summary": "Tabs, drafts with Apply and Discard, Undo and Redo, Help icons, scaling and window controls."},
+  {"slug": "general", "section": "workbench", "title": "General", "summary": "Polling, auto-switching, highlights, the preview window, history lengths, logging and diagnostics."},
+  {"slug": "rotations", "section": "workbench", "title": "Rotations and the editor", "summary": "The rotation roster, Built In and custom rotations, metadata and tags, and editing action cards."},
+  {"slug": "stop-and-branch", "section": "workbench", "title": "Stop and Branch cards", "summary": "End a sequence early with Stop, or split it into True and False arms with a Branch."},
+  {"slug": "cooldowns", "section": "workbench", "title": "Cooldowns", "summary": "Independent reminders that highlight on their own, with their own effect, colour, position and sound."},
+  {"slug": "switching", "section": "workbench", "title": "Switch conditions and auto-switching", "summary": "How Rotation Master chooses which rotation is active, how often it re-checks, and how to take manual control."},
+  {"slug": "conditions", "section": "workbench", "title": "Conditions", "summary": "Building condition trees with All, Any and Not; managing categories; custom conditions written in Lua."},
+  {"slug": "conditions-reference", "section": "workbench", "title": "Condition types", "summary": "Every built-in condition type, grouped by its default category.", "generated": "conditions"},
+  {"slug": "effects", "section": "workbench", "title": "Effects", "summary": "Highlight styles: textures, glows, pulses, rotations and custom sequences."},
+  {"slug": "item-sets", "section": "workbench", "title": "Item sets", "summary": "One button for an ordered list of alternatives, such as potions or bandages."},
+  {"slug": "announcements", "section": "workbench", "title": "Announcements", "summary": "Send a chat message, emote or sound when you cast a spell or use an item, or from a macro."},
+  {"slug": "functions", "section": "workbench", "title": "Functions", "summary": "Reusable Lua helpers for custom conditions, with namespaces, documentation and dependency bundles."},
+  {"slug": "integrations", "section": "workbench", "title": "Integrations", "summary": "Optional addons: Lua editors, Masque skins, Questie and other providers."},
+  {"slug": "profiles", "section": "workbench", "title": "Profiles", "summary": "Separate sets of settings and rotations; activate, copy, reset, import and export them."},
+  {"slug": "sharing", "section": "more", "title": "Importing, exporting and sharing", "summary": "Every kind of export, how to import safely, cloning Built In rotations, and sharing on this site."},
+  {"slug": "slash-commands", "section": "more", "title": "Slash commands", "summary": "Every /rm command, including /rm set, /rm check, /rm repair and /rm perf."},
+  {"slug": "editions", "section": "more", "title": "Game editions", "summary": "What works on Classic Era, TBC Anniversary, Classic progression, Forever and Retail."},
+  {"slug": "troubleshooting", "section": "more", "title": "Troubleshooting", "summary": "Nothing is highlighted, errors, broken data, slow performance, and how to ask for help."}
+ ]
+}

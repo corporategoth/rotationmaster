@@ -1,6 +1,81 @@
-# Local export viewer
+# Rotation Master website and export viewer
 
-The `Web/` application reads pasted RM exports as data. It has no backend, account, upload service or addon connection. Imported Lua and HTML are never executed. Hosting and publishing are separate decisions.
+`Web/` holds two things that share the same decoding modules:
+
+- **The website** (`site/` + `server/`): player help, public sharing of exports, and the viewer inside a site shell. It needs the small Node service described in [The website](#the-website) below.
+- **The local export viewer** (`index.html`, `viewer/`, `codec/`, `schema/`, `catalog/`, `editor/`): a backend-free page that reads pasted RM exports as data. It still works on its own, exactly as described in the rest of this file.
+
+Imported Lua and HTML are never executed by either. Hosting and publishing are separate decisions; see [DECISIONS.md](DECISIONS.md).
+
+## The website
+
+Run it locally with one command from the repository root (Node 22.13 or later; verified on 24.22.0; no `npm install`):
+
+```sh
+node Web/server/server.mjs
+```
+
+Then open `http://127.0.0.1:8790/`. Data goes to `Web/server/data/site.sqlite` (ignored by git). Use `--db :memory:` for a throwaway run, `--port` to change the port. The server binds `127.0.0.1` by default and refuses to expose the development sign-in on any other address. Session cookies are signed with a random key per start unless `RM_SESSION_SECRET` is set, so a restart signs everyone out. All options are listed at the top of `server/server.mjs`.
+
+| Path | What it is |
+| --- | --- |
+| `/` | Home: what RM is, links to help, sharing, the viewer and the Discord. |
+| `/help/…` | The player guide: Markdown files in `site/help/` listed by `site/help/index.json`, rendered by the server with the safe Markdown module. `/help/conditions-reference` appends tables generated from `site/conditions.json`. |
+| `/shares` | Browse and search public shares (kind, class, edition, text, uploader). Server-rendered; works without JavaScript. |
+| `/shares/new` | Upload form: checks the export in the browser and with `/api/check`, shows the same import warnings viewers will see, previews the Markdown description, then publishes. |
+| `/s/<id>` | A share: warnings first, the description, the export string with Copy, the fully decoded content (every step, branch arm, cooldown, nested condition, Lua source as text), the original viewer's structure check and raw data, delete (uploader only) and report. |
+| `/viewer` | The local export viewer and comparison, inside the site shell. |
+| `/signin` | The development sign-in (display name only). |
+
+### Layout
+
+| Path | Role |
+| --- | --- |
+| `server/server.mjs` | Entry point and options. |
+| `server/app.mjs` | `node:http` request handler: static allowlist, pages, JSON API, CSP and security headers, same-origin checks, body limits, rate limits. |
+| `server/validate.mjs` | Upload validation: decodes with `codec/`, validates rotations with `schema/`, classifies with `site/kinds.mjs`, scans with `site/risks.mjs`. |
+| `server/storage/store.mjs`, `sqlite.mjs` | Storage interface and its `node:sqlite` implementation. |
+| `server/identity/provider.mjs`, `dev.mjs`, `session.mjs` | Identity-provider interface, the development provider, signed session cookies. |
+| `server/ratelimit.mjs` | In-memory sliding-window limiter. |
+| `server/pages.mjs` | Server-rendered HTML (everything escaped). |
+| `server/moderate.mjs` | Moderation command line: list reports, hide/unhide/delete shares, ban users. |
+| `site/markdown.mjs` | Safe Markdown subset → escaped HTML or DOM nodes; no raw HTML, http(s) links only for user content, no images. |
+| `site/kinds.mjs` | Classifies every export kind (rotation envelope and legacy body, function bundle, custom function/condition, condition category, item set, effect, announcement, profile) and extracts display metadata. |
+| `site/risks.mjs` | Import warnings: Lua code, code that runs on apply, chat/whisper/emote output to other players, macro-triggerable announcements, profile replacement, custom conditions a rotation needs, unrecognised content. |
+| `site/tree-render.mjs`, `kind-render.mjs` | Browser rendering of the full decoded content and of the warnings. |
+| `site/share-form.mjs`, `share-page.mjs`, `signin.mjs`, `site.mjs`, `client.mjs` | Page scripts. |
+| `site/site.css`, `theme-init.js` | Light/dark theme (follows the system, with a toggle) and phone-width layout. |
+
+### API
+
+All JSON. State-changing calls need `X-Requested-With: rotationmaster`, `Content-Type: application/json` and, when the browser sends one, a same-origin `Origin`.
+
+| Call | Purpose |
+| --- | --- |
+| `GET /api/health`, `GET /api/me` | Liveness; the signed-in user, identity provider and limits. |
+| `POST /api/auth/dev` `{displayName}`, `POST /api/auth/logout` | Development sign-in; sign out. |
+| `POST /api/check` `{export}` | Decode, classify and scan an export without saving it. |
+| `GET /api/shares?q=&kind=&class=&edition=&owner=&page=` | List shares (never includes export text). |
+| `POST /api/shares` `{title,description,export,kind?,class?,editions?}` | Publish. Class/editions declared by the export win; a conflicting declaration is refused. |
+| `GET /api/shares/<id>` | One share including its export text. |
+| `DELETE /api/shares/<id>` | Delete; uploader only. |
+| `POST /api/shares/<id>/report` `{reason,details?}` | Report (one per user per share). |
+
+Limits (defaults in `server/app.mjs` and `server/validate.mjs`): export 256 KiB, title 3–120 characters, description 20,000 characters, uploads 10 per user and 30 per address per hour, reports 20 per user per hour, sign-ins 30 per address per hour, checks 60 per address per minute. The same user cannot publish an identical export twice.
+
+### Help content
+
+Help is sourced from the addon's own in-game help (`Help/*.lua`, `UI/help.lua`, `Locales/enUS.lua`), `docs/` and the code (for example `main.lua`'s `/rm` handler). When the addon changes, update the matching `site/help/*.md` page. Run `python3 tools/export_web_conditions.py` after adding or renaming a condition type; `--check` (part of `tools/check`) fails while it is stale. `tests/web_site_content.mjs` checks that every help link and anchor resolves, that every catalog condition has a name and category, and that every `/rm` command from the in-game help is documented.
+
+### Tests
+
+```sh
+node --test tests/web_site_api.mjs tests/web_site_content.mjs
+```
+
+They start the app on an ephemeral `127.0.0.1` port with an in-memory database and stop it afterwards.
+
+## Local export viewer
 
 Serve this directory over loopback HTTP from the repository root:
 
@@ -58,7 +133,7 @@ Differences page 25 returned changes at a time. Typed field/step segments retain
 
 ## Bundled source catalog
 
-`catalog/defaults.json` contains the fifteen current bundled definitions, generated through production registration, library initialization and export. It records explicit `enUS` display strings separately from unchanged symbolic manifest keys and raw Lua bytes. Source file hashes provide consistency metadata; they do not authenticate upstream content or establish native readiness. The catalog and browser add no addon runtime work.
+`catalog/defaults.json` contains the thirty-six current bundled definitions, generated through production registration, library initialization and export. It records explicit `enUS` display strings separately from unchanged symbolic manifest keys and raw Lua bytes. Source file hashes provide consistency metadata; they do not authenticate upstream content or establish native readiness. The catalog and browser add no addon runtime work.
 
 Generate the primary catalog with `lua5.1 tools/export_web_defaults.lua` or `luajit tools/export_web_defaults.lua` from the repository root. Both produce identical sorted typed JSON. The trusted generator loads only reviewed fixed source paths and supplies an explicit offline English locale; it does not execute condition/provider callbacks or query gameplay facts. `luajit tools/export_web_defaults.lua --fixtures` creates actual bundled-codec wire snapshots. Their decoded semantics are tested; compressed/serialized wire iteration order is not promised to be canonical.
 
@@ -103,6 +178,8 @@ node --test tests/web_catalog.mjs
 node --test tests/web_catalog_compare.mjs
 node --test tests/web_share.mjs
 node --test tests/web_sharing_ui.mjs
+node --test tests/web_site_api.mjs
+node --test tests/web_site_content.mjs
 python3 tools/check
 ```
 

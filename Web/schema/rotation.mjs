@@ -79,7 +79,7 @@ function catalogFrom(text){
   if(!exact(row,['id','project','expansion','class','mobInfoProbe'])||!nonempty(row.id)||cases.has(row.id)||!integer(row.project,1)||!integer(row.expansion,0)||!nonempty(row.class)||typeof row.mobInfoProbe!=='boolean')return null;
   cases.add(row.id);
  }
- if(!Array.isArray(c.conditions)||c.conditions.length!==118)return null;
+ if(!Array.isArray(c.conditions)||c.conditions.length!==124)return null;
  const byID=new Map();
  for(const row of c.conditions){
   if(!exact(row,['id','module','declarations'])||!nonempty(row.id)||byID.has(row.id)||['AND','OR','NOT','DELETE'].includes(row.id)||typeof row.module!=='string'||!/^Conditions\/[A-Za-z0-9_-]+\.lua$/.test(row.module)||!Array.isArray(row.declarations)||!row.declarations.length||row.declarations.length>64)return null;
