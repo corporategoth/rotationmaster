@@ -13,6 +13,7 @@ local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function known(id)return{type='SPELL_KNOWN',spell=id}end
+local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
 local function buff(id)return{type='BUFF',unit='player',spell=id,anyrank=true}end
 local function maelstrom(n)return{type='BUFF_STACKS',unit='player',spell=408505,operator='GREATERTHANOREQUALS',value=n}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
@@ -25,7 +26,7 @@ local ranged=all({type='BEYOND_MELEE',unit='target'},negate({type='MOVING'}))
 local flamed={type='DEBUFF',unit='target',spell=8050,anyrank=true,owndebuff=true}
 local dual=all(known(674),negate({type='WEAPON',offhand=true}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.shaman.enhancement',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.shaman.enhancement',revision=2,
  blocks={['era.shaman.manual']=1,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.melee-totems']=1},
  nameKey='Default.SoD.Shaman.Enhancement.Name',descriptionKey='Default.SoD.Shaman.Enhancement.Description',
  applicability={families={'era'},actionContext='player',class='SHAMAN',minLevel=1,maxLevel=60,rulesets={'season:2'}},
@@ -38,8 +39,8 @@ assert(addon:RegisterDefaultRotation({
  cooldowns={
   spell('sod-enh-windfury-weapon',8232,negate(imbue(windfury))),
   spell('sod-enh-rockbiter-weapon',8017,all(negate({type='WEAPON'}),negate(known(8232)))),
-  spell('sod-enh-offhand-flametongue',8024,all(dual,known(408507))),
-  spell('sod-enh-offhand-windfury',8232,all(dual,negate(known(408507)))),
+  spell('sod-enh-offhand-flametongue',8024,all(dual,rune(408507))),
+  spell('sod-enh-offhand-windfury',8232,all(dual,negate(rune(408507)))),
   optional(spell('sod-enh-offhand-windfury-icyveins',8232,dual)),
   block('era.shaman.shield','sod-enh-'),
   spell('sod-enh-spirit-of-the-alpha',408696,all(negate(buff(443320)),negate({type='BUFF',unit='player',spell=408696,ownbuff=true}))),

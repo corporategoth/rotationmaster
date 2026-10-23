@@ -91,12 +91,14 @@ test('tank: Revenge, Shield Slam, Sunder to five, Demoralizing Shout on elites, 
 end)
 
 test('SoD DPS: Slammin\' stacks, Rend, Blood Surge Slam, Bloodthirst; two-hander Quick Strike or dual-wield fillers; Sudden Death Execute',function()
- local f,s=warrior(60,leveling,{23881,402911,403196,1464});s.season=2
+ local f,s=warrior(60,leveling,{23881,402911,403196,1464});s.season=2;M.engrave(s,403195)
  s.buffs[2]={id=1234005,stacks=3};assert(first(f,s,SDPS)==1464);s.buffs[2]=nil
  assert(first(f,s,SDPS)==772);s.debuffs={{id=772}};s.buffs[2]={id=413399};assert(first(f,s,SDPS)==1464,'Blood Surge');s.buffs[2]=nil
+ M.engrave(s,402922);assert(first(f,s,SDPS)==1464,'Precise Timing (a passive rune): Slam on cooldown');M.unengrave(s,402922)
  assert(first(f,s,SDPS)==23881);s.nopower[23881]=true;assert(first(f,s,SDPS)==1680,'dual wield: Whirlwind');s.nopower[1680]=true
  assert(first(f,s,SDPS)==402911);s.nopower[402911]=true;assert(first(f,s,SDPS)==403196,'Devastate replaces Sunder')
- M.know(s,429765);assert(first(f,s,SDPS)==429765,'Quick Strike engraved: two-hander');s.power=20;assert(first(f,s,SDPS)==nil)
+ M.know(s,429765);assert(first(f,s,SDPS)==403196,'Quick Strike known but not engraved: the dual-wield arm')
+ M.engrave(s,429765);assert(first(f,s,SDPS)==429765,'Quick Strike engraved: two-hander');s.power=20;assert(first(f,s,SDPS)==nil)
  s.buffs[2]={id=440114};assert(first(f,s,SDPS)==5308,'Sudden Death')
  local u=M.upkeep(f,s,SDPS);assert(not u['sod-dps-heroic-strike']);s.buffs[3]={id=425415};assert(M.upkeep(f,s,SDPS)['sod-dps-heroic-strike']==78,'always with Consumed by Rage')
 end)
@@ -111,7 +113,7 @@ test('SoD variants: Battle Forecaster stance swaps and no Rend; Icy Veins Execut
 end)
 
 test('SoD tank: Shield Slam for Defender\'s Resolve, Revenge, Devastate; Thunder Clap first on packs',function()
- local f,s=warrior(60,leveling,{23922,403196,440488});s.season=2;s.form=2
+ local f,s=warrior(60,leveling,{23922,403196,440488});s.season=2;s.form=2;M.engrave(s,403195)
  assert(first(f,s,STANK)==23922);s.buffs[2]={id=460171,expires=130};s.usable[6572]=true;assert(first(f,s,STANK)==6572)
  s.usable[6572]=false;assert(first(f,s,STANK)==23922);s.nopower[23922]=true;assert(first(f,s,STANK)==440488);s.nopower[440488]=true
  assert(first(f,s,STANK)==5308,'Execute whenever the game allows it');s.usable[5308]=false;assert(first(f,s,STANK)==403196)

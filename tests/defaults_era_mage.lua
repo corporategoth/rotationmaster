@@ -48,7 +48,7 @@ test('standard realm: Frost owns levels 1-9, no points and ties; Fire by points;
  s.setSeason(3,true);assert(M.selected(a)==FIRE,'Hardcore realms use the vanilla premades')
 end)
 
-test('Season of Discovery: the SoD premades win; Fire is the default, Frost by tree, Arcane with Arcane Blast, healer by rune',function()
+test('Season of Discovery: the SoD premades win; Fire is the default, Frost by tree, Arcane with the Arcane Blast rune, healer by rune',function()
  local a,s=mage(1);s.setSeason(2)
  assert(M.selected(a)==SFIRE,'level 1 on SoD')
  s.setLevel(40);assert(M.selected(a)==SFIRE,'no points')
@@ -56,11 +56,14 @@ test('Season of Discovery: the SoD premades win; Fire is the default, Frost by t
  assert(M.switch(a,SFROSTWCT)=='match');assert(a:SetDefaultRotationEnabled(SFROST,false));assert(M.selected(a)==SFROSTWCT)
  assert(a:SetDefaultRotationEnabled(SFROST,true))
  s.setTalents({25,0,0});assert(M.selected(a)==SFIRE,'Arcane primary without Arcane Blast plays Fire')
- s.learn(400574);assert(M.selected(a)==SARCANE,'Arcane primary with Arcane Blast')
+ s.learn(400574);assert(M.selected(a)==SFIRE,'a known Arcane Blast whose rune is not engraved is not the rune')
+ s.engrave(400574);assert(M.selected(a)==SARCANE,'Arcane primary with Arcane Blast engraved')
  s.setTalents({0,0,0});assert(M.switch(a,SARCANE)=='unavailable'and M.selected(a)==SFIRE,'Arcane Blast without points stays Fire')
- s.learn(401417);assert(M.selected(a)==SHEAL,'Regeneration engraved: healer')
- s.unlearn(401417);s.learn(412510);assert(M.selected(a)==SHEAL,'Mass Regeneration engraved: healer')
- s.unlearn(412510);s.setSeason(nil);assert(M.selected(a)==FROST,'back on a standard realm')
+ s.engrave(401417);assert(M.selected(a)==SHEAL,'Regeneration engraved: healer')
+ s.unengrave(401417);s.engrave(412510);assert(M.selected(a)==SHEAL,'Mass Regeneration engraved: healer')
+ s.runesPending=true;s.engrave();assert(M.switch(a,SHEAL)=='unavailable'and M.selected(a)==SFIRE,'runes still loading: the default until they read')
+ s.runesPending=false;assert(M.selected(a)==SHEAL,'runes loaded: healer again')
+ s.unengrave(412510);s.setSeason(nil);assert(M.selected(a)==FROST,'back on a standard realm')
 end)
 
 test('cast, channel, target and out-of-combat boundaries stop every damage premade without melee',function()
@@ -156,7 +159,7 @@ test('Balefire Bolt is never advised at four stacks or more, by any premade, buf
 end)
 
 test('SoD Fire: Hot Streak, Living Bomb, Scorch below two, Living Flame, Balefire at five stacks, Frostfire, moving, AoE',function()
- local a,s=mage(60,{0,31,0},11366,2948,2136,401502,400613,401556,BALEFIRE,11113,2120,120,10,11129);s.setSeason(2)
+ local a,s=mage(60,{0,31,0},11366,2948,2136,401502,400613,401556,BALEFIRE,11113,2120,120,10,11129);s.setSeason(2);s.engrave(BALEFIRE)
  s.combat=false;s.targetCombat=false;M.expect(a,s,SFIRE,BALEFIRE,nil,'pull: Balefire Bolt')
  s.known[BALEFIRE]=nil;M.expect(a,s,SFIRE,11366,nil,'pull without Balefire: Pyroblast');s.known[BALEFIRE]=true;s.combat=true;s.targetCombat=true
  s.buff('player',48108);M.expect(a,s,SFIRE,11366,nil,'Hot Streak: Pyroblast')
@@ -176,7 +179,9 @@ test('SoD Fire: Hot Streak, Living Bomb, Scorch below two, Living Flame, Balefir
  s.debuff('target',400613);M.expect(a,s,SFIRE,401556,nil,'moving: Living Flame');s.cooling(401556,5);M.expect(a,s,SFIRE,2136,nil,'moving: Fire Blast')
  s.moving=false;s.clearAuras();s.cooldown={};s.near(3,{0,5});M.expect(a,s,SFIRE,401556,nil,'pack: Living Flame')
  s.cooling(401556,5);M.expect(a,s,SFIRE,400613,nil,'pack: Living Bomb');s.debuff('target',400613);M.expect(a,s,SFIRE,11113,nil,'pack close: Blast Wave')
- s.learn(400618);lit=M.upkeep(a,s,SFIRE);assert(lit[2136],'Overheat: Fire Blast reminder')
+ lit=M.upkeep(a,s,SFIRE);assert(not lit[2136],'no Overheat engraved: no Fire Blast reminder')
+ s.engrave(400615);lit=M.upkeep(a,s,SFIRE);assert(lit[2136],'Overheat (a passive rune) engraved: Fire Blast reminder')
+ s.unengrave(400615);s.learn(400618);lit=M.upkeep(a,s,SFIRE);assert(not lit[2136],'an alternate Fire Blast rank is not Overheat')
 end)
 
 test('SoD Frost: Ice Lance at three Glaciate, Deep Freeze on Fingers, Brain Freeze Balefire, filler by rune, Frozen Orb',function()
@@ -221,7 +226,7 @@ test('SoD Arcane: Missile Barrage, Barrage at four stacks, Living Flame, Arcane 
 end)
 
 test('SoD healer: beacon management on a friend, damage that heals on an enemy, Frost healer arm',function()
- local a,s=mage(60,{31,0,0},401417,412510,401462,436516,400574,400610,5143,412532);s.setSeason(2)
+ local a,s=mage(60,{31,0,0},401417,412510,401462,436516,400574,400610,5143,412532);s.setSeason(2);s.engrave(412532)
  s.hostile=false;s.friendly=true;s.ranged(401462,436516,428885)
  M.expect(a,s,SHEAL,401417,nil,'friend without your beacon: Regeneration')
  s.buff('target',400735,{sourceUnit='party1'});M.expect(a,s,SHEAL,401417,nil,'someone else\'s beacon does not count')
@@ -231,7 +236,7 @@ test('SoD healer: beacon management on a friend, damage that heals on an enemy, 
  s.cooling(436516,10);s.cooling(412510,10);s.health.target=95;M.expect(a,s,SHEAL,nil,'stopped','healthy and beaconed: nothing to do')
  s.cooldown={};s.health.target=100;s.clearAuras();s.friendly=false;s.hostile=true
  M.expect(a,s,SHEAL,412532,nil,'enemy with Spellfrost engraved: Spellfrost Bolt')
- s.known[412532]=nil;M.expect(a,s,SHEAL,400574,nil,'Arcane: Arcane Blast')
+ s.unengrave(412532);M.expect(a,s,SHEAL,400574,nil,'Arcane: Arcane Blast')
  s.buff('player',400573,{applications=2});M.expect(a,s,SHEAL,400610,nil,'two stacks: Arcane Barrage')
  s.buff('player',400589);M.expect(a,s,SHEAL,5143,nil,'Missile Barrage: Missiles')
 end)
@@ -254,6 +259,8 @@ test('reminders: armor choice, intellect, gems, Ice Barrier, Mana Shield, Evocat
  s.clearAuras();s.targetCast='Heal';lit=M.upkeep(a,s,FROST);assert(lit[2139],'Counterspell an interruptible cast')
  -- SoD: Molten Armor when engraved, Icy Veins, Cold Snap once Icy Veins is spent.
  s.targetCast=nil;s.setSeason(2);s.learn(428741,425121);s.combat=false;s.group=false
+ lit=M.upkeep(a,s,SFROST);assert(lit[168]and not lit[428741],'Molten Armor known but not engraved: Frost Armor')
+ s.engrave(428741,425121)
  lit=M.upkeep(a,s,SFROST);assert(lit[428741]and not lit[168],'Molten Armor engraved')
  s.combat=true;s.classification='elite';lit=M.upkeep(a,s,SFROST);assert(lit[425121]and not lit[12472],'Icy Veins on elites')
  s.cooldown={};s.cooling(425121,100);lit=M.upkeep(a,s,SFROST);assert(lit[12472],'Cold Snap refreshes Icy Veins')

@@ -8,9 +8,9 @@ local function mine(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function spell(id,action,conditions,ranked)return{id=id,type='spell',action=action,ranked=ranked or false,conditions=conditions or {}}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.druid.balance.icyveins',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.druid.balance.icyveins',revision=2,
  blocks={['era.druid.boundaries']=1,['era.druid.upkeep']=1,['era.druid.caster-cooldowns']=1,['sod.druid.maul']=1,['sod.druid.balance-cooldowns']=1,
-  ['sod.druid.forms']=1,['sod.druid.cat']=1,['era.druid.stealth-opener']=1,['era.druid.cat-builders']=1,['era.druid.powershift']=1,['sod.druid.bear']=1,
+  ['sod.druid.forms']=1,['sod.druid.cat']=2,['era.druid.stealth-opener']=1,['era.druid.cat-builders']=1,['era.druid.powershift']=1,['sod.druid.bear']=1,
   ['sod.druid.caster-pull']=1},
  nameKey='Default.SoD.Druid.Balance.IcyVeins.Name',descriptionKey='Default.SoD.Druid.Balance.IcyVeins.Description',
  applicability={families={'era'},actionContext='player',class='DRUID',minLevel=1,maxLevel=60,rulesets={'season:2'}},

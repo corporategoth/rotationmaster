@@ -9,10 +9,10 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='priest-sod-wh-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.priest.dps.wowhead',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.priest.dps.wowhead',revision=2,
  blocks={['era.priest.boundaries']=1,['era.priest.enemy-target']=1,['era.priest.shadowform']=1,['era.priest.pull-shield']=1,['era.priest.wand-finish']=1,
-  ['era.priest.wand-fallback']=1,['era.priest.upkeep']=1,['era.priest.dps-upkeep']=1,['sod.priest.upkeep']=1,['sod.priest.pull']=1,['sod.priest.aoe']=1,
-  ['sod.priest.moving']=1,['sod.priest.dots']=1,['sod.priest.procs']=1,['sod.priest.filler']=1},
+  ['era.priest.wand-fallback']=1,['era.priest.upkeep']=1,['era.priest.dps-upkeep']=1,['sod.priest.upkeep']=2,['sod.priest.pull']=1,['sod.priest.aoe']=1,
+  ['sod.priest.moving']=1,['sod.priest.dots']=2,['sod.priest.procs']=1,['sod.priest.filler']=1},
  nameKey='Default.SoD.Priest.Dps.Wowhead.Name',descriptionKey='Default.SoD.Priest.Dps.Wowhead.Description',
  applicability={families={'era'},actionContext='player',class='PRIEST',minLevel=1,maxLevel=60,rulesets={'season:2'}},
  tags={'shadow','damage','raid','single-target','aoe','season-of-discovery','wowhead','warcraft-tavern'},
@@ -33,7 +33,7 @@ assert(addon:RegisterDefaultRotation({
    block(P..'moving','sod.priest.moving',P),
    block(P..'finish','era.priest.wand-finish',P),
    block(P..'dots','sod.priest.dots',P),
-   spell(P..'blast',8092,any(negate({type='SPELL_KNOWN',spell=431655}),
+   spell(P..'blast',8092,any(negate({type='RUNE_ENGRAVED',spell=431655}),
     {type='DEBUFF_STACKS',unit='target',spell=431655,owndebuff=true,operator='GREATERTHANOREQUALS',value=3})),
    block(P..'procs','sod.priest.procs',P),
    block(P..'filler','sod.priest.filler',P),

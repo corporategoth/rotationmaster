@@ -15,13 +15,18 @@ local deep={17364,408510,8190,8232,8075,5675,8512,425336}
 local function first(f,s,id)return(M.first(f,s,id))end
 local function cd(s,id)s.cooldown[id]={startTime=99,duration=6,isEnabled=true,modRate=1}end
 
-test('the deep talent spell picks the premade: Mana Tide, then Lava Burst, else Enhancement at any level',function()
+test('talent trees (1 Elemental, 2 Enhancement, 3 Restoration) pick the premade at the deep tiers: Restoration from 16, Elemental from 21, else Enhancement at any level',function()
  local f,s=shaman(1)
  for _,level in ipairs({1,30,60})do s.level=level;assert(M.selected(f,s)==ENH,'level '..level)end
- M.know(s,408490);assert(M.selected(f,s)==ELE);M.know(s,16190);assert(M.selected(f,s)==RESTO,'Mana Tide outranks Lava Burst')
- s.known[408490]=false;assert(M.selected(f,s)==RESTO);s.known[16190]=false
+ M.know(s,408490,16190);assert(M.selected(f,s)==ENH,'deep talent spells known without the points are not the switch')
+ M.trees(f,s,{20,0,0});assert(M.selected(f,s)==ENH,'Elemental before 21 points plays the melee hybrid');M.trees(f,s,{21,0,0});assert(M.selected(f,s)==ELE)
+ M.trees(f,s,{31,20,0});assert(M.selected(f,s)==ELE,'Stormcaller hybrid: Elemental')
+ M.trees(f,s,{0,0,16});assert(M.selected(f,s)==RESTO,'Restoration from Mana Tide\'s tier');M.trees(f,s,{0,20,31});assert(M.selected(f,s)==RESTO,'Wavebreaker hybrid: Restoration')
+ M.trees(f,s,{0,31,20});assert(M.selected(f,s)==ENH,'Enhancement main tree with 20 Restoration points stays Enhancement')
+ M.trees(f,s,{21,0,21});assert(M.selected(f,s)==ENH,'a tie stays Enhancement')
+ M.trees(f,s,{0,0,0});s.known[408490]=false;s.known[16190]=false
  local a=f.addon;assert(a:SetDefaultRotationEnabled(ENH,false));assert(M.selected(f,s)==WH,'the Wowhead variant runs only when chosen')
- s.level=24;M.know(s,408490);assert(M.selected(f,s)==WH,'Elemental starts at 25 (30, or 25 with Legacy points)')
+ s.level=24;M.trees(f,s,{21,0,0});assert(M.selected(f,s)==WH,'Elemental starts at 25 (30, or 25 with Legacy points)')
 end)
 
 test('on the real restricted Forever client the premades are listed but never auto-selected',function()
@@ -124,8 +129,8 @@ test('Restoration heals the friendly target and helps with damage otherwise',fun
  local u=M.upkeep(f,s,RESTO);assert(not u['shaman-resto-mana-tide']);s.group,s.mana=true,50;assert(M.upkeep(f,s,RESTO)['shaman-resto-mana-tide']==16190)
 end)
 
-test('real publisher auto-selects by talent spell and highlights',function()
+test('real publisher auto-selects by talent tree and highlights',function()
  local f,s=shaman(40,leveling,deep);local poll,selected,glow=M.publisher(f,s)
- poll();assert(selected()==ENH and f.addon.currentSpell==17364);M.know(s,408490);poll();assert(selected()==ELE);assert(#glow>0)
+ poll();assert(selected()==ENH and f.addon.currentSpell==17364);M.know(s,408490);M.trees(f,s,{21,0,0});poll();assert(selected()==ELE);assert(#glow>0)
 end)
 finish()

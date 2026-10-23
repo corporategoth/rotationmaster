@@ -33,19 +33,21 @@ test('switch: one vanilla premade at every level; SoD realms take the SoD packs,
  local a,s=hunter(1);assert(M.selected(a)==RANGED,'level 1')
  s.setLevel(30);assert(M.selected(a)==RANGED);s.setLevel(60);s.setTalents({0,31,20});assert(M.selected(a)==RANGED)
  assert(not M.row(a,SODR).eligible and M.row(a,SODR).eligibilityReason=='ruleset-mismatch','SoD premade eligible on a standard realm')
- s.learn(415320);assert(M.selected(a)==RANGED,'a melee rune on a standard realm changes nothing')
+ s.engrave(415320);assert(M.selected(a)==RANGED,'a melee rune on a standard realm changes nothing')
  enable(a,CLIPPED);enable(a,STING);assert(M.selected(a)==RANGED,'the recommended premade outranks the opt-in variants')
  assert(a:SetDefaultRotationEnabled(RANGED,false));assert(M.selected(a)==CLIPPED,'Icy Veins next')
  assert(a:SetDefaultRotationEnabled(CLIPPED,false));assert(M.selected(a)==STING,'wowsims last')
  s.setSeason(3,true);assert(a:SetDefaultRotationEnabled(RANGED,true));assert(M.selected(a)==RANGED,'Hardcore uses the vanilla premade')
  a,s=hunter(1,2);assert(M.selected(a)==SODR,'SoD level 1: ranged')
- s.learn(415320);assert(M.selected(a)==SODM,'Flanking Strike engraved: melee')
- s.unlearn(415320);s.learn(425711);assert(M.selected(a)==SODM,'Carve engraved: melee')
- s.learn(409433);assert(M.selected(a)==SODR,'Chimera Shot in the hands slot: ranged')
- s.unlearn(409433,425711);s.learn(458482,409552);assert(M.selected(a)==SODR,'Explosive Shot with Wyvern Strike: ranged')
- s.unlearn(409552);assert(M.selected(a)==SODM,'Wyvern Strike alone: melee')
- s.unlearn(458482);s.learn(415320,409433);assert(M.selected(a)==SODR,'the weave build (Chimera + Flanking) stays ranged')
- s.known={};assert(M.selected(a)==SODR,'a SoD Hunter with nothing learned still gets a premade')
+ s.learn(415320);assert(M.selected(a)==SODR,'a known Flanking Strike whose rune is not engraved stays ranged')
+ s.engrave(415320);assert(M.selected(a)==SODM,'Flanking Strike engraved: melee')
+ s.unengrave(415320);s.engrave(425711);assert(M.selected(a)==SODM,'Carve engraved: melee')
+ s.engrave(409433);assert(M.selected(a)==SODR,'Chimera Shot in the hands slot: ranged')
+ s.unengrave(409433,425711);s.engrave(458479,409552);assert(M.selected(a)==SODR,'Explosive Shot with Wyvern Strike: ranged')
+ s.unengrave(409552);assert(M.selected(a)==SODM,'Wyvern Strike alone: melee')
+ s.runesPending=true;s.engrave();assert(M.switch(a,SODM)=='unavailable'and M.selected(a)==SODR,'runes still loading: ranged until they read')
+ s.runesPending=false;s.unengrave(458479);s.engrave(415320,409433);assert(M.selected(a)==SODR,'the weave build (Chimera + Flanking) stays ranged')
+ s.known={};s.runes={};s.engrave();assert(M.selected(a)==SODR,'a SoD Hunter with nothing learned still gets a premade')
  for _,id in ipairs(VANILLA)do if not M.row(a,id).envelope.body.disabled then assert(M.row(a,id).eligible,id..' must stay eligible on SoD (no rulesets)')end end
 end)
 
@@ -155,7 +157,7 @@ test('vanilla reminders: aspects, pet care, worth-it cooldowns, safety',function
 end)
 
 test('SoD ranged: Kill Shot build priorities',function()
- local a,s=hunter(60,2);full(a,s);s.learn(409433,409593,13813);s.debuff('target',1130);s.repeatActive=true
+ local a,s=hunter(60,2);full(a,s);s.learn(409433,13813);s.engrave(409593);s.debuff('target',1130);s.repeatActive=true
  M.expect(a,s,SODR,1978,nil,'Serpent Sting first');s.debuff('target',1978,{expirationTime=110})
  M.expect(a,s,SODR,409593,nil,'Kill Shot while Trick Shots is below four and nothing else is pending')
  s.buff('player',1233451,{applications=4});M.expect(a,s,SODR,2643,nil,'four Trick Shots: Multi-Shot');s.clearAuras();s.debuff('target',1130);s.debuff('target',1978,{expirationTime=110})
@@ -183,6 +185,16 @@ test('SoD ranged: Lock and Load / Sniper Training and leveling arm',function()
  s.clearAuras();s.debuff('target',1130);s.debuff('target',1978,{expirationTime=120});s.cooling(19434,5);s.cooling(409433,1)
  M.expect(a,s,SODR,13813,nil,'Chimera nearly back: a trap feeds Lock and Load')
  s.cooling(13813,10);M.expect(a,s,SODR,13795,nil,'then Immolation Trap')
+ s.cooling(13795,10);M.expect(a,s,SODR,2643,nil,'no Lock and Load engraved: no Frost Trap (it only feeds the proc)')
+ s.engrave(415413);M.expect(a,s,SODR,13809,nil,'Lock and Load (a passive rune) engraved: Frost Trap feeds it')
+ s.cooldown={};s.cooling(409433,5);s.history(75,.2);M.expect(a,s,SODR,19434,nil,'no Sniper Training: Aimed Shot after an Auto')
+ s.engrave(415399);M.expect(a,s,SODR,2643,nil,'Sniper Training engraved without two stacks: no hard-cast Aimed Shot')
+ a.spellHistory={};s.combat=false;s.targetCombat=false;s.clearAuras();s.debuff('target',1130)
+ M.expect(a,s,SODR,13809,nil,'pull with Lock and Load: Frost Trap first')
+ s.cooling(13809,10);M.expect(a,s,SODR,1978,nil,'pull with Sniper Training and no stacks: no pre-cast Aimed Shot')
+ s.buff('player',415401,{applications=2});M.expect(a,s,SODR,19434,nil,'pull with two Sniper Training stacks: instant Aimed Shot')
+ s.clearAuras();s.debuff('target',1130);s.unengrave(415399);M.expect(a,s,SODR,19434,nil,'pull without Sniper Training: pre-cast Aimed Shot')
+ s.combat=true;s.targetCombat=true
  a,s=hunter(20,2);s.learn(1978,3044,2643,437123,409552);s.debuff('target',1130);s.debuff('target',1978,{expirationTime=120});s.repeatActive=true
  M.expect(a,s,SODR,409552,nil,'leveling: Explosive Shot');s.cooling(409552,4)
  M.expect(a,s,SODR,437123,nil,'leveling: Steady Shot')
@@ -190,7 +202,7 @@ test('SoD ranged: Lock and Load / Sniper Training and leveling arm',function()
 end)
 
 test('SoD ranged: dead zone, AoE, reminders',function()
- local a,s=hunter(60,2);full(a,s);s.learn(409593,415320,13813);s.targetRange={0,5}
+ local a,s=hunter(60,2);full(a,s);s.learn(415320,13813);s.engrave(409593);s.targetRange={0,5}
  M.expect(a,s,SODR,409593,nil,'in melee: Kill Shot (no minimum range)');s.cooling(409593,5)
  M.expect(a,s,SODR,415320,nil,'in melee: Flanking Strike');s.targetRange={28,30}
  s.debuff('target',1130);s.debuff('target',1978,{expirationTime=120});s.repeatActive=true;s.near(3,{25,30})
@@ -203,6 +215,16 @@ test('SoD ranged: dead zone, AoE, reminders',function()
  s.clearAuras();s.buff('pet',428728,{applications=5});lit=M.upkeep(a,s,SODR);assert(lit[428726],'Focus Fire at five Frenzy')
  s.classification='elite';s.cooling(409593,5);lit=M.upkeep(a,s,SODR);assert(not lit[3045],'Rapid Fire waits for Kill Shot')
  s.cooldown={};lit=M.upkeep(a,s,SODR);assert(lit[3045],'Rapid Fire with Kill Shot ready')
+end)
+
+test('SoD Lone Wolf (a passive rune): no pet reminders once engraved, on both premades',function()
+ local a,s=hunter(60,2);full(a,s);s.pet=false;s.combat=false
+ for _,id in ipairs({SODR,SODM})do
+  s.runes={};s.engrave();s.pet=false;s.petDead=false;local lit=M.upkeep(a,s,id);assert(lit[883],id..': Call Pet without Lone Wolf')
+  s.engrave(415370);lit=M.upkeep(a,s,id);assert(not lit[883],id..': no Call Pet with Lone Wolf engraved')
+  s.pet=true;s.petDead=true;lit=M.upkeep(a,s,id);assert(not lit[982],id..': no Revive Pet with Lone Wolf engraved')
+ end
+ s.setSeason(nil);s.pet=false;s.petDead=false;local lit=M.upkeep(a,s,RANGED);assert(lit[883],'vanilla keeps its pet reminders')
 end)
 
 test('SoD melee: Flanking upkeep, Raptor Fury, fillers, out-of-reach shots, AoE',function()

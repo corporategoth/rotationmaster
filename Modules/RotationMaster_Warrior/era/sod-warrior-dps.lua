@@ -1,7 +1,8 @@
 -- Season of Discovery Warrior melee DPS, levels 1–60: two-hander, dual wield, Gladiator and
 -- leveling (the SoD catch-all outside Defensive Stance). wowsims/sod Phase 6 with Wowhead Phase
 -- 7/8: Charge; Victory Rush; Intercept; Whirlwind (Thunder Clap before it) on two engaged enemies;
--- Slam at three Slammin' stacks (Phase 8 four-piece); Rend kept up; Slam on Blood Surge;
+-- Slam at three Slammin' stacks (Phase 8 four-piece); Rend kept up; Slam on Blood Surge (on
+-- cooldown with the Precise Timing rune);
 -- Bloodthirst; Mortal Strike; Shield Slam; Overpower; then by build: Quick Strike for two-handers
 -- (the engraved glove rune), or Whirlwind, Raging Blow and Devastate (Sunder before it) for dual
 -- wield; Execute with 30 rage or Sudden Death; Hamstring near the rage cap. Reminders: Battle and
@@ -15,6 +16,7 @@ local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function known(id)return{type='SPELL_KNOWN',spell=id}end
+local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
 local function buff(id)return{type='BUFF',unit='player',spell=id,anyrank=true}end
 local function rage(op,n)return{type='POWER',unit='player',operator=op,value=n}end
 local function enemies(op,n)return{type='THREAT_COUNT',threat=1,operator=op,value=n}end
@@ -32,7 +34,7 @@ local unqueued=all(negate(queued(78)),negate(queued(845)))
 local immune=any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',unit='target',value='MECHANICAL'},{type='CREATURE',unit='target',value='ELEMENTAL'})
 local enraged=any(buff(12880),buff(425415),buff(427066),buff(29131),buff(18499))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.warrior.dps',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.warrior.dps',revision=2,
  blocks={['era.warrior.boundaries']=1,['era.warrior.upkeep']=1,['era.warrior.aoe-strikes']=1},
  nameKey='Default.SoD.Warrior.DPS.Name',descriptionKey='Default.SoD.Warrior.DPS.Description',
  applicability={families={'era'},actionContext='player',class='WARRIOR',minLevel=1,maxLevel=60,rulesets={'season:2'}},
@@ -50,7 +52,7 @@ assert(addon:RegisterDefaultRotation({
   spell('sod-dps-death-wish',12328,combat()),
   spell('sod-dps-recklessness',1719,all(combat(),boss,any(buff(12328),lifetime('LESSTHANOREQUALS',25)))),
   spell('sod-dps-sweeping-strikes',12292,all(combat(),enemies('GREATERTHANOREQUALS',2))),
-  optional(spell('sod-dps-berserker-rage',18499,all(combat(),any(known(402911),known(426940)),negate(enraged)))),
+  optional(spell('sod-dps-berserker-rage',18499,all(combat(),any(rune(402911),rune(426940)),negate(enraged)))),
   optional(spell('sod-dps-battle-stance-dip',2457,all(combat(),buff(426969),negate({type='FORM',value=1}),rage('LESSTHANOREQUALS',25)))),
  },
  rotation={
@@ -60,18 +62,18 @@ assert(addon:RegisterDefaultRotation({
  {id='sod-dps-aoe',type='branch',conditions=enemies('GREATERTHANOREQUALS',2),onFalse={},onTrue={block('era.warrior.aoe-strikes','sod-dps-')}},
  spell('sod-dps-slammin',1464,{type='BUFF_STACKS',unit='player',spell=1234005,operator='GREATERTHANOREQUALS',value=3}),
  spell('sod-dps-rend',772,all(negate({type='DEBUFF',unit='target',spell=772,anyrank=true,owndebuff=true}),any(big,target('GREATERTHAN',.3)),negate(immune))),
- spell('sod-dps-blood-surge-slam',1464,buff(413399)),
+ spell('sod-dps-blood-surge-slam',1464,any(buff(413399),rune(402922))),
  spell('sod-dps-bloodthirst',23881),
  spell('sod-dps-mortal-strike',12294),
  spell('sod-dps-shield-slam',23922),
  spell('sod-dps-overpower',7384),
- {id='sod-dps-two-hand',type='branch',conditions=known(429765),onTrue={
+ {id='sod-dps-two-hand',type='branch',conditions=rune(429765),onTrue={
   spell('sod-dps-quick-strike',429765,any(rage('GREATERTHANOREQUALS',30),cooling(23881,1.5),cooling(12294,1.5))),
  },onFalse={
   spell('sod-dps-whirlwind',1680),
   spell('sod-dps-raging-blow',402911),
   spell('sod-dps-devastate',403196),
-  spell('sod-dps-sunder',7386,all(negate(known(403196)),target('GREATERTHANOREQUALS',.6),any(negate({type='DEBUFF',unit='target',spell=7386,anyrank=true}),
+  spell('sod-dps-sunder',7386,all(negate(rune(403195)),target('GREATERTHANOREQUALS',.6),any(negate({type='DEBUFF',unit='target',spell=7386,anyrank=true}),
    {type='DEBUFF_STACKS',unit='target',spell=7386,anyrank=true,operator='LESSTHAN',value=5}))),
  }},
  spell('sod-dps-execute',5308,any(buff(440114),all(target('LESSTHAN',.2),rage('GREATERTHANOREQUALS',30)))),

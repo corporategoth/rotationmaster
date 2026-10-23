@@ -1,6 +1,6 @@
 -- Shared Classic Era Hunter blocks (Built In composition; authoring-time only).
 -- Consumers: rm.era.hunter.ranged, rm.era.hunter.ranged.icyveins, rm.era.hunter.ranged.wowsims,
--- rm.sod.hunter.ranged and rm.sod.hunter.melee. A content change needs a block revision bump, every
+-- rm.sod.hunter.ranged and rm.sod.hunter.melee (which use sod.hunter.upkeep). A content change needs a block revision bump, every
 -- consumer's pin and revision bumped, and both recorded in tests/fixtures/builtin_composition_ledger.lua.
 -- Policy and sources are the consumers'; see premade-research era/hunter.md.
 local _,addon=...
@@ -22,6 +22,7 @@ local stingless=all(negate({type='DEBUFF',unit='target',spell=1978,anyrank=true,
  negate({type='DEBUFF',unit='target',spell=3043,anyrank=true,owndebuff=true}),negate({type='DEBUFF',unit='target',spell=3034,anyrank=true,owndebuff=true}))
 local lives=any({type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.3},{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHAN',value=8})
 local attacked={type='ISSAME',unit='targettarget',otherunit='player'}
+local loneWolf={type='RUNE_ENGRAVED',spell=415370}
 -- Casts and channels (Aimed Shot, Steady Shot, Volley, Mend Pet) and a missing target end advice.
 assert(addon:RegisterDefaultBlock({id='era.hunter.boundaries',revision=1,families={'era'},class='HUNTER',steps={
  {id='manual',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
@@ -79,6 +80,18 @@ assert(addon:RegisterDefaultBlock({id='era.hunter.upkeep',revision=1,families={'
  spell('trueshot-aura',19506,negate(buff(19506))),
  spell('call-pet',883,negate({type='PET'})),
  spell('revive-pet',982,{type='DEAD',unit='pet'}),
+ spell('mend-pet',136,all({type='PET'},{type='HEALTHPCT',unit='pet',operator='LESSTHAN',value=.5},negate({type='BUFF',unit='pet',spell=136,anyrank=true}))),
+ spell('intimidation',19577,all(combat(),negate({type='GROUP'}),attacked)),
+ spell('feign-death',5384,all(combat(),any(all({type='GROUP'},{type='THREAT',unit='target',threat=3}),
+  all(negate({type='GROUP'}),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.35},{type='PET'})))),
+}}))
+-- Season of Discovery: the same reminders, but with the Lone Wolf rune (415370, passive: more damage
+-- without a pet) engraved, never call or revive a pet.
+assert(addon:RegisterDefaultBlock({id='sod.hunter.upkeep',revision=1,families={'era'},class='HUNTER',steps={
+ spell('monkey',13163,all(negate(known(13165)),negate(buff(13163)),negate(buff(5118)))),
+ spell('trueshot-aura',19506,negate(buff(19506))),
+ spell('call-pet',883,all(negate({type='PET'}),negate(loneWolf))),
+ spell('revive-pet',982,all({type='DEAD',unit='pet'},negate(loneWolf))),
  spell('mend-pet',136,all({type='PET'},{type='HEALTHPCT',unit='pet',operator='LESSTHAN',value=.5},negate({type='BUFF',unit='pet',spell=136,anyrank=true}))),
  spell('intimidation',19577,all(combat(),negate({type='GROUP'}),attacked)),
  spell('feign-death',5384,all(combat(),any(all({type='GROUP'},{type='THREAT',unit='target',threat=3}),

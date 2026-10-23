@@ -10,7 +10,8 @@ local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function combat()return{type='COMBAT',unit='player'}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
+-- Season of Discovery runes: engraved, by the spell the rune teaches (passive runes too).
+local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
 local function points(op,n)return{type='POINT',unit='player',operator=op,value=n}end
 local function energy(op,n)return{type='POWER',unit='player',operator=op,value=n}end
 local function classified(kind)return{type='CLASSIFICATION',unit='target',value=kind}end
@@ -90,10 +91,10 @@ assert(addon:RegisterDefaultBlock({
 }}))
 -- Season of Discovery reminders: a temporary enchant on each weapon (any poison, stone or Wild
 -- Strikes counts; Instant/Deadly Poison offered), Kick, Thistle Tea, Blade Flurry and Adrenaline
--- Rush with Slice and Dice up, Cold Blood at five, Evasion solo when hurt. Off by default: Vanish
--- for Master of Subtlety and Preparation (both only pay with the passive rune engraved).
+-- Rush with Slice and Dice up, Cold Blood at five, Evasion solo when hurt; with the Master of
+-- Subtlety rune (passive, 425096) engraved, Vanish to renew it and Preparation once Vanish is spent.
 assert(addon:RegisterDefaultBlock({
- id='era.rogue.sod-upkeep',revision=1,families={'era'},class='ROGUE',steps={
+ id='era.rogue.sod-upkeep',revision=2,families={'era'},class='ROGUE',steps={
  item('sod-mainhand-poison',instant,negate({type='WEAPON'})),
  item('sod-offhand-poison',offhand,all(dualWield,negate({type='WEAPON',offhand=true}))),
  spell('sod-kick',1766,interrupt),
@@ -102,29 +103,29 @@ assert(addon:RegisterDefaultBlock({
  spell('sod-adrenaline-rush',13750,all(combat(),sliced,worth)),
  spell('sod-cold-blood',14177,all(combat(),points('GREATERTHANOREQUALS',5))),
  spell('sod-evasion',5277,all(combat(),negate({type='GROUP'}),hurt,tanked)),
- optional(spell('sod-vanish',1856,all(combat(),{type='GROUP'},negate(tanked),points('GREATERTHANOREQUALS',5),negate({type='BUFF',unit='player',spell=425096})))),
- optional(spell('sod-preparation',14185,all(combat(),{type='GROUP'},{type='SPELL_COOLDOWN',spell=1856,operator='GREATERTHAN',value=30}))),
+ spell('sod-vanish',1856,all(combat(),{type='GROUP'},rune(425096),negate(tanked),points('GREATERTHANOREQUALS',5),negate({type='BUFF',unit='player',spell=425096}))),
+ spell('sod-preparation',14185,all(combat(),{type='GROUP'},rune(425096),{type='SPELL_COOLDOWN',spell=1856,operator='GREATERTHAN',value=30})),
 }}))
 -- Season of Discovery stealth opener: Shadowstrike, Garrote in a group (Carnage, Master of
 -- Subtlety), Ambush for a Backstab build, Cheap Shot solo; then stop without breaking Stealth.
 assert(addon:RegisterDefaultBlock({
- id='era.rogue.sod-opener',revision=1,families={'era'},class='ROGUE',steps={
+ id='era.rogue.sod-opener',revision=2,families={'era'},class='ROGUE',steps={
  spell('shadowstrike',399985),
  spell('group-garrote',703,{type='GROUP'}),
- spell('ambush',8676,all(negate(known(399956)),negate(known(424785)))),
+ spell('ambush',8676,all(negate(rune(399956)),negate(rune(424785)))),
  spell('cheap-shot',1833,negate({type='GROUP'})),
- spell('stealth-sinister',1752,all(negate(known(399956)),negate(known(424785)))),
+ spell('stealth-sinister',1752,all(negate(rune(399956)),negate(rune(424785)))),
  spell('stealth-mutilate',399956),
  spell('stealth-saber-slash',424785),
  {id='stealth-stop',type='none',suppress_attack=true,conditions={}},
 }}))
 -- Season of Discovery builders by the engraved glove rune: Mutilate (two points, so not past
--- three), Saber Slash, Backstab when not faced or when no glove builder is engraved (Cutthroat),
--- else Sinister Strike.
+-- three), Saber Slash, Backstab when not faced or with the Cutthroat rune (passive, 462708: no
+-- positional), else Sinister Strike.
 assert(addon:RegisterDefaultBlock({
- id='era.rogue.sod-builders',revision=1,families={'era'},class='ROGUE',steps={
+ id='era.rogue.sod-builders',revision=2,families={'era'},class='ROGUE',steps={
  spell('mutilate',399956,points('LESSTHANOREQUALS',3)),
  spell('saber-slash',424785),
- spell('backstab',53,all(points('LESSTHANOREQUALS',4),any(behind,all(negate(known(399956)),negate(known(424785)),negate(known(424919)))))),
+ spell('backstab',53,all(points('LESSTHANOREQUALS',4),any(behind,rune(462708)))),
  spell('sinister',1752),
 }}))

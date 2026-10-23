@@ -8,6 +8,8 @@ local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function known(id)return{type='SPELL_KNOWN',spell=id}end
+-- Season of Discovery runes: engraved, by the spell the rune teaches (passive runes too).
+local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
 local function buff(id,anyrank)return{type='BUFF',unit='player',spell=id,anyrank=anyrank}end
 local function missing(id)return negate(buff(id,true))end
 local function own(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
@@ -19,7 +21,7 @@ local function class(kind)return{type='CLASSIFICATION',unit='target',value=kind}
 local function cooling(id,v)return{type='SPELL_COOLDOWN',spell=id,operator='GREATERTHAN',value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or {}}end
-local function block(id,steps)assert(addon:RegisterDefaultBlock({id=id,revision=1,families={'era'},class='MAGE',steps=steps}))end
+local function block(id,steps,revision)assert(addon:RegisterDefaultBlock({id=id,revision=revision or 1,families={'era'},class='MAGE',steps=steps}))end
 local group={type='GROUP'}
 local solo=negate(group)
 local elite=any(class('elite'),class('rareelite'),class('worldboss'))
@@ -99,11 +101,11 @@ block('era.mage.upkeep',vanilla)
 -- Season of Discovery only.
 -- Molten Armor (wrist rune) is the choice when engraved; otherwise as in vanilla.
 block('sod.mage.armor',{
- spell('molten-armor',428741,bare(known(428741))),
- spell('mage-armor',6117,bare(negate(known(428741)),mageArmor)),
- spell('ice-armor',7302,bare(negate(known(428741)),negate(mageArmor),known(7302))),
- spell('frost-armor',168,bare(negate(known(428741)),negate(mageArmor),negate(known(7302)),known(168))),
-})
+ spell('molten-armor',428741,bare(rune(428741))),
+ spell('mage-armor',6117,bare(negate(rune(428741)),mageArmor)),
+ spell('ice-armor',7302,bare(negate(rune(428741)),negate(mageArmor),known(7302))),
+ spell('frost-armor',168,bare(negate(rune(428741)),negate(mageArmor),negate(known(7302)),known(168))),
+},2)
 local sod=upkeep()
 for _,step in ipairs({
  spell('remove-greater-curse',412113,{type='DISPELLABLE',unit='player',debufftype='Curse'}),
@@ -111,10 +113,10 @@ for _,step in ipairs({
  spell('evocation',12051,all(combat(),pct('MANAPCT','player','LESSTHAN',.15))),
  spell('icy-veins',425121,all(combat(),negate(buff(425121)),any(elite,lives(20)))),
  -- Cold Snap refreshes Icy Veins once it, Deep Freeze and Frozen Orb are all spent.
- spell('cold-snap',12472,all(combat(),known(425121),cooling(425121,20),negate(buff(425121)),
-  any(negate(known(428739)),cooling(428739,2)),any(negate(known(440802)),cooling(440802,2)))),
+ spell('cold-snap',12472,all(combat(),rune(425121),cooling(425121,20),negate(buff(425121)),
+  any(negate(rune(428739)),cooling(428739,2)),any(negate(rune(440802)),cooling(440802,2)))),
 })do sod[#sod+1]=step end
-block('sod.mage.upkeep',sod)
+block('sod.mage.upkeep',sod,2)
 -- Balefire Bolt stacks a Spirit-draining aura on you; the fifth stack kills you. Every Balefire step
 -- is gated here: never at four or more stacks (the aura is read as a buff and as a debuff), and never
 -- within 2.5 s of the last cast, whose stack may not have landed yet. Older guides' 8-10 stacks are lethal.
@@ -130,8 +132,8 @@ block('sod.mage.balefire-scorched',{spell('balefire',428878,all(balefire,any(fir
 block('sod.mage.balefire-brain-freeze',{spell('balefire-brain-freeze',428878,all(balefire,buff(400730)))})
 -- Living Bomb on a target without yours that will live to see it explode.
 block('sod.mage.living-bomb',{spell('living-bomb',400613,all(negate(own(400613)),lives(12)))})
--- Overheat (passive) makes Fire Blast off the global cooldown and castable during another cast; its
--- Fire Blast ranks are known only while it is engraved. A reminder, because the cast Stop hides it.
+-- Overheat (passive rune 400615) makes Fire Blast off the global cooldown and castable during another
+-- cast. A reminder, because the cast Stop hides it.
 block('sod.mage.overheat',{
- spell('overheat-fire-blast',2136,all(combat(),any(known(400618),known(400619),known(400616),known(400620),known(400621),known(400622),known(400623)))),
-})
+ spell('overheat-fire-blast',2136,all(combat(),rune(400615))),
+},2)

@@ -31,9 +31,11 @@ test('auto-select by talent tree, with Enhancement owning levels 1–9, no point
   s.level=40;assert(M.selected(f,s)==enh,'no points spent');s.talents={10,10,0};assert(M.selected(f,s)==enh,'a tie')
   s.talents={31,0,20};assert(M.selected(f,s)==ele);s.talents={0,21,30};assert(M.selected(f,s)==resto);s.talents={0,31,0};assert(M.selected(f,s)==enh)
  end
- s.season=2;s.talents={0,31,0};s.mainEnchant=1663;assert(M.selected(f,s)==SENH,'Rockbiter before Windfury is learned: Enhancement')
- M.know(s,8232);assert(M.selected(f,s)==STANK,'Windfury known, Rockbiter kept: tank');s.talents={31,0,0};assert(M.selected(f,s)==STANK,'either tree tanks')
- s.mainEnchant=283;assert(M.selected(f,s)==SELE);s.mainEnchant=false;assert(M.selected(f,s)==SELE)
+ s.season=2;s.talents={0,31,0};s.mainEnchant=1663;assert(M.selected(f,s)==SENH,'Rockbiter without Way of Earth: Enhancement')
+ M.know(s,8232);assert(M.selected(f,s)==SENH,'Windfury known and Rockbiter kept, without the rune: Enhancement')
+ M.engrave(s,408531);assert(M.selected(f,s)==STANK,'Way of Earth (a passive rune) engraved: tank');s.talents={31,0,0};assert(M.selected(f,s)==STANK,'either tree tanks')
+ M.unengrave(s,408531);M.engrave(s,408680);assert(M.selected(f,s)==STANK,'either Way of Earth spell');M.unengrave(s,408680)
+ assert(M.selected(f,s)==SELE,'no Way of Earth: Elemental');s.mainEnchant=false;assert(M.selected(f,s)==SELE)
  s.season=nil;s.talents={31,0,0};assert(a:SetDefaultRotationEnabled(ELE,false));assert(M.selected(f,s)==ELEWS)
  s.talents={0,0,31};assert(a:SetDefaultRotationEnabled(RESTO,false));assert(M.selected(f,s)==RESTOWT)
  s.talents={0,0,0};assert(a:SetDefaultRotationEnabled(ENH,false));assert(M.selected(f,s)==ENHWT)
@@ -108,13 +110,14 @@ test('Restoration heals the friendly target by health; fights a hostile one; Tav
 end)
 
 test('SoD Enhancement: Maelstrom spells at five stacks, Stormstrike, Lava Lash, Flame Shock; imbues per weapon',function()
- local f,s=shaman(60,kit,{408490,408507,425339,674,8024});s.season=2;s.mainEnchant=283;s.offEnchant=true
+ local f,s=shaman(60,kit,{408490,408507,425339,674,8024});s.season=2;s.mainEnchant=283;s.offEnchant=true;M.engrave(s,408507)
  assert(first(f,s,SENH)==17364);s.nopower[17364]=true;assert(first(f,s,SENH)==408507);s.nopower[408507]=true
  s.buffs={{id=408505,stacks=5}};assert(first(f,s,SENH)==408490);s.buffs={}
  assert(first(f,s,SENH)==8050);s.debuffs={{id=8050}};assert(first(f,s,SENH)==8042);s.nopower[8042]=true;assert(first(f,s,SENH)==425339)
  s.enemies={0,0,0};assert(first(f,s,SENH)==8190);s.totems[1]=5;M.know(s,408341);assert(first(f,s,SENH)==408341,'Fire Nova from a fire totem');s.enemies={};s.totems={}
  local u=M.upkeep(f,s,SENH);assert(not u['sod-enh-windfury-weapon']and not u['sod-enh-offhand-flametongue'],'both weapons enchanted')
  s.offEnchant=false;u=M.upkeep(f,s,SENH);assert(u['sod-enh-offhand-flametongue']==8024 and not u['sod-enh-offhand-windfury'] and not u['sod-enh-offhand-windfury-icyveins'])
+ M.unengrave(s,408507);u=M.upkeep(f,s,SENH);assert(u['sod-enh-offhand-windfury']==8232 and not u['sod-enh-offhand-flametongue'],'no Lava Lash rune: Windfury off hand');M.engrave(s,408507)
  s.mainEnchant=1663;assert(M.upkeep(f,s,SENH)['sod-enh-windfury-weapon']==8232,'Windfury replaces Rockbiter')
 end)
 
@@ -150,6 +153,6 @@ test('real publisher highlights the selected premade and follows talents and sea
  poll();assert(selected()==ENH and f.addon.currentSpell==17364)
  s.talents={31,0,0};f.addon:InvalidateBuildContext('talents');poll();assert(selected()==ELE)
  s.season=2;s.mainEnchant=283;f.addon:InvalidateBuildContext('client');poll();assert(selected()==SELE)
- s.mainEnchant=1663;poll();assert(selected()==STANK,'Rockbiter with Windfury known: tank')
+ s.mainEnchant=1663;M.engrave(s,408531);poll();assert(selected()==STANK,'Way of Earth engraved: tank')
 end)
 finish()

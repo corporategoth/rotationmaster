@@ -1,6 +1,6 @@
 -- Season of Discovery Druid Balance, levels 1-60, and the SoD default for every Druid no other SoD
 -- premade fits. After wowsims P6 with Wowhead's Phase 8 thresholds: Starsurge whenever its buff is
--- down, Hurricane only on six or more, Insect Swarm only on the move, Sunfire and Moonfire on
+-- down, Hurricane on six or more (four with the Gale Winds rune), Insect Swarm only on the move, Sunfire and Moonfire on
 -- targets that live, Starfire only when empowered (Starsurge or Lunar Eclipse), Wrath filler.
 -- In Cat or Bear Form it plays the SoD Feral sections.
 local _,addon=...
@@ -13,9 +13,9 @@ local function ttd(v)return{type='TT_HEALTH',unit='target',health=0,operator='GR
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function spell(id,action,conditions,ranked)return{id=id,type='spell',action=action,ranked=ranked or false,conditions=conditions or {}}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.druid.balance',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.druid.balance',revision=2,
  blocks={['era.druid.boundaries']=1,['era.druid.upkeep']=1,['era.druid.caster-cooldowns']=1,['sod.druid.maul']=1,['sod.druid.balance-cooldowns']=1,
-  ['sod.druid.forms']=1,['sod.druid.cat']=1,['era.druid.stealth-opener']=1,['era.druid.cat-builders']=1,['era.druid.powershift']=1,['sod.druid.bear']=1,
+  ['sod.druid.forms']=1,['sod.druid.cat']=2,['era.druid.stealth-opener']=1,['era.druid.cat-builders']=1,['era.druid.powershift']=1,['sod.druid.bear']=1,
   ['sod.druid.caster-pull']=1},
  nameKey='Default.SoD.Druid.Balance.Name',descriptionKey='Default.SoD.Druid.Balance.Description',
  applicability={families={'era'},actionContext='player',class='DRUID',minLevel=1,maxLevel=60,rulesets={'season:2'}},
@@ -33,7 +33,9 @@ assert(addon:RegisterDefaultRotation({
    ref('sod-balance-forms','sod.druid.forms','sod-balance-'),
    ref('sod-balance-pull','sod.druid.caster-pull','sod-balance-pull-'),
    spell('sod-balance-starsurge',417157,negate({type='BUFF',unit='player',spell=417157,ownbuff=true}),true),
-   {id='sod-balance-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=6},onFalse={},onTrue={
+   -- Gale Winds (passive) makes Hurricane free of cooldown and twice as strong: worth it from four.
+   {id='sod-balance-aoe',type='branch',conditions=any({type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=6},
+    all({type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=4},{type='RUNE_ENGRAVED',spell=417135})),onFalse={},onTrue={
     spell('sod-balance-hurricane',16914,negate(moving()))}},
    {id='sod-balance-moving',type='branch',conditions=moving(),onFalse={},onTrue={
     spell('sod-balance-moving-insect-swarm',5570,negate(mine(5570))),spell('sod-balance-moving-sunfire',414684,negate(mine(414684)),true),

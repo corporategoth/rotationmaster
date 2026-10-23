@@ -14,6 +14,8 @@ local function anyBuff(id)return{type='BUFF',unit='player',spell=id,anyrank=true
 local function mine(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function known(id)return{type='SPELL_KNOWN',spell=id}end
+-- Season of Discovery runes: engraved, by the first spell the rune teaches.
+local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
 local function moving()return{type='MOVING'}end
 local function energy(op,v)return{type='POWER',unit='player',operator=op,value=v}end
 local function cp(op,v)return{type='POINT',unit='player',operator=op,value=v}end
@@ -30,7 +32,7 @@ local function spell(id,action,conditions,ranked)return{id=id,type='spell',actio
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or {}}end
 local function wait(id)return{id=id,type='none',conditions={}}end
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
-local function druid(id,steps)assert(addon:RegisterDefaultBlock({id=id,revision=1,families={'era'},class='DRUID',steps=steps}))end
+local function druid(id,steps,revision)assert(addon:RegisterDefaultBlock({id=id,revision=revision or 1,families={'era'},class='DRUID',steps=steps}))end
 
 -- Casts and channels (Starfire, Hurricane, Tranquility, Healing Touch) and travel forms halt advice and Attack.
 druid('era.druid.boundaries',{
@@ -180,7 +182,7 @@ druid('sod.druid.cat',{
  ref('opening','era.druid.stealth-opener','open-'),
  spell('faerie-fire',16857,noFaerieFire()),
  spell('savage-roar',407988,all(negate(own(407988)),cp('GREATERTHANOREQUALS',1))),
- {id='aoe',type='branch',conditions=all(known(411128),engaged(4)),onFalse={},onTrue={
+ {id='aoe',type='branch',conditions=all(engaged(4),rune(439510)),onFalse={},onTrue={
   spell('aoe-swipe',411128,{},true),ref('aoe-powershift','era.druid.powershift','aoe-')}},
  spell('mangle',407993,negate({type='DEBUFF',unit='target',spell=407993,anyrank=true}),true),
  spell('clearcasting-shred',5221,all(own(16870),negate(front()))),
@@ -189,7 +191,7 @@ druid('sod.druid.cat',{
  ref('builders','era.druid.cat-builders','build-'),
  spell('faerie-fire-refresh',16857,{type='DEBUFF_REMAIN',unit='target',spell=16857,anyrank=true,operator='LESSTHAN',value=8}),
  ref('powershift','era.druid.powershift','shift-'),
-})
+},2)
 -- Bear (Icy Veins, wowsims P6, Warcraft Tavern): Faerie Fire (Feral) or Sunfire (Bear) to pull from
 -- range, Lacerate before it drops, packs (Mangle under Berserk, Swipe), Mangle, Lacerate, Swipe.
 druid('sod.druid.bear',{

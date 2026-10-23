@@ -13,6 +13,8 @@ local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function known(id)return{type='SPELL_KNOWN',spell=id}end
+-- The Devastate rune's first taught spell is 403195 (wowsims/exporter); 403196 is the ability.
+local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
 local function buff(id)return{type='BUFF',unit='player',spell=id,anyrank=true}end
 local function rage(op,n)return{type='POWER',unit='player',operator=op,value=n}end
 local function enemies(op,n)return{type='THREAT_COUNT',threat=1,operator=op,value=n}end
@@ -27,7 +29,7 @@ local unqueued=all(negate(queued(78)),negate(queued(845)))
 local function resolve(id)return any(negate(buff(id)),{type='BUFF_REMAIN',unit='player',spell=id,operator='LESSTHAN',value=2})end
 local stacked=all({type='DEBUFF',unit='target',spell=7386,anyrank=true},{type='DEBUFF_STACKS',unit='target',spell=7386,anyrank=true,operator='GREATERTHANOREQUALS',value=5})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.warrior.tank',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.warrior.tank',revision=2,
  blocks={['era.warrior.boundaries']=1,['era.warrior.upkeep']=1},
  nameKey='Default.SoD.Warrior.Tank.Name',descriptionKey='Default.SoD.Warrior.Tank.Description',
  applicability={families={'era'},actionContext='player',class='WARRIOR',minLevel=10,maxLevel=60,rulesets={'season:2'}},
@@ -58,7 +60,7 @@ assert(addon:RegisterDefaultRotation({
   spell('sod-tank-aoe-revenge',6572),
   spell('sod-tank-aoe-whirlwind',1680),
   spell('sod-tank-aoe-devastate',403196),
-  spell('sod-tank-aoe-sunder',7386,negate(known(403196))),
+  spell('sod-tank-aoe-sunder',7386,negate(rune(403195))),
  }},
  spell('sod-tank-resolve-shield-slam',23922,all(resolve(460171),resolve(462230))),
  spell('sod-tank-revenge',6572),
@@ -67,10 +69,10 @@ assert(addon:RegisterDefaultRotation({
  spell('sod-tank-execute',5308),
  spell('sod-tank-cunning-whirlwind',1680,{type='BUFF_STACKS',unit='player',spell=1234067,operator='GREATERTHANOREQUALS',value=5}),
  spell('sod-tank-devastate',403196),
- spell('sod-tank-sunder',7386,all(negate(known(403196)),negate(stacked))),
+ spell('sod-tank-sunder',7386,all(negate(rune(403195)),negate(stacked))),
  spell('sod-tank-demoralizing',1160,all(big,negate(any({type='DEBUFF',unit='target',spell=1160,anyrank=true},{type='DEBUFF',unit='target',spell=99,anyrank=true})))),
  spell('sod-tank-thunder-clap',6343,all(big,negate({type='DEBUFF',unit='target',spell=6343,anyrank=true}))),
  spell('sod-tank-rend',772,all(negate(known(23922)),negate({type='DEBUFF',unit='target',spell=772,anyrank=true,owndebuff=true}))),
- spell('sod-tank-sunder-filler',7386,negate(known(403196))),
+ spell('sod-tank-sunder-filler',7386,negate(rune(403195))),
  }},
 }))

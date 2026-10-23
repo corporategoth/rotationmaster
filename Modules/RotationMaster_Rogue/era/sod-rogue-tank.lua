@@ -1,4 +1,5 @@
--- Season of Discovery Rogue tank, levels 1–60 (Just a Flesh Wound engraved: Tease is known).
+-- Season of Discovery Rogue tank, levels 1–60, chosen when the Just a Flesh Wound rune (which teaches
+-- Tease) is engraved.
 -- wowsims/sod Phase 6 Main Gauche order with Icy Veins, Zockify and Warcraft Tavern: Riposte, Main
 -- Gauche on cooldown, Blade Dance from one point and refreshed from three, Slice and Dice from
 -- three (refreshed from four), Fan of Knives, Crimson Tempest and Blunderbuss on three engaged
@@ -11,7 +12,6 @@ local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function combat()return{type='COMBAT',unit='player'}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
 local function points(op,n)return{type='POINT',unit='player',operator=op,value=n}end
 local function energy(op,n)return{type='POWER',unit='player',operator=op,value=n}end
 local function own(id)return{type='BUFF',unit='player',spell=id,anyrank=true,ownbuff=true}end
@@ -23,7 +23,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local tanked={type='ISSAME',unit='targettarget',otherunit='player'}
 local instant={8928,8927,8926,6950,6949,6947}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.tank',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.tank',revision=2,
  blocks={['era.rogue.boundaries']=1},
  nameKey='Default.SoD.Rogue.Tank.Name',descriptionKey='Default.SoD.Rogue.Tank.Description',
  applicability={families={'era'},actionContext='player',class='ROGUE',minLevel=1,maxLevel=60,rulesets={'season:2'}},
@@ -32,7 +32,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://www.icy-veins.com/wow-classic/combat-rogue-tank-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Combat Rogue tank rotation',reviewedAt='2026-10-23',revision='2025-04-08'},
  {url='https://www.zockify.com/wowclassic/rogue/tank/',title='Zockify: SoD Rogue tank (Phase 8)',reviewedAt='2026-10-23',revision='2025-04-10'},
  {url='https://www.warcrafttavern.com/wow-classic-sod/guides/combat-rogue-tank/',title='Warcraft Tavern: SoD Combat Rogue tank (Phase 4)',reviewedAt='2026-10-23'}},
- body={priority=60,switch=any(known(410412),known(1219355)),
+ body={priority=60,switch={type='RUNE_ENGRAVED',spell=400014},
  cooldowns={
   item('rogue-tank-mainhand-poison',instant,negate({type='WEAPON'})),
   item('rogue-tank-offhand-poison',instant,all({type='SWING_TIME',offhand=true,operator='GREATERTHAN',value=0},negate({type='WEAPON',offhand=true}))),

@@ -1,10 +1,14 @@
 -- WoW Forever healing Priest (Discipline and Holy) in a group, levels 10–60: selected without
--- Shadowform once a healing talent spell is known (Holy Nova, Binding Heal, Penance, Prayer of
--- Mending). Heals your current friendly target (RM suggests the spell; you pick the target):
+-- Shadowform when Discipline or Holy is the main talent tree. Heals your current friendly target (RM suggests the spell; you pick the target):
 -- shield, Prayer of Mending and Renew before the pull; Shield, Penance and Flash Heal in an
 -- emergency; dispels; Prayer of Healing (and Holy Nova on Holy Purpose) when the party is hurt;
 -- Binding Heal, Penance, Renew, Greater Heal, Heal. Spare time on an enemy: DoTs, Smite, wand.
 local _,addon=...
+-- Talent trees in the Forever talent window's order (assumed classic: 1 Discipline, 2 Holy, 3 Shadow; verify in game).
+-- Level 10 first (no talent config below it), then the points (an empty tree is a clean no-match),
+-- then the primary tree, which settles hybrids.
+local function tree(n,points)return{type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+ {type='TALENT_TREE_POINTS',tree=n,operator='GREATERTHANOREQUALS',value=points},{type='PRIMARY_TALENT_TREE',tree=n}}}end
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
@@ -20,7 +24,7 @@ local friendly={type='FRIENDLY',unit='target'}
 local function hurt(n)return{type='PROXIMITY_HEALTHPCT_COUNT',unit='player',distance=40,healthoperator='LESSTHAN',health=.7,operator='GREATERTHANOREQUALS',value=n}end
 local function dispel(kind)return{type='DISPELLABLE',unit='target',debufftype=kind}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.priest.healer',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.priest.healer',revision=2,
  blocks={['forever.priest.boundaries']=1,['forever.priest.upkeep']=1,['forever.priest.wand']=1},
  nameKey='Default.Forever.Priest.Healer.Name',descriptionKey='Default.Forever.Priest.Healer.Description',
  applicability={families={'forever'},actionContext='player',class='PRIEST',minLevel=10,maxLevel=60},
@@ -34,7 +38,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/simulationcraft/simc/blob/forever/SpellDataDump/priest.txt',title='SimulationCraft Forever spell data (1.60.1.70425)',reviewedAt='2026-10-23',revision='4dd64b4a21',notes='Spell IDs, ranks, Holy Purpose proc.'},
  },
  body={priority=20,
-  switch=all({type='GROUP'},negate(known(15473)),known(15237,15430,15431,27799,27800,27801,401937,1240774,402174,1240720,1240721,1316995,401859,1240827)),
+  switch=all({type='GROUP'},negate(known(15473)),any(tree(1,1),tree(2,1))),
   cooldowns={
    block('heal-upkeep','forever.priest.upkeep','heal-'),
    spell('heal-power-infusion',10060,all({type='COMBAT',unit='player'},friendly,negate({type='ISSAME',unit='target',otherunit='player'}))),

@@ -6,19 +6,19 @@
 local _,addon=...
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
+local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
 local function own(id)return{type='BUFF',unit='player',spell=id,anyrank=true,ownbuff=true}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function remain(id)return{type='BUFF_REMAIN',unit='player',spell=id,anyrank=true,ownbuff=true,operator='LESSTHANOREQUALS',value=1.5}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.protection.wowsims',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.protection.wowsims',revision=2,
  blocks={['sod.paladin.tank-upkeep']=1,['era.paladin.melee-opening']=1,['era.paladin.boundaries']=1,['sod.paladin.seal']=1},
  nameKey='Default.SoD.Paladin.Protection.Wowsims.Name',descriptionKey='Default.SoD.Paladin.Protection.Wowsims.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN',minLevel=1,maxLevel=60,rulesets={'season:2'}},
  tags={'endgame','protection','tank','single-target','season-of-discovery','wowsims'},
  sources={{url='https://github.com/wowsims/sod/blob/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/protection_paladin/apls/p5prot.apl.json',title='wowsims/sod Phase 5 Protection APL',reviewedAt='2026-10-23',revision='0e3f6ef'}},
- body={priority=119,switch=any(own(407627),own(25780),known(407632),known(440658),{type='PRIMARY_TALENT_TREE',tree=2}),
+ body={priority=119,switch=any(own(407627),own(25780),rune(407632),rune(440658),{type='PRIMARY_TALENT_TREE',tree=2}),
   cooldowns={block('sprotws-upkeep','sod.paladin.tank-upkeep','sprotws-upkeep-')},
   rotation={
    block('sprotws-opening','era.paladin.melee-opening','sprotws-'),

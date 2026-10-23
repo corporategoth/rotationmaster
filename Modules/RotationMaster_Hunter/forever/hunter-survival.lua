@@ -1,9 +1,14 @@
--- WoW Forever Survival Hunter in melee (dual-wield), levels 10–60, once Strider Kick (the
--- 21-point Survival talent) is known; until then Survival levels with the ranged premade, as every
+-- WoW Forever Survival Hunter in melee (dual-wield), levels 10–60, once Survival is the main tree
+-- with 21 points (Strider Kick's tier); until then Survival levels with the ranged premade, as every
 -- source advises. Wowhead's level-30 order: Mongoose Bite, Strider Kick, Raptor Strike,
 -- Counterattack, with Explosive Trap on packs. Out of melee it shoots (own Serpent Sting, Arcane,
 -- Aimed, Auto Shot). Aspect of the Beast and Hunter's Mark (Expose Prey needs it) are reminders.
 local _,addon=...
+-- Talent trees in the Forever talent window's order (assumed classic: 1 Beast Mastery, 2 Marksmanship, 3 Survival; verify in game).
+-- Level 10 first (no talent config below it), then the points (an empty tree is a clean no-match),
+-- then the primary tree, which settles hybrids.
+local function tree(n,points)return{type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+ {type='TALENT_TREE_POINTS',tree=n,operator='GREATERTHANOREQUALS',value=points},{type='PRIMARY_TALENT_TREE',tree=n}}}end
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
@@ -13,7 +18,7 @@ local function stop(id,conditions,attack)return{id=id,type='none',suppress_attac
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.survival',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.survival',revision=2,
  blocks={['forever.hunter.boundaries']=1,['forever.hunter.survival-pull']=1,['forever.hunter.range-shots']=1,['forever.hunter.melee-aoe']=1,
   ['forever.hunter.pet-care']=1,['forever.hunter.burst']=1},
  nameKey='Default.Forever.Hunter.Survival.Name',descriptionKey='Default.Forever.Hunter.Survival.Description',
@@ -26,7 +31,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://worldofwarcraft.blizzard.com/en-us/news/24301515',title='Blizzard: Forever class deep dive, Hunter and Druid',reviewedAt='2026-10-23',revision='2026-09-30',notes='Aspect of the Beast, Strider Kick, Expose Prey; no priority.'},
   {url='https://github.com/simulationcraft/simc/blob/forever/SpellDataDump/hunter.txt',title='SimulationCraft Forever spell data (1.60.1.70425)',reviewedAt='2026-10-23',revision='4dd64b4a21',notes='Spell IDs, ranks and cooldowns only.'},
  },
- body={priority=20,switch={type='SPELL_KNOWN',spell=1317257},
+ body={priority=20,switch=tree(3,21),
   cooldowns={
    spell('sv-aspect-beast',13161,all(combat(),negate({type='BUFF',unit='player',spell=13161,anyrank=true,ownbuff=true}))),
    spell('sv-mark',1130,all(combat(),{type='ATTACKABLE',unit='target'},negate({type='DEBUFF',unit='target',spell=1130,anyrank=true}))),

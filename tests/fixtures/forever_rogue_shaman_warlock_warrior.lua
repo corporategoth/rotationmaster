@@ -48,7 +48,7 @@ function M.fixture(class,options)
   health=100,targetHealth=100,power=class=='ROGUE'and 100 or 0,maxPower=100,mana=100,targetMana=0,points=0,stealth=false,cast=false,channel=false,
   targetCast=nil,targetInterruptible=true,form=1,forms=3,group=false,classification='normal',creature=7,targetLevel=nil,targettarget='player',
   threat=nil,enemies={},autorepeat=false,active={},mainEnchant=false,offEnchant=false,offSpeed=nil,
-  pet=false,petDead=false,petHealth=100,ttd=nil}
+  pet=false,petDead=false,petHealth=100,ttd=nil,trees={0,0,0},nodes={}}
  local names,ranks={},{}
  local function highest(name)
   for base,list in pairs(families)do if name=='Spell '..base then for i=#list,1,-1 do if s.known[list[i]] then return list[i] end end;return nil end end
@@ -106,6 +106,15 @@ function M.fixture(class,options)
   if unit=='target'then return s.threat end
   local n=tonumber(unit:match('^nameplate(%d+)$') or '');local v=n and s.enemies[n];if v==false then return nil end;return v end
  e.IsSpellKnown=function(id)return s.known[id]==true end
+ -- Forever talents (C_ClassTalents/C_Traits, as the Camelot talent frame reads them): the three classic
+ -- trees are node groups of one trait tree, in display order. s.trees = points per tree, s.nodes[node] =
+ -- a node's rank (absent: not in the tree), s.config=false = no active config yet (below level 10).
+ e.C_ClassTalents={GetActiveConfigID=function()if s.config==false then return nil end;return 7 end}
+ e.C_Traits={GetConfigInfo=function()return{ID=7,type=1,name='Loadout',treeIDs={900}}end,
+  GetGroupDisplayInfoByTreeID=function()local list={};for i=1,3 do list[i]={groupID=10+i,treeID=900,orderIndex=i-1,displayName='Tree '..i,icon=i}end;return list end,
+  GetGroupCurrencyInfo=function(_,ids)local list={};for i,id in ipairs(ids)do list[i]={traitNodeGroupID=id,currencyInfos={{spent=s.trees[id-10]or 0}}}end;return list end,
+  GetNodeInfo=function(_,node)local rank=s.nodes[node];if rank==nil then return{ID=0,activeRank=0,maxRanks=0,entryIDs={}}end
+   return{ID=node,activeRank=rank,ranksPurchased=rank,maxRanks=5,entryIDs={node*10},isVisible=true}end}
  e.C_Spell={GetSpellInfo=function(id)
    if type(id)=='string'then local hit=highest(id);return hit and {name=names[hit],spellID=hit,subtext=ranks[hit]}or nil end
    return {name=names[id] or ('Spell '..id),spellID=id,subtext=ranks[id] or ''}end,
@@ -125,7 +134,8 @@ function M.fixture(class,options)
   'Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/validation.lua','Data/catalog.lua','Data/diff.lua','Core/rotation_library.lua','Core/rotation_tags.lua',
   'Conditions/common.lua','Conditions/spell.lua','Conditions/known_spell.lua','Conditions/character.lua','Conditions/buffs.lua','Conditions/debuffs.lua',
   'Conditions/combat.lua','Conditions/casting.lua','Conditions/channeling.lua','Conditions/stats.lua','Conditions/range.lua','Conditions/spatial.lua','Conditions/spatial_stats.lua',
-  'Conditions/weapon.lua','Conditions/unit_states.lua','Conditions/totem.lua','Platform/inventory.lua','Conditions/item.lua'}) do f.load(path) end
+  'Conditions/weapon.lua','Conditions/unit_states.lua','Conditions/totem.lua','Platform/inventory.lua','Conditions/item.lua',
+  'Platform/talents.lua','Conditions/talent.lua','Core/build_context.lua'}) do f.load(path) end
  if not options.restricted then
   local get=a.Platform.GetClientInfo
   a.Platform.GetClientInfo=function(self)local info=get(self);assert(info.family=='forever');info.combatDataPolicy='probe';return info end
@@ -176,6 +186,10 @@ function M.upkeep(f,s,id)
 end
 function M.switches(f,id)f.sync();return f.addon:evaluateCondition(M.body(f.addon,id).switch)==true end
 function M.know(s,...)for _,id in ipairs({...})do s.known[id]=true end end
+-- Talent points per tree ({1,2,3} in display order), read again after the talent notification.
+function M.trees(f,s,points)s.trees=points;f.addon:InvalidateBuildContext('talents')end
+-- A trait node's rank (nil: not in the tree).
+function M.node(f,s,node,rank)s.nodes[node]=rank;f.addon:InvalidateBuildContext('talents')end
 -- The pack the real auto-switch would pick: enabled, eligible, matching switch, highest priority.
 function M.selected(f,s)
  local a=f.addon;f.sync()

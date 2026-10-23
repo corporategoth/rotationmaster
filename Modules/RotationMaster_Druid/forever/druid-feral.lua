@@ -1,9 +1,14 @@
--- WoW Forever Feral Druid (Cat and Bear in one premade, by form), levels 10–60. Selected by a
--- Feral talent spell (Feral Charge, Shifting Power, Primal Bite) or by being in Cat, Bear or Dire
--- Bear Form, so an untalented Druid who shifts gets the form's list. Icy Veins' Feral leveling
+-- WoW Forever Feral Druid (Cat and Bear in one premade, by form), levels 10–60. Selected with 11 Feral
+-- Combat points or Feral as the main talent tree, or by being in Cat, Bear or Dire Bear Form, so an
+-- untalented Druid who shifts gets the form's list. Icy Veins' Feral leveling
 -- order as the spine, with Warcraft Tavern's Faerie Fire and Demoralizing Roar and Ferocious Bite
 -- only once Rip runs or the target is nearly dead. In caster form it suggests Cat Form (else Bear).
 local _,addon=...
+-- Talent trees in the Forever talent window's order (assumed classic: 1 Balance, 2 Feral Combat, 3 Restoration; verify in game).
+-- Level 10 first (no talent config below it), then the points (an empty tree is a clean no-match),
+-- then the primary tree, which settles hybrids.
+local function tree(n,points)return{type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+ {type='TALENT_TREE_POINTS',tree=n,operator='GREATERTHANOREQUALS',value=points},{type='PRIMARY_TALENT_TREE',tree=n}}}end
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
@@ -55,7 +60,7 @@ local casterSection={
  stop('feral-caster-stop'),
 }
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.druid.feral',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.druid.feral',revision=2,
  blocks={['forever.druid.boundaries']=1,['forever.druid.upkeep']=1},
  nameKey='Default.Forever.Druid.Feral.Name',descriptionKey='Default.Forever.Druid.Feral.Description',
  applicability={families={'forever'},actionContext='player',class='DRUID',minLevel=10,maxLevel=60},
@@ -69,7 +74,11 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/simulationcraft/simc/blob/forever/SpellDataDump/druid.txt',title='SimulationCraft Forever spell data (1.60.1.70425)',reviewedAt='2026-10-23',revision='4dd64b4a21',notes='Spell IDs, ranks and GCDs only.'},
  },
  body={priority=20,
-  switch=any(known(16979),known(414924),known(1322605),known(407995),known(1238069),known(1238070),known(1238073),aura(768),aura(5487),aura(9634)),
+  -- 11 Feral points (Feral Charge's tier) first: readable, so a talented feral never waits on an aura
+  -- read; then the forms; then Feral as the main tree before its first talent spell, last so a tie
+  -- (unavailable) cannot hide a form.
+  switch=any(all({type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='TALENT_TREE_POINTS',tree=2,operator='GREATERTHANOREQUALS',value=11}),
+   aura(768),aura(5487),aura(9634),tree(2,1)),
   cooldowns={
    block('feral-upkeep','forever.druid.upkeep','feral-'),
    spell('feral-maul',6807,all(bear,combat(),power('GREATERTHANOREQUALS',50),negate({type='SPELL_ACTIVE',spell=6807}))),

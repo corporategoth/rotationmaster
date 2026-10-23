@@ -7,7 +7,7 @@ local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function combat()return{type='COMBAT',unit='player'}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
+local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
 local function buff(id)return{type='BUFF',unit='player',spell=id,anyrank=true}end
 local function own(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
 local function lifetime(op,n)return{type='TT_HEALTH',unit='target',health=0,operator=op,value=n}end
@@ -18,14 +18,14 @@ local curses={980,603,1490,17862,704,1714,702,18223}
 local cursed={type='OR',value={}};for i,id in ipairs(curses)do cursed.value[i]=own(id)end
 local summon=all(negate({type='PET'}),negate(combat()))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.fire.icyveins',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.fire.icyveins',revision=2,
  blocks={['era.warlock.boundaries']=1,['era.warlock.armor']=1,['era.warlock.safety']=1},
  nameKey='Default.SoD.Warlock.Fire.IcyVeins.Name',descriptionKey='Default.SoD.Warlock.Fire.IcyVeins.Description',
  applicability={families={'era'},actionContext='player',class='WARLOCK',minLevel=1,maxLevel=60,rulesets={'season:2'}},
  tags={'dps','ranged','caster','endgame','aoe','season-of-discovery','icy-veins','warcraft-tavern'},
  sources={{url='https://www.icy-veins.com/wow-classic/destruction-warlock-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Destruction Warlock DPS rotation',reviewedAt='2026-10-23',revision='2025-04-08'},
  {url='https://www.warcrafttavern.com/wow-classic-sod/guides/destruction-warlock-dps/',title='Warcraft Tavern: SoD Destruction Warlock DPS (Phase 4)',reviewedAt='2026-10-23'}},
- body={priority=65,switch=any(known(403629),known(412758)),
+ body={priority=65,switch=any(rune(403629),rune(412758)),
  cooldowns={block('era.warlock.armor','sod-fire-iv-'),
   spell('sod-fire-iv-imp',688,summon),
   block('era.warlock.safety','sod-fire-iv-')},
@@ -52,7 +52,7 @@ assert(addon:RegisterDefaultRotation({
  spell('sod-fire-iv-execute-soul-fire',6353,all({type='HEALTHPCT',unit='target',operator='LESSTHAN',value=.35},buff(440873))),
  spell('sod-fire-iv-soul-fire-proc',6353,buff(457643)),
  spell('sod-fire-iv-incinerate',412758),
- spell('sod-fire-iv-bolt',686,negate(known(412758))),
+ spell('sod-fire-iv-bolt',686,negate(rune(412758))),
  spell('sod-fire-iv-tap',1454,{type='HEALTHPCT',unit='player',operator='GREATERTHAN',value=.4}),
  }},
 }))
