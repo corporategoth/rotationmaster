@@ -81,7 +81,7 @@ end)
 
 test('composed packs pass strict corpus validation with real condition schemas',function()
     local corpus=dofile('tests/fixtures/default_corpus.lua');local seen=0
-    for _,class in ipairs({'WARRIOR','ROGUE','HUNTER','PALADIN','PRIEST','SHAMAN','MAGE','WARLOCK','DRUID'}) do
+    for _,class in ipairs({'WARRIOR','ROGUE','HUNTER','PALADIN','PRIEST','SHAMAN','MAGE','WARLOCK','DRUID','DEATHKNIGHT','DEMONHUNTER','EVOKER','MONK'}) do
         local f,packs=corpus.load(5,1,class)
         for _,p in ipairs(packs) do
             if ledger.packs[p.id] and p.applicability.class==class then
