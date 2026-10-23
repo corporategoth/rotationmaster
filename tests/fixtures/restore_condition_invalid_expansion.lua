@@ -93,6 +93,7 @@ local edits={
 }
 local function digest(s)local n=5381;for i=1,#s do n=(n*33+s:byte(i))%4294967296 end;return n end
 return function(text,path)
+ text=dofile('tests/fixtures/restore_workbench_resize.lua')(text,path)
  if path~='UI/condition_editor.lua' then return text end
  if #text==oldBytes and digest(text)==oldHash then return text end
  assert(#text==bytes and digest(text)==hash,'unrelated invalid-field expansion source')

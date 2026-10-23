@@ -720,6 +720,8 @@ def main():
             ['lua5.1', 'tests/workbench_scroll.lua'],
             ['lua5.1', 'tests/workbench_resize.lua'],
             ['luajit', 'tests/workbench_resize.lua'],
+            ['lua5.1', 'tests/workbench_reflow.lua'],
+            ['luajit', 'tests/workbench_reflow.lua'],
             ['lua5.1', 'tests/settings_launcher.lua'],
             ['lua5.1', 'tests/settings_metadata.lua'],
             ['luajit', 'tests/settings_metadata.lua'],

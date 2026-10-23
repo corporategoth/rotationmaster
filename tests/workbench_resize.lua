@@ -196,11 +196,13 @@ test('settings rosters fill their column and the divider redraws the detail form
     parent:SetSize(776,600);p:SetWidth(776);assert(p.roster.frame:GetWidth()==318);assertRoster(parent,p,frames,'narrow page')
     parent:SetSize(1600,600);p:SetWidth(1600);assert(p.roster.frame:GetWidth()==500);assertRoster(parent,p,frames,'wide page')
     p.roster.rows[3]:Click();assertRoster(parent,p,frames,'after selection')
-    -- An invalid pending input cannot be redrawn, so the divider stays put.
-    local edit=p:Edit('unrelated','Unrelated','',function() return nil end,function() error('must not flush') end)
-    edit:SetText('invalid');edit.scripts.OnTextChanged(edit,true)
-    local side,preference=p.roster.frame:GetWidth(),a.db.global.workbenchSidebarWidth
-    drag(p.roster.splitter,state,-100);assert(p.roster.frame:GetWidth()==side and a.db.global.workbenchSidebarWidth==preference and edit:GetText()=='invalid','divider moved past an invalid input')
+    -- A divider drag redraws the detail but carries an invalid pending input.
+    local key;for name,control in pairs(p.fields) do for _,record in ipairs(p.edits) do if record.control==control and record.parse('not an item')==nil then key=name end end end
+    assert(key,'Item Sets has no validated input to edit');local edit=p.fields[key]
+    edit:SetText('not an item');edit.scripts.OnTextChanged(edit,true)
+    local side=p.roster.frame:GetWidth();drag(p.roster.splitter,state,-100)
+    edit=p.fields[key];local dirty=false;for _,record in ipairs(p.edits) do if record.control==edit then dirty=record.dirty end end
+    assert(p.roster.frame:GetWidth()==side-100 and edit:GetText()=='not an item' and dirty and edit.textColor[2]<1,'divider drag lost an invalid input')
 end)
 
 test('settings pages keep every control inside at the minimum window and both divider extremes',function()
