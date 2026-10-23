@@ -631,6 +631,8 @@ function addon:OnInitializeInternal()
         addon:register_custom_condition(key, condition)
     end
 
+    -- This character's Built In packs register before the catalog is built.
+    if self.LoadBuiltInModule then self:LoadBuiltInModule() end
     if self.InitializeRotationLibrary then self:InitializeRotationLibrary() end
 
     -- These values are cached for the entire time you are in combat.  Their values

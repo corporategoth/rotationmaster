@@ -13,13 +13,9 @@
 local F=dofile('tests/fixtures/addon.lua')
 local M={}
 local SECRET=setmetatable({},{__tostring=function()return 'secret'end})
+-- The class's Built In module files (tools/builtin_modules.lua reads its TOC).
 local function packPaths(class)
- local result={}
- for line in io.lines('RotationMaster.toc')do
-  local path=line:gsub('\r',''):match('^%s*(Defaults/.-%.lua)%s*$')
-  if path and(path=='Defaults/blocks/retail-'..class..'.lua'or path:match('^Defaults/retail/'..class..'%-'))then result[#result+1]=path end
- end
- return result
+ return dofile('tools/builtin_modules.lua').paths({family='retail',class=(class:gsub('%-','')):upper()})
 end
 M.packPaths=packPaths
 function M.new(class,options)

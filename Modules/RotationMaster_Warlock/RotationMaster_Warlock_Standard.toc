@@ -1,0 +1,20 @@
+## Interface: 120105
+## Title: Rotation Master - Warlock
+## Notes: Rotation Master's Built In Warlock rotations. Rotation Master loads this itself, only for a Warlock, and only this edition's files.
+## Author: PreZ
+## Version: @project-version@
+## Dependencies: RotationMaster
+## LoadOnDemand: 1
+## Group: RotationMaster
+## X-Category: Action Bars
+## X-License: MIT
+
+bind.lua
+retail/blocks.lua
+retail/warlock-affliction.lua
+retail/warlock-affliction-icyveins.lua
+retail/warlock-demonology.lua
+retail/warlock-demonology-icyveins.lua
+retail/warlock-destruction.lua
+retail/warlock-destruction-simc.lua
+retail/warlock-destruction-icyveins.lua

@@ -1,0 +1,18 @@
+## Interface: 120105
+## Title: Rotation Master - Evoker
+## Notes: Rotation Master's Built In Evoker rotations. Rotation Master loads this itself, only for a Evoker, and only this edition's files.
+## Author: PreZ
+## Version: @project-version@
+## Dependencies: RotationMaster
+## LoadOnDemand: 1
+## Group: RotationMaster
+## X-Category: Action Bars
+## X-License: MIT
+
+bind.lua
+retail/blocks.lua
+retail/evoker-devastation.lua
+retail/evoker-devastation-guide.lua
+retail/evoker-augmentation.lua
+retail/evoker-augmentation-assisted.lua
+retail/evoker-preservation.lua

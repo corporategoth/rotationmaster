@@ -58,7 +58,7 @@ end
 local function shipped()
     local a,load=fixture()
     a.loadAllDefaults=true
-    for line in io.lines('RotationMaster.toc') do local path=line:gsub('\r',''):match('^%s*(Defaults/.-%.lua)%s*$');if path then load(path) end end
+    for _,path in ipairs(dofile('tools/builtin_modules.lua').paths()) do load(path) end
     assert(a:InitializeRotationLibrary());return a
 end
 local function newest(rows) local top=0;for revision in pairs(rows) do top=math.max(top,revision) end;return top end
@@ -239,7 +239,7 @@ test('ledger records every shipped block digest and composed pack pin revision',
     a.RegisterDefaultBlock=function(self,b) authored[#authored+1]=a.RotationData.CopyData(b);return registerBlock(self,b) end
     a.RegisterDefaultRotation=function(self,p) registered[#registered+1]=p.id;return registerRotation(self,p) end
     a.loadAllDefaults=true
-    for line in io.lines('RotationMaster.toc') do local path=line:gsub('\r',''):match('^%s*(Defaults/.-%.lua)%s*$');if path then load(path) end end
+    for _,path in ipairs(dofile('tools/builtin_modules.lua').paths()) do load(path) end
     assert(a:InitializeRotationLibrary() and #authored>0)
     local blocks,packs={},{}
     for _,b in ipairs(authored) do

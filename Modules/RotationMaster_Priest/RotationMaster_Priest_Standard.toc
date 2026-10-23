@@ -1,0 +1,18 @@
+## Interface: 120105
+## Title: Rotation Master - Priest
+## Notes: Rotation Master's Built In Priest rotations. Rotation Master loads this itself, only for a Priest, and only this edition's files.
+## Author: PreZ
+## Version: @project-version@
+## Dependencies: RotationMaster
+## LoadOnDemand: 1
+## Group: RotationMaster
+## X-Category: Action Bars
+## X-License: MIT
+
+bind.lua
+retail/blocks.lua
+retail/priest-shadow.lua
+retail/priest-shadow-icyveins.lua
+retail/priest-discipline.lua
+retail/priest-discipline-wowhead.lua
+retail/priest-holy.lua

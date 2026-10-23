@@ -86,7 +86,7 @@ end
 -- Built In composition: authoring-time reuse of named step blocks by packaged
 -- definitions only. Expansion runs once, here at registration; the catalog,
 -- editor, clone, export and runtime only ever see the expanded independent
--- tree. A user can neither see nor author a reference. See Defaults/README.md.
+-- tree. A user can neither see nor author a reference. See Modules/README.md.
 local blocks,compositions={},{}
 local blockFields={id=true,revision=true,families=true,class=true,steps=true,overrides=true}
 local overrideFields={families=true,specs=true,steps=true}

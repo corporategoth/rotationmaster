@@ -1,0 +1,21 @@
+## Interface: 120105
+## Title: Rotation Master - Druid
+## Notes: Rotation Master's Built In Druid rotations. Rotation Master loads this itself, only for a Druid, and only this edition's files.
+## Author: PreZ
+## Version: @project-version@
+## Dependencies: RotationMaster
+## LoadOnDemand: 1
+## Group: RotationMaster
+## X-Category: Action Bars
+## X-License: MIT
+
+bind.lua
+retail/blocks.lua
+retail/druid-balance.lua
+retail/druid-balance-guide.lua
+retail/druid-feral.lua
+retail/druid-feral-guide.lua
+retail/druid-guardian.lua
+retail/druid-guardian-guide.lua
+retail/druid-guardian-simc.lua
+retail/druid-restoration.lua

@@ -5,11 +5,11 @@
 local F=dofile('tests/fixtures/addon.lua')
 local H={}
 local packs={
- SHAMAN={'Defaults/blocks/shaman.lua','Defaults/tbc/shaman-enhancement-icyveins.lua','Defaults/tbc/shaman-enhancement-wowsims.lua','Defaults/tbc/shaman-elemental-icyveins.lua',
-  'Defaults/tbc/shaman-elemental-wowhead.lua','Defaults/tbc/shaman-elemental-nextaction.lua','Defaults/tbc/shaman-restoration.lua'},
- DRUID={'Defaults/blocks/druid.lua','Defaults/tbc/druid-balance.lua','Defaults/tbc/druid-feral-icyveins.lua','Defaults/tbc/druid-feral-wowhead.lua','Defaults/tbc/druid-restoration.lua'},
- PALADIN={'Defaults/blocks/paladin.lua','Defaults/tbc/paladin-retribution-wowhead.lua','Defaults/tbc/paladin-retribution-icyveins.lua','Defaults/tbc/paladin-retribution-twist.lua',
-  'Defaults/tbc/paladin-protection-wowhead.lua','Defaults/tbc/paladin-protection-icyveins.lua','Defaults/tbc/paladin-holy.lua','Defaults/tbc/paladin-holy-wowhead.lua'},
+ SHAMAN={'Modules/RotationMaster_Shaman/tbc/blocks.lua','Modules/RotationMaster_Shaman/tbc/shaman-enhancement-icyveins.lua','Modules/RotationMaster_Shaman/tbc/shaman-enhancement-wowsims.lua','Modules/RotationMaster_Shaman/tbc/shaman-elemental-icyveins.lua',
+  'Modules/RotationMaster_Shaman/tbc/shaman-elemental-wowhead.lua','Modules/RotationMaster_Shaman/tbc/shaman-elemental-nextaction.lua','Modules/RotationMaster_Shaman/tbc/shaman-restoration.lua'},
+ DRUID={'Modules/RotationMaster_Druid/tbc/blocks.lua','Modules/RotationMaster_Druid/tbc/druid-balance.lua','Modules/RotationMaster_Druid/tbc/druid-feral-icyveins.lua','Modules/RotationMaster_Druid/tbc/druid-feral-wowhead.lua','Modules/RotationMaster_Druid/tbc/druid-restoration.lua'},
+ PALADIN={'Modules/RotationMaster_Paladin/tbc/blocks.lua','Modules/RotationMaster_Paladin/tbc/paladin-retribution-wowhead.lua','Modules/RotationMaster_Paladin/tbc/paladin-retribution-icyveins.lua','Modules/RotationMaster_Paladin/tbc/paladin-retribution-twist.lua',
+  'Modules/RotationMaster_Paladin/tbc/paladin-protection-wowhead.lua','Modules/RotationMaster_Paladin/tbc/paladin-protection-icyveins.lua','Modules/RotationMaster_Paladin/tbc/paladin-holy.lua','Modules/RotationMaster_Paladin/tbc/paladin-holy-wowhead.lua'},
 }
 H.packs=packs
 -- Rank families (base id first) for spells whose higher ranks the scenarios exercise.

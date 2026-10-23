@@ -15,13 +15,9 @@ local F=dofile('tests/fixtures/addon.lua')
 local M={}
 local SECRET=setmetatable({},{__tostring=function()return 'secret'end})
 M.SECRET=SECRET
+-- The class's Built In module files (tools/builtin_modules.lua reads its TOC).
 local function packPaths(class)
- local result={};local stem=class:gsub('%-','%%-')
- for line in io.lines('RotationMaster.toc')do
-  local path=line:gsub('\r',''):match('^%s*(Defaults/.-%.lua)%s*$')
-  if path and(path=='Defaults/blocks/retail-'..class..'.lua'or path:match('^Defaults/retail/'..stem..'%-'))then result[#result+1]=path end
- end
- return result
+ return dofile('tools/builtin_modules.lua').paths({family='retail',class=(class:gsub('%-','')):upper()})
 end
 M.packPaths=packPaths
 -- class is the file stem ('death-knight'), token the class token ('DEATHKNIGHT').

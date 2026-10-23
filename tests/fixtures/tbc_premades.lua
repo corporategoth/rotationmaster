@@ -4,13 +4,9 @@
 -- per ID. Observations are modeled facts, not trainer schedules or native acceptance.
 local F=dofile('tests/fixtures/addon.lua')
 local M={}
+-- The class's Built In module files (tools/builtin_modules.lua reads its TOC).
 local function packPaths(class)
- local result={}
- for line in io.lines('RotationMaster.toc')do
-  local path=line:gsub('\r',''):match('^%s*(Defaults/.-%.lua)%s*$')
-  if path and(path=='Defaults/blocks/'..class..'.lua'or path:match('^Defaults/tbc/'..class..'%-'))then result[#result+1]=path end
- end
- return result
+ return dofile('tools/builtin_modules.lua').paths({family='tbc',class=(class:gsub('%-','')):upper()})
 end
 M.packPaths=packPaths
 function M.new(class,product)

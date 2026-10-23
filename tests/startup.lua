@@ -1334,5 +1334,14 @@ test('environment membership snapshots the canonical predicate and retains curre
     local ok,why=pcall(a.EvaluateNextActionInternal,a);assert(not ok and why==boundary,'membership scan did not reach action boundary: '..tostring(why))
     assert(calls==2 and a.unitsInRange['GUID-target'].unit=='target' and a.unitsInRange['GUID-old']==nil)
 end)
+test('startup loads this character\'s Built In module before the rotation library builds its catalog',function()
+    local env,a,load=fixture(true,true);load('main.lua');load('Core/builtin_modules.lua')
+    env.UnitClass=function() return 'Shaman','SHAMAN' end
+    local order={}
+    env.C_AddOns.LoadAddOn=function(name) order[#order+1]='load '..name;return true end
+    a.InitializeRotationLibrary=function() order[#order+1]='library';return true end
+    initialize(a)
+    assert(table.concat(order,', ')=='load RotationMaster_Shaman, library',table.concat(order,', '))
+end)
 print(string.format('%d passed, %d failed', passed, failures))
 os.exit(failures == 0 and 0 or 1)

@@ -13,10 +13,10 @@ local families={
  [1240193]={1240193,1464,8820,11604,11605},[408490]={408490,1238299,1238300,1326047},
 }
 local packs={
- ROGUE={'Defaults/blocks/forever-rogue.lua','Defaults/forever/rogue-dps.lua','Defaults/forever/rogue-subtlety-warcrafttavern.lua','Defaults/forever/rogue-subtlety-wowhead.lua'},
- SHAMAN={'Defaults/blocks/forever-shaman.lua','Defaults/forever/shaman-restoration.lua','Defaults/forever/shaman-elemental.lua','Defaults/forever/shaman-enhancement.lua','Defaults/forever/shaman-enhancement-wowhead.lua'},
- WARLOCK={'Defaults/blocks/forever-warlock.lua','Defaults/forever/warlock-dps.lua','Defaults/forever/warlock-dps-icyveins.lua','Defaults/forever/warlock-dps-wowhead.lua'},
- WARRIOR={'Defaults/blocks/forever-warrior.lua','Defaults/forever/warrior-protection.lua','Defaults/forever/warrior-protection-warcrafttavern.lua','Defaults/forever/warrior-dps.lua','Defaults/forever/warrior-dps-warcrafttavern.lua'},
+ ROGUE={'Modules/RotationMaster_Rogue/forever/blocks.lua','Modules/RotationMaster_Rogue/forever/rogue-dps.lua','Modules/RotationMaster_Rogue/forever/rogue-subtlety-warcrafttavern.lua','Modules/RotationMaster_Rogue/forever/rogue-subtlety-wowhead.lua'},
+ SHAMAN={'Modules/RotationMaster_Shaman/forever/blocks.lua','Modules/RotationMaster_Shaman/forever/shaman-restoration.lua','Modules/RotationMaster_Shaman/forever/shaman-elemental.lua','Modules/RotationMaster_Shaman/forever/shaman-enhancement.lua','Modules/RotationMaster_Shaman/forever/shaman-enhancement-wowhead.lua'},
+ WARLOCK={'Modules/RotationMaster_Warlock/forever/blocks.lua','Modules/RotationMaster_Warlock/forever/warlock-dps.lua','Modules/RotationMaster_Warlock/forever/warlock-dps-icyveins.lua','Modules/RotationMaster_Warlock/forever/warlock-dps-wowhead.lua'},
+ WARRIOR={'Modules/RotationMaster_Warrior/forever/blocks.lua','Modules/RotationMaster_Warrior/forever/warrior-protection.lua','Modules/RotationMaster_Warrior/forever/warrior-protection-warcrafttavern.lua','Modules/RotationMaster_Warrior/forever/warrior-dps.lua','Modules/RotationMaster_Warrior/forever/warrior-dps-warcrafttavern.lua'},
 }
 M.packs=packs
 -- Every spell an action or a condition of the class's premades names, collected from the expanded bodies.

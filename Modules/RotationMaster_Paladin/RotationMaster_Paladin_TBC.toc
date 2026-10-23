@@ -1,0 +1,20 @@
+## Interface: 20506
+## Title: Rotation Master - Paladin
+## Notes: Rotation Master's Built In Paladin rotations. Rotation Master loads this itself, only for a Paladin, and only this edition's files.
+## Author: PreZ
+## Version: @project-version@
+## Dependencies: RotationMaster
+## LoadOnDemand: 1
+## Group: RotationMaster
+## X-Category: Action Bars
+## X-License: MIT
+
+bind.lua
+tbc/blocks.lua
+tbc/paladin-retribution-wowhead.lua
+tbc/paladin-retribution-icyveins.lua
+tbc/paladin-retribution-twist.lua
+tbc/paladin-protection-wowhead.lua
+tbc/paladin-protection-icyveins.lua
+tbc/paladin-holy.lua
+tbc/paladin-holy-wowhead.lua
