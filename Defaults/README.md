@@ -94,3 +94,27 @@ A block content change needs a new block revision. Every consumer's pin must the
 ## WoW Forever premades: Druid, Hunter, Mage, Paladin, Priest
 
 `Defaults/forever/<class>-<role>.lua` (ids `rm.forever.<class>.<role>[.<source>]`) with shared blocks in `Defaults/blocks/forever-<class>.lua`, levels 1–60 (talent-gated roles from 10), `families={'forever'}`. Forever has one specialization ID per class and RM's talent conditions are unavailable on its traits layout, so every switch is a known-spell or own-aura proxy (for example Pyroblast for Fire, Strider Kick for Survival, Holy Shock plus a group for a Holy Paladin), talent spells are matched across all their rank IDs, and the catch-all premade of each class has the lowest priority. Player-chosen source variants share their recommended sibling's switch at a lower priority. RM classes Forever as `combatDataPolicy="restricted"`, so these packs are listed but never auto-selected (`restricted-or-unsupported-client`); they are written to be correct if that policy is relaxed and are exercised on a synthetic Forever context with `probe` policy by `tests/defaults_forever_<class>.lua` (shared model: `tests/fixtures/forever_premade_model.lua`). Branch and Stop conditions use observations that do not routinely go unavailable: enemy counts in branches are engaged enemies (`THREAT_COUNT`), player-centred `DISTANCE_COUNT` appears only inside single steps, target lifetime is approximated by target health, and combo points are read on the player as on Mainline-engine clients. Every guide behind them is a level-30 beta guide; spell IDs follow the research's Wowhead and SimulationCraft cross-check and still need in-game verification.
+
+## Retail (Midnight) premades: Paladin, Priest, Rogue, Shaman, Warlock, Warrior
+
+`Defaults/retail/<class>-<spec>[-<source>].lua` (ids `rm.retail.<class>.<spec>[.<source>]`) with shared blocks in `Defaults/blocks/retail-<class>.lua`, levels 10–90, `families={'retail'}`. Retail stores rotations per specialization, so every premade declares its specialization in `applicability.specs` and is eligible only in that slot (listed, ineligible, in the class's other slots); the switch is only `LEVEL >= 10`. In Midnight combat the game hides buffs, debuffs, cooldown times, primary resources and every unit's health from addons, so the recommended premade for every DPS and tank specialization is **Blizzard Assisted**: one cast/channel Stop and one no-target Stop, then the `assisted` step (Blizzard's Assisted Combat suggestion), with independent reminders for what that suggestion never casts (SimulationCraft's `assisted_combat` cooldown lists: Avatar, Recklessness, Doom Winds, Ascendance, Power Infusion, Vanish…; Heroic Strike for Arms; Shield Block and Ignore Pain for Protection Warriors; interrupts; health-gated defensives; buffs, shields and pets between pulls). Guide variants (Icy Veins, SimulationCraft default lists, Wowhead) are separate premades, disabled by default and described as references, because most of their inputs are hidden in combat. Healers (Holy Paladin, Discipline, Holy Priest, Restoration Shaman) get one enabled premade each that acts on the current friendly or hostile target using readable inputs only (readiness, usability, own cast history); choosing whom to heal stays with the player.
+
+| Class | Specialization (ID) | Recommended | Disabled references |
+|---|---|---|---|
+| Paladin | Retribution (70) | `rm.retail.paladin.retribution` | `.retribution.icyveins` |
+| | Protection (66) | `rm.retail.paladin.protection` | `.protection.icyveins`, `.protection.wowhead` |
+| | Holy (65) | `rm.retail.paladin.holy` (healer) | |
+| Priest | Shadow (258) | `rm.retail.priest.shadow` | `.shadow.icyveins` |
+| | Discipline (256) | `rm.retail.priest.discipline` (healer) | `.discipline.wowhead` |
+| | Holy (257) | `rm.retail.priest.holy` (healer) | |
+| Rogue | Assassination (259), Outlaw (260), Subtlety (261) | `rm.retail.rogue.<spec>` | `.<spec>.icyveins` |
+| Shaman | Elemental (262) | `rm.retail.shaman.elemental` | `.elemental.icyveins` |
+| | Enhancement (263) | `rm.retail.shaman.enhancement` | `.enhancement.stormbringer`, `.enhancement.totemic` |
+| | Restoration (264) | `rm.retail.shaman.restoration` (healer) | |
+| Warlock | Affliction (265), Demonology (266) | `rm.retail.warlock.<spec>` | `.<spec>.icyveins` |
+| | Destruction (267) | `rm.retail.warlock.destruction` | `.destruction.simc`, `.destruction.icyveins` |
+| Warrior | Arms (71) | `rm.retail.warrior.arms` | `.arms.slayer`, `.arms.colossus` |
+| | Fury (72) | `rm.retail.warrior.fury` | `.fury.slayer`, `.fury.thane` |
+| | Protection (73) | `rm.retail.warrior.protection` | `.protection.icyveins` |
+
+RM classes Retail as `combatDataPolicy="restricted"`, so these packs are listed but never auto-selected (`restricted-or-unsupported-client`). `tests/defaults_retail_{paladin,priest,rogue,shaman,warlock,warrior}.lua` exercise them on a synthetic Retail context with `probe` policy (shared model: `tests/fixtures/retail_premade_model_b.lua`, with a modeled `C_AssistedCombat` and secret cooldown times), and check that on the real restricted context they are listed but not auto-selected. Retail has no weapon-imbue condition and RM cannot read Holy Power (`POINT` maps Paladins to combo points), so imbues are left to Blizzard's suggestion and Holy Power gates fall back to spell usability. Spell IDs follow SimulationCraft's 12.1.5 spell data and still need in-game verification.
