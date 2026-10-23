@@ -104,6 +104,12 @@ end
 for _,count in ipairs({64,65})do local b=body();b.tags={};for i=1,count do b.tags[i]='tag-'..i end;add('tag-count-'..count,'body',b)end
 local unknown=body();unknown.rotation={{id='effect',type='spell',action=403,effect='user-effect'},{id='itemset',type='item',action='user-set'}};add('unresolved-reference-sets','body',unknown)
 for _,type in ipairs({'spell','pet','any','item','none','future'})do local b=body();b.rotation={{id='action',type=type,action=type=='item' and {1,'Item name'} or 403,suppress_attack=false}};add('action-'..type,'body',b)end
+for _,case in ipairs({{'assisted-rotation',{{id='blizzard',type='assisted',conditions={type='COMBAT'}}},{}},
+ {'assisted-with-action',{{id='blizzard',type='assisted',action=403}},{}},
+ {'assisted-in-cooldowns',{},{{id='blizzard',type='assisted'}}},
+ {'assisted-in-branch',{{id='gate',type='branch',conditions={type='COMBAT'},onTrue={{id='blizzard',type='assisted'}},onFalse={}}},{}}})do
+ local b=body();b.rotation=case[2];b.cooldowns=case[3];add(case[1],'body',b)
+end
 local colors=body();colors.rotation={{id='color',type='none',color={r=0,g=1,b=.5,a=0}}};add('color-valid','body',colors);colors.rotation[1].color.a=2;add('color-invalid','body',colors)
 local many=body();for i=1,150 do many.rotation[i]={id='bad-'..i,type=3,future=true}end;add('diagnostic-cap-still-updates-status','body',many)
 local envelope={format='RotationMaster',schemaVersion=1,id='fixture',revision=1,nameKey='Name',descriptionKey='Description',applicability={families={'tbc'},actionContext='player',class='SHAMAN'},body=body()}

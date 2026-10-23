@@ -112,6 +112,8 @@ local function help_action_group(group, singular)
             L["Actions automatically require a learned spell or carried item, usable resources, cooldown readiness and valid range. Conditions can additionally test other actions."])))
     group:AddChild(Indent(40, CreateText(color.GREEN .. L["Item"] .. color.RESET .. " - " ..
             "An item you are carrying OR wearing.  Only items that have a USE ability will be available.")))
+    group:AddChild(Indent(40, CreateText(color.GREEN .. L["Blizzard's suggestion"] .. color.RESET .. " - " ..
+            L["Recommends whatever spell Blizzard's Assisted Combat suggests next, read each time the rotation is evaluated. It highlights that spell's button and shows in the preview like a spell step, and is held to the same requirements: known, usable, off cooldown and in range. When nothing is suggested, the suggested spell is not on your bars, or Assisted Combat is unavailable (anywhere but Retail, or a specialization without it), the step is skipped. Rotation list only."])))
     group:AddChild(Indent(40, CreateText(color.GREEN .. L["Stop"] .. color.RESET .. " - " ..
             L["Stop ends lower priority actions. Implicit Attack remains eligible unless you suppress it. An unavailable Stop condition also suppresses Attack. Optional reminders remain independent."])))
 

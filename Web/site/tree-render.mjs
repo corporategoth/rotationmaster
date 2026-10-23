@@ -8,7 +8,7 @@ import {CHAT_CHANNELS} from './risks.mjs';
 const isMap=v=>v instanceof Map;
 const get=(m,k)=>isMap(m)?m.get(k):undefined;
 const LOGICAL={AND:'All of',OR:'Any of',NOT:'Not'};
-const STEP_LABELS={spell:'Spell',pet:'Pet spell',any:'Any spell',item:'Item',none:'Stop',branch:'Branch'};
+const STEP_LABELS={spell:'Spell',pet:'Pet spell',any:'Any spell',item:'Item',none:'Stop',branch:'Branch',assisted:'Blizzard\'s Assisted Combat suggestion'};
 const MODES={true:'Always true (guard skipped)',false:'Always false (guard skipped)'};
 const STEP_SKIP=new Set(['type','action','conditions','onTrue','onFalse','mode','id','name','ranked','disabled','suppress_attack']);
 const LIMIT=40000;

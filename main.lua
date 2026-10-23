@@ -961,7 +961,7 @@ function addon:rotationValidConditions(rot,spec)
                 if (step.mode==nil or step.mode=="evaluate") and not self:validateCondition(step.conditions,spec) then return false end
             else
                 if step.type==nil or not self:validateCondition(step.conditions,spec) then return false end
-                if step.type~="none" and step.action==nil then return false end
+                if step.type~="none" and step.action==nil and not (step.type=="assisted" and row.section=="rotation") then return false end
                 if step.type=="item" then
                     if type(step.action)=="string" then
                         local itemset=itemsets[step.action] or global_itemsets[step.action]
@@ -1568,8 +1568,12 @@ local function leanAction(plan, entry, decisionRow)
     if decisionSink then decisionSink(decisionRow, 'attempt') end
     local action = cond.action
     if action == nil or cond.disabled then
-        if decisionSink then decisionSink(decisionRow, action == nil and 'noaction' or 'disabled') end
-        return nil, false
+        -- Assisted steps carry no action: the spell is Blizzard's suggestion,
+        -- read below each poll. An enabled step with an action never gets here.
+        if action ~= nil or cond.disabled or cond.type ~= "assisted" then
+            if decisionSink then decisionSink(decisionRow, action == nil and 'noaction' or 'disabled') end
+            return nil, false
+        end
     end
     local matches = evaluateConditionPlan(entry.conditions, plan.cache, plan.now, cond.id) == "match"
     if decisionSink then decisionSink(decisionRow, matches and 'matched' or 'notmatched') end
@@ -1580,7 +1584,7 @@ local function leanAction(plan, entry, decisionRow)
     local spellids, itemids = entry.spellids, nil
     if not spellids then
         spellids, itemids = addon:GetSpellIds(cond)
-        if cond.type ~= "item" then entry.spellids = spellids end
+        if cond.type ~= "item" and action ~= nil then entry.spellids = spellids end
     end
     for index, id in ipairs(spellids or noIds) do
         local itemId = itemids and itemids[index]
@@ -1897,7 +1901,7 @@ function addon:EvaluateNextActionInternal()
             local firstMapped,firstItem
             local matches
             local action=cond.action
-            if action~=nil and not cond.disabled then
+            if (action~=nil or cond.type=="assisted") and not cond.disabled then
                 if conditionSession then matches=conditionSession:EvaluateBool(cond.conditions,{stepId=cond.id})
                 else matches=addon:evaluateCondition(cond.conditions,{stepId=cond.id}) end
                 if decisionSink then decisionSink(decisionRow,matches and 'matched' or 'notmatched')end
@@ -2162,6 +2166,13 @@ function addon:GetSpellIds(rot)
             end
             return spellids, itemids
         end
+    elseif rot.type == "assisted" then
+        -- Blizzard's Assisted Combat suggestion, resolved fresh on every call:
+        -- the suggestion, then its base and override spell IDs, so whichever
+        -- one sits on a button maps (Platform/assisted_combat.lua).
+        local platform = self.Platform
+        local suggestion = platform.GetAssistedSuggestion and platform:GetAssistedSuggestion()
+        if suggestion then return platform:GetAssistedSpellCandidates(suggestion) end
     end
     return {}
 end

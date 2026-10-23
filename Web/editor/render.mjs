@@ -4,7 +4,7 @@ import {formatBytes,valueText} from '../viewer/model.mjs';
 const scalar=field=>!field.present?'Unset':field.value===true?'True':field.value===false?'False':Object.is(field.value,-0)?'-0':String(field.value);
 const byteLabel=value=>{const part=formatBytes(value,{limit:64});return part.text+(part.remaining?'… ('+part.remaining+' more bytes)':'');};
 const actionLabel=action=>!action.present?'Unset':action.table?'Opaque table ('+action.entries+' entries)':action.values?'['+action.values.map(v=>valueText(v,64)).join(', ')+(action.remaining?', … ('+action.remaining+' more entries)':'')+']':valueText(action.value,64);
-const stepLabel=row=>byteLabel(row.type)+(row.type==='none'?' (Stop) · suppress_attack: '+scalar(row.suppressAttack):' · action: '+actionLabel(row.action));
+const stepLabel=row=>byteLabel(row.type)+(row.type==='none'?' (Stop) · suppress_attack: '+scalar(row.suppressAttack):row.type==='assisted'&&!row.action.present?' (Blizzard\'s suggestion)':' · action: '+actionLabel(row.action));
 const messages={'decode-first':'Decode a valid First export before editing.','schema-unavailable':'Editing is unavailable without the local schema.','invalid-structure':'This structure remains read-only.','unsupported-schema':'This envelope schema remains read-only.','strict-index-required':'This structure cannot be edited safely.','invalid-data':'This data remains read-only.'};
 export function mountDraftEditor(document,root,{schemaText,readSource,writeClipboard,isVisible=()=>true,onAction=()=>{},focusLease=()=>0}={}){
   const editor=createDraftEditor({schemaText,readSource});let active=true,operation=0,invalid=false,stepPage=0,selectedStepId=null,stepTicket=0,stepListeners=[],stepControls=null;

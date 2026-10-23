@@ -309,6 +309,11 @@ local function validate(envelope, options, bodyOnly)
                         if #step.action == 0 then issue("empty-item-list", where..".action", "error") end
                         for j, item in ipairs(step.action) do check(item,function(v) return integer(v,1) or nonempty(v) end,where..".action["..j.."]") end
                     end
+                elseif step.type == "assisted" then
+                    -- Blizzard's Assisted Combat suggestion: the spell is read at
+                    -- evaluation time, so the step names none. Rotation list only.
+                    if step.action ~= nil then issue("unexpected-assisted-action", where..".action", "warning", "unsupported") end
+                    if row.section ~= "rotation" then issue("assisted-in-optional-list", where..".type", "warning", "unsupported") end
                 elseif step.type ~= "none" then issue("unknown-action-type", where..".type", "warning", "unsupported") end
             end
             for _,flag in ipairs({"ranked","use_name","disabled"}) do optionalType(step[flag],"boolean",where.."."..flag) end

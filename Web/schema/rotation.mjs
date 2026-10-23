@@ -79,7 +79,7 @@ function catalogFrom(text){
   if(!exact(row,['id','project','expansion','class','mobInfoProbe'])||!nonempty(row.id)||cases.has(row.id)||!integer(row.project,1)||!integer(row.expansion,0)||!nonempty(row.class)||typeof row.mobInfoProbe!=='boolean')return null;
   cases.add(row.id);
  }
- if(!Array.isArray(c.conditions)||c.conditions.length!==124)return null;
+ if(!Array.isArray(c.conditions)||c.conditions.length!==125)return null;
  const byID=new Map();
  for(const row of c.conditions){
   if(!exact(row,['id','module','declarations'])||!nonempty(row.id)||byID.has(row.id)||['AND','OR','NOT','DELETE'].includes(row.id)||typeof row.module!=='string'||!/^Conditions\/[A-Za-z0-9_-]+\.lua$/.test(row.module)||!Array.isArray(row.declarations)||!row.declarations.length||row.declarations.length>64)return null;
@@ -292,6 +292,9 @@ function validate(envelope,catalogText,rawOptions,bodyOnly){
     else if(type==='item'){
      if(typeof action==='string'){if(check(action,identifier,path+'.action')&&!(options.itemsets&&Set.prototype.has.call(options.itemsets,action)))issue('missing-itemset',path+'.action','warning','unresolved');}
      else if(list(action,path+'.action',true)){if(!keys(action).length)issue('empty-item-list',path+'.action');for(const i of keys(action))check(get(action,i),v=>integer(v,1)||nonempty(v),`${path}.action[${i}]`);}
+    }else if(type==='assisted'){
+     if(!nil(action))issue('unexpected-assisted-action',path+'.action','warning','unsupported');
+     if(row.section!=='rotation')issue('assisted-in-optional-list',path+'.type','warning','unsupported');
     }else if(type!=='none')issue('unknown-action-type',path+'.type','warning','unsupported');
    }
    for(const k of ['ranked','use_name','disabled','suppress_attack'])optional(get(step,k),'boolean',path+'.'+keyText(k));
