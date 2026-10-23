@@ -55,35 +55,43 @@ local function rejects(code,ok,why)
     return why
 end
 
-test('shipped Rogue packs expand to exactly their pre-composition trees',function()
+local function shipped()
     local a,load=fixture()
-    for _,path in ipairs({'Defaults/blocks/rogue.lua','Defaults/tbc/rogue-20-29.lua','Defaults/tbc/rogue-30-39.lua','Defaults/tbc/rogue-40-49.lua'}) do load(path) end
-    assert(a:InitializeRotationLibrary())
-    -- Digests of the registered envelopes before conversion (de883a5), IDs included.
-    local before={['rm.tbc.rogue.starter.30-39']='8e7a98d25c5eea4c',['rm.tbc.rogue.starter.40-49']='54eb34c914fe4f32'}
-    for id,expected in pairs(before) do
-        local view=assert(a:GetDefaultRotation(id));assert(view.validation.valid and view.readOnly)
-        assert(digest(view.envelope)==expected,id..' expanded tree differs from the pre-composition definition')
+    for line in io.lines('RotationMaster.toc') do local path=line:gsub('\r',''):match('^%s*(Defaults/.-%.lua)%s*$');if path then load(path) end end
+    assert(a:InitializeRotationLibrary());return a
+end
+local function newest(rows) local top=0;for revision in pairs(rows) do top=math.max(top,revision) end;return top end
+
+test('shipped composed packs expand once into plain trees pinned as the ledger records',function()
+    local a=shipped();local seen=0
+    for id,rows in pairs(ledger.packs) do
+        local view=assert(a:GetDefaultRotation(id),id..' is not registered');assert(view.validation.valid and view.readOnly,id)
         assert(not composedArtifacts(view.envelope),id..' leaked composition data')
-        assert(same(a:GetDefaultRotationComposition(id),{blocks={['tbc.rogue.preserve-manual']=1,['tbc.rogue.melee-priority']=1}}))
+        assert(same(a:GetDefaultRotationComposition(id),{blocks=rows[newest(rows)]}),id..' pins differ from the ledger')
+        seen=seen+1
     end
-    assert(a:GetDefaultRotationComposition('rm.tbc.rogue.starter.20-29')==nil)
-    -- The unconverted20–29 literal graph is the same policy under another prefix.
-    local old=a.RotationData.CopyData(a:GetDefaultRotation('rm.tbc.rogue.starter.20-29').envelope.body.rotation)
-    local function rename(v) if type(v)=='table' then if type(v.id)=='string' then v.id=v.id:gsub('^rogue%-preview%-','rogue-thirty-') end;for _,c in pairs(v) do rename(c) end end end
-    rename(old);assert(same(old,a:GetDefaultRotation('rm.tbc.rogue.starter.30-39').envelope.body.rotation))
+    assert(seen>0,'no composed shipped packs')
+    -- Variants of one role expand a shared block to identical steps under the same prefix.
+    local function find(list,id) for _,row in ipairs(assert(a.RotationData.IndexRotationSteps({rotation=list,cooldowns={}})).rows) do if row.step.id==id then return row.step end end end
+    for _,pair in ipairs({{'rm.tbc.rogue.dps.wowsims','rm.tbc.rogue.dps.wowhead','rogue-sinister'},{'rm.tbc.warrior.dps.wowsims','rm.tbc.warrior.dps.icyveins','warrior-dps-charge'},{'rm.tbc.hunter.ranged.wowsims','rm.tbc.hunter.ranged.wowhead','hunter-auto-shot'}}) do
+        local left=find(a:GetDefaultRotation(pair[1]).envelope.body.rotation,pair[3]);local right=find(a:GetDefaultRotation(pair[2]).envelope.body.rotation,pair[3])
+        assert(left and right and same(left,right),pair[3]..' differs between variants')
+    end
 end)
 
-test('converted packs pass strict corpus validation with real condition schemas',function()
-    local corpus=dofile('tests/fixtures/default_corpus.lua')
-    local f,packs=corpus.load(5,1,'ROGUE');local seen=0
-    for _,p in ipairs(packs) do
-        if p.id=='rm.tbc.rogue.starter.30-39' or p.id=='rm.tbc.rogue.starter.40-49' then
-            assert(not composedArtifacts(p));corpus.check(f,p,true);seen=seen+1
-            assert(same(p,f.addon:GetDefaultRotation(p.id).envelope),'corpus and catalog disagree')
+test('composed packs pass strict corpus validation with real condition schemas',function()
+    local corpus=dofile('tests/fixtures/default_corpus.lua');local seen=0
+    for _,class in ipairs({'WARRIOR','ROGUE','HUNTER','PALADIN','PRIEST','SHAMAN','MAGE','WARLOCK','DRUID'}) do
+        local f,packs=corpus.load(5,1,class)
+        for _,p in ipairs(packs) do
+            if ledger.packs[p.id] and p.applicability.class==class then
+                assert(not composedArtifacts(p));corpus.check(f,p,true);seen=seen+1
+                assert(same(p,f.addon:GetDefaultRotation(p.id).envelope),'corpus and catalog disagree')
+            end
         end
     end
-    assert(seen==2)
+    local expected=0;for _ in pairs(ledger.packs) do expected=expected+1 end
+    assert(seen==expected,seen..' of '..expected..' composed packs validated')
 end)
 
 test('nested references in lists and branch arms derive stable unique IDs',function()
@@ -231,7 +239,6 @@ test('ledger records every shipped block digest and composed pack pin revision',
     a.RegisterDefaultRotation=function(self,p) registered[#registered+1]=p.id;return registerRotation(self,p) end
     for line in io.lines('RotationMaster.toc') do local path=line:gsub('\r',''):match('^%s*(Defaults/.-%.lua)%s*$');if path then load(path) end end
     assert(a:InitializeRotationLibrary() and #authored>0)
-    local function newest(rows) local top=0;for revision in pairs(rows) do top=math.max(top,revision) end;return top end
     local blocks,packs={},{}
     for _,b in ipairs(authored) do
         blocks[b.id]=true;local rows=ledger.blocks[b.id]
