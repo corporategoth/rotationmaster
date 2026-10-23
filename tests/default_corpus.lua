@@ -68,6 +68,11 @@ for _,client in ipairs(clients) do for _,class in ipairs(classes) do
 end end
 test('TOC includes every reviewed starter pack exactly once',function()
     local _,packs=corpus.load(5,1,'PRIEST');local wanted={['rm.tbc.shaman.enhancement.50-59']=true,['rm.tbc.shaman.starter']=true,['rm.tbc.shaman.enhancement.30-39']=true,['rm.tbc.shaman.enhancement.40-49']=true,['rm.tbc.mage.starter']=true,['rm.tbc.mage.starter.30-39']=true,['rm.tbc.warlock.starter']=true,['rm.tbc.warlock.starter.30-39']=true,['rm.tbc.warlock.starter.40-49']=true,['rm.tbc.priest.starter']=true,['rm.tbc.priest.starter.20-29']=true,['rm.tbc.priest.shadow.30-39']=true,['rm.tbc.priest.shadow.40-49']=true,['rm.tbc.warrior.starter']=true,['rm.tbc.warrior.starter.20-29']=true,['rm.tbc.paladin.starter']=true,['rm.tbc.paladin.starter.20-29']=true,['rm.tbc.hunter.starter']=true,['rm.tbc.hunter.starter.20-29']=true,['rm.tbc.hunter.starter.30-39']=true,['rm.tbc.hunter.starter.40-49']=true,['rm.tbc.druid.caster.starter']=true,['rm.tbc.druid.caster.starter.20-29']=true,['rm.tbc.rogue.starter']=true,['rm.tbc.rogue.starter.20-29']=true,['rm.tbc.paladin.starter.30-39']=true,['rm.tbc.rogue.starter.30-39']=true,['rm.tbc.druid.caster.starter.30-39']=true,['rm.tbc.warrior.starter.30-39']=true,['rm.tbc.mage.starter.40-49']=true,['rm.tbc.warrior.starter.40-49']=true,['rm.tbc.paladin.starter.40-49']=true,['rm.tbc.rogue.starter.40-49']=true,['rm.tbc.druid.caster.starter.40-49']=true}
+    -- WoW Forever Rogue, Shaman, Warlock and Warrior premades (one per role and source family).
+    for _,id in ipairs({'rm.forever.rogue.dps','rm.forever.rogue.subtlety.warcrafttavern','rm.forever.rogue.subtlety.wowhead',
+        'rm.forever.shaman.restoration','rm.forever.shaman.elemental','rm.forever.shaman.enhancement','rm.forever.shaman.enhancement.wowhead',
+        'rm.forever.warlock.dps','rm.forever.warlock.dps.icyveins','rm.forever.warlock.dps.wowhead',
+        'rm.forever.warrior.protection','rm.forever.warrior.protection.warcrafttavern','rm.forever.warrior.dps','rm.forever.warrior.dps.warcrafttavern'})do wanted[id]=true end
     for _,pack in ipairs(packs)do assert(wanted[pack.id],pack.id..' is unexpected or duplicated');wanted[pack.id]=nil end
     assert(not next(wanted),'reviewed starter pack missing from TOC')
 end)

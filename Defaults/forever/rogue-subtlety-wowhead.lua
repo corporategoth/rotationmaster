@@ -1,0 +1,46 @@
+-- WoW Forever Subtlety Rogue, Wowhead's Garrote build (player-chosen variant).
+-- Shares the Subtlety switch (Hemorrhage and Premeditation known) but ranks below the other
+-- Rogue premades, so it runs only when the player picks it. Differs from the default:
+-- Premeditation then Garrote on every opener, Vanish (then Preparation) spent in the
+-- rotation to re-open with Garrote once the last one has run out, Rupture as the standing
+-- five-point finisher, Hemorrhage as the only builder and no Ghostly Strike. Vanish is also
+-- the class's escape; this premade spends it. Shared parts: Defaults/blocks/forever-rogue.lua.
+local _,addon=...
+local function all(...)return{type='AND',value={...}}end
+local function negate(c)return{type='NOT',value=c}end
+local function points(op,n)return{type='POINT',unit='player',operator=op,value=n}end
+local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
+local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
+local function garroted()return{type='DEBUFF',unit='target',spell=703,anyrank=true,owndebuff=true}end
+local function sliced()return{type='BUFF',unit='player',spell=5171,anyrank=true,ownbuff=true}end
+assert(addon:RegisterDefaultRotation({
+ format='RotationMaster',schemaVersion=1,id='rm.forever.rogue.subtlety.wowhead',revision=1,
+ blocks={['forever.rogue.boundaries']=1,['forever.rogue.stealth-fallback']=1,['forever.rogue.expose-armor']=1,['forever.rogue.upkeep']=1},
+ nameKey='Default.Forever.Rogue.Subtlety.Wowhead.Name',descriptionKey='Default.Forever.Rogue.Subtlety.Wowhead.Description',
+ applicability={families={'forever'},actionContext='player',class='ROGUE',minLevel=25,maxLevel=60},
+ tags={'dps','melee','leveling','endgame','subtlety','wowhead'},
+ sources={{url='https://www.wowhead.com/forever/guide/classes/rogue/subtlety/level-30-dps-overview',title='Wowhead: Forever level 30 Subtlety Rogue',reviewedAt='2026-10-23',revision='2026-10-06'},
+ {url='https://www.wowhead.com/forever/guide/classes/rogue/subtlety/dps-abilities',title='Wowhead: Forever Subtlety Rogue abilities',reviewedAt='2026-10-23',revision='2026-10-08'}},
+ body={priority=4,switch={type='AND',value={{type='SPELL_KNOWN',spell=16511},{type='SPELL_KNOWN',spell=14183}}},
+ cooldowns={block('forever.rogue.upkeep','rogue-wowhead-'),
+  spell('rogue-wowhead-vanish',1856,all({type='COMBAT',unit='player'},{type='SPELL_KNOWN',spell=703},negate(garroted()))),
+  spell('rogue-wowhead-preparation',14185,all({type='COMBAT',unit='player'},negate(garroted()),{type='SPELL_COOLDOWN',spell=1856,operator='GREATERTHAN',value=30}))},
+ rotation={
+ block('forever.rogue.boundaries','rogue-wowhead-'),
+ {id='rogue-wowhead-stealth',type='branch',conditions={type='STEALTHED'},onFalse={},onTrue={
+  spell('rogue-wowhead-premeditation',14183,points('LESSTHANOREQUALS',3)),
+  spell('rogue-wowhead-garrote',703),
+  block('forever.rogue.stealth-fallback','rogue-wowhead-stealth-'),
+ }},
+ spell('rogue-wowhead-slice',5171,all(negate(sliced()),points('GREATERTHANOREQUALS',3))),
+ block('forever.rogue.expose-armor','rogue-wowhead-'),
+ spell('rogue-wowhead-slice-refresh',5171,all(points('GREATERTHANOREQUALS',4),{type='BUFF_REMAIN',unit='player',spell=5171,anyrank=true,ownbuff=true,operator='LESSTHAN',value=1})),
+ {id='rogue-wowhead-finisher',type='branch',conditions=points('GREATERTHANOREQUALS',5),onFalse={},onTrue={
+  spell('rogue-wowhead-rupture',1943,negate({type='DEBUFF',unit='target',spell=1943,anyrank=true,owndebuff=true})),
+  spell('rogue-wowhead-eviscerate',2098),
+  {id='rogue-wowhead-pool',type='none',suppress_attack=false,conditions={}},
+ }},
+ spell('rogue-wowhead-hemorrhage',16511),
+ spell('rogue-wowhead-sinister',1752,negate({type='SPELL_KNOWN',spell=16511})),
+ }},
+}))

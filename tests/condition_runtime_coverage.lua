@@ -93,7 +93,8 @@ test('every existing TBC pack action and cooldown graph compiles without changin
  local f,_,prepare=fixture();local a=f.addon;local loaded={}
  -- Built In composition: compile the expanded graphs registration actually consumes.
  for _,path in ipairs({'Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/validation.lua','Core/rotation_library.lua'})do f.load(path)end
- a.RegisterDefaultRotation=function(_,envelope)loaded[#loaded+1]=assert(a:ExpandDefaultRotation(envelope));return true end
+ -- A TBC census: the WoW Forever premades (reference-only on a restricted client) are not counted here.
+ a.RegisterDefaultRotation=function(_,envelope)if envelope.applicability.families[1]~='forever'then loaded[#loaded+1]=assert(a:ExpandDefaultRotation(envelope))end;return true end
  for path in io.lines('RotationMaster.toc')do if path:match('^Defaults/.*%.lua$')then f.load(path)end end
  assert(#loaded==36,'pack census changed: '..#loaded)
  for _,envelope in ipairs(loaded)do assert(prepare(a,envelope.body,{},function()return true end),envelope.id..' rejected compiler')end
