@@ -36,8 +36,10 @@ local repaired=[=[    evaluate = function(value, cache)
             return Functions.values.compare(value.operator, cur, value.value)
         end
     end,]=]
+-- The class map (MAGE = Arcane Charges) is TBC's: Era and progression select per
+-- expansion and specialization (tests/progression_points.lua).
 local function fixture(project)
- local f=F.new(project or 11,2,'MAGE');local a,e=f.addon,f.env;local s={exists=true,class='MAGE',current=3,maximum=5,calls={}}
+ local f=F.new(project or 5,1,'MAGE');local a,e=f.addon,f.env;local s={exists=true,class='MAGE',current=3,maximum=5,calls={}}
  local function call(k,...) s.calls[#s.calls+1]={k,n=select('#',...),...};if s.throw==k then error('native points failure') end;return s[k] end
  e.UnitExists=function(...) assert(select('#',...)==1);return call('exists',...) end;e.UnitClass=function(...) assert(select('#',...)==1);call('class',...);return s.label,s.class,s.id end
  e.UnitPower=function(...) assert(select('#',...)==2);return call('current',...) end;e.UnitPowerMax=function(...) assert(select('#',...)==2);return call('maximum',...) end

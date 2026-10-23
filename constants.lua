@@ -231,7 +231,9 @@ addon.points = {
     MAGE = Enum.PowerType.ArcaneCharges,
 }
 -- Retail's other class resources (Rogue and Druid keep the Combo Points
--- fallback). Classic-family clients keep the map above unchanged.
+-- fallback). Classic-family clients keep the map above unchanged; it serves
+-- TBC, Forever and the archived V1 POINT API. Era and progression POINT select
+-- per expansion and specialization instead (Core/point_conditions.lua).
 if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
     addon.points.PALADIN = Enum.PowerType.HolyPower
     addon.points.EVOKER = Enum.PowerType.Essence

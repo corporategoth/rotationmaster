@@ -59,6 +59,14 @@ local function eligible(view, context, candidates)
             if scope[range[1]] and value<scope[range[1]] or scope[range[2]] and value>scope[range[2]] then return false,range[3].."-mismatch" end
         end
     end
+    -- The client's expansion (LE_EXPANSION_LEVEL_CURRENT). Build numbers are
+    -- shared across Blizzard products, so only this separates MoP from Wrath.
+    local minExpansion,maxExpansion=scope.minExpansion,scope.maxExpansion
+    if minExpansion or maxExpansion then
+        local value=context.expansion
+        if type(value)~="number" then return false,"missing-expansion" end
+        if minExpansion and value<minExpansion or maxExpansion and value>maxExpansion then return false,"expansion-mismatch" end
+    end
     -- These selectors need dedicated context providers before execution is safe.
     -- Keep their definitions visible for reference rather than assuming a match.
     if scope.intent or scope.roles then return false,"unsupported-context-selector" end
@@ -142,7 +150,11 @@ end
 -- never apply to it, and registering them would hold every premade in memory
 -- on every client. Their files still load; what they build is garbage. Offline
 -- tools and cross-edition/cross-class tests set loadAllDefaults.
-local function notForThisCharacter(families,class)
+-- A pack scoped to other expansions (minExpansion/maxExpansion) is skipped
+-- too: a Mists pack never registers on a Wrath progression client. Only a
+-- readable client expansion outside the declared range filters; anything
+-- unprovable registers, and eligibility refuses it later.
+local function notForThisCharacter(families,class,minExpansion,maxExpansion)
     if addon.loadAllDefaults then return false end
     local platform=addon.Platform
     local family=platform and type(platform.GetClientFamily)=="function" and platform:GetClientFamily()
@@ -150,6 +162,12 @@ local function notForThisCharacter(families,class)
         local listed=false
         for _,value in ipairs(families) do if value==family then listed=true;break end end
         if not listed then return true end
+    end
+    if (type(minExpansion)=="number" or type(maxExpansion)=="number") and platform and type(platform.GetClientInfo)=="function" then
+        local ok,info=pcall(platform.GetClientInfo,platform)
+        local expansion=ok and type(info)=="table" and info.expansion or nil
+        if platform:CanReadValue(expansion) and (not canaccessvalue or canaccessvalue(expansion)) and type(expansion)=="number"
+            and (type(minExpansion)=="number" and expansion<minExpansion or type(maxExpansion)=="number" and expansion>maxExpansion) then return true end
     end
     if type(class)=="string" and type(UnitClass)=="function" then
         local ok,_,token=pcall(UnitClass,"player")
@@ -342,7 +360,8 @@ function addon:GetDefaultRotationComposition(id)
 end
 
 function addon:RegisterDefaultRotation(envelope)
-    if type(envelope)=="table" and type(envelope.applicability)=="table" and notForThisCharacter(envelope.applicability.families,envelope.applicability.class) then return true,"other-character" end
+    local scope=type(envelope)=="table" and envelope.applicability
+    if type(scope)=="table" and notForThisCharacter(scope.families,scope.class,scope.minExpansion,scope.maxExpansion) then return true,"other-character" end
     local expanded,composition,problem=expandDefinition(envelope)
     if not expanded then return false,problem end
     local copy,why=data.CopyData(expanded)
@@ -536,7 +555,7 @@ function addon:BindRotationLibraryReader(bind)
             or type(value.build)~='number' or value.build~=value.build or value.build<=0 or value.build>=math.huge or value.family=='unknown'
             or contextRawget(contextEnvironment,'pairs')~=contextPairs then return nil end
         local client,readValue=platform.GetClientInfo,platform.CanReadValue
-        local unitClass,unitLevel,buildInfo,project=UnitClass,UnitLevel,GetBuildInfo,WOW_PROJECT_ID
+        local unitClass,unitLevel,buildInfo,project,expansion=UnitClass,UnitLevel,GetBuildInfo,WOW_PROJECT_ID,LE_EXPANSION_LEVEL_CURRENT
         local hasVehicle,inVehicle,petBattles=UnitHasVehicleUI,UnitInVehicle,C_PetBattles
         local vehicleBar,overrideBar,possessBar=HasVehicleActionBar,HasOverrideActionBar,IsPossessBarVisible
         local inBattle=petBattles and petBattles.IsInBattle
@@ -545,6 +564,7 @@ function addon:BindRotationLibraryReader(bind)
             if not ownsPrivateContext(method,projection,dispatch) or owner.GetRotationContext~=ownedRotationContext
                 or owner.Platform~=platform or platform.GetClientInfo~=client or platform.CanReadValue~=readValue
                 or UnitClass~=unitClass or UnitLevel~=unitLevel or GetBuildInfo~=buildInfo or WOW_PROJECT_ID~=project
+                or LE_EXPANSION_LEVEL_CURRENT~=expansion
                 or UnitHasVehicleUI~=hasVehicle or UnitInVehicle~=inVehicle or C_PetBattles~=petBattles
                 or HasVehicleActionBar~=vehicleBar or HasOverrideActionBar~=overrideBar or IsPossessBarVisible~=possessBar
                 or (petBattles and petBattles.IsInBattle)~=inBattle

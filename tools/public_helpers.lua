@@ -67,6 +67,12 @@ GetConditionCreatureTypeMatch={
   args={self={type='RMPlatform',description='Rotation Master platform adapter (implicit with colon calls).'},powerType={type='number',description='Original explicit readable finite nonnegative integer combo-resource selector, including zero; retained for the maximum query.'},kind={type='string',description='Exactly current for the player/target combo query or maximum for the player capacity query.'}},
   returns={{type='number | nil',description='Finite native resource quantity, retaining its sign and fractional part; nil when unavailable.'},{type='string | nil',description='Policy, query-validation or required observation availability reason for a nil quantity.'}},
  },
+ Platform_GetUnitPointFragmentObservation={
+  module='Platform/points.lua',member='Platform.GetUnitPointFragmentObservation',callName='addon.Platform:GetUnitPointFragmentObservation',
+  description='Observe a point resource that the client reports in fragments (Mists of Pandaria Burning Embers). Current uses exactly UnitPower(unit,powerType,true) and maximum UnitPowerMax(unit,powerType,true); the result is divided by Blizzard MAX_POWER_PER_EMBER (10), so 35 fragments are 3.5. Probe policy only. Missing, failed, restricted or malformed data remains unavailable; it never falls back to the whole-unit query. No cache is added.',
+  args={self={type='RMPlatform',description='Rotation Master platform adapter (implicit with colon calls).'},unit={type='string',description='Exact nonempty unit token, passed unchanged.'},powerType={type='number',description='Explicit readable finite nonnegative integer power selector.'},kind={type='string',description='Exactly current for UnitPower or maximum for UnitPowerMax.'}},
+  returns={{type='number | nil',description='Finite quantity in whole units with its fractional part; nil when unavailable.'},{type='string | nil',description='Policy, query-validation or required observation availability reason for a nil quantity.'}},
+ },
  GetConditionPointResourceV2={
   module='Core/point_conditions.lua',member='GetConditionPointResourceV2',callName='addon:GetConditionPointResourceV2',
   captureBindings={playerClassCacheKey='builtin:Core/point_conditions.lua:playerClassCacheKey'},

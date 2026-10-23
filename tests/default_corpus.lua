@@ -1,6 +1,9 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local corpus=dofile('tests/fixtures/default_corpus.lua')
-local clients={{'retail',1,12},{'era',2,0},{'progression',19,4},{'tbc',5,1},{'forever',18,12}}
+-- {family, project, LE_EXPANSION_LEVEL_CURRENT}. Progression runs twice: a Mists
+-- client (4) and a Wrath client (2, Titan-Reforged), so an expansion-scoped pack
+-- is checked on both sides of applicability.minExpansion/maxExpansion.
+local clients={{'retail',1,12},{'era',2,0},{'progression',19,4},{'progression',11,2},{'tbc',5,1},{'forever',18,12}}
 local classes={'WARRIOR','PALADIN','HUNTER','ROGUE','PRIEST','SHAMAN','MAGE','WARLOCK','DRUID','DEATHKNIGHT','MONK','DEMONHUNTER','EVOKER'}
 local visited,runnable={},{}
 local function matches(scope,family,class)
@@ -24,7 +27,7 @@ local function samples(packs,family,class)
     return result
 end
 for _,client in ipairs(clients) do for _,class in ipairs(classes) do
-    test('all shipped defaults load and retain safe scope on '..client[1]..'/'..class,function()
+    test('all shipped defaults load and retain safe scope on '..client[1]..(client[1]=='progression' and ' expansion '..client[3] or '')..'/'..class,function()
         local f,packs,state=corpus.load(client[2],client[3],class);local a=f.addon;local witnesses={}
         assert(#packs>0,'no default packs loaded')
         local visibleCount=0
@@ -48,6 +51,7 @@ for _,client in ipairs(clients) do for _,class in ipairs(classes) do
                     assert(not scope.specs or corpus.contains(scope.specs,sample.spec))
                     assert(scope.actionContext==sample.context and (not scope.minLevel or sample.level>=scope.minLevel) and (not scope.maxLevel or sample.level<=scope.maxLevel))
                     assert((not scope.minBuild or sample.build>=scope.minBuild) and (not scope.maxBuild or sample.build<=scope.maxBuild))
+                    assert((not scope.minExpansion or client[3]>=scope.minExpansion) and (not scope.maxExpansion or client[3]<=scope.maxExpansion),'expansion selector ignored')
                     assert(client[1]~='retail' and client[1]~='forever' and not scope.roles and not scope.intent and not scope.rulesets)
                 end
             end

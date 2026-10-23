@@ -73,9 +73,74 @@ do
     end
 end
 
+-- Era and progression read only a resource the client's expansion, the class
+-- and (Mists of Pandaria) the player's specialization really have. Anything
+-- else is unavailable, never a Combo Points read that answers a confident 0.
+-- Values are Enum.PowerType NAMES, resolved at read time; a table is keyed by
+-- the specialization INDEX Blizzard's own resource bars test (SPEC_WARLOCK_*
+-- 1/2/3, SPEC_PRIEST_SHADOW 3). Sources, Gethe/wow-ui-source classic
+-- 45eb466ddb (5.5.4.70531), Blizzard_UnitFrame/Mists: PaladinPowerBar (Holy
+-- Power, every Paladin), MonkHarmonyBar (Chi, every Monk), PriestBar (Shadow
+-- Orbs, Shadow only), ShardBar (Soul Shards / Demonic Fury / Burning Embers
+-- by Warlock specialization). Not mapped, on purpose:
+--   Mage: Arcane Charges are a player aura before Legion (DEBUFF_STACKS 36032).
+--   Death Knight: classic runes are typed; RUNE / RUNE_COOLDOWN read them.
+--   Balance Eclipse: a signed -100..100 power with a direction
+--   (GetEclipseDirection); POINT's negative value already means "deficit from
+--   maximum", so it cannot express Eclipse. Druids read Combo Points in every
+--   specialization, real (0 outside Cat Form) as on Retail.
+--   Era Warlock and Mage: 1.15 has neither power (shards are bag items:
+--   CARRYING 6265; SoD Arcane Blast stacks are an aura).
+-- Burning Embers are reported in embers with their fraction by the power
+-- observer (Platform/points.lua), so 3.5 is a valid threshold.
+-- Wrath (2) has only combo points; Cataclysm (3) adds Holy Power and Soul
+-- Shards for every specialization. Another progression expansion has no map
+-- until it is researched.
+local editionPointPowers={
+    era={ROGUE='ComboPoints',DRUID='ComboPoints'},
+    progression={
+        [2]={ROGUE='ComboPoints',DRUID='ComboPoints'},
+        [3]={ROGUE='ComboPoints',DRUID='ComboPoints',PALADIN='HolyPower',WARLOCK='SoulShards'},
+        [4]={ROGUE='ComboPoints',DRUID='ComboPoints',PALADIN='HolyPower',MONK='Chi',
+            PRIEST={[3]='ShadowOrbs'},WARLOCK={'SoulShards','DemonicFury','BurningEmbers'}},
+    },
+}
+local function editionPointResource(platform,info,unit,class,cache)
+    local family=info.family
+    local map=editionPointPowers[family]
+    if family=='progression' then
+        local expansion=info.expansion
+        if not platform:CanReadValue(expansion) then return nil,'restricted-value' end
+        if type(expansion)~='number' then return nil,'unsupported-point-expansion' end
+        map=map[expansion]
+        if map==nil then return nil,'unsupported-point-expansion' end
+    end
+    local name=map[class]
+    if type(name)=='table' then
+        -- Only the player's own specialization is readable.
+        if unit~='player' then return nil,'point-specialization-unavailable' end
+        local spec,why=addon.Functions.cache.getCached(cache,platform.GetPlayerSpecializationIndex,platform)
+        if spec==nil then return nil,why end
+        name=name[spec]
+    end
+    if name==nil then return nil,'point-resource-unavailable' end
+    local enum=Enum
+    if not platform:CanReadValue(enum) then return nil,'restricted-value' end
+    if type(enum)~='table' then return nil,'point-resource-unavailable' end
+    local types=rawget(enum,'PowerType')
+    if not platform:CanReadValue(types) then return nil,'restricted-value' end
+    if type(types)~='table' then return nil,'point-resource-unavailable' end
+    local selected=rawget(types,name)
+    if not platform:CanReadValue(selected) then return nil,'restricted-value' end
+    if selected==nil then return nil,'point-resource-unavailable' end
+    if type(selected)~='number' or selected~=selected or selected<0 or selected==math.huge or selected%1~=0 then return nil,'invalid-point-resource' end
+    return selected,nil,'power'
+end
+
 -- New Built In POINT copies may opt into the player/target transport; old sources keep the API above.
 -- Under the restricted policy (Retail, Forever) only a power type Blizzard
 -- flags never secret is selected (Platform/points.lua); its reads stay guarded.
+-- Era and progression select per edition and specialization (above).
 function addon:GetConditionPointResourceV2(unit,cache)
     local platform=self.Platform
     local info=platform:GetClientInfo()
@@ -86,6 +151,8 @@ function addon:GetConditionPointResourceV2(unit,cache)
     local record,reason=addon.Functions.cache.getCached(cache,pointIdentity,self,unit,playerClassCacheKey)
     if not record then return nil,reason end
     if not record.exists then return false end
+    local family=info.family
+    if policy=='probe' and (family=='era' or family=='progression') then return editionPointResource(platform,info,unit,record.class,cache) end
     local points=self.points
     if not platform:CanReadValue(points) then return nil,'restricted-value' end
     if type(points)~='table' then return nil,'invalid-point-resource-map' end
@@ -132,6 +199,8 @@ do
     local function sourceGetter(name)
         if name=="GetConditionPointResource" then return addon.GetConditionPointResource end
         if name=="GetConditionPointResourceV2" then return addon.GetConditionPointResourceV2 end
+        if name=="editionPointPowers" then return editionPointPowers end
+        if name=="editionPointResource" then return editionPointResource end
         if name=="playerClassCacheKey" then return playerClassCacheKey end
         if name=="pointComboTypes" then return pointComboTypes end
         if name=="pointComboValue" then return pointComboValue end

@@ -2,7 +2,8 @@
 local inverse,oldBody,newBody=dofile('tests/fixtures/restore_point_tbc_transport.lua')
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local function fixture(project,combo)
- local f=F.new(project or 5,1,'ROGUE');local a,e=f.addon,f.env;local s={calls={},current=0,maximum=5,combo=5,class='ROGUE',exists=true}
+ -- Progression projects run their own expansion (Wrath 2, Cataclysm 3, Mists 4).
+ local f=F.new(project or 5,({[11]=2,[14]=3,[19]=4})[project] or 1,'ROGUE');local a,e=f.addon,f.env;local s={calls={},current=0,maximum=5,combo=5,class='ROGUE',exists=true}
  e.Enum.PowerType.ComboPoints=combo or 4;f.load('Core/point_conditions.lua')
  local function call(k,...)s.calls[#s.calls+1]={k,...};if s.fail==k then error('private marker')end;return s[k]end
  e.UnitExists=function(unit)return call('exists',unit)end;e.UnitClass=function(unit)call('class',unit);return 'Rogue',s.class end

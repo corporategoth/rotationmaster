@@ -3430,6 +3430,7 @@ L["Evaluation-pass presence cache only; name, level and provider history remain 
 L["Exact helper-owned player, party1..party4 or raid1..raid40 token."] = true
 L["Exact integral native rune slot from 1 through 6."] = true
 L["Exact nonempty unit token to observe."] = true
+L["Exact nonempty unit token, passed unchanged."] = true
 L["Exact readable recipient name recorded for this cast."] = true
 L["Exact selected unit token; only the literal player token may select the TBC combo transport."] = true
 L["Exact selected unit token; player class alone may use the successful longterm cache."] = true
@@ -3440,6 +3441,7 @@ L["Exact unit token used for existence and as the recipient of player hostility 
 L["Exact unit token whose resource should be observed; this does not redirect player or vehicle units."] = true
 L["Exact unit token whose selected flag should be observed."] = true
 L["Exact unit token whose selected resource quantity is requested."] = true
+L["Exactly current for UnitPower or maximum for UnitPowerMax."] = true
 L["Exactly current for UnitPower or maximum for UnitPowerMax; no other native query is added."] = true
 L["Exactly current for the player/target combo query or maximum for the player capacity query."] = true
 L["Exactly dead for UnitIsDeadOrGhost, or friendly for UnitIsFriend(player, unit)."] = true
@@ -3450,6 +3452,7 @@ L["Explicit finite weighting window; no profile fallback or clamp."] = true
 L["Explicit nonnegative integer power selector, false for a known absent unit, or nil when required data is unavailable."] = true
 L["Explicit nonnegative integer selector, false for known unit absence, or nil when required data is unavailable."] = true
 L["Explicit readable finite nonnegative integer power selector, including zero."] = true
+L["Explicit readable finite nonnegative integer power selector."] = true
 L["Finite ETA including zero, false for known absence/no estimate, or nil when unavailable."] = true
 L["Finite final stream age, or nil when unavailable."] = true
 L["Finite minimum native threat status, preserving signed and fractional thresholds."] = true
@@ -3457,6 +3460,7 @@ L["Finite native creature ID, false for known unit absence, or nil when required
 L["Finite native resource quantity, retaining its sign and fractional part; nil when unavailable."] = true
 L["Finite native threat status, false for known absence/nonenemy/no-threat, or nil for unavailable observations."] = true
 L["Finite nonnegative native health scalar, or nil when unavailable."] = true
+L["Finite quantity in whole units with its fractional part; nil when unavailable."] = true
 L["Finite signed combined rate, or nil for unavailable calculation."] = true
 L["First exact unit token, checked for existence before comparison."] = true
 L["First table to compare."] = true
@@ -3513,6 +3517,7 @@ L["Numeric widget supporting slider bounds, percent display and pending-edit val
 L["Observation kind: cast or channel. These use different native interruptibility tuple positions."] = true
 L["Observation, history, work-limit or arithmetic availability reason."] = true
 L["Observe a fresh protected zero-argument GetTime for a needed health forecast. Require readability and a finite number; preserve signed and fractional values without adding a monotonic, integral or nonnegative restriction. No clock cache or extra native query is used."] = true
+L["Observe a point resource that the client reports in fragments (Mists of Pandaria Burning Embers). Current uses exactly UnitPower(unit,powerType,true) and maximum UnitPowerMax(unit,powerType,true); the result is divided by Blizzard MAX_POWER_PER_EMBER (10), so 35 fragments are 3.5. Probe policy only. Missing, failed, restricted or malformed data remains unavailable; it never falls back to the whole-unit query. No cache is added."] = true
 L["Observe a readable raw unit level on known clients. A readable absent unit returns exists=false; present units require a positive finite integer UnitLevel. Unknown boss levels, missing, failed, restricted or malformed observations return nil with a reason. This does not use effective or scaled levels."] = true
 L["Observe a selected unit role on probe-policy clients without issuing inspection requests. Known unit absence returns false. Prefer the callable modern inspection API, with legacy fallback only when that callable is absent; a selected failure never falls through. Require a positive finite integral specialization ID and consume only role return five from the exact one-argument GetSpecializationInfoByID call. Missing, failed, restricted or malformed required facts are unavailable; readable nonempty future role strings remain exact."] = true
 L["Observe a unit casting or channeling on supported readable clients. A readable inactive result returns active=false. Active records contain name and independently available remainingSeconds and interruptible fields, with remainingReason or interruptibleReason when an optional field is unavailable. Missing, failed or restricted observations return nil with a reason."] = true

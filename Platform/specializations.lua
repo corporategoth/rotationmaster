@@ -46,6 +46,18 @@ function platform:GetRotationSpecialization()
     return {kind=kind,index=index,key=id}
 end
 
+-- The player's active specialization INDEX (1..4), for an observation that
+-- depends on it: POINT's per-specialization resource on Mists of Pandaria
+-- Classic. It is not the rotation storage key above (progression stores per
+-- talent group). Blizzard's 5.5.4 resource bars compare
+-- C_SpecializationInfo.GetSpecialization() with the SPEC_* indices
+-- (Gethe/wow-ui-source classic 45eb466ddb, Blizzard_FrameXMLBase/Classic/
+-- Constants.lua; Blizzard_UnitFrame/Mists/ShardBar.lua, PriestBar.lua).
+-- No specialization yet (below level 10) is unavailable, never index 1.
+function platform:GetPlayerSpecializationIndex()
+    return queryInteger(method("GetSpecialization",GetSpecialization),16)
+end
+
 function platform:GetRotationSpecializations(classID)
     local kind,reason=mode()
     if not kind then return nil,reason end
