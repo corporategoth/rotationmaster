@@ -17,8 +17,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local undead=any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',unit='target',value='DEMON'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution.stacking',revision=2,
- blocks={['sod.paladin.ret-upkeep']=1,['era.paladin.safety']=1,['era.paladin.melee-opening']=1,['era.paladin.boundaries']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution.stacking',revision=3,
+ blocks={['sod.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=1,['era.paladin.boundaries']=1},
  nameKey='Default.SoD.Paladin.Retribution.Stacking.Name',descriptionKey='Default.SoD.Paladin.Retribution.Stacking.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN',minLevel=20,maxLevel=60,rulesets={'season:2'}},
  tags={'endgame','raid','retribution','melee','single-target','season-of-discovery','wowhead','wowsims'},
@@ -30,7 +30,7 @@ assert(addon:RegisterDefaultRotation({
    block('sstack-opening','era.paladin.melee-opening','sstack-'),
    spell('sstack-command',20375,expiring(20375)),
    spell('sstack-martyrdom',407798,expiring(407798)),
-   {id='sstack-pull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+   {id='sstack-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell('sstack-pull-exorcism',415068),
     {id='sstack-pull-stop',type='none',conditions={}},
    }},

@@ -12,8 +12,8 @@ local function own(id)return{type='BUFF',unit='player',spell=id,anyrank=true,own
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.protection',revision=2,
- blocks={['sod.paladin.tank-upkeep']=1,['era.paladin.melee-opening']=1,['era.paladin.boundaries']=1,['sod.paladin.seal']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.protection',revision=3,
+ blocks={['sod.paladin.tank-upkeep']=2,['era.paladin.melee-opening']=1,['era.paladin.boundaries']=1,['sod.paladin.seal']=2},
  nameKey='Default.SoD.Paladin.Protection.Name',descriptionKey='Default.SoD.Paladin.Protection.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN',minLevel=1,maxLevel=60,rulesets={'season:2'}},
  tags={'leveling','endgame','protection','tank','single-target','aoe','season-of-discovery','wowhead'},
@@ -24,7 +24,7 @@ assert(addon:RegisterDefaultRotation({
   rotation={
    block('sprot-opening','era.paladin.melee-opening','sprot-'),
    block('sprot-seal','sod.paladin.seal','sprot-'),
-   {id='sprot-pull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+   {id='sprot-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell('sprot-pull-holy-shield',20925,negate(own(20925))),
     spell('sprot-pull-avengers-shield',407669),
     spell('sprot-pull-exorcism',415068),

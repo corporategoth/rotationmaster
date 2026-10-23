@@ -239,6 +239,10 @@ test('SoD healer: beacon management on a friend, damage that heals on an enemy, 
  s.unengrave(412532);M.expect(a,s,SHEAL,400574,nil,'Arcane: Arcane Blast')
  s.buff('player',400573,{applications=2});M.expect(a,s,SHEAL,400610,nil,'two stacks: Arcane Barrage')
  s.buff('player',400589);M.expect(a,s,SHEAL,5143,nil,'Missile Barrage: Missiles')
+ -- Mass Regeneration is cancelled at once (Wowhead): its channel shows the next spell; any other channel is kept.
+ s.channel=true;s.channelSpell=412510;M.expect(a,s,SHEAL,5143,nil,'channelling Mass Regeneration: the next spell shows')
+ s.channelSpell=5143;assert(stopped(select(2,M.first(a,s,SHEAL))),'channelling Arcane Missiles: stopped')
+ s.channelSpell=nil;assert(stopped(select(2,M.first(a,s,SHEAL))),'an unnamed channel: stopped');s.channel=false
 end)
 
 test('reminders: armor choice, intellect, gems, Ice Barrier, Mana Shield, Evocation, Cold Snap, Icy Veins, decurse',function()

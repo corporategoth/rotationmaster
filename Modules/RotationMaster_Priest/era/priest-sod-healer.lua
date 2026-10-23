@@ -16,7 +16,7 @@ local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='priest-sod-heal-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.priest.healer',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.priest.healer',revision=2,
  blocks={['era.priest.boundaries']=1,['era.priest.enemy-target']=1,['era.priest.dispels']=1,['era.priest.big-heal']=1,['era.priest.renew']=1,
   ['era.priest.friend-fortitude']=1,['era.priest.upkeep']=1,['era.priest.divine-spirit']=1,['sod.priest.healer-damage']=1,['sod.priest.healer-upkeep']=1},
  nameKey='Default.SoD.Priest.Healer.Name',descriptionKey='Default.SoD.Priest.Healer.Description',
@@ -36,7 +36,7 @@ assert(addon:RegisterDefaultRotation({
    {id=P..'friend',type='branch',conditions=all({type='FRIENDLY',unit='target'},negate({type='DEAD',unit='target'})),
     onFalse={block(P..'damage','sod.priest.healer-damage',P)},
     onTrue={
-     {id=P..'prepull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+     {id=P..'prepull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
       spell(P..'prepull-mending',401859),block(P..'prepull-fortitude','era.priest.friend-fortitude',P..'prepull-'),stop(P..'prepull-stop')}},
      spell(P..'shield',17,all(pct('target','LESSTHAN',.5),negate({type='DEBUFF',unit='target',spell=6788}))),
      spell(P..'penance',402174,pct('target','LESSTHAN',.8)),

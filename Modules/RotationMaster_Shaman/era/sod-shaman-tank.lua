@@ -21,7 +21,7 @@ local flamed={type='DEBUFF',unit='target',spell=8050,anyrank=true,owndebuff=true
 local surge={type='BUFF',unit='player',spell=440285}
 local group=all(combat(),{type='GROUP'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.shaman.tank',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.shaman.tank',revision=3,
  blocks={['era.shaman.manual']=1,['era.shaman.interrupt']=1},
  nameKey='Default.SoD.Shaman.Tank.Name',descriptionKey='Default.SoD.Shaman.Tank.Description',
  applicability={families={'era'},actionContext='player',class='SHAMAN',minLevel=30,maxLevel=60,rulesets={'season:2'}},
@@ -46,7 +46,7 @@ assert(addon:RegisterDefaultRotation({
  },
  rotation={
  block('era.shaman.manual','sod-tank-'),
- {id='sod-tank-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+ {id='sod-tank-pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('sod-tank-pull-flame-shock',8050,all({type='ATTACKABLE',unit='target'},negate({type='COMBAT',unit='target'}))),
   {id='sod-tank-pull-stop',type='none',suppress_attack=false,conditions={}},
  }},

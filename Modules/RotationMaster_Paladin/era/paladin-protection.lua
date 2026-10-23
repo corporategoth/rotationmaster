@@ -12,10 +12,10 @@ local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local undead=any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',unit='target',value='DEMON'})
-local function noSeal()local out={};for i,id in ipairs({20154,21084,20375,21082,20166,20165,20164})do out[i]=own(id)end;return negate({type='OR',value=out})end
+local function sealed()local out={};for i,id in ipairs({20154,21084,20375,21082,20166,20165,20164})do out[i]=own(id)end;return{type='OR',value=out}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.paladin.protection',revision=1,
- blocks={['era.paladin.tank-upkeep']=1,['era.paladin.melee-opening']=1,['era.paladin.boundaries']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.paladin.protection',revision=2,
+ blocks={['era.paladin.tank-upkeep']=2,['era.paladin.melee-opening']=1,['era.paladin.boundaries']=1},
  nameKey='Default.Era.Paladin.Protection.Name',descriptionKey='Default.Era.Paladin.Protection.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN',minLevel=1,maxLevel=60},
  tags={'leveling','endgame','protection','tank','single-target','aoe','wowhead','icy-veins'},
@@ -26,11 +26,11 @@ assert(addon:RegisterDefaultRotation({
   cooldowns={block('prot-upkeep','era.paladin.tank-upkeep','prot-')},
   rotation={
    block('prot-opening','era.paladin.melee-opening','prot-'),
-   {id='prot-seal',type='branch',conditions=noSeal(),onFalse={},onTrue={
+   {id='prot-seal',type='branch',conditions=sealed(),onTrue={},onFalse={
     spell('prot-seal-wisdom',20166,mana('LESSTHAN',0.4)),
     spell('prot-seal-righteousness',20154),
    }},
-   {id='prot-pull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+   {id='prot-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell('prot-pull-holy-shield',20925,negate(own(20925))),
     spell('prot-pull-judgement',20271),
     {id='prot-pull-stop',type='none',conditions={}},

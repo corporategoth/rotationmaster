@@ -11,10 +11,10 @@ local function own(id)return{type='BUFF',unit='player',spell=id,anyrank=true,own
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local undead=any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',unit='target',value='DEMON'})
-local function noSeal()local out={};for i,id in ipairs({20154,21084,20375,21082,20166,20165,20164})do out[i]=own(id)end;return negate({type='OR',value=out})end
+local function sealed()local out={};for i,id in ipairs({20154,21084,20375,21082,20166,20165,20164})do out[i]=own(id)end;return{type='OR',value=out}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.paladin.protection.icyveins',revision=1,
- blocks={['era.paladin.tank-upkeep']=1,['era.paladin.melee-opening']=1,['era.paladin.boundaries']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.paladin.protection.icyveins',revision=2,
+ blocks={['era.paladin.tank-upkeep']=2,['era.paladin.melee-opening']=1,['era.paladin.boundaries']=1},
  nameKey='Default.Era.Paladin.Protection.IcyVeins.Name',descriptionKey='Default.Era.Paladin.Protection.IcyVeins.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN',minLevel=1,maxLevel=60},
  tags={'endgame','raid','protection','tank','single-target','aoe','icy-veins','wowhead'},
@@ -24,11 +24,11 @@ assert(addon:RegisterDefaultRotation({
   cooldowns={block('protw-upkeep','era.paladin.tank-upkeep','protw-')},
   rotation={
    block('protw-opening','era.paladin.melee-opening','protw-'),
-   {id='protw-seal',type='branch',conditions=noSeal(),onFalse={},onTrue={
+   {id='protw-seal',type='branch',conditions=sealed(),onTrue={},onFalse={
     spell('protw-seal-wisdom',20166),
     spell('protw-seal-righteousness',20154),
    }},
-   {id='protw-pull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+   {id='protw-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell('protw-pull-holy-shield',20925,negate(own(20925))),
     spell('protw-pull-judgement',20271),
     {id='protw-pull-stop',type='none',conditions={}},

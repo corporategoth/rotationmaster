@@ -13,9 +13,9 @@ local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.paladin.retribution',revision=1,
- blocks={['era.paladin.ret-upkeep']=1,['era.paladin.safety']=1,['era.paladin.melee-opening']=1,['era.paladin.boundaries']=1,
-  ['era.paladin.crusader-opener']=1,['era.paladin.seal']=1,['era.paladin.undead']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.paladin.retribution',revision=2,
+ blocks={['era.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=1,['era.paladin.boundaries']=1,
+  ['era.paladin.crusader-opener']=1,['era.paladin.seal']=2,['era.paladin.undead']=1},
  nameKey='Default.Era.Paladin.Retribution.Name',descriptionKey='Default.Era.Paladin.Retribution.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN',minLevel=1,maxLevel=60},
  tags={'leveling','endgame','retribution','melee','single-target','icy-veins','wowhead','warcraft-tavern'},
@@ -32,7 +32,7 @@ assert(addon:RegisterDefaultRotation({
    block('ret-opening','era.paladin.melee-opening','ret-'),
    block('ret-crusader','era.paladin.crusader-opener','ret-'),
    block('ret-seal','era.paladin.seal','ret-'),
-   {id='ret-pull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+   {id='ret-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell('ret-pull-judgement',20271),
     {id='ret-pull-stop',type='none',conditions={}},
    }},

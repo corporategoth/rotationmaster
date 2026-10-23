@@ -20,22 +20,23 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function optional(step)step.disabled=true;return step end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local big=any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'})
+local shield={type='WEAPON_TYPE',slot='offhand',kind='shield'}
 local tanked={type='ISSAME',unit='targettarget',otherunit='player'}
 local unqueued=all(negate(queued(78)),negate(queued(845)))
 local demoralized=any({type='DEBUFF',unit='target',spell=1160,anyrank=true},{type='DEBUFF',unit='target',spell=99,anyrank=true})
 local stacked=all({type='DEBUFF',unit='target',spell=7386,anyrank=true},{type='DEBUFF_STACKS',unit='target',spell=7386,anyrank=true,operator='GREATERTHANOREQUALS',value=5})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.warrior.protection',revision=1,
- blocks={['era.warrior.boundaries']=1,['era.warrior.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.warrior.protection',revision=2,
+ blocks={['era.warrior.boundaries']=2,['era.warrior.upkeep']=1},
  nameKey='Default.Era.Warrior.Protection.Name',descriptionKey='Default.Era.Warrior.Protection.Description',
  applicability={families={'era'},actionContext='player',class='WARRIOR',minLevel=10,maxLevel=60},
  tags={'tank','melee','leveling','endgame','aoe','icy-veins','maxdps'},
  sources={{url='https://www.icy-veins.com/wow-classic/warrior-tank-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Warrior tank rotation',reviewedAt='2026-10-23',revision='2024-11-17'},
  {url='https://www.icy-veins.com/wow-classic/protection-warrior-leveling-guide-1-60',title='Icy Veins: Classic Protection Warrior leveling 1-60',reviewedAt='2026-10-23',revision='2026-07-18'},
  {url='https://github.com/kaminaris/MaxDps-Warrior/blob/c3bf773f3709514aae9aad8647cd6a4ae7fc8756/Specialization/Classic/Protection.lua',title='MaxDps-Warrior: Classic Protection',reviewedAt='2026-10-23',revision='c3bf773f3709514aae9aad8647cd6a4ae7fc8756'}},
- body={priority=30,switch={type='FORM',value=2},
+ body={priority=30,switch={type='FORM',form=71},
  cooldowns={block('era.warrior.upkeep','warrior-prot-'),
-  spell('warrior-prot-shield-block',2565,all(combat(),tanked,negate({type='CASTING',unit='target'}),negate({type='BUFF',unit='player',spell=2565}))),
+  spell('warrior-prot-shield-block',2565,all(combat(),shield,tanked,negate({type='CASTING',unit='target'}),negate({type='BUFF',unit='player',spell=2565}))),
   spell('warrior-prot-bloodrage',2687,all(combat(),rage('LESSTHAN',60),{type='HEALTHPCT',unit='player',operator='GREATERTHAN',value=.5})),
   spell('warrior-prot-heroic-strike',78,all(combat(),unqueued,enemies('LESSTHAN',2),rage('GREATERTHANOREQUALS',50))),
   spell('warrior-prot-cleave',845,all(combat(),unqueued,enemies('GREATERTHANOREQUALS',2),rage('GREATERTHANOREQUALS',50))),
@@ -51,7 +52,7 @@ assert(addon:RegisterDefaultRotation({
   spell('warrior-prot-pack-battle-shout',6673),
  }},
  spell('warrior-prot-revenge',6572),
- spell('warrior-prot-shield-slam',23922),
+ spell('warrior-prot-shield-slam',23922,shield),
  spell('warrior-prot-bloodthirst',23881),
  spell('warrior-prot-sunder',7386,negate(stacked)),
  spell('warrior-prot-demoralizing',1160,all(big,negate(demoralized))),

@@ -26,7 +26,7 @@ local cursed={type='OR',value={}};for i,id in ipairs(curses)do cursed.value[i]=o
 local incinerated=all(buff(412758),{type='BUFF_REMAIN',unit='player',spell=412758,operator='GREATERTHANOREQUALS',value=1.8})
 local summon=all(negate({type='PET'}),negate(combat()))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.fire',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.fire',revision=3,
  blocks={['era.warlock.boundaries']=1,['era.warlock.armor']=1,['era.warlock.safety']=1},
  nameKey='Default.SoD.Warlock.Fire.Name',descriptionKey='Default.SoD.Warlock.Fire.Description',
  applicability={families={'era'},actionContext='player',class='WARLOCK',minLevel=1,maxLevel=60,rulesets={'season:2'}},
@@ -55,7 +55,7 @@ assert(addon:RegisterDefaultRotation({
   spell('sod-fire-aoe-lake-of-fire',460692),
   spell('sod-fire-aoe-hellfire',1949,all({type='DISTANCE_COUNT',enemy=true,distance=10,operator='GREATERTHANOREQUALS',value=3},{type='HEALTHPCT',unit='player',operator='GREATERTHAN',value=.5})),
  }},
- {id='sod-fire-curse',type='branch',conditions=negate(cursed),onFalse={},onTrue={
+ {id='sod-fire-curse',type='branch',conditions=cursed,onTrue={},onFalse={
   spell('sod-fire-recklessness',704,all({type='GROUP'},negate({type='DEBUFF',unit='target',spell=704,anyrank=true}))),
   spell('sod-fire-doom',603,all({type='GROUP'},big,lifetime('GREATERTHAN',60))),
   spell('sod-fire-agony',980,lasting),
@@ -69,7 +69,7 @@ assert(addon:RegisterDefaultRotation({
  spell('sod-fire-soul-fire-proc',6353,buff(457643)),
  spell('sod-fire-chaos-bolt',403629,negate(execute)),
  spell('sod-fire-shadow-trance',686,buff(17941)),
- {id='sod-fire-solo',type='branch',conditions=negate({type='GROUP'}),onFalse={},onTrue={
+ {id='sod-fire-solo',type='branch',conditions={type='GROUP'},onTrue={},onFalse={
   spell('sod-fire-drain-life',403677,negate(own(403677))),
   spell('sod-fire-solo-tap',1454,all(mana('LESSTHAN',.5),{type='HEALTHPCT',unit='player',operator='GREATERTHAN',value=.7})),
  }},

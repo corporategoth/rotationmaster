@@ -13,8 +13,8 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local combat={type='COMBAT',unit='player'}
 local P='priest-sim-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.priest.dps.wowsims',revision=1,
- blocks={['era.priest.boundaries']=1,['era.priest.enemy-target']=1,['era.priest.shadowform']=1,['era.priest.pull']=1,['era.priest.pull-shield']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.era.priest.dps.wowsims',revision=2,
+ blocks={['era.priest.boundaries']=1,['era.priest.enemy-target']=1,['era.priest.shadowform']=1,['era.priest.pull']=2,['era.priest.pull-shield']=1,
   ['era.priest.moving']=1,['era.priest.wand-finish']=1,['era.priest.pain']=1,['era.priest.filler']=1,['era.priest.wand-fallback']=1,
   ['era.priest.upkeep']=1},
  nameKey='Default.Era.Priest.Dps.Wowsims.Name',descriptionKey='Default.Era.Priest.Dps.Wowsims.Description',

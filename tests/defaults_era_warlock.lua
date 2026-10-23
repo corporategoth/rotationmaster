@@ -47,8 +47,10 @@ test('casts, channels, no target and another player\'s mob stop without melee; a
   s.combat=false;assert(stopped(f,s,id),id..' tagged by someone else');s.group=true;assert(first(f,s,id),id..' joins the group pull')
   s.group=false;s.targetCombat=false;assert(first(f,s,id),id..' pulls a fresh mob')
  end
- local f,s=warlock(60,kit,{427717,1120});s.season=2;s.channel=true;dots(s,427717,403677,426320,980,172,18265)
- assert(stopped(f,s,SHADOWWS),'wowsims: nothing due, keep draining');s.debuffs={};assert(first(f,s,SHADOWWS)==427717,'wowsims: clip the channel for a due DoT')
+ local f,s=warlock(60,kit,{427717,1120});s.season=2;s.channel=true;s.channelSpell=1120;dots(s,427717,403677,426320,980,172,18265)
+ assert(stopped(f,s,SHADOWWS),'wowsims: nothing due, keep draining');s.debuffs={};assert(first(f,s,SHADOWWS)==427717,'wowsims: clip the Drain Soul channel for a due DoT')
+ for _,id in ipairs({1949,755,689})do s.channelSpell=id;local ok,r=stopped(f,s,SHADOWWS);assert(ok and r.suppressAttack,'wowsims: channel '..id..' (Hellfire, Health Funnel, Drain Life) is kept')end
+ s.channelSpell=nil;assert(stopped(f,s,SHADOWWS),'wowsims: a channel it cannot name is kept')
 end)
 
 test('leveling: Immolate and Shadow Bolt at 1; curse, DoTs, then solo sustain and the wand as learned; groups never wand',function()

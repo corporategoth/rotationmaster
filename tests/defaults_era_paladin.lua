@@ -8,8 +8,9 @@ local SRET,SRETIV,STWIST,SSTACK,SHOCK='rm.sod.paladin.retribution','rm.sod.palad
 local SPROT,SPROTWS,SHOLY,SHOLYWH='rm.sod.paladin.protection','rm.sod.paladin.protection.wowsims','rm.sod.paladin.holy','rm.sod.paladin.holy.wowhead'
 local VANILLA={RET,TWIST,PROT,PROTIV,HOLY}
 local SOD={SRET,SRETIV,STWIST,SSTACK,SHOCK,SPROT,SPROTWS,SHOLY,SHOLYWH}
+-- Auras are stances read by spell (FORM form, any rank): Devotion Aura's rank family is modeled.
 local function paladin(level,season)
- local f,s=M.new('paladin');local a=f.addon
+ local f,s=M.new('paladin',{families={[465]={465,10290,643,10291,1032,10292,10293}}});local a=f.addon
  s.setLevel(level or 60);if season then s.setSeason(season)end
  return a,s,f
 end
@@ -100,7 +101,10 @@ test('vanilla Retribution reminders: aura, blessing, heal, emergency bubble',fun
  s.combat=false;s.health.player=50
  local lit=M.upkeep(a,s,RET);assert(lit[20218]and not lit[7294]and lit[19742]and not lit[19740]and lit[19750]and not lit[635],'solo')
  s.group=true;lit=M.upkeep(a,s,RET);assert(lit[19740]and not lit[19742],'group: Might')
- s.buff('player',465);s.buff('player',25782,{sourceUnit='party1'});lit=M.upkeep(a,s,RET);assert(not lit[20218]and not lit[19740],'chosen aura and a Greater Blessing are kept')
+ s.buff('player',465);s.buff('player',25782,{sourceUnit='party1'});lit=M.upkeep(a,s,RET);assert(lit[20218]and not lit[19740],'a Devotion Aura buff is not your aura (stance)')
+ s.shift(465);lit=M.upkeep(a,s,RET);assert(not lit[20218]and not lit[19740],'chosen aura and a Greater Blessing are kept')
+ s.bar={20218,10293};s.form=2;assert(M.status(a,RET,'ret-sanctity-aura')=='no-match','any rank of an aura you chose, wherever it sits on the bar');s.shift(0)
+ assert(M.upkeep(a,s,RET)[20218],'no aura active');s.shift(465)
  s.combat=true;s.health.player=15;lit=M.upkeep(a,s,RET);assert(lit[642]and not lit[498]and not lit[19750],'bubble')
  s.debuff('player',25771);lit=M.upkeep(a,s,RET);assert(not lit[642],'Forbearance blocks the bubble')
  s.health.player=5;lit=M.upkeep(a,s,RET);assert(lit[633],'Lay on Hands')

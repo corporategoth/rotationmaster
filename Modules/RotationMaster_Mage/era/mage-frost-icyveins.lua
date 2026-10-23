@@ -12,7 +12,7 @@ local function stop(id)return{id=id,type='none',suppress_attack=true,conditions=
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='mage-grind-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.mage.frost.icyveins',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.era.mage.frost.icyveins',revision=2,
  blocks={['era.mage.boundaries']=1,['era.mage.frostbolt']=1,['era.mage.moving']=1,['era.mage.execute']=1,
   ['era.mage.wand-finish']=1,['era.mage.armor']=1,['era.mage.upkeep']=1},
  nameKey='Default.Era.Mage.Frost.IcyVeins.Name',descriptionKey='Default.Era.Mage.Frost.IcyVeins.Description',
@@ -33,7 +33,7 @@ assert(addon:RegisterDefaultRotation({
    block(P..'upkeep','era.mage.upkeep',P)},
   rotation={
    block(P..'boundaries','era.mage.boundaries',P),
-   {id=P..'pull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+   {id=P..'pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     block(P..'pull-filler','era.mage.frostbolt',P..'pull-'),stop(P..'pull-stop')}},
    block(P..'moving','era.mage.moving',P),
    {id=P..'aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2},onFalse={},onTrue={

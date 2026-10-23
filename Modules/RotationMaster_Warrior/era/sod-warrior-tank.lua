@@ -27,19 +27,20 @@ local tanked={type='ISSAME',unit='targettarget',otherunit='player'}
 local unqueued=all(negate(queued(78)),negate(queued(845)))
 -- Defender's Resolve: 460171 per wowsims and Wowhead's text, 462230 per Wowhead's link (verify).
 local function resolve(id)return any(negate(buff(id)),{type='BUFF_REMAIN',unit='player',spell=id,operator='LESSTHAN',value=2})end
+local shield={type='WEAPON_TYPE',slot='offhand',kind='shield'}
 local stacked=all({type='DEBUFF',unit='target',spell=7386,anyrank=true},{type='DEBUFF_STACKS',unit='target',spell=7386,anyrank=true,operator='GREATERTHANOREQUALS',value=5})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.warrior.tank',revision=2,
- blocks={['era.warrior.boundaries']=1,['era.warrior.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.warrior.tank',revision=3,
+ blocks={['era.warrior.boundaries']=2,['era.warrior.upkeep']=1},
  nameKey='Default.SoD.Warrior.Tank.Name',descriptionKey='Default.SoD.Warrior.Tank.Description',
  applicability={families={'era'},actionContext='player',class='WARRIOR',minLevel=10,maxLevel=60,rulesets={'season:2'}},
  tags={'tank','melee','leveling','endgame','aoe','season-of-discovery','wowhead','wowsims'},
  sources={{url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/warrior/tank-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Protection Warrior tank rotation (Phase 8)',reviewedAt='2026-10-23',revision='2025-04-09'},
  {url='https://github.com/wowsims/sod/blob/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/tank_warrior/apls/phase_4.apl.json',title='wowsims/sod: Warrior tank Phase 4 APL',reviewedAt='2026-10-23',revision='0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e'}},
- body={priority=70,switch={type='FORM',value=2},
+ body={priority=70,switch={type='FORM',form=71},
  cooldowns={block('era.warrior.upkeep','sod-tank-'),
   spell('sod-tank-commanding-shout',403215,negate(buff(403215))),
-  spell('sod-tank-shield-block',2565,all(combat(),tanked,negate({type='BUFF',unit='player',spell=2565}))),
+  spell('sod-tank-shield-block',2565,all(combat(),shield,tanked,negate({type='BUFF',unit='player',spell=2565}))),
   spell('sod-tank-heroic-strike',78,all(combat(),unqueued,enemies('LESSTHAN',2),rage('GREATERTHANOREQUALS',50))),
   spell('sod-tank-cleave',845,all(combat(),unqueued,enemies('GREATERTHANOREQUALS',2),rage('GREATERTHANOREQUALS',55))),
   spell('sod-tank-bloodrage',2687,all(combat(),{type='HEALTHPCT',unit='player',operator='GREATERTHAN',value=.5})),
@@ -56,15 +57,15 @@ assert(addon:RegisterDefaultRotation({
  {id='sod-tank-aoe',type='branch',conditions=enemies('GREATERTHANOREQUALS',2),onFalse={},onTrue={
   spell('sod-tank-aoe-thunder-clap',6343),
   spell('sod-tank-aoe-shockwave',440488),
-  spell('sod-tank-aoe-shield-slam',23922),
+  spell('sod-tank-aoe-shield-slam',23922,shield),
   spell('sod-tank-aoe-revenge',6572),
   spell('sod-tank-aoe-whirlwind',1680),
   spell('sod-tank-aoe-devastate',403196),
   spell('sod-tank-aoe-sunder',7386,negate(rune(403195))),
  }},
- spell('sod-tank-resolve-shield-slam',23922,all(resolve(460171),resolve(462230))),
+ spell('sod-tank-resolve-shield-slam',23922,all(shield,resolve(460171),resolve(462230))),
  spell('sod-tank-revenge',6572),
- spell('sod-tank-shield-slam',23922),
+ spell('sod-tank-shield-slam',23922,shield),
  spell('sod-tank-shockwave',440488),
  spell('sod-tank-execute',5308),
  spell('sod-tank-cunning-whirlwind',1680,{type='BUFF_STACKS',unit='player',spell=1234067,operator='GREATERTHANOREQUALS',value=5}),

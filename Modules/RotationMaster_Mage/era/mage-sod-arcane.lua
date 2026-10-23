@@ -14,7 +14,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local P='mage-sarcane-'
 local combat={type='COMBAT',unit='player'}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.mage.arcane',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.mage.arcane',revision=3,
  blocks={['era.mage.boundaries']=1,['era.mage.wand-finish']=1,['sod.mage.balefire']=1,['sod.mage.armor']=2,['sod.mage.upkeep']=2},
  nameKey='Default.SoD.Mage.Arcane.Name',descriptionKey='Default.SoD.Mage.Arcane.Description',
  applicability={families={'era'},actionContext='player',class='MAGE',minLevel=10,maxLevel=60,rulesets={'season:2'}},
@@ -33,7 +33,7 @@ assert(addon:RegisterDefaultRotation({
    block(P..'upkeep','sod.mage.upkeep',P)},
   rotation={
    block(P..'boundaries','era.mage.boundaries',P),
-   {id=P..'pull',type='branch',conditions=negate(combat),onFalse={},onTrue={spell(P..'pull-arcane-blast',400574),stop(P..'pull-stop')}},
+   {id=P..'pull',type='branch',conditions=combat,onTrue={},onFalse={spell(P..'pull-arcane-blast',400574),stop(P..'pull-stop')}},
    {id=P..'moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
     spell(P..'moving-barrage',400610),spell(P..'moving-fire-blast',2136),stop(P..'moving-stop')}},
    {id=P..'aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={

@@ -12,8 +12,8 @@ local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution.icyveins',revision=1,
- blocks={['sod.paladin.ret-upkeep']=1,['era.paladin.safety']=1,['era.paladin.melee-opening']=1,['era.paladin.boundaries']=1,['sod.paladin.seal']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution.icyveins',revision=2,
+ blocks={['sod.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=1,['era.paladin.boundaries']=1,['sod.paladin.seal']=2},
  nameKey='Default.SoD.Paladin.Retribution.IcyVeins.Name',descriptionKey='Default.SoD.Paladin.Retribution.IcyVeins.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN',minLevel=1,maxLevel=60,rulesets={'season:2'}},
  tags={'leveling','retribution','melee','single-target','season-of-discovery','icy-veins','warcraft-tavern'},
@@ -28,7 +28,7 @@ assert(addon:RegisterDefaultRotation({
    spell('sretiv-crusader-seal',21082,all(negate({type='DEBUFF',unit='target',spell=21183,anyrank=true}),negate({type='GROUP',raid=true}),{type='SPELL_AVAIL',spell=20271},
     any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='worldboss'},{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=20}))),
    block('sretiv-seal','sod.paladin.seal','sretiv-'),
-   {id='sretiv-pull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+   {id='sretiv-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell('sretiv-pull-exorcism',415068),
     spell('sretiv-pull-judgement',20271),
     {id='sretiv-pull-stop',type='none',conditions={}},

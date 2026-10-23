@@ -17,8 +17,8 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local undead=any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',unit='target',value='DEMON'})
 local holyPower={type='BUFF_STACKS',unit='player',spell=1226461,operator='GREATERTHANOREQUALS',value=3}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution',revision=2,
- blocks={['sod.paladin.ret-upkeep']=1,['era.paladin.safety']=1,['era.paladin.melee-opening']=1,['era.paladin.boundaries']=1,['sod.paladin.seal']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution',revision=3,
+ blocks={['sod.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=1,['era.paladin.boundaries']=1,['sod.paladin.seal']=2},
  nameKey='Default.SoD.Paladin.Retribution.Name',descriptionKey='Default.SoD.Paladin.Retribution.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN',minLevel=1,maxLevel=60,rulesets={'season:2'}},
  tags={'leveling','endgame','retribution','melee','single-target','season-of-discovery','wowhead','wowsims','icy-veins'},
@@ -30,7 +30,7 @@ assert(addon:RegisterDefaultRotation({
   rotation={
    block('sret-opening','era.paladin.melee-opening','sret-'),
    block('sret-seal','sod.paladin.seal','sret-'),
-   {id='sret-pull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+   {id='sret-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell('sret-pull-exorcism',415068),
     spell('sret-pull-judgement',20271,negate(known(415068))),
     {id='sret-pull-stop',type='none',conditions={}},

@@ -116,7 +116,9 @@ test('SoD Enhancement: Maelstrom spells at five stacks, Stormstrike, Lava Lash, 
  assert(first(f,s,SENH)==8050);s.debuffs={{id=8050}};assert(first(f,s,SENH)==8042);s.nopower[8042]=true;assert(first(f,s,SENH)==425339)
  s.enemies={0,0,0};assert(first(f,s,SENH)==8190);s.totems[1]=5;M.know(s,408341);assert(first(f,s,SENH)==408341,'Fire Nova from a fire totem');s.enemies={};s.totems={}
  local u=M.upkeep(f,s,SENH);assert(not u['sod-enh-windfury-weapon']and not u['sod-enh-offhand-flametongue'],'both weapons enchanted')
- s.offEnchant=false;u=M.upkeep(f,s,SENH);assert(u['sod-enh-offhand-flametongue']==8024 and not u['sod-enh-offhand-windfury'] and not u['sod-enh-offhand-windfury-icyveins'])
+ s.offEnchant=false;s.gear={[16]=M.GEAR.SWORD};u=M.upkeep(f,s,SENH);assert(not u['sod-enh-offhand-flametongue']and not u['sod-enh-offhand-windfury'],'Dual Wield known, nothing in the off hand')
+ s.gear[17]=M.GEAR.SHIELD;u=M.upkeep(f,s,SENH);assert(not u['sod-enh-offhand-flametongue']and not u['sod-enh-offhand-windfury'],'a shield takes no imbue')
+ s.gear[17]=M.GEAR.SWORD;u=M.upkeep(f,s,SENH);assert(u['sod-enh-offhand-flametongue']==8024 and not u['sod-enh-offhand-windfury'] and not u['sod-enh-offhand-windfury-icyveins'])
  M.unengrave(s,408507);u=M.upkeep(f,s,SENH);assert(u['sod-enh-offhand-windfury']==8232 and not u['sod-enh-offhand-flametongue'],'no Lava Lash rune: Windfury off hand');M.engrave(s,408507)
  s.mainEnchant=1663;assert(M.upkeep(f,s,SENH)['sod-enh-windfury-weapon']==8232,'Windfury replaces Rockbiter')
 end)

@@ -7,26 +7,6 @@ local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local corpus=dofile('tests/fixtures/default_corpus.lua')
 local modules=dofile('tools/builtin_modules.lua')
 
--- TEMPORARY: Classic Era (era/) is being converted on its own branch. These are exactly its
--- offending Branches as "<block or pack id>/<step id>". Delete this table (leave it empty) when
--- that branch merges; a listed step that no longer offends fails the test, so it cannot go stale.
-local ERA_PENDING={
- 'era.druid.bear-pull/pull','era.druid.caster-pull/pull','sod.druid.caster-pull/pull','rm.sod.druid.balance.wowhead/sod-balance-wh-pull',
- 'era.hunter.dead-zone/melee','era.hunter.opening/pull','rm.era.hunter.ranged/hunter-solo','rm.era.hunter.ranged.icyveins/hunter-solo',
- 'rm.era.hunter.ranged.wowsims/hunter-solo','rm.sod.hunter.ranged/hunter-melee','rm.sod.hunter.ranged/hunter-pull','rm.sod.hunter.melee/hunter-pull',
- 'rm.era.mage.frost/mage-frost-pull','rm.era.mage.frost.icyveins/mage-grind-pull','rm.era.mage.fire/mage-fire-pull','rm.era.mage.fire.warcrafttavern/mage-fire-wct-pull',
- 'rm.sod.mage.fire/mage-sfire-pull','rm.sod.mage.frost/mage-sfrost-pull','rm.sod.mage.frost.warcrafttavern/mage-sfrost-wct-pull','rm.sod.mage.arcane/mage-sarcane-pull',
- 'rm.sod.mage.healer/mage-sheal-pull','era.paladin.seal/seal','sod.paladin.seal/seal','sod.paladin.holy-hostile/seal',
- 'rm.era.paladin.retribution/ret-pull','rm.era.paladin.retribution.twist/twist-seal','rm.era.paladin.retribution.twist/twist-pull','rm.era.paladin.protection/prot-seal',
- 'rm.era.paladin.protection/prot-pull','rm.era.paladin.protection.icyveins/protw-seal','rm.era.paladin.protection.icyveins/protw-pull','rm.sod.paladin.retribution/sret-pull',
- 'rm.sod.paladin.retribution.icyveins/sretiv-pull','rm.sod.paladin.retribution.twist/stwist-pull','rm.sod.paladin.retribution.stacking/sstack-pull','rm.sod.paladin.shockadin/shock-pull',
- 'rm.sod.paladin.protection/sprot-pull','rm.sod.paladin.protection.wowsims/sprotws-pull','era.priest.pull/pull','sod.priest.pull/pull',
- 'rm.era.priest.dps.warcrafttavern/priest-wct-pull','rm.era.priest.dps.warcrafttavern/priest-wct-solo','rm.era.priest.healer/priest-heal-prepull','rm.sod.priest.healer/priest-sod-heal-prepull',
- 'rm.sod.priest.healer.warcrafttavern/priest-sod-wct-prepull','rm.era.shaman.enhancement/enh-pull','rm.era.shaman.enhancement.warcrafttavern/enh-wt-pull','rm.sod.shaman.tank/sod-tank-pull',
- 'rm.sod.shaman.enhancement/sod-enh-pull','era.warlock.curse/curse-needed','era.warlock.sustain/solo','rm.era.warlock.dps.warcrafttavern/lock-wt-solo',
- 'rm.sod.warlock.tank/sod-tank-curse','rm.sod.warlock.fire/sod-fire-curse','rm.sod.warlock.fire/sod-fire-solo','era.warrior.boundaries/pull',
-}
-
 local function negated(c) return type(c)=='table' and c.type=='NOT' end
 -- Every Branch in a step list, nested arms included: fn(step).
 local function branches(list,fn)
@@ -44,40 +24,27 @@ local function authored()
     assert(#out.blocks>0 and #out.packs>0)
     return out,f
 end
-local function eraOnly(families) return #families==1 and families[1]=='era' end
 
 test('no Built In Branch has NOT as its whole condition (every edition, blocks, overrides and packs)',function()
-    local defs=authored();local pending={};for _,key in ipairs(ERA_PENDING) do assert(not pending[key],'duplicate '..key);pending[key]=true end
-    local offences,seen,scope={},{},{}
-    local function scan(owner,families,path,list)
-        scope[owner]=families
+    local defs=authored();local offences={}
+    local function scan(owner,path,list)
         branches(list,function(step)
-            if negated(step.conditions) then
-                local key=owner..'/'..tostring(step.id);seen[key]=true
-                if not pending[key] then offences[#offences+1]=path..': '..key end
-            end
+            if negated(step.conditions) then offences[#offences+1]=path..': '..owner..'/'..tostring(step.id) end
         end)
     end
     for _,row in ipairs(defs.blocks) do local b=row.def
-        scan(b.id,b.families,row.path,b.steps)
-        for _,override in ipairs(b.overrides or {}) do scan(b.id,b.families,row.path,override.steps) end
+        scan(b.id,row.path,b.steps)
+        for _,override in ipairs(b.overrides or {}) do scan(b.id,row.path,override.steps) end
     end
-    for _,row in ipairs(defs.packs) do local p=row.def;scan(p.id,p.applicability.families,row.path,p.body.rotation);scan(p.id,p.applicability.families,row.path,p.body.cooldowns) end
+    for _,row in ipairs(defs.packs) do local p=row.def;scan(p.id,row.path,p.body.rotation);scan(p.id,row.path,p.body.cooldowns) end
     assert(#offences==0,'Branch condition is a NOT (drop the outer NOT and swap onTrue/onFalse): '..table.concat(offences,', '))
-    for key in pairs(pending) do
-        local owner=key:match('^(.*)/[^/]*$')
-        assert(scope[owner] and eraOnly(scope[owner]),'ERA_PENDING may only name Classic Era steps: '..key)
-        assert(seen[key],'ERA_PENDING entry no longer offends; remove it: '..key)
-    end
 end)
 
-test('no composed Built In outside Classic Era expands to a Branch whose condition is a NOT',function()
+test('no composed Built In expands to a Branch whose condition is a NOT',function()
     local f,packs=corpus.load(5,1,'ROGUE');local bad={}
     for _,p in ipairs(packs) do
-        if not corpus.contains(p.applicability.families,'era') then
-            branches(p.body.rotation,function(step) if negated(step.conditions) then bad[#bad+1]=p.id..'/'..step.id end end)
-            branches(p.body.cooldowns,function(step) if negated(step.conditions) then bad[#bad+1]=p.id..'/'..step.id end end)
-        end
+        branches(p.body.rotation,function(step) if negated(step.conditions) then bad[#bad+1]=p.id..'/'..step.id end end)
+        branches(p.body.cooldowns,function(step) if negated(step.conditions) then bad[#bad+1]=p.id..'/'..step.id end end)
     end
     assert(#bad==0,table.concat(bad,', '))
 end)
@@ -119,7 +86,7 @@ local function setter(a,condition)
     end
 end
 
--- Every shipped Branch outside Classic Era, on the real sequence executor and condition evaluator:
+-- Every shipped Branch, on the real sequence executor and condition evaluator:
 -- the walk (each step offered, then the outcome) is the same for the authored form and its negated
 -- form, when the condition is true, false and unavailable.
 test('negating any shipped Branch and swapping its arms gives the same walk when true, false or unavailable',function()
@@ -135,25 +102,23 @@ test('negating any shipped Branch and swapping its arms gives the same walk when
     local count,decided=0,0
     local function find(body,id) local found;branches(body.rotation,function(step) if step.id==id then found=step end end);return found end
     for _,p in ipairs(packs) do
-        if not corpus.contains(p.applicability.families,'era') then
-            local ids={};branches(p.body.rotation,function(step) ids[#ids+1]=step.id end)
-            for _,id in ipairs(ids) do
-                local before,condition=negatedCopy(a,p.body,id);set=setter(a,condition);count=count+1
-                -- The whole premade (other conditions false), then the Branch alone, so a Stop ahead of
-                -- it cannot hide its arms.
-                local alone,aloneBefore={rotation={find(p.body,id)}},{rotation={find(before,id)}}
-                local outcomes={}
-                for _,m in ipairs({'match','no-match','unavailable'}) do
-                    set(m)
-                    for _,pair in ipairs({{p.body,before},{alone,aloneBefore}}) do
-                        local x,y=walk(pair[1]),walk(pair[2])
-                        assert(x==y,p.id..'/'..id..' '..m..': '..x..' | negated: '..y)
-                    end
-                    outcomes[m]=walk(alone)
+        local ids={};branches(p.body.rotation,function(step) ids[#ids+1]=step.id end)
+        for _,id in ipairs(ids) do
+            local before,condition=negatedCopy(a,p.body,id);set=setter(a,condition);count=count+1
+            -- The whole premade (other conditions false), then the Branch alone, so a Stop ahead of
+            -- it cannot hide its arms.
+            local alone,aloneBefore={rotation={find(p.body,id)}},{rotation={find(before,id)}}
+            local outcomes={}
+            for _,m in ipairs({'match','no-match','unavailable'}) do
+                set(m)
+                for _,pair in ipairs({{p.body,before},{alone,aloneBefore}}) do
+                    local x,y=walk(pair[1]),walk(pair[2])
+                    assert(x==y,p.id..'/'..id..' '..m..': '..x..' | negated: '..y)
                 end
-                assert(outcomes.unavailable==' => unavailable suppress',p.id..'/'..id..' unavailable did not pause: '..outcomes.unavailable)
-                if outcomes.match~=outcomes['no-match'] then decided=decided+1 end
+                outcomes[m]=walk(alone)
             end
+            assert(outcomes.unavailable==' => unavailable suppress',p.id..'/'..id..' unavailable did not pause: '..outcomes.unavailable)
+            if outcomes.match~=outcomes['no-match'] then decided=decided+1 end
         end
     end
     assert(decided==count,(count-decided)..' of '..count..' branches walk the same either way')

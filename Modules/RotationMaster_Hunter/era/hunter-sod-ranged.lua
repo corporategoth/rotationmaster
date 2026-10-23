@@ -33,7 +33,7 @@ local worth=all(combat(),any(classified('worldboss'),classified('elite'),classif
  {type='TT_HEALTH',unit='target',health=0,operator='GREATERTHAN',value=20}))
 local viperLow=all(mana('LESSTHAN',.5),any(buff(415423),all({type='SPELL_KNOWN',spell=415423},mana('LESSTHAN',.1))))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.hunter.ranged',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.hunter.ranged',revision=3,
  blocks={['era.hunter.boundaries']=1,['sod.hunter.upkeep']=1},
  nameKey='Default.SoD.Hunter.Ranged.Name',descriptionKey='Default.SoD.Hunter.Ranged.Description',
  applicability={families={'era'},actionContext='player',class='HUNTER',minLevel=1,maxLevel=60,rulesets={'season:2'}},
@@ -57,7 +57,7 @@ assert(addon:RegisterDefaultRotation({
  rotation={
   block('era.hunter.boundaries','hunter-'),
   -- Inside melee range (dead zone, or a weaver stepping in): Kill Shot has no minimum range.
-  {id='hunter-melee',type='branch',conditions=negate({type='BEYOND_MELEE',unit='target'}),onFalse={},onTrue={
+  {id='hunter-melee',type='branch',conditions={type='BEYOND_MELEE',unit='target'},onTrue={},onFalse={
    spell('hunter-melee-kill-shot',409593),
    spell('hunter-melee-wyvern-strike',458436),
    spell('hunter-melee-flanking-strike',415320),
@@ -66,7 +66,7 @@ assert(addon:RegisterDefaultRotation({
    spell('hunter-melee-carve',425711,{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2}),
    stop('hunter-melee-stop',true),
   }},
-  {id='hunter-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+  {id='hunter-pull',type='branch',conditions=combat(),onTrue={},onFalse={
    spell('hunter-pull-mark',1130,unmarked),
    -- Lock and Load (passive): a Frost Trap placed before the pull makes the next Shot free.
    spell('hunter-pull-lnl-frost-trap',13809,all(lockAndLoad,negate(buff(415414)))),

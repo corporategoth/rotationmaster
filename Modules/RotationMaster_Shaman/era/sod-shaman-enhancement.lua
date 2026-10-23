@@ -24,9 +24,10 @@ local windfury={283,284,525,1669,7569}
 local big=any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'})
 local ranged=all({type='BEYOND_MELEE',unit='target'},negate({type='MOVING'}))
 local flamed={type='DEBUFF',unit='target',spell=8050,anyrank=true,owndebuff=true}
-local dual=all(known(674),negate({type='WEAPON',offhand=true}))
+-- An off-hand weapon (by item type, so a shield never asks for an imbue) without its enchant.
+local dual=all({type='WEAPON_TYPE',slot='offhand',kind='weapon'},negate({type='WEAPON',offhand=true}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.shaman.enhancement',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.shaman.enhancement',revision=3,
  blocks={['era.shaman.manual']=1,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.melee-totems']=1},
  nameKey='Default.SoD.Shaman.Enhancement.Name',descriptionKey='Default.SoD.Shaman.Enhancement.Description',
  applicability={families={'era'},actionContext='player',class='SHAMAN',minLevel=1,maxLevel=60,rulesets={'season:2'}},
@@ -51,7 +52,7 @@ assert(addon:RegisterDefaultRotation({
  },
  rotation={
  block('era.shaman.manual','sod-enh-'),
- {id='sod-enh-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+ {id='sod-enh-pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('sod-enh-pull-flame-shock',8050,all({type='ATTACKABLE',unit='target'},negate({type='COMBAT',unit='target'}))),
   spell('sod-enh-pull-bolt',403,all({type='ATTACKABLE',unit='target'},negate({type='COMBAT',unit='target'}),ranged)),
   {id='sod-enh-pull-stop',type='none',suppress_attack=false,conditions={}},

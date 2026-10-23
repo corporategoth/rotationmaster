@@ -23,7 +23,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local tanked={type='ISSAME',unit='targettarget',otherunit='player'}
 local instant={8928,8927,8926,6950,6949,6947}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.tank',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.tank',revision=3,
  blocks={['era.rogue.boundaries']=1},
  nameKey='Default.SoD.Rogue.Tank.Name',descriptionKey='Default.SoD.Rogue.Tank.Description',
  applicability={families={'era'},actionContext='player',class='ROGUE',minLevel=1,maxLevel=60,rulesets={'season:2'}},
@@ -35,7 +35,7 @@ assert(addon:RegisterDefaultRotation({
  body={priority=60,switch={type='RUNE_ENGRAVED',spell=400014},
  cooldowns={
   item('rogue-tank-mainhand-poison',instant,negate({type='WEAPON'})),
-  item('rogue-tank-offhand-poison',instant,all({type='SWING_TIME',offhand=true,operator='GREATERTHAN',value=0},negate({type='WEAPON',offhand=true}))),
+  item('rogue-tank-offhand-poison',instant,all({type='WEAPON_TYPE',slot='offhand',kind='weapon'},negate({type='WEAPON',offhand=true}))),
   spell('rogue-tank-tease',410412,all(combat(),{type='GROUP'},negate(tanked))),
   spell('rogue-tank-tease-alt',1219355,all(combat(),{type='GROUP'},negate(tanked))),
   spell('rogue-tank-kick',1766,any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})),

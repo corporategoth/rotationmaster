@@ -34,8 +34,8 @@ local unqueued=all(negate(queued(78)),negate(queued(845)))
 local immune=any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',unit='target',value='MECHANICAL'},{type='CREATURE',unit='target',value='ELEMENTAL'})
 local enraged=any(buff(12880),buff(425415),buff(427066),buff(29131),buff(18499))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.warrior.dps',revision=2,
- blocks={['era.warrior.boundaries']=1,['era.warrior.upkeep']=1,['era.warrior.aoe-strikes']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.warrior.dps',revision=3,
+ blocks={['era.warrior.boundaries']=2,['era.warrior.upkeep']=1,['era.warrior.aoe-strikes']=1},
  nameKey='Default.SoD.Warrior.DPS.Name',descriptionKey='Default.SoD.Warrior.DPS.Description',
  applicability={families={'era'},actionContext='player',class='WARRIOR',minLevel=1,maxLevel=60,rulesets={'season:2'}},
  tags={'dps','melee','leveling','endgame','aoe','season-of-discovery','wowsims','wowhead'},
@@ -53,7 +53,7 @@ assert(addon:RegisterDefaultRotation({
   spell('sod-dps-recklessness',1719,all(combat(),boss,any(buff(12328),lifetime('LESSTHANOREQUALS',25)))),
   spell('sod-dps-sweeping-strikes',12292,all(combat(),enemies('GREATERTHANOREQUALS',2))),
   optional(spell('sod-dps-berserker-rage',18499,all(combat(),any(rune(402911),rune(426940)),negate(enraged)))),
-  optional(spell('sod-dps-battle-stance-dip',2457,all(combat(),buff(426969),negate({type='FORM',value=1}),rage('LESSTHANOREQUALS',25)))),
+  optional(spell('sod-dps-battle-stance-dip',2457,all(combat(),buff(426969),negate({type='FORM',form=2457}),rage('LESSTHANOREQUALS',25)))),
  },
  rotation={
  block('era.warrior.boundaries','sod-dps-'),
@@ -65,7 +65,7 @@ assert(addon:RegisterDefaultRotation({
  spell('sod-dps-blood-surge-slam',1464,any(buff(413399),rune(402922))),
  spell('sod-dps-bloodthirst',23881),
  spell('sod-dps-mortal-strike',12294),
- spell('sod-dps-shield-slam',23922),
+ spell('sod-dps-shield-slam',23922,{type='WEAPON_TYPE',slot='offhand',kind='shield'}),
  spell('sod-dps-overpower',7384),
  {id='sod-dps-two-hand',type='branch',conditions=rune(429765),onTrue={
   spell('sod-dps-quick-strike',429765,any(rage('GREATERTHANOREQUALS',30),cooling(23881,1.5),cooling(12294,1.5))),

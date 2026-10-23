@@ -19,8 +19,8 @@ local sliced={type='BUFF',unit='player',spell=5171,anyrank=true,ownbuff=true}
 local lasting=any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'},
  {type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.2})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.rogue.dps',revision=1,
- blocks={['era.rogue.boundaries']=1,['era.rogue.opener']=1,['era.rogue.upkeep']=1,['era.rogue.builders']=1,['era.rogue.expose-armor']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.rogue.dps',revision=2,
+ blocks={['era.rogue.boundaries']=1,['era.rogue.opener']=2,['era.rogue.upkeep']=2,['era.rogue.builders']=2,['era.rogue.expose-armor']=1},
  nameKey='Default.Era.Rogue.DPS.Name',descriptionKey='Default.Era.Rogue.DPS.Description',
  applicability={families={'era'},actionContext='player',class='ROGUE',minLevel=1,maxLevel=60},
  tags={'dps','melee','leveling','endgame','wowsims','icy-veins','wowhead'},

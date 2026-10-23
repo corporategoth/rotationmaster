@@ -9,6 +9,7 @@ local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
+local function form(id)return{type='FORM',form=id}end
 local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
 local function hot(id)return{type='BUFF',unit='target',spell=id,anyrank=true,ownbuff=true}end
 local function hp(v)return{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=v}end
@@ -17,8 +18,8 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function spell(id,action,conditions,ranked)return{id=id,type='spell',action=action,ranked=ranked or false,conditions=conditions or {}}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.druid.restoration',revision=2,
- blocks={['era.druid.boundaries']=1,['era.druid.upkeep']=1,['era.druid.heal-cooldowns']=1,['era.druid.resto-damage']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.druid.restoration',revision=3,
+ blocks={['era.druid.boundaries']=2,['era.druid.upkeep']=1,['era.druid.heal-cooldowns']=1,['era.druid.resto-damage']=1},
  nameKey='Default.SoD.Druid.Restoration.Name',descriptionKey='Default.SoD.Druid.Restoration.Description',
  applicability={families={'era'},actionContext='player',class='DRUID',minLevel=1,maxLevel=60,rulesets={'season:2'}},
  tags={'season-of-discovery','leveling','endgame','restoration','healer','group','icy-veins','warcraft-tavern'},
@@ -35,7 +36,7 @@ assert(addon:RegisterDefaultRotation({
   },
   rotation={
    ref('sod-resto-boundaries','era.druid.boundaries','sod-resto-'),
-   {id='sod-resto-feral-form',type='none',conditions=any(own(768),own(5487),own(9634))},
+   {id='sod-resto-feral-form',type='none',conditions=any(form(768),form(5487),form(9634))},
    {id='sod-resto-heal',type='branch',conditions=all({type='FRIENDLY',unit='target'},negate({type='DEAD',unit='target'})),onFalse={},onTrue={
     spell('sod-resto-instant-touch',5185,any(own(17116),{type='BUFF',unit='player',spell=414800,anyrank=true})),
     spell('sod-resto-wild-growth',408120,hurt(.9,2),true),

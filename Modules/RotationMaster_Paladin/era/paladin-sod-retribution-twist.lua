@@ -15,8 +15,8 @@ local function swing(op,v)return{type='SWING_TIME_REMAIN',offhand=false,operator
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution.twist',revision=2,
- blocks={['sod.paladin.ret-upkeep']=1,['era.paladin.safety']=1,['era.paladin.melee-opening']=1,['era.paladin.boundaries']=1,['sod.paladin.seal']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution.twist',revision=3,
+ blocks={['sod.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=1,['era.paladin.boundaries']=1,['sod.paladin.seal']=2},
  nameKey='Default.SoD.Paladin.Retribution.Twist.Name',descriptionKey='Default.SoD.Paladin.Retribution.Twist.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN',minLevel=20,maxLevel=60,rulesets={'season:2'}},
  tags={'endgame','raid','retribution','melee','single-target','seal-twisting','season-of-discovery','wowhead','wowsims'},
@@ -27,7 +27,7 @@ assert(addon:RegisterDefaultRotation({
   rotation={
    block('stwist-opening','era.paladin.melee-opening','stwist-'),
    block('stwist-seal','sod.paladin.seal','stwist-'),
-   {id='stwist-pull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+   {id='stwist-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell('stwist-pull-exorcism',415068),
     {id='stwist-pull-stop',type='none',conditions={}},
    }},

@@ -6,6 +6,7 @@ local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
+local function form(id)return{type='FORM',form=id}end
 local function known(id)return{type='SPELL_KNOWN',spell=id}end
 local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
 local function cp(op,v)return{type='POINT',unit='player',operator=op,value=v}end
@@ -13,8 +14,8 @@ local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name
 local function spell(id,action,conditions,ranked)return{id=id,type='spell',action=action,ranked=ranked or false,conditions=conditions or {}}end
 local rake={type='DEBUFF',unit='target',spell=1822,anyrank=true,owndebuff=true}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.druid.tank.wowsims',revision=2,
- blocks={['era.druid.boundaries']=1,['era.druid.upkeep']=1,['sod.druid.maul']=1,['sod.druid.tank-cooldowns']=1,['sod.druid.bear']=1,['sod.druid.tank-humanoid']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.druid.tank.wowsims',revision=3,
+ blocks={['era.druid.boundaries']=2,['era.druid.upkeep']=1,['sod.druid.maul']=2,['sod.druid.tank-cooldowns']=2,['sod.druid.bear']=1,['sod.druid.tank-humanoid']=1},
  nameKey='Default.SoD.Druid.Tank.Wowsims.Name',descriptionKey='Default.SoD.Druid.Tank.Wowsims.Description',
  applicability={families={'era'},actionContext='player',class='DRUID',minLevel=1,maxLevel=60,rulesets={'season:2'}},
  tags={'season-of-discovery','endgame','feral','tank','melee','single-target','wowsims'},
@@ -25,7 +26,7 @@ assert(addon:RegisterDefaultRotation({
   cooldowns={ref('sod-tank-ws-upkeep','era.druid.upkeep','sod-tank-ws-'),ref('sod-tank-ws-maul','sod.druid.maul','sod-tank-ws-'),ref('sod-tank-ws-cooldowns','sod.druid.tank-cooldowns','sod-tank-ws-')},
   rotation={
    ref('sod-tank-ws-boundaries','era.druid.boundaries','sod-tank-ws-'),
-   {id='sod-tank-ws-cat',type='branch',conditions=own(768),onFalse={},onTrue={
+   {id='sod-tank-ws-cat',type='branch',conditions=form(768),onFalse={},onTrue={
     {id='sod-tank-ws-cat-no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
     spell('sod-tank-ws-savage-roar',407988,all(negate(own(407988)),cp('GREATERTHANOREQUALS',2))),
     spell('sod-tank-ws-tigers-fury',417045,negate(rake),true),
@@ -34,7 +35,7 @@ assert(addon:RegisterDefaultRotation({
     spell('sod-tank-ws-cat-dire-bear-form',9634),
     spell('sod-tank-ws-cat-bear-form',5487),
     {id='sod-tank-ws-cat-wait',type='none',conditions={}}}},
-   {id='sod-tank-ws-bear',type='branch',conditions=any(own(5487),own(9634)),onFalse={},onTrue={
+   {id='sod-tank-ws-bear',type='branch',conditions=any(form(5487),form(9634)),onFalse={},onTrue={
     spell('sod-tank-ws-cat-form',768,all(known(407988),{type='ATTACKABLE',unit='target'},negate(rake))),
     ref('sod-tank-ws-bear-section','sod.druid.bear','sod-tank-ws-bear-')}},
    ref('sod-tank-ws-humanoid','sod.druid.tank-humanoid','sod-tank-ws-'),

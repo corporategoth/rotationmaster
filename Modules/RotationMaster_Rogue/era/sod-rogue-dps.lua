@@ -25,8 +25,8 @@ local poisoned=any(stacks(458820,4),stacks(1214170,4),stacks(2818,4))
 -- Passive runes: Carnage (bleeds pay), Cut to the Chase (finishers refresh Slice and Dice).
 local carnage,chase=rune(432276),rune(432271)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.dps',revision=2,
- blocks={['era.rogue.boundaries']=1,['era.rogue.sod-opener']=2,['era.rogue.sod-upkeep']=2,['era.rogue.sod-builders']=2,['era.rogue.expose-armor']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.dps',revision=3,
+ blocks={['era.rogue.boundaries']=1,['era.rogue.sod-opener']=3,['era.rogue.sod-upkeep']=3,['era.rogue.sod-builders']=3,['era.rogue.expose-armor']=1},
  nameKey='Default.SoD.Rogue.DPS.Name',descriptionKey='Default.SoD.Rogue.DPS.Description',
  applicability={families={'era'},actionContext='player',class='ROGUE',minLevel=1,maxLevel=60,rulesets={'season:2'}},
  tags={'dps','melee','leveling','endgame','aoe','season-of-discovery','wowsims','icy-veins','zockify'},
@@ -45,7 +45,7 @@ assert(addon:RegisterDefaultRotation({
   spell('rogue-aoe-crimson-tempest',412096,all(points('GREATERTHANOREQUALS',3),negate(owned(436611)))),
   spell('rogue-aoe-fan-of-knives',409240),
  }},
- spell('rogue-cutthroat-ambush',8676,{type='BUFF',unit='player',spell=462707}),
+ spell('rogue-cutthroat-ambush',8676,all({type='WEAPON_TYPE',slot='mainhand',subclass=15},{type='BUFF',unit='player',spell=462707})),
  spell('rogue-saber-upkeep',424785,all(points('LESSTHAN',4),any(negate(stacks(424785,3)),
   {type='DEBUFF_REMAIN',unit='target',spell=424785,owndebuff=true,operator='LESSTHAN',value=2}))),
  spell('rogue-poisoned-knife',425012,all(points('LESSTHAN',5),{type='POWER',unit='player',operator='LESSTHANOREQUALS',value=80},poisoned)),

@@ -4,7 +4,8 @@
 -- bump, every consumer's pin and revision bumped, and both recorded in
 -- tests/fixtures/builtin_composition_ledger.lua.
 -- Policy and sources are the consumers'; see premade-research era/rogue.md. IDs are Era 1.15.9
--- client data and SoD rune spells; verify in game.
+-- client data and SoD rune spells; verify in game. Ambush and Backstab need a dagger in the main hand
+-- (weapon subclass 15); the off-hand poison needs an off-hand weapon (read by item type).
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
@@ -30,19 +31,20 @@ local interrupt=any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INT
 local instant={8928,8927,8926,6950,6949,6947}
 local offhand={20844,8985,8984,2893,2892}
 for _,id in ipairs(instant)do offhand[#offhand+1]=id end
-local dualWield={type='SWING_TIME',offhand=true,operator='GREATERTHAN',value=0}
+local dualWield={type='WEAPON_TYPE',slot='offhand',kind='weapon'}
+local dagger={type='WEAPON_TYPE',slot='mainhand',subclass=15}
 -- Boundaries: manual casts/channels (bandages) and no attackable target end advice and Attack.
 assert(addon:RegisterDefaultBlock({
  id='era.rogue.boundaries',revision=1,families={'era'},class='ROGUE',steps={
  {id='manual',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
  {id='no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
 }}))
--- Vanilla stealth opener: Premeditation, Ambush from behind, Cheap Shot solo, Garrote outside
+-- Vanilla stealth opener: Premeditation, Ambush from behind with a dagger, Cheap Shot solo, Garrote outside
 -- raids, else Sinister Strike; then stop so Attack does not break Stealth.
 assert(addon:RegisterDefaultBlock({
- id='era.rogue.opener',revision=1,families={'era'},class='ROGUE',steps={
+ id='era.rogue.opener',revision=2,families={'era'},class='ROGUE',steps={
  spell('premeditation',14183,points('LESSTHANOREQUALS',3)),
- spell('ambush',8676,behind),
+ spell('ambush',8676,all(dagger,behind)),
  spell('cheap-shot',1833,negate({type='GROUP'})),
  spell('garrote',703,negate(raid)),
  spell('stealth-sinister',1752),
@@ -52,7 +54,7 @@ assert(addon:RegisterDefaultBlock({
 -- Slice and Dice up on elites or packs, Cold Blood for a five-point finisher, Evasion when hurt.
 -- Off by default: Vanish for threat, Gouge, Preparation and the racials.
 assert(addon:RegisterDefaultBlock({
- id='era.rogue.upkeep',revision=1,families={'era'},class='ROGUE',steps={
+ id='era.rogue.upkeep',revision=2,families={'era'},class='ROGUE',steps={
  item('mainhand-poison',instant,negate({type='WEAPON'})),
  item('offhand-poison',offhand,all(dualWield,negate({type='WEAPON',offhand=true}))),
  spell('kick',1766,interrupt),
@@ -68,12 +70,12 @@ assert(addon:RegisterDefaultBlock({
  optional(spell('berserking',26297,all(combat(),sliced,worth))),
 }}))
 -- Vanilla builders by what is known: Ghostly Strike and Hemorrhage outside raids (a debuff slot),
--- Backstab when the target is not facing you. Each consumer adds its own Sinister Strike.
+-- Backstab (dagger) when the target is not facing you. Each consumer adds its own Sinister Strike.
 assert(addon:RegisterDefaultBlock({
- id='era.rogue.builders',revision=1,families={'era'},class='ROGUE',steps={
+ id='era.rogue.builders',revision=2,families={'era'},class='ROGUE',steps={
  spell('ghostly-strike',14278,negate(raid)),
  spell('hemorrhage',16511,negate(raid)),
- spell('backstab',53,behind),
+ spell('backstab',53,all(dagger,behind)),
 }}))
 -- Improved Expose Armor 2/2 duty (tree 1, talent 8: verify the index in game): in a group, on an elite
 -- or boss nobody Sunders (and, in SoD, nobody keeps Sebacious Poison on), Expose Armor at five
@@ -94,7 +96,7 @@ assert(addon:RegisterDefaultBlock({
 -- Rush with Slice and Dice up, Cold Blood at five, Evasion solo when hurt; with the Master of
 -- Subtlety rune (passive, 425096) engraved, Vanish to renew it and Preparation once Vanish is spent.
 assert(addon:RegisterDefaultBlock({
- id='era.rogue.sod-upkeep',revision=2,families={'era'},class='ROGUE',steps={
+ id='era.rogue.sod-upkeep',revision=3,families={'era'},class='ROGUE',steps={
  item('sod-mainhand-poison',instant,negate({type='WEAPON'})),
  item('sod-offhand-poison',offhand,all(dualWield,negate({type='WEAPON',offhand=true}))),
  spell('sod-kick',1766,interrupt),
@@ -109,10 +111,10 @@ assert(addon:RegisterDefaultBlock({
 -- Season of Discovery stealth opener: Shadowstrike, Garrote in a group (Carnage, Master of
 -- Subtlety), Ambush for a Backstab build, Cheap Shot solo; then stop without breaking Stealth.
 assert(addon:RegisterDefaultBlock({
- id='era.rogue.sod-opener',revision=2,families={'era'},class='ROGUE',steps={
+ id='era.rogue.sod-opener',revision=3,families={'era'},class='ROGUE',steps={
  spell('shadowstrike',399985),
  spell('group-garrote',703,{type='GROUP'}),
- spell('ambush',8676,all(negate(rune(399956)),negate(rune(424785)))),
+ spell('ambush',8676,all(dagger,negate(rune(399956)),negate(rune(424785)))),
  spell('cheap-shot',1833,negate({type='GROUP'})),
  spell('stealth-sinister',1752,all(negate(rune(399956)),negate(rune(424785)))),
  spell('stealth-mutilate',399956),
@@ -123,9 +125,9 @@ assert(addon:RegisterDefaultBlock({
 -- three), Saber Slash, Backstab when not faced or with the Cutthroat rune (passive, 462708: no
 -- positional), else Sinister Strike.
 assert(addon:RegisterDefaultBlock({
- id='era.rogue.sod-builders',revision=2,families={'era'},class='ROGUE',steps={
+ id='era.rogue.sod-builders',revision=3,families={'era'},class='ROGUE',steps={
  spell('mutilate',399956,points('LESSTHANOREQUALS',3)),
  spell('saber-slash',424785),
- spell('backstab',53,all(points('LESSTHANOREQUALS',4),any(behind,rune(462708)))),
+ spell('backstab',53,all(dagger,points('LESSTHANOREQUALS',4),any(behind,rune(462708)))),
  spell('sinister',1752),
 }}))

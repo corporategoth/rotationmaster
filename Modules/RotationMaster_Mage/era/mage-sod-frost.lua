@@ -19,7 +19,7 @@ local fingers=any(buff(400647),buff(400669),buff(400670))
 local function fingersStacks(n)return any({type='BUFF_STACKS',unit='player',spell=400647,operator='GREATERTHANOREQUALS',value=n},
  {type='BUFF_STACKS',unit='player',spell=400669,operator='GREATERTHANOREQUALS',value=n},{type='BUFF_STACKS',unit='player',spell=400670,operator='GREATERTHANOREQUALS',value=n})end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.mage.frost',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.mage.frost',revision=3,
  blocks={['era.mage.boundaries']=1,['era.mage.wand-finish']=1,['sod.mage.balefire']=1,['sod.mage.balefire-brain-freeze']=1,
   ['sod.mage.living-bomb']=1,['sod.mage.armor']=2,['sod.mage.upkeep']=2},
  nameKey='Default.SoD.Mage.Frost.Name',descriptionKey='Default.SoD.Mage.Frost.Description',
@@ -38,7 +38,7 @@ assert(addon:RegisterDefaultRotation({
    block(P..'upkeep','sod.mage.upkeep',P)},
   rotation={
    block(P..'boundaries','era.mage.boundaries',P),
-   {id=P..'pull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+   {id=P..'pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell(P..'pull-spellfrost',412532),spell(P..'pull-frostfire',401502),spell(P..'pull-frostbolt',116),stop(P..'pull-stop')}},
    {id=P..'moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
     spell(P..'moving-ice-lance',400640,fingers),spell(P..'moving-frozen-orb',440802),

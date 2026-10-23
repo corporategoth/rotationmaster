@@ -5,12 +5,12 @@
 -- and powershifts with Furor 5/5. Bear Mauls every swing, Swipes packs and spare rage.
 local _,addon=...
 local function any(...)return{type='OR',value={...}}end
-local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
+local function form(id)return{type='FORM',form=id}end
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.druid.feral',revision=1,
- blocks={['era.druid.boundaries']=1,['era.druid.upkeep']=1,['era.druid.feral-cooldowns']=1,['era.druid.cat']=1,['era.druid.stealth-opener']=1,
-  ['era.druid.cat-builders']=1,['era.druid.powershift']=1,['era.druid.bear']=1,['era.druid.bear-pull']=1,['era.druid.feral-humanoid']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.druid.feral',revision=2,
+ blocks={['era.druid.boundaries']=2,['era.druid.upkeep']=1,['era.druid.feral-cooldowns']=2,['era.druid.cat']=1,['era.druid.stealth-opener']=1,
+  ['era.druid.cat-builders']=1,['era.druid.powershift']=1,['era.druid.bear']=1,['era.druid.bear-pull']=2,['era.druid.feral-humanoid']=1},
  nameKey='Default.Era.Druid.Feral.Name',descriptionKey='Default.Era.Druid.Feral.Description',
  applicability={families={'era'},actionContext='player',class='DRUID',minLevel=10,maxLevel=60},
  tags={'leveling','endgame','feral','melee','tank','single-target','aoe','icy-veins','wowhead','warcraft-tavern','wowsims'},
@@ -27,8 +27,8 @@ assert(addon:RegisterDefaultRotation({
   cooldowns={ref('era-feral-upkeep','era.druid.upkeep','era-feral-'),ref('era-feral-cooldowns','era.druid.feral-cooldowns','era-feral-')},
   rotation={
    ref('era-feral-boundaries','era.druid.boundaries','era-feral-'),
-   {id='era-feral-cat',type='branch',conditions=own(768),onFalse={},onTrue={ref('era-feral-cat-section','era.druid.cat','era-feral-cat-')}},
-   {id='era-feral-bear',type='branch',conditions=any(own(5487),own(9634)),onFalse={},onTrue={ref('era-feral-bear-section','era.druid.bear','era-feral-bear-')}},
+   {id='era-feral-cat',type='branch',conditions=form(768),onFalse={},onTrue={ref('era-feral-cat-section','era.druid.cat','era-feral-cat-')}},
+   {id='era-feral-bear',type='branch',conditions=any(form(5487),form(9634)),onFalse={},onTrue={ref('era-feral-bear-section','era.druid.bear','era-feral-bear-')}},
    ref('era-feral-humanoid','era.druid.feral-humanoid','era-feral-'),
   },
  },
