@@ -84,3 +84,55 @@ function platform:GetRotationSpecializations(classID)
     end
     return choices
 end
+
+-- The player's specialization ID (Retail, Mists of Pandaria Classic), for the
+-- SPECIALIZATION condition. Forever's specialization API reports one ID per
+-- class (its three trees are trait groups), so it cannot name a spec there.
+-- Talent-tree clients have no specialization API; the condition reads their
+-- primary talent tree instead (Core/build_context.lua). No specialization yet
+-- is unavailable, never a guessed index.
+function platform:GetPlayerSpecializationID()
+    local family=self:GetClientFamily()
+    if family=="forever" then return nil,"specialization-unsupported" end
+    if family~="retail" and family~="progression" then return nil,"unsupported-client" end
+    local index,why=queryInteger(method("GetSpecialization",GetSpecialization),16)
+    if not index then return nil,why end
+    return queryInteger(method("GetSpecializationInfo",GetSpecializationInfo),math.huge,index)
+end
+
+-- One class's specializations as the client names them, for editors. Only
+-- clients whose specialization API names real specs answer (not Forever).
+-- Returns a fresh list of {id,name,icon}.
+function platform:GetClassSpecializationChoices(classID)
+    local family=self:GetClientFamily()
+    if family~="retail" and family~="progression" then return nil,"unsupported-client" end
+    if not integer(classID,1,64) then return nil,"invalid-class" end
+    local count,why=queryInteger(method("GetNumSpecializationsForClassID",GetNumSpecializationsForClassID),16,classID)
+    if not count then return nil,why end
+    if type(GetSpecializationInfoForClassID)~="function" then return nil,"missing-api" end
+    local choices={}
+    for index=1,count do
+        local ok,id,name,_,icon=pcall(GetSpecializationInfoForClassID,classID,index)
+        if not ok then return nil,"api-error" end
+        if not self:CanReadValue(id) or not self:CanReadValue(name) or not self:CanReadValue(icon) then return nil,"restricted-value" end
+        if not integer(id,1,math.huge) or type(name)~="string" or name=="" then return nil,"invalid-api-result" end
+        if type(icon)~="number" and type(icon)~="string" then icon=nil end
+        choices[#choices+1]={id=id,name=name,icon=icon}
+    end
+    return choices
+end
+
+-- Display name, icon and class token of a specialization ID, where the
+-- client can name it (Retail order: id, name, description, icon, role, class).
+function platform:GetSpecializationDisplay(specID)
+    local family=self:GetClientFamily()
+    if family~="retail" and family~="progression" then return nil,"unsupported-client" end
+    if not integer(specID,1,math.huge) or type(GetSpecializationInfoByID)~="function" then return nil,"missing-api" end
+    local ok,id,name,_,icon,_,classFile=pcall(GetSpecializationInfoByID,specID)
+    if not ok then return nil,"api-error" end
+    if not self:CanReadValue(id) or not self:CanReadValue(name) or not self:CanReadValue(icon)
+        or not self:CanReadValue(classFile) then return nil,"restricted-value" end
+    if id~=specID or type(name)~="string" or name=="" then return nil,"specialization-unavailable" end
+    if type(icon)~="number" and type(icon)~="string" then icon=nil end
+    return {id=id,name=name,icon=icon,class=type(classFile)=="string" and classFile or nil}
+end

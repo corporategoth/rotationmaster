@@ -114,9 +114,9 @@ test('set piece weapon imbue and action context conditions read the caches',func
  a.GetEquippedSetPieces=nil;value,why=set.evaluate({set=500,operator='GREATERTHANOREQUALS',value=2});assert(value==nil and why=='build-context-unavailable')
 end)
 
-test('mainline has no temporary weapon enchant condition',function()
+test('mainline registers the temporary weapon enchant condition',function()
  local f,a=fixture(1,10);f.load('Conditions/build.lua')
- assert(a.definitions.SET_PIECES and a.definitions.ACTION_CONTEXT and not a.definitions.WEAPON_IMBUE)
+ assert(a.definitions.SET_PIECES and a.definitions.ACTION_CONTEXT and a.definitions.WEAPON_IMBUE)
 end)
 
 finish()

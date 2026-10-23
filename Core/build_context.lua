@@ -117,7 +117,32 @@ local function socketCount(link)
     end
     return count
 end
+-- Weapon slots carry their item class, subclass and equip location
+-- (Platform GetItemInfoInstant: IDs and INVTYPE_* tokens, never localized
+-- names), read once per equipment change for WEAPON_TYPE.
+local WEAPON_SLOTS={[16]=true,[17]=true,[18]=true}
+local function weaponType(record)
+    local reader=addon.Platform and addon.Platform.GetItemInfoInstant
+    if type(reader)~='function' then record.typeReason='missing-api';return end
+    local info,why=reader(addon.Platform,record.itemID)
+    if not info then record.typeReason=why or 'item-data-unavailable';return end
+    record.classID,record.subClassID,record.equipLoc=info.classID,info.subClassID,info.equipLoc
+end
+-- The ranged slot (bows, guns, wands, relics) exists through Cataclysm; Mists
+-- of Pandaria removed it and Retail followed. Elsewhere the client says.
+local function rangedSlot()
+    local info=addon.Platform:GetClientInfo()
+    if info.family=='retail' or info.family=='progression' and type(info.expansion)=='number' and info.expansion>=4 then
+        return nil,'no-ranged-slot'
+    end
+    if type(GetInventorySlotInfo)~='function' then return nil,'missing-api' end
+    local ok,slot=pcall(GetInventorySlotInfo,'RANGEDSLOT')
+    slot=ok and positive(slot)
+    if not slot then return nil,'no-ranged-slot' end
+    return slot
+end
 local function buildEquipment()
+    snapshot.rangedSlot,snapshot.rangedReason=rangedSlot()
     local equipment,sets,pending={},{},false
     local idOf=GetInventoryItemID
     if type(idOf)~='function' then
@@ -138,6 +163,7 @@ local function buildEquipment()
             local setID,why=itemSetID(itemID)
             if setID then sets[setID]=(sets[setID] or 0)+1;record.setID=setID
             elseif setID==nil then record.setReason=why;if why=='item-data-pending' then pending=true end end
+            if WEAPON_SLOTS[slot] then weaponType(record) end
             equipment[slot]=record
         end
     end
@@ -211,6 +237,17 @@ local function buildTalents()
         else loadout.reason='missing-api' end
         talents.loadout=loadout
     end
+    -- SPECIALIZATION: talent-tree clients compare the primary tree (the
+    -- unique tree with the most points); specialization clients compare the
+    -- active specialization ID. Either way unavailable stays a reason.
+    local okClass,_,class=call(UnitClass,'player')
+    talents.class=okClass and readable(class) and type(class)=='string' and class or nil
+    if layout=='tree' then
+        local primary,reason=platform:GetPrimaryTalentTree(talents.group)
+        talents.specMode,talents.specValue,talents.specReason='tree',primary and primary.index,reason
+    elseif platform.GetPlayerSpecializationID then
+        talents.specMode='id';talents.specValue,talents.specReason=platform:GetPlayerSpecializationID()
+    else talents.specReason='missing-api' end
     snapshot.talents=talents
 end
 -- Rulesets are the realm's season and game rules: a pack's
@@ -293,4 +330,26 @@ function addon:GetItemSetName(setID)
     if ok and readable(name) and type(name)=='string' and name~='' then return name end
 end
 function addon:GetTalentBuild() return refresh('talents').talents end
+-- mode ('tree' or 'id'), value (primary tree index or specialization ID),
+-- reason when the value is unavailable, and the player's class token.
+-- Cached until a talent or specialization notification; no allocation.
+function addon:GetPlayerSpecializationObservation()
+    local talents=refresh('talents').talents
+    return talents.specMode,talents.specValue,talents.specReason,talents.class
+end
+-- One weapon slot ('mainhand', 'offhand' or 'ranged'): its equipment record
+-- (with classID/subClassID/equipLoc or typeReason), false when empty, or nil
+-- and a reason (no ranged slot on this client, missing API).
+local weaponSlotIDs={mainhand=16,offhand=17}
+function addon:GetEquippedWeaponSlot(kind)
+    local value=refresh('equipment')
+    if value.equipmentReason then return nil,value.equipmentReason end
+    local slot=weaponSlotIDs[kind]
+    if kind=='ranged' then
+        slot=value.rangedSlot
+        if not slot then return nil,value.rangedReason or 'no-ranged-slot' end
+    end
+    if not slot then return nil,'invalid-weapon-slot' end
+    return value.equipment[slot] or false
+end
 function addon:GetSeasonInfo() return refresh('client').season end
