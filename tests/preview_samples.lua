@@ -46,13 +46,13 @@ test('sample tooltip has no spell or item hyperlink and stale callbacks cannot f
  a:CreateNativePreviewWindow();enter();assert(labels==1)
 end)
 
-test('profile replacement close and release invalidate sample state and old callbacks',function()
- local _,a=fixture(2);api(a);a:SetPreviewSampleEnabled(true);local w=a.nextWindow;local old=a.db.profile;local close=w.close.scripts.OnClick
+test('profile replacement and release invalidate sample state and old callbacks',function()
+ local _,a=fixture(2);api(a);a:SetPreviewSampleEnabled(true);local w=a.nextWindow;local old=a.db.profile;local stale=w:MenuEntries()[2].func
  a.db.profile={preview_spells=0};assert(not a:IsPreviewSampleEnabled());a:RefreshPreviewWindow();assert(not a.nextWindow)
- a:SetPreviewSampleEnabled(true);local fresh=a.nextWindow;close();assert(a:IsPreviewSampleEnabled()and fresh:Valid())
+ a:SetPreviewSampleEnabled(true);local fresh=a.nextWindow;stale();assert(a:IsPreviewSampleEnabled()and fresh:Valid()and a.db.profile.preview_locked==nil)
  fresh:Release();assert(not a:IsPreviewSampleEnabled());a:SetPreviewSampleEnabled(true);assert(a.nextWindow==fresh and fresh:Valid()and fresh.frame:IsShown())
  fresh:Release();a:RefreshPreviewWindow();assert(not a.nextWindow)
- a.db.profile=old;assert(not a:IsPreviewSampleEnabled());a:SetPreviewSampleEnabled(true);a.nextWindow.close:Click();assert(not a:IsPreviewSampleEnabled()and not a.nextWindow)
+ a.db.profile=old;assert(not a:IsPreviewSampleEnabled());a:SetPreviewSampleEnabled(true);assert(not a.nextWindow.close);a:SetPreviewSampleEnabled(false);assert(not a:IsPreviewSampleEnabled()and a.nextWindow and a.nextWindow.sampleCount==0)
 end)
 
 test('samples honor configured geometry opacity and pooled Masque surfaces without fake metadata',function()
@@ -61,7 +61,7 @@ test('samples honor configured geometry opacity and pooled Masque surfaces witho
  a.ConfigureMasquePreview=function(_,w)attaches=attaches+1;for i=1,w.slots do local icon=w:EnsureIcon(i);icon.masqueOwner={};icon.masqueSurface={texture={SetTexture=function(self,v)self.value=v end}}end end
  a.ResizeMasquePreviewIcon=function()end
  a:SetPreviewSampleEnabled(true);local w=a.nextWindow
- assert(w.slots==4 and w.frame:GetWidth()==80 and w.frame:GetHeight()==320 and not w.header:IsShown()and visible(w)==4)
+ assert(w.slots==4 and w.frame:GetWidth()==80 and w.frame:GetHeight()==320 and not w.header and visible(w)==4)
  for _,icon in ipairs(w.icons)do assert(icon.masqueSurface.texture.value==icon.texture:GetTexture()and icon:GetAlpha()==1)end
  local before=attaches;for i=1,3 do w:ReleaseChildren();w:PauseLayout();w:ResumeLayout();w:DoLayout()end;assert(attaches==before and queries()==0)
 end)
@@ -98,7 +98,7 @@ for _,mode in ipairs({'disabled','missing','inactive'})do
   assert(a.currentRotation==nil and a.currentSpell==nil and not a.rotationTimer,'rotation must remain stopped')
   assert(a:IsPreviewSampleEnabled()and w:Valid()and w.count==0 and w.sampleCount==3 and visible(w)==3,'empty stopped publisher erased samples: '..mode)
   for _,icon in ipairs(w.icons)do assert(icon.sample and icon.spellId==nil and icon.itemId==nil)end
-  assert(w.title:GetText()=='Preview','sample title must identify the preview')
+  assert(not w.title,'the preview has no title bar')
   c.tick();assert(w.sampleCount==3 and visible(w)==3,'stopped timer must not be needed to refill samples')
   a:SetPreviewSampleEnabled(false);assert(not a.nextWindow and a.db.profile.preview_spells==0)
  end)

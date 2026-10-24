@@ -61,7 +61,7 @@ test('failed removal quarantines reusable child and never exposes retained skin'
 end)
 test('release profile replacement and stale callbacks retire old membership',function()
  local _,a,p=fixture();a.db.profile.preview_masque=true;local w=a:CreateNativePreviewWindow();w:AddRecommendation(403)
- local stale=w.close.scripts.OnClick;w:Release();assert(p.removes==3 and not next(p.members))
+ local stale=w:MenuEntries()[2].func;w:Release();assert(p.removes==3 and not next(p.members))
  a.db.profile={preview_spells=2,preview_masque=true};a:RefreshPreviewWindow();assert(p.adds==5);stale();assert(w.active and next(p.members))
  a.db.profile={preview_spells=1};a:RefreshPreviewWindow();assert(not next(p.members)and a:GetMasquePreviewStatus().state=='disabled')
 end)

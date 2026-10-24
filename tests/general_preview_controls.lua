@@ -36,6 +36,25 @@ test('preview lock and unlock persist and update the same window immediately wit
   end
  end
 end)
+test('the preview right-click lock keeps an open General page field and draft in step',function()
+ for _,initial in ipairs({false,true})do
+  local f,a,p=fixture();a.db.profile.preview_spells=2;a.db.profile.preview_locked=initial;p:DiscardSettingsDraft();p:Draw()
+  f.load('UI/preview.lua');a:RefreshPreviewWindow();local window=a.nextWindow;a.GlowClear=function()end
+  p.fields.disable_buttons:Click();assert(p:IsSettingsDraftDirty())
+  window:MenuEntries()[2].func()
+  assert(a.db.profile.preview_locked==not initial and window.locked==not initial and a.nextWindow==window and window.frame:IsShown())
+  assert(p.fields.preview_locked:GetChecked()==not initial and p:SettingsData().profile.preview_locked==not initial and p.draftBaseline.profile.preview_locked==not initial)
+  assert(not p.fields.preview_locked.rmUnsaved and p:IsSettingsDraftDirty())
+  assert(p:SaveSettingsDraft() and a.db.profile.preview_locked==not initial,'Apply wrote the old lock back')
+  -- A released page no longer receives the menu's lock changes.
+  p:Release();assert(a.previewLockChanged==nil);window:MenuEntries()[2].func();assert(a.db.profile.preview_locked==initial)
+ end
+end)
+test('profiles carry the headerless preview migration flag as a Boolean only',function()
+ local _,a=fixture()
+ assert(a:ValidateProfileTransfer({previewHeaderlessGeometry=true})and a:ValidateProfileTransfer({previewHeaderlessGeometry=false}))
+ assert(not a:ValidateProfileTransfer({previewHeaderlessGeometry='yes'}))
+end)
 test('immediate lock preserves unrelated invalid drafts and retires old click handlers',function()
  local _,a,p=fixture();p.fields.disable_buttons:Click();local draft=p:SettingsData().profile.disable_buttons
  local input=p:Edit('unrelated','Unrelated','',function()return nil end,function()error('must not flush')end)
@@ -175,7 +194,7 @@ test('real General Preview action paints transient samples without applying the 
  local f,a,p=fixture();p:DiscardSettingsDraft();a.db.profile.preview_spells=0;p:Draw()
  f.load('Integrations/masque.lua');f.load('UI/preview.lua')
  local dirty=p:IsSettingsDraftDirty();p.fields.preview_sample:Click();local window=a.nextWindow
- assert(a:IsPreviewSampleEnabled()and window:Valid()and window.sampleCount==3 and window.count==0 and window.title:GetText()=='Preview')
+ assert(a:IsPreviewSampleEnabled()and window:Valid()and window.sampleCount==3 and window.count==0 and not window.title)
  assert(a.db.profile.preview_spells==0 and p:IsSettingsDraftDirty()==dirty)
  local stale=p.fields.preview_sample.scripts.OnClick;p:Release();stale();assert(a:IsPreviewSampleEnabled())
  a:SetPreviewSampleEnabled(false);assert(not a.nextWindow and a.db.profile.preview_spells==0)
