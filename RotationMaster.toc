@@ -17,6 +17,7 @@
 ## X-Project-Revision: @project-revision@
 ## X-ReleaseDate: @project-date-iso@
 ## SavedVariables: RotationMasterDB
+## LoadSavedVariablesFirst: 1
 ## OptionalDeps: LibDBIcon-1.0, LibDataBroker-1.1, LibCompress, CallbackHandler-1.0, LibCustomGlow, ThreatClassic-1.0, LibClassicDurations, LibRangeCheck-3.0, Masque
 ## X-Credits: None
 ## X-License: MIT

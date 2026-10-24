@@ -239,7 +239,8 @@ function T.new(o)
     for _,line in ipairs(toc) do
         if line:match('^%s*#') or not line:find('%S') then
         elseif line=='embeds.xml' then for _,path in ipairs(xmlFiles('embeds.xml')) do clientLoad(path) end
-        elseif line=='locales.xml' then clientLoad('Locales/enUS.lua')
+        -- The language registry and English; translations are not loaded here.
+        elseif line=='locales.xml' then clientLoad('Locales/language.lua');clientLoad('Locales/enUS.lua')
         elseif line:match('%.lua$') then clientLoad(line) end
     end
     -- Each library frame's update timers are not driven; AceTimer runs nothing by itself.

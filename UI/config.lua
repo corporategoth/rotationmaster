@@ -169,17 +169,55 @@ local function newShell()
         if shell.scaleDragging then shell.pendingScale=selected;shell.scaleValue:SetText(tostring(math.floor(selected*100+.5)))
         else shell:ApplyScale(selected,true) end
     end)
-    -- The client's language is the translation in use (AceLocale picks it at
-    -- load); languages are named in their own script, as clients do.
-    local nativeNames={enUS="English",deDE="Deutsch",esES="Español (España)",esMX="Español (Latinoamérica)",frFR="Français",itIT="Italiano",koKR="한국어",ptBR="Português (Brasil)",ruRU="Русский",zhCN="简体中文",zhTW="繁體中文"}
-    local active=nativeNames[client.locale] and client.locale or "enUS"
-    shell.language=flatButton(window,nativeNames[active],120);shell.language.value=active;shell.language:SetSize(120,22)
+    -- Rotation Master's language (Locales/language.lua): Automatic follows the
+    -- game, or any of the languages, each named in its own language and script.
+    -- The choice is account-wide and shows after the interface reloads.
+    local languageNames,languageOrder=addon.languageNames,addon.languageOrder
+    local languageState=addon:GetLanguageState()
+    shell.language=flatButton(window,languageNames[languageState.active],120);shell.language.value=languageState.active;shell.language:SetSize(120,22)
     local languageArrow=shell.language:CreateTexture(nil,"ARTWORK");languageArrow:SetSize(12,12);languageArrow:SetPoint("RIGHT",-5,0);languageArrow:SetTexture(addon:ControlTexture("chevron-down"))
-    shell.languageMenu=CreateFrame("Frame",nil,window);shell.languageMenu:SetSize(160,30);shell.languageMenu:SetPoint("TOPRIGHT",shell.language,"BOTTOMRIGHT",0,-2);shell.languageMenu:SetFrameLevel(window:GetFrameLevel()+90);fill(shell.languageMenu,.08,.09,.10)
-    local english=flatButton(shell.languageMenu,nativeNames[active],156);english:SetSize(156,26);english:SetPoint("TOPLEFT",2,-2);english:SetSelected(true)
-    addon:SetUIScript(english,"OnClick",function() shell.languageMenu:Hide() end);shell.languageRows={english};shell.languageMenu:Hide()
-    shell.language.tooltip=string.format(L["Game locale: %s. Rotation Master uses your game's language; text not yet translated appears in English."],client.locale or L["Unknown"])
-    addon:SetUIScript(shell.language,"OnClick",function() if shell.languageMenu:IsShown() then shell.languageMenu:Hide() else shell.languageMenu:Show() end end)
+    local languageEntries={{value="auto",text=L["Automatic (game language)"]}}
+    for _,locale in ipairs(languageOrder) do languageEntries[#languageEntries+1]={value=locale,text=languageNames[locale]} end
+    shell.languageMenu=CreateFrame("Frame",nil,window);shell.languageMenu:SetSize(204,#languageEntries*26+4);shell.languageMenu:SetPoint("TOPRIGHT",shell.language,"BOTTOMRIGHT",0,-2);shell.languageMenu:SetFrameLevel(window:GetFrameLevel()+90);fill(shell.languageMenu,.08,.09,.10)
+    shell.languageRows={}
+    for index,entry in ipairs(languageEntries) do
+        local row=flatButton(shell.languageMenu,entry.text,200);row:SetSize(200,26);row:SetPoint("TOPLEFT",2,-2-(index-1)*26);row.value=entry.value
+        addon:SetUIScript(row,"OnClick",function() shell:ChooseLanguage(entry.value) end);shell.languageRows[index]=row
+    end
+    shell.languageMenu:Hide()
+    function shell:PaintLanguage()
+        local state=addon:GetLanguageState()
+        for _,row in ipairs(self.languageRows) do row:SetSelected(row.value==state.choice) end
+        local tooltip=string.format(L["Language of Rotation Master's text. Automatic follows the game's language (%s). A change shows after the interface reloads; text not yet translated appears in English."],
+            languageNames[state.automatic]..(state.client and " ("..state.client..")" or ""))
+        if state.shown~=state.active then tooltip=tooltip.."\n\n"..string.format(L["%s shows after the interface reloads."],languageNames[state.shown]) end
+        if state.switchedLate then tooltip=tooltip.."\n\n"..L["This game version loads settings after Rotation Master's text, so some names keep the game's language."] end
+        self.language.tooltip=tooltip
+    end
+    function shell:ShowLanguageReload(locale)
+        local prompt=self.languagePrompt
+        if not prompt then
+            prompt={frame=CreateFrame("Frame",nil,window)};self.languagePrompt=prompt
+            prompt.frame:SetSize(430,120);prompt.frame:SetPoint("CENTER");prompt.frame:EnableMouse(true);addon:MakeWindowOpaque(prompt.frame)
+            prompt.text=text(prompt.frame,"GameFontHighlight");prompt.text:SetPoint("TOPLEFT",12,-12);prompt.text:SetSize(406,60);prompt.text:SetWordWrap(true)
+            prompt.reload=flatButton(prompt.frame,L["Reload now"],110);prompt.reload:SetPoint("BOTTOMRIGHT",-128,12)
+            prompt.later=flatButton(prompt.frame,L["Later"],110);prompt.later:SetPoint("BOTTOMRIGHT",-12,12)
+            -- A click is a hardware event, which ReloadUI accepts.
+            addon:SetUIScript(prompt.reload,"OnClick",function() prompt.frame:Hide();ReloadUI() end)
+            addon:SetUIScript(prompt.later,"OnClick",function() prompt.frame:Hide() end);prompt.frame:Hide()
+        end
+        local width=addon:FitWorkbenchPrompt(prompt.frame,window,430);prompt.text:SetWidth(math.max(1,width-24))
+        prompt.text:SetText(string.format(L["Rotation Master shows %s after the interface reloads. Reload now?"],languageNames[locale]))
+        prompt.frame:SetFrameLevel(window:GetFrameLevel()+250);prompt.frame:Show();addon:RegisterWindowForEscape(prompt)
+    end
+    function shell:ChooseLanguage(choice)
+        self.languageMenu:Hide()
+        if choice==addon:GetLanguageState().choice then return end
+        local reload=addon:SetLanguageChoice(choice);self:PaintLanguage()
+        if reload then self:ShowLanguageReload(addon:GetLanguageState().shown) elseif self.languagePrompt then self.languagePrompt.frame:Hide() end
+    end
+    shell:PaintLanguage()
+    addon:SetUIScript(shell.language,"OnClick",function() if shell.languageMenu:IsShown() then shell.languageMenu:Hide() else shell:PaintLanguage();shell.languageMenu:Show() end end)
     addon:RegisterWindowForEscape({frame=shell.languageMenu})
     local linkPane=CreateFrame("Frame",nil,window);shell.linkPane=linkPane;linkPane:SetSize(520,72);linkPane:SetPoint("BOTTOM",0,28);linkPane:SetFrameLevel(window:GetFrameLevel()+90);fill(linkPane,.07,.08,.09)
     shell.linkInput=addon:CreateWorkbenchEditBox(linkPane);shell.linkInput:SetPoint("TOPLEFT",12,-12);shell.linkInput:SetSize(496,24)
