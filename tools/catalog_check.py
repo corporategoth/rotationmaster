@@ -147,15 +147,10 @@ def _computed_key_sites(source):
 
 
 def _registration(source):
-    """Read only an exact NewLocale(..., literalLocale, literalDefault) call, or a
-    generated translation's register(literalLocale, function ...) (Locales/language.lua)."""
+    """Read only an exact NewLocale(..., literalLocale, literalDefault) call."""
     ts = tokens(source)
     found = []
     for i in range(len(ts)-2):
-        if (ts[i][1] in ('register', 'RegisterTranslation') and ts[i+1][1] == '(' and i+3 < len(ts)
-                and ts[i+2][0] in ('string', 'long') and ts[i+3][1] == ','):
-            found.append((decode_string(ts[i+2][1]), False))
-            continue
         if ts[i][1] != 'NewLocale' or ts[i+1][1] != '(':
             continue
         args, arg, depth = [], [], 1
@@ -288,10 +283,6 @@ def _consumer_contracts(root):
     return contracts
 
 
-# Selects which translation runs; it holds no strings (tools/locales.py checks its place).
-LANGUAGE_REGISTRY = 'Locales/language.lua'
-
-
 def locale_report(root, contracts=None, require_complete=False, english_reuse=None):
     """Report known literal coverage. No Lua execution or locale-list inference.
 
@@ -310,7 +301,7 @@ def locale_report(root, contracts=None, require_complete=False, english_reuse=No
                 path = Path(ref.replace('\\', '/'))
                 if path.is_absolute() or '..' in path.parts or path.parts[:1] != ('Locales',):
                     issues.append('locales.xml: unsupported locale path '+ref)
-                elif path.as_posix() != LANGUAGE_REGISTRY:
+                else:
                     loaded.append(path.as_posix())
     except (OSError, ET.ParseError) as exc:
         issues.append('locales.xml: '+str(exc))
@@ -319,7 +310,7 @@ def locale_report(root, contracts=None, require_complete=False, english_reuse=No
     if len(loaded) != len(set(loaded)):
         issues.append('locales.xml: duplicate locale file')
     for path in sorted((root/'Locales').glob('*.lua')):
-        if path.relative_to(root).as_posix() not in loaded and path.relative_to(root).as_posix() != LANGUAGE_REGISTRY:
+        if path.relative_to(root).as_posix() not in loaded:
             issues.append(str(path.relative_to(root))+': locale file not loaded')
     base_source = (root/'Locales/enUS.lua').read_text()
     base, _, _, _, _, _, _ = _literal_dictionary(base_source, True)

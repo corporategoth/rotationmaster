@@ -458,7 +458,6 @@ return {
         "PlaceAction",
         "PlaySoundFile",
         "RAID",
-        "ReloadUI",
         "SAVE",
         "SCHOOL_STRINGS",
         "SECONDARY",
