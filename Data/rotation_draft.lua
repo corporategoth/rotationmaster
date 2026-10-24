@@ -193,12 +193,12 @@ function data.NewRotationDraft(original,newId,reserved)
             result=first
         elseif name=='SetDetails' then
             if type(first)~='table' then return nil,'invalid-metadata' end
-            for key in pairs(first) do if key~='description' and key~='metadata' and key~='tags' and key~='priority' and key~='handle' then return nil,'protected-body-field' end end
+            for key in pairs(first) do if key~='description' and key~='metadata' and key~='tags' and key~='priority' and key~='identifier' then return nil,'protected-body-field' end end
             candidate.description=detach(first.description);candidate.metadata=detach(first.metadata);if first.tags~=nil then candidate.tags=detach(first.tags) end;if first.priority~=nil then candidate.priority=detach(first.priority) end
-            -- A handle string replaces the stored one; false removes it.
-            if first.handle==false then candidate.handle=nil elseif first.handle~=nil then candidate.handle=detach(first.handle) end;result='metadata'
+            -- An identifier string replaces the stored one; false removes it.
+            if first.identifier==false then candidate.identifier=nil elseif first.identifier~=nil then candidate.identifier=detach(first.identifier) end;result='metadata'
         elseif name=='SetBodyField' then
-            if first~='name' and first~='description' and first~='metadata' and first~='tags' and first~='priority' and first~='disabled' and first~='switch' and first~='handle' then return nil,'protected-body-field' end
+            if first~='name' and first~='description' and first~='metadata' and first~='tags' and first~='priority' and first~='disabled' and first~='switch' and first~='identifier' then return nil,'protected-body-field' end
             candidate[first]=detach(second);result=first
         else return nil,'invalid-rotation-command' end
         local valid,reason=inspect(candidate);if not valid then return nil,reason end

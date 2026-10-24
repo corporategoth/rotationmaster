@@ -263,7 +263,7 @@ function addon.layout_rotation_help(frame)
     group:AddChild(Gap())
     group:AddChild(CreateText(L["A Built In loads only for the edition and class it was written for (shown under the switch). Its specialization and level are part of its switch condition, so the switch decides the rest."]))
     group:AddChild(Gap())
-    group:AddChild(CreateText(L["Every rotation has a handle, shown beside its priority: type /rm set <handle> to choose it (any case), /rm set auto to go back to automatic switching, and /rm list to see every handle. A Built In's handle is fixed; yours is made from its name until you change it."]))
+    group:AddChild(CreateText(L["Every rotation has an identifier (ID), shown beside its priority: type /rm set <id> to choose it (any case), /rm set auto to go back to automatic switching, and /rm list to see every identifier. A Built In's identifier is fixed; yours is made from its name until you change it."]))
     group:AddChild(Gap())
     group:AddChild(CreateText(L["In the list, a red border means the rotation cannot be selected (the tooltip names why), grey means it is switched off, and an amber bar means its switch condition can match at the same time as another rotation (yours or Built In), so only priority decides between them; a wider bar means they also have the same priority and the name decides. /rm why lists the order and what automatic switching would choose now."]))
 

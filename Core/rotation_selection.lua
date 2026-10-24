@@ -50,7 +50,7 @@ local issueText={
     ['unexpected-assisted-action']=L['has a setting this version does not understand (%s)'],
     ['unexpected-stop-option']=L['has a setting this version does not understand (%s)'],
     ['invalid-priority']=L['has an invalid switch priority'],
-    ['invalid-handle']=L['has an invalid handle'],
+    ['invalid-identifier']=L['has an invalid identifier'],
 }
 local refusalText={
     ['disabled']=L['it is disabled'],
@@ -282,9 +282,9 @@ function addon:GetRotationEligibilityReport()
     verdict(string.format(L['Fallback (%s)'],DEFAULT),DEFAULT)
     local headers=self.ListRotationHeaders and self:ListRotationHeaders(spec)
     if type(headers)~='table' then return lines end
-    local handles={}
-    if self.ListRotationHandles then for _,entry in ipairs(self:ListRotationHandles(spec)) do handles[entry.key]=entry.handle end end
-    local function tagged(text,key) return handles[key] and string.format('%s [%s]',text,handles[key]) or text end
+    local identifiers={}
+    if self.ListRotationIdentifiers then for _,entry in ipairs(self:ListRotationIdentifiers(spec)) do identifiers[entry.key]=entry.identifier end end
+    local function tagged(text,key) return identifiers[key] and string.format('%s [%s]',text,identifiers[key]) or text end
     -- Built Ins that are off are named when they would otherwise apply here,
     -- with who switched them off; the rest are only counted.
     local states={}
@@ -508,100 +508,100 @@ function addon:DescribeApplicability(scope)
 end
 -- END SWITCH OVERLAP
 
--- BEGIN ROTATION HANDLES
--- Every rotation for a specialization has a handle (Data/validation.lua):
--- a Built In's comes from its pack (GetBuiltinHandle), yours is stored in
--- the rotation (body.handle) or, until you set one, made from its name. The
--- fallback is "default". Stored handles and Built Ins claim theirs first;
+-- BEGIN ROTATION IDENTIFIERS
+-- Every rotation for a specialization has an identifier (Data/validation.lua):
+-- a Built In's comes from its pack (GetBuiltinIdentifier), yours is stored in
+-- the rotation (body.identifier) or, until you set one, made from its name. The
+-- fallback is "default". Stored identifiers and Built Ins claim theirs first;
 -- the rest are derived in name order, a clash taking -2, -3...
 local function sortedUnstored(list) table.sort(list,function(a,b) if a.name~=b.name then return a.name<b.name end;return tostring(a.canonicalId)<tostring(b.canonicalId) end) end
-function addon:ListRotationHandles(spec,headers)
+function addon:ListRotationIdentifiers(spec,headers)
     headers=headers or self.ListRotationHeaders and self:ListRotationHeaders(spec)
     local rows,used,pending={},{},{}
     for _,row in ipairs(type(headers)=='table' and headers or {}) do
         local entry={key=row.key,name=row.name,kind=row.kind,canonicalId=row.canonicalId,fallback=row.fallback,row=row}
-        if row.fallback then entry.handle='default';entry.stored=true
-        elseif row.kind=='builtin' then entry.handle=row.handle
-        elseif row.handle then entry.handle=row.handle;entry.stored=true end
-        if entry.handle then
-            if used[entry.handle] and not row.fallback then entry.duplicateOf=used[entry.handle] end
-            used[entry.handle]=used[entry.handle] or entry
+        if row.fallback then entry.identifier='default';entry.stored=true
+        elseif row.kind=='builtin' then entry.identifier=row.identifier
+        elseif row.identifier then entry.identifier=row.identifier;entry.stored=true end
+        if entry.identifier then
+            if used[entry.identifier] and not row.fallback then entry.duplicateOf=used[entry.identifier] end
+            used[entry.identifier]=used[entry.identifier] or entry
         elseif not row.fallback then pending[#pending+1]=entry end
         rows[#rows+1]=entry
     end
     sortedUnstored(pending)
     for _,entry in ipairs(pending) do
-        local base=data.SlugRotationHandle(entry.name);local handle,n=base,2
-        while used[handle] do handle=data.SlugRotationHandle(base:sub(1,29)..'-'..n);n=n+1 end
-        entry.handle=handle;entry.derived=true;used[handle]=entry
+        local base=data.SlugRotationIdentifier(entry.name);local identifier,n=base,2
+        while used[identifier] do identifier=data.SlugRotationIdentifier(base:sub(1,29)..'-'..n);n=n+1 end
+        entry.identifier=identifier;entry.derived=true;used[identifier]=entry
     end
     return rows,used
 end
-function addon:GetRotationHandle(spec,key)
+function addon:GetRotationIdentifier(spec,key)
     if key==DEFAULT then return 'default' end
-    local rows=self:ListRotationHandles(spec)
-    for _,entry in ipairs(rows) do if entry.key==key then return entry.handle,entry end end
+    local rows=self:ListRotationIdentifiers(spec)
+    for _,entry in ipairs(rows) do if entry.key==key then return entry.identifier,entry end end
 end
--- A free handle made from a name, for a new rotation or a copy.
-function addon:NewRotationHandle(spec,name,except)
-    local _,used=self:ListRotationHandles(spec)
-    local base=data.SlugRotationHandle(name);local handle,n=base,2
-    while used[handle] and used[handle].key~=except do handle=data.SlugRotationHandle(base:sub(1,29)..'-'..n);n=n+1 end
-    return handle
+-- A free identifier made from a name, for a new rotation or a copy.
+function addon:NewRotationIdentifier(spec,name,except)
+    local _,used=self:ListRotationIdentifiers(spec)
+    local base=data.SlugRotationIdentifier(name);local identifier,n=base,2
+    while used[identifier] and used[identifier].key~=except do identifier=data.SlugRotationIdentifier(base:sub(1,29)..'-'..n);n=n+1 end
+    return identifier
 end
--- nil when `text` can be this rotation's handle; else a sentence why.
-function addon:CheckRotationHandle(spec,key,text)
-    local handle,why=data.NormalizeRotationHandle(text)
-    if not handle then
-        if why=='reserved-handle' then return string.format(L['%s is reserved for /rm set.'],tostring(text)) end
-        return L['A handle starts with a letter, then letters, digits, _ or -, up to 32 characters.']
+-- nil when `text` can be this rotation's identifier; else a sentence why.
+function addon:CheckRotationIdentifier(spec,key,text)
+    local identifier,why=data.NormalizeRotationIdentifier(text)
+    if not identifier then
+        if why=='reserved-identifier' then return string.format(L['%s is reserved for /rm set.'],tostring(text)) end
+        return L['An identifier starts with a letter, then letters, digits, _ or -, up to 32 characters.']
     end
-    local _,used=self:ListRotationHandles(spec)
-    local owner=used[handle]
-    if owner and owner.key~=key then return string.format(L['%s already uses the handle %s.'],owner.name,handle) end
-    return nil,handle
+    local _,used=self:ListRotationIdentifiers(spec)
+    local owner=used[identifier]
+    if owner and owner.key~=key then return string.format(L['%s already uses the identifier %s.'],owner.name,identifier) end
+    return nil,identifier
 end
--- The rotation a handle names among those selectable now; nil, and the
--- valid handles, when none or several do.
-function addon:ResolveRotationHandle(spec,text,selectable)
+-- The rotation an identifier names among those selectable now; nil, and the
+-- valid identifiers, when none or several do.
+function addon:ResolveRotationIdentifier(spec,text,selectable)
     local wanted=type(text)=='string' and text:lower():match('^%s*(.-)%s*$')
     if not wanted or wanted=='' then return nil end
-    local rows=self:ListRotationHandles(spec);local found,valid={},{}
+    local rows=self:ListRotationIdentifiers(spec);local found,valid={},{}
     for _,entry in ipairs(rows) do
         if not selectable or entry.fallback or selectable[entry.key] then
-            valid[#valid+1]=entry.handle
-            if entry.handle==wanted then found[#found+1]=entry end
+            valid[#valid+1]=entry.identifier
+            if entry.identifier==wanted then found[#found+1]=entry end
         end
     end
     table.sort(valid)
     if #found==1 then return found[1].fallback and DEFAULT or found[1].key,found[1] end
     return nil,nil,valid,#found>1
 end
--- The handles of the rotations in `selectable` (runtime rows), sorted.
-function addon:ListSelectableHandles(spec,selectable)
+-- The identifiers of the rotations in `selectable` (runtime rows), sorted.
+function addon:ListSelectableIdentifiers(spec,selectable)
     local list={}
-    for _,entry in ipairs(self:ListRotationHandles(spec)) do if entry.fallback and selectable[DEFAULT] or selectable[entry.key] then list[#list+1]=entry.handle end end
+    for _,entry in ipairs(self:ListRotationIdentifiers(spec)) do if entry.fallback and selectable[DEFAULT] or selectable[entry.key] then list[#list+1]=entry.identifier end end
     table.sort(list);return list
 end
--- "Name [handle]" for chat and menus.
+-- "Name [identifier]" for chat and menus.
 function addon:FormatRotationLabel(name,key,spec)
     if type(name)~='string' then return name end
-    local handle=key~=DEFAULT and self:GetRotationHandle(spec or self.currentSpec,key) or nil
-    return handle and string.format('%s [%s]',name,handle) or name
+    local identifier=key~=DEFAULT and self:GetRotationIdentifier(spec or self.currentSpec,key) or nil
+    return identifier and string.format('%s [%s]',name,identifier) or name
 end
 function addon:GetRotationLabel(key,spec)
     local name=key==DEFAULT and DEFAULT or self:GetRotationName(key)
     if not name then return nil end
     return self:FormatRotationLabel(name,key,spec)
 end
--- /rm list: handle, name and status of every rotation for the live spec.
-function addon:GetRotationHandleReport()
+-- /rm list: identifier, name and status of every rotation for the live spec.
+function addon:GetRotationIdentifierReport()
     local spec=self.currentSpec;local lines={}
     if spec==nil then return {L['No rotation can run until your specialization is available.']} end
-    lines[1]=string.format(L['Rotations for %s (use /rm set <handle>):'],self:DescribeRotationSpec(spec))
+    lines[1]=string.format(L['Rotations for %s (use /rm set <id>):'],self:DescribeRotationSpec(spec))
     local states={}
     for _,row in ipairs(self.GetBuiltinStates and self:GetBuiltinStates(spec) or {}) do states[row.id]=row end
-    for _,entry in ipairs(self:ListRotationHandles(spec)) do
+    for _,entry in ipairs(self:ListRotationIdentifiers(spec)) do
         local status
         if entry.kind=='builtin' then
             local state=states[entry.canonicalId]
@@ -615,15 +615,15 @@ function addon:GetRotationHandleReport()
             if not why and not entry.fallback and self:IsManualOnlyRotation(spec,entry.key) then status=status..', '..L['manual only (no switch condition)'] end
         end
         local kind=entry.fallback and L['fallback'] or entry.kind=='builtin' and L['Built In'] or L['yours']
-        lines[#lines+1]=string.format('%s — %s (%s) — %s',entry.handle,entry.name,kind,status)
+        lines[#lines+1]=string.format('%s — %s (%s) — %s',entry.identifier,entry.name,kind,status)
     end
     return lines
 end
-function addon:ShowRotationHandleReport()
-    local lines=self:GetRotationHandleReport()
+function addon:ShowRotationIdentifierReport()
+    local lines=self:GetRotationIdentifierReport()
     if #lines<=6 or not self.ShowConditionText then for _,line in ipairs(lines) do self:print(line) end;return lines end
     self:print(L['The rotation list opened in a window you can copy from.'])
-    self:ShowConditionText(table.concat(lines,'\n'),L['Rotations and their handles'])
+    self:ShowConditionText(table.concat(lines,'\n'),L['Rotations and their identifiers'])
     return lines
 end
--- END ROTATION HANDLES
+-- END ROTATION IDENTIFIERS

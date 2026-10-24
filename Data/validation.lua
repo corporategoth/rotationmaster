@@ -29,25 +29,25 @@ end
 local function integer(value, minimum)
     return type(value) == "number" and value >= minimum and value % 1 == 0
 end
--- A rotation handle: a short identifier for /rm set and lists. A letter,
+-- A rotation identifier (ID): a short name for /rm set and lists. A letter,
 -- then letters, digits, _ or -; at most 32 characters; compared without case
 -- and stored lower-case. auto and default are reserved for /rm set.
-local reservedHandles={auto=true,default=true}
-function data.NormalizeRotationHandle(value)
-    if type(value)~="string" or #value<1 or #value>32 or not value:match("^[A-Za-z][A-Za-z0-9_%-]*$") then return nil,"invalid-handle" end
-    local handle=value:lower()
-    if reservedHandles[handle] then return nil,"reserved-handle" end
-    return handle
+local reservedIdentifiers={auto=true,default=true}
+function data.NormalizeRotationIdentifier(value)
+    if type(value)~="string" or #value<1 or #value>32 or not value:match("^[A-Za-z][A-Za-z0-9_%-]*$") then return nil,"invalid-identifier" end
+    local id=value:lower()
+    if reservedIdentifiers[id] then return nil,"reserved-identifier" end
+    return id
 end
--- A handle made from a name: other characters become -, repeats collapse,
+-- An identifier made from a name: other characters become -, repeats collapse,
 -- the ends are trimmed, and a leading digit gets an r prefix.
-function data.SlugRotationHandle(name)
+function data.SlugRotationIdentifier(name)
     local text=type(name)=="string" and name:lower() or ""
     text=text:gsub("[^%w_%-]+","-"):gsub("%-%-+","-"):gsub("^[-_]+",""):gsub("[-_]+$","")
     if text=="" then text="rotation" end
     if not text:match("^%a") then text="r-"..text end
     text=text:sub(1,32):gsub("[-_]+$","")
-    if reservedHandles[text] then text=text.."-rotation" end
+    if reservedIdentifiers[text] then text=text.."-rotation" end
     return text
 end
 function data.GetRotationPriority(value)
@@ -300,8 +300,8 @@ local function validate(envelope, options, bodyOnly)
     end
     if not object(envelope.body, "$.body") then return finish() end
     local body = envelope.body
-    unknown(body, {name=true,description=true,metadata=true,tags=true,revision=true,priority=true,disabled=true,switch=true,rotation=true,cooldowns=true,handle=true}, "$.body")
-    if body.handle~=nil and data.NormalizeRotationHandle(body.handle)~=body.handle then issue('invalid-handle','$.body.handle','error') end
+    unknown(body, {name=true,description=true,metadata=true,tags=true,revision=true,priority=true,disabled=true,switch=true,rotation=true,cooldowns=true,identifier=true}, "$.body")
+    if body.identifier~=nil and data.NormalizeRotationIdentifier(body.identifier)~=body.identifier then issue('invalid-identifier','$.body.identifier','error') end
     if not data.GetRotationPriority(body.priority) then issue('invalid-priority','$.body.priority','error') end
     if body.revision~=nil then check(body.revision, function(v) return type(v)=="number" and v>=1 and v<=9007199254740991 and v%1==0 end, "$.body.revision") end
     optionalType(body.name, "string", "$.body.name")

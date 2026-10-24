@@ -597,11 +597,11 @@ function addon:BindRotationProfile()
                 legacyValid=replacement.valid
             end
         end
-        -- An imported handle is kept when it is free here; a taken one is
-        -- dropped, so the handle is made from the rotation's name instead.
-        if body.handle~=nil and owner.CheckRotationHandle then
+        -- An imported identifier is kept when it is free here; a taken one is
+        -- dropped, so the identifier is made from the rotation's name instead.
+        if body.identifier~=nil and owner.CheckRotationIdentifier then
             local except=reference and keyFor(reference) or nil
-            if owner:CheckRotationHandle(number,except,body.handle) then body.handle=nil end
+            if owner:CheckRotationIdentifier(number,except,body.identifier) then body.identifier=nil end
         end
         local allocate,allocationReason=self:Allocator();if not allocate then return nil,allocationReason end
         local id=reference and reference.address.id or allocate();if not id then return nil,'id-collision' end
@@ -660,9 +660,9 @@ function addon:BindRotationProfile()
         if scope~='class' and scope~='character' then return nil,'invalid-owner-scope' end
         if scope=='character' and not c.character then return nil,'missing-owner-context' end
         local target={kind='custom',address={scope=scope,class=c.class,owner=scope=='class' and c.class or c.character,spec=number,id=id}}
-        -- A copy never keeps its source's handle; until you set one, its
-        -- handle is made from its new name (ListRotationHandles).
-        if type(copiedRecord.body)=='table' then copiedRecord.body.handle=nil end
+        -- A copy never keeps its source's identifier; until you set one, its
+        -- identifier is made from its new name (ListRotationIdentifiers).
+        if type(copiedRecord.body)=='table' then copiedRecord.body.identifier=nil end
         local saved,commitReason=self:Commit(target,nil,copiedRecord,scope);if not saved then return nil,commitReason end
         return id,nil,saved
     end
@@ -709,7 +709,7 @@ function addon:BindRotationProfile()
                 local state=not status.valid and 'invalid' or not status.supported and 'unsupported' or not status.resolved and 'unresolved' or 'valid'
                 local first=status.diagnostics[1]
                 local projection={validationState=state,problem=first and {code=first.code,path=first.path,condition=first.condition,reason=first.reason},body={name=type(body.name)=='string' and body.name or nil,description=type(body.description)=='string' and body.description or nil,
-                    priority=body.priority,disabled=body.disabled,handle=type(body.handle)=='string' and body.handle or nil,tags=tagsView(body.tags),metadata=metadataView(body.metadata)},tags=manifest and copy(manifest.tags),sources=manifest and copy(manifest.sources)}
+                    priority=body.priority,disabled=body.disabled,identifier=type(body.identifier)=='string' and body.identifier or nil,tags=tagsView(body.tags),metadata=metadataView(body.metadata)},tags=manifest and copy(manifest.tags),sources=manifest and copy(manifest.sources)}
                 return projection
             end)
             if not projected then return nil,view end
@@ -717,7 +717,7 @@ function addon:BindRotationProfile()
             headers[key]={seal=row.seal,view=view,stamp=validationStamp}
             result[#result+1]={key=key,reference=copy(reference),canonicalId=row.address.id,kind='custom',scope=row.address.scope,
                 name=view.body.name or L['Unnamed rotation'],description=view.body.description or '',enabled=not view.body.disabled,
-                priority=data.GetRotationPriority(view.body.priority),handle=view.body.handle,tags=data.GetRotationTags(view) or {},search=data.RotationSearchText(view,view.body.name or '',view.body.description or ''),
+                priority=data.GetRotationPriority(view.body.priority),identifier=view.body.identifier,tags=data.GetRotationTags(view) or {},search=data.RotationSearchText(view,view.body.name or '',view.body.description or ''),
                 readOnly=false,pending=false,virtual=false,fallback=row.address.id==profile.rotationFallbackID,effectiveFallback=fallback and same(fallback,reference) or false,validationState=view.validationState,problem=view.problem}
         end
         local virtual={kind='custom',address={scope='class',class=c.class,owner=c.class,spec=number,id=profile.rotationFallbackID}}
@@ -735,7 +735,7 @@ function addon:BindRotationProfile()
                 local problem=first and {code=first.code,path=first.path,condition=first.condition,reason=first.reason}
                 local _,builtinState=owner:GetBuiltinSwitch(id)
                 builtinPresentation[id]={name=name,description=description,eligible=eligible,reason=eligibilityReason,problem=problem,state=builtinState}
-                return {key=keyFor(reference),reference=reference,canonicalId=id,kind='builtin',name=name,description=description,handle=owner.GetBuiltinHandle and owner:GetBuiltinHandle(id) or nil,enabled=view.enabled,switchedOn=view.switchedOn==true,builtinState=builtinState,eligible=eligible,eligibilityReason=eligibilityReason,priority=data.GetRotationPriority(body.priority),
+                return {key=keyFor(reference),reference=reference,canonicalId=id,kind='builtin',name=name,description=description,identifier=owner.GetBuiltinIdentifier and owner:GetBuiltinIdentifier(id) or nil,enabled=view.enabled,switchedOn=view.switchedOn==true,builtinState=builtinState,eligible=eligible,eligibilityReason=eligibilityReason,priority=data.GetRotationPriority(body.priority),
                     tags=data.GetRotationTags(view.envelope) or {},search=data.RotationSearchText(view.envelope,name,description),readOnly=true,pending=false,virtual=false,fallback=false,effectiveFallback=false,validationState=view.validation.valid and 'valid' or 'invalid',problem=problem}
             end)
             if not rows then return nil,why end;for _,row in ipairs(rows) do result[#result+1]=row end
