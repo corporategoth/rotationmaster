@@ -1,7 +1,8 @@
--- Live condition dots on rotation, cooldown, Branch/Stop and switch cards
--- (UI/rotation_cards.lua, UI/rotation_editor.lua): the real evaluator, at
--- the General "Live Status Update Frequency" (profile.live_config_update),
--- only while the editor is open and visible; 0 turns the dots off.
+-- Live condition bars on rotation, cooldown, Branch/Stop and switch condition
+-- fields (UI/rotation_cards.lua, UI/rotation_editor.lua): a thin stripe on
+-- the field's left edge, from the real evaluator, at the General "Live Status
+-- Update Frequency" (profile.live_config_update), only while the editor is
+-- open and visible; 0 turns them off.
 local F=dofile('tests/fixtures/addon.lua')
 local test,finish=F.suite()
 local function cond(tag) return {type=tag} end
@@ -51,62 +52,79 @@ local function card(pane,id)
     if pane.view.section~=section then pane:SelectContent(section) end
     return visibleCard(pane,id)
 end
-local function dot(c) return c.live:IsShown() and c.live.state end
-local function color(c) local t=c.live.dot:GetTexture() or '';return t:match('Indicator%-(%a+)') end
-local function hover(control) control.scripts.OnEnter(control);return control.lastTooltip end
+local function bar(c) return c.liveBar:IsShown() and c.liveBar.state end
+local GREEN,RED,GREY={.3,.85,.4,1},{.9,.27,.22,1},{.55,.55,.55,.55}
+local function painted(c,want) local got=c.liveBar.color;return got and got[1]==want[1] and got[2]==want[2] and got[3]==want[3] and got[4]==want[4] end
+local function tooltip(f)
+    local lines={}
+    f.env.GameTooltip={SetOwner=function() end,SetText=function(_,text,r,g,b) for i=#lines,1,-1 do lines[i]=nil end;lines[1]={text,r,g,b} end,AddLine=function(_,text,r,g,b) lines[#lines+1]={text,r,g,b} end,Show=function() end,Hide=function() end,IsOwned=function() return true end}
+    return lines
+end
+local CLICK='Click condition text on any card to view or edit its conditions.'
 
-test('dots show satisfied, not satisfied and unavailable with the reason; no condition shows nothing',function()
+test('bars show matching, not matching and unavailable; no condition shows nothing; no dot remains',function()
     local f,parent,env=fixture(2)
     local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'))
     assert(env.running()==1 and env.timers[1].delay==2,'timer not started at the live update frequency')
-    assert(dot(card(pane,'yes')).status=='satisfied' and color(card(pane,'yes'))=='Green','yes')
-    assert(dot(card(pane,'no')).status=='unsatisfied' and color(card(pane,'no'))=='Red','no')
-    local odd=card(pane,'odd');assert(dot(odd).status=='unavailable' and color(odd)=='Gray' and dot(odd).reason=='target-unreadable','odd')
-    assert(not card(pane,'plain').live:IsShown(),'a card with no condition has a dot')
-    assert(dot(card(pane,'stop')).status=='satisfied','Stop')
-    assert(dot(card(pane,'branch')).status=='unsatisfied' and dot(card(pane,'inner')).status=='satisfied','Branch and its child')
-    assert(not card(pane,'forced').live:IsShown(),'a forced branch (condition skipped) has a dot')
+    local yes,no,odd=card(pane,'yes'),card(pane,'no'),card(pane,'odd')
+    assert(bar(yes).status=='satisfied' and painted(yes,GREEN),'yes')
+    assert(bar(no).status=='unsatisfied' and painted(no,RED),'no')
+    assert(bar(odd).status=='unavailable' and painted(odd,GREY) and bar(odd).reason=='target-unreadable','odd')
+    assert(not card(pane,'plain').liveBar:IsShown(),'a card with no condition has a bar')
+    assert(bar(card(pane,'stop')).status=='satisfied','Stop')
+    assert(bar(card(pane,'branch')).status=='unsatisfied' and bar(card(pane,'inner')).status=='satisfied','Branch and its child')
+    assert(not card(pane,'forced').liveBar:IsShown(),'a forced branch (condition skipped) has a bar')
+    assert(yes.live==nil and pane.switchLive==nil,'the old dot is still there')
 end)
 
-test('the tooltip says the state, the reason and when it was checked',function()
+test('the bar is a thin stripe inside the condition field, on its left edge',function()
+    local f,parent=fixture(2)
+    local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'))
+    for _,id in ipairs({'yes','branch','inner','stop','cd'}) do
+        local c=card(pane,id);local stripe=c.liveBar
+        assert(stripe:GetParent()==c.condition,id..': bar is not inside the condition field')
+        local point,relative,relativePoint,x,y=stripe:GetPoint(1)
+        assert(point=='TOPLEFT' and relative==c.condition and relativePoint=='TOPLEFT' and x==0 and y==0,id..': bar not on the field\'s left edge')
+        local point2,relative2=stripe:GetPoint(2);assert(point2=='BOTTOMLEFT' and relative2==c.condition,id..': bar does not span the field')
+        assert(stripe.width==3,id..': bar width '..tostring(stripe.width))
+    end
+    assert(bar(card(pane,'cd')).status=='satisfied','cooldown bar')
+end)
+
+test('the condition tooltip leads with the match state on its own line, coloured, then the click hint, then when it was checked',function()
     local f,parent,env=fixture(2)
     local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'))
-    local tips={}
-    f.env.GameTooltip={SetOwner=function() end,SetText=function(_,text) tips[#tips+1]=text end,AddLine=function(_,text) tips[#tips+1]=text end,Show=function() end,Hide=function() end,IsOwned=function() return true end}
     env.advance(3)
-    card(pane,'yes').live.scripts.OnEnter(card(pane,'yes').live)
-    local text=table.concat(tips,'\n')
-    assert(text:find('Currently satisfied') and text:find('Checked 3 seconds ago'),text)
-    tips={};card(pane,'odd').live.scripts.OnEnter(card(pane,'odd').live)
-    text=table.concat(tips,'\n');assert(text:find('Unavailable: target%-unreadable'),text)
-    tips={};card(pane,'no').live.scripts.OnEnter(card(pane,'no').live)
-    assert(table.concat(tips,'\n'):find('Not satisfied'))
+    local lines=tooltip(f);local yes=card(pane,'yes');yes.condition.scripts.OnEnter(yes.condition)
+    assert(lines[1][1]=='Currently Matches' and lines[1][2]==GREEN[1] and lines[1][3]==GREEN[2],'first line '..tostring(lines[1] and lines[1][1]))
+    assert(lines[2][1]==CLICK,'second line '..tostring(lines[2] and lines[2][1]))
+    assert(lines[3][1]=='Checked 3 seconds ago.','third line '..tostring(lines[3] and lines[3][1]))
+    lines=tooltip(f);local no=card(pane,'no');no.condition.scripts.OnEnter(no.condition)
+    assert(lines[1][1]=='Does Not Currently Match' and lines[1][2]==RED[1] and lines[2][1]==CLICK)
+    lines=tooltip(f);local odd=card(pane,'odd');odd.condition.scripts.OnEnter(odd.condition)
+    assert(lines[1][1]=='Unavailable: target-unreadable' and lines[1][2]==GREY[1] and lines[2][1]==CLICK,tostring(lines[1][1]))
+    lines=tooltip(f);local plain=card(pane,'plain');plain.condition.scripts.OnEnter(plain.condition)
+    assert(#lines==1 and lines[1][1]==CLICK,'a field without a condition gained a state line')
 end)
 
-test('each tick re-evaluates; a changed state repaints the dot',function()
+test('each tick re-evaluates; a changed state repaints the bar',function()
     local f,parent,env=fixture(2)
     local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'))
     env.live.NO='match';env.tick()
-    assert(dot(card(pane,'no')).status=='satisfied','tick did not repaint')
+    assert(bar(card(pane,'no')).status=='satisfied' and painted(card(pane,'no'),GREEN),'tick did not repaint')
     env.live.YES='unavailable';env.tick()
-    assert(dot(card(pane,'yes')).status=='unavailable')
+    assert(bar(card(pane,'yes')).status=='unavailable' and painted(card(pane,'yes'),GREY))
 end)
 
-test('cooldown cards get the dot where the arrows sit on rotation cards',function()
-    local f,parent=fixture(2)
-    local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'))
-    local _,_,_,rx,ry=card(pane,'yes').live:GetPoint()
-    local cd=card(pane,'cd');local _,_,_,cx,cy=cd.live:GetPoint()
-    assert(dot(cd).status=='satisfied','cooldown dot')
-    assert(rx==cx and ry==cy,'cooldown dot not aligned: '..tostring(rx)..','..tostring(ry)..' vs '..tostring(cx)..','..tostring(cy))
-end)
-
-test('the switch condition has its own dot',function()
+test('the switch condition field has the same bar and tooltip',function()
     local f,parent,env=fixture(2)
     local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'))
-    assert(pane.switchLive:IsShown() and pane.switchLive.state.status=='satisfied')
-    env.live.SW='no-match';env.tick();assert(pane.switchLive.state.status=='unsatisfied')
-    env.live.SW='unavailable';env.tick();assert(pane.switchLive.state.status=='unavailable')
+    local stripe=pane.switchLiveBar
+    assert(stripe:IsShown() and stripe.state.status=='satisfied' and stripe:GetParent()==pane.switch)
+    local lines=tooltip(f);pane.switch.scripts.OnEnter(pane.switch)
+    assert(lines[1][1]=='Currently Matches' and lines[2][1]:sub(1,#CLICK)==CLICK,'switch tooltip '..tostring(lines[1][1]))
+    env.live.SW='no-match';env.tick();assert(stripe.state.status=='unsatisfied')
+    env.live.SW='unavailable';env.tick();assert(stripe.state.status=='unavailable')
 end)
 
 test('closing the editor cancels the timer; nothing is evaluated while closed',function()
@@ -117,7 +135,6 @@ test('closing the editor cancels the timer; nothing is evaluated while closed',f
     assert(env.running()==0,'timer survived the closed editor')
     local before=env.evaluated();stale();env.tick()
     assert(env.evaluated()==before,'a closed editor evaluated conditions')
-    -- Reopening starts one timer again.
     assert(f.addon:CreateRotationEditor(parent,0,'mine'));assert(env.running()==1)
 end)
 
@@ -128,31 +145,31 @@ test('a hidden editor stops its timer at the next tick',function()
     assert(env.running()==0 and env.evaluated()==before,'hidden editor kept evaluating')
 end)
 
-test('0 turns the dots off: no timer, no evaluation, no dots',function()
+test('0 turns the bars off: no timer, no evaluation, no bars',function()
     local f,parent,env=fixture(0)
     local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'))
     assert(env.running()==0 and env.evaluated()==0)
-    assert(not card(pane,'yes').live:IsShown() and not pane.switchLive:IsShown())
+    assert(not card(pane,'yes').liveBar:IsShown() and not pane.switchLiveBar:IsShown())
 end)
 
-test('changing the frequency restarts the open editor\'s timer; 0 clears the dots',function()
+test('changing the frequency restarts the open editor\'s timer; 0 clears the bars',function()
     local f,parent,env=fixture(2)
     local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'))
     f.addon.db.profile.live_config_update=5;f.addon:RestartLiveStatus()
     assert(env.running()==1 and env.timers[#env.timers].delay==5)
     f.addon.db.profile.live_config_update=0;f.addon:RestartLiveStatus()
-    assert(env.running()==0 and not card(pane,'yes').live:IsShown())
+    assert(env.running()==0 and not card(pane,'yes').liveBar:IsShown())
     pane:Release();f.addon.db.profile.live_config_update=3;f.addon:RestartLiveStatus()
     assert(env.running()==0,'a closed editor got a timer')
 end)
 
-test('Built In read-only views get the dots',function()
+test('Built In read-only views get the bars',function()
     local f,parent=fixture(2)
     local pane=assert(f.addon:CreateRotationEditor(parent,0,'builtin'))
-    assert(pane.workspace.readOnly and dot(card(pane,'yes')).status=='satisfied')
+    assert(pane.workspace.readOnly and bar(card(pane,'yes')).status=='satisfied')
 end)
 
-test('the dot tooltip names the advised step and shares the not-on-your-bars warning',function()
+test('the tooltip names the advised step; the not-on-your-bars warning stays on its own row',function()
     local f,parent=fixture(2)
     local a=f.addon
     a.currentSpec=0;a.currentRotation='mine'
@@ -160,13 +177,13 @@ test('the dot tooltip names the advised step and shares the not-on-your-bars war
     a.GetStepBinding=function(_,step) if step.id=='no' then return false end;return true end
     a.WatchButtonIndex=function() end
     local pane=assert(a:CreateRotationEditor(parent,0,'mine'))
-    local tips={}
-    f.env.GameTooltip={SetOwner=function() end,SetText=function(_,text) tips[#tips+1]=text end,AddLine=function(_,text) tips[#tips+1]=text end,Show=function() end,Hide=function() end,IsOwned=function() return true end}
-    card(pane,'yes').live.scripts.OnEnter(card(pane,'yes').live)
-    assert(table.concat(tips,'\n'):find('Rotation Master is advising this step now'),table.concat(tips,'\n'))
-    tips={};card(pane,'no').live.scripts.OnEnter(card(pane,'no').live)
-    assert(table.concat(tips,'\n'):find("Not on your action bars"),table.concat(tips,'\n'))
+    local lines=tooltip(f);local yes=card(pane,'yes');yes.condition.scripts.OnEnter(yes.condition)
+    assert(lines[1][1]=='Currently Matches' and lines[2][1]==CLICK and lines[3][1]=='Rotation Master is advising this step now.','advising line order')
+    local no=card(pane,'no')
+    assert(no.unbound:IsShown() and no.unbound.tooltip:find('this step is skipped'),'warning row moved')
+    assert(bar(no).status=='unsatisfied')
 end)
+
 test('the addon schedules no live-status timer of its own (zero cost with the editor closed)',function()
     local root=assert(io.popen('pwd'):read('*l'))
     local c=assert(loadfile('tests/fixtures/wholepoll_shaman.lua'))('trace',root,true,root,true)({buttons=true,target=true,poll=.15})

@@ -434,7 +434,7 @@ function addon:CreateRotationCanvas(parent,owner)
         end)
         addon:SetUIScript(card.condition,'OnClick',function() if alive() then owner:EditCondition(model.id) end end)
         addon:SetUIScript(card.condition,'OnEnter',function(control)
-            if alive() and GameTooltip then GameTooltip:SetOwner(control,'ANCHOR_RIGHT');GameTooltip:SetText(control.tooltip,1,1,1,1,true) end
+            if alive() and GameTooltip then addon:ShowConditionFieldTooltip(control,control.tooltip,card.liveBar and card.liveBar.state) end
         end)
         addon:SetUIScript(card.condition,'OnLeave',function(control)
             if alive() and GameTooltip and GameTooltip:IsOwned(control) then GameTooltip:Hide() end

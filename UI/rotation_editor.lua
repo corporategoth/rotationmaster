@@ -155,7 +155,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         if workspace.fallback then self.switch:Disable() else self.switch:Enable() end
         self:ApplySwitchNotes()
         self:BuildScene();self:LayoutGeometry();self.canvas:Render()
-        if self.liveTimer then self:RefreshLiveStatus() else self.switchLive:SetState(nil) end
+        if self.liveTimer then self:RefreshLiveStatus() else self.switchLiveBar:SetState(nil) end
         for _,control in ipairs({self.compare,self.clone}) do if self.workspace.pending then control:Disable() else control:Enable() end end
         self.clone:SetText(self.workspace.readOnly and L['Clone to edit'] or L['Duplicate'])
         if self.workspace.readOnly or workspace.fallback or self.workspace.pending then self.delete:Disable() else self.delete:Enable() end
@@ -264,9 +264,16 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     pane.switchButton=addon:CreateWorkbenchButton(pane.frame,'',300);pane.switch=pane.switchButton
     pane.switchText=pane.switchButton:GetFontString();pane.switchText:ClearAllPoints();pane.switchText:SetPoint('TOPLEFT',6,-4);pane.switchText:SetWordWrap(true);pane.switchText:SetJustifyH('LEFT')
     pane.switchLabel=addon:CreateWorkbenchButton(pane.frame,L['Switch condition'],180);addon:StyleWorkbenchHeader(pane.switchLabel:GetFontString());pane.switchLabel.art:SetAlpha(.1);addon:AlignWorkbenchTextLeft(pane.switchLabel,0)
-    pane.switchLive=addon:CreateLiveStatusDot(pane.frame)
-    addon:SetUIScript(pane.switchLive,'OnEnter',function(control) addon:ShowLiveStatusTooltip(control,control.state) end)
     pane.switch.tooltip=L['Click condition text on any card to view or edit its conditions.']
+    -- The switch condition's live bar, and its state first in the tooltip.
+    pane.switchLiveBar=addon:CreateLiveStatusBar(pane.switch)
+    do
+        local enter=pane.switch:GetScript('OnEnter')
+        addon:SetUIScript(pane.switch,'OnEnter',function(control,...)
+            if enter then enter(control,...) end
+            if pane.switchLiveBar.state then addon:ShowConditionFieldTooltip(control,control.tooltip,pane.switchLiveBar.state) end
+        end)
+    end
     pane.compare=tool(L['Compare rotations'],126,function()
         pane:RequestLeave(function() if addon.ShowRotationComparison then addon:ShowRotationComparison(spec,id) end end)
     end,'compare')
@@ -333,6 +340,9 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         local note,amber,where=self:SwitchNotes()
         self.switch.tooltip=note and (self.switchBaseTooltip and self.switchBaseTooltip..'\n\n'..note or note) or self.switchBaseTooltip
         if addon.SetWorkbenchNotice then addon:SetWorkbenchNotice(self.switch,amber,false) end
+        -- The live bar steps inside the amber overlap edge when that shows.
+        local inset=amber and 4 or 0;local bar=self.switchLiveBar
+        bar:ClearAllPoints();bar:SetPoint('TOPLEFT',self.switch,'TOPLEFT',inset,0);bar:SetPoint('BOTTOMLEFT',self.switch,'BOTTOMLEFT',inset,0)
         local pill=L['Built In: it cannot be edited. Duplicate makes your own copy; Enabled and Priority are your settings for this profile.']
         self.readOnlyPill.tooltip=where and pill..'\n\n'..where or pill
     end
@@ -533,9 +543,6 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         if available then self.validationButton:Hide() else self.validationButton:Show() end
         local switchTop=y+30+(available and 0 or 24)
         self.switchLabel:ClearAllPoints();self.switchLabel:SetPoint('TOPLEFT',8,-switchTop)
-        -- The switch condition's live dot follows the header text.
-        local caption=self.switchLabel:GetFontString();local textWidth=type(caption.GetStringWidth)=='function' and caption:GetStringWidth() or nil
-        self.switchLive:ClearAllPoints();self.switchLive:SetPoint('LEFT',self.switchLabel,'LEFT',math.min(168,(tonumber(textWidth) or 100)+8),0)
         self.switch:ClearAllPoints();self.switch:SetPoint('TOPLEFT',8,-switchTop-22)
         self.switchText:SetWidth(math.max(100,width-28))
         self.switchText:SetText(addon:PlainWorkbenchName(workspace.fallback and L['No other rotations match.'] or addon:DescribeCardCondition(self.workspace:Snapshot().switch or {},spec)))
@@ -667,7 +674,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         self.opening=true;self.name:EnableMouse(not workspace.readOnly and not workspace.fallback);self.canvas.frame:Show();self.frame:Show();self.opening=nil;self:Message('')
         self.frame:SetSize(parent:GetWidth(),parent:GetHeight());self:Layout();self:StartLiveStatus();return self
     end
-    -- Live condition dots. Each card's condition (and the switch condition)
+    -- Live condition bars. Each card's condition (and the switch condition)
     -- is evaluated with the real evaluator against the player's state now,
     -- every Live Status Update Frequency seconds (profile.live_config_update,
     -- 0 = off), only while this editor is open and on screen. Only bound
@@ -709,7 +716,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     function pane:ClearLiveStatus()
         self.liveStates=nil
         for _,card in ipairs(self.canvas.cards) do if card.token and card.model and card.SetLive then card:SetLive(nil) end end
-        self.switchLive:SetState(nil)
+        self.switchLiveBar:SetState(nil)
     end
     -- Whether this rotation is the one advising now, and which step it chose
     -- (the last recommendation /rm debug glow recorded), for the tooltips.
@@ -762,8 +769,8 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
             local state=matched==true and {status='satisfied',at=now} or matched==false and {status='unsatisfied',at=now}
                 or {status='unavailable',reason=L['unreadable right now'],at=now}
             if active then state.chosen=L['This rotation is advising now.'] end
-            self.switchLive:SetState(state)
-        else self.switchLive:SetState(nil) end
+            self.switchLiveBar:SetState(state)
+        else self.switchLiveBar:SetState(nil) end
     end
     -- A resize lays out the header and viewport at once. Cards follow through
     -- the shared reflow driver, once per rendered frame at most, by geometry
@@ -790,7 +797,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         end
     end
     addon:SetUIScript(pane.frame,'OnSizeChanged',function() pane:Resized() end)
-    -- Shown again without being reopened: the live dots resume.
+    -- Shown again without being reopened: the live bars resume.
     addon:SetUIScript(pane.frame,'OnShow',function() if pane.active and pane.ready and not pane.opening and not pane.liveTimer then pane:StartLiveStatus() end end)
     addon:InstallRotationMetadata(pane)
     addon:InstallRotationUnsaved(pane);addon:InstallRotationChangeReview(pane)
