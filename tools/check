@@ -64,6 +64,8 @@ def main():
             ['luajit', 'tests/native_reference_index.lua'],
             ['lua5.1', 'tests/native_widget_ownership.lua'],
             ['luajit', 'tests/native_widget_ownership.lua'],
+            ['lua5.1', 'tests/client_api_surface.lua'],
+            ['luajit', 'tests/client_api_surface.lua'],
             ['lua5.1', 'tests/native_condition_sources.lua'],
             ['luajit', 'tests/native_condition_sources.lua'],
             ['lua5.1', 'tests/rotation_content_revision.lua'],

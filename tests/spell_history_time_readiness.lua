@@ -5,7 +5,8 @@ local function read(path)local file=assert(io.open(path));local text=file:read('
 local function fixture(modern)
  local f=F.new(5,1,'WARLOCK');local a,e=f.addon,f.env;local s={time=100,known=true,calls=0,ids={},canonical=686}
  e.BOOKTYPE_SPELL='spell';e.BOOKTYPE_PET='pet';e.GetTime=function() return s.time end;e.UnitGUID=function(unit) assert(unit=='player');return 'Player-1' end
- e.GetAddOnMetadata=function(_,field) return field=='Title' and 'Rotation Master' or 'test' end
+ -- No client has a GetAddOnMetadata global any more; metadata comes from C_AddOns.
+ e.C_AddOns={GetAddOnMetadata=function(_,field) return field=='Title' and 'Rotation Master' or 'test' end}
  f.libraries['AceAddon-3.0']={NewAddon=function(_,object)return object end};f.libraries['AceEvent-3.0']={};f.libraries['LibDBIcon-1.0']={}
  f.libraries['LibDataBroker-1.1']={NewDataObject=function()return {} end};f.libraries['ThreatClassic-1.0']={Disable=function()end}
  -- Execute the whole production event producer. Only external library/native

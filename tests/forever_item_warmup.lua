@@ -1,7 +1,7 @@
 -- Actual cold initialization; only external item API capabilities are modeled.
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local make=dofile('tests/fixtures/client_baseline.lua')
-local function build(mode)
+local function build(mode,case)
  local disk=loadfile;local observed={modern={},legacy={},nativeReads=0}
  _G.loadfile=function(path,...)
   local chunk,why=disk(path,...);if path~='init.lua'or not chunk then return chunk,why end
@@ -30,13 +30,13 @@ local function build(mode)
    setfenv(chunk,env);return chunk(name,a)
   end
  end
- local ok,c=pcall(make,{'forever',18,12,'restricted'});_G.loadfile=disk;assert(ok,c)
+ local ok,c=pcall(make,case or {'forever',18,12,'restricted'});_G.loadfile=disk;assert(ok,c)
  return c,observed
 end
-local function healthy(c)
+local function healthy(c,policy)
  local a=c.a;assert(not a.initializationErrorReport and not a.adviceErrorReport,'advisory warmup blocked initialization')
  assert(#a.Diagnostics:GetReports()==0,'advisory warmup produced startup diagnostic')
- assert(a.Platform:GetClientInfo().combatDataPolicy=='restricted'and a.currentRotation==nil)
+ assert(a.Platform:GetClientInfo().combatDataPolicy==(policy or'restricted')and a.currentRotation==nil)
 end
 test('modern-only item metadata permits actual Forever cold initialization',function()
  local c,o=build('modern-only');healthy(c);assert(#o.modern>0 and #o.legacy==0)
@@ -50,9 +50,11 @@ test('modern errors unavailable invalid and restricted metadata are advisory wit
   local c,o=build(mode);healthy(c);assert(#o.modern>0 and #o.legacy==0,mode..' fell through to legacy')
  end
 end)
+-- Forever has no GetItemInfo global at all; only Classic still provides it (behind its
+-- default loadDeprecationFallbacks=1), so the legacy route is exercised on Era.
 test('missing modern method uses legacy only when absent and legacy failure is advisory',function()
  for _,mode in ipairs({'legacy','legacy-throw'})do
-  local c,o=build(mode);healthy(c);assert(#o.legacy>0 and #o.modern==0)
+  local c,o=build(mode,{'era',2,0,'probe'});healthy(c,'probe');assert(#o.legacy>0 and #o.modern==0)
  end
 end)
 test('missing both metadata APIs never blocks initialization or fabricates facts',function()

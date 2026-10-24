@@ -15,6 +15,10 @@ local support=assert(addonFixture:match("(    load%('UI/controls.lua'%).-)\n    
 -- Identity is assigned before the common fixture's first production load.
 common=once(common,'    env.LE_EXPANSION_LEVEL_CURRENT = 1',[[    env.LE_EXPANSION_LEVEL_CURRENT = baseline[3]
     env.WOW_PROJECT_ID = baseline[2]
+    -- Only what this client provides (tests/fixtures/client_api.lua); Retail and Forever
+    -- with loadDeprecationFallbacks off, the Classic families with their default (on).
+    do local api=dofile('tests/fixtures/client_api.lua');local project=baseline[2];local name=api.byProject[project]
+        if name then api.install(env,name,{fallbacks=name~='retail' and name~='forever'}) end end
     env.WOW_PROJECT_BURNING_CRUSADE_CLASSIC,env.WOW_PROJECT_WRATH_CLASSIC=5,11
     env.WOW_PROJECT_CATACLYSM_CLASSIC,env.WOW_PROJECT_MISTS_CLASSIC,env.WOW_PROJECT_CAMELOT=14,19,18
     env.UnitLevel=function() return 11 end

@@ -237,7 +237,7 @@ local function restricted()
     end
     e.tinsert,e.tremove=table.insert,table.remove
     f.libraries['LibCustomGlow-1.0']={PixelGlow_Stop=function() end,AutoCastGlow_Stop=function() end,ButtonGlow_Stop=function() end}
-    e.C_AddOns={IsAddOnLoaded=function() return false end}
+    e.C_AddOns.IsAddOnLoaded=function() return false end
     -- LibStub is a callable table in the client (LibStub:GetLibrary).
     local call=e.LibStub
     e.LibStub=setmetatable({GetLibrary=function(_,name,silent) if silent then local ok,lib=pcall(call,name);return ok and lib or nil end;return call(name) end},
