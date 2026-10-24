@@ -3971,6 +3971,19 @@ L["Help.Conditions.SPECIALIZATION.editions"] = "Retail and Mists of Pandaria Cla
 L["Help.Conditions.WEAPON_TYPE"] = "What is equipped in the main hand, off hand or ranged slot: nothing, any weapon, a one-handed, two-handed or ranged weapon, a shield, an off-hand item, or one weapon type such as Daggers. Types are read from the item's class and subclass, so they work in every language. The answer is cached until your equipment changes."
 L["Help.Conditions.WEAPON_TYPE.examples"] = "Dual wielding: off hand holds any weapon. Titan's Grip: off hand holds a two-handed weapon. Backstab and Ambush: main hand holds Daggers. Shield Slam or a tank set: off hand holds a shield. The ranged slot exists only before Mists of Pandaria; elsewhere, and while item data is still loading, this condition is unavailable, including under NOT."
 
+-- Steps whose action is on no action bar (buttons.lua GetStepBinding).
+L["Not on your action bars, so it can't be highlighted. It is skipped."] = true
+L["Some suggestions are not on your action bars, so they can't be highlighted. They are skipped."] = true
+L["Rotation Master highlights a step by lighting the action button that holds it. No action bar button holds this action right now, so this step is skipped and the next step is used instead. Put it on an action bar to use it. Spells inside macros count only where the game lets addons read macros (not on Retail)."] = true
+L["Rotation Master highlights a cooldown by lighting the action button that holds it. No action bar button holds this action right now, so this cooldown is never shown or announced. Put it on an action bar to use it. Spells inside macros count only where the game lets addons read macros (not on Retail)."] = true
+L["Blizzard can suggest %s, but no action bar button holds it. Rotation Master highlights an action by lighting the button that holds it, so when one of these is suggested this step is skipped and the next step is used instead. Put them on an action bar to use them."] = true
+L["Skipped, not on your action bars (they cannot be highlighted): %s."] = true
+L["step %s"] = true
+L["cooldown"] = true
+L["Not on your action bars"] = true
+L["An amber border and warning mark a card whose action no action bar button holds right now. Rotation Master highlights an action by lighting the button that holds it, so that step is skipped (a cooldown is never shown) until you put it on a bar. The warning updates when your bars change. Red still marks invalid data."] = true
+L["Actions must also be on an action bar: Rotation Master highlights an action by lighting the button that holds it, so a step or cooldown that no button holds is skipped, and its card shows an amber warning."] = true
+
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true
 L["All original results, preserving nil positions and return count."] = true

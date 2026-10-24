@@ -81,6 +81,22 @@ local FramePool = {}
 -- last recommendation glow request and what became of it. Written only when
 -- the bars are scanned or the recommended spell changes, never per poll.
 local FetchCount,LastFetchAt=0,nil
+-- Callbacks told when the index changes (a scan, or a macro button that now
+-- shows another action), so an open editor can refresh what it derives from
+-- the index. Event driven only; nothing runs per poll unless a macro changed.
+local indexWatchers={}
+local indexContext={module='ui',operation='button-index'}
+local function announceIndexChange()
+    if next(indexWatchers)==nil then return end
+    local diagnostics=addon.Diagnostics
+    for key,callback in pairs(indexWatchers) do
+        if diagnostics and type(diagnostics.Call)=='function' then diagnostics:Call(indexContext,callback,key)
+        else pcall(callback,key) end
+    end
+end
+function addon:WatchButtonIndex(key,callback)
+    if key~=nil then indexWatchers[key]=type(callback)=='function' and callback or nil end
+end
 -- The client data policy the current index was built under (Fetch).
 local fetchedPolicy
 local LastGlow = {}
@@ -807,6 +823,7 @@ function addon:RefreshMacroButtons()
         ButtonSpells[change.button],ButtonItems[change.button]=nil,nil
         AddButton(change.spell,change.button,change.item)
     end
+    announceIndexChange()
 end
 
 function FetchNeuron()
@@ -1113,6 +1130,7 @@ function addon:Fetch()
 		self:EnableRotationTimer()
 		self:EvaluateNextAction()
 	end
+    announceIndexChange()
 end
 
 function addon:FindSpell(spellIds,itemIds)
@@ -1127,6 +1145,103 @@ function addon:FindSpell(spellIds,itemIds)
             end
         end
     end
+end
+
+-- Whether a step's action is on an action button now: the test the engine
+-- applies before it may select a step or show a cooldown (main.lua, "the
+-- first mapped and ready spell"), read from the last scan with no bar call.
+-- Bound means FindSpell maps one of the IDs GetSpellIds gives the step: a
+-- spell under its own ID or any rank (Classic), or under its base or
+-- override spell where the client relates them (the aliases above); an item
+-- or item set through a button holding that same item; a pet spell through
+-- the pet bar. Returns true, or false when no button holds it (the engine
+-- skips it), or nil when there is nothing to check: no action (Stop,
+-- Branch), IDs that cannot be resolved yet, or no scan has run.
+-- Blizzard's suggestion changes every poll, so it is checked against the
+-- specialization's suggestion set: false and the known spells that are on
+-- no button, when any is missing.
+local function assistedBinding(self)
+    local platform=self.Platform
+    if type(platform)~='table' or type(platform.GetAssistedRotationSpells)~='function' then return nil end
+    local spells=platform:GetAssistedRotationSpells()
+    if type(spells)~='table' or #spells==0 then return nil end
+    local missing
+    for _,spell in ipairs(spells) do
+        if platform:IsSpellKnown(spell,false)==true then
+            local mapped=false
+            for _,id in ipairs(platform:GetAssistedSpellCandidates(spell)) do
+                if Spells[id] then mapped=true;break end
+            end
+            if not mapped then missing=missing or {};missing[#missing+1]=spell end
+        end
+    end
+    if missing then return false,missing end
+    return true
+end
+local BINDABLE={spell=true,pet=true,any=true,item=true}
+function addon:GetStepBinding(step)
+    if type(step)~='table' or FetchCount==0 or step.type=='branch' or step.type=='none' then return nil end
+    if step.type=='assisted' then return assistedBinding(self) end
+    if step.action==nil or not BINDABLE[step.type] then return nil end
+    local ok,spellIds,itemIds=pcall(self.GetSpellIds,self,step)
+    if not ok or type(spellIds)~='table' or #spellIds==0 then return nil end
+    for index,id in ipairs(spellIds) do
+        if step.type=='item' then
+            if self:FindSpell({id},{itemIds and itemIds[index]}) then return true end
+        elseif self:FindSpell({id}) then return true end
+    end
+    return false
+end
+
+-- The enabled, reachable steps of one rotation body whose action is on no
+-- action button now, in walk order: {step=, section=, ordinal=, missing=}.
+-- For /rm why and /rm debug glow; nothing reads it per poll.
+function addon:ListUnboundSteps(body)
+    local data=self.RotationData
+    if type(body)~='table' or type(data)~='table' or type(data.IndexRotationSteps)~='function' then return {} end
+    local ok,index=pcall(data.IndexRotationSteps,body,{allowMissingIds=true})
+    if not ok or type(index)~='table' or type(index.rows)~='table' then return {} end
+    local list={}
+    for _,row in ipairs(index.rows) do
+        local step=row.step
+        if type(step)=='table' and not step.disabled and not row.unreachable then
+            local bound,missing=self:GetStepBinding(step)
+            if bound==false then list[#list+1]={step=step,section=row.section,ordinal=row.ordinal,missing=missing} end
+        end
+    end
+    return list
+end
+
+-- One step's action, named for a report line.
+function addon:DescribeStepAction(step)
+    if type(step)~='table' then return '?' end
+    local function spellName(id)
+        local info=self.Platform and self.Platform:GetSpellInfo(id)
+        return info and info.name or tostring(id)
+    end
+    if step.type=='assisted' then return L["Blizzard's suggestion"] end
+    if step.type=='item' then
+        if type(step.action)=='string' then
+            local set=(self.db.profile.itemsets or {})[step.action] or (self.db.global.itemsets or {})[step.action]
+            return type(set)=='table' and type(set.name)=='string' and set.name or L['Item']
+        end
+        return L['Item']
+    end
+    return spellName(step.action)
+end
+function addon:DescribeUnboundStep(entry)
+    local step=entry.step
+    local where=entry.section=='cooldowns' and L['cooldown'] or string.format(L['step %s'],tostring(entry.ordinal or '?'))
+    local name=type(step.name)=='string' and step.name:find('%S') and step.name or self:DescribeStepAction(step)
+    if entry.missing then
+        local names={}
+        for i,id in ipairs(entry.missing) do
+            local info=self.Platform and self.Platform:GetSpellInfo(id)
+            names[i]=info and info.name or tostring(id)
+        end
+        return string.format('%s (%s: %s)',name,where,table.concat(names,', '))
+    end
+    return string.format('%s (%s)',name,where)
 end
 
 -- Readiness through the bar itself, for actions outside the player's and pet's

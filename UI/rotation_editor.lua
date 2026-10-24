@@ -43,6 +43,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         for stepId,state in pairs(self.view.cardStates or {}) do self.view.expanded[stepId]=state=='expanded' end
         for stepId,expanded in pairs(self.view.expanded) do if not expanded then self.view.detailsHeights[stepId]=nil else self.view.detailsHeights[stepId]=self.view.detailsHeights[stepId] or 180 end end
         self.view.viewportWidth=self.canvas and self.canvas.frame:GetWidth() or 720
+        self.view.unbound,self.bindingSignature=self:CollectBindings(snapshot)
         local scene,problem=addon:BuildRotationCanvas(snapshot,self.view)
         if not scene then self:Message(problem.code);return end
         addon:FitRotationSceneWidth(scene,self.view.viewportWidth)
@@ -60,8 +61,43 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
             if model.pendingProblem then model.invalid=true end
             model.displayName=self:FieldText(model.id,'name',model.step.name or '')
             model.expanded=not model.compact and self.view.expanded[model.id]==true
+            model.unbound=self.view.unbound[model.id]
         end
         return scene
+    end
+    -- Steps and cooldowns whose action no action button holds right now, so
+    -- the engine skips them (addon:GetStepBinding, from the button index):
+    -- stepId -> {missing=} (the missing spells of Blizzard's suggestion).
+    -- Computed when the scene is built and when the index changes, never per
+    -- frame. Stop and Branch have no action and are never listed.
+    function pane:CollectBindings(snapshot)
+        local unbound,signature={},{}
+        if addon.GetStepBinding then
+            local tree=data.IndexRotationSteps(snapshot,{allowMissingIds=true})
+            for _,row in ipairs(tree and tree.rows or {}) do
+                local step=row.step
+                if type(step)=='table' and step.id~=nil then
+                    local bound,missing=addon:GetStepBinding(step)
+                    if bound==false then
+                        unbound[step.id]={missing=missing}
+                        signature[#signature+1]=tostring(step.id)..(missing and (':'..table.concat(missing,',')) or '')
+                    end
+                end
+            end
+        end
+        table.sort(signature)
+        return unbound,table.concat(signature,'|')
+    end
+    -- The bars were rescanned (a slot changed, a page, a macro...): repaint
+    -- only when a card's warning changes, and not under a focused input (the
+    -- next render picks it up).
+    function pane:RefreshBindings()
+        if not self.active then return end
+        local _,signature=self:CollectBindings(self.workspace:Snapshot())
+        if signature==self.bindingSignature then return end
+        local focus=type(GetCurrentKeyBoardFocus)=='function' and GetCurrentKeyBoardFocus() or nil
+        if focus then return end
+        self:Render()
     end
     -- The first issue under each section header, from the validation this
     -- scene already ran (and any invalid staged input): the Rotation and
@@ -506,6 +542,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         if self.metadataWindow then self.metadataWindow:Close(true) end
         if addon.CancelWorkbenchReflow then addon:CancelWorkbenchReflow(self) end
         self.active=false;self.generation=(self.generation or 0)+1;self.canvas:Release();self.name:ClearFocus();self.description:ClearFocus();self.frame:Hide()
+        if addon.WatchButtonIndex then addon:WatchButtonIndex(self,nil) end
     end
     function pane:Open(nextSpec,nextId,nextSelect)
         local selected,problem=addon:GetRotationEditWorkspace(nextSpec,nextId);if not selected then return nil,problem end
@@ -517,6 +554,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         self.nameDirty=false;self.descriptionDirty=false;self.metadataDirty=false;self.tagsDirty=false;self.priorityDirty=false;self.handleDirty=false;self.handleProblem=nil;self.handleEdited=false;self.scopeDirty=false;self.scopeDraft=nil;self.metadataDraft=nil;self.deleted=false;self.active=true;self.generation=(self.generation or 0)+1
         local token=self.generation
         local function alive() return self.active and self.generation==token end
+        if addon.WatchButtonIndex then addon:WatchButtonIndex(self,function() if alive() then self:RefreshBindings() end end) end
         for _,control in ipairs(self.tools) do
             addon:SetUIScript(control,'OnClick',function() if alive() then control.action() end end)
         end

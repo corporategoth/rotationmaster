@@ -184,7 +184,7 @@ local function rotationRows(self)
     for _,row in ipairs(index.rows) do
         if row.section=='rotation' and type(row.step)=='table' then rows[#rows+1]=row end
     end
-    return rows
+    return rows,nil,rotation
 end
 
 local function conditionStatus(self,step)
@@ -239,7 +239,8 @@ local function walkStep(self,report,row,now,verbose)
             if ready then return 'selected',mapped,nil end
             firstReason=firstReason or ('spell '..show(id)..' not ready: '..parts)
         else
-            firstReason=firstReason or ('spell '..show(id)..' is on no scanned button')
+            if verbose then report.add('      not on your action bars: this spell is skipped (it cannot be highlighted)') end
+            firstReason=firstReason or ('spell '..show(id)..' is not on your action bars, so the step is skipped (it cannot be highlighted)')
         end
     end
     return anyMapped and 'notready' or 'unmapped',nil,firstReason
@@ -331,10 +332,17 @@ function addon:BuildGlowDiagnostic()
     local index,firstError=scanSection(self,report)
 
     section(report,'Rotation steps (top to bottom, as the engine walks them)')
-    local rows,rowsWhy=rotationRows(self)
+    local rows,rowsWhy,rotation=rotationRows(self)
     local expected,expectedReason
     if not rows then add('  %s',rowsWhy)
     else
+        -- Steps and cooldowns the engine skips because no button holds them.
+        local unbound=self.ListUnboundSteps and self:ListUnboundSteps(rotation) or {}
+        if #unbound>0 then
+            local names={}
+            for i,entry in ipairs(unbound) do names[i]=self:DescribeUnboundStep(entry) end
+            add('  skipped, not on your action bars (cannot be highlighted): %s',table.concat(names,'; '))
+        end
         local stopped
         for n,row in ipairs(rows) do
             if n>MAX_STEPS then add('  ... %d more steps',#rows-MAX_STEPS);break end

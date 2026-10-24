@@ -256,6 +256,16 @@ function addon:GetRotationEligibilityReport()
     local active=self.currentRotation and (self.currentRotation==DEFAULT and DEFAULT or self:GetRotationName(self.currentRotation) or tostring(self.currentRotation))
     lines[2]=string.format(L['Active rotation: %s'],active and (active..' ('..(self.manualRotation and L['manual'] or L['automatic'])..')') or L['None'])
     if spec==nil then lines[3]=L['No rotation can run until your specialization is available.'];return lines end
+    -- The active rotation's steps that no action button holds are skipped.
+    if self.currentRotation~=nil and self.ListUnboundSteps and self.GetRotationForCleanup then
+        local ok,body=pcall(self.GetRotationForCleanup,self,spec,self.currentRotation)
+        local unbound=ok and self:ListUnboundSteps(body) or {}
+        if #unbound>0 then
+            local names={}
+            for i,entry in ipairs(unbound) do names[i]=self:DescribeUnboundStep(entry) end
+            lines[#lines+1]=string.format(L['Skipped, not on your action bars (they cannot be highlighted): %s.'],table.concat(names,'; '))
+        end
+    end
     local unoffered,offered=self:GetUnofferedRotationSpec()
     if unoffered then
         lines[#lines+1]=string.format(L['You have not chosen a specialization yet (Retail characters below level 10 have none), so Rotation Master uses %s (%s). The Rotations editor only offers %s, so rotations saved there cannot run until you choose a specialization.'],
