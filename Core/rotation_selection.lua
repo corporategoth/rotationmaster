@@ -301,3 +301,155 @@ function addon:ShowRotationEligibilityReport()
     return lines
 end
 -- END ROTATION ELIGIBILITY EXPLANATIONS
+
+-- BEGIN SWITCH OVERLAP
+-- Rotations of one tier (your own, or Built In) whose switch conditions can
+-- match at the same time, so that priority alone decides between them (a
+-- tie, by name). Static: each switch becomes a region (specializations and
+-- a player level range, from SPECIALIZATION and LEVEL conditions joined by
+-- AND, narrowed by a Built In's applicability) plus its other conditions;
+-- two overlap when their regions meet and one's other conditions are a
+-- subset of the other's (identical, or one subsumes the other). Live: both
+-- match right now. Computed on demand (list refresh, editor open), cached on
+-- the auto-switch list identity; never while polling.
+local function canonical(value)
+    if type(value)~='table' then return type(value)..':'..tostring(value) end
+    local keys={};for key in pairs(value) do keys[#keys+1]=key end
+    table.sort(keys,function(a,b) return tostring(a)<tostring(b) end)
+    local parts={};for _,key in ipairs(keys) do parts[#parts+1]=tostring(key)..'='..canonical(value[key]) end
+    return '{'..table.concat(parts,',')..'}'
+end
+local function newRegion() return {lo=-math.huge,hi=math.huge,atoms={},count=0} end
+local function addAtom(region,condition) local key=canonical(condition);if not region.atoms[key] then region.atoms[key]=true;region.count=region.count+1 end end
+local function narrowSpecs(region,list)
+    local set={};for _,spec in ipairs(list) do if not region.specs or region.specs[spec] then set[spec]=true end end
+    region.specs=set
+end
+local function addCondition(region,condition)
+    if type(condition)~='table' or condition.type==nil then return end
+    if condition.type=='AND' and type(condition.value)=='table' then
+        for _,child in ipairs(condition.value) do addCondition(region,child) end;return
+    end
+    if condition.type=='LEVEL' and condition.unit=='player' and not condition.relative and type(condition.value)=='number' then
+        local value,operator=condition.value,condition.operator
+        if operator=='GREATERTHANOREQUALS' then region.lo=math.max(region.lo,value);return
+        elseif operator=='GREATERTHAN' then region.lo=math.max(region.lo,math.floor(value)+1);return
+        elseif operator=='LESSTHANOREQUALS' then region.hi=math.min(region.hi,value);return
+        elseif operator=='LESSTHAN' then region.hi=math.min(region.hi,math.ceil(value)-1);return
+        elseif operator=='EQUALS' then region.lo=math.max(region.lo,value);region.hi=math.min(region.hi,value);return end
+    end
+    if condition.type=='SPECIALIZATION' and type(condition.spec)=='number' then narrowSpecs(region,{condition.spec});return end
+    addAtom(region,condition)
+end
+local function meets(a,b)
+    if math.max(a.lo,b.lo)>math.min(a.hi,b.hi) then return false end
+    if a.specs and b.specs then
+        local any=false;for spec in pairs(a.specs) do if b.specs[spec] then any=true;break end end
+        if not any then return false end
+    end
+    return true
+end
+local function subset(a,b) if a.count>b.count then return false end;for key in pairs(a.atoms) do if not b.atoms[key] then return false end end;return true end
+local function sameSpecs(a,b)
+    if (a.specs==nil)~=(b.specs==nil) then return false end
+    if not a.specs then return true end
+    for spec in pairs(a.specs) do if not b.specs[spec] then return false end end
+    for spec in pairs(b.specs) do if not a.specs[spec] then return false end end
+    return true
+end
+function addon:GetSwitchRegion(switch,applicability)
+    local region=newRegion()
+    if type(applicability)=='table' then
+        if type(applicability.specs)=='table' then narrowSpecs(region,applicability.specs) end
+        if type(applicability.minLevel)=='number' then region.lo=math.max(region.lo,applicability.minLevel) end
+        if type(applicability.maxLevel)=='number' then region.hi=math.min(region.hi,applicability.maxLevel) end
+    end
+    addCondition(region,switch)
+    return region
+end
+local function within(inner,outer)
+    if inner.lo<outer.lo or inner.hi>outer.hi then return false end
+    if outer.specs then
+        if not inner.specs then return false end
+        for spec in pairs(inner.specs) do if not outer.specs[spec] then return false end end
+    end
+    return true
+end
+-- How two switch regions relate when both can match at once: 'identical';
+-- 'subsumes' (a matches whenever b does); 'subsumed' (the reverse);
+-- 'overlaps' (they share some of their range); nil when no overlap is proved.
+function addon:CompareSwitchRegions(a,b)
+    if not meets(a,b) then return nil end
+    local ab,ba=subset(a,b),subset(b,a)
+    if not ab and not ba then return nil end
+    if ab and ba and a.lo==b.lo and a.hi==b.hi and sameSpecs(a,b) then return 'identical' end
+    if ab and within(b,a) then return 'subsumes' end
+    if ba and within(a,b) then return 'subsumed' end
+    return 'overlaps'
+end
+local overlapCache={}
+function addon:GetSwitchOverlaps(spec)
+    spec=spec or self.currentSpec
+    local order=self.autoswitchRotation
+    if spec==nil or spec~=self.currentSpec or type(order)~='table' then return {} end
+    if overlapCache.order==order and overlapCache.spec==spec and overlapCache.registry==self.conditionRegistryVersion then return overlapCache.result end
+    local pass=self.AcquireRotationRuntimePass and self:AcquireRotationRuntimePass(spec)
+    local rows={}
+    for _,key in ipairs(order) do
+        local body=pass and pass:Get(key) or (not pass and self.GetRuntimeRotation and self:GetRuntimeRotation(spec,key))
+        if type(body)=='table' and type(body.switch)=='table' then
+            local builtin=self.GetDefaultIdForRuntime and self:GetDefaultIdForRuntime(spec,key)
+            local view=builtin and self.GetDefaultRotation and self:GetDefaultRotation(builtin)
+            local matches=self.SwitchConditionMatchesNow and self:SwitchConditionMatchesNow(body.switch)
+            rows[#rows+1]={key=key,name=body.name or key,priority=data.GetRotationPriority(body.priority) or 0,builtin=builtin~=nil,
+                region=self:GetSwitchRegion(body.switch,view and view.applicability),live=matches==true}
+        end
+    end
+    local result={}
+    local function add(row,other,kind,live)
+        local list=result[row.key];if not list then list={};result[row.key]=list end
+        list[#list+1]={key=other.key,name=other.name,priority=other.priority,kind=kind,live=live,tie=row.priority==other.priority}
+    end
+    for i=1,#rows do for j=i+1,#rows do
+        local a,b=rows[i],rows[j]
+        if a.builtin==b.builtin then
+            local kind=self:CompareSwitchRegions(a.region,b.region)
+            local live=a.live and b.live
+            if kind or live then
+                local reverse=kind=='subsumes' and 'subsumed' or kind=='subsumed' and 'subsumes' or kind
+                add(a,b,kind or 'live',live);add(b,a,reverse or 'live',live)
+            end
+        end
+    end end
+    overlapCache={order=order,spec=spec,registry=self.conditionRegistryVersion,result=result}
+    return result
+end
+-- One line naming what a rotation overlaps with, for a tooltip or note; nil when nothing.
+function addon:DescribeSwitchOverlap(list)
+    if type(list)~='table' or #list==0 then return nil end
+    local ties,others={},{}
+    for _,entry in ipairs(list) do
+        local text=string.format('%s (%d)',self.PlainWorkbenchName and self:PlainWorkbenchName(entry.name) or entry.name,entry.priority)
+        if entry.tie then ties[#ties+1]=text else others[#others+1]=text end
+    end
+    local lines={}
+    if #ties>0 then lines[#lines+1]=string.format(L['Same priority as %s: their switch conditions can match together, and the tie is decided by name.'],table.concat(ties,', ')) end
+    if #others>0 then lines[#lines+1]=string.format(L['Can match together with %s: only priority decides which is chosen.'],table.concat(others,', ')) end
+    return table.concat(lines,'\n'),#ties>0
+end
+-- The load-time scope of a definition (edition, class, specializations,
+-- levels, expansion, rules) as one line; nil when it has none.
+function addon:DescribeApplicability(scope)
+    if type(scope)~='table' then return nil end
+    local parts={}
+    local editions={tbc=L['TBC'],era=L['Classic Era'],progression=L['Classic Progression'],retail=L['Retail'],forever=L['Forever']}
+    if type(scope.families)=='table' then local names={};for _,family in ipairs(scope.families) do names[#names+1]=editions[family] or family end;parts[#parts+1]=table.concat(names,', ') end
+    if type(scope.class)=='string' then parts[#parts+1]=(LOCALIZED_CLASS_NAMES_MALE and LOCALIZED_CLASS_NAMES_MALE[scope.class]) or scope.class:sub(1,1)..scope.class:sub(2):lower() end
+    if type(scope.specs)=='table' then local names={};for _,spec in ipairs(scope.specs) do names[#names+1]=self:DescribeRotationSpec(spec) end;parts[#parts+1]=table.concat(names,', ') end
+    if scope.minLevel or scope.maxLevel then parts[#parts+1]=string.format(L['levels %s–%s'],tostring(scope.minLevel or 1),tostring(scope.maxLevel or '?')) end
+    if scope.minExpansion or scope.maxExpansion then parts[#parts+1]=string.format(L['expansions %s–%s'],tostring(scope.minExpansion or '?'),tostring(scope.maxExpansion or '?')) end
+    if type(scope.rulesets)=='table' then parts[#parts+1]=table.concat(scope.rulesets,', ') end
+    if #parts==0 then return nil end
+    return string.format(L['Loads only for: %s. The switch condition decides the rest.'],table.concat(parts,' · '))
+end
+-- END SWITCH OVERLAP

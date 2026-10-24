@@ -6,6 +6,15 @@ local data=addon.RotationData
 local function text(parent,font)
     local label=parent:CreateFontString(nil,'OVERLAY',font or 'GameFontHighlightSmall');label:SetJustifyH('LEFT');label:SetWordWrap(false);return label
 end
+-- A Built In's on/off switch, live from the library when it is loaded,
+-- else the workspace's copy of the source (its enabled flag).
+local function builtinSwitch(workspace)
+    if type(addon.GetBuiltinSwitch)=='function' then return (addon:GetBuiltinSwitch(workspace.builtin)) end
+    local source=workspace.source;return type(source)=='table' and (source.switchedOn==nil and source.enabled or source.switchedOn) or nil
+end
+local function builtinOverrides(workspace)
+    return workspace.readOnly and type(addon.GetBuiltinOverrides)=='function' and addon:GetBuiltinOverrides(workspace.builtin) or nil
+end
 function addon:CreateRotationEditor(parent,spec,id,onSelect)
     if parent.rmRotationEditor then return parent.rmRotationEditor:Open(spec,id,onSelect) end
     local workspace,why=self:GetRotationEditWorkspace(spec,id);if not workspace then return nil,why end
@@ -106,15 +115,42 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         self.origin:SetText('')
         self.switchText:SetText(addon:PlainWorkbenchName(workspace.fallback and L['No other rotations match.'] or addon:DescribeCardCondition(snapshot.switch or {},spec)))
         if workspace.fallback then self.switch:Disable() else self.switch:Enable() end
+        self.switchNoteText,self.switchNoteAmber=self:SwitchNotes();self.switchNoteWorkspace=self.workspace
         self:BuildScene();self:LayoutGeometry();self.canvas:Render()
         for _,control in ipairs({self.compare,self.clone}) do if self.workspace.pending then control:Disable() else control:Enable() end end
         self.clone:SetText(self.workspace.readOnly and L['Clone to edit'] or L['Duplicate'])
         if self.workspace.readOnly or workspace.fallback or self.workspace.pending then self.delete:Disable() else self.delete:Enable() end
         -- A Built In's switch is read live (never the workspace's cached copy)
         -- and apart from validity, so the pill shows exactly what a click flips.
-        local builtinOn=self.workspace.readOnly and addon:GetBuiltinSwitch(self.workspace.builtin)
+        local builtinOn=self.workspace.readOnly and builtinSwitch(self.workspace)
         self.enable:SetSelected(self.workspace.readOnly and builtinOn==true or not self.workspace.readOnly and not snapshot.disabled)
         self.enable:SetText(self.workspace.readOnly and (builtinOn and L['Enabled'] or L['Disabled']) or snapshot.disabled and L['Disabled'] or L['Enabled'])
+        self:RenderPriority(snapshot)
+    end
+    -- The priority box and, for a Built In, which of its settings are yours.
+    function pane:RenderPriority(snapshot)
+        local amber={1,.72,.25};local white={1,1,1}
+        if self.workspace.readOnly then
+            local overrides=builtinOverrides(self.workspace) or {}
+            if not self.priority:HasFocus() then self.priority:SetText(tostring(overrides.effectivePriority or 0)) end
+            local color=overrides.priority~=nil and amber or white
+            self.priority:SetTextColor(color[1],color[2],color[3]);self.priorityLabel:SetTextColor(color[1],color[2],color[3])
+            self.priorityLabel:SetText(overrides.priority~=nil and L['Your priority'] or L['Priority'])
+            if overrides.enabled~=nil then self.enable:SetAccent(amber[1],amber[2],amber[3],.85) else self.enable:SetAccent(.35,.65,.4,.7) end
+            self.enable.tooltip=overrides.enabled~=nil and string.format(L['Your setting for this profile. The Built In ships %s.'],overrides.shippedEnabled and L['enabled'] or L['disabled']) or L['As the Built In ships. Click to change it for this profile.']
+            self.priority.tooltip=overrides.priority~=nil and string.format(L['Your priority for this profile; the Built In ships with %d.'],overrides.shippedPriority or 0) or nil
+            self.name:SetAlpha(.75);self.description:SetAlpha(.75)
+        else
+            if not self.priorityDirty then self.priority:SetText(tostring(snapshot.priority~=nil and snapshot.priority or 0));self.priority:SetTextColor(1,1,1) end
+            self.priorityLabel:SetText(L['Priority']);self.priorityLabel:SetTextColor(1,1,1);self.enable:SetAccent(.35,.65,.4,.7);self.enable.tooltip=nil;self.priority.tooltip=nil
+            self.name:SetAlpha(1);self.description:SetAlpha(1)
+        end
+    end
+    -- A Built In priority or Enabled change is saved now, then selection follows.
+    function pane:BuiltinOverrideChanged()
+        if not self.active then return end
+        self:RefreshAdvice()
+        if self.active then self:LayoutGeometry();self:Render() end
     end
     function pane:RotationDisplayName() return addon:PlainWorkbenchName(self.nameDirty and self.name:GetText() or self.workspace:Snapshot().name or self.workspace.title) end
     function pane:EditCondition(target)
@@ -179,12 +215,45 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     table.remove(pane.tools);pane.clone:Hide()
     pane.enable=tool(workspace.readOnly and L['Enable Built In'] or L['Enabled'],116,function()
         if workspace.readOnly then
-            local current=addon:GetBuiltinSwitch(workspace.builtin)==true;local ok,problem=addon:SetDefaultRotationEnabled(workspace.builtin,not current)
-            if ok then if workspace.source then workspace.source.enabled=not current end;pane:RefreshAdvice();if pane.active and pane.workspace==workspace then pane:Render() end else pane:Message(problem) end
+            local current=builtinSwitch(workspace)==true;local ok,problem=addon:SetDefaultRotationEnabled(workspace.builtin,not current)
+            if ok then if workspace.source then workspace.source.enabled=not current end;pane:BuiltinOverrideChanged() else pane:Message(problem) end
         else pane:Command('SetBodyField','disabled',not workspace:Snapshot().disabled) end
     end)
     local oldEnable=pane.enable;oldEnable:Hide();table.remove(pane.tools)
     pane.enable=addon:CreateWorkbenchPill(pane.frame,L['Enabled'],70);pane.enable.action=oldEnable.action
+    -- Priority sits left of the Enabled pill: together they decide whether,
+    -- and in which order, automatic switching tries this rotation. For a
+    -- Built In both are your settings for this profile, saved at once and
+    -- shown in amber when they differ from the pack's; the pack itself is
+    -- never copied.
+    pane.priorityLabel=text(pane.frame);pane.priorityLabel:SetText(L['Priority']);pane.priorityLabel:SetJustifyH('RIGHT')
+    pane.priority=addon:CreateWorkbenchEditBox(pane.frame);pane.priority:SetSize(56,20);pane.priority:SetMaxLetters(7)
+    pane.priorityDown=addon:CreateWorkbenchIconButton(pane.frame,'minus',L['Decrease priority']);pane.priorityDown:SetSize(18,18)
+    pane.priorityUp=addon:CreateWorkbenchIconButton(pane.frame,'plus',L['Increase priority']);pane.priorityUp:SetSize(18,18)
+    pane.overrideReset=addon:CreateWorkbenchButton(pane.frame,L['Reset to default'],116);pane.overrideReset:SetHeight(20)
+    pane.overrideReset.tooltip=L['Use the Built In as it ships: its own Enabled setting and priority.']
+    -- A Built In's pane says it cannot be edited, and where its copy comes from.
+    pane.readOnlyBanner=addon:CreateWorkbenchLabeledIconButton(pane.frame,'copy',L['Built In: read-only. Click to copy it to your rotations and edit the copy. Enabled and Priority are your own settings for this profile.'],400)
+    pane.readOnlyBanner:GetFontString():SetTextColor(.357,.753,.922);pane.readOnlyBanner:Hide()
+    -- Under the switch: what else decides selection (where it loads, the
+    -- specialization being played) and, in amber, overlapping switches.
+    pane.switchNote=text(pane.frame);pane.switchNote:SetWordWrap(true);pane.switchNote:SetJustifyV('TOP');pane.switchNote:Hide()
+    function pane:SwitchNotes()
+        local lines,amber={},false
+        local scope
+        if self.workspace.readOnly and addon.GetDefaultRotation then local view=addon:GetDefaultRotation(self.workspace.builtin);scope=view and view.applicability
+        else for _,kind in ipairs({'origins','imports'}) do local record=self.workspace.reserved and self.workspace.reserved[kind];if type(record)=='table' and type(record.manifest)=='table' and record.manifest.applicability then scope=record.manifest.applicability;break end end end
+        local where=addon.DescribeApplicability and addon:DescribeApplicability(scope)
+        if where then lines[#lines+1]=where end
+        if addon.currentSpec~=nil and spec~=addon.currentSpec and addon.DescribeRotationSpec then
+            lines[#lines+1]=string.format(L['You are playing %s; this rotation is saved for %s, so it is not selectable now.'],addon:DescribeRotationSpec(addon.currentSpec),addon:DescribeRotationSpec(spec))
+        end
+        if not self.workspace.fallback and spec==addon.currentSpec and addon.GetSwitchOverlaps then
+            local overlap=addon:DescribeSwitchOverlap(addon:GetSwitchOverlaps(spec)[self.workspace.id])
+            if overlap then lines[#lines+1]=overlap;amber=true end
+        end
+        return #lines>0 and table.concat(lines,'\n') or nil,amber
+    end
     pane.delete=tool(L['Delete'],24,function() if pane.ConfirmDelete then pane:ConfirmDelete() end end)
     pane.delete:SetText('');pane.delete.art:Hide();pane.delete.icon=pane.delete:CreateTexture(nil,'ARTWORK');pane.delete.icon:SetAllPoints(pane.delete);pane.delete.icon:SetTexture(addon:ControlTexture('trash'));pane.delete.icon:SetVertexColor(1,.3,.3,1);pane.delete.tooltip=L['Delete rotation']
     table.remove(pane.tools)
@@ -346,12 +415,26 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         local reserve=addon:GetWorkbenchHelpReserve(self.frame)
         self.name:ClearAllPoints();self.name:SetPoint('TOPLEFT',86,-4);self.name:SetWidth(math.max(100,width-94-self.info:GetWidth()-8-reserve))
         self.info:ClearAllPoints();self.info:SetPoint('TOPRIGHT',self.frame,'TOPRIGHT',-8-reserve,-4)
+        local overrides=builtinOverrides(self.workspace)
+        local showPriority=not workspace.fallback
+        local showReset=overrides~=nil and overrides.overridden
+        local headerReserve=112+(showPriority and 132 or 0)+(showReset and 122 or 0)
         for _,control in ipairs(self.tools) do
-                if x+control:GetWidth()>width-112 then x=8;y=y+24 end
+                if x+control:GetWidth()>width-headerReserve then x=8;y=y+24 end
             control:ClearAllPoints();control:SetPoint('TOPLEFT',self.frame,'TOPLEFT',x,-y);x=x+control:GetWidth()+4
         end
         self.delete:ClearAllPoints();self.delete:SetPoint('TOPRIGHT',self.frame,'TOPRIGHT',-8,-34)
         self.enable:ClearAllPoints();self.enable:SetPoint('TOPRIGHT',self.frame,'TOPRIGHT',-36,-35)
+        for _,control in ipairs({self.priorityLabel,self.priority,self.priorityDown,self.priorityUp}) do if showPriority then control:Show() else control:Hide() end end
+        self.priorityUp:ClearAllPoints();self.priorityUp:SetPoint('RIGHT',self.enable,'LEFT',-8,0)
+        self.priority:ClearAllPoints();self.priority:SetPoint('RIGHT',self.priorityUp,'LEFT',-2,0)
+        self.priorityDown:ClearAllPoints();self.priorityDown:SetPoint('RIGHT',self.priority,'LEFT',-2,0)
+        self.priorityLabel:ClearAllPoints();self.priorityLabel:SetPoint('RIGHT',self.priorityDown,'LEFT',-4,0)
+        self.overrideReset:ClearAllPoints();self.overrideReset:SetPoint('RIGHT',showPriority and self.priorityLabel or self.enable,'LEFT',-8,0)
+        if showReset then self.overrideReset:Show() else self.overrideReset:Hide() end
+        if self.workspace.readOnly then
+            self.readOnlyBanner:ClearAllPoints();self.readOnlyBanner:SetPoint('TOPLEFT',8,-y-26);self.readOnlyBanner:SetWidth(math.max(100,width-16));self.readOnlyBanner:Show();y=y+24
+        else self.readOnlyBanner:Hide() end
         local available=self.validation and self.validation.valid and self.validation.supported and self.validation.resolved and not self:HasInvalidPendingFields()
         self.validationButton:ClearAllPoints();self.validationButton:SetPoint('TOPLEFT',8,-y-26);self.validationButton:SetWidth(math.max(100,width-16))
         self:RefreshSectionMarkers()
@@ -364,7 +447,16 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         local switchHeight=math.max(20,self.switchText:GetStringHeight());self.switchText:SetHeight(math.min(72,switchHeight))
         self.switch:SetSize(math.max(100,width-16),math.min(72,switchHeight)+8)
         self.switch:Show()
-        local top=self:LayoutViewControls(switchTop+22+math.min(72,switchHeight)+18,width)
+        -- Notes are computed once per render (Render), not per resize.
+        if self.switchNoteWorkspace~=self.workspace then self.switchNoteText,self.switchNoteAmber=self:SwitchNotes();self.switchNoteWorkspace=self.workspace end
+        local noteText,amber=self.switchNoteText,self.switchNoteAmber;local noteHeight=0
+        if noteText then
+            self.switchNote:SetText(noteText);self.switchNote:SetWidth(math.max(100,width-16));self.switchNote:SetHeight(0)
+            noteHeight=math.min(60,self.switchNote:GetStringHeight());self.switchNote:SetHeight(noteHeight)
+            if amber then self.switchNote:SetTextColor(1,.72,.25) else self.switchNote:SetTextColor(.67,.72,.77) end
+            self.switchNote:ClearAllPoints();self.switchNote:SetPoint('TOPLEFT',8,-(switchTop+22+math.min(72,switchHeight)+12));self.switchNote:Show();noteHeight=noteHeight+4
+        else self.switchNote:Hide() end
+        local top=self:LayoutViewControls(switchTop+22+math.min(72,switchHeight)+18+noteHeight,width)
         self.canvas.frame:ClearAllPoints();self.canvas.frame:SetPoint('TOPLEFT',8,-top)
         self.canvas.frame:SetSize(math.max(1,width-40),math.max(1,height-top-48));self.canvas:LayoutScrollBar();local barReserve=self.selectionBar and self.selectionBar:IsShown() and 200 or 0;self.status:SetWidth(math.max(1,width-330-barReserve));self.hint:SetWidth(math.max(1,width-330-barReserve));if (self.status:GetText() or '')=='' then self.hint:Show() else self.hint:Hide() end
     end
@@ -397,6 +489,51 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         addon:SetUIScript(self.info,'OnClick',function() if alive() then self.metadataWindow:Open() end end)
         addon:SetUIScript(self.enable,'OnClick',function() if alive() then self.enable.action() end end)
         addon:SetUIScript(self.delete,'OnClick',function() if alive() then self.delete.action() end end)
+        addon:SetUIScript(self.readOnlyBanner,'OnClick',function() if alive() and workspace.readOnly then self.clone.action() end end)
+        addon:SetUIScript(self.overrideReset,'OnClick',function()
+            if not alive() or not workspace.readOnly or not addon.ResetBuiltinOverrides then return end
+            local ok,problem=addon:ResetBuiltinOverrides(workspace.builtin)
+            if ok then self:BuiltinOverrideChanged() else self:Message(problem) end
+        end)
+        local function setBuiltinPriority(value)
+            if not alive() or not workspace.readOnly or not addon.SetBuiltinPriority then return end
+            local ok,problem=addon:SetBuiltinPriority(workspace.builtin,value)
+            if ok then self:Message('');self:BuiltinOverrideChanged() else self.priority:SetTextColor(1,.35,.35);self:Message(problem=='invalid-priority' and L['Switch priority must be a whole number between -100000 and 100000.'] or problem) end
+        end
+        local function stepPriority(delta)
+            if not alive() or workspace.fallback then return end
+            local text=self.priority:GetText();local number=tonumber(text);if text~='' and number==nil then return end
+            local value=data.GetRotationPriority(text=='' and nil or number);if value==nil then return end
+            value=math.max(-100000,math.min(100000,value+delta))
+            if workspace.readOnly then return setBuiltinPriority(value) end
+            self.priority:SetText(tostring(value));self.priorityDirty=true;self.priority:SetTextColor(1,1,1);self:UpdateHistory()
+        end
+        addon:SetUIScript(self.priorityDown,'OnClick',function() stepPriority(-1) end)
+        addon:SetUIScript(self.priorityUp,'OnClick',function() stepPriority(1) end)
+        local function commitBuiltinPriority()
+            if not alive() or not workspace.readOnly then return end
+            local text=self.priority:GetText();local current=builtinOverrides(workspace)
+            local value=text:match('^%s*$') and current and current.shippedPriority or tonumber(text)
+            if current and value==current.effectivePriority then self:RenderPriority(workspace:Snapshot());return end
+            setBuiltinPriority(value)
+        end
+        addon:SetUIScript(self.priority,'OnTextChanged',function(_,user)
+            if not alive() or not user then return end
+            local text=self.priority:GetText()
+            if text~='' and text~='-' and not text:match('^%-?%d+$') then self.priority:SetText(self.lastPriorityText or '0');return end
+            self.lastPriorityText=text
+            if not workspace.readOnly and not workspace.fallback then self.priorityDirty=true;self.priority:SetTextColor(1,1,1);self:UpdateHistory() end
+        end)
+        addon:SetUIScript(self.priority,'OnEnterPressed',function(control) control:ClearFocus();commitBuiltinPriority() end)
+        addon:SetUIScript(self.priority,'OnEditFocusLost',function() commitBuiltinPriority() end)
+        addon:SetUIScript(self.priority,'OnEditFocusGained',workspace.fallback and function(control) control:ClearFocus() end or nil)
+        addon:SetUIScript(self.priority,'OnEnter',function()
+            if not alive() or not GameTooltip then return end
+            local text=L['Higher numbers are tried first; your own rotations are always tried before Built Ins. The fallback is used only when no switch condition of another rotation matches. Equal priorities use name, then identity. Blank means zero.']
+            if self.priority.tooltip then text=self.priority.tooltip..'\n\n'..text end
+            GameTooltip:SetOwner(self.priority,'ANCHOR_RIGHT');GameTooltip:SetText(text,1,1,1,1,true)
+        end)
+        addon:SetUIScript(self.priority,'OnLeave',function() if GameTooltip and GameTooltip:IsOwned(self.priority) then GameTooltip:Hide() end end)
         addon:SetUIScript(self.validationButton,'OnClick',function()
             if not alive() or not addon.ShowConditionText then return end
             local lines={L['This rotation cannot run until its incomplete or unavailable data is resolved.']}
