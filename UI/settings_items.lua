@@ -22,7 +22,11 @@ function addon:BuildItemSettings(p)
         local first;if self.FindFirstItemOfItemSet then first=self:FindFirstItemOfItemSet({},setId,true) elseif self.FindFirstItemInItems then first=self:FindFirstItemInItems((merged[setId] or {}).items or {}) end
         local ok,why
         if self.BeginItemSetBind then ok,why=self:BeginItemSetBind(setId,first)
-        elseif first and type(PickupItem)=='function' then self.bindingItemSet=setId;PickupItem(first);ok=true else why='unavailable' end
+        else
+            local pickup=type(C_Item)=='table' and C_Item.PickupItem or nil
+            if type(pickup)~='function' then pickup=PickupItem end
+            if first and type(pickup)=='function' then self.bindingItemSet=setId;pickup(first);ok=true else why='unavailable' end
+        end
         if not ok then p:Message(why=='combat' and L['Leave combat before changing action bar bindings.'] or L['An item from this set must be available before binding.']) end
         return ok
     end

@@ -73,8 +73,12 @@ end
 -- true, or false and a reason key: 'combat', 'unavailable'.
 function addon:BeginItemSetBind(id,first)
     if inCombat() then return false,'combat' end
-    if not first or type(PickupItem)~='function' then return false,'unavailable' end
-    self.bindingItemSet=id;PickupItem(first);self:WatchItemSetBind();return true
+    -- Retail/Forever have only C_Item.PickupItem; Classic's global is a
+    -- loadDeprecationFallbacks alias of it.
+    local pickup=type(C_Item)=='table' and C_Item.PickupItem or nil
+    if type(pickup)~='function' then pickup=PickupItem end
+    if not first or type(pickup)~='function' then return false,'unavailable' end
+    self.bindingItemSet=id;pickup(first);self:WatchItemSetBind();return true
 end
 
 -- Clears the cursor only when it still holds a member of set id: after a

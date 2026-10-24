@@ -3,8 +3,8 @@ local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local function read(path) local h=assert(io.open(path));local s=h:read('*a');h:close();return s end
 local catalog=read('Data/builtin_sources.lua')
 local inverse,oldBodies,newBodies,oldBindings=dofile('tests/fixtures/restore_role_repairs.lua')
-local function fixture(project,expansion,actualPolicy)
- local f=F.new(project or 11,expansion or 2,'SHAMAN');local a,e=f.addon,f.env;local s={exists=true,spec=77,role='HEALER',talent='HEALER',calls={}};local opaque={}
+local function fixture(project,expansion,actualPolicy,options)
+ local f=F.new(project or 11,expansion or 2,'SHAMAN',options);local a,e=f.addon,f.env;local s={exists=true,spec=77,role='HEALER',talent='HEALER',calls={}};local opaque={}
  local function call(key,...) assert(select('#',...)==1);s.calls[#s.calls+1]={key,arg=(...),arity=select('#',...)};if s.throw==key then error('native role failure') end end
  e.canaccessvalue=function(v) return not rawequal(v,opaque) end
  e.UnitExists=function(...) call('exists',...);return s.exists end
@@ -63,7 +63,7 @@ test('canonical outer cache preserves nil tuples and isolates selected units rec
  end
 end)
 test('registration branches unchanged while real non-probe policies deny without native calls and recover fresh',function()
- for _,shape in ipairs({{1,12,'inspect'},{18,12,'talent'},{11,2,'talent'},{14,3,'talent'},{19,4,'talent'},{5,1,false},{2,0,false},{999,12,'talent'}}) do local _,a,s=fixture(shape[1],shape[2],true);local definition=a.conditionDefinitions.ROLE
+ for _,shape in ipairs({{1,12,'inspect'},{18,0,false},{11,2,'talent'},{14,3,'talent'},{19,4,'talent'},{5,1,false},{2,0,false},{999,12,'talent'}}) do local _,a,s=fixture(shape[1],shape[2],true);local definition=a.conditionDefinitions.ROLE
   if shape[3] then assert(definition.builtinSourceVariant==shape[3] and (definition.fields.unit~=nil)==(shape[3]=='inspect'));if shape[1]==999 then unknown(a,node());assert(#s.calls==0) else assert(a:evaluateConditionResult(node()).status=='match') end
   else assert(definition==nil) end
  end
@@ -82,8 +82,10 @@ test('new public helper source clones preserve actual owned policy receiver and 
   s[shape[3]=='inspect' and 'role' or 'talent']=nil;local result,why=fn(a.Platform,shape[3]=='inspect' and 'target' or 2);assert(result==nil and why)
  end
 end)
+-- An archived raw callback calls Retail's GetInspectSpecialization global, which exists only
+-- behind loadDeprecationFallbacks (the client default): that is the world it ran in.
 test('archived raw source retains complete bindings global inspect slot6 and nil role mismatch without rewriting',function()
- for _,shape in ipairs(variants) do local _,a,s=fixture(shape[1],shape[2]);local source=assert(a:GetBuiltinConditionSource('ROLE'));source.evaluate=oldBodies[shape[3]];source.bindings=a:CopySettingsData(oldBindings[shape[3]]);local before=a:CopySettingsData(source)
+ for _,shape in ipairs(variants) do local _,a,s=fixture(shape[1],shape[2],nil,{fallbacks=true});local source=assert(a:GetBuiltinConditionSource('ROLE'));source.evaluate=oldBodies[shape[3]];source.bindings=a:CopySettingsData(oldBindings[shape[3]]);local before=a:CopySettingsData(source)
   assert(a:FunctionSourceHash(source)==(shape[3]=='inspect' and '0e207da1' or '825b57b5'),'archived ROLE export changed');local d=assert(a:CompileCustomCondition('RAW_ROLE',source));a:RegisterCondition('RAW_ROLE',d)
   if shape[3]=='inspect' then assert(d.evaluate(node(),{})==false and s.calls[2][1]=='legacy','historical inspect slot6/global behavior changed') else s.talent=nil;assert(d.evaluate(node(),{})==false) end
   assert(a:evaluateConditionResult({type='NOT',value=node(nil,'RAW_ROLE')}).status=='match' and a:SettingsDataEqual(source,before))

@@ -22,7 +22,8 @@ test('legacy tuple positions retain charges, dispel type and caster',function()
 end)
 test('Era duration augmentation is optional and receives the actual filter',function()
     local calls=0
-    local p=fixture({WOW_PROJECT_CLASSIC=2,WOW_PROJECT_ID=2,LibStub=function(name,silent)
+    -- The library wraps the UnitAura global (Era's default loadDeprecationFallbacks=1).
+    local p=fixture({WOW_PROJECT_CLASSIC=2,WOW_PROJECT_ID=2,UnitAura=function() error('read through the library') end,LibStub=function(name,silent)
         assert(name=='LibClassicDurations' and silent==true)
         return {UnitAuraDirect=function(_,_,filter)
             assert(filter=='HARMFUL|RAID');calls=calls+1;return 'Curse',1,1,'Curse',30,130,'player',nil,nil,99
@@ -32,6 +33,14 @@ test('Era duration augmentation is optional and receives the actual filter',func
     p=fixture({WOW_PROJECT_CLASSIC=2,WOW_PROJECT_ID=2,LibStub=function() return nil end,
         C_UnitAuras={GetAuraDataByIndex=function() return {name='Buff',spellId=1} end}})
     assert(p:GetAuraByIndex('player',1,'HELPFUL').name=='Buff')
+end)
+test('Era with loadDeprecationFallbacks off reads C_UnitAuras and never the library that wraps the missing UnitAura',function()
+    local p=fixture({WOW_PROJECT_CLASSIC=2,WOW_PROJECT_ID=2,LibStub=function()
+            -- The real library captured the missing UnitAura at load: every read fails.
+            return {UnitAuraDirect=function() error("attempt to call upvalue 'UnitAura' (a nil value)") end}
+        end,
+        C_UnitAuras={GetAuraDataByIndex=function(unit,index,filter) assert(filter=='HARMFUL');return {name='Rend',spellId=772,expirationTime=130,duration=15} end}})
+    local aura=assert(p:GetAuraByIndex('target',1,'HARMFUL'));assert(aura.name=='Rend' and aura.spellID==772 and aura.expirationTime==130)
 end)
 test('permanent auras remain infinite and expired auras clamp to zero',function()
     local p=fixture({UnitAura=function() return 'Buff',1,0,nil,0,0,'player',nil,nil,1 end})

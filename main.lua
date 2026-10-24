@@ -168,8 +168,14 @@ if (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC) then
         UnitThreatSituation = function(...) return ThreatClassic:UnitThreatSituation(...) end
     end
 
-    local LibClassicDurations = LibStub("LibClassicDurations")
-    LibClassicDurations:Register(addon_name)
+    -- The library captured UnitAura and CombatLogGetCurrentEventInfo when it
+    -- loaded. With loadDeprecationFallbacks off Era provides neither, the
+    -- library cannot work, and registering would run its combat-log handler
+    -- into a nil call on every event; Platform/auras.lua then reads C_UnitAuras.
+    if type(UnitAura) == "function" and type(CombatLogGetCurrentEventInfo) == "function" then
+        local LibClassicDurations = LibStub("LibClassicDurations")
+        LibClassicDurations:Register(addon_name)
+    end
 elseif ThreatClassic then
     ThreatClassic:Disable()
 end
@@ -2387,7 +2393,11 @@ function addon:UpdateBoundButton(id)
         local itemid=self:FindFirstItemOfItemSet({},id,true);local updated=false
         for index=#slots,1,-1 do local slot=slots[index];local kind,action=GetActionInfo(slot)
             if kind=='item' then
-                if itemid and itemid~=action then self:debug('Updated slot %s to new item %d',slot,itemid);PickupItem(itemid);PlaceAction(slot);ClearCursor();updated=true end
+                if itemid and itemid~=action then
+                    -- C_Item.PickupItem: Retail/Forever have no global, Classic only behind loadDeprecationFallbacks.
+                    local pickup=type(C_Item)=='table' and C_Item.PickupItem or PickupItem
+                    self:debug('Updated slot %s to new item %d',slot,itemid);pickup(itemid);PlaceAction(slot);ClearCursor();updated=true
+                end
             else table.remove(slots,index);updated=true end
         end
         if #slots==0 then bindings[id]=nil end
@@ -3329,7 +3339,14 @@ local function handle_combat_log(_, event, _, sourceGUID, _, _, _, destGUID, _, 
         value = tonumber((select(offs, ...))),
     })
 end
-addon.COMBAT_LOG_EVENT_UNFILTERED = wrapCombatEvent(function() handle_combat_log(CombatLogGetCurrentEventInfo()) end)
+-- Classic reads the payload from C_CombatLog; its CombatLogGetCurrentEventInfo
+-- exists only while loadDeprecationFallbacks is on. Retail and Forever never
+-- dispatch this handler (their payload is secure-only).
+addon.COMBAT_LOG_EVENT_UNFILTERED = wrapCombatEvent(function()
+    local read=type(C_CombatLog)=='table' and C_CombatLog.GetCurrentEventInfo or nil
+    if type(read)~='function' then read=CombatLogGetCurrentEventInfo end
+    handle_combat_log(read())
+end)
 
 addon.SPELL_DATA_LOAD_RESULT = wrapEvent(function(_, _, spellId, success)
     if success then

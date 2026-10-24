@@ -41,7 +41,10 @@ function platform:GetAuraByIndex(unit, index, filter)
     local legacy
     -- ClassicDurations supplies otherwise unavailable Era timer estimates.
     -- It stays optional and never substitutes for a restricted native result.
-    if isEra and not checkedDurations and (type(LibStub) == "table" or type(LibStub) == "function") then
+    -- It wraps the UnitAura global, which Era provides only while
+    -- loadDeprecationFallbacks is on; without it C_UnitAuras is read directly.
+    if isEra and not checkedDurations and type(UnitAura) == "function"
+        and (type(LibStub) == "table" or type(LibStub) == "function") then
         checkedDurations = true
         local ok, lib = pcall(LibStub, "LibClassicDurations", true)
         if ok and type(lib) == "table" and type(lib.UnitAuraDirect) == "function" then durationProvider = lib.UnitAuraDirect end

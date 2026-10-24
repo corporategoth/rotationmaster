@@ -58,7 +58,8 @@ test('workbench title text tabs footer help and bounded scale follow navigation 
     shell.scaleSlider:SetValue(1);assert(a.db.global.uiScale==0.7)
     shell.scaleSlider:SetValue(999);assert(a.db.global.uiScale==1.3)
     shell.help:Click();assert(shell.helpPane:IsShown())
-    f.env.GetMouseFocus=function() return shell.content end
+    -- Every current client has GetMouseFoci; GetMouseFocus is gone (tests/fixtures/client_api_*.lua).
+    f.env.GetMouseFoci=function() return {shell.content} end
     shell.content.scripts.OnMouseDown(shell.content,'RightButton');assert(not shell.frame.visible)
     a:ShowConfig('General');assert(shell.frame.scale==1.3 and shell.activeTitle.text:find('General',1,true))
     a.db.global.uiScale=0/0;a:ShowConfig('General');assert(shell.frame.scale==1)
@@ -129,7 +130,8 @@ test('right-click ignores opening with the button held and unrelated overlapping
         local down=true;local focus
         f.env.IsMouseButtonDown=function() return down end
         f.env.MouseIsOver=function() return true end
-        f.env[api]=function() if api=='GetMouseFoci' then return {focus} end;return focus end
+        -- GetMouseFocus models a build older than every current client: past the fixture's guard.
+        rawset(f.env,api,function() if api=='GetMouseFoci' then return {focus} end;return focus end)
         f.load('UI/window.lua');f.load('UI/help.lua');f.load('UI/config.lua');local shell=a:ShowConfig('General')
         focus=shell.content;shell.content.scripts.OnUpdate()
         down=false

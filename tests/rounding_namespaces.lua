@@ -5,7 +5,9 @@ local modules={SPELL_COOLDOWN='spell',PETSPELL_COOLDOWN='petspell',ANYSPELL_COOL
 local moduleHashes={spell='cb4b90f9',petspell='a2ea9040',anyspell='af801d0d',stats='d96430e7',totem='2384c0a0'}
 local privateHashes={spell={color='906341b8',helpers='769a506e'},petspell={color='fedaa3e7',helpers='60920b9d'},anyspell={color='f35f4765',helpers='47f6d2db',SpellData='bd968be4'},stats={color='89107d36',helpers='c19dbbac'},totem={observe='e59e23eb',remaining='b96f5341',element='5fbfedcc',amount='3bd67a6b',specific='fdeca8ba',findSpecific='f753db9d',platform='c9ee8d33',color='b1a3d66a',helpers='f15cbb60'}}
 local function fixture(case,modern)
-    local f=F.new(unpack(case[1]));local a,e=f.addon,f.env
+    -- The legacy spell globals belong to builds older than every current client (no client
+    -- still has GetSpellInfo and C_Spell's absence together), so that mode runs unguarded.
+    local f=F.new(case[1][1],case[1][2],case[1][3],{clientApi=modern and nil or false});local a,e=f.addon,f.env
     local s={now=100,start=98,duration=3.2346,enabled=true,known=true,active=true,calls={},rounds={},runes={[1]={98,3.2346},[2]={99,5}}}
     local function call(name,...) s.calls[name]=(s.calls[name] or 0)+1;if s.throw==name then error('native '..name..' failed') end end
     e.GetTime=function() return s.now end
@@ -14,6 +16,9 @@ local function fixture(case,modern)
     if modern then e.C_Spell={GetSpellInfo=info,GetSpellCooldown=function(...) local start,duration,enabled=cooldown(...);return {startTime=start,duration=duration,isEnabled=enabled,modRate=1} end}
     else e.C_Spell=nil;e.GetSpellInfo=function(id) local r=info(id);return r.name,r.subtext,r.iconID,0,0,30,r.spellID end;e.GetSpellCooldown=function(...) local start,duration,enabled=cooldown(...);return start,duration,enabled and 1 or 0 end end
     e.IsSpellKnown=function(...) assert(select('#',...)==2 and select(1,...)==5019 and select(2,...)==true);call('known',...);return s.known end
+    -- Modern clients answer through C_SpellBook with the spell bank (IsSpellKnown is fallback-only).
+    if modern then e.Enum.SpellBookSpellBank={Player=0,Pet=1}
+        e.C_SpellBook={IsSpellKnown=function(id,bank) assert(id==5019 and bank==1);call('known',id,true);return s.known end} end
     e.GetRuneType=function(...) assert(select('#',...)==1);local index=...;assert(index>=1 and index<=6);call('runetype',...);return index<=2 and 1 or 2 end
     e.GetRuneCooldown=function(...) assert(select('#',...)==1);local index=...;call('rune',...);return s.runes[index][1],s.runes[index][2],false end
     e.GetTotemInfo=function(...) assert(select('#',...)==1 and (...)==2);call('totem',...);return s.active,'Fixture totem',s.start,s.duration,1,1,5019 end

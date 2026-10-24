@@ -1,6 +1,8 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local function fixture(native)
-    local f=F.new();local e=f.env;e.NUM_BAG_SLOTS=4;e.NUM_TOTAL_EQUIPPED_BAG_SLOTS=5
+    -- The native shape is Retail's (C_Container and a reagent bag past NUM_BAG_SLOTS); no
+    -- current client still has the legacy container globals, so that route runs unguarded.
+    local f=native and F.new(1,12) or F.new(nil,nil,nil,{clientApi=false});local e=f.env;e.NUM_BAG_SLOTS=4;e.NUM_TOTAL_EQUIPPED_BAG_SLOTS=5
     local function size(bag) return (bag==0 or bag==5) and 2 or 0 end
     local function info(bag,slot)
         if bag==5 and slot==2 then return end

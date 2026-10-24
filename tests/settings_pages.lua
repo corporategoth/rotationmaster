@@ -1,6 +1,6 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
-local function fixture()
-    local f=F.new();local a=f.addon;local _,create=dofile('tests/fixtures/native_ui.lua')(f.env)
+local function fixture(product)
+    local f=F.new(product);local a=f.addon;local _,create=dofile('tests/fixtures/native_ui.lua')(f.env)
     local codecData,codecDeps=dofile('tests/fixtures/codec.lua')();a.RotationData=codecData;a.NewRotationCodec=function() return codecData.NewCodec(codecDeps) end
     a.pretty_name='Rotation Master';a.name='rotationmaster';a.configPaneGeneration=1
     for _,path in ipairs({'Platform/spells.lua','Data/catalog.lua','Data/rotation_store.lua','Core/rotation_library.lua','Core/rotation_scope.lua','Core/rotation_migration.lua','Help/general.lua','Help/conditions.lua','Help/effects.lua','Help/itemsets.lua','Help/announce.lua','UI/window.lua','UI/help.lua','UI/icon_picker.lua','UI/color_picker.lua','UI/settings_roster_order.lua','UI/settings_layout.lua','UI/settings_ordered.lua','UI/settings_draft.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_form.lua','UI/settings_transfer.lua','UI/cpu_profile.lua','UI/settings_general.lua','UI/settings_profiles.lua','UI/collection_compare.lua','UI/settings_collections.lua','UI/settings_announces.lua','UI/settings_effects.lua','UI/settings_items.lua','UI/settings_conditions.lua'}) do local h=io.open(path);if h then h:close();f.load(path) end end
@@ -979,8 +979,9 @@ end)
 test('supported editor inventory distinguishes loaded metadata from available connection',function()
     local f,parent=fixture();local a=f.addon;f.load('UI/lua_editor.lua');f.load('UI/settings_integrations.lua');f.load('Integrations/catalog.lua')
     f.load('Integrations/lua_workbench.lua')
-    f.env.IsAddOnLoaded=function(name) return name=='!!!LuaWorkbench' end
-    f.env.GetAddOnMetadata=function(name,key) assert(key=='Version');if name=='!!!LuaWorkbench' then return '1.2.3' end end
+    -- Addon state comes from C_AddOns on every current client.
+    f.env.C_AddOns={IsAddOnLoaded=function(name) return name=='!!!LuaWorkbench' end,
+        GetAddOnMetadata=function(name,key) assert(key=='Version');if name=='!!!LuaWorkbench' then return '1.2.3' end end}
     local p=a:CreateSettingsForm(parent)
     p:Open(function(form) a:BuildIntegrationSettings(form) end)
     local function cardText()

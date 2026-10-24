@@ -1,7 +1,7 @@
 local F=dofile('tests/fixtures/addon.lua')
 local test,finish=F.suite()
-local function fixture()
-    local f=F.new();local e,a=f.env,f.addon
+local function fixture(project)
+    local f=F.new(project);local e,a=f.env,f.addon
     local state={known={spell={[403]=true,[6603]=true},pet={[974]=true}},range=true,usable=true,power=false,
         cooldown=0,count=1,itemRange=true,combat=true,hostile=true,dead=false,exists=true,vehicle=false,active=false}
     e.Enum.SpellBookSpellBank={Player=0,Pet=1}
@@ -44,8 +44,9 @@ test('item availability uses its item ID rather than requiring its use spell to 
     s.cooldown=0;s.itemRange=false;assert(not a:NewActionReadiness(100)('item',234,5512))
     s.itemRange=true;assert(a:NewActionReadiness(100)('item',234,5512))
 end)
+-- C_Item.GetItemCooldown exists on Retail and Forever only (tests/fixtures/client_api_*.lua).
 test('current boolean item cooldowns reach per-pass advice and unavailable results retry next pass',function()
-    local f=fixture();local a=f.addon;local enabled,calls=true,0
+    local f=fixture(1);local a=f.addon;local enabled,calls=true,0
     f.env.C_Container=nil
     f.env.C_Item.GetItemCooldown=function(id) assert(id==5512);calls=calls+1;return 0,0,enabled end
     f.env.GetItemCooldown=function() error('failed native observation must not fall back') end

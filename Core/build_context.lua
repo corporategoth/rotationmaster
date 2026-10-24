@@ -144,8 +144,11 @@ local function rangedSlot()
     if info.family=='retail' or info.family=='progression' and type(info.expansion)=='number' and info.expansion>=4 then
         return nil,'no-ranged-slot'
     end
-    if type(GetInventorySlotInfo)~='function' then return nil,'missing-api' end
-    local ok,slot=pcall(GetInventorySlotInfo,'RANGEDSLOT')
+    -- Forever keeps the global only behind loadDeprecationFallbacks; C_PaperDollInfo first.
+    local slotInfo=type(C_PaperDollInfo)=='table' and C_PaperDollInfo.GetInventorySlotInfo or nil
+    if type(slotInfo)~='function' then slotInfo=GetInventorySlotInfo end
+    if type(slotInfo)~='function' then return nil,'missing-api' end
+    local ok,slot=pcall(slotInfo,'RANGEDSLOT')
     slot=ok and positive(slot)
     if not slot then return nil,'no-ranged-slot' end
     return slot
@@ -180,11 +183,17 @@ local function buildEquipment()
 end
 local function buildWeapons()
     local weapons={}
-    local ok,main,_,_,mainID,off,_,_,offID=call(GetWeaponEnchantInfo)
+    -- Retail/Forever: the global is a loadDeprecationFallbacks alias; the
+    -- Platform composes the same tuple from C_PaperDollInfo (Conditions/weapon.lua).
+    local reader=GetWeaponEnchantInfo
+    if type(C_PaperDollInfo)=='table' and type(C_PaperDollInfo.GetTemporaryEnchantmentInfo)=='function' then
+        reader=addon.Platform.ComposedWeaponEnchantInfo
+    end
+    local ok,main,_,_,mainID,off,_,_,offID=call(reader)
     if ok and readable(main) and readable(off) and readable(mainID) and readable(offID) then
         weapons.main={enchanted=main==true or main==1,enchantID=positive(mainID)}
         weapons.off={enchanted=off==true or off==1,enchantID=positive(offID)}
-    else weapons.reason=type(GetWeaponEnchantInfo)=='function' and 'api-error' or 'missing-api' end
+    else weapons.reason=type(reader)=='function' and 'api-error' or 'missing-api' end
     snapshot.weapons=weapons
 end
 local function activeGroup()
@@ -223,10 +232,15 @@ local function buildTalents()
         talents.selected=selected
     elseif layout=='traits' then
         local loadout={}
-        local okSpec,specIndex=call(GetSpecialization)
+        -- C_SpecializationInfo first: Retail keeps the globals only behind
+        -- loadDeprecationFallbacks, Forever not at all.
+        local specs=type(C_SpecializationInfo)=='table' and C_SpecializationInfo or {}
+        local getSpec=type(specs.GetSpecialization)=='function' and specs.GetSpecialization or GetSpecialization
+        local getInfo=type(specs.GetSpecializationInfo)=='function' and specs.GetSpecializationInfo or GetSpecializationInfo
+        local okSpec,specIndex=call(getSpec)
         specIndex=okSpec and positive(specIndex)
         if specIndex then
-            local okID,specID=call(GetSpecializationInfo,specIndex)
+            local okID,specID=call(getInfo,specIndex)
             loadout.specID=okID and positive(specID) or nil
         end
         local classTalents=C_ClassTalents
@@ -294,8 +308,11 @@ local function buildClient()
     local info=addon.Platform:GetClientInfo()
     local season={family=info.family,id=positive(info.seasonId),gameModeId=positive(info.gameModeId),
         hardcore=info.hardcore==true,selfFoundAllowed=info.selfFoundAllowed==true}
-    if C_GameRules and type(C_GameRules.IsSelfFoundActive)=='function' then
-        local ok,active=pcall(C_GameRules.IsSelfFoundActive)
+    -- The character's Self-Found flag is C_PlayerInfo.IsSelfFoundActive on every
+    -- client that has the mode (C_GameRules only says whether the realm allows it).
+    local playerInfo=type(C_PlayerInfo)=='table' and C_PlayerInfo or nil
+    if playerInfo and type(playerInfo.IsSelfFoundActive)=='function' then
+        local ok,active=pcall(playerInfo.IsSelfFoundActive)
         season.selfFound=ok and readable(active) and active==true
     end
     local rulesets={}

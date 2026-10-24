@@ -1,6 +1,8 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local function fixture(native)
-    local f=F.new();local a,e=f.addon,f.env
+    -- The native shape is Retail's (C_Item with boolean cooldowns, C_Container); no current
+    -- client still has the legacy container globals, so that route runs unguarded.
+    local f=native and F.new(1,12) or F.new(nil,nil,nil,{clientApi=false});local a,e=f.addon,f.env
     a.db.profile.itemsets={pots={name='Potions',items={10,11}}};a.db.global.itemsets={};a.bagContents={};a.combatCache={}
     local s={count={[10]=2,[11]=5},equipped={},start=0,duration=0,enabled=true,range=true,hasRange=true,level=11,minimum=1,gcdStart=0,gcdDuration=0,calls={}}
     local function call(name) s.calls[name]=(s.calls[name] or 0)+1 end
@@ -21,7 +23,8 @@ local function fixture(native)
     end
     if native then e.C_Container={GetContainerNumSlots=slots,GetContainerItemInfo=entry} else e.GetContainerNumSlots=slots;e.GetContainerItemInfo=entry end
     e.UnitLevel=function(unit) assert(unit=='player');return s.level end
-    e.C_Spell={GetSpellCooldown=function(id) assert(id==29515);return {startTime=s.gcdStart,duration=s.gcdDuration,isEnabled=true,modRate=1} end}
+    -- The Classic GCD probe spell, or Retail's GCD spell for the native (Retail) route.
+    e.C_Spell={GetSpellCooldown=function(id) assert(id==29515 or id==61304);return {startTime=s.gcdStart,duration=s.gcdDuration,isEnabled=true,modRate=1} end}
     local c=f.libraries.LibCompress;c.fcs16init=function() return '' end;c.fcs16update=function(_,hash,value) return hash..':'..value end;c.fcs16final=function(_,hash) return hash end
     for _,path in ipairs({'Platform/spells.lua','Platform/items.lua','Platform/inventory.lua','Core/conditions.lua'}) do f.load(path) end
     local file=io.open('Core/item_conditions.lua');if file then file:close();f.load('Core/item_conditions.lua') end

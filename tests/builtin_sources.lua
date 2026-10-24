@@ -51,12 +51,16 @@ test('glyph clone retains the expansion-scoped player class binding',function()
     assert(copy.valid(0,{item=123})==true and a.conditionDefinitions.GLYPH.valid(0,{item=123})==true)
 end)
 test('ROLE clones use the registered product variant rather than the last collected callback body',function()
-    for _,case in ipairs({{1,12,true},{19,4,false},{18,12,false},{5,2,false}}) do
+    -- Forever reports expansion 0 and registers no ROLE (Conditions/character.lua); its old
+    -- {18,12} case modelled a Forever with a talent-group role API it does not have.
+    for _,case in ipairs({{1,12,true},{19,4,false},{5,2,false}}) do
         local f,a=fixture(case[1],case[2]);local calls={inspect=0,talent=0}
         -- Isolate source-variant dispatch; role_conditions.lua checks real policy denial.
         a.Platform.GetClientInfo=function() return {combatDataPolicy='probe'} end
         f.env.UnitExists=function(unit) assert(unit=='target');return true end
-        f.env.GetInspectSpecialization=function(unit) assert(unit=='target');calls.inspect=calls.inspect+1;return 123 end
+        local function inspect(unit) assert(unit=='target');calls.inspect=calls.inspect+1;return 123 end
+        -- Retail has only C_SpecializationInfo.GetInspectSpecialization (the global is fallback-only).
+        if case[1]==1 then f.env.C_SpecializationInfo={GetInspectSpecialization=inspect} else f.env.GetInspectSpecialization=inspect end
         f.env.GetSpecializationInfoByID=function(id) assert(id==123);return id,'Fixture',nil,nil,'HEALER','SHAMAN' end
         f.env.GetTalentGroupRole=function(spec) assert(spec==a.currentSpec);calls.talent=calls.talent+1;return 'TANK' end
         local source=assert(a:GetBuiltinConditionSource('ROLE'));local copy=assert(a:CompileCustomCondition('COPY_ROLE',source))

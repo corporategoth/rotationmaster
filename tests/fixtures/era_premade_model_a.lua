@@ -148,7 +148,8 @@ function M.new(class,options)
   'Core/build_context.lua','Core/rotation_library.lua'})do f.load(path)end
  for line in io.lines('RotationMaster.toc')do local path=line:gsub('\r',''):match('^(Conditions/.-%.lua)$');if path then f.load(path)end end
  for _,path in ipairs(options.packs or packPaths(class))do f.load(path)end
- e.BOOKTYPE_SPELL,e.BOOKTYPE_PET='spell','pet';e.GetAddOnMetadata=function()return 'Rotation Master test'end
+ e.BOOKTYPE_SPELL,e.BOOKTYPE_PET='spell','pet';-- No client has a GetAddOnMetadata global any more; metadata comes from C_AddOns.
+ e.C_AddOns={GetAddOnMetadata=function()return 'Rotation Master test'end,IsAddOnLoaded=function()return false end}
  f.libraries['AceAddon-3.0']={NewAddon=function(_,object)return object end};f.libraries['AceEvent-3.0']={}
  f.libraries['LibDBIcon-1.0']={};f.libraries['LibSharedMedia-3.0']={};f.libraries['LibDataBroker-1.1']={NewDataObject=function(_,_,object)return object end}
  f.libraries['ThreatClassic-1.0']={Disable=function()end};f.libraries['LibClassicDurations'].Register=function()end

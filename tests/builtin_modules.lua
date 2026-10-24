@@ -40,7 +40,9 @@ local function client(f,project,options)
         return true,nil
     end
     local api={LoadAddOn=load,IsAddOnLoaded=function(name)return loaded[name]==true end}
-    if options.legacy then f.env.C_AddOns=nil;f.env.LoadAddOn=api.LoadAddOn;f.env.IsAddOnLoaded=api.IsAddOnLoaded
+    -- No current client lacks C_AddOns (tests/fixtures/client_api_*.lua): the legacy globals
+    -- model an older build, so they are placed past the fixture's client guard.
+    if options.legacy then f.env.C_AddOns=nil;rawset(f.env,'LoadAddOn',api.LoadAddOn);rawset(f.env,'IsAddOnLoaded',api.IsAddOnLoaded)
     else f.env.C_AddOns=api end
     return requests,ran
 end

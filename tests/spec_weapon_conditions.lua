@@ -31,14 +31,20 @@ local function fixture(product,expansion,class)
     -- Equipment: s.items[slot]={id,class,subclass,equipLoc}
     e.GetInventoryItemID=function(_,slot) hit('GetInventoryItemID');return s.items[slot] and s.items[slot][1] end
     e.GetInventoryItemLink=function(_,slot) local item=s.items[slot];return item and ('|Hitem:'..item[1]..':0:0:0:0:0:0|h') end
-    e.GetItemInfo=function() return 'Item' end
-    e.GetItemInfoInstant=function(id)
+    -- Item queries live in C_Item on every current client (the globals are gone on
+    -- Retail/Forever and fallback-only on Classic); both shapes answer the same here.
+    local function itemInfo() return 'Item' end
+    local function itemInfoInstant(id)
         hit('GetItemInfoInstant')
         for _,item in pairs(s.items) do
             if item[1]==id then if item.pending then return nil end;return id,'Type','Subtype',item[4] or '',1,item[2],item[3] end
         end
     end
-    e.GetInventorySlotInfo=function(name) assert(name=='RANGEDSLOT');if s.noRangedSlot then error('Invalid inventory slot') end;return 18 end
+    e.GetItemInfo,e.GetItemInfoInstant=itemInfo,itemInfoInstant
+    e.C_Item={GetItemInfo=itemInfo,GetItemInfoInstant=itemInfoInstant}
+    local function slotInfo(name) assert(name=='RANGEDSLOT');if s.noRangedSlot then error('Invalid inventory slot') end;return 18 end
+    -- Forever keeps GetInventorySlotInfo only behind loadDeprecationFallbacks; C_PaperDollInfo is native there.
+    e.GetInventorySlotInfo=slotInfo;e.C_PaperDollInfo={GetInventorySlotInfo=slotInfo}
     -- Talent trees (Era/TBC/Wrath).
     e.GetNumTalentTabs=function() return 3 end
     e.GetTalentTabInfo=function(tree) hit('GetTalentTabInfo');return 'Tree '..tree,'icon',s.points[tree] end
@@ -261,9 +267,10 @@ test('weapon enchants on Retail read C_PaperDollInfo once per evaluation, and st
     info[16]={enchantID=opaque,remainingTimeMs=1,chargesRemaining=0,hasExpirationTime=true};unavailableUnderNot(a,{type='WEAPON_IMBUE',enchant=5400},'restricted-value')
     e.issecretvalue=function() return false end
     e.C_PaperDollInfo.GetTemporaryEnchantmentInfo=function() error('blocked') end;unavailableUnderNot(a,{type='WEAPON'},'api-error')
-    e.C_PaperDollInfo=nil;e.GetWeaponEnchantInfo=function() return true,1000,0,283,false,nil,nil,nil end
+    -- A build without C_PaperDollInfo's enchant record (older than every current client), past the guard.
+    e.C_PaperDollInfo=nil;rawset(e,'GetWeaponEnchantInfo',function() return true,1000,0,283,false,nil,nil,nil end)
     assert(a:evaluateCondition({type='WEAPON_IMBUE',enchant=283})==true,'the classic API is used where the modern one is absent')
-    e.GetWeaponEnchantInfo=nil;unavailableUnderNot(a,{type='WEAPON'},'missing-api')
+    rawset(e,'GetWeaponEnchantInfo',nil);unavailableUnderNot(a,{type='WEAPON'},'missing-api')
 end)
 
 test('the conditions join Character, Items and the Switch picker once per profile',function()

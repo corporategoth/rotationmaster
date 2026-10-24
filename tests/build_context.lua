@@ -66,20 +66,40 @@ test('talent trees summarize per client family and refresh on talent notificatio
  fire('CHARACTER_POINTS_CHANGED');assert(a:GetTalentBuild().primary==3)
 end)
 
+-- Retail keeps GetSpecialization/GetSpecializationInfo only behind loadDeprecationFallbacks
+-- and Forever not at all; the fixture (no fallbacks) offers C_SpecializationInfo alone.
 test('modern trait loadouts report the active and saved configuration',function()
  local _,a,e=fixture(1,10)
- e.GetSpecialization=function()return 2 end;e.GetSpecializationInfo=function(index)assert(index==2);return 263 end
+ e.GetSpecialization=function()error('fallback-only global')end
+ assert(e.GetSpecialization==nil,'Retail fixture kept a fallback-only global')
+ e.C_SpecializationInfo={GetSpecialization=function()return 2 end,GetSpecializationInfo=function(index)assert(index==2);return 263 end}
  e.C_ClassTalents={GetActiveConfigID=function()return 11 end,GetLastSelectedSavedConfigID=function(spec)assert(spec==263);return 42 end}
  e.C_Traits={GetConfigInfo=function(id)return {name=id==42 and 'Raid' or 'Active'} end}
  local talents=a:GetTalentBuild();assert(talents.layout=='traits' and talents.loadout.specID==263 and talents.loadout.configID==11 and talents.loadout.savedConfigID==42 and talents.loadout.name=='Raid')
- local _,b,f=fixture(1,10);f.GetSpecialization=function()return nil end
+ local _,b,f=fixture(1,10);f.C_SpecializationInfo={GetSpecialization=function()return nil end}
  assert(b:GetTalentBuild().loadout.reason=='missing-api','missing trait API not reported')
+end)
+
+test('Retail and Forever read weapon enchants and the ranged slot through C_PaperDollInfo',function()
+ for _,project in ipairs({1,18}) do
+  local _,a,e=fixture(project,project==1 and 12 or 0)
+  assert(e.GetWeaponEnchantInfo==nil and e.GetInventorySlotInfo==nil,'fixture kept a fallback-only global')
+  e.INVSLOT_MAINHAND,e.INVSLOT_OFFHAND=16,17
+  e.C_PaperDollInfo={GetTemporaryEnchantmentInfo=function(slot)
+    if slot==16 then return {enchantID=283,remainingTimeMs=1000,hasExpirationTime=true,chargesRemaining=1} end end,
+   GetInventorySlotInfo=function(name)assert(name=='RANGEDSLOT');return 18 end}
+  a:InvalidateBuildContext()
+  local weapons=a:GetBuildContext().weapons
+  assert(weapons.reason==nil and weapons.main.enchanted and weapons.main.enchantID==283 and not weapons.off.enchanted,'project '..project..' weapons '..tostring(weapons.reason))
+ end
 end)
 
 test('season and game rules become pack rulesets',function()
  local _,a,e=fixture(2,0);e.C_Seasons={GetActiveSeason=function()return 2 end};e.Enum.SeasonID={NoSeason=0,SeasonOfDiscovery=2}
  local rules=a:GetBuildRulesets();assert(rules['season:2'] and rules['season:seasonofdiscovery'] and not rules.standard and not rules.hardcore)
- local _,b,f=fixture(2,0);f.C_GameRules={IsHardcoreActive=function()return true end,IsSelfFoundActive=function()return true end,GetCurrentGameModeRecordID=function()return 3 end}
+ local _,b,f=fixture(2,0);f.C_GameRules={IsHardcoreActive=function()return true end,GetCurrentGameModeRecordID=function()return 3 end}
+ -- Blizzard's API is C_PlayerInfo.IsSelfFoundActive; no client has a C_GameRules one.
+ f.C_PlayerInfo={IsSelfFoundActive=function()return true end}
  rules=b:GetBuildRulesets();assert(rules.hardcore and rules['self-found'] and rules['mode:3'] and not rules.standard)
  local _,c=fixture(5,1);assert(c:GetBuildRulesets().standard,'a plain realm is not standard')
 end)

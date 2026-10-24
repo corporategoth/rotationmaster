@@ -80,7 +80,11 @@ function M.new(class,options)
  -- s.castSpell / s.channelSpell name the spell in progress (CASTING_SPELL / CHANNELING_SPELL by ID).
  e.UnitCastingInfo=function(unit)if unit=='player'and s.cast then local name=s.castSpell and('Spell '..s.castSpell)or'Manual cast';return name,name,1,99000,102000,false,'cast-guid',false,s.castSpell or 1 end end
  e.UnitChannelInfo=function(unit)if unit=='player'and s.channel then local name=s.channelSpell and('Spell '..s.channelSpell)or'Manual channel';return name,name,1,99000,102000,false,false,s.channelSpell or 1 end end
- e.GetWeaponEnchantInfo=function()return s.enchants.main==true,60000,0,1,s.enchants.off==true,60000,0,2 end
+ -- Retail keeps GetWeaponEnchantInfo only behind loadDeprecationFallbacks; C_PaperDollInfo is native.
+ e.INVSLOT_MAINHAND,e.INVSLOT_OFFHAND=16,17
+ e.C_PaperDollInfo={GetTemporaryEnchantmentInfo=function(slot)
+  if slot==16 and s.enchants.main==true then return {enchantID=1,remainingTimeMs=60000,hasExpirationTime=true,chargesRemaining=0} end
+  if slot==17 and s.enchants.off==true then return {enchantID=2,remainingTimeMs=60000,hasExpirationTime=true,chargesRemaining=0} end end}
  e.Enum.SpellBookSpellBank={Player=0,Pet=1}
  e.Enum.PowerType.HolyPower,e.Enum.PowerType.Maelstrom,e.Enum.PowerType.Insanity,e.Enum.PowerType.Focus=9,11,13,2
  -- constants.lua ran before these Retail power types existed; rerun it so the class resource map
@@ -125,7 +129,8 @@ function M.new(class,options)
   'Conditions/debuffs.lua','Conditions/combat.lua','Conditions/casting.lua','Conditions/channeling.lua','Conditions/stats.lua','Conditions/talent.lua',
   'Conditions/item.lua','Conditions/spatial.lua','Conditions/spatial_stats.lua','Conditions/unit_states.lua','Conditions/range.lua','Conditions/misc.lua','Conditions/weapon.lua','Conditions/assisted.lua'})do f.load(path)end
  for _,path in ipairs(packPaths(class))do f.load(path)end
- e.BOOKTYPE_SPELL,e.BOOKTYPE_PET='spell','pet';e.GetAddOnMetadata=function()return 'Rotation Master test'end
+ -- The client has no BOOKTYPE_* globals (removed in 11.0) and reads addon metadata through C_AddOns.
+ e.C_AddOns={GetAddOnMetadata=function()return 'Rotation Master test'end,IsAddOnLoaded=function()return false end}
  f.libraries['AceAddon-3.0']={NewAddon=function(_,object)return object end};f.libraries['AceEvent-3.0']={}
  f.libraries['LibDBIcon-1.0']={};f.libraries['LibSharedMedia-3.0']={};f.libraries['LibDataBroker-1.1']={NewDataObject=function(_,_,object)return object end}
  f.libraries['ThreatClassic-1.0']={Disable=function()end};f.libraries['LibClassicDurations'].Register=function()end

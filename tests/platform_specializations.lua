@@ -1,7 +1,7 @@
 local F=dofile('tests/fixtures/addon.lua')
 local test,finish=F.suite()
-local function fixture(project,expansion)
-    local f=F.new(project,expansion)
+local function fixture(project,expansion,options)
+    local f=F.new(project,expansion,nil,options)
     f.env.WOW_PROJECT_BURNING_CRUSADE_CLASSIC=5;f.env.WOW_PROJECT_MISTS_CLASSIC=19
     f.env.WOW_PROJECT_WRATH_CLASSIC=11;f.env.WOW_PROJECT_CAMELOT=18
     f.load('Platform/client.lua');f.load('Platform/specializations.lua');return f
@@ -23,8 +23,9 @@ test('current rotation keys preserve specialization IDs groups and the single cl
         local selection=f.addon.Platform:GetRotationSpecialization();assert(selection.key==0 and selection.index==0)
     end
 end)
+-- Retail's specialization globals exist only behind loadDeprecationFallbacks (its default).
 test('legacy methods are used only when the corresponding native specialization method is absent',function()
-    local f=fixture(1,12);local p=f.addon.Platform
+    local f=fixture(1,12,{fallbacks=true});local p=f.addon.Platform
     f.env.GetSpecialization=function() return 1 end
     f.env.GetSpecializationInfo=function(index) assert(index==1);return 262,'Elemental' end
     assert(p:GetRotationSpecialization().key==262)
@@ -53,7 +54,7 @@ test('unavailable malformed or restricted selection never becomes namespace zero
     assert(f.addon.Platform:GetRotationSpecialization()==nil)
 end)
 test('editor choices are copied complete bounded namespaces with modern count and legacy class metadata',function()
-    local f=fixture(1,12);local p=f.addon.Platform
+    local f=fixture(1,12,{fallbacks=true});local p=f.addon.Platform
     f.env.C_SpecializationInfo={GetNumSpecializationsForClassID=function(class) assert(class==7);return 2 end}
     f.env.GetSpecializationInfoForClassID=function(class,index)
         assert(class==7);if index==1 then return 262,'Elemental','Damage',123,'DAMAGER',false,true end

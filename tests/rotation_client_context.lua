@@ -4,7 +4,8 @@ local function same(left,right)
  for _,key in ipairs(required) do local a,b=left[key],right[key];assert(a==b or type(a)=='number' and type(b)=='number' and a~=a and b~=b,'different '..key) end
 end
 local function fixture(before,beforeBind)
- local f=F.new(5,1,'SHAMAN');local a,e=f.addon,f.env
+ -- This fixture switches WOW_PROJECT_ID across every family, so it is no one client: unguarded.
+ local f=F.new(5,1,'SHAMAN',{clientApi=false});local a,e=f.addon,f.env
  local s={class='SHAMAN',level=11,build='20202',vehicle=false,battle=false,calls={}}
  local function hit(name) s.calls[name]=(s.calls[name] or 0)+1 end
  e.UnitClass=function(...) assert(select('#',...)==1 and (...)=='player');hit('class');if s.onClass then s.onClass() end;return 'Ignored',s.class end

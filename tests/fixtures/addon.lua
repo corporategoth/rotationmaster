@@ -1,8 +1,21 @@
 -- Explicit external boundaries; production constants/utilities/help stay real.
 local F = {}
-function F.new(product, expansion, class)
+-- The environment holds only what the real client provides (tests/fixtures/client_api.lua):
+-- Retail and Forever as a client with loadDeprecationFallbacks off (the addon must not rely
+-- on Blizzard's deprecation fallbacks), the Classic families with it on (their default).
+-- options.fallbacks overrides that; options.clientApi=false keeps an unrestricted env.
+function F.new(product, expansion, class, options)
+    -- Some suites pass a fourth positional value F.new never read; only a table is options.
+    if type(options) ~= 'table' then options = {} end
     local env = setmetatable({}, {__index = _G})
     env._G = env
+    local client = dofile('tests/fixtures/client_api.lua')
+    local clientName = client.byProject[product or 5]
+    if options.clientApi ~= false and clientName then
+        local fallbacks = options.fallbacks
+        if fallbacks == nil then fallbacks = clientName ~= 'retail' and clientName ~= 'forever' end
+        client.install(env, clientName, {fallbacks = fallbacks})
+    end
     env.WOW_PROJECT_MAINLINE, env.WOW_PROJECT_CLASSIC = 1, 2
     env.WOW_PROJECT_BURNING_CRUSADE_CLASSIC,env.WOW_PROJECT_MISTS_CLASSIC=5,19
     env.WOW_PROJECT_WRATH_CLASSIC,env.WOW_PROJECT_CATACLYSM_CLASSIC,env.WOW_PROJECT_CAMELOT=11,14,18

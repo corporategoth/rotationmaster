@@ -237,7 +237,7 @@ local function restricted()
     end
     e.tinsert,e.tremove=table.insert,table.remove
     f.libraries['LibCustomGlow-1.0']={PixelGlow_Stop=function() end,AutoCastGlow_Stop=function() end,ButtonGlow_Stop=function() end}
-    e.C_AddOns={IsAddOnLoaded=function() return false end}
+    e.C_AddOns.IsAddOnLoaded=function() return false end
     -- LibStub is a callable table in the client (LibStub:GetLibrary).
     local call=e.LibStub
     e.LibStub=setmetatable({GetLibrary=function(_,name,silent) if silent then local ok,lib=pcall(call,name);return ok and lib or nil end;return call(name) end},
@@ -348,7 +348,9 @@ test('restricted retail: vehicle, override and possession bars are detected thro
     bars.possess=true;assert(a:ReadActionContext()=='possession','possession missed')
     bars.override=true;assert(a:ReadActionContext()=='override','override missed')
     bars.vehicle=true;assert(a:ReadActionContext()=='vehicle','vehicle missed')
-    e.C_ActionBar=nil;e.HasOverrideActionBar=function() return true end;assert(a:ReadActionContext()=='override','legacy global no longer read')
+    -- Every current client has C_ActionBar (tests/fixtures/client_api_*.lua); the global
+    -- is read only on builds older than that, modelled here past the fixture's guard.
+    e.C_ActionBar=nil;rawset(e,'HasOverrideActionBar',function() return true end);assert(a:ReadActionContext()=='override','legacy global no longer read')
 end)
 
 for _,engine in ipairs({'standard','lean'}) do

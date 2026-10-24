@@ -7,7 +7,7 @@ local function tick(code)
  local edit=c.edit;local update=edit:GetScript('OnUpdate');if update then update(edit,.1)end
 end
 local function fixture(provider,numbers)
- local f,a=dofile('tests/fixtures/lua_workbench.lua')();f.load('UI/lua_input_diagnostics.lua');f.env.IsAddOnLoaded=function()return true end
+ local f,a=dofile('tests/fixtures/lua_workbench.lua')();f.load('UI/lua_input_diagnostics.lua');f.env.C_AddOns=f.env.C_AddOns or {};f.env.C_AddOns.IsAddOnLoaded=function()return true end
  a.db.profile.lua_line_numbers=numbers~=false
  if provider=='native'then
   f.load('LibsAugment/FAIAP.lua');local enable=a.LuaSyntax.enable

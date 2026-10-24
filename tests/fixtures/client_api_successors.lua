@@ -1,0 +1,26 @@
+-- Successors of client globals Blizzard removed without a fallback, or moved behind
+-- loadDeprecationFallbacks: the API the addon must prefer where the global is gone.
+-- Read by tests/client_api_surface.lua, and by tools/generate_client_api.py so every
+-- successor is classified in the client manifests.
+return {
+    GetSpellInfo='C_Spell.GetSpellInfo',GetSpellCooldown='C_Spell.GetSpellCooldown',GetSpellCharges='C_Spell.GetSpellCharges',
+    GetSpellLink='C_Spell.GetSpellLink',IsSpellInRange='C_Spell.IsSpellInRange',SpellHasRange='C_Spell.SpellHasRange',
+    IsUsableSpell='C_Spell.IsSpellUsable',IsCurrentSpell='C_Spell.IsCurrentSpell',IsAutoRepeatSpell='C_Spell.IsAutoRepeatSpell',
+    GetSpellBookItemInfo='C_SpellBook.GetSpellBookItemInfo',GetSpellTabInfo='C_SpellBook.GetSpellBookSkillLineInfo',
+    GetNumSpellTabs='C_SpellBook.GetNumSpellBookSkillLines',HasPetSpells='C_SpellBook.HasPetSpells',IsSpellKnown='C_SpellBook.IsSpellKnown',
+    GetItemInfo='C_Item.GetItemInfo',GetItemInfoInstant='C_Item.GetItemInfoInstant',GetItemCount='C_Item.GetItemCount',
+    GetItemSpell='C_Item.GetItemSpell',GetItemCooldown='C_Item.GetItemCooldown',IsEquippedItem='C_Item.IsEquippedItem',
+    IsUsableItem='C_Item.IsUsableItem',ItemHasRange='C_Item.ItemHasRange',IsItemInRange='C_Item.IsItemInRange',
+    PickupItem='C_Item.PickupItem',GetItemSetInfo='C_Item.GetItemSetInfo',GetItemSubClassInfo='C_Item.GetItemSubClassInfo',
+    GetItemInventorySlotInfo='C_Item.GetItemInventorySlotInfo',GetItemStats='C_Item.GetItemStats',
+    GetAddOnMetadata='C_AddOns.GetAddOnMetadata',IsAddOnLoaded='C_AddOns.IsAddOnLoaded',LoadAddOn='C_AddOns.LoadAddOn',
+    GetContainerItemInfo='C_Container.GetContainerItemInfo',GetContainerNumSlots='C_Container.GetContainerNumSlots',
+    GetMouseFocus='GetMouseFoci',MouseIsOver='InputUtil.IsMouseOver',IsRaidLeader='UnitIsGroupLeader',
+    GetZonePVPInfo='C_PvP.GetZonePVPInfo',UnitAura='C_UnitAuras.GetAuraDataByIndex',
+    GetActiveTalentGroup='C_SpecializationInfo.GetActiveSpecGroup',GetActiveSpecGroup='C_SpecializationInfo.GetActiveSpecGroup',
+    GetSpecialization='C_SpecializationInfo.GetSpecialization',GetSpecializationInfo='C_SpecializationInfo.GetSpecializationInfo',
+    GetNumSpecializationsForClassID='C_SpecializationInfo.GetNumSpecializationsForClassID',
+    GetTalentInfo='C_SpecializationInfo.GetTalentInfo',GetTalentTabInfo='C_SpecializationInfo.GetSpecializationInfo',
+    GetWeaponEnchantInfo='C_PaperDollInfo.GetTemporaryEnchantmentInfo',GetInventorySlotInfo='C_PaperDollInfo.GetInventorySlotInfo',
+    InterfaceOptions_AddCategory='Settings.RegisterAddOnCategory',InterfaceOptionsFrame_OpenToCategory='Settings.OpenToCategory',
+}

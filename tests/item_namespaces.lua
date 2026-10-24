@@ -3,7 +3,9 @@ local tags={'EQUIPPED','CARRYING','ITEM','ITEM_RANGE','ITEM_COOLDOWN'}
 local expected={EQUIPPED={valid={},print={nullable=1}},CARRYING={valid={isin=1},print={nullable=2}},ITEM={valid={},print={nullable=1}},ITEM_RANGE={valid={},print={nullable=1}},ITEM_COOLDOWN={valid={isin=1},print={nullable=2}}}
 local groups={isin='values',nullable='presentation',compareString='presentation'}
 local function fixture(native)
-    local f=F.new();local a,e=f.addon,f.env
+    -- The native shape is Retail's (C_Item with boolean cooldowns, C_Container); no current
+    -- client still has the legacy container globals, so that route runs unguarded.
+    local f=native and F.new(1,12) or F.new(nil,nil,nil,{clientApi=false});local a,e=f.addon,f.env
     a.db.profile.itemsets={personal={name='Personal',items={10,11}},collision=false};a.db.global.itemsets={global={name='Global',items={11}},collision={name='Ignored',items={11}}};a.combatCache={};a.bagContents={}
     local state={count={[10]=2,[11]=5},equipped={},start=0,duration=0,enabled=true,range=true,minimum=1,metadata=true,calls={}}
     local function call(name) state.calls[name]=(state.calls[name] or 0)+1;if state.throw==name then error('native '..name..' failed') end end
