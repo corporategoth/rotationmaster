@@ -1,7 +1,7 @@
 -- Season of Discovery Holy after Wowhead's Phase 4 healing guide: Holy Light is the main heal (Divine
 -- Light when mana allows) for moderate and heavy damage, then Cleanse, Holy Shock for light damage or
 -- while moving, Flash of Light for light damage. Same switch as the recommended SoD Holy premade,
--- lower priority: choose it by disabling that one.
+-- lower priority, shipped disabled.
 -- Shared blocks: era/blocks.lua. Original priority data, no guide prose.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
@@ -13,13 +13,13 @@ local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.holy.wowhead',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.holy.wowhead',revision=5,
  blocks={['sod.paladin.holy-upkeep']=2,['era.paladin.boundaries']=1,['era.paladin.cleanse']=1,['sod.paladin.holy-hostile']=2},
  nameKey='Default.SoD.Paladin.Holy.Wowhead.Name',descriptionKey='Default.SoD.Paladin.Holy.Wowhead.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},
  tags={'endgame','holy','healer','dungeon','raid','season-of-discovery','wowhead'},
  sources={{url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/paladin/healer-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Paladin healer rotation (Phase 4)',reviewedAt='2026-10-23',revision='2024-07-12'}},
- body={priority=109,switch=all({type='GROUP'},any(rune(407613),rune(458856),rune(412019),all(negate(rune(407676)),{type='PRIMARY_TALENT_TREE',tree=1}))),
+ body={priority=109,disabled=true,switch=all({type='GROUP'},any(rune(407613),rune(458856),rune(412019),all(negate(rune(407676)),{type='PRIMARY_TALENT_TREE',tree=1}))),
   cooldowns={block('sholywh-upkeep','sod.paladin.holy-upkeep','sholywh-')},
   rotation={
    block('sholywh-boundaries','era.paladin.boundaries','sholywh-'),

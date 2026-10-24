@@ -19,10 +19,10 @@ local function armorOnly(a,s,want)
  assert(#got==(want and 1 or 0)and(not want or got[1]==want),'armor reminders: '..table.concat(got,','))
 end
 
-test('both premades register valid, localized and composed with the same switch',function()
+test('both premades register valid, localized and composed with the same switch; the Wowhead one ships disabled',function()
  local a,_,f=fixture(1)
  for _,id in ipairs({IV,WH})do local row=M.row(a,id)
-  assert(row.readOnly and row.validation.valid and row.validation.resolved and row.eligible,id)
+  assert(row.readOnly and row.validation.valid and row.validation.resolved and row.eligible==(id==IV)and row.enabled==(id==IV),id)
   assert(f.translations[row.nameKey]and f.translations[row.descriptionKey]and a:GetDefaultRotationComposition(id),id)
   assert(row.applicability.minLevel==nil and row.applicability.maxLevel==nil)
   assert(M.switch(a,id)=='match',id)
@@ -35,7 +35,8 @@ test('auto-select picks the Icy Veins premade at every level; the Wowhead one wh
  for _,level in ipairs({1,9,10,35,70})do s.setLevel(level)
   for _,talents in ipairs({{0,0,0},{21,0,0},{0,41,0},{10,10,10}})do s.talents=talents;assert(M.selected(a)==IV,level)end
  end
- assert(a:SetDefaultRotationEnabled(IV,false));assert(M.selected(a)==WH)
+ assert(a:SetDefaultRotationEnabled(IV,false));assert(M.selected(a)~=WH,'the disabled Wowhead premade was chosen')
+ assert(a:SetDefaultRotationEnabled(WH,true));assert(M.selected(a)==WH)
 end)
 
 test('cast, channel and target boundaries stop without melee',function()

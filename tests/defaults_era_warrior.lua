@@ -17,9 +17,11 @@ local function stopped(f,s,id)local x,r=M.first(f,s,id);return x==nil and r.stat
 
 test('every premade registers valid; vanilla on every realm, SoD only on Season of Discovery, above every vanilla premade',function()
  local f,s=warrior(60);local a=f.addon
- for _,id in ipairs(VANILLA)do local row=assert(M.row(f,id),id);assert(row.validation.valid and row.validation.resolved and row.eligible and a:GetDefaultRotationComposition(id),id)end
- for _,id in ipairs(SEASON)do local row=M.row(f,id);assert(row.validation.valid and row.validation.resolved and not row.eligible,id)end
- s.season=2;for _,id in ipairs(SEASON)do assert(M.row(f,id).eligible,id)end
+ -- The same-switch source variants ship disabled.
+ local off={[PROTIV]=true,[SFC]=true,[SIV]=true}
+ for _,id in ipairs(VANILLA)do local row=assert(M.row(f,id),id);assert(row.validation.valid and row.validation.resolved and row.eligible==not off[id] and (M.body(a,id).disabled==true)==(off[id]==true) and a:GetDefaultRotationComposition(id),id)end
+ for _,id in ipairs(SEASON)do local row=M.row(f,id);assert(row.validation.valid and row.validation.resolved and not row.eligible and (M.body(a,id).disabled==true)==(off[id]==true),id)end
+ s.season=2;for _,id in ipairs(SEASON)do assert(M.row(f,id).eligible==not off[id],id)end
  for _,id in ipairs(SEASON)do for _,v in ipairs(VANILLA)do assert(M.body(a,id).priority>M.body(a,v).priority,id..' must outrank '..v)end end
 end)
 
@@ -29,7 +31,8 @@ test('auto-select: Defensive Stance picks the tank from level 10, anything else 
   s.level=5;s.form=2;assert(M.selected(f,s)==dps,'below 10 there is no tank premade')
   for _,level in ipairs({10,40,60})do s.level=level;s.form=2;assert(M.selected(f,s)==tank,level);s.form=1;assert(M.selected(f,s)==dps);s.form=3;assert(M.selected(f,s)==dps)end
  end
- s.season=2;s.form=1;assert(a:SetDefaultRotationEnabled(SDPS,false));assert(M.selected(f,s)==SFC);assert(a:SetDefaultRotationEnabled(SFC,false));assert(M.selected(f,s)==SIV)
+ s.season=2;s.form=1;assert(a:SetDefaultRotationEnabled(SDPS,false));assert(M.selected(f,s)==DPS,'the SoD variants ship disabled: the vanilla premade runs')
+ for _,id in ipairs({SFC,SIV,PROTIV})do assert(a:SetDefaultRotationEnabled(id,true))end;assert(M.selected(f,s)==SFC);assert(a:SetDefaultRotationEnabled(SFC,false));assert(M.selected(f,s)==SIV)
  s.season=nil;s.form=2;assert(a:SetDefaultRotationEnabled(PROT,false));assert(M.selected(f,s)==PROTIV)
  -- Stances are read by spell: Defensive Stance selects the tank wherever it sits on the bar (Gladiator
  -- Stance in SoD adds a fourth form and shifts the slots).

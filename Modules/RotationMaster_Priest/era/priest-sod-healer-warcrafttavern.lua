@@ -18,7 +18,7 @@ local function any(...)return{type='OR',value={...}}end
 local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
 local P='priest-sod-wct-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.priest.healer.warcrafttavern',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.priest.healer.warcrafttavern',revision=5,
  blocks={['era.priest.boundaries']=2,['era.priest.enemy-target']=1,['era.priest.dispels']=1,['era.priest.big-heal']=1,
   ['era.priest.friend-fortitude']=1,['era.priest.upkeep']=1,['era.priest.divine-spirit']=1,['sod.priest.healer-damage']=1,['sod.priest.healer-upkeep']=1},
  nameKey='Default.SoD.Priest.Healer.WarcraftTavern.Name',descriptionKey='Default.SoD.Priest.Healer.WarcraftTavern.Description',
@@ -29,7 +29,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.warcrafttavern.com/wow-classic-sod/guides/discipline-priest-healer/',title='Warcraft Tavern: SoD Discipline Priest healer',reviewedAt='2026-10-23',notes='Phase 4 text.'},
  },
  body={
-  priority=115,
+  priority=115,disabled=true,
   switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='GROUP'},{type='OR',value={{type='PRIMARY_TALENT_TREE',tree=2},{type='PRIMARY_TALENT_TREE',tree=1}}}}},
   cooldowns={block(P..'upkeep','era.priest.upkeep',P),block(P..'spirit','era.priest.divine-spirit',P),block(P..'sod-upkeep','sod.priest.healer-upkeep',P)},
   rotation={

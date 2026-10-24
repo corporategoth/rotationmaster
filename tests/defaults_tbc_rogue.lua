@@ -14,14 +14,15 @@ local function first(f,s,id)return(M.first(f,s,id))end
 local function both(f,s,g,t,a,b)local x,y=first(f,s,RS),first(g,t,RH);assert(x==a and y==(b==nil and a or b),'wowsims '..tostring(x)..' wowhead '..tostring(y))end
 local function set(s,t,key,value)s[key],t[key]=value,value end
 
-test('both premades register valid 1–70, share the switch, and the wowsims premade auto-selects',function()
+test('both premades register valid 1–70, share the switch, the wowsims premade auto-selects and the Wowhead one ships disabled',function()
  local f,s=rogue(1);local a=f.addon
- for _,level in ipairs({1,20,70})do s.level=level;a.longtermCache={};for _,r in ipairs(a:ListDefaultRotations(0))do assert(r.eligible,r.id..' at '..level)end
+ for _,level in ipairs({1,20,70})do s.level=level;a.longtermCache={};for _,r in ipairs(a:ListDefaultRotations(0))do assert(r.eligible==(r.id~=RH),r.id..' at '..level)end
   assert(M.switches(f,RS)and M.switches(f,RH))end
  for _,src in ipairs(a:GetDefaultRotation(RH).envelope.sources)do assert(not src.url:find('icy%-veins')and not src.url:find('wowsims'),src.url)end
  for _,src in ipairs(a:GetDefaultRotation(RS).envelope.sources)do assert(not src.url:find('wowhead'),src.url)end
  local poll,selected=M.publisher(f,s);s.level=1;poll();assert(selected()==RS and f.addon.currentSpell==1752)
- s.level=70;poll();assert(selected()==RS);assert(a:SetDefaultRotationEnabled(RS,false));poll();assert(selected()==RH)
+ s.level=70;poll();assert(selected()==RS);assert(a:SetDefaultRotationEnabled(RS,false));poll();assert(selected()~=RH,'the disabled Wowhead premade was chosen')
+ assert(a:SetDefaultRotationEnabled(RH,true));poll();assert(selected()==RH)
 end)
 
 test('casts, channels and a missing target stop with Attack suppressed',function()

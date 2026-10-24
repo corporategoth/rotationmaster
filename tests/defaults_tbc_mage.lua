@@ -18,7 +18,8 @@ test('all four premades register valid, localized, sourced and composed',functio
  for _,id in ipairs(ALL)do local row=M.row(a,id)
   assert(row.readOnly and row.validation.valid and row.validation.resolved,id)
   assert(f.translations[row.nameKey]and f.translations[row.descriptionKey],id..' untranslated')
-  assert(#row.envelope.sources>=1 and row.envelope.revision==3,id)
+  assert(#row.envelope.sources>=1 and row.envelope.revision==(id==FIREWH and 4 or 3),id)
+  assert(row.enabled==(id~=FIREWH),id..' shipped enablement')
   assert(a:GetDefaultRotationComposition(id),id..' is not composed from the shared Mage blocks')
   assert(row.applicability.class=='MAGE'and row.applicability.maxLevel==nil and row.applicability.minLevel==nil and row.applicability.families[1]=='tbc')
  end
@@ -40,7 +41,9 @@ test('auto-select: Frost owns low levels and no talents; Fire, Arcane and Frost 
  s.talents={10,10,0};assert(M.selected(a)==FROST,'a tied build falls back to Frost')
  s.setLevel(70);s.talents={0,10,51};assert(M.selected(a)==FROST)
  s.talents={2,44,15};assert(M.selected(a)==FIRE)
- assert(a:SetDefaultRotationEnabled(FIRE,false));assert(M.selected(a)==FIREWH,'disabling the recommended Fire selects the Wowhead variant')
+ -- The Wowhead variant ships disabled: with the recommended Fire off, the Frost catch-all runs until it is enabled.
+ assert(a:SetDefaultRotationEnabled(FIRE,false));assert(M.selected(a)==FROST,'disabling the recommended Fire selects '..tostring(M.selected(a)))
+ assert(a:SetDefaultRotationEnabled(FIREWH,true));assert(M.selected(a)==FIREWH,'enabling the Wowhead variant does not select it')
  assert(a:SetDefaultRotationEnabled(FIRE,true));assert(M.selected(a)==FIRE)
 end)
 

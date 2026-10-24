@@ -13,7 +13,7 @@ local function buff(id)return{type='BUFF',unit='player',spell=id,anyrank=true}en
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.hunter.ranged.wowhead',revision=3,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.hunter.ranged.wowhead',revision=4,
  blocks={['tbc.hunter.opening']=3,['tbc.hunter.leveling']=1,['tbc.hunter.upkeep']=1},
  nameKey='Default.TBC.Hunter.Ranged.Wowhead.Name',descriptionKey='Default.TBC.Hunter.Ranged.Wowhead.Description',
  applicability={families={'tbc'},actionContext='player',class='HUNTER'},
@@ -21,7 +21,7 @@ assert(addon:RegisterDefaultRotation({
  sources={{url='https://www.wowhead.com/tbc/guide/classes/hunter/dps-rotation-cooldowns-abilities-pve',title='Wowhead: TBC Hunter DPS rotation, cooldowns and abilities',reviewedAt='2026-10-23',revision='2026-02-10'},
  {url='https://www.wowhead.com/tbc/guide/classes/hunter/beast-mastery/leveling-tips',title='Wowhead: TBC Beast Mastery Hunter leveling',reviewedAt='2026-10-23',revision='2026-02-02'},
  {url='https://www.wowhead.com/tbc/guide/classes/hunter/leveling-tips',title='Wowhead: TBC Hunter leveling',reviewedAt='2026-10-23',revision='2026-09-04'}},
- body={priority=5,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=5,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
  cooldowns={block('tbc.hunter.upkeep','hunter-'),
   spell('hunter-hawk',13165,all(negate(buff(13165)),
    any({type='COMBAT',unit='player'},all(negate(buff(5118)),negate(buff(13159)),negate(buff(20043)),negate(buff(13161))))))},

@@ -17,7 +17,9 @@ local function stopped(f,s,id)local x,r=M.first(f,s,id);return x==nil and r.stat
 
 test('every premade registers valid; vanilla on every realm, SoD only on Season of Discovery, above every vanilla premade',function()
  local f,s=shaman(60);local a=f.addon
- for _,id in ipairs(VANILLA)do local row=assert(M.row(f,id),id);assert(row.validation.valid and row.validation.resolved and row.eligible and a:GetDefaultRotationComposition(id),id)end
+ -- The same-switch source variants ship disabled.
+ local off={[ENHWT]=true,[ELEWS]=true,[RESTOWT]=true}
+ for _,id in ipairs(VANILLA)do local row=assert(M.row(f,id),id);assert(row.validation.valid and row.validation.resolved and row.eligible==not off[id] and (M.body(a,id).disabled==true)==(off[id]==true) and a:GetDefaultRotationComposition(id),id)end
  for _,id in ipairs(SEASON)do assert(M.row(f,id).validation.valid and not M.row(f,id).eligible,id..' leaked onto a standard realm')end
  s.season=2;for _,id in ipairs({SENH,SELE,SRESTO,STANK})do assert(M.row(f,id).eligible,id)end
  for _,id in ipairs(SEASON)do for _,v in ipairs(VANILLA)do assert(M.body(a,id).priority>M.body(a,v).priority,id..' must outrank '..v)end end
@@ -36,7 +38,8 @@ test('auto-select by talent tree, with Enhancement owning levels 1–9, no point
  M.engrave(s,408531);assert(M.selected(f,s)==STANK,'Way of Earth (a passive rune) engraved: tank');s.talents={31,0,0};assert(M.selected(f,s)==STANK,'either tree tanks')
  M.unengrave(s,408531);M.engrave(s,408680);assert(M.selected(f,s)==STANK,'either Way of Earth spell');M.unengrave(s,408680)
  assert(M.selected(f,s)==SELE,'no Way of Earth: Elemental');s.mainEnchant=false;assert(M.selected(f,s)==SELE)
- s.season=nil;s.talents={31,0,0};assert(a:SetDefaultRotationEnabled(ELE,false));assert(M.selected(f,s)==ELEWS)
+ s.season=nil;s.talents={31,0,0};assert(a:SetDefaultRotationEnabled(ELE,false));assert(M.selected(f,s)==ENH,'the variants ship disabled: the Enhancement catch-all runs')
+ for _,id in ipairs({ELEWS,RESTOWT,ENHWT})do assert(a:SetDefaultRotationEnabled(id,true))end;assert(M.selected(f,s)==ELEWS)
  s.talents={0,0,31};assert(a:SetDefaultRotationEnabled(RESTO,false));assert(M.selected(f,s)==RESTOWT)
  s.talents={0,0,0};assert(a:SetDefaultRotationEnabled(ENH,false));assert(M.selected(f,s)==ENHWT)
 end)

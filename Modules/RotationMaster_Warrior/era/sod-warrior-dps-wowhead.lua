@@ -19,13 +19,13 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local unqueued=all(negate(queued(78)),negate(queued(845)))
 local berserker={type='FORM',form=2458}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.warrior.dps.wowhead',revision=3,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.warrior.dps.wowhead',revision=4,
  blocks={['era.warrior.boundaries']=2,['era.warrior.upkeep']=1},
  nameKey='Default.SoD.Warrior.DPS.Wowhead.Name',descriptionKey='Default.SoD.Warrior.DPS.Wowhead.Description',
  applicability={families={'era'},actionContext='player',class='WARRIOR',rulesets={'season:2'}},
  tags={'dps','melee','endgame','season-of-discovery','wowhead'},
  sources={{url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/warrior/dps-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Warrior DPS rotation (Battle Forecaster, Phase 7/8)',reviewedAt='2026-10-23',revision='2025-04-12'}},
- body={priority=45,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=45,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
  cooldowns={block('era.warrior.upkeep','sod-fc-'),
   spell('sod-fc-berserker-stance',2458,all(combat(),negate(berserker),negate({type='FORM',form=71}),forecast(457816))),
   spell('sod-fc-battle-stance',2457,all(combat(),berserker,forecast(457817))),

@@ -19,16 +19,17 @@ local function eligible(f)local out={};for _,r in ipairs(f.addon:ListDefaultRota
 
 test('four premades register valid at every level, the tank switch holds level 10, and each cites only its own source family',function()
  local f,s=warrior(1);local a=f.addon
- -- Applicability holds only load-time facts: every premade is eligible at any level; level lives in the switch.
+ -- Applicability holds only load-time facts: every premade fits any level; level lives in the switch. The Icy Veins
+ -- variants ship disabled (same switch, lower priority).
  for _,level in ipairs({1,9,10,40,70})do
   s.level=level;a.longtermCache={};local e=eligible(f)
-  assert(e[DW]and e[DI]and e[PW]and e[PI],'scope at '..level)
+  assert(e[DW]and not e[DI]and e[PW]and not e[PI],'scope at '..level)
  end
  s.forms=3;s.shift(71)
  for _,case in ipairs({{9,false},{10,true}})do s.level=case[1];a.longtermCache={};assert(M.switches(f,PW)==case[2]and M.switches(f,PI)==case[2],'tank switch at '..case[1])end
  for id,host in pairs({[DI]='icy%-veins%.com',[PI]='icy%-veins%.com'})do for _,src in ipairs(a:GetDefaultRotation(id).envelope.sources)do assert(src.url:find(host),id..' cites '..src.url)end end
  for _,src in ipairs(a:GetDefaultRotation(PW).envelope.sources)do assert(not src.url:find('icy%-veins'),PW..' cites Icy Veins')end
- for _,id in ipairs({DW,DI,PW,PI})do local v=a:GetDefaultRotation(id);assert(v.validation.valid and v.readOnly and v.revision==((id==PW or id==PI)and 4 or 3))end
+ for _,id in ipairs({DW,DI,PW,PI})do local v=a:GetDefaultRotation(id);assert(v.validation.valid and v.readOnly and v.revision==({[DW]=3,[DI]=4,[PW]=4,[PI]=5})[id] and v.enabled==(id==DW or id==PW))end
 end)
 
 test('variants share their sibling switch; Defensive Stance selects the tank, anything else DPS, recommended first',function()
@@ -39,8 +40,8 @@ test('variants share their sibling switch; Defensive Stance selects the tank, an
  end
  -- No talent points and no stances beyond Battle: still the DPS premade.
  s.level,s.form,s.forms=10,1,1;poll();assert(selected()==DW)
- s.forms=3;assert(f.addon:SetDefaultRotationEnabled(DW,false));s.form=1;poll();assert(selected()==DI)
- assert(f.addon:SetDefaultRotationEnabled(PW,false));s.form=2;poll();assert(selected()==PI)
+ s.forms=3;assert(f.addon:SetDefaultRotationEnabled(DW,false)and f.addon:SetDefaultRotationEnabled(DI,true));s.form=1;poll();assert(selected()==DI)
+ assert(f.addon:SetDefaultRotationEnabled(PW,false)and f.addon:SetDefaultRotationEnabled(PI,true));s.form=2;poll();assert(selected()==PI)
  -- Stances are read by spell: Defensive Stance selects the tank wherever it sits on the bar.
  assert(f.addon:SetDefaultRotationEnabled(PW,true));s.bar={2457,2458,71};s.form=3;poll();assert(selected()==PW,'Defensive Stance in slot 3')
  s.form=2;poll();assert(selected()==DI and not M.switches(f,PW),'Berserker Stance in slot 2 is not Defensive (the recommended DPS premade is off here)')

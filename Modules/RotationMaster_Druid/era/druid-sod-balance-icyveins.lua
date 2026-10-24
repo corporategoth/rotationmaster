@@ -8,7 +8,7 @@ local function mine(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function spell(id,action,conditions,ranked)return{id=id,type='spell',action=action,ranked=ranked or false,conditions=conditions or {}}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.druid.balance.icyveins',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.druid.balance.icyveins',revision=5,
  blocks={['era.druid.boundaries']=3,['era.druid.upkeep']=1,['era.druid.caster-cooldowns']=2,['sod.druid.maul']=2,['sod.druid.balance-cooldowns']=1,
   ['sod.druid.forms']=2,['sod.druid.cat']=2,['era.druid.stealth-opener']=1,['era.druid.cat-builders']=1,['era.druid.powershift']=1,['sod.druid.bear']=1,
   ['sod.druid.caster-pull']=2},
@@ -19,7 +19,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.icy-veins.com/wow-classic/balance-druid-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Balance Druid rotation',reviewedAt='2026-10-23',revision='2025-04-08'},
   {url='https://www.icy-veins.com/wow-classic/balance-druid-dps-season-of-discovery-pve-spec-builds-talents',title='Icy Veins: SoD Balance Druid runes',reviewedAt='2026-10-23',revision='2026-07-18'},
  },
- body={priority=101,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=101,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
   cooldowns={ref('sod-balance-iv-upkeep','era.druid.upkeep','sod-balance-iv-'),ref('sod-balance-iv-caster','era.druid.caster-cooldowns','sod-balance-iv-'),
    ref('sod-balance-iv-maul','sod.druid.maul','sod-balance-iv-'),ref('sod-balance-iv-cooldowns','sod.druid.balance-cooldowns','sod-balance-iv-')},
   rotation={

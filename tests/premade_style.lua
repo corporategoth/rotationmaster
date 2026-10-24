@@ -285,4 +285,76 @@ test('every shipped OR Stop walks exactly like consecutive Stops on its children
     for _,p in ipairs(packs) do visit(p.body.rotation) end
     assert(stops>200 and combos>2000,stops..' OR Stops, '..combos..' combinations')
 end)
+
+-- One enabled premade per spec (the user, 2026-10-24): a same-spec alternative ships disabled and the
+-- recommended premade (highest priority) stays enabled. Judged by the engine's own switch-overlap
+-- analysis (Core/rotation_selection.lua): within one load scope (families, expansion, class,
+-- rulesets), an enabled Built In whose switch another enabled one matches identically or subsumes at
+-- an equal or higher priority could only ever be chosen by priority, so it is an alternative and must
+-- ship disabled. Deliberate layering passes by construction: a catch-all under a spec premade subsumes
+-- it at a LOWER priority; Season of Discovery packs (rulesets season:2) and vanilla packs are separate
+-- load scopes; Retail initial-spec premades name another specialization.
+local function overlapRows()
+    local f,packs=corpus.load(5,1,'ROGUE');local a=f.addon;f.load('Core/rotation_selection.lua')
+    local scopes={}
+    for _,p in ipairs(packs) do
+        local ap=p.applicability
+        local key=table.concat(ap.families or {},',')..'@'..tostring(ap.minExpansion)..'-'..tostring(ap.maxExpansion)
+            ..'/'..tostring(ap.class)..'/'..table.concat(ap.rulesets or {},',')
+        scopes[key]=scopes[key] or {}
+        table.insert(scopes[key],{id=p.id,priority=p.body.priority or 0,disabled=p.body.disabled==true,region=a:GetSwitchRegion(p.body.switch,ap)})
+    end
+    return a,scopes
+end
+local function alternativeOffences(a,scopes)
+    local shadowed,outranked={},{}
+    for key,list in pairs(scopes) do
+        for _,q in ipairs(list) do for _,p in ipairs(list) do
+            if p~=q and not p.disabled then
+                local kind=a:CompareSwitchRegions(p.region,q.region)
+                if not q.disabled and p.priority>=q.priority and (kind=='identical' or kind=='subsumes') then
+                    shadowed[#shadowed+1]=key..': '..q.id..' ('..q.priority..') under '..p.id..' ('..p.priority..', '..kind..')'
+                elseif q.disabled and kind=='identical' and q.priority>p.priority then
+                    outranked[#outranked+1]=key..': disabled '..q.id..' ('..q.priority..') outranks enabled '..p.id..' ('..p.priority..')'
+                end
+            end
+        end end
+    end
+    table.sort(shadowed);table.sort(outranked)
+    return shadowed,outranked
+end
+
+test('one enabled premade per switch in every edition, class and spec: alternatives ship disabled, the recommended one does not',function()
+    local a,scopes=overlapRows()
+    local shadowed,outranked=alternativeOffences(a,scopes)
+    assert(#shadowed==0,'enabled same-spec alternatives (ship them disabled=true, or give them their own switch): '..table.concat(shadowed,'; '))
+    assert(#outranked==0,'a disabled premade outranks the enabled one with the same switch: '..table.concat(outranked,'; '))
+    local count,off=0,0;for _,list in pairs(scopes) do for _,row in ipairs(list) do count=count+1;if row.disabled then off=off+1 end end end
+    assert(count>300 and off>130,count..' Built Ins, '..off..' disabled')
+end)
+
+-- The rule on shipped data, so the check above cannot pass vacuously: an enabled lower duplicate and a
+-- disabled higher duplicate are named; a catch-all under a spec premade and a SoD pack over a vanilla
+-- pack with the same switch are not.
+test('the alternative check names enabled duplicates and disabled recommendations, and allows the documented layering',function()
+    local a,scopes=overlapRows()
+    local function find(id) for key,list in pairs(scopes) do for _,row in ipairs(list) do if row.id==id then return key,list,row end end end end
+    local key,list,feral=find('rm.tbc.druid.feral.icyveins')
+    local _,_,catchall=find('rm.tbc.druid.balance');local _,_,alternative=find('rm.tbc.druid.feral.wowhead')
+    assert(not feral.disabled and not catchall.disabled and alternative.disabled and catchall.priority<feral.priority,'TBC Druid layering changed')
+    assert(a:CompareSwitchRegions(catchall.region,feral.region)=='subsumes','the Balance catch-all no longer subsumes Feral')
+    local only={[key]=list}
+    local s0,o0=alternativeOffences(a,only);assert(#s0==0 and #o0==0,table.concat(s0,'; ')..table.concat(o0,'; '))
+    alternative.disabled=false
+    local s1,o1=alternativeOffences(a,only)
+    assert(#s1==1 and #o1==0 and s1[1]:find('rm.tbc.druid.feral.wowhead (20) under rm.tbc.druid.feral.icyveins (30, identical)',1,true),table.concat(s1,'; '))
+    feral.disabled=true
+    local s2,o2=alternativeOffences(a,only)
+    assert(#s2==0 and #o2==1 and o2[1]:find('disabled rm.tbc.druid.feral.icyveins (30) outranks enabled rm.tbc.druid.feral.wowhead (20)',1,true),table.concat(o2,'; '))
+    feral.disabled,alternative.disabled=false,true
+    -- SoD over vanilla: both Balance premades are catch-alls, in separate load scopes.
+    local sodKey,sodList,sod=find('rm.sod.druid.balance');local eraKey,eraList,era=find('rm.era.druid.balance')
+    assert(sodKey~=eraKey and not sod.disabled and not era.disabled and a:CompareSwitchRegions(sod.region,era.region)=='identical','Druid Balance layering changed')
+    local s3,o3=alternativeOffences(a,{[sodKey]=sodList,[eraKey]=eraList});assert(#s3==0 and #o3==0,table.concat(s3,'; ')..table.concat(o3,'; '))
+end)
 finish()

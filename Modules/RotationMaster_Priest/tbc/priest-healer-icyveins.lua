@@ -1,5 +1,5 @@
 -- TBC Priest healer after Icy Veins, levels 10–70; same switch as the Wowhead healer premade
--- with a lower priority, so choose or enable it to use it. It follows Icy Veins' order:
+-- with a lower priority, shipped disabled: enable it to use it. It follows Icy Veins' order:
 -- Shield, Binding Heal, Renew, Flash Heal, Greater Heal (any rank), group heals, and Prayer of
 -- Mending last; no pre-pull Prayer of Mending and no fixed top-up rank. You pick the target.
 local _,addon=...
@@ -12,7 +12,7 @@ local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='priest-heal-iv-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.priest.healer.icyveins',revision=3,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.priest.healer.icyveins',revision=4,
  blocks={['tbc.priest.boundaries']=3,['tbc.priest.dispels']=1,['tbc.priest.group-heal']=1,['tbc.priest.big-heal']=1,
   ['tbc.priest.healer-damage']=1,['tbc.priest.upkeep']=1},
  nameKey='Default.TBC.Priest.HealerIcyVeins.Name',descriptionKey='Default.TBC.Priest.HealerIcyVeins.Description',
@@ -24,7 +24,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.icy-veins.com/tbc-classic/discipline-priest-leveling-guide',title='Icy Veins: Discipline Priest leveling',reviewedAt='2026-10-23',revision='2026-01-12'},
  },
  body={
-  priority=25,
+  priority=25,disabled=true,
   switch={type='AND',value={{type='GROUP'},{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
    {type='OR',value={{type='PRIMARY_TALENT_TREE',tree=2},{type='PRIMARY_TALENT_TREE',tree=1}}}}},
   cooldowns={block(P..'upkeep','tbc.priest.upkeep',P),

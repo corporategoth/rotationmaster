@@ -13,7 +13,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local combat={type='COMBAT',unit='player'}
 local P='priest-sim-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.priest.dps.wowsims',revision=3,
+ format='RotationMaster',schemaVersion=1,id='rm.era.priest.dps.wowsims',revision=4,
  blocks={['era.priest.dps-boundaries']=1,['era.priest.shadowform']=1,['era.priest.pull']=2,['era.priest.pull-shield']=1,
   ['era.priest.moving']=1,['era.priest.wand-finish']=1,['era.priest.pain']=1,['era.priest.filler']=1,['era.priest.wand-fallback']=1,
   ['era.priest.upkeep']=1},
@@ -24,7 +24,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/wowsims/classic/blob/7779ebbf79dc7f1341e6ab939b28a3402c9a730a/ui/shadow_priest/apls/p1.apl.json',title='wowsims/classic Shadow Priest P1 APL',reviewedAt='2026-10-23',revision='7779ebb'},
  },
  body={
-  priority=4,
+  priority=4,disabled=true,
   switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
   cooldowns={block(P..'upkeep','era.priest.upkeep',P),
    -- Inner Focus goes on Devouring Plague; without the racial, on Mind Blast as usual.

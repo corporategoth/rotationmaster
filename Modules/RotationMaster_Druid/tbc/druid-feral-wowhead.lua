@@ -9,7 +9,7 @@ local function negate(c)return{type='NOT',value=c}end
 local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
 local function energy(op,v)return{type='POWER',unit='player',operator=op,value=v}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.druid.feral.wowhead',revision=3,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.druid.feral.wowhead',revision=4,
  blocks={['tbc.druid.boundaries']=3,['tbc.druid.upkeep']=1,['tbc.druid.feral-cooldowns']=2,['tbc.druid.cat-opening']=1,
   ['tbc.druid.cat-builders']=1,['tbc.druid.bear-core']=1,['tbc.druid.feral-humanoid']=1},
  nameKey='Default.TBC.Druid.Feral.Wowhead.Name',descriptionKey='Default.TBC.Druid.Feral.Wowhead.Description',
@@ -18,7 +18,7 @@ assert(addon:RegisterDefaultRotation({
  sources={{url='https://www.wowhead.com/tbc/guide/classes/druid/feral/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Feral Druid DPS rotation',reviewedAt='2026-10-23',revision='2026-02-10'},
   {url='https://www.wowhead.com/tbc/guide/classes/druid/feral/tank-rotation-cooldowns-abilities-pve',title='Wowhead: Feral Druid tank rotation',reviewedAt='2026-10-23',revision='2024-05-18'},
   {url='https://www.wowhead.com/tbc/guide/feral-druid-dps-leveling-guide-burning-crusade-classic',title='Wowhead: Feral Druid leveling',reviewedAt='2026-10-23',revision='2026-01-30'}},
- body={priority=20,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='PRIMARY_TALENT_TREE',tree=2}}},
+ body={priority=20,disabled=true,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='PRIMARY_TALENT_TREE',tree=2}}},
   cooldowns={
    {id='feral-wh-upkeep',type='block',block='tbc.druid.upkeep',prefix='feral-wh-'},
    {id='feral-wh-cooldowns',type='block',block='tbc.druid.feral-cooldowns',prefix='feral-wh-'},

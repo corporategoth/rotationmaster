@@ -8,7 +8,7 @@ local M=dofile('tests/fixtures/retail_premade_model_a.lua')
 local DEV,AUG,PRES=1467,1473,1468
 local P='rm.retail.evoker.'
 local ids={[DEV]={P..'devastation',P..'devastation.guide'},[AUG]={P..'augmentation',P..'augmentation.assisted'},[PRES]={P..'preservation'}}
-local enabledByDefault={[P..'devastation']=true,[P..'augmentation']=true,[P..'augmentation.assisted']=true}
+local enabledByDefault={[P..'devastation']=true,[P..'augmentation']=true}
 local function evoker(spec,level)
  local f,s=M.new('evoker','EVOKER',spec);local a=f.addon
  s.setLevel(level or 90);s.powerType=0;s.targetRange={20,25}
@@ -34,7 +34,9 @@ test('auto-select: Assisted for Devastation, the Icy Veins Ebon Might list for A
  enable(a,P..'devastation.guide');assert(M.selected(a)==P..'devastation','the reference outranked Assisted')
  a=evoker(AUG);assert(M.selected(a)==P..'augmentation','Augmentation: '..tostring(M.selected(a)))
  assert(M.switch(a,P..'augmentation.assisted')=='match')
- assert(a:SetDefaultRotationEnabled(P..'augmentation',false));assert(M.selected(a)==P..'augmentation.assisted','the Assisted alternative is the fallback')
+ -- The Assisted alternative ships disabled: it is chosen once enabled with the Icy Veins list off.
+ assert(a:SetDefaultRotationEnabled(P..'augmentation',false));assert(M.selected(a)==nil,'a disabled alternative was chosen: '..tostring((M.selected(a))))
+ enable(a,P..'augmentation.assisted');assert(M.selected(a)==P..'augmentation.assisted','the enabled Assisted alternative is not chosen')
  a=evoker(PRES);assert(M.selected(a)==nil,'Preservation is reference only')
  do local low,ls=evoker(DEV,9);ls.respec(1465);assert(M.selected(low)==P..'initial','below 10 the game reports the initial spec: '..tostring(M.selected(low)))end
 end)

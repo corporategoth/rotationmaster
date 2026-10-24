@@ -10,7 +10,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local execute=function(id)return spell(id,5308,{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=.2})end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.warrior.dps.icyveins',revision=3,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.warrior.dps.icyveins',revision=4,
  blocks={['tbc.warrior.boundaries']=3,['tbc.warrior.upkeep']=1,['tbc.warrior.dps-upkeep']=1,['tbc.warrior.dps-opening']=1,['tbc.warrior.dps-leveling']=1},
  nameKey='Default.TBC.Warrior.DPS.IcyVeins.Name',descriptionKey='Default.TBC.Warrior.DPS.IcyVeins.Description',
  applicability={families={'tbc'},actionContext='player',class='WARRIOR'},
@@ -19,7 +19,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://www.icy-veins.com/tbc-classic/arms-warrior-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Arms Warrior PvE rotation, cooldowns and abilities',reviewedAt='2026-10-23',revision='2026-01-12'},
  {url='https://www.icy-veins.com/tbc-classic/arms-warrior-leveling-guide',title='Icy Veins: Arms Warrior leveling',reviewedAt='2026-10-23',revision='2026-01-12'},
  {url='https://www.icy-veins.com/tbc-classic/fury-warrior-leveling-guide',title='Icy Veins: Fury Warrior leveling',reviewedAt='2026-10-23',revision='2026-01-12'}},
- body={priority=5,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=5,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
  cooldowns={block('tbc.warrior.upkeep','warrior-dps-'),block('tbc.warrior.dps-upkeep','warrior-dps-')},
  rotation={
  block('tbc.warrior.boundaries','warrior-dps-'),

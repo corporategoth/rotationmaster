@@ -20,7 +20,7 @@ test('six sourced, localized, valid premades replace the bounded Shaman starters
   assert(r.validation.valid and r.validation.supported and r.validation.resolved,id)
   assert(f.translations[r.nameKey]and f.translations[r.descriptionKey],id..' localization')
   assert(#e.sources>0 and e.sources[1].reviewedAt=='2026-10-23',id..' sources')
-  assert(e.revision==((id==ENH or id==SIM)and 4 or 2)and e.applicability.class=='SHAMAN'and e.applicability.maxLevel==nil and e.applicability.actionContext=='player',id)
+  assert(e.revision==({[ENH]=4,[SIM]=5,[ELE]=2,[EWH]=3,[ENA]=3,[RESTO]=2})[id]and r.enabled==(id~=SIM and id~=EWH and id~=ENA)and e.applicability.class=='SHAMAN'and e.applicability.maxLevel==nil and e.applicability.actionContext=='player',id)
   assert(e.applicability.families[1]=='tbc'and #e.applicability.families==1)
   assert(a:GetDefaultRotationComposition(id),id..' uses the shared Shaman blocks')
  end
@@ -41,10 +41,12 @@ test('auto-select: Enhancement below 10 and without talents, then the primary tr
   assert(H.switch(a,EWH)==H.switch(a,ELE)and H.switch(a,ENA)==H.switch(a,ELE))
  end
  s.talents={0,0,0};assert(H.switch(a,ELE)=='unavailable'and H.switch(a,RESTO)=='unavailable','no points: the tree is unknown, never a match')
- -- Players pick a variant by turning the recommended one off.
- s.level,s.talents=70,{0,41,20};assert(a:SetDefaultRotationEnabled(ENH,false));assert(H.selected(f,s)==SIM)
- s.talents={41,20,0};assert(a:SetDefaultRotationEnabled(ELE,false));assert(H.selected(f,s)==EWH)
- assert(a:SetDefaultRotationEnabled(EWH,false));assert(H.selected(f,s)==ENA)
+ -- Variants ship disabled: players pick one by enabling it and turning the recommended one off.
+ s.level,s.talents=70,{0,41,20};assert(a:SetDefaultRotationEnabled(ENH,false));assert(H.selected(f,s)~=SIM)
+ assert(a:SetDefaultRotationEnabled(SIM,true));assert(H.selected(f,s)==SIM)
+ s.talents={41,20,0};assert(a:SetDefaultRotationEnabled(ELE,false));assert(H.selected(f,s)==SIM,'Elemental off: the Enhancement catch-all')
+ assert(a:SetDefaultRotationEnabled(EWH,true));assert(H.selected(f,s)==EWH)
+ assert(a:SetDefaultRotationEnabled(EWH,false)and a:SetDefaultRotationEnabled(ENA,true));assert(H.selected(f,s)==ENA)
 end)
 test('Enhancement leveling stage: Bolt pull from range, then Earth Shock and a ranged Bolt in combat',function()
  local f,s=fixture(6);s.near=false

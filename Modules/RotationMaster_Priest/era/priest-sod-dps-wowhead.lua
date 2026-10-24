@@ -9,7 +9,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='priest-sod-wh-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.priest.dps.wowhead',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.priest.dps.wowhead',revision=5,
  blocks={['era.priest.dps-boundaries']=1,['era.priest.shadowform']=1,['era.priest.pull-shield']=1,['era.priest.wand-finish']=1,
   ['era.priest.wand-fallback']=1,['era.priest.upkeep']=1,['era.priest.dps-upkeep']=1,['sod.priest.upkeep']=2,['sod.priest.pull']=2,['sod.priest.aoe']=1,
   ['sod.priest.moving']=1,['sod.priest.dots']=2,['sod.priest.procs']=1,['sod.priest.filler']=1},
@@ -21,7 +21,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.warcrafttavern.com/wow-classic-sod/guides/shadow-priest-dps/',title='Warcraft Tavern: SoD Shadow Priest',reviewedAt='2026-10-23',notes='Phase 4 text.'},
  },
  body={
-  priority=105,
+  priority=105,disabled=true,
   switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
   cooldowns={block(P..'upkeep','era.priest.upkeep',P),block(P..'dps-upkeep','era.priest.dps-upkeep',P),block(P..'sod-upkeep','sod.priest.upkeep',P)},
   rotation={

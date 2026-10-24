@@ -7,6 +7,8 @@ local function copy(v)if type(v)~='table'then return v end;local out={};for k,x 
 local function same(a,b)if type(a)~=type(b)then return false end;if type(a)~='table'then return a==b end;for k,v in pairs(a)do if not same(v,b[k])then return false end end;for k in pairs(b)do if a[k]==nil then return false end end;return true end
 local new={WARRIOR={'rm.tbc.warrior.dps.wowsims','rm.tbc.warrior.dps.icyveins','rm.tbc.warrior.protection.wowhead','rm.tbc.warrior.protection.icyveins'},
  ROGUE={'rm.tbc.rogue.dps.wowsims','rm.tbc.rogue.dps.wowhead'},HUNTER={'rm.tbc.hunter.ranged.wowsims','rm.tbc.hunter.ranged.wowhead'}}
+-- Same-switch alternatives of the recommended premades ship disabled.
+local off={['rm.tbc.warrior.dps.icyveins']=true,['rm.tbc.warrior.protection.icyveins']=true,['rm.tbc.rogue.dps.wowhead']=true,['rm.tbc.hunter.ranged.wowhead']=true}
 -- The clone of each class's 40–49 (Rogue 30–39) pack, and a level inside its saved bracket.
 local bracket={WARRIOR={45,'rm.tbc.warrior.starter.40-49',78},ROGUE={35,'rm.tbc.rogue.starter.30-39',1752},HUNTER={45,'rm.tbc.hunter.starter.40-49',75}}
 local function load(class,level)
@@ -19,7 +21,7 @@ for _,class in ipairs({'WARRIOR','ROGUE','HUNTER'})do
  test(class..': saved clones of removed packs load unchanged and stay editable and exportable',function()
   local f,s,p=load(class,bracket[class][1]);local a=f.addon
   local listed={};for _,r in ipairs(a:ListDefaultRotations(0))do listed[r.id]=r end
-  for _,id in ipairs(new[class])do assert(listed[id]and listed[id].enabled,id..' not listed and enabled')end
+  for _,id in ipairs(new[class])do assert(listed[id]and listed[id].enabled==not off[id],id..' not listed, or enabled state wrong')end
   for id in pairs(p.rotationLibrary.preferences)do assert(not listed[id]and a:GetDefaultRotation(id)==nil,id..' still shipped')end
   for _,id in ipairs(p.clones)do
    local body=assert(a:GetEditableRotation(0,id),'clone '..id..' lost');assert(same(body,saved[class].rotations[0][id]),'clone body changed on load')

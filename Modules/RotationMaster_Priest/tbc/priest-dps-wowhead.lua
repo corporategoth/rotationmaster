@@ -1,5 +1,5 @@
 -- TBC Priest damage after Wowhead's guides, levels 1–70; same switch as the Icy Veins damage
--- premade with a lower priority, so choose or enable it to use it. It differs where Wowhead
+-- premade with a lower priority, shipped disabled: enable it to use it. It differs where Wowhead
 -- differs: Mind Blast opens and goes before DoT refreshes, Vampiric Embrace only when your
 -- health drops, and a dying solo target gets spells (Spirit Tap) instead of the wand.
 local _,addon=...
@@ -12,7 +12,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local function healthy()return{type='HEALTHPCT',unit='player',operator='GREATERTHAN',value=.5}end
 local P='priest-wh-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.priest.dps.wowhead',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.priest.dps.wowhead',revision=5,
  blocks={['tbc.priest.dps-boundaries']=1,['tbc.priest.shadowform']=1,['tbc.priest.moving']=1,
   ['tbc.priest.dots']=1,['tbc.priest.filler']=1,['tbc.priest.upkeep']=1},
  nameKey='Default.TBC.Priest.DpsWowhead.Name',descriptionKey='Default.TBC.Priest.DpsWowhead.Description',
@@ -24,7 +24,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.wowhead.com/tbc/guide/classes/priest/shadow/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Shadow Priest rotation',reviewedAt='2026-10-23',revision='2026-02-10'},
  },
  body={
-  priority=5,
+  priority=5,disabled=true,
   switch={type='SPELL_KNOWN',spell=585},
   cooldowns={block(P..'upkeep','tbc.priest.upkeep',P),
    spell(P..'inner-focus',14751,all({type='COMBAT',unit='player'},{type='SPELL_COOLDOWN',spell=8092,operator='LESSTHANOREQUALS',value=1.5})),

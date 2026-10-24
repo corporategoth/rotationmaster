@@ -20,9 +20,11 @@ local function dots(s,...)for _,id in ipairs({...})do s.debuffs[#s.debuffs+1]={i
 
 test('every premade registers valid 1–60; vanilla on every realm, SoD only on Season of Discovery, above every vanilla premade',function()
  local f,s=warlock(60);local a=f.addon
- for _,id in ipairs(VANILLA)do local row=assert(M.row(f,id),id);assert(row.validation.valid and row.validation.resolved and row.eligible and a:GetDefaultRotationComposition(id),id)end
- for _,id in ipairs(SEASON)do local row=M.row(f,id);assert(row.validation.valid and row.validation.resolved and not row.eligible,id)end
- s.season=2;for _,id in ipairs(SEASON)do assert(M.row(f,id).eligible,id)end
+ -- The same-switch source variants ship disabled.
+ local off={[WT]=true,[IV]=true,[FIREIV]=true,[SHADOWWS]=true}
+ for _,id in ipairs(VANILLA)do local row=assert(M.row(f,id),id);assert(row.validation.valid and row.validation.resolved and row.eligible==not off[id] and (M.body(a,id).disabled==true)==(off[id]==true) and a:GetDefaultRotationComposition(id),id)end
+ for _,id in ipairs(SEASON)do local row=M.row(f,id);assert(row.validation.valid and row.validation.resolved and not row.eligible and (M.body(a,id).disabled==true)==(off[id]==true),id)end
+ s.season=2;for _,id in ipairs(SEASON)do assert(M.row(f,id).eligible==not off[id],id)end
  for _,id in ipairs(SEASON)do for _,v in ipairs(VANILLA)do assert(M.body(a,id).priority>M.body(a,v).priority,id..' must outrank '..v)end end
 end)
 
@@ -34,7 +36,8 @@ test('auto-select: one vanilla premade for every tree; SoD by engraved hands and
  M.know(s,412758);assert(M.selected(f,s)==SHADOW,'Incinerate known without its rune: Shadow');s.known[412758]=false
  M.engrave(s,412758);assert(M.selected(f,s)==FIRE,'Incinerate');M.unengrave(s,412758);M.engrave(s,403629);assert(M.selected(f,s)==FIRE,'Chaos Bolt')
  M.engrave(s,403789);assert(M.selected(f,s)==TANK,'Metamorphosis wins')
- M.unengrave(s,403789);assert(a:SetDefaultRotationEnabled(FIRE,false));assert(M.selected(f,s)==FIREIV)
+ M.unengrave(s,403789);assert(a:SetDefaultRotationEnabled(FIRE,false));assert(M.selected(f,s)==SHADOW,'the Icy Veins Fire variant ships disabled')
+ for _,id in ipairs({FIREIV,SHADOWWS,WT,IV})do assert(a:SetDefaultRotationEnabled(id,true))end;assert(M.selected(f,s)==FIREIV)
  M.unengrave(s,403629);assert(a:SetDefaultRotationEnabled(SHADOW,false));assert(M.selected(f,s)==SHADOWWS)
  s.season=nil;assert(a:SetDefaultRotationEnabled(DPS,false));assert(M.selected(f,s)==WT);assert(a:SetDefaultRotationEnabled(WT,false));assert(M.selected(f,s)==IV)
 end)

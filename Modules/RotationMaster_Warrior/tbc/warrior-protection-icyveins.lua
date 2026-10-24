@@ -13,14 +13,14 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local function classified(kind)return{type='CLASSIFICATION',unit='target',value=kind}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.warrior.protection.icyveins',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.warrior.protection.icyveins',revision=5,
  blocks={['tbc.warrior.boundaries']=3,['tbc.warrior.upkeep']=1,['tbc.warrior.prot-upkeep']=1,['tbc.warrior.prot-core']=1,['tbc.warrior.sunder']=1},
  nameKey='Default.TBC.Warrior.Protection.IcyVeins.Name',descriptionKey='Default.TBC.Warrior.Protection.IcyVeins.Description',
  applicability={families={'tbc'},actionContext='player',class='WARRIOR'},
  tags={'tank','melee','leveling','endgame','aoe','icy-veins'},
  sources={{url='https://www.icy-veins.com/tbc-classic/protection-warrior-tank-pve-rotation-cooldowns-abilities',title='Icy Veins: Protection Warrior tank rotation, cooldowns and abilities',reviewedAt='2026-10-23',revision='2026-01-12'},
  {url='https://www.icy-veins.com/tbc-classic/protection-warrior-leveling-guide',title='Icy Veins: Protection Warrior leveling',reviewedAt='2026-10-23',revision='2026-01-12'}},
- body={priority=25,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='FORM',form=71}}},
+ body={priority=25,disabled=true,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='FORM',form=71}}},
  cooldowns={block('tbc.warrior.upkeep','warrior-prot-'),block('tbc.warrior.prot-upkeep','warrior-prot-'),
   spell('warrior-prot-shield-block',2565,all({type='COMBAT',unit='player'},{type='WEAPON_TYPE',slot='offhand',kind='shield'},negate({type='BUFF',unit='player',spell=2565,anyrank=true}),
    {type='ISSAME',unit='targettarget',otherunit='player'}))},

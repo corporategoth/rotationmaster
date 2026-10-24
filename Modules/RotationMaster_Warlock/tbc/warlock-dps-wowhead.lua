@@ -1,5 +1,5 @@
 -- TBC Warlock after Wowhead's guides, levels 1–70; same switch as the Icy Veins premade with a
--- lower priority, so choose or enable it to use it. It differs where Wowhead differs:
+-- lower priority, shipped disabled: enable it to use it. It differs where Wowhead differs:
 -- solo it drain-tanks (Drain Life as the filler once DoTs are up, no wand) and keeps Immolate
 -- and Siphon Life for tough (elite) mobs; in a group Immolate always goes on, after
 -- Corruption and Siphon Life.
@@ -16,7 +16,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local tough=any(class('elite'),class('rareelite'),class('worldboss'))
 local P='warlock-wh-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.warlock.dps.wowhead',revision=3,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.warlock.dps.wowhead',revision=4,
  blocks={['tbc.warlock.boundaries']=2,['tbc.warlock.procs']=1,['tbc.warlock.moving']=1,['tbc.warlock.curse']=2,['tbc.warlock.aoe']=1,
   ['tbc.warlock.finishers']=1,['tbc.warlock.filler']=1,['tbc.warlock.armor']=1,['tbc.warlock.upkeep']=1},
  nameKey='Default.TBC.Warlock.DpsWowhead.Name',descriptionKey='Default.TBC.Warlock.DpsWowhead.Description',
@@ -30,7 +30,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/wowsims/tbc/blob/3301fca59306a747e521274c36e073e69acc7b77/ui/core/talents/warlock.ts',title='wowsims TBC Warlock talent layout',reviewedAt='2026-10-23',revision='3301fca',notes='Talent positions only.'},
  },
  body={
-  priority=5,
+  priority=5,disabled=true,
   switch={type='SPELL_KNOWN',spell=686},
   cooldowns={block(P..'armor','tbc.warlock.armor',P),block(P..'upkeep','tbc.warlock.upkeep',P)},
   rotation={
