@@ -30,10 +30,8 @@ local onMe={type='THREAT',unit='target',threat=3}
 -- Vanilla and Season of Discovery.
 -- Casts, channels (Blizzard, Arcane Missiles, Evocation) and a target that is not ours to pull end advice.
 block('era.mage.boundaries',{
- stop('cast',{type='CASTING',unit='player'}),
- stop('channel',{type='CHANNELING',unit='player'}),
- stop('target',negate(all({type='ATTACKABLE',unit='target'},any(combat(),negate({type='COMBAT',unit='target'}))))),
-})
+ stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate(all({type='ATTACKABLE',unit='target'},any(combat(),negate({type='COMBAT',unit='target'})))))),
+},2)
 -- Frostbolt once learned (level 4); Fireball before that.
 block('era.mage.frostbolt',{
  {id='frostbolt-known',type='branch',conditions=known(116),onTrue={spell('frostbolt',116)},onFalse={spell('fireball',133)}},

@@ -21,9 +21,9 @@ test('all four premades register valid, localized, sourced and composed',functio
  for _,id in ipairs(ALL)do local row=M.row(a,id)
   assert(row.readOnly and row.validation.valid and row.validation.resolved,id)
   assert(f.translations[row.nameKey]and f.translations[row.descriptionKey]and a:GetDefaultRotationComposition(id),id)
-  assert(row.applicability.class=='PRIEST'and row.applicability.maxLevel==70)
+  assert(row.applicability.class=='PRIEST'and row.applicability.maxLevel==nil)
  end
- assert(M.row(a,DIV).applicability.minLevel==1 and M.row(a,HWH).applicability.minLevel==10)
+ do local sw=M.row(a,HWH).envelope.body.switch.value[2];assert(sw.type=='LEVEL'and sw.value==10,'healer switch holds level 10')end
  for _,source in ipairs(M.row(a,DWH).envelope.sources)do assert(source.url:find('wowhead'),'Wowhead damage cites another source')end
  for _,source in ipairs(M.row(a,HIV).envelope.sources)do assert(source.url:find('icy%-veins'),'Icy Veins healer cites another source')end
  for _,source in ipairs(M.row(a,HWH).envelope.sources)do assert(source.url:find('wowhead'),'Wowhead healer cites another source')end
@@ -31,7 +31,7 @@ end)
 
 test('auto-select: damage solo and for Shadow, healer in a group as Holy or Discipline',function()
  local a,s=fixture(5);assert(M.selected(a)==DIV)
- s.group=true;assert(M.selected(a)==DIV and not M.row(a,HWH).eligible,'no healer premade before talents')
+ s.group=true;assert(M.selected(a)==DIV and M.switch(a,HWH)=='no-match','no healer premade before talents')
  s.setLevel(30);assert(M.selected(a)==DIV,'a grouped priest with no points still gets damage advice')
  s.talents={0,21,0};assert(M.selected(a)==HWH);assert(M.switch(a,HIV)=='match','Icy Veins healer matches like its sibling')
  s.talents={21,0,0};assert(M.selected(a)==HWH,'Discipline heals too')

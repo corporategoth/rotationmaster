@@ -20,7 +20,8 @@ test('every Demon Hunter premade loads for its own specialization only and decla
   for index,id in ipairs(list)do
    local row=assert(rows[id],id);local scope=row.applicability
    assert(row.readOnly and row.builtin and #scope.families==1 and scope.families[1]=='retail'and scope.class=='DEMONHUNTER',id)
-   assert(#scope.specs==1 and scope.specs[1]==spec and scope.minLevel==8 and scope.maxLevel==90,id..' scope')
+   assert(scope.specs==nil and scope.minLevel==nil and scope.maxLevel==nil,id..' scope: load-time facts only')
+   assert(row.envelope.body.switch.type=='SPECIALIZATION'and row.envelope.body.switch.spec==spec,id..' switch')
    assert(row.eligible==(index==1),id..' eligibility: only the Assisted premade is on by default')
   end
   for other,list2 in pairs(ids)do if other~=spec then for _,id in ipairs(list2)do assert(rows[id]==nil or not rows[id].eligible,id..' eligible in spec '..spec)end end end
@@ -32,7 +33,7 @@ test('auto-select: the Blizzard Assisted premade in each spec slot; an enabled r
   for _,id in ipairs(list)do assert(M.switch(a,id)=='match',id..' switch')end
   for i=2,#list do enable(a,list[i]);assert(M.rows(a)[list[i]].eligible,list[i]..' enabled but not runnable')end
   assert(M.selected(a)==list[1],'a reference outranked the recommended premade')
-  local low=dh(spec,7);assert(M.selected(low)==nil,'level 7 is below the Demon Hunter start')
+  local low=dh(spec,8);assert(M.selected(low)==list[1],'a Demon Hunter starts at 8 with a specialization: its premade')
  end
 end)
 test('Assisted: follows the suggestion every poll, falls through when there is none, waits on casts and channels',function()

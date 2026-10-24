@@ -25,10 +25,10 @@ local unshielded=negate({type='DEBUFF',unit='target',spell=6788})
 local nochakra=all(negate(own(81208)),negate(own(81206)),negate(own(81209)))
 local aoe=hurt(3,.85)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.priest.holy',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.priest.holy',revision=3,
  blocks={['mop.priest.upkeep']=1,['mop.priest.healer-boundaries']=1,['mop.priest.healer-cooldowns']=1,['mop.priest.holy-damage']=1},
  nameKey='Default.MoP.Priest.Holy.Name',descriptionKey='Default.MoP.Priest.Holy.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PRIEST',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PRIEST'},
  tags={'holy','healer','group','leveling','endgame','warcraft-tavern','icy-veins','hekili'},
  sources={{url='https://www.warcrafttavern.com/mop/guides/pve-holy-priest-rotations-cooldowns/',title='Warcraft Tavern: Holy Priest rotation (MoP Classic)',reviewedAt='2026-10-23'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/holy-priest-pve-rotation-cooldowns-abilities',title='Icy Veins: Holy Priest rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'},

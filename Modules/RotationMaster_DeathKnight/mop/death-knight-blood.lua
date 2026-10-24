@@ -19,10 +19,10 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local FEVER,PLAGUE=55095,55078
 local both=all(disease(FEVER),disease(PLAGUE))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.deathknight.blood',revision=2,
- blocks={['mop.deathknight.boundaries']=1,['mop.deathknight.upkeep']=1,['mop.deathknight.blood-upkeep']=2,['mop.deathknight.blood-pull']=1,['mop.deathknight.spread']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.deathknight.blood',revision=3,
+ blocks={['mop.deathknight.boundaries']=2,['mop.deathknight.upkeep']=1,['mop.deathknight.blood-upkeep']=2,['mop.deathknight.blood-pull']=1,['mop.deathknight.spread']=1},
  nameKey='Default.MoP.DeathKnight.Blood.Name',descriptionKey='Default.MoP.DeathKnight.Blood.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DEATHKNIGHT',minLevel=55,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DEATHKNIGHT'},
  tags={'blood','tank','leveling','single-target','aoe','icy-veins','wowsims'},
  sources={
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/blood-death-knight-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Blood Death Knight rotation',reviewedAt='2026-10-23',revision='2025-09-23'},
@@ -30,7 +30,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/wowsims/mop/tree/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/death_knight/blood/apls',title='wowsims/mop Blood APLs (sha, iron_juggernaut)',reviewedAt='2026-10-23',revision='ec2c6c2552',notes='Health, Blood Shield and rune-cap Death Strike; Rune Strike at 90; Heart Strike on two Blood runes.'},
   {url='https://www.wowhead.com/mop-classic/guide/classes/death-knight/blood/tank-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Blood Death Knight rotation',reviewedAt='2026-10-23',revision='2025-08-02',notes='Read from a Wayback snapshot; Crimson Scourge split at 15 s.'},
  },
- body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=250}}},
+ body={priority=30,switch={type='SPECIALIZATION',spec=250},
   cooldowns={
    block('blood-upkeep','mop.deathknight.blood-upkeep','blood-'),
    block('blood-class','mop.deathknight.upkeep','blood-'),

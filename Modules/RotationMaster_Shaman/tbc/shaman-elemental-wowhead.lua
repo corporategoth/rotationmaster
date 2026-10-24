@@ -8,15 +8,15 @@ local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function own(id)return{type='BUFF',unit='player',spell=id,anyrank=true,ownbuff=true}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.elemental.wowhead',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.elemental.wowhead',revision=2,
  blocks={['tbc.shaman.shield']=1,['tbc.shaman.mainhand-imbue']=1,['tbc.shaman.elemental-totems']=1,['tbc.shaman.bloodlust']=1,
-  ['tbc.shaman.elemental-opening']=1,['tbc.shaman.boundaries']=1,['tbc.shaman.interrupt']=1,['tbc.shaman.elemental-aoe']=1},
+  ['tbc.shaman.elemental-opening']=1,['tbc.shaman.boundaries']=2,['tbc.shaman.interrupt']=1,['tbc.shaman.elemental-aoe']=1},
  nameKey='Default.TBC.Shaman.Elemental.Wowhead.Name',descriptionKey='Default.TBC.Shaman.Elemental.Wowhead.Description',
- applicability={families={'tbc'},actionContext='player',class='SHAMAN',minLevel=10,maxLevel=70},
+ applicability={families={'tbc'},actionContext='player',class='SHAMAN'},
  tags={'leveling','endgame','elemental','caster','single-target','aoe','wowhead'},
  sources={{url='https://www.wowhead.com/tbc/guide/classes/shaman/elemental/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Elemental Shaman DPS rotation',reviewedAt='2026-10-23',revision='2026-02-07'},
   {url='https://www.wowhead.com/tbc/guide/classes/shaman/elemental/leveling-tips',title='Wowhead: Elemental Shaman leveling',reviewedAt='2026-10-23',revision='2026-03-02'}},
- body={priority=21,switch={type='PRIMARY_TALENT_TREE',tree=1},
+ body={priority=21,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='PRIMARY_TALENT_TREE',tree=1}}},
   cooldowns={
    {id='ele-wh-shield',type='block',block='tbc.shaman.shield',prefix='ele-wh-'},
    {id='ele-wh-imbue',type='block',block='tbc.shaman.mainhand-imbue',prefix='ele-wh-'},

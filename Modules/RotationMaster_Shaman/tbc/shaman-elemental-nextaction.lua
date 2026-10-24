@@ -9,13 +9,13 @@ local function negate(c)return{type='NOT',value=c}end
 local function own(id)return{type='BUFF',unit='player',spell=id,anyrank=true,ownbuff=true}end
 local function flame()return{type='DEBUFF',unit='target',spell=8050,anyrank=true,owndebuff=true}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.elemental.nextaction',revision=1,
- blocks={['tbc.shaman.mainhand-imbue']=1,['tbc.shaman.bloodlust']=1,['tbc.shaman.elemental-opening']=1,['tbc.shaman.boundaries']=1,['tbc.shaman.interrupt']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.elemental.nextaction',revision=2,
+ blocks={['tbc.shaman.mainhand-imbue']=1,['tbc.shaman.bloodlust']=1,['tbc.shaman.elemental-opening']=1,['tbc.shaman.boundaries']=2,['tbc.shaman.interrupt']=1},
  nameKey='Default.TBC.Shaman.Elemental.NextAction.Name',descriptionKey='Default.TBC.Shaman.Elemental.NextAction.Description',
- applicability={families={'tbc'},actionContext='player',class='SHAMAN',minLevel=10,maxLevel=70},
+ applicability={families={'tbc'},actionContext='player',class='SHAMAN'},
  tags={'leveling','endgame','elemental','caster','single-target','dot','nextaction'},
  sources={{url='https://www.curseforge.com/wow/addons/next-action',title='NextActionTBC 1.30.1 Elemental priority',reviewedAt='2026-10-23',revision='1.30.1'}},
- body={priority=20,switch={type='PRIMARY_TALENT_TREE',tree=1},
+ body={priority=20,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='PRIMARY_TALENT_TREE',tree=1}}},
   cooldowns={
    {id='ele-na-lightning-shield',type='spell',action=324,ranked=false,conditions=all(negate(own(324)),negate(own(24398)))},
    {id='ele-na-imbue',type='block',block='tbc.shaman.mainhand-imbue',prefix='ele-na-'},

@@ -21,7 +21,7 @@ test('the Hunter premades load, validate and declare Mists of Pandaria Classic o
  M.scope('hunter',{BASE},1);M.scope('hunter',{BM,MM,SV},10)
  local a=hunter();local row=M.row(a,MMIV);local scope=row.applicability
  assert(row.readOnly and not row.eligible and row.eligibilityReason=='disabled','the Arcane dump variant ships disabled')
- assert(scope.minExpansion==4 and scope.maxExpansion==4 and scope.minLevel==10 and scope.maxLevel==90 and scope.families[1]=='progression')
+ assert(scope.minExpansion==4 and scope.maxExpansion==4 and scope.minLevel==nil and scope.maxLevel==nil and scope.families[1]=='progression')
  local priorities={};for id,r in pairs(M.rows(a))do priorities[id]=r.envelope.body.priority end
  assert(priorities[BASE]<priorities[MMIV]and priorities[MMIV]<priorities[MM]and priorities[BM]==priorities[MM]and priorities[SV]==priorities[MM])
 end)

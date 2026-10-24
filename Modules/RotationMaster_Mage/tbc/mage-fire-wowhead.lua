@@ -8,11 +8,11 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id)return{id=id,type='none',suppress_attack=true,conditions={}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.mage.fire.wowhead',revision=2,
- blocks={['tbc.mage.boundaries']=1,['tbc.mage.wand-finish']=1,['tbc.mage.moving-fire-blast']=1,['tbc.mage.fire-aoe']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.mage.fire.wowhead',revision=3,
+ blocks={['tbc.mage.boundaries']=2,['tbc.mage.wand-finish']=1,['tbc.mage.moving-fire-blast']=1,['tbc.mage.fire-aoe']=1,
   ['tbc.mage.improved-scorch']=1,['tbc.mage.armor-molten']=1,['tbc.mage.upkeep']=1},
  nameKey='Default.TBC.Mage.FireWowhead.Name',descriptionKey='Default.TBC.Mage.FireWowhead.Description',
- applicability={families={'tbc'},actionContext='player',class='MAGE',minLevel=10,maxLevel=70},
+ applicability={families={'tbc'},actionContext='player',class='MAGE'},
  tags={'fire','wowhead','wowsims','leveling','raid','single-target','aoe'},
  sources={
   {url='https://www.wowhead.com/tbc/guide/classes/mage/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Mage DPS rotation',reviewedAt='2026-10-23',revision='2026-05-31'},

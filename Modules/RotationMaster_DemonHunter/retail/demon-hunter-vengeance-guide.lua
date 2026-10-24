@@ -16,16 +16,16 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function off(id,action,conditions)local step=spell(id,action,conditions);step.disabled=true;return step end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.vengeance.guide',revision=2,
- blocks={['retail.demonhunter.boundaries']=1,['retail.demonhunter.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.vengeance.guide',revision=3,
+ blocks={['retail.demonhunter.boundaries']=2,['retail.demonhunter.utility']=2},
  nameKey='Default.Retail.DemonHunter.VengeanceGuide.Name',descriptionKey='Default.Retail.DemonHunter.VengeanceGuide.Description',
- applicability={families={'retail'},actionContext='player',class='DEMONHUNTER',specs={581},minLevel=8,maxLevel=90},
+ applicability={families={'retail'},actionContext='player',class='DEMONHUNTER'},
  tags={'vengeance','tank','reference','wowhead','icy-veins'},
  sources={
   {url='https://www.wowhead.com/guide/classes/demon-hunter/vengeance/rotation-cooldowns-pve-tank',title='Wowhead: Vengeance Demon Hunter rotation (Midnight Season 1)',reviewedAt='2026-10-23',revision='2026-02-24',notes='Read from a Wayback snapshot; Season 1 data. Spirit Bomb at 6 souls.'},
   {url='https://www.icy-veins.com/wow/vengeance-demon-hunter-pve-tank-rotation-cooldowns-abilities',title='Icy Veins: Vengeance Demon Hunter rotation (12.1.5)',reviewedAt='2026-10-23',revision='2026-10-12',notes='Hero-tree goals: Fracture before Soul Cleave (Aldrachi), Fracture on cooldown and Voidfall spending (Annihilator).'},
  },
- body={priority=10,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=8},
+ body={priority=10,disabled=true,switch={type='SPECIALIZATION',spec=581},
   cooldowns={
    block('vguide-utility','retail.demonhunter.utility','vguide-'),
    spell('vguide-demon-spikes',203720,all(combat(),negate(buff(203819)))),

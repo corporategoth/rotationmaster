@@ -19,9 +19,8 @@ local smashed={type='DEBUFF',unit='target',spell=86346,owndebuff=true}
 -- Attack suppressed; out of combat Charge (the engine checks 8-25 yd) or Heroic Throw from range, then
 -- stop and let Attack start the fight.
 assert(addon:RegisterDefaultBlock({
- id='mop.warrior.boundaries',revision=2,families={'progression'},class='WARRIOR',steps={
- {id='manual',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
- {id='no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
+ id='mop.warrior.boundaries',revision=3,families={'progression'},class='WARRIOR',steps={
+ {id='manual',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))},
  {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('pull-charge',100),
   spell('pull-throw',57755,{type='BEYOND_MELEE',unit='target'}),

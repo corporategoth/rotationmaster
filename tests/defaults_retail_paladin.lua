@@ -20,7 +20,8 @@ test('every Paladin premade is listed in each slot, Retail only, eligible only i
  local a,s=paladin();s.learn(255937)
  M.checkSlots(a,SPECS)
  for _,id in ipairs({RETIV,PROTIV,PROTWH})do assert(M.row(a,70,id).envelope.body.disabled==true,id..' reference is not off by default')end
- s.setLevel(9);for spec in pairs(SPECS)do assert(M.selected(a,spec)==nil,'below 10 (no specialization yet) nothing applies')end
+ -- Below 10 the game reports the initial specialization (1451): its premade, never a specialization's.
+ s.setLevel(9);assert(M.selected(a,1451)=='rm.retail.paladin.initial','below 10: '..tostring((M.selected(a,1451))))
 end)
 test('Retribution Assisted: Blizzard\'s suggestion after the cast and no-target Stops',function()
  local a,s=paladin();s.learn(unpack(retKit))

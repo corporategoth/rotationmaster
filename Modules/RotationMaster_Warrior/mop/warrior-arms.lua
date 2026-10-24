@@ -25,10 +25,10 @@ local taste=own(60503)
 local worth=any(classified('worldboss'),classified('elite'),{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=15})
 local burst=all(combat(),any(negate({type='SPELL_KNOWN',spell=86346}),smashed),worth)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.arms',revision=3,
- blocks={['mop.warrior.boundaries']=2,['mop.warrior.gap']=1,['mop.warrior.dps-upkeep']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.arms',revision=4,
+ blocks={['mop.warrior.boundaries']=3,['mop.warrior.gap']=1,['mop.warrior.dps-upkeep']=2},
  nameKey='Default.MoP.Warrior.Arms.Name',descriptionKey='Default.MoP.Warrior.Arms.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARRIOR',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARRIOR'},
  tags={'arms','dps','melee','leveling','endgame','wowsims','wowtbc'},
  sources={{url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/warrior/arms/apls/arms.apl.json',title='wowsims/mop: Arms Warrior APL',reviewedAt='2026-10-23',revision='ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9'},
  {url='https://wowtbc.gg/mop/class-guides/arms-warrior/',title='wowtbc.gg: Arms Warrior (MoP Classic)',reviewedAt='2026-10-23'},

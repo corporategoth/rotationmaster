@@ -67,10 +67,8 @@ local flaying=any({type='CHANNELING_SPELL',unit='player',spell=15407},{type='CHA
 local clip=all(flaying,any({type='SPELL_AVAIL',spell=8092},all(execute,{type='SPELL_AVAIL',spell=32379}),
  {type='CHANNELING_PROGRESS',unit='player',operator='GREATERTHANOREQUALS',value=.67}))
 assert(addon:RegisterDefaultBlock({
- id='mop.priest.shadow-shell',revision=3,families={'progression'},class='PRIEST',steps={
- stop('cast',{type='CASTING',unit='player'}),
- stop('channel',all({type='CHANNELING',unit='player'},negate(clip))),
- stop('no-target',negate({type='ATTACKABLE',unit='target'})),
+ id='mop.priest.shadow-shell',revision=4,families={'progression'},class='PRIEST',steps={
+ stop('cast',any({type='CASTING',unit='player'},all({type='CHANNELING',unit='player'},negate(clip)),negate({type='ATTACKABLE',unit='target'}))),
  {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('pull-spike',73510),
   spell('pull-blast',8092),

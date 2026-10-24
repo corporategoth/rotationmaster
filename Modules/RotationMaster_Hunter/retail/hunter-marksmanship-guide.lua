@@ -23,16 +23,16 @@ local trick=buff(257622)
 local aimedCap={type='SPELL_CHARGES',spell=AIMED,operator='GREATERTHANOREQUALS',value=2}
 local hydra=all(precise,engaged(2),known(470945))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.marksmanship.guide',revision=3,
- blocks={['retail.hunter.boundaries']=1,['retail.hunter.utility']=2,['retail.hunter.mark']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.marksmanship.guide',revision=4,
+ blocks={['retail.hunter.boundaries']=2,['retail.hunter.utility']=2,['retail.hunter.mark']=1},
  nameKey='Default.Retail.Hunter.MarksmanshipGuide.Name',descriptionKey='Default.Retail.Hunter.MarksmanshipGuide.Description',
- applicability={families={'retail'},actionContext='player',class='HUNTER',specs={254},minLevel=10,maxLevel=90},
+ applicability={families={'retail'},actionContext='player',class='HUNTER'},
  tags={'marksmanship','ranged','reference','simulationcraft','icy-veins'},
  sources={
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/hunter_marksmanship.simc',title='SimulationCraft default action list: Marksmanship',reviewedAt='2026-10-23',revision='c5fea93f'},
   {url='https://www.icy-veins.com/wow/marksmanship-hunter-pve-dps-rotation-cooldowns-abilities',title='Icy Veins: Marksmanship Hunter rotation (12.1.5)',reviewedAt='2026-10-23',revision='2026-10-14'},
  },
- body={priority=10,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+ body={priority=10,disabled=true,switch={type='SPECIALIZATION',spec=254},
   cooldowns={block('mmguide-utility','retail.hunter.utility','mmguide-')},
   rotation={
    block('mmguide-boundaries','retail.hunter.boundaries','mmguide-'),

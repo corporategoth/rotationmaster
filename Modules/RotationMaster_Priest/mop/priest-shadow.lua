@@ -17,10 +17,10 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local function far(n)return negate({type='DISTANCE',unit='target',value=n})end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.priest.shadow',revision=3,
- blocks={['mop.priest.upkeep']=1,['mop.priest.shadow-shell']=3,['mop.priest.shadow-cooldowns']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.priest.shadow',revision=4,
+ blocks={['mop.priest.upkeep']=1,['mop.priest.shadow-shell']=4,['mop.priest.shadow-cooldowns']=2},
  nameKey='Default.MoP.Priest.Shadow.Name',descriptionKey='Default.MoP.Priest.Shadow.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PRIEST',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PRIEST'},
  tags={'shadow','dps','caster','leveling','endgame','wowsims','icy-veins','method','wowtbc'},
  sources={{url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/priest/shadow/apls/default.apl.json',title='wowsims/mop: Shadow Priest APL',reviewedAt='2026-10-23',revision='ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/shadow-priest-pve-rotation-cooldowns-abilities',title='Icy Veins: Shadow Priest rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'},

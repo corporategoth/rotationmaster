@@ -17,10 +17,10 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local tanking={type='THREAT',unit='target',threat=3}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.protection',revision=3,
- blocks={['mop.paladin.boundaries']=1,['mop.paladin.upkeep']=1,['mop.paladin.seal-insight']=2,['mop.paladin.prot-upkeep']=1,['mop.paladin.prot-open']=2,['mop.paladin.prot-aoe']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.protection',revision=4,
+ blocks={['mop.paladin.damage-boundaries']=1,['mop.paladin.upkeep']=1,['mop.paladin.seal-insight']=2,['mop.paladin.prot-upkeep']=1,['mop.paladin.prot-open']=3,['mop.paladin.prot-aoe']=1},
  nameKey='Default.MoP.Paladin.Protection.Name',descriptionKey='Default.MoP.Paladin.Protection.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN'},
  tags={'protection','tank','leveling','single-target','aoe','icy-veins','hekili'},
  sources={
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/protection-paladin-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Protection Paladin rotation',reviewedAt='2026-10-23',revision='2025-09-23'},
@@ -41,7 +41,7 @@ assert(addon:RegisterDefaultRotation({
    spell('prot-holy-avenger',105809,all(combat(),tanking)),
   },
   rotation={
-   block('prot-boundaries','mop.paladin.boundaries','prot-'),
+   block('prot-boundaries','mop.paladin.damage-boundaries','prot-'),
    block('prot-open','mop.paladin.prot-open','prot-'),
    spell('prot-grand-crusader',31935,buff(85416)),
    block('prot-aoe','mop.paladin.prot-aoe','prot-'),

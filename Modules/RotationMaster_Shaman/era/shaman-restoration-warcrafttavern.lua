@@ -11,13 +11,13 @@ local function target(op,v)return{type='HEALTHPCT',unit='target',operator=op,val
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.shaman.restoration.warcrafttavern',revision=1,
- blocks={['era.shaman.manual']=1,['era.shaman.cures']=1,['era.shaman.healer-damage']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.shaman.restoration.warcrafttavern',revision=2,
+ blocks={['era.shaman.manual']=2,['era.shaman.cures']=1,['era.shaman.healer-damage']=1},
  nameKey='Default.Era.Shaman.Restoration.WarcraftTavern.Name',descriptionKey='Default.Era.Shaman.Restoration.WarcraftTavern.Description',
- applicability={families={'era'},actionContext='player',class='SHAMAN',minLevel=10,maxLevel=60},
+ applicability={families={'era'},actionContext='player',class='SHAMAN'},
  tags={'healer','endgame','warcraft-tavern'},
  sources={{url='https://www.warcrafttavern.com/wow-classic/guides/pve-restoration-shaman/',title='Warcraft Tavern: Classic PvE Restoration Shaman',reviewedAt='2026-10-23'}},
- body={priority=21,switch={type='PRIMARY_TALENT_TREE',tree=3},
+ body={priority=21,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='PRIMARY_TALENT_TREE',tree=3}}},
  cooldowns={
   spell('resto-wt-mana-tide',16190,all(combat(),{type='GROUP'},{type='MANAPCT',unit='player',operator='LESSTHAN',value=.6})),
   spell('resto-wt-mana-spring',5675,all(combat(),{type='GROUP'},negate({type='TOTEM',spell=3}))),

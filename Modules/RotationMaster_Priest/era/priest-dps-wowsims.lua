@@ -13,12 +13,12 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local combat={type='COMBAT',unit='player'}
 local P='priest-sim-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.priest.dps.wowsims',revision=2,
- blocks={['era.priest.boundaries']=1,['era.priest.enemy-target']=1,['era.priest.shadowform']=1,['era.priest.pull']=2,['era.priest.pull-shield']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.era.priest.dps.wowsims',revision=3,
+ blocks={['era.priest.dps-boundaries']=1,['era.priest.shadowform']=1,['era.priest.pull']=2,['era.priest.pull-shield']=1,
   ['era.priest.moving']=1,['era.priest.wand-finish']=1,['era.priest.pain']=1,['era.priest.filler']=1,['era.priest.wand-fallback']=1,
   ['era.priest.upkeep']=1},
  nameKey='Default.Era.Priest.Dps.Wowsims.Name',descriptionKey='Default.Era.Priest.Dps.Wowsims.Description',
- applicability={families={'era'},actionContext='player',class='PRIEST',minLevel=1,maxLevel=60},
+ applicability={families={'era'},actionContext='player',class='PRIEST'},
  tags={'shadow','damage','raid','single-target','wowsims'},
  sources={
   {url='https://github.com/wowsims/classic/blob/7779ebbf79dc7f1341e6ab939b28a3402c9a730a/ui/shadow_priest/apls/p1.apl.json',title='wowsims/classic Shadow Priest P1 APL',reviewedAt='2026-10-23',revision='7779ebb'},
@@ -32,8 +32,7 @@ assert(addon:RegisterDefaultRotation({
     all(negate(known(2944)),{type='SPELL_COOLDOWN',spell=8092,operator='LESSTHANOREQUALS',value=1.5})))),
    spell(P..'scream',8122,all(negate({type='GROUP'}),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.5},{type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=2}))},
   rotation={
-   block(P..'boundaries','era.priest.boundaries',P),
-   block(P..'target','era.priest.enemy-target',P),
+   block(P..'boundaries','era.priest.dps-boundaries',P),
    block(P..'form','era.priest.shadowform',P),
    block(P..'pull','era.priest.pull',P),
    block(P..'moving','era.priest.moving',P),

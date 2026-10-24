@@ -15,7 +15,7 @@ test('the Paladin premades load, validate and declare Forever only',function()
  local a=paladin();local rows=M.rows(a)
  for _,id in ipairs({RET,PROT,IVPROT,HOLY,WHHOLY})do
   local row=assert(rows[id],id);local scope=row.applicability
-  assert(row.readOnly and row.builtin and scope.families[1]=='forever'and #scope.families==1 and scope.class=='PALADIN'and scope.maxLevel==60,id)
+  assert(row.readOnly and row.builtin and scope.families[1]=='forever'and #scope.families==1 and scope.class=='PALADIN'and scope.maxLevel==nil and scope.minLevel==nil,id)
   local variant=id==IVPROT or id==WHHOLY
   assert(row.eligible==not variant,id..(variant and ' variant is not off by default' or ' not eligible on the probe Forever context'))
   assert((row.envelope.body.disabled==true)==variant,id..' disabled flag')

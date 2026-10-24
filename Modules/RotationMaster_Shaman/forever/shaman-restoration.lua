@@ -12,7 +12,7 @@ local _,addon=...
 -- Talent trees in the Forever talent window's order (assumed classic: 1 Elemental, 2 Enhancement, 3 Restoration; verify in game).
 -- Level 10 first (no talent config below it), then the points (an empty tree is a clean no-match),
 -- then the primary tree, which settles hybrids.
-local function tree(n,points)return{type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+local function tree(n,points)return{type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=20},
  {type='TALENT_TREE_POINTS',tree=n,operator='GREATERTHANOREQUALS',value=points},{type='PRIMARY_TALENT_TREE',tree=n}}}end
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
@@ -21,11 +21,11 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.shaman.restoration',revision=3,
- blocks={['forever.shaman.manual']=1,['forever.shaman.upkeep']=2,['forever.shaman.group-totems']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.shaman.restoration',revision=4,
+ blocks={['forever.shaman.manual']=2,['forever.shaman.upkeep']=2,['forever.shaman.group-totems']=1,
   ['forever.shaman.caster-aoe']=1,['forever.shaman.stormstrike-hybrid']=1},
  nameKey='Default.Forever.Shaman.Restoration.Name',descriptionKey='Default.Forever.Shaman.Restoration.Description',
- applicability={families={'forever'},actionContext='player',class='SHAMAN',minLevel=20,maxLevel=60},
+ applicability={families={'forever'},actionContext='player',class='SHAMAN'},
  tags={'healer','caster','leveling','endgame','icy-veins'},
  sources={{url='https://www.icy-veins.com/wow-forever/restoration-shaman-leveling',title='Icy Veins: Forever Restoration Shaman leveling',reviewedAt='2026-10-23',revision='2026-10-18'},
  {url='https://www.icy-veins.com/wow-forever/restoration-shaman-healer-pve-guide',title='Icy Veins: Forever Restoration Shaman healer PvE guide',reviewedAt='2026-10-23',revision='2026-10-18'},

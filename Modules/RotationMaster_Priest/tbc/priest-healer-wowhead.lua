@@ -15,11 +15,11 @@ local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='priest-heal-wh-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.priest.healer.wowhead',revision=3,
- blocks={['tbc.priest.boundaries']=2,['tbc.priest.dispels']=1,['tbc.priest.group-heal']=1,['tbc.priest.big-heal']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.priest.healer.wowhead',revision=4,
+ blocks={['tbc.priest.boundaries']=3,['tbc.priest.dispels']=1,['tbc.priest.group-heal']=1,['tbc.priest.big-heal']=1,
   ['tbc.priest.healer-damage']=1,['tbc.priest.upkeep']=1},
  nameKey='Default.TBC.Priest.HealerWowhead.Name',descriptionKey='Default.TBC.Priest.HealerWowhead.Description',
- applicability={families={'tbc'},actionContext='player',class='PRIEST',minLevel=10,maxLevel=70},
+ applicability={families={'tbc'},actionContext='player',class='PRIEST'},
  tags={'holy','discipline','healer','wowhead','dungeon','raid'},
  sources={
   {url='https://www.wowhead.com/tbc/guide/classes/priest/healer-rotation-cooldowns-abilities-pve',title='Wowhead: Priest healing rotation',reviewedAt='2026-10-23',revision='2026-02-10'},

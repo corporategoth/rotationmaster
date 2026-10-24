@@ -20,9 +20,8 @@ local worth=all(combat(),any(classified('worldboss'),classified('elite')))
 -- Boundaries every variant shares: casts/channels, no target, melee range, the pull, Auto Shot,
 -- Hunter's Mark and the multi-target branch.
 assert(addon:RegisterDefaultBlock({
- id='tbc.hunter.opening',revision=2,families={'tbc'},class='HUNTER',steps={
- {id='manual',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
- {id='no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
+ id='tbc.hunter.opening',revision=3,families={'tbc'},class='HUNTER',steps={
+ {id='manual',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))},
  {id='melee',type='branch',conditions={type='BEYOND_MELEE',unit='target'},onTrue={},onFalse={
   spell('raptor-strike',2973,negate({type='SPELL_ACTIVE',spell=2973,ranked=false})),
   spell('mongoose-bite',1495),

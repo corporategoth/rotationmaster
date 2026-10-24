@@ -8,10 +8,10 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.monk.brewmaster',revision=2,
- blocks={['retail.monk.boundaries']=1,['retail.monk.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.monk.brewmaster',revision=3,
+ blocks={['retail.monk.boundaries']=2,['retail.monk.utility']=2},
  nameKey='Default.Retail.Monk.Brewmaster.Name',descriptionKey='Default.Retail.Monk.Brewmaster.Description',
- applicability={families={'retail'},actionContext='player',class='MONK',specs={268},minLevel=10,maxLevel=90},
+ applicability={families={'retail'},actionContext='player',class='MONK'},
  tags={'brewmaster','tank','assisted-combat','icy-veins'},
  sources={
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/assisted_combat/monk_brewmaster.simc',title='SimulationCraft model of Blizzard Assisted Combat: Brewmaster',reviewedAt='2026-10-23',revision='c5fea93f',notes='Its cooldowns list (Invoke Niuzao, racials) is what Assisted Combat leaves out.'},
@@ -19,7 +19,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.icy-veins.com/wow/brewmaster-monk-pve-tank-rotation-cooldowns-abilities',title='Icy Veins: Brewmaster Monk rotation (12.1.5)',reviewedAt='2026-10-23',revision='2026-10-12',notes='The brews list, and the advice to use the rotation assistant only with brews pressed by hand.'},
   {url='https://github.com/kaminaris/MaxDps-Monk',title='MaxDps Monk (Midnight)',reviewedAt='2026-10-23',revision='d286e7b1',notes='Assisted Combat spell plus interrupt, defensive and cooldown glows.'},
  },
- body={priority=20,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+ body={priority=20,switch={type='SPECIALIZATION',spec=268},
   cooldowns={
    block('brew-utility','retail.monk.utility','brew-'),
    spell('brew-black-ox-brew',115399,combat()),

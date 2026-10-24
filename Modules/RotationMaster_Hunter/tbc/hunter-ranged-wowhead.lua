@@ -13,10 +13,10 @@ local function buff(id)return{type='BUFF',unit='player',spell=id,anyrank=true}en
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.hunter.ranged.wowhead',revision=2,
- blocks={['tbc.hunter.opening']=2,['tbc.hunter.leveling']=1,['tbc.hunter.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.hunter.ranged.wowhead',revision=3,
+ blocks={['tbc.hunter.opening']=3,['tbc.hunter.leveling']=1,['tbc.hunter.upkeep']=1},
  nameKey='Default.TBC.Hunter.Ranged.Wowhead.Name',descriptionKey='Default.TBC.Hunter.Ranged.Wowhead.Description',
- applicability={families={'tbc'},actionContext='player',class='HUNTER',minLevel=1,maxLevel=70},
+ applicability={families={'tbc'},actionContext='player',class='HUNTER'},
  tags={'dps','ranged','leveling','endgame','wowhead'},
  sources={{url='https://www.wowhead.com/tbc/guide/classes/hunter/dps-rotation-cooldowns-abilities-pve',title='Wowhead: TBC Hunter DPS rotation, cooldowns and abilities',reviewedAt='2026-10-23',revision='2026-02-10'},
  {url='https://www.wowhead.com/tbc/guide/classes/hunter/beast-mastery/leveling-tips',title='Wowhead: TBC Beast Mastery Hunter leveling',reviewedAt='2026-10-23',revision='2026-02-02'},

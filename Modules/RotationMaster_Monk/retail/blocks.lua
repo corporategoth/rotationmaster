@@ -10,9 +10,12 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
 -- Your casts and channels (Fists of Fury, Celestial Conduit, Spinning Crane Kick, Crackling Jade
 -- Lightning, Soothing Mist) end advice.
-assert(addon:RegisterDefaultBlock({id='retail.monk.boundaries',revision=1,families={'retail'},class='MONK',steps={
- stop('cast',{type='CASTING',unit='player'}),
- stop('channel',{type='CHANNELING',unit='player'}),
+assert(addon:RegisterDefaultBlock({id='retail.monk.boundaries',revision=2,families={'retail'},class='MONK',steps={
+ stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})),
+}}))
+-- The healer: the same, or no attackable target, ends advice (one Stop).
+assert(addon:RegisterDefaultBlock({id='retail.monk.heal-boundaries',revision=1,families={'retail'},class='MONK',steps={
+ stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},{type='NOT',value={type='ATTACKABLE',unit='target'}})),
 }}))
 -- What Blizzard's Assisted Combat never suggests, for every spec: Spear Hand Strike on an
 -- interruptible cast (enemy casts are secret in Midnight combat, so it lights only where they can be

@@ -15,10 +15,10 @@ local function lifetime(op,n)return{type='TT_HEALTH',unit='target',health=0,oper
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.rogue.dps.wowsims',revision=3,
- blocks={['tbc.rogue.opening']=2,['tbc.rogue.upkeep']=2,['tbc.rogue.builders']=3},
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.rogue.dps.wowsims',revision=4,
+ blocks={['tbc.rogue.opening']=3,['tbc.rogue.upkeep']=2,['tbc.rogue.builders']=3},
  nameKey='Default.TBC.Rogue.DPS.Wowsims.Name',descriptionKey='Default.TBC.Rogue.DPS.Wowsims.Description',
- applicability={families={'tbc'},actionContext='player',class='ROGUE',minLevel=1,maxLevel=70},
+ applicability={families={'tbc'},actionContext='player',class='ROGUE'},
  tags={'dps','melee','leveling','endgame','wowsims','icy-veins'},
  sources={{url='https://github.com/wowsims/tbc/blob/3301fca59306a747e521274c36e073e69acc7b77/sim/rogue/rotation.go',title='wowsims/tbc: Rogue rotation',reviewedAt='2026-10-23',revision='3301fca59306a747e521274c36e073e69acc7b77'},
  {url='https://www.icy-veins.com/tbc-classic/rogue-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: TBC Rogue DPS rotation, cooldowns and abilities',reviewedAt='2026-10-23',revision='2026-01-12'},

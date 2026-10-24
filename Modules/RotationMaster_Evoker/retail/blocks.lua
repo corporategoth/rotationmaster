@@ -11,9 +11,12 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
 -- Your casts, channels (Disintegrate) and empowers (Fire Breath, Eternity Surge, Upheaval, Dream
 -- Breath: the game reports an empower as a channel) end advice.
-assert(addon:RegisterDefaultBlock({id='retail.evoker.boundaries',revision=1,families={'retail'},class='EVOKER',steps={
- stop('cast',{type='CASTING',unit='player'}),
- stop('channel',{type='CHANNELING',unit='player'}),
+assert(addon:RegisterDefaultBlock({id='retail.evoker.boundaries',revision=2,families={'retail'},class='EVOKER',steps={
+ stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})),
+}}))
+-- The healer: the same, or no attackable target, ends advice (one Stop).
+assert(addon:RegisterDefaultBlock({id='retail.evoker.heal-boundaries',revision=1,families={'retail'},class='EVOKER',steps={
+ stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))),
 }}))
 -- What Blizzard's Assisted Combat never suggests, for every spec: Quell on an interruptible cast,
 -- Obsidian Scales whenever it is ready in combat, and out of combat Blessing of the Bronze when it is

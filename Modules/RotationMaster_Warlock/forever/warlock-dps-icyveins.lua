@@ -25,11 +25,11 @@ local function pact()return all(known(19028),level(40))end
 local function summon()return all(negate({type='PET'}),any(negate(combat()),buff(18708)),any(negate(sacrificed()),pact()))end
 local function bane()return all(negate(own(980)),negate(own(603)),negate(havoc()))end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.warlock.dps.icyveins',revision=3,
- blocks={['forever.warlock.boundaries']=1,['forever.warlock.upkeep']=2,['forever.warlock.procs']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.warlock.dps.icyveins',revision=4,
+ blocks={['forever.warlock.boundaries']=2,['forever.warlock.upkeep']=2,['forever.warlock.procs']=1,
   ['forever.warlock.moving']=2,['forever.warlock.aoe']=2,['forever.warlock.wand']=1},
  nameKey='Default.Forever.Warlock.DPS.IcyVeins.Name',descriptionKey='Default.Forever.Warlock.DPS.IcyVeins.Description',
- applicability={families={'forever'},actionContext='player',class='WARLOCK',minLevel=1,maxLevel=60},
+ applicability={families={'forever'},actionContext='player',class='WARLOCK'},
  tags={'dps','ranged','caster','leveling','endgame','aoe','icy-veins'},
  sources={{url='https://www.icy-veins.com/wow-forever/affliction-warlock-leveling',title='Icy Veins: Forever Affliction Warlock leveling',reviewedAt='2026-10-23',revision='2026-10-17'},
  {url='https://www.icy-veins.com/wow-forever/demonology-warlock-leveling',title='Icy Veins: Forever Demonology Warlock leveling',reviewedAt='2026-10-23',revision='2026-10-17'},

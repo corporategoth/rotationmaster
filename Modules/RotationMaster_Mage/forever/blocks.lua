@@ -18,10 +18,8 @@ assert(addon:RegisterDefaultBlock({id='forever.mage.lance-batch',revision=1,fami
  spell('lance-batch',1312002,all({type='CASTING',unit='player'},fingers)),
 }}))
 -- Casts and channels (Missiles, Blizzard, Evocation) and a target that is not attackable end advice.
-assert(addon:RegisterDefaultBlock({id='forever.mage.boundaries',revision=1,families={'forever'},class='MAGE',steps={
- stop('cast',{type='CASTING',unit='player'}),
- stop('channel',{type='CHANNELING',unit='player'}),
- stop('target',negate({type='ATTACKABLE',unit='target'})),
+assert(addon:RegisterDefaultBlock({id='forever.mage.boundaries',revision=2,families={'forever'},class='MAGE',steps={
+ stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))),
 }}))
 -- Frostbolt once learned (level 4); Fireball only before it.
 assert(addon:RegisterDefaultBlock({id='forever.mage.frostbolt',revision=1,families={'forever'},class='MAGE',steps={

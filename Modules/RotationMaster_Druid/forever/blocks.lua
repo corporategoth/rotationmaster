@@ -15,10 +15,8 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
 -- Casts and channels (Starfire, Hurricane, Tranquility, Healing Touch) and travel forms end advice.
-assert(addon:RegisterDefaultBlock({id='forever.druid.boundaries',revision=1,families={'forever'},class='DRUID',steps={
- stop('cast',{type='CASTING',unit='player'}),
- stop('channel',{type='CHANNELING',unit='player'}),
- stop('travel',any(aura(783),aura(1066))),
+assert(addon:RegisterDefaultBlock({id='forever.druid.boundaries',revision=2,families={'forever'},class='DRUID',steps={
+ stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},aura(783),aura(1066))),
 }}))
 -- Out of combat: Mark of the Wild unless Mark or Gift is up; Thorns on yourself while solo
 -- (in a group it belongs on the tank, by hand). Omen of Clarity is passive on Forever.

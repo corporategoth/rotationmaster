@@ -26,10 +26,10 @@ local roar6=any({type='BUFF_REMAIN',unit='player',spell=52610,ownbuff=true,opera
 local worth=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},
  {type='CLASSIFICATION',unit='target',value='worldboss'},{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=20})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.druid.feral',revision=3,
- blocks={['mop.druid.boundaries']=2,['mop.druid.target']=1,['mop.druid.mark']=1,['mop.druid.feral-upkeep']=2,['mop.druid.feral-open']=3,['mop.druid.feral-aoe']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.druid.feral',revision=4,
+ blocks={['mop.druid.melee-boundaries']=1,['mop.druid.mark']=1,['mop.druid.feral-upkeep']=2,['mop.druid.feral-open']=3,['mop.druid.feral-aoe']=1},
  nameKey='Default.MoP.Druid.Feral.Name',descriptionKey='Default.MoP.Druid.Feral.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID'},
  tags={'feral','leveling','single-target','aoe','wowsims','wowhead'},
  sources={
   {url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/sim/druid/feral/rotation.go',title='wowsims/mop Feral rotation (default APL)',reviewedAt='2026-10-23',revision='ec2c6c2552'},
@@ -44,8 +44,7 @@ assert(addon:RegisterDefaultRotation({
    spell('feral-berserk',106952,all(combat(),{type='FORM',form=768},any(own(5217),all(power('GREATERTHANOREQUALS',90),{type='SPELL_COOLDOWN',spell=5217,operator='GREATERTHANOREQUALS',value=15})),worth)),
   },
   rotation={
-   block('feral-boundaries','mop.druid.boundaries','feral-'),
-   block('feral-target','mop.druid.target','feral-'),
+   block('feral-boundaries','mop.druid.melee-boundaries','feral-'),
    block('feral-open','mop.druid.feral-open','feral-'),
    block('feral-aoe','mop.druid.feral-aoe','feral-'),
    {id='feral-execute',type='branch',conditions=all({type='HEALTHPCT',unit='target',operator='LESSTHAN',value=.25},bleed(1079)),onTrue={

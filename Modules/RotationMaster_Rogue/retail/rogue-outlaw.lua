@@ -12,17 +12,17 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.outlaw',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.outlaw',revision=3,
  blocks={['retail.rogue.boundaries']=1,['retail.rogue.upkeep']=2},
  nameKey='Default.Retail.Rogue.Outlaw.Name',descriptionKey='Default.Retail.Rogue.Outlaw.Description',
- applicability={families={'retail'},actionContext='player',class='ROGUE',specs={260},minLevel=10,maxLevel=90},
+ applicability={families={'retail'},actionContext='player',class='ROGUE'},
  tags={'outlaw','melee','assisted-combat','single-target','aoe','simulationcraft'},
  sources={
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/assisted_combat/rogue_outlaw.simc',title='SimulationCraft: Assisted Combat model, Outlaw Rogue',reviewedAt='2026-10-23',revision='c5fea93fb77d'},
   {url='https://github.com/Gethe/wow-ui-source/blob/e7aa82019dc298e0351c7159d60c2a9b916b9b67/Interface/AddOns/Blizzard_APIDocumentationGenerated/AssistedCombatDocumentation.lua',title='Blizzard API documentation: C_AssistedCombat (12.1.5)',reviewedAt='2026-10-23',revision='e7aa82019d'},
   {url='https://github.com/kaminaris/MaxDps-Rogue',title='MaxDps Rogue module (Midnight)',reviewedAt='2026-10-23',revision='6145c857',notes='No priority in Midnight: the Assisted Combat spell plus cooldown and defensive glows.'},
  },
- body={priority=10,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+ body={priority=10,switch={type='SPECIALIZATION',spec=260},
   cooldowns={
    block('retail.rogue.upkeep','outlaw-'),
    spell('outlaw-vanish',1856,all(fight,negate({type='STEALTHED'}))),

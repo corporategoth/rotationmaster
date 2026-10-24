@@ -18,11 +18,11 @@ local fire=buff(82926)
 local focusLow=all({type='SELF_LEVEL',operator='GREATERTHANOREQUALS',value=63},any(negate(buff(53220)),{type='BUFF_REMAIN',unit='player',spell=53220,operator='LESSTHAN',value=4}))
 local lust=any(buff(2825),buff(32182),buff(80353),buff(90355))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.marksmanship.icyveins',revision=3,
- blocks={['mop.hunter.boundaries']=1,['mop.hunter.mark']=1,['mop.hunter.pet']=1,['mop.hunter.aspect']=1,['mop.hunter.utility']=1,['mop.hunter.burst']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.marksmanship.icyveins',revision=4,
+ blocks={['mop.hunter.boundaries']=2,['mop.hunter.mark']=1,['mop.hunter.pet']=1,['mop.hunter.aspect']=1,['mop.hunter.utility']=1,['mop.hunter.burst']=1,
   ['mop.hunter.talents']=1,['mop.hunter.talent-shots']=1,['mop.hunter.serpent']=1},
  nameKey='Default.MoP.Hunter.Marksmanship.IcyVeins.Name',descriptionKey='Default.MoP.Hunter.Marksmanship.IcyVeins.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='HUNTER',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='HUNTER'},
  tags={'marksmanship','leveling','single-target','aoe','icy-veins','hekili'},
  sources={
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/marksmanship-hunter-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Marksmanship Hunter rotation',reviewedAt='2026-10-23',revision='2026-05-29'},

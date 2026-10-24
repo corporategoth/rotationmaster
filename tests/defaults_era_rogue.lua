@@ -19,7 +19,7 @@ local function slice(expires)return{id=5171,expires=expires or 130}end
 test('every premade registers valid 1–60; vanilla runs on every realm, SoD only on Season of Discovery',function()
  local f,s=rogue(1);local a=f.addon
  for _,id in ipairs({DPS,TAV,SIM,SOD,SIV,SZK,TANK})do local row=assert(M.row(f,id),id)
-  assert(row.readOnly and row.validation.valid and row.validation.resolved and row.applicability.minLevel==1 and row.applicability.maxLevel==60,id)
+  assert(row.readOnly and row.validation.valid and row.validation.resolved and row.applicability.minLevel==nil and row.applicability.maxLevel==nil,id)
   assert(a:GetDefaultRotationComposition(id),id..' is not composed')
  end
  for _,season in ipairs({false,3,11})do s.season=season or nil

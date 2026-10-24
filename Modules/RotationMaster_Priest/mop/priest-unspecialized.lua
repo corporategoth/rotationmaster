@@ -12,10 +12,10 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.priest.unspecialized',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.priest.unspecialized',revision=2,
  blocks={['mop.priest.upkeep']=1,['mop.priest.healer-boundaries']=1},
  nameKey='Default.MoP.Priest.Unspecialized.Name',descriptionKey='Default.MoP.Priest.Unspecialized.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PRIEST',minLevel=1,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PRIEST'},
  tags={'dps','caster','leveling','icy-veins'},
  sources={{url='https://www.icy-veins.com/mists-of-pandaria-classic/shadow-priest-leveling',title='Icy Veins: Shadow Priest levelling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/discipline-priest-leveling',title='Icy Veins: Discipline Priest levelling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'}},

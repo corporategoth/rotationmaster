@@ -7,15 +7,15 @@ local _,addon=...
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.protection.wowhead',revision=3,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.protection.wowhead',revision=4,
  blocks={['retail.paladin.boundaries']=1,['retail.paladin.upkeep']=2,['retail.paladin.prot-defensives']=2,['retail.paladin.prot-cooldowns']=1},
  nameKey='Default.Retail.Paladin.Protection.Wowhead.Name',descriptionKey='Default.Retail.Paladin.Protection.Wowhead.Description',
- applicability={families={'retail'},actionContext='player',class='PALADIN',specs={66},minLevel=10,maxLevel=90},
+ applicability={families={'retail'},actionContext='player',class='PALADIN'},
  tags={'protection','tank','reference','single-target','aoe','wowhead'},
  sources={
   {url='https://www.wowhead.com/guide/classes/paladin/protection/rotation-cooldowns-pve-tank',title='Wowhead: Protection Paladin rotation (Season 2)',reviewedAt='2026-10-23',revision='2026-08-12',notes='Divine Toll at 0 Holy Power.'},
  },
- body={priority=4,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+ body={priority=4,disabled=true,switch={type='SPECIALIZATION',spec=66},
   cooldowns={
    block('retail.paladin.upkeep','protwh-'),
    block('retail.paladin.prot-cooldowns','protwh-'),

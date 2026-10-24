@@ -24,9 +24,8 @@ local sliced=own(5171)
 local enemies=function(op,n)return{type='THREAT_COUNT',threat=1,operator=op,value=n}end
 -- Manual casts and channels (a poison takes three seconds) and no attackable target end advice and Attack.
 assert(addon:RegisterDefaultBlock({
- id='mop.rogue.boundaries',revision=1,families={'progression'},class='ROGUE',steps={
- {id='manual',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
- {id='no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
+ id='mop.rogue.boundaries',revision=2,families={'progression'},class='ROGUE',steps={
+ {id='manual',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))},
 }}))
 -- Out of combat with a target and not stealthed (the opener Branch comes first): Stealth, then stop; Attack still
 -- shows when Stealth is not ready, so a body pull works.

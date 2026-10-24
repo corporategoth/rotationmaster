@@ -14,10 +14,10 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local ranged=all({type='BEYOND_MELEE',unit='target'},negate({type='MOVING'}))
 local threatening=all({type='GROUP'},{type='THREAT',unit='target',threat=2})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.shaman.enhancement.warcrafttavern',revision=2,
- blocks={['era.shaman.manual']=1,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.self-heal']=1,['era.shaman.melee-totems']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.shaman.enhancement.warcrafttavern',revision=3,
+ blocks={['era.shaman.manual']=2,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.self-heal']=1,['era.shaman.melee-totems']=1},
  nameKey='Default.Era.Shaman.Enhancement.WarcraftTavern.Name',descriptionKey='Default.Era.Shaman.Enhancement.WarcraftTavern.Description',
- applicability={families={'era'},actionContext='player',class='SHAMAN',minLevel=1,maxLevel=60},
+ applicability={families={'era'},actionContext='player',class='SHAMAN'},
  tags={'dps','melee','leveling','endgame','aoe','warcraft-tavern'},
  sources={{url='https://www.warcrafttavern.com/wow-classic/guides/pve-enhancement-shaman/',title='Warcraft Tavern: Classic PvE Enhancement Shaman',reviewedAt='2026-10-23'},
  {url='https://www.warcrafttavern.com/wow-classic/guides/shaman-leveling-guide/',title='Warcraft Tavern: Classic Shaman leveling guide',reviewedAt='2026-10-23'}},

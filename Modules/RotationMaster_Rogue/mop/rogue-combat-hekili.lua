@@ -25,10 +25,10 @@ local boss={type='CLASSIFICATION',unit='target',value='worldboss'}
 local deep=own(84747)
 local charges=function(op,n)return any(stacks(115189,op,n),negate(own(115189)))end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.combat.hekili',revision=3,
- blocks={['mop.rogue.boundaries']=1,['mop.rogue.combat-opener']=1,['mop.rogue.out-of-combat']=2,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1,['mop.rogue.combat-upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.combat.hekili',revision=4,
+ blocks={['mop.rogue.boundaries']=2,['mop.rogue.combat-opener']=1,['mop.rogue.out-of-combat']=2,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1,['mop.rogue.combat-upkeep']=1},
  nameKey='Default.MoP.Rogue.Combat.Hekili.Name',descriptionKey='Default.MoP.Rogue.Combat.Hekili.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE'},
  tags={'combat','dps','melee','endgame','hekili'},
  sources={{url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/RogueCombat.simc',title='Hekili MoP fork: Combat Rogue priority',reviewedAt='2026-10-23',revision='0750b5dd98005481baf828cce26149b9abca875b'}},
  body={priority=20,disabled=true,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=260},{type='TALENT',layout='grid',value=18}}},

@@ -21,10 +21,13 @@ local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,
 local function block(id,steps,revision)assert(addon:RegisterDefaultBlock({id=id,revision=revision or 1,families={'progression'},class='PALADIN',steps=steps}))end
 local function sealed(id)return{type='FORM',form=id}end
 local enemies=function(n)return{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=n}end
--- Casts and channels end advice; damage premades also stop on a target that is not attackable.
+-- Casts and channels end advice; damage and tank premades take the variant that also stops on a
+-- target that is not attackable (one Stop).
 block('mop.paladin.boundaries',{
- stop('cast',{type='CASTING',unit='player'}),
- stop('channel',{type='CHANNELING',unit='player'}),
+ stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})),
+},2)
+block('mop.paladin.damage-boundaries',{
+ stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))),
 })
 -- Every premade: Rebuke an interruptible cast (off the global cooldown); Blessing of Kings out of
 -- combat when neither Kings nor Might is up, Blessing of Might when another paladin's Kings is.
@@ -66,11 +69,10 @@ block('mop.paladin.prot-upkeep',{
 -- Both Protection premades: pull with Avenger's Shield (Judgment from range), then Sanctified
 -- Wrath's Judgment in wings.
 block('mop.paladin.prot-open',{
- stop('target',negate({type='ATTACKABLE',unit='target'})),
  {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('pull-avengers-shield',31935),spell('pull-judgment',20271,{type='BEYOND_MELEE',unit='target'}),stop('pull-stop')}},
  spell('wings-judgment',20271,all({type='TALENT',layout='grid',value=14},buff(31884))),
-},2)
+},3)
 -- Both Protection premades: three or more enemies on you (Icy Veins' AoE order), then stop.
 block('mop.paladin.prot-aoe',{
  {id='aoe',type='branch',conditions=enemies(3),onFalse={},onTrue={

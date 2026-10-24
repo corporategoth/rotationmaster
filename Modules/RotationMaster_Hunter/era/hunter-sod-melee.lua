@@ -32,10 +32,10 @@ local noAspect=all(negate(buff(415423)),negate(buff(13163)),negate(buff(5118)),n
 local viperLow=all(mana('LESSTHAN',.5),any(buff(415423),all(known(415423),mana('LESSTHAN',.05))))
 local rapid=buff(3045)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.hunter.melee',revision=3,
- blocks={['era.hunter.boundaries']=1,['sod.hunter.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.hunter.melee',revision=4,
+ blocks={['era.hunter.boundaries']=2,['sod.hunter.upkeep']=1},
  nameKey='Default.SoD.Hunter.Melee.Name',descriptionKey='Default.SoD.Hunter.Melee.Description',
- applicability={families={'era'},actionContext='player',class='HUNTER',minLevel=1,maxLevel=60,rulesets={'season:2'}},
+ applicability={families={'era'},actionContext='player',class='HUNTER',rulesets={'season:2'}},
  tags={'dps','melee','survival','leveling','endgame','season-of-discovery','wowhead','wowsims'},
  sources={
   {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/hunter/melee-dps-rotation-cooldowns-abilities-pve',title='Wowhead: Melee Hunter rotation, Season of Discovery',reviewedAt='2026-10-23',revision='2025-08-20'},

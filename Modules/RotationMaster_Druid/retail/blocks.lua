@@ -9,9 +9,8 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
 -- Your casts and channels (Convoke the Spirits, Tranquility) end advice.
-assert(addon:RegisterDefaultBlock({id='retail.druid.boundaries',revision=1,families={'retail'},class='DRUID',steps={
- stop('cast',{type='CASTING',unit='player'}),
- stop('channel',{type='CHANNELING',unit='player'}),
+assert(addon:RegisterDefaultBlock({id='retail.druid.boundaries',revision=2,families={'retail'},class='DRUID',steps={
+ stop('cast',{type='OR',value={{type='CASTING',unit='player'},{type='CHANNELING',unit='player'}}}),
 }}))
 -- What Blizzard's Assisted Combat never suggests, for every spec: Mark of the Wild out of combat,
 -- and Barkskin and the racial cooldowns whenever they are ready in combat. Health is secret on

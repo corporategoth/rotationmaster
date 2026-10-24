@@ -13,11 +13,11 @@ local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='priest-wct-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.priest.dps.warcrafttavern',revision=2,
- blocks={['era.priest.boundaries']=1,['era.priest.enemy-target']=1,['era.priest.shadowform']=1,['era.priest.moving']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.era.priest.dps.warcrafttavern',revision=3,
+ blocks={['era.priest.dps-boundaries']=1,['era.priest.shadowform']=1,['era.priest.moving']=1,
   ['era.priest.filler']=1,['era.priest.wand-fallback']=1,['era.priest.upkeep']=1,['era.priest.dps-upkeep']=1},
  nameKey='Default.Era.Priest.Dps.WarcraftTavern.Name',descriptionKey='Default.Era.Priest.Dps.WarcraftTavern.Description',
- applicability={families={'era'},actionContext='player',class='PRIEST',minLevel=1,maxLevel=60},
+ applicability={families={'era'},actionContext='player',class='PRIEST'},
  tags={'shadow','damage','leveling','single-target','warcraft-tavern'},
  sources={
   {url='https://www.warcrafttavern.com/wow-classic/guides/priest-leveling-guide/',title='Warcraft Tavern: Classic Priest leveling',reviewedAt='2026-10-23'},
@@ -28,8 +28,7 @@ assert(addon:RegisterDefaultRotation({
   switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
   cooldowns={block(P..'upkeep','era.priest.upkeep',P),block(P..'dps-upkeep','era.priest.dps-upkeep',P)},
   rotation={
-   block(P..'boundaries','era.priest.boundaries',P),
-   block(P..'target','era.priest.enemy-target',P),
+   block(P..'boundaries','era.priest.dps-boundaries',P),
    block(P..'form','era.priest.shadowform',P),
    {id=P..'pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell(P..'pull-blast',8092),spell(P..'pull-smite',585),stop(P..'pull-stop')}},

@@ -16,12 +16,12 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local raid={type='INSTANCE',value='raid'}
 local summon=all(negate({type='PET'}),negate({type='COMBAT',unit='player'}))
-local blocks={['era.warlock.boundaries']=1,['era.warlock.procs']=1,['era.warlock.group-finish']=1,['era.warlock.dying']=1,['era.warlock.curse']=2,
+local blocks={['era.warlock.boundaries']=2,['era.warlock.procs']=1,['era.warlock.group-finish']=1,['era.warlock.dying']=1,['era.warlock.curse']=2,
  ['era.warlock.moving']=1,['era.warlock.aoe']=1,['era.warlock.filler']=1,['era.warlock.armor']=1,['era.warlock.safety']=1}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.warlock.dps.warcrafttavern',revision=2,blocks=blocks,
+ format='RotationMaster',schemaVersion=1,id='rm.era.warlock.dps.warcrafttavern',revision=3,blocks=blocks,
  nameKey='Default.Era.Warlock.DPS.WarcraftTavern.Name',descriptionKey='Default.Era.Warlock.DPS.WarcraftTavern.Description',
- applicability={families={'era'},actionContext='player',class='WARLOCK',minLevel=1,maxLevel=60},
+ applicability={families={'era'},actionContext='player',class='WARLOCK'},
  tags={'dps','ranged','caster','leveling','endgame','warcraft-tavern'},
  sources={{url='https://www.warcrafttavern.com/wow-classic/guides/warlock-leveling-guide/',title='Warcraft Tavern: Classic Warlock leveling guide',reviewedAt='2026-10-23'},
  {url='https://www.warcrafttavern.com/wow-classic/guides/pve-warlock-rotation/',title='Warcraft Tavern: Classic Warlock rotation',reviewedAt='2026-10-23'}},

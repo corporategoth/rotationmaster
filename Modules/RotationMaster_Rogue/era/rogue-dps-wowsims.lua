@@ -17,10 +17,10 @@ local capped={type='POWER',unit='player',operator='GREATERTHANOREQUALS',value=79
 local lasting=any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'},
  {type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.2})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.rogue.dps.wowsims',revision=2,
- blocks={['era.rogue.boundaries']=1,['era.rogue.opener']=2,['era.rogue.upkeep']=2,['era.rogue.builders']=2,['era.rogue.expose-armor']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.rogue.dps.wowsims',revision=3,
+ blocks={['era.rogue.boundaries']=2,['era.rogue.opener']=2,['era.rogue.upkeep']=2,['era.rogue.builders']=2,['era.rogue.expose-armor']=1},
  nameKey='Default.Era.Rogue.DPS.Wowsims.Name',descriptionKey='Default.Era.Rogue.DPS.Wowsims.Description',
- applicability={families={'era'},actionContext='player',class='ROGUE',minLevel=1,maxLevel=60},
+ applicability={families={'era'},actionContext='player',class='ROGUE'},
  tags={'dps','melee','endgame','wowsims'},
  sources={{url='https://github.com/wowsims/classic/blob/7779ebbf79dc7f1341e6ab939b28a3402c9a730a/ui/rogue/apls/combat_sinister_strike_sweaty.apl.json',title='wowsims/classic: Combat Sinister Strike "sweaty" APL',reviewedAt='2026-10-23',revision='7779ebbf79dc7f1341e6ab939b28a3402c9a730a'},
  {url='https://www.warcrafttavern.com/wow-classic/guides/rogue-leveling-guide/',title='Warcraft Tavern: Classic Rogue leveling guide (Sword Specialization timing)',reviewedAt='2026-10-23'}},

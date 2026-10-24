@@ -11,7 +11,7 @@ local _,addon=...
 -- Talent trees in the Forever talent window's order (assumed classic: 1 Elemental, 2 Enhancement, 3 Restoration; verify in game).
 -- Level 10 first (no talent config below it), then the points (an empty tree is a clean no-match),
 -- then the primary tree, which settles hybrids.
-local function tree(n,points)return{type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+local function tree(n,points)return{type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=25},
  {type='TALENT_TREE_POINTS',tree=n,operator='GREATERTHANOREQUALS',value=points},{type='PRIMARY_TALENT_TREE',tree=n}}}end
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
@@ -23,11 +23,11 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local shocked={type='DEBUFF',unit='target',spell=8050,anyrank=true,owndebuff=true}
 local melee=negate({type='BEYOND_MELEE',unit='target'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.shaman.elemental',revision=4,
- blocks={['forever.shaman.manual']=1,['forever.shaman.upkeep']=2,['forever.shaman.imbue']=1,['forever.shaman.group-totems']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.shaman.elemental',revision=5,
+ blocks={['forever.shaman.manual-target']=1,['forever.shaman.upkeep']=2,['forever.shaman.imbue']=1,['forever.shaman.group-totems']=1,
   ['forever.shaman.caster-aoe']=1,['forever.shaman.stormstrike-hybrid']=1},
  nameKey='Default.Forever.Shaman.Elemental.Name',descriptionKey='Default.Forever.Shaman.Elemental.Description',
- applicability={families={'forever'},actionContext='player',class='SHAMAN',minLevel=25,maxLevel=60},
+ applicability={families={'forever'},actionContext='player',class='SHAMAN'},
  tags={'dps','ranged','caster','leveling','endgame','aoe','icy-veins'},
  sources={{url='https://www.icy-veins.com/wow-forever/elemental-shaman-leveling',title='Icy Veins: Forever Elemental Shaman leveling',reviewedAt='2026-10-23',revision='2026-10-18'},
  {url='https://www.icy-veins.com/wow-forever/elemental-shaman-ranged-dps-pve-guide',title='Icy Veins: Forever Elemental Shaman PvE guide',reviewedAt='2026-10-23',revision='2026-10-18'},
@@ -40,8 +40,7 @@ assert(addon:RegisterDefaultRotation({
   spell('shaman-ele-searing-totem',3599,all(combat(),negate({type='TOTEM',spell=1}),negate(enemies(3)))),
   spell('shaman-ele-elemental-mastery',16166,combat())},
  rotation={
- block('forever.shaman.manual','shaman-ele-'),
- {id='shaman-ele-no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
+ block('forever.shaman.manual-target','shaman-ele-'),
  {id='shaman-ele-pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('shaman-ele-pull-chain',421,all(negate({type='MOVING'}),{type='DISTANCE_COUNT',enemy=true,distance=30,operator='GREATERTHANOREQUALS',value=3})),
   spell('shaman-ele-pull-bolt',403,negate({type='MOVING'})),

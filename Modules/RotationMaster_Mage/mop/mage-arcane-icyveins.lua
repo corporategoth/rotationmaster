@@ -13,10 +13,10 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local MISSILES=79683
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.mage.arcane.icyveins',revision=3,
- blocks={['mop.mage.boundaries']=1,['mop.mage.upkeep']=1,['mop.mage.armor-frost']=1,['mop.mage.bombs']=1,['mop.mage.arcane-open']=2,['mop.mage.arcane-aoe-moving']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.mage.arcane.icyveins',revision=4,
+ blocks={['mop.mage.boundaries']=2,['mop.mage.upkeep']=1,['mop.mage.armor-frost']=1,['mop.mage.bombs']=1,['mop.mage.arcane-open']=2,['mop.mage.arcane-aoe-moving']=1},
  nameKey='Default.MoP.Mage.Arcane.IcyVeins.Name',descriptionKey='Default.MoP.Mage.Arcane.IcyVeins.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE'},
  tags={'arcane','leveling','single-target','aoe','icy-veins','wowhead'},
  sources={
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/arcane-mage-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Arcane Mage rotation',reviewedAt='2026-10-23',revision='2025-06-17'},

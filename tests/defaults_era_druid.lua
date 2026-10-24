@@ -45,7 +45,7 @@ test('fifteen sourced, localized, composed premades: vanilla and Season of Disco
  assert(prio[BAL]>prio[BALIV]and prio[FER]>prio[FERWT]and prio[FERWT]>prio[FERWTC]and prio[FERWTC]>prio[FERWH]and prio[RES]>prio[RESWT])
  assert(prio[SBAL]>prio[SBALWH]and prio[SBALWH]>prio[SBALIV]and prio[STANK]>prio[STANKWS]and prio[STANK]>prio[SFER])
  assert(M.row(a,STANKWS).envelope.body.disabled==true and not M.row(a,STANKWS).eligible,'the cat-weave tank is opt-in')
- assert(M.row(a,FER).applicability.minLevel==10 and M.row(a,RES).applicability.minLevel==10 and M.row(a,BAL).applicability.minLevel==1)
+ for _,id in ipairs({FER,RES})do local sw=M.row(a,id).envelope.body.switch;assert(sw.type=='AND'and sw.value[1].type=='LEVEL'and sw.value[1].value==10,id..' switch holds level 10')end
 end)
 
 test('standard realm: Balance owns levels 1-9, no points and ties; Feral and Restoration by tree; variants share switches',function()

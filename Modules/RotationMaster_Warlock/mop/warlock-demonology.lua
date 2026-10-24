@@ -12,11 +12,11 @@ local function any(...)return{type='OR',value={...}}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.warlock.demonology',revision=3,
- blocks={['mop.warlock.boundaries']=2,['mop.warlock.upkeep']=1,['mop.warlock.demonology-upkeep']=2,['mop.warlock.demonology-demon']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.warlock.demonology',revision=4,
+ blocks={['mop.warlock.boundaries']=3,['mop.warlock.upkeep']=1,['mop.warlock.demonology-upkeep']=2,['mop.warlock.demonology-demon']=1,
   ['mop.warlock.demonology-pull']=2,['mop.warlock.demonology-caster']=1,['mop.warlock.demonology-filler']=1},
  nameKey='Default.MoP.Warlock.Demonology.Name',descriptionKey='Default.MoP.Warlock.Demonology.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARLOCK',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARLOCK'},
  tags={'demonology','dps','caster','ranged','pet','leveling','endgame','wowsims','hekili'},
  sources={{url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/warlock/demonology/apls/default.apl.json',title='wowsims/mop: Demonology Warlock APL',reviewedAt='2026-10-23',revision='ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9'},
  {url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/WarlockDemonology.simc',title='Hekili (MoP fork): Demonology Warlock priority',reviewedAt='2026-10-23',revision='0750b5dd98005481baf828cce26149b9abca875b'},

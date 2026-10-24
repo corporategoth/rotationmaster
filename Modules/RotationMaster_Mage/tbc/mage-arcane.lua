@@ -12,10 +12,10 @@ local function buff(id)return{type='BUFF',unit='player',spell=id}end
 local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v}end
 local stacks={type='DEBUFF',unit='player',spell=36032}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.mage.arcane',revision=2,
- blocks={['tbc.mage.boundaries']=1,['tbc.mage.frostbolt']=1,['tbc.mage.wand-finish']=1,['tbc.mage.moving-fire-blast']=1,['tbc.mage.armor']=1,['tbc.mage.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.mage.arcane',revision=3,
+ blocks={['tbc.mage.boundaries']=2,['tbc.mage.frostbolt']=1,['tbc.mage.wand-finish']=1,['tbc.mage.moving-fire-blast']=1,['tbc.mage.armor']=1,['tbc.mage.upkeep']=1},
  nameKey='Default.TBC.Mage.Arcane.Name',descriptionKey='Default.TBC.Mage.Arcane.Description',
- applicability={families={'tbc'},actionContext='player',class='MAGE',minLevel=10,maxLevel=70},
+ applicability={families={'tbc'},actionContext='player',class='MAGE'},
  tags={'arcane','leveling','raid','single-target','aoe'},
  sources={
   {url='https://www.icy-veins.com/tbc-classic/arcane-mage-leveling-guide',title='Icy Veins: Arcane Mage leveling',reviewedAt='2026-10-23',revision='2026-01-12'},

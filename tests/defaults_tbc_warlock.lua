@@ -24,7 +24,7 @@ test('both premades register valid, localized and composed with the same switch'
  for _,id in ipairs({IV,WH})do local row=M.row(a,id)
   assert(row.readOnly and row.validation.valid and row.validation.resolved and row.eligible,id)
   assert(f.translations[row.nameKey]and f.translations[row.descriptionKey]and a:GetDefaultRotationComposition(id),id)
-  assert(row.applicability.minLevel==1 and row.applicability.maxLevel==70)
+  assert(row.applicability.minLevel==nil and row.applicability.maxLevel==nil)
   assert(M.switch(a,id)=='match',id)
  end
  for _,source in ipairs(M.row(a,WH).envelope.sources)do assert(not source.url:find('icy%-veins'),'Wowhead variant cites Icy Veins')end

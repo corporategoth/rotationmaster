@@ -20,10 +20,10 @@ local combat={type='COMBAT',unit='player'}
 local beacon={type='BUFF',unit='target',spell=400735,ownbuff=true}
 local fingers=any(buff(400647),buff(400669),buff(400670))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.mage.healer',revision=3,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.mage.healer',revision=4,
  blocks={['era.mage.wand-finish']=1,['sod.mage.balefire']=1,['sod.mage.armor']=2,['sod.mage.upkeep']=2},
  nameKey='Default.SoD.Mage.Healer.Name',descriptionKey='Default.SoD.Mage.Healer.Description',
- applicability={families={'era'},actionContext='player',class='MAGE',minLevel=1,maxLevel=60,rulesets={'season:2'}},
+ applicability={families={'era'},actionContext='player',class='MAGE',rulesets={'season:2'}},
  tags={'arcane','healer','group','season-of-discovery'},
  sources={
   {url='https://www.icy-veins.com/wow-classic/arcane-mage-healer-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Arcane Mage healer rotation (Phase 4)',reviewedAt='2026-10-23',revision='2025-04-08'},
@@ -39,8 +39,7 @@ assert(addon:RegisterDefaultRotation({
    spell(P..'frozen-orb',440802,combat),
    block(P..'upkeep','sod.mage.upkeep',P)},
   rotation={
-   stop(P..'cast',{type='CASTING',unit='player'}),
-   stop(P..'channel',all({type='CHANNELING',unit='player'},negate({type='CHANNELING_SPELL',unit='player',spell=412510}))),
+   stop(P..'cast',any({type='CASTING',unit='player'},all({type='CHANNELING',unit='player'},negate({type='CHANNELING_SPELL',unit='player',spell=412510})))),
    {id=P..'friend',type='branch',conditions={type='FRIENDLY',unit='target'},onFalse={},onTrue={
     spell(P..'rewind-time',401462,all(beacon,hp('LESSTHAN',.5))),
     spell(P..'chronostatic',436516,hp('LESSTHAN',.5)),

@@ -15,17 +15,17 @@ local function hp(v)return{type='HEALTHPCT',unit='target',operator='LESSTHAN',va
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function spell(id,action,conditions,ranked)return{id=id,type='spell',action=action,ranked=ranked or false,conditions=conditions or {}}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.druid.restoration',revision=2,
- blocks={['era.druid.boundaries']=2,['era.druid.upkeep']=1,['era.druid.heal-cooldowns']=1,['era.druid.resto-damage']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.druid.restoration',revision=3,
+ blocks={['era.druid.boundaries']=3,['era.druid.upkeep']=1,['era.druid.heal-cooldowns']=1,['era.druid.resto-damage']=1},
  nameKey='Default.Era.Druid.Restoration.Name',descriptionKey='Default.Era.Druid.Restoration.Description',
- applicability={families={'era'},actionContext='player',class='DRUID',minLevel=10,maxLevel=60},
+ applicability={families={'era'},actionContext='player',class='DRUID'},
  tags={'leveling','endgame','restoration','healer','group','icy-veins','wowhead'},
  sources={
   {url='https://www.icy-veins.com/wow-classic/restoration-druid-healer-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Restoration Druid rotation',reviewedAt='2026-10-23',revision='2024-11-17'},
   {url='https://www.icy-veins.com/wow-classic/restoration-druid-leveling-talent-build-from-1-to-60',title='Icy Veins: Restoration Druid leveling',reviewedAt='2026-10-23',revision='2026-07-18'},
   {url='https://www.wowhead.com/classic/guide/classes/druid/healer-rotation-cooldowns-abilities-pve',title='Wowhead: Classic Restoration Druid rotation',reviewedAt='2026-10-23',revision='2025-03-20'},
  },
- body={priority=30,switch={type='PRIMARY_TALENT_TREE',tree=3},
+ body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='PRIMARY_TALENT_TREE',tree=3}}},
   cooldowns={ref('era-resto-upkeep','era.druid.upkeep','era-resto-'),ref('era-resto-cooldowns','era.druid.heal-cooldowns','era-resto-')},
   rotation={
    ref('era-resto-boundaries','era.druid.boundaries','era-resto-'),

@@ -19,16 +19,16 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.affliction.icyveins',revision=3,
- blocks={['retail.warlock.boundaries']=1,['retail.warlock.upkeep']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.affliction.icyveins',revision=4,
+ blocks={['retail.warlock.boundaries']=2,['retail.warlock.upkeep']=2},
  nameKey='Default.Retail.Warlock.Affliction.IcyVeins.Name',descriptionKey='Default.Retail.Warlock.Affliction.IcyVeins.Description',
- applicability={families={'retail'},actionContext='player',class='WARLOCK',specs={265},minLevel=10,maxLevel=90},
+ applicability={families={'retail'},actionContext='player',class='WARLOCK'},
  tags={'affliction','ranged','reference','single-target','aoe','icy-veins','simulationcraft'},
  sources={
   {url='https://www.icy-veins.com/wow/affliction-warlock-pve-dps-rotation-cooldowns-abilities',title='Icy Veins: Affliction Warlock rotation (Midnight)',reviewedAt='2026-10-23',revision='2026-10-12'},
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/warlock_affliction.simc',title='SimulationCraft: Affliction Warlock default list (SH_st)',reviewedAt='2026-10-23',revision='c5fea93fb77d'},
  },
- body={priority=5,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+ body={priority=5,disabled=true,switch={type='SPECIALIZATION',spec=265},
   cooldowns={
    block('retail.warlock.upkeep','affiv-'),
    spell('affiv-summon-felhunter',691,all(negate(combat()),negate({type='PET'}),negate(own(196099)))),

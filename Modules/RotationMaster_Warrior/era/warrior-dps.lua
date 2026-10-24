@@ -29,10 +29,10 @@ local unqueued=all(negate(queued(78)),negate(queued(845)))
 local immune=any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',unit='target',value='MECHANICAL'},{type='CREATURE',unit='target',value='ELEMENTAL'})
 local near={type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=2}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.warrior.dps',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.era.warrior.dps',revision=3,
  blocks={['era.warrior.boundaries']=2,['era.warrior.upkeep']=1,['era.warrior.aoe-strikes']=1},
  nameKey='Default.Era.Warrior.DPS.Name',descriptionKey='Default.Era.Warrior.DPS.Description',
- applicability={families={'era'},actionContext='player',class='WARRIOR',minLevel=1,maxLevel=60},
+ applicability={families={'era'},actionContext='player',class='WARRIOR'},
  tags={'dps','melee','leveling','endgame','aoe','wowsims','icy-veins','wowhead'},
  sources={{url='https://github.com/wowsims/classic/blob/7779ebbf79dc7f1341e6ab939b28a3402c9a730a/ui/warrior/apls/dps_reck.apl.json',title='wowsims/classic: Warrior DPS APL',reviewedAt='2026-10-23',revision='7779ebbf79dc7f1341e6ab939b28a3402c9a730a'},
  {url='https://www.icy-veins.com/wow-classic/warrior-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Warrior DPS rotation',reviewedAt='2026-10-23',revision='2024-11-17'},

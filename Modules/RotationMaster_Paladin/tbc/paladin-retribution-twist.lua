@@ -16,15 +16,15 @@ local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v
 local function blood()return any(own(31892),own(348700))end
 local function anySeal()local out={};for i,id in ipairs({21084,20375,31892,348700,31801,348704,21082,20166,20165,20164})do out[i]=own(id)end;return{type='OR',value=out}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.retribution.twist',revision=3,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.retribution.twist',revision=4,
  blocks={['tbc.paladin.ret-upkeep']=2,['tbc.paladin.melee-opening']=1,['tbc.paladin.boundaries']=1},
  nameKey='Default.TBC.Paladin.Retribution.Twist.Name',descriptionKey='Default.TBC.Paladin.Retribution.Twist.Description',
- applicability={families={'tbc'},actionContext='player',class='PALADIN',minLevel=64,maxLevel=70},
+ applicability={families={'tbc'},actionContext='player',class='PALADIN'},
  tags={'endgame','raid','retribution','melee','single-target','seal-twisting','wowhead','icy-veins','wowsims'},
  sources={{url='https://www.wowhead.com/tbc/guide/classes/paladin/retribution/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Retribution Paladin DPS rotation',reviewedAt='2026-10-23',revision='2026-02-10'},
   {url='https://www.icy-veins.com/tbc-classic/retribution-paladin-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Retribution Paladin rotation (twisting)',reviewedAt='2026-10-23',revision='2026-01-12'},
   {url='https://github.com/wowsims/tbc/blob/3301fca59306a747e521274c36e073e69acc7b77/sim/paladin/retribution/rotation.go',title='wowsims/tbc Retribution twist rotation',reviewedAt='2026-10-23',revision='3301fca59306a747e521274c36e073e69acc7b77'}},
- body={priority=3,disabled=true,switch=all(known(20375),any(known(31892),known(348700)),{type='PRIMARY_TALENT_TREE',tree=3}),
+ body={priority=3,disabled=true,switch=all({type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=64},known(20375),any(known(31892),known(348700)),{type='PRIMARY_TALENT_TREE',tree=3}),
   cooldowns={{id='twist-upkeep',type='block',block='tbc.paladin.ret-upkeep',prefix='twist-'}},
   rotation={
    {id='twist-opening',type='block',block='tbc.paladin.melee-opening',prefix='twist-'},

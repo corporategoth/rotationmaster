@@ -26,10 +26,8 @@ local function sacrificed()return any(buff(18789),buff(18790),buff(18791),buff(1
 local function pact()return all(known(19028),{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=40})end
 -- Manual casts and channels (Drain Life, Drain Soul, Wrack, Hellfire, Rain of Fire, Health
 -- Funnel) run to the end; no advice against a target that is not yours to pull.
-assert(addon:RegisterDefaultBlock({id='forever.warlock.boundaries',revision=1,families={'forever'},class='WARLOCK',steps={
- stop('cast',{type='CASTING',unit='player'}),
- stop('channel',{type='CHANNELING',unit='player'}),
- stop('target',negate(all({type='ATTACKABLE',unit='target'},any(combat(),negate({type='COMBAT',unit='target'}))))),
+assert(addon:RegisterDefaultBlock({id='forever.warlock.boundaries',revision=2,families={'forever'},class='WARLOCK',steps={
+ stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate(all({type='ATTACKABLE',unit='target'},any(combat(),negate({type='COMBAT',unit='target'})))))),
 }}))
 -- Independent reminders every source shares: armor, Soul Link, the Demonology sacrifice with
 -- Pact, and the weapon stone (Firestone for a Fire build, else Spellstone). Health is secret on

@@ -5,12 +5,12 @@ local _,addon=...
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function moving()return{type='MOVING'}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.druid.balance.icyveins',revision=2,
- blocks={['era.druid.boundaries']=2,['era.druid.upkeep']=1,['era.druid.caster-cooldowns']=2,['era.druid.feral-cooldowns']=2,['era.druid.forms']=2,
+ format='RotationMaster',schemaVersion=1,id='rm.era.druid.balance.icyveins',revision=3,
+ blocks={['era.druid.boundaries']=3,['era.druid.upkeep']=1,['era.druid.caster-cooldowns']=2,['era.druid.feral-cooldowns']=2,['era.druid.forms']=2,
   ['era.druid.cat']=1,['era.druid.stealth-opener']=1,['era.druid.cat-builders']=1,['era.druid.powershift']=1,['era.druid.bear']=1,['era.druid.bear-pull']=2,
   ['era.druid.caster-pull']=2},
  nameKey='Default.Era.Druid.Balance.IcyVeins.Name',descriptionKey='Default.Era.Druid.Balance.IcyVeins.Description',
- applicability={families={'era'},actionContext='player',class='DRUID',minLevel=1,maxLevel=60},
+ applicability={families={'era'},actionContext='player',class='DRUID'},
  tags={'endgame','raid','balance','caster','single-target','aoe','icy-veins'},
  sources={
   {url='https://www.icy-veins.com/wow-classic/balance-druid-ranged-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Balance Druid rotation',reviewedAt='2026-10-23',revision='2024-11-17'},

@@ -17,11 +17,11 @@ local P='mage-sfire-'
 local scorchTalent={type='TALENT',layout='tree',tree=2,talent=10,operator='GREATERTHANOREQUALS',value=1}
 local balefireStack=any({type='BUFF',unit='player',spell=428878},{type='DEBUFF',unit='player',spell=428878})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.mage.fire',revision=3,
- blocks={['era.mage.boundaries']=1,['era.mage.wand-finish']=1,['sod.mage.balefire']=1,['sod.mage.balefire-scorched']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.mage.fire',revision=4,
+ blocks={['era.mage.boundaries']=2,['era.mage.wand-finish']=1,['sod.mage.balefire']=1,['sod.mage.balefire-scorched']=1,
   ['sod.mage.living-bomb']=1,['sod.mage.overheat']=2,['sod.mage.armor']=2,['sod.mage.upkeep']=2},
  nameKey='Default.SoD.Mage.Fire.Name',descriptionKey='Default.SoD.Mage.Fire.Description',
- applicability={families={'era'},actionContext='player',class='MAGE',minLevel=1,maxLevel=60,rulesets={'season:2'}},
+ applicability={families={'era'},actionContext='player',class='MAGE',rulesets={'season:2'}},
  tags={'fire','leveling','raid','single-target','aoe','season-of-discovery'},
  sources={
   {url='https://github.com/wowsims/sod/blob/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/mage/builds/p7_fire.build.json',title='wowsims/sod Phase 7 Fire build',reviewedAt='2026-10-23',revision='0e3f6ef'},

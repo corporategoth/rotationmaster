@@ -12,16 +12,16 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.druid.guardian.guide',revision=2,
- blocks={['retail.druid.boundaries']=1,['retail.druid.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.druid.guardian.guide',revision=3,
+ blocks={['retail.druid.boundaries']=2,['retail.druid.utility']=2},
  nameKey='Default.Retail.Druid.GuardianGuide.Name',descriptionKey='Default.Retail.Druid.GuardianGuide.Description',
- applicability={families={'retail'},actionContext='player',class='DRUID',specs={104},minLevel=10,maxLevel=90},
+ applicability={families={'retail'},actionContext='player',class='DRUID'},
  tags={'guardian','tank','reference','icy-veins','wowhead'},
  sources={
   {url='https://www.icy-veins.com/wow/guardian-druid-pve-tank-rotation-cooldowns-abilities',title='Icy Veins: Guardian Druid rotation (12.1.5)',reviewedAt='2026-10-23',revision='2026-10-12'},
   {url='https://www.wowhead.com/guide/classes/druid/guardian/rotation-cooldowns-pve-tank',title='Wowhead: Guardian Druid rotation (Midnight Season 1)',reviewedAt='2026-10-23',revision='2026-03-07',notes='Read from a Wayback snapshot.'},
  },
- body={priority=10,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+ body={priority=10,disabled=true,switch={type='SPECIALIZATION',spec=104},
   cooldowns={
    block('gguide-utility','retail.druid.utility','gguide-'),
    spell('gguide-bear-form',5487,all(negate(combat()),negate(buff(5487)),negate(buff(102558)))),

@@ -15,10 +15,10 @@ local lives=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASS
  {type='HEALTHPCT',unit='target',operator='GREATERTHANOREQUALS',value=.3},{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=6})
 local moving={type='MOVING'}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.druid.unspecialized',revision=3,
- blocks={['mop.druid.boundaries']=2,['mop.druid.target']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.druid.unspecialized',revision=4,
+ blocks={['mop.druid.melee-boundaries']=1},
  nameKey='Default.MoP.Druid.Unspecialized.Name',descriptionKey='Default.MoP.Druid.Unspecialized.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID',minLevel=1,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID'},
  tags={'leveling','single-target','warcraft-tavern'},
  sources={
   {url='https://www.warcrafttavern.com/mop/guides/druid-leveling-guide/',title='Warcraft Tavern: MoP Classic Druid leveling',reviewedAt='2026-10-23',notes='Only names Wrath and Moonfire for the first levels; the form arms are RM policy.'},
@@ -26,8 +26,7 @@ assert(addon:RegisterDefaultRotation({
  body={priority=0,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
   cooldowns={},
   rotation={
-   block('none-boundaries','mop.druid.boundaries','none-'),
-   block('none-target','mop.druid.target','none-'),
+   block('none-boundaries','mop.druid.melee-boundaries','none-'),
    {id='none-cat',type='branch',conditions={type='FORM',form=768},onFalse={},onTrue={
     spell('none-cat-rake',1822,all(negate({type='DEBUFF',unit='target',spell=1822,owndebuff=true}),lives)),
     spell('none-cat-bite',22568,any(cp('GREATERTHANOREQUALS',5),all(cp('GREATERTHANOREQUALS',2),{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=.3}))),

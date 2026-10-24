@@ -13,15 +13,15 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local soulburst=buff(1297433)
 local metaReady={type='BUFF_STACKS',unit='player',spell=1225789,ownbuff=true,operator='GREATERTHANOREQUALS',value=50}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.devourer.guide',revision=2,
- blocks={['retail.demonhunter.boundaries']=1,['retail.demonhunter.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.devourer.guide',revision=3,
+ blocks={['retail.demonhunter.boundaries']=2,['retail.demonhunter.utility']=2},
  nameKey='Default.Retail.DemonHunter.DevourerGuide.Name',descriptionKey='Default.Retail.DemonHunter.DevourerGuide.Description',
- applicability={families={'retail'},actionContext='player',class='DEMONHUNTER',specs={1480},minLevel=8,maxLevel=90},
+ applicability={families={'retail'},actionContext='player',class='DEMONHUNTER'},
  tags={'devourer','ranged','reference','icy-veins'},
  sources={
   {url='https://www.icy-veins.com/wow/devourer-demon-hunter-pve-dps-rotation-cooldowns-abilities',title='Icy Veins: Devourer Demon Hunter rotation (12.1.5)',reviewedAt='2026-10-23',revision='2026-10-12',notes='Annihilator list; Void-Scarred actives follow Void Ray inside Void Metamorphosis.'},
  },
- body={priority=10,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=8},
+ body={priority=10,disabled=true,switch={type='SPECIALIZATION',spec=1480},
   cooldowns={block('dguide-utility','retail.demonhunter.utility','dguide-')},
   rotation={
    block('dguide-boundaries','retail.demonhunter.boundaries','dguide-'),

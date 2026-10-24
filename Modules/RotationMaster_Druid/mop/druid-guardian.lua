@@ -23,10 +23,10 @@ local tanked={type='ISSAME',unit='targettarget',otherunit='player'}
 local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
 local cleave=any({type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2},{type='CLASSIFICATION',unit='target',value='worldboss'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.druid.guardian',revision=3,
- blocks={['mop.druid.boundaries']=2,['mop.druid.target']=1,['mop.druid.mark']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.druid.guardian',revision=4,
+ blocks={['mop.druid.melee-boundaries']=1,['mop.druid.mark']=1},
  nameKey='Default.MoP.Druid.Guardian.Name',descriptionKey='Default.MoP.Druid.Guardian.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID'},
  tags={'guardian','tank','leveling','single-target','aoe','wowsims','wowhead'},
  sources={
   {url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/druid/guardian/apls/default.apl.json',title='wowsims/mop Guardian default APL',reviewedAt='2026-10-23',revision='ec2c6c2552'},
@@ -55,8 +55,7 @@ assert(addon:RegisterDefaultRotation({
    off('guardian-growl',6795,all({type='GROUP'},combat(),negate(tanked))),
   },
   rotation={
-   block('guardian-boundaries','mop.druid.boundaries','guardian-'),
-   block('guardian-target','mop.druid.target','guardian-'),
+   block('guardian-boundaries','mop.druid.melee-boundaries','guardian-'),
    {id='guardian-cat',type='branch',conditions={type='FORM',form=768},onFalse={},onTrue={
     spell('guardian-cat-rake',1822,negate(bleed(1822))),
     spell('guardian-cat-rip',1079,all(cp('GREATERTHANOREQUALS',5),any(negate(bleed(1079)),{type='DEBUFF_REMAIN',unit='target',spell=1079,owndebuff=true,operator='LESSTHAN',value=4}))),

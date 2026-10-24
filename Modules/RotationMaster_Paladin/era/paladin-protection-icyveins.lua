@@ -13,10 +13,10 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local undead=any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',unit='target',value='DEMON'})
 local function sealed()local out={};for i,id in ipairs({20154,21084,20375,21082,20166,20165,20164})do out[i]=own(id)end;return{type='OR',value=out}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.paladin.protection.icyveins',revision=2,
- blocks={['era.paladin.tank-upkeep']=2,['era.paladin.melee-opening']=1,['era.paladin.boundaries']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.paladin.protection.icyveins',revision=3,
+ blocks={['era.paladin.tank-upkeep']=2,['era.paladin.melee-opening']=2},
  nameKey='Default.Era.Paladin.Protection.IcyVeins.Name',descriptionKey='Default.Era.Paladin.Protection.IcyVeins.Description',
- applicability={families={'era'},actionContext='player',class='PALADIN',minLevel=1,maxLevel=60},
+ applicability={families={'era'},actionContext='player',class='PALADIN'},
  tags={'endgame','raid','protection','tank','single-target','aoe','icy-veins','wowhead'},
  sources={{url='https://www.icy-veins.com/wow-classic/protection-paladin-tank-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Protection Paladin rotation',reviewedAt='2026-10-23',revision='2024-11-18'},
   {url='https://www.wowhead.com/classic/guide/lights-bulwark-protection-paladin-tanking',title='Wowhead: Protection Paladin tanking guide (Askalon), Wisdom rotation',reviewedAt='2026-10-23',revision='2024-11-21'}},

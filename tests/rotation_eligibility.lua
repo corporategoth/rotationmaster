@@ -196,8 +196,8 @@ test('/rm why lists every rotation with its first blocking issue, in a copyable 
     local lines={};for line in shown.text:gmatch('[^\n]+') do lines[#lines+1]=line end
     assert(lines[1]:find('^Specialization: ') and lines[2]:find('^Active rotation: '),shown.text)
     assert(shown.text:find('Fallback (Default): cannot be selected, no fallback rotation is saved for',1,true),shown.text)
-    assert(shown.text:find('Broken cooldown: cannot be selected, Cooldown 1 (Spell 8042): ',1,true),shown.text)
-    assert(shown.text:find('Copy of Shaman: early leveling: ready',1,true),shown.text)
+    assert(shown.text:find('Broken cooldown [broken-cooldown]: cannot be selected, Cooldown 1 (Spell 8042): ',1,true),shown.text)
+    assert(shown.text:find('Copy of Shaman: early leveling [copy-of-shaman-early-leveling]: ready',1,true),shown.text)
     -- The roster rows carry the same first issue for the browser's red marker.
     local broken,ready
     for _,row in ipairs(a:ListRotationHeaders(0)) do if row.name=='Broken cooldown' then broken=row elseif row.name=='Copy of Shaman: early leveling' then ready=row end end

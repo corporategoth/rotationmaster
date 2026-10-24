@@ -27,10 +27,10 @@ local flamed={type='DEBUFF',unit='target',spell=8050,anyrank=true,owndebuff=true
 -- An off-hand weapon (by item type, so a shield never asks for an imbue) without its enchant.
 local dual=all({type='WEAPON_TYPE',slot='offhand',kind='weapon'},negate({type='WEAPON',offhand=true}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.shaman.enhancement',revision=3,
- blocks={['era.shaman.manual']=1,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.melee-totems']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.shaman.enhancement',revision=4,
+ blocks={['era.shaman.manual']=2,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.melee-totems']=1},
  nameKey='Default.SoD.Shaman.Enhancement.Name',descriptionKey='Default.SoD.Shaman.Enhancement.Description',
- applicability={families={'era'},actionContext='player',class='SHAMAN',minLevel=1,maxLevel=60,rulesets={'season:2'}},
+ applicability={families={'era'},actionContext='player',class='SHAMAN',rulesets={'season:2'}},
  tags={'dps','melee','leveling','endgame','aoe','season-of-discovery','wowsims','icy-veins','wowhead'},
  sources={{url='https://github.com/wowsims/sod/blob/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/enhancement_shaman/apls/phase_6.apl.json',title='wowsims/sod: Enhancement Shaman Phase 6 APL',reviewedAt='2026-10-23',revision='0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e'},
  {url='https://www.icy-veins.com/wow-classic/enhancement-shaman-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Enhancement Shaman DPS rotation',reviewedAt='2026-10-23',revision='2025-04-08'},

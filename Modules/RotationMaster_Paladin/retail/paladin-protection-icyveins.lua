@@ -12,16 +12,16 @@ local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.protection.icyveins',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.protection.icyveins',revision=5,
  blocks={['retail.paladin.boundaries']=1,['retail.paladin.upkeep']=2,['retail.paladin.prot-defensives']=2,['retail.paladin.prot-cooldowns']=1},
  nameKey='Default.Retail.Paladin.Protection.IcyVeins.Name',descriptionKey='Default.Retail.Paladin.Protection.IcyVeins.Description',
- applicability={families={'retail'},actionContext='player',class='PALADIN',specs={66},minLevel=10,maxLevel=90},
+ applicability={families={'retail'},actionContext='player',class='PALADIN'},
  tags={'protection','tank','reference','single-target','aoe','icy-veins','simulationcraft'},
  sources={
   {url='https://www.icy-veins.com/wow/protection-paladin-pve-tank-rotation-cooldowns-abilities',title='Icy Veins: Protection Paladin rotation (Midnight)',reviewedAt='2026-10-23',revision='2026-10-12',notes='Shield of the Righteous at 3 to 5 Holy Power.'},
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/paladin_protection.simc',title='SimulationCraft: Protection Paladin default list',reviewedAt='2026-10-23',revision='c5fea93fb77d'},
  },
- body={priority=5,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+ body={priority=5,disabled=true,switch={type='SPECIALIZATION',spec=66},
   cooldowns={
    block('retail.paladin.upkeep','protiv-'),
    block('retail.paladin.prot-cooldowns','protiv-'),

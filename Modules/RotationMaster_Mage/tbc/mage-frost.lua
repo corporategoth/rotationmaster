@@ -11,10 +11,10 @@ local function stop(id)return{id=id,type='none',suppress_attack=true,conditions=
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local frozen=any({type='DEBUFF',unit='target',spell=122,anyrank=true},{type='DEBUFF',unit='target',spell=33395},{type='DEBUFF',unit='target',spell=12494})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.mage.frost',revision=2,
- blocks={['tbc.mage.boundaries']=1,['tbc.mage.frostbolt']=1,['tbc.mage.wand-finish']=1,['tbc.mage.armor']=1,['tbc.mage.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.mage.frost',revision=3,
+ blocks={['tbc.mage.boundaries']=2,['tbc.mage.frostbolt']=1,['tbc.mage.wand-finish']=1,['tbc.mage.armor']=1,['tbc.mage.upkeep']=1},
  nameKey='Default.TBC.Mage.Frost.Name',descriptionKey='Default.TBC.Mage.Frost.Description',
- applicability={families={'tbc'},actionContext='player',class='MAGE',minLevel=1,maxLevel=70},
+ applicability={families={'tbc'},actionContext='player',class='MAGE'},
  tags={'frost','leveling','raid','single-target','aoe'},
  sources={
   {url='https://www.icy-veins.com/tbc-classic/frost-single-target-mage-leveling-guide',title='Icy Veins: Frost single-target Mage leveling',reviewedAt='2026-10-23',revision='2026-01-12'},

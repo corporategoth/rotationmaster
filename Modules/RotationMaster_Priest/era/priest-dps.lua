@@ -15,12 +15,12 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local raid={type='INSTANCE',value='raid'}
 local P='priest-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.priest.dps',revision=2,
- blocks={['era.priest.boundaries']=1,['era.priest.enemy-target']=1,['era.priest.shadowform']=1,['era.priest.pull']=2,['era.priest.pull-shield']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.era.priest.dps',revision=3,
+ blocks={['era.priest.dps-boundaries']=1,['era.priest.shadowform']=1,['era.priest.pull']=2,['era.priest.pull-shield']=1,
   ['era.priest.moving']=1,['era.priest.wand-finish']=1,['era.priest.pain']=1,['era.priest.filler']=1,['era.priest.wand-fallback']=1,
   ['era.priest.upkeep']=1,['era.priest.dps-upkeep']=1},
  nameKey='Default.Era.Priest.Dps.Name',descriptionKey='Default.Era.Priest.Dps.Description',
- applicability={families={'era'},actionContext='player',class='PRIEST',minLevel=1,maxLevel=60},
+ applicability={families={'era'},actionContext='player',class='PRIEST'},
  tags={'shadow','damage','leveling','raid','single-target','icy-veins','wowhead'},
  sources={
   {url='https://www.icy-veins.com/wow-classic/shadow-priest-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Shadow Priest rotation',reviewedAt='2026-10-23',revision='2024-11-18'},
@@ -36,8 +36,7 @@ assert(addon:RegisterDefaultRotation({
   switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
   cooldowns={block(P..'upkeep','era.priest.upkeep',P),block(P..'dps-upkeep','era.priest.dps-upkeep',P)},
   rotation={
-   block(P..'boundaries','era.priest.boundaries',P),
-   block(P..'target','era.priest.enemy-target',P),
+   block(P..'boundaries','era.priest.dps-boundaries',P),
    block(P..'form','era.priest.shadowform',P),
    block(P..'pull','era.priest.pull',P),
    block(P..'moving','era.priest.moving',P),

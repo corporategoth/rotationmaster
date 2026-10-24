@@ -33,10 +33,10 @@ local worth=all(combat(),any(classified('worldboss'),classified('elite'),classif
  {type='TT_HEALTH',unit='target',health=0,operator='GREATERTHAN',value=20}))
 local viperLow=all(mana('LESSTHAN',.5),any(buff(415423),all({type='SPELL_KNOWN',spell=415423},mana('LESSTHAN',.1))))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.hunter.ranged',revision=3,
- blocks={['era.hunter.boundaries']=1,['sod.hunter.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.hunter.ranged',revision=4,
+ blocks={['era.hunter.boundaries']=2,['sod.hunter.upkeep']=1},
  nameKey='Default.SoD.Hunter.Ranged.Name',descriptionKey='Default.SoD.Hunter.Ranged.Description',
- applicability={families={'era'},actionContext='player',class='HUNTER',minLevel=1,maxLevel=60,rulesets={'season:2'}},
+ applicability={families={'era'},actionContext='player',class='HUNTER',rulesets={'season:2'}},
  tags={'dps','ranged','leveling','endgame','season-of-discovery','wowsims','wowhead'},
  sources={
   {url='https://github.com/wowsims/sod/blob/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/hunter/builds/p8_ranged.build.json',title='wowsims/sod: Hunter P8 ranged build',reviewedAt='2026-10-23',revision='0e3f6ef'},

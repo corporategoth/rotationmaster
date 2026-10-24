@@ -19,9 +19,13 @@ local lust=any(buff(2825),buff(32182))
 local flame={type='DEBUFF',unit='target',spell=8050,owndebuff=true}
 -- Manual casts and channels, and Ghost Wolf, end advice with Attack suppressed.
 assert(addon:RegisterDefaultBlock({
- id='mop.shaman.manual',revision=1,families={'progression'},class='SHAMAN',steps={
- {id='manual',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
- {id='ghost-wolf',type='none',suppress_attack=true,conditions=own(2645)},
+ id='mop.shaman.manual',revision=2,families={'progression'},class='SHAMAN',steps={
+ {id='manual',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},own(2645))},
+}}))
+-- Damage premades: the same, or no attackable target, ends advice (one Stop).
+assert(addon:RegisterDefaultBlock({
+ id='mop.shaman.manual-target',revision=1,families={'progression'},class='SHAMAN',steps={
+ {id='manual',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},own(2645),negate({type='ATTACKABLE',unit='target'}))},
 }}))
 -- Lightning Shield whenever your own is missing (every damage dealer and the catch-all).
 assert(addon:RegisterDefaultBlock({

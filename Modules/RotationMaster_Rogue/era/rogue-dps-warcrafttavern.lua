@@ -11,10 +11,10 @@ local function negate(c)return{type='NOT',value=c}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.rogue.dps.warcrafttavern',revision=2,
- blocks={['era.rogue.boundaries']=1,['era.rogue.opener']=2,['era.rogue.upkeep']=2,['era.rogue.builders']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.era.rogue.dps.warcrafttavern',revision=3,
+ blocks={['era.rogue.boundaries']=2,['era.rogue.opener']=2,['era.rogue.upkeep']=2,['era.rogue.builders']=2},
  nameKey='Default.Era.Rogue.DPS.WarcraftTavern.Name',descriptionKey='Default.Era.Rogue.DPS.WarcraftTavern.Description',
- applicability={families={'era'},actionContext='player',class='ROGUE',minLevel=1,maxLevel=60},
+ applicability={families={'era'},actionContext='player',class='ROGUE'},
  tags={'dps','melee','leveling','endgame','warcraft-tavern'},
  sources={{url='https://www.warcrafttavern.com/wow-classic/guides/pve-combat-rogue/',title='Warcraft Tavern: Classic PvE Combat Rogue',reviewedAt='2026-10-23'},
  {url='https://www.warcrafttavern.com/wow-classic/guides/pve-assassination-rogue/',title='Warcraft Tavern: Classic PvE Assassination Rogue',reviewedAt='2026-10-23'},

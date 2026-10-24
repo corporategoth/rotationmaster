@@ -20,10 +20,10 @@ local clearcasting,berserk=own(135700),own(106951)
 local worth=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},
  {type='CLASSIFICATION',unit='target',value='worldboss'},{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=20})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.druid.feral.icyveins',revision=3,
- blocks={['mop.druid.boundaries']=2,['mop.druid.target']=1,['mop.druid.mark']=1,['mop.druid.feral-upkeep']=2,['mop.druid.feral-open']=3,['mop.druid.feral-aoe']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.druid.feral.icyveins',revision=4,
+ blocks={['mop.druid.melee-boundaries']=1,['mop.druid.mark']=1,['mop.druid.feral-upkeep']=2,['mop.druid.feral-open']=3,['mop.druid.feral-aoe']=1},
  nameKey='Default.MoP.Druid.Feral.IcyVeins.Name',descriptionKey='Default.MoP.Druid.Feral.IcyVeins.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID'},
  tags={'feral','leveling','single-target','aoe','icy-veins','wowhead'},
  sources={
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/feral-druid-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Feral Druid rotation',reviewedAt='2026-10-23',revision='2025-06-22'},
@@ -37,8 +37,7 @@ assert(addon:RegisterDefaultRotation({
    spell('fivy-berserk',106952,all(combat(),{type='FORM',form=768},power('GREATERTHANOREQUALS',90),{type='SPELL_COOLDOWN',spell=5217,operator='GREATERTHANOREQUALS',value=15},worth)),
   },
   rotation={
-   block('fivy-boundaries','mop.druid.boundaries','fivy-'),
-   block('fivy-target','mop.druid.target','fivy-'),
+   block('fivy-boundaries','mop.druid.melee-boundaries','fivy-'),
    block('fivy-open','mop.druid.feral-open','fivy-'),
    block('fivy-aoe','mop.druid.feral-aoe','fivy-'),
    {id='fivy-execute',type='branch',conditions=all({type='HEALTHPCT',unit='target',operator='LESSTHAN',value=.25},bleed(1079)),onTrue={

@@ -15,15 +15,15 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.fury.slayer',revision=3,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.fury.slayer',revision=4,
  blocks={['retail.warrior.boundaries']=1,['retail.warrior.upkeep']=1,['retail.warrior.charge']=2},
  nameKey='Default.Retail.Warrior.Fury.Slayer.Name',descriptionKey='Default.Retail.Warrior.Fury.Slayer.Description',
- applicability={families={'retail'},actionContext='player',class='WARRIOR',specs={72},minLevel=10,maxLevel=90},
+ applicability={families={'retail'},actionContext='player',class='WARRIOR'},
  tags={'fury','melee','reference','slayer','single-target','aoe','simulationcraft'},
  sources={
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/warrior_fury.simc',title='SimulationCraft: Fury Warrior default list (slayer, slayer_aoe)',reviewedAt='2026-10-23',revision='c5fea93fb77d'},
  },
- body={priority=5,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+ body={priority=5,disabled=true,switch={type='SPECIALIZATION',spec=72},
   cooldowns={
    block('retail.warrior.upkeep','furysl-'),
    spell('furysl-recklessness',1719,fight),

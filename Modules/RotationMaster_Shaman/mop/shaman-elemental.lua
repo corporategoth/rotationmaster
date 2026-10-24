@@ -27,10 +27,10 @@ local refresh=any(all(any(negate(flame),shock('LESSTHAN',3)),any(classified('wor
 local lava=any(shock('GREATERTHAN',2),own(77762),ascended)
 local fulminate=all({type='BUFF_STACKS',unit='player',spell=324,ownbuff=true,operator='GREATERTHANOREQUALS',value=6},shock('GREATERTHANOREQUALS',6))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.elemental',revision=3,
- blocks={['mop.shaman.manual']=1,['mop.shaman.lightning-shield']=1,['mop.shaman.group']=1,['mop.shaman.fire-totems']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.elemental',revision=4,
+ blocks={['mop.shaman.manual-target']=1,['mop.shaman.lightning-shield']=1,['mop.shaman.group']=1,['mop.shaman.fire-totems']=1},
  nameKey='Default.MoP.Shaman.Elemental.Name',descriptionKey='Default.MoP.Shaman.Elemental.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='SHAMAN',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='SHAMAN'},
  tags={'elemental','dps','caster','ranged','leveling','endgame','wowhead','icy-veins','wowsims'},
  sources={{url='https://www.wowhead.com/mop-classic/guide/classes/shaman/elemental/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Elemental Shaman rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2026-06-29'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/elemental-shaman-pve-rotation-cooldowns-abilities',title='Icy Veins: Elemental Shaman rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2025-06-22'},
@@ -50,8 +50,7 @@ assert(addon:RegisterDefaultRotation({
   spell('shaman-ele-shamanistic-rage',30823,all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.5})),
  },
  rotation={
- block('mop.shaman.manual','shaman-ele-'),
- {id='shaman-ele-no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
+ block('mop.shaman.manual-target','shaman-ele-'),
  {id='shaman-ele-pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('shaman-ele-pull-lava',51505,talent(16)),
   spell('shaman-ele-pull-bolt',403),

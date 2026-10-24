@@ -24,7 +24,8 @@ test('every Druid premade loads for its own specialization only and declares Ret
   for index,id in ipairs(list)do
    local row=assert(rows[id],id);local scope=row.applicability
    assert(row.readOnly and row.builtin and #scope.families==1 and scope.families[1]=='retail'and scope.class=='DRUID',id)
-   assert(#scope.specs==1 and scope.specs[1]==spec and scope.minLevel==10 and scope.maxLevel==90,id..' scope')
+   assert(scope.specs==nil and scope.minLevel==nil and scope.maxLevel==nil,id..' scope: load-time facts only')
+   assert(row.envelope.body.switch.type=='SPECIALIZATION'and row.envelope.body.switch.spec==spec,id..' switch')
    assert(row.eligible==(index==1),id..' eligibility: only the recommended premade is on by default')
   end
   for other,list2 in pairs(ids)do if other~=spec then for _,id in ipairs(list2)do assert(rows[id]==nil or not rows[id].eligible,id..' eligible in spec '..spec)end end end
@@ -35,7 +36,7 @@ test('auto-select: the recommended premade in each spec slot; an enabled referen
   local a=druid(spec);assert(M.selected(a)==list[1],'spec '..spec..': '..tostring(M.selected(a)))
   for _,id in ipairs(list)do assert(M.switch(a,id)=='match',id..' switch')end
   if list[2]then enable(a,list[2]);assert(M.rows(a)[list[2]].eligible,'an enabled reference is not runnable');assert(M.selected(a)==list[1],'the reference outranked the recommended premade')end
-  local low=druid(spec,9);assert(M.selected(low)==nil,'level 9 has no specialization premade')
+  do local low,ls=druid(spec,9);ls.respec(1447);assert(M.selected(low)==P..'initial','below 10 the game reports the initial spec: '..tostring(M.selected(low)))end
  end
 end)
 test('Assisted: follows the suggestion, falls through when there is none, waits on casts and channels',function()

@@ -15,10 +15,10 @@ local function group(v)return{type='PROXIMITY_HEALTHPCT',unit='player',operation
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.restoration.hekili',revision=2,
- blocks={['mop.shaman.manual']=1,['mop.shaman.group']=1,['mop.shaman.restoration-upkeep']=1,['mop.shaman.restoration-damage']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.restoration.hekili',revision=3,
+ blocks={['mop.shaman.manual']=2,['mop.shaman.group']=1,['mop.shaman.restoration-upkeep']=1,['mop.shaman.restoration-damage']=1},
  nameKey='Default.MoP.Shaman.Restoration.Hekili.Name',descriptionKey='Default.MoP.Shaman.Restoration.Hekili.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='SHAMAN',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='SHAMAN'},
  tags={'restoration','healer','caster','endgame','hekili'},
  sources={{url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/ShamanRestoration.simc',title='Hekili (MoP fork): Restoration Shaman priority',reviewedAt='2026-10-23',revision='0750b5dd98005481baf828cce26149b9abca875b'}},
  body={priority=20,disabled=true,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=264}}},

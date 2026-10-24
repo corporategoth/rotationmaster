@@ -16,11 +16,11 @@ local function remain(op,n)return{type='DEBUFF_REMAIN',unit='target',spell=1978,
 local stingless=all(negate({type='DEBUFF',unit='target',spell=1978,anyrank=true,owndebuff=true}),
  negate({type='DEBUFF',unit='target',spell=3043,anyrank=true,owndebuff=true}),negate({type='DEBUFF',unit='target',spell=3034,anyrank=true,owndebuff=true}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.hunter.ranged',revision=2,
- blocks={['era.hunter.boundaries']=1,['era.hunter.dead-zone']=2,['era.hunter.opening']=2,['era.hunter.solo']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.era.hunter.ranged',revision=3,
+ blocks={['era.hunter.boundaries']=2,['era.hunter.dead-zone']=2,['era.hunter.opening']=2,['era.hunter.solo']=1,
   ['era.hunter.hawk']=1,['era.hunter.upkeep']=1,['era.hunter.cooldowns']=1},
  nameKey='Default.Era.Hunter.Ranged.Name',descriptionKey='Default.Era.Hunter.Ranged.Description',
- applicability={families={'era'},actionContext='player',class='HUNTER',minLevel=1,maxLevel=60},
+ applicability={families={'era'},actionContext='player',class='HUNTER'},
  tags={'dps','ranged','leveling','endgame','icy-veins','warcraft-tavern','wowsims'},
  sources={
   {url='https://www.icy-veins.com/wow-classic/hunter-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Hunter DPS rotation, cooldowns and abilities',reviewedAt='2026-10-23',revision='2024-11-17'},

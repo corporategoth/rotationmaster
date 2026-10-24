@@ -24,10 +24,10 @@ local unshielded=negate({type='DEBUFF',unit='target',spell=6788})
 local friendly={type='FRIENDLY',unit='target'}
 local function dispel(kind)return{type='DISPELLABLE',unit='target',debufftype=kind}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.priest.healer',revision=4,
- blocks={['forever.priest.boundaries']=1,['forever.priest.upkeep']=1,['forever.priest.wand']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.priest.healer',revision=5,
+ blocks={['forever.priest.boundaries']=2,['forever.priest.upkeep']=1,['forever.priest.wand']=1},
  nameKey='Default.Forever.Priest.Healer.Name',descriptionKey='Default.Forever.Priest.Healer.Description',
- applicability={families={'forever'},actionContext='player',class='PRIEST',minLevel=10,maxLevel=60},
+ applicability={families={'forever'},actionContext='player',class='PRIEST'},
  tags={'discipline','holy','healer','group','icy-veins','wowhead'},
  sources={
   {url='https://www.icy-veins.com/wow-forever/discipline-priest-healer-pve-guide',title='Icy Veins: Forever Discipline Priest PvE',reviewedAt='2026-10-23',revision='2026-10-16'},
