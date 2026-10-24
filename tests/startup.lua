@@ -365,9 +365,12 @@ test('live autoswitch reads packaged rotations through the facade and prefers ex
     function addon:EnableRotationTimer() end
     function addon:DestroyAllGlows() end
     function addon:GlowClear() end
-    addon.db.profile.rotations[0]={user={name='Z custom',switch={type='READY'},rotation={}}}
+    -- Your rotations and packs compete on priority alone.
+    addon.db.profile.rotations[0]={user={name='Z custom',priority=100000,switch={type='READY'},rotation={}}}
     addon:UpdateAutoSwitch();addon:SwitchRotation()
-    assert(addon.currentRotation=='user','default displaced an existing matching custom rotation')
+    assert(addon.currentRotation=='user','a lower-priority pack displaced a matching custom rotation')
+    addon.db.profile.rotations[0].user.priority=-100000;addon:UpdateAutoSwitch();addon:SwitchRotation()
+    assert(addon.currentRotation~='user' and addon:IsDefaultRuntimeRotation(0,addon.currentRotation),'a custom rotation won on ownership, not priority')
     addon.db.profile.rotations[0].user=nil
     addon.db.profile.rotations[0][env.DEFAULT or 'Default']={name='Saved fallback',rotation={{type='spell',action=324}}}
     -- The saved fallback is the last resort: an enabled pack whose switch matches is chosen first.
@@ -424,7 +427,7 @@ test('switching revisits previously inapplicable packs and clears outgoing coold
     assert(glowing==false and cleared,'outgoing ineligible pack retained highlights')
 end)
 
-test('live autoswitch uses explicit priority and tries packs before the fallback',function()
+test('live autoswitch uses explicit priority alone, packs and yours alike, before the fallback',function()
     local env,a,load=fixture(true,true);load('main.lua');initialize(a)
     a.currentSpec=0
     local function body(name,priority) return {name=name,priority=priority,switch={type='COMBAT'},rotation={{type='spell',action=403}}} end
@@ -434,8 +437,10 @@ test('live autoswitch uses explicit priority and tries packs before the fallback
     a.usefulCondition=function() return true end;a.validateCondition=function() return true end;a.rotationValidConditions=function() return true end
     a.debug=function() end;a.info=function() end;a.RemoveAllCurrentGlows=function() end;a.EnableRotationTimer=function() end
     local calls=0;a.evaluateCondition=function() calls=calls+1;return true end
-    a:UpdateAutoSwitch();a:SwitchRotation();assert(a.currentRotation=='high' and calls==1,'priority selection executed extra candidates or chose alphabetically')
-    rows.high.priority=-5;a:UpdateAutoSwitch();a:SwitchRotation();assert(a.currentRotation=='low')
+    a:UpdateAutoSwitch();a:SwitchRotation();assert(a.currentRotation=='pack' and calls==1,'the highest priority (a pack) was not chosen first')
+    rows.pack.priority=10;a:UpdateAutoSwitch();a:SwitchRotation();assert(a.currentRotation=='high' and calls==2,'priority selection executed extra candidates or chose by ownership')
+    rows.pack.priority=10000;rows.pack.disabled=true;rows.high.priority=-5;a:UpdateAutoSwitch();a:SwitchRotation();assert(a.currentRotation=='low')
+    rows.pack.disabled=nil
     rows.low.disabled=true;rows.high.disabled=true;rows[env.DEFAULT]=body('My fallback',-100000)
     a:UpdateAutoSwitch();calls=0;a:SwitchRotation();assert(a.currentRotation=='pack' and calls==1,'the fallback displaced a matching pack')
     rows.pack.disabled=true;a:UpdateAutoSwitch();calls=0;a:SwitchRotation();assert(a.currentRotation==env.DEFAULT and calls==0,'fallback not chosen when nothing else can be')

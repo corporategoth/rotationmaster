@@ -565,7 +565,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         addon:SetUIScript(self.priority,'OnEditFocusGained',workspace.fallback and function(control) control:ClearFocus() end or nil)
         addon:SetUIScript(self.priority,'OnEnter',function()
             if not alive() or not GameTooltip then return end
-            local text=L['Higher numbers are tried first; your own rotations are always tried before Built Ins. The fallback is used only when no switch condition of another rotation matches. Equal priorities use name, then identity. Blank means zero.']
+            local text=L['Higher numbers are tried first; your rotations and Built Ins compete on priority alone. The fallback is used only when no switch condition of another rotation matches. Equal priorities use name, then identity. Blank means zero.']
             if self.priority.tooltip then text=self.priority.tooltip..'\n\n'..text end
             GameTooltip:SetOwner(self.priority,'ANCHOR_RIGHT');GameTooltip:SetText(text,1,1,1,1,true)
         end)

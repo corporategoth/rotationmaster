@@ -81,7 +81,7 @@ test('the editor: one line with Priority left of Enabled; a Built In is read-onl
     assert(other.switchNote:GetText():find('You are playing Brewmaster; this rotation is saved for Windwalker',1,true),tostring(other.switchNote:GetText()))
 end)
 
-test('switch overlap: identical, subsumed and live overlaps within a tier, ties marked, other tiers and specs apart',function()
+test('switch overlap: identical, subsumed and live overlaps between any rotations, ties marked, other specs apart',function()
     local f=T.new{level=10,specIndex=1};local a=f.addon
     local region=function(c,s) return a:GetSwitchRegion(c,s) end
     assert(a:CompareSwitchRegions(region(level(10)),region(level(10)))=='identical')
@@ -106,8 +106,16 @@ test('switch overlap: identical, subsumed and live overlaps within a tier, ties 
     local found;for _,entry in ipairs(overlaps[low] or {}) do if entry.key==high then found=entry end end
     assert(found and found.kind=='subsumes' and not found.tie,'Low does not subsume High: '..tostring(found and found.kind))
     assert(a:CompareSwitchRegions(region({type='AND',value={level(1),{type='LEVEL',unit='player',operator='LESSTHAN',value=20}}}),region(level(10)))=='overlaps')
-    for _,entry in ipairs(overlaps[low]) do assert(not a:IsDefaultRuntimeRotation(268,entry.key),'custom overlaps reported against a Built In') end
+    -- Yours and Built Ins compete on priority, so they are compared too: Low (level 1+) can
+    -- match together with the Brewmaster Built In, and an equal priority is a tie.
+    local brew=key(a,'rm.retail.monk.brewmaster');local withBrew
+    for _,entry in ipairs(overlaps[low]) do if entry.key==brew then withBrew=entry end end
+    assert(withBrew and not withBrew.tie,'a custom rotation is not compared with a Built In')
+    custom(f,268,'Level ten',{priority=20,switch=level(10)});a:UpdateAutoSwitch()
+    local tie;for _,entry in ipairs(a:GetSwitchOverlaps(268)[brew] or {}) do if entry.name=='Level ten' then tie=entry end end
+    assert(tie and tie.tie and tie.kind~='live','a custom/Built In priority tie is not marked')
     -- Cached on the auto-switch list: the same answer until the roster changes.
+    overlaps=a:GetSwitchOverlaps(268)
     assert(a:GetSwitchOverlaps(268)==overlaps);a:UpdateAutoSwitch();assert(a:GetSwitchOverlaps(268)~=overlaps)
 end)
 
@@ -121,13 +129,13 @@ test('the rotation list: switching order, priorities shown, disabled rows grey, 
     local host=f.env.CreateFrame('Frame');host:SetSize(1000,3000)
     local browser=a:CreateRotationBrowser(host,{spec=268,id=high})
     local order={};for _,row in ipairs(browser.rows) do order[#order+1]=row end
-    assert(order[1].key==off and order[2].key==high and order[3].key==low,'own rotations not first by priority: '..order[1].name..', '..order[2].name)
+    -- By priority alone (yours and Built Ins mixed), then name; the fallback last.
+    assert(order[1].key==off,'highest priority not first: '..order[1].name)
     assert(order[#order].fallback,'the fallback is not last')
-    local seenBuiltin=false
-    for i,row in ipairs(order) do
-        if row.kind=='builtin' then seenBuiltin=true elseif seenBuiltin and not row.fallback then error('custom after a Built In at '..i) end
-        if i>1 and row.kind==order[i-1].kind and not row.fallback and not order[i-1].fallback then assert((order[i-1].priority or 0)>=(row.priority or 0),'not sorted by priority at '..i) end
-    end
+    local position={};for i,row in ipairs(order) do position[row.key]=i end
+    local brew,guide=position[key(a,'rm.retail.monk.brewmaster')],position[key(a,'rm.retail.monk.brewmaster.guide')]
+    assert(position[off]<brew and brew<guide and guide<position[high] and position[high]<position[low],'Built Ins not interleaved by priority (50 > 20 > 10 > 9 > 1)')
+    for i=2,#order-1 do assert((order[i-1].priority or 0)>=(order[i].priority or 0),'not sorted by priority at '..i) end
     local controls={};for _,control in ipairs(browser.rowButtons) do if control:IsShown() and control.browserEntry then controls[control.browserEntry.key]=control end end
     local offRow=controls[off];assert(offRow.nameLabel.alpha==.5 and offRow.tooltip:find('Disabled',1,true),'disabled custom row not grey')
     local ww=controls[key(a,'rm.retail.monk.windwalker')]

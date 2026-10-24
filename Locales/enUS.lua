@@ -935,7 +935,7 @@ L["%d other Built In rotations are disabled (for another specialization, level o
 L["%s: disabled by you (turn it back on in Rotations, in its Built In view)."] = true
 L["%s: ships disabled, an alternative to the recommended one (turn it on in Rotations, in its Built In view)."] = true
 L["then the fallback (%s)"] = true
-L["Automatic switching tries: %s. Higher numbers are tried first; your own rotations are always tried before Built Ins."] = true
+L["Automatic switching tries: %s. Higher numbers are tried first; equal priorities go by name."] = true
 L["Automatic switching would choose: %s"] = true
 L["%d Built In disabled: %s"] = true
 L["Disabled by you"] = true
@@ -980,10 +980,10 @@ L["More than one rotation uses the handle %s. Give one of them another handle in
 L["Handles you can use now: %s (or auto). /rm list shows every rotation."] = true
 L["Handle"] = true
 L["Choosing a rotation"] = true
-L["Automatic switching tries your own rotations first, then Built Ins, each in priority order: higher numbers are tried first, equal priorities by name. It picks the first whose switch condition matches. The fallback (Default) is used only when none matches. The rotation list is sorted in this same order and shows each priority."] = true
+L["Automatic switching tries the enabled rotations in priority order, yours and Built Ins alike: higher numbers are tried first, equal priorities by name. It picks the first whose switch condition matches. The fallback (Default) is used only when none matches. The rotation list is sorted in this same order and shows each priority."] = true
 L["Priority sits beside Enabled at the top of the editor. A Built In cannot be edited, but its Enabled setting and priority are yours to change for this profile: they are saved at once, shown in amber when they differ from how it ships, and Reset to default puts it back. Copy a Built In to your rotations to edit anything else."] = true
 L["A Built In loads only for the edition and class it was written for (shown under the switch). Its specialization and level are part of its switch condition, so the switch decides the rest."] = true
-L["In the list, a red border means the rotation cannot be selected (the tooltip names why), grey means it is switched off, and an amber bar means its switch condition can match at the same time as another rotation of the same kind, so only priority decides between them; a wider bar means they also have the same priority and the name decides. /rm why lists the order and what automatic switching would choose now."] = true
+L["In the list, a red border means the rotation cannot be selected (the tooltip names why), grey means it is switched off, and an amber bar means its switch condition can match at the same time as another rotation (yours or Built In), so only priority decides between them; a wider bar means they also have the same priority and the name decides. /rm why lists the order and what automatic switching would choose now."] = true
 L["You are playing %s; this rotation is saved for %s, so it is not selectable now."] = true
 L["Priority"] = true
 L["Reset to default"] = true
@@ -997,7 +997,7 @@ L["Turn this Built In back on for this profile."] = true
 L["Disabled by you: automatic switching skips it. Select it and click Disabled to turn it back on."] = true
 L["Ships disabled (an alternative to the recommended Built In): automatic switching skips it until you turn it on."] = true
 L["Disabled: automatic switching skips it."] = true
-L["Higher numbers are tried first; your own rotations are always tried before Built Ins."] = true
+L["Higher numbers are tried first; equal priorities go by name. Your rotations and Built Ins compete on priority alone."] = true
 L["Same priority as %s: their switch conditions can match together, and the tie is decided by name."] = true
 L["Can match together with %s: only priority decides which is chosen."] = true
 L["expansions %s–%s"] = true
@@ -1914,7 +1914,7 @@ L["Priority %d"] = true
 L["Invalid priority"] = true
 L["Switch priority must be a whole number between -100000 and 100000."] = true
 L["Edit the description, tags, switch priority, author, realm, email, website and version. Source citations remain separate from your attribution. Use changes updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values."] = true
-L["Higher numbers are tried first; your own rotations are always tried before Built Ins. The fallback is used only when no switch condition of another rotation matches. Equal priorities use name, then identity. Blank means zero."] = true
+L["Higher numbers are tried first; your rotations and Built Ins compete on priority alone. The fallback is used only when no switch condition of another rotation matches. Equal priorities use name, then identity. Blank means zero."] = true
 L["Invalid switch priority for %s:%s; explicit repair resets it to zero."] = true
 
 -- Rank-aware aura families.
