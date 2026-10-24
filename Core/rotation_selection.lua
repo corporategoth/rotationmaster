@@ -546,12 +546,15 @@ function addon:ListSelectableHandles(spec,selectable)
     table.sort(list);return list
 end
 -- "Name [handle]" for chat and menus.
+function addon:FormatRotationLabel(name,key,spec)
+    if type(name)~='string' then return name end
+    local handle=key~=DEFAULT and self:GetRotationHandle(spec or self.currentSpec,key) or nil
+    return handle and string.format('%s [%s]',name,handle) or name
+end
 function addon:GetRotationLabel(key,spec)
-    spec=spec or self.currentSpec
     local name=key==DEFAULT and DEFAULT or self:GetRotationName(key)
     if not name then return nil end
-    local handle=key~=DEFAULT and self:GetRotationHandle(spec,key) or nil
-    return handle and string.format('%s [%s]',name,handle) or name
+    return self:FormatRotationLabel(name,key,spec)
 end
 -- /rm list: handle, name and status of every rotation for the live spec.
 function addon:GetRotationHandleReport()
