@@ -3,7 +3,7 @@
 -- never copy the rotation; one header line with Priority left of Enabled; a read-only
 -- banner on a Built In; the rotation list sorted as automatic switching tries it, with
 -- disabled rows greyed and overlapping switches marked amber; where a pack loads and the
--- live specialization shown under the switch; the switch-overlap analysis itself.
+-- live specialization in tooltips (no extra rows); the switch-overlap analysis itself.
 local T=dofile('tests/fixtures/toc_addon.lua')
 local F=dofile('tests/fixtures/addon.lua')
 local test,finish=F.suite()
@@ -56,7 +56,10 @@ test('the editor: one line with Priority left of Enabled; a Built In is read-onl
     local f=T.new{level=10,specIndex=1};local a=f.addon
     local parent=f.env.CreateFrame('Frame');parent:SetSize(900,700)
     local pane=assert(a:CreateRotationEditor(parent,268,key(a,'rm.retail.monk.brewmaster')))
-    assert(pane.readOnlyBanner:IsShown() and pane.readOnlyBanner:GetText():find('read%-only'),'no read-only banner')
+    -- A blue Read-Only pill replaces Undo and Redo; no banner row, nothing to click.
+    assert(pane.readOnlyPill:IsShown() and pane.readOnlyPill:GetText()=='Read-Only' and not pane.undo:IsShown() and not pane.redo:IsShown(),'no Read-Only pill in place of Undo/Redo')
+    assert(pane.readOnlyPill.scripts.OnClick==nil and pane.readOnlyBanner==nil and pane.switchNote==nil,'the pill acts, or a banner/note row remains')
+    local br,bg,bb=unpack(pane.readOnlyPill:GetFontString().textColor);assert(br<.4 and bb>.9,'pill is not Built In blue')
     assert(not pane.apply:IsEnabled() and not pane.name:IsMouseEnabled(),'Built In fields are editable')
     local _,anchor=pane.priorityUp:GetPoint(1);assert(anchor==pane.enable,'priority is not left of Enabled')
     assert(pane.priority:GetText()=='20' and pane.priorityLabel:GetText()=='Priority' and not pane.overrideReset:IsShown())
@@ -71,14 +74,21 @@ test('the editor: one line with Priority left of Enabled; a Built In is read-onl
     local pr,pg=unpack(pane.enable:GetFontString().textColor);assert(pr==1 and pg<.9,'Enabled override not shown in the pill text')
     pane.overrideReset:Click();assert(prefs(a)['rm.retail.monk.brewmaster']==nil and pane.priority:GetText()=='20' and not pane.overrideReset:IsShown())
     -- Where it loads, under the switch.
-    assert(pane.switchNote:IsShown() and pane.switchNote:GetText():find('Loads only for: Retail · Monk',1,true),tostring(pane.switchNote:GetText()))
+    assert(pane.readOnlyPill.tooltip:find('Loads only for: Retail · Monk',1,true),tostring(pane.readOnlyPill.tooltip))
+    -- No row is reserved: the canvas sits as far below the switch as in your own rotation's pane,
+    -- and the switch as far below the header.
+    local function gaps(p) local _,_,cy=p.canvas.frame:GetPoint(1);local _,_,sy=p.switch:GetPoint(1);return sy-cy-p.switch:GetHeight(),sy end
+    local mineKey=custom(f,268,'Mine',{switch=level(1)})
+    local mine=assert(a:CreateRotationEditor(f.env.CreateFrame('Frame'),268,mineKey));mine.frame:SetSize(900,700);mine:Layout()
+    local builtinGap,builtinTop=gaps(pane);local mineGap,mineTop=gaps(mine)
+    assert(builtinGap==mineGap and builtinTop==mineTop,('Built In pane reserves extra rows: %s/%s vs %s/%s'):format(builtinGap,builtinTop,mineGap,mineTop))
     -- Load-time scope only: no specializations, a minimum level only, rulesets by name.
     local text=a:DescribeApplicability({families={'era'},class='DRUID',specs={102},minLevel=10,maxLevel=60,rulesets={'season:2','hardcore','self-found'}})
     assert(text=='Loads only for: Classic Era · Druid · level 10+ · Season of Discovery, Hardcore, Self-Found. The switch condition decides the rest.',text)
     assert(a:DescribeApplicability({families={'retail'},class='MONK',minLevel=1})=='Loads only for: Retail · Monk. The switch condition decides the rest.')
     -- A rotation saved for another specialization says it is not selectable now.
     local other=assert(a:CreateRotationEditor(f.env.CreateFrame('Frame'),269,key(a,'rm.retail.monk.windwalker')))
-    assert(other.switchNote:GetText():find('You are playing Brewmaster; this rotation is saved for Windwalker',1,true),tostring(other.switchNote:GetText()))
+    assert(other.switch.tooltip:find('You are playing Brewmaster; this rotation is saved for Windwalker',1,true),tostring(other.switch.tooltip))
 end)
 
 test('switch overlap: identical, subsumed and live overlaps between any rotations, ties marked, other specs apart',function()

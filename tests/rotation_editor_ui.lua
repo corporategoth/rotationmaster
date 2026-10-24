@@ -666,7 +666,7 @@ test('switch priority sits beside Enabled, stages with validation and history, a
     pane.undo:Click();assert(pane.workspace:Snapshot().priority==nil);pane.redo:Click();pane.apply:Click();assert(a:GetEditableRotation(0,'mine').priority==25)
     pane.priorityDown:Click();assert(field:GetText()=='24' and pane.priorityDirty);pane.priorityUp:Click();assert(field:GetText()=='25')
     pane:Release();pane=assert(a:CreateRotationEditor(parent,0,'builtin'));field=pane.priority
-    assert(pane.readOnlyBanner:IsShown(),'read-only banner missing');field:SetText('50');field.scripts.OnTextChanged(field,true);assert(not pane.priorityDirty and not pane.apply:IsEnabled())
+    assert(pane.readOnlyPill:IsShown() and not pane.undo:IsShown(),'Read-Only pill missing');field:SetText('50');field.scripts.OnTextChanged(field,true);assert(not pane.priorityDirty and not pane.apply:IsEnabled())
 end)
 test('diagram and compact list share one guarded draft and switching views preserves pending edits and history',function()
     local f,parent=fixture();local a=f.addon;local pane=assert(a:CreateRotationEditor(parent,0,'mine'))

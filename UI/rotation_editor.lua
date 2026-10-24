@@ -153,7 +153,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         self.origin:SetText('')
         self.switchText:SetText(addon:PlainWorkbenchName(workspace.fallback and L['No other rotations match.'] or addon:DescribeCardCondition(snapshot.switch or {},spec)))
         if workspace.fallback then self.switch:Disable() else self.switch:Enable() end
-        self.switchNoteText,self.switchNoteAmber=self:SwitchNotes();self.switchNoteWorkspace=self.workspace
+        self:ApplySwitchNotes()
         self:BuildScene();self:LayoutGeometry();self.canvas:Render()
         if self.liveTimer then self:RefreshLiveStatus() else self.switchLive:SetState(nil) end
         for _,control in ipairs({self.compare,self.clone}) do if self.workspace.pending then control:Disable() else control:Enable() end end
@@ -304,19 +304,22 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     pane.priorityUp=addon:CreateWorkbenchIconButton(pane.frame,'plus',L['Increase priority']);pane.priorityUp:SetSize(18,18)
     pane.overrideReset=addon:CreateWorkbenchButton(pane.frame,L['Reset to default'],116);pane.overrideReset:SetHeight(20)
     pane.overrideReset.tooltip=L['Use the Built In as it ships: its own Enabled setting and priority.']
-    -- A Built In's pane says it cannot be edited, and where its copy comes from.
-    pane.readOnlyBanner=addon:CreateWorkbenchLabeledIconButton(pane.frame,'copy',L['Built In: read-only. Click to copy it to your rotations and edit the copy. Enabled and Priority are your own settings for this profile.'],400)
-    pane.readOnlyBanner:GetFontString():SetTextColor(.357,.753,.922);pane.readOnlyBanner:Hide()
-    -- Under the switch: what else decides selection (where it loads, the
-    -- specialization being played) and, in amber, overlapping switches.
-    pane.switchNote=text(pane.frame);pane.switchNote:SetWordWrap(true);pane.switchNote:SetJustifyV('TOP');pane.switchNote:Hide()
+    -- A Built In shows a blue Read-Only pill where Undo and Redo sit (it has
+    -- nothing to undo). It is a label, not a button; its tooltip says where
+    -- the pack loads. Duplicate makes an editable copy.
+    pane.readOnlyPill=addon:CreateWorkbenchPill(pane.frame,L['Read-Only'],78);pane.readOnlyPill:SetSelected(true)
+    pane.readOnlyPill:SetAccent(.357,.753,.922,.9);pane.readOnlyPill:GetFontString():SetTextColor(.357,.753,.922);pane.readOnlyPill:Hide()
+    pane.switchBaseTooltip=pane.switch.tooltip
+    -- What else bears on selection, kept off the page (vertical space is
+    -- scarce): where it loads (the Read-Only pill's tooltip), and the
+    -- specialization being played and overlapping switches (the switch's
+    -- tooltip, with an amber edge on the switch for an overlap).
     function pane:SwitchNotes()
         local lines,amber={},false
         local scope
         if self.workspace.readOnly and addon.GetDefaultRotation then local view=addon:GetDefaultRotation(self.workspace.builtin);scope=view and view.applicability
         else for _,kind in ipairs({'origins','imports'}) do local record=self.workspace.reserved and self.workspace.reserved[kind];if type(record)=='table' and type(record.manifest)=='table' and record.manifest.applicability then scope=record.manifest.applicability;break end end end
         local where=addon.DescribeApplicability and addon:DescribeApplicability(scope)
-        if where then lines[#lines+1]=where end
         if addon.currentSpec~=nil and spec~=addon.currentSpec and addon.DescribeRotationSpec then
             lines[#lines+1]=string.format(L['You are playing %s; this rotation is saved for %s, so it is not selectable now.'],addon:DescribeRotationSpec(addon.currentSpec),addon:DescribeRotationSpec(spec))
         end
@@ -324,7 +327,14 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
             local overlap=addon:DescribeSwitchOverlap(addon:GetSwitchOverlaps(spec)[self.workspace.id])
             if overlap then lines[#lines+1]=overlap;amber=true end
         end
-        return #lines>0 and table.concat(lines,'\n') or nil,amber
+        return #lines>0 and table.concat(lines,'\n') or nil,amber,where
+    end
+    function pane:ApplySwitchNotes()
+        local note,amber,where=self:SwitchNotes()
+        self.switch.tooltip=note and (self.switchBaseTooltip and self.switchBaseTooltip..'\n\n'..note or note) or self.switchBaseTooltip
+        if addon.SetWorkbenchNotice then addon:SetWorkbenchNotice(self.switch,amber,false) end
+        local pill=L['Built In: it cannot be edited. Duplicate makes your own copy; Enabled and Priority are your settings for this profile.']
+        self.readOnlyPill.tooltip=where and pill..'\n\n'..where or pill
     end
     pane.delete=tool(L['Delete'],24,function() if pane.ConfirmDelete then pane:ConfirmDelete() end end)
     pane.delete:SetText('');pane.delete.art:Hide();pane.delete.icon=pane.delete:CreateTexture(nil,'ARTWORK');pane.delete.icon:SetAllPoints(pane.delete);pane.delete.icon:SetTexture(addon:ControlTexture('trash'));pane.delete.icon:SetVertexColor(1,.3,.3,1);pane.delete.tooltip=L['Delete rotation']
@@ -493,9 +503,18 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         local showPriority=not workspace.fallback
         local showReset=overrides~=nil and overrides.overridden
         local headerReserve=112+(showPriority and 132 or 0)+(showReset and 122 or 0)+180
+        -- A Built In has nothing to undo: the Read-Only pill takes that place.
+        local readOnly=self.workspace.readOnly
+        if readOnly then
+            self.readOnlyPill:ClearAllPoints();self.readOnlyPill:SetPoint('TOPLEFT',self.frame,'TOPLEFT',x,-y-3);self.readOnlyPill:Show();x=x+self.readOnlyPill:GetWidth()+4
+        else self.readOnlyPill:Hide() end
         for _,control in ipairs(self.tools) do
+            if readOnly and (control==self.undo or control==self.redo) then control:Hide()
+            else
+                control:Show()
                 if x+control:GetWidth()>width-headerReserve then x=8;y=y+24 end
-            control:ClearAllPoints();control:SetPoint('TOPLEFT',self.frame,'TOPLEFT',x,-y);x=x+control:GetWidth()+4
+                control:ClearAllPoints();control:SetPoint('TOPLEFT',self.frame,'TOPLEFT',x,-y);x=x+control:GetWidth()+4
+            end
         end
         self.delete:ClearAllPoints();self.delete:SetPoint('TOPRIGHT',self.frame,'TOPRIGHT',-8,-34)
         self.enable:ClearAllPoints();self.enable:SetPoint('TOPRIGHT',self.frame,'TOPRIGHT',-36,-35)
@@ -508,9 +527,6 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         self.handleLabel:ClearAllPoints();self.handleLabel:SetPoint('RIGHT',self.handle,'LEFT',-4,0)
         self.overrideReset:ClearAllPoints();self.overrideReset:SetPoint('RIGHT',self.handleLabel,'LEFT',-8,0)
         if showReset then self.overrideReset:Show() else self.overrideReset:Hide() end
-        if self.workspace.readOnly then
-            self.readOnlyBanner:ClearAllPoints();self.readOnlyBanner:SetPoint('TOPLEFT',8,-y-26);self.readOnlyBanner:SetWidth(math.max(100,width-16));self.readOnlyBanner:Show();y=y+24
-        else self.readOnlyBanner:Hide() end
         local available=self.validation and self.validation.valid and self.validation.supported and self.validation.resolved and not self:HasInvalidPendingFields()
         self.validationButton:ClearAllPoints();self.validationButton:SetPoint('TOPLEFT',8,-y-26);self.validationButton:SetWidth(math.max(100,width-16))
         self:RefreshSectionMarkers()
@@ -526,16 +542,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         local switchHeight=math.max(20,self.switchText:GetStringHeight());self.switchText:SetHeight(math.min(72,switchHeight))
         self.switch:SetSize(math.max(100,width-16),math.min(72,switchHeight)+8)
         self.switch:Show()
-        -- Notes are computed once per render (Render), not per resize.
-        if self.switchNoteWorkspace~=self.workspace then self.switchNoteText,self.switchNoteAmber=self:SwitchNotes();self.switchNoteWorkspace=self.workspace end
-        local noteText,amber=self.switchNoteText,self.switchNoteAmber;local noteHeight=0
-        if noteText then
-            self.switchNote:SetText(noteText);self.switchNote:SetWidth(math.max(100,width-16));self.switchNote:SetHeight(0)
-            noteHeight=math.min(60,self.switchNote:GetStringHeight());self.switchNote:SetHeight(noteHeight)
-            if amber then self.switchNote:SetTextColor(1,.72,.25) else self.switchNote:SetTextColor(.67,.72,.77) end
-            self.switchNote:ClearAllPoints();self.switchNote:SetPoint('TOPLEFT',8,-(switchTop+22+math.min(72,switchHeight)+12));self.switchNote:Show();noteHeight=noteHeight+4
-        else self.switchNote:Hide() end
-        local top=self:LayoutViewControls(switchTop+22+math.min(72,switchHeight)+18+noteHeight,width)
+        local top=self:LayoutViewControls(switchTop+22+math.min(72,switchHeight)+18,width)
         self.canvas.frame:ClearAllPoints();self.canvas.frame:SetPoint('TOPLEFT',8,-top)
         self.canvas.frame:SetSize(math.max(1,width-40),math.max(1,height-top-48));self.canvas:LayoutScrollBar();local barReserve=self.selectionBar and self.selectionBar:IsShown() and 200 or 0;self.status:SetWidth(math.max(1,width-330-barReserve));self.hint:SetWidth(math.max(1,width-330-barReserve));if (self.status:GetText() or '')=='' then self.hint:Show() else self.hint:Hide() end
     end
@@ -571,7 +578,6 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         addon:SetUIScript(self.info,'OnClick',function() if alive() then self.metadataWindow:Open() end end)
         addon:SetUIScript(self.enable,'OnClick',function() if alive() then self.enable.action() end end)
         addon:SetUIScript(self.delete,'OnClick',function() if alive() then self.delete.action() end end)
-        addon:SetUIScript(self.readOnlyBanner,'OnClick',function() if alive() and workspace.readOnly then self.clone.action() end end)
         addon:SetUIScript(self.overrideReset,'OnClick',function()
             if not alive() or not workspace.readOnly or not addon.ResetBuiltinOverrides then return end
             local ok,problem=addon:ResetBuiltinOverrides(workspace.builtin)
