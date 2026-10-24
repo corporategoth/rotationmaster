@@ -7,17 +7,17 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.devastation',revision=2,
- blocks={['retail.evoker.boundaries']=1,['retail.evoker.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.devastation',revision=3,
+ blocks={['retail.evoker.boundaries']=2,['retail.evoker.utility']=2},
  nameKey='Default.Retail.Evoker.Devastation.Name',descriptionKey='Default.Retail.Evoker.Devastation.Description',
- applicability={families={'retail'},actionContext='player',class='EVOKER',specs={1467},minLevel=10,maxLevel=90},
+ applicability={families={'retail'},actionContext='player',class='EVOKER'},
  tags={'devastation','ranged','assisted-combat'},
  sources={
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/assisted_combat/evoker_devastation.simc',title='SimulationCraft model of Blizzard Assisted Combat: Devastation',reviewedAt='2026-10-23',revision='c5fea93f',notes='Its cooldowns list (Deep Breath, Dragonrage, Tip the Scales) is what Assisted Combat leaves out.'},
   {url='https://github.com/Gethe/wow-ui-source/blob/live/Interface/AddOns/Blizzard_APIDocumentationGenerated/AssistedCombatDocumentation.lua',title='Blizzard API documentation: C_AssistedCombat (12.1.5.70529)',reviewedAt='2026-10-23',revision='e7aa82019d'},
   {url='https://github.com/kaminaris/MaxDps-Evoker',title='MaxDps Evoker (Midnight)',reviewedAt='2026-10-23',revision='a63a8438',notes='Assisted Combat spell plus interrupt, defensive and cooldown glows.'},
  },
- body={priority=20,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+ body={priority=20,switch={type='SPECIALIZATION',spec=1467},
   cooldowns={
    block('dev-utility','retail.evoker.utility','dev-'),
    spell('dev-dragonrage',375087,combat()),

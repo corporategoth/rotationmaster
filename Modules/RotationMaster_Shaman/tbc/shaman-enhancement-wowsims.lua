@@ -8,11 +8,11 @@ local function negate(c)return{type='NOT',value=c}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function windfuryWithin(s)return{type='SPELL_HISTORY_TIME',spell=8512,operator='LESSTHAN',value=s}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.enhancement.wowsims',revision=3,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.enhancement.wowsims',revision=4,
  blocks={['tbc.shaman.enhancement-upkeep']=2,['tbc.shaman.mainhand-imbue']=1,['tbc.shaman.shield']=1,['tbc.shaman.bloodlust']=1,
-  ['tbc.shaman.enhancement-opening']=2,['tbc.shaman.boundaries']=1,['tbc.shaman.interrupt']=1},
+  ['tbc.shaman.enhancement-opening']=2,['tbc.shaman.boundaries']=2,['tbc.shaman.interrupt']=1},
  nameKey='Default.TBC.Shaman.Enhancement.Wowsims.Name',descriptionKey='Default.TBC.Shaman.Enhancement.Wowsims.Description',
- applicability={families={'tbc'},actionContext='player',class='SHAMAN',minLevel=1,maxLevel=70},
+ applicability={families={'tbc'},actionContext='player',class='SHAMAN'},
  tags={'endgame','raid','enhancement','melee','single-target','aoe','wowhead','wowsims'},
  sources={{url='https://www.wowhead.com/tbc/guide/classes/shaman/enhancement/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Enhancement Shaman DPS rotation',reviewedAt='2026-10-23',revision='2026-02-17'},
   {url='https://github.com/wowsims/tbc/blob/3301fca59306a747e521274c36e073e69acc7b77/sim/shaman/enhancement/rotation.go',title='wowsims/tbc Enhancement rotation',reviewedAt='2026-10-23',revision='3301fca59306a747e521274c36e073e69acc7b77'}},

@@ -16,16 +16,16 @@ local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local harmony=known(1262765)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.monk.brewmaster.guide',revision=3,
- blocks={['retail.monk.boundaries']=1,['retail.monk.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.monk.brewmaster.guide',revision=4,
+ blocks={['retail.monk.boundaries']=2,['retail.monk.utility']=2},
  nameKey='Default.Retail.Monk.BrewmasterGuide.Name',descriptionKey='Default.Retail.Monk.BrewmasterGuide.Description',
- applicability={families={'retail'},actionContext='player',class='MONK',specs={268},minLevel=10,maxLevel=90},
+ applicability={families={'retail'},actionContext='player',class='MONK'},
  tags={'brewmaster','tank','reference','icy-veins','simulationcraft'},
  sources={
   {url='https://www.icy-veins.com/wow/brewmaster-monk-pve-tank-rotation-cooldowns-abilities',title='Icy Veins: Brewmaster Monk rotation (12.1.5)',reviewedAt='2026-10-23',revision='2026-10-12'},
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/monk_brewmaster.simc',title='SimulationCraft default action list: Brewmaster',reviewedAt='2026-10-23',revision='c5fea93f',notes='Same shape; its numeric brew logic is Icy Veins\' advice made exact.'},
  },
- body={priority=10,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+ body={priority=10,disabled=true,switch={type='SPECIALIZATION',spec=268},
   cooldowns={
    block('bguide-utility','retail.monk.utility','bguide-'),
    spell('bguide-black-ox-brew',115399,all(combat(),{type='SPELL_CHARGES',spell=119582,operator='LESSTHAN',value=1},negate({type='SPELL_AVAIL',spell=322507}))),

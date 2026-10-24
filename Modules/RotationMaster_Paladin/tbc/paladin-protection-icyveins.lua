@@ -9,10 +9,10 @@ local function negate(c)return{type='NOT',value=c}end
 local function own(id)return{type='BUFF',unit='player',spell=id,anyrank=true,ownbuff=true}end
 local function anySeal()local out={};for i,id in ipairs({21084,20375,31892,348700,31801,348704,21082,20166,20165,20164})do out[i]=own(id)end;return{type='OR',value=out}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.protection.icyveins',revision=3,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.protection.icyveins',revision=4,
  blocks={['tbc.paladin.tank-upkeep']=2,['tbc.paladin.melee-opening']=1,['tbc.paladin.boundaries']=1},
  nameKey='Default.TBC.Paladin.Protection.IcyVeins.Name',descriptionKey='Default.TBC.Paladin.Protection.IcyVeins.Description',
- applicability={families={'tbc'},actionContext='player',class='PALADIN',minLevel=1,maxLevel=70},
+ applicability={families={'tbc'},actionContext='player',class='PALADIN'},
  tags={'leveling','endgame','protection','tank','single-target','aoe','icy-veins'},
  sources={{url='https://www.icy-veins.com/tbc-classic/protection-paladin-tank-pve-rotation-cooldowns-abilities',title='Icy Veins: Protection Paladin rotation',reviewedAt='2026-10-23',revision='2026-01-12'},
   {url='https://www.icy-veins.com/tbc-classic/protection-paladin-leveling-guide',title='Icy Veins: Protection Paladin leveling',reviewedAt='2026-10-23',revision='2026-01-12'}},

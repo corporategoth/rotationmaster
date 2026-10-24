@@ -27,10 +27,10 @@ local memory=own(139597)
 local capped=negate(chi('GREATERTHANOREQUALS',-1))
 local friendly={type='FRIENDLY',unit='target'}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.monk.mistweaver',revision=3,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.monk.mistweaver',revision=4,
  blocks={['mop.monk.upkeep']=1},
  nameKey='Default.MoP.Monk.Mistweaver.Name',descriptionKey='Default.MoP.Monk.Mistweaver.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK'},
  tags={'mistweaver','healer','leveling','icy-veins','wowhead'},
  sources={
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/mistweaver-monk-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Mistweaver Monk rotation',reviewedAt='2026-10-23',revision='2025-06-17'},
@@ -60,8 +60,7 @@ assert(addon:RegisterDefaultRotation({
     spell('mist-soothing-enveloping',124682,all(negate(mine(132120)),negate(mine(124682)),health('target','LESSTHAN',.8))),
     spell('mist-soothing-surging',SURGING,any(health('target','LESSTHAN',.6),vital)),
     stop('mist-soothing-stop')}},
-   stop('mist-cast',{type='CASTING',unit='player'}),
-   stop('mist-channel',{type='CHANNELING',unit='player'}),
+   stop('mist-cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})),
    {id='mist-heal',type='branch',conditions=all(friendly,negate({type='DEAD',unit='target'})),onTrue={
     spell('mist-renewing',RENEWING),
     spell('mist-uplift',116670,all({type='GROUP'},chi('GREATERTHANOREQUALS',2),hurt(3,.85))),

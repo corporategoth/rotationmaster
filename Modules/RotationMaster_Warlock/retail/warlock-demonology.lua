@@ -13,10 +13,10 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.demonology',revision=2,
- blocks={['retail.warlock.boundaries']=1,['retail.warlock.upkeep']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.demonology',revision=3,
+ blocks={['retail.warlock.boundaries']=2,['retail.warlock.upkeep']=2},
  nameKey='Default.Retail.Warlock.Demonology.Name',descriptionKey='Default.Retail.Warlock.Demonology.Description',
- applicability={families={'retail'},actionContext='player',class='WARLOCK',specs={266},minLevel=10,maxLevel=90},
+ applicability={families={'retail'},actionContext='player',class='WARLOCK'},
  tags={'demonology','ranged','assisted-combat','single-target','aoe','simulationcraft'},
  sources={
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/assisted_combat/warlock_demonology.simc',title='SimulationCraft: Assisted Combat model, Demonology Warlock',reviewedAt='2026-10-23',revision='c5fea93fb77d'},
@@ -24,7 +24,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/kaminaris/MaxDps-Warlock',title='MaxDps Warlock module (Midnight)',reviewedAt='2026-10-23',revision='432c75e0dd',notes='No priority in Midnight: the Assisted Combat spell plus cooldown, defensive and interrupt glows.'},
   {url='https://www.icy-veins.com/wow/demonology-warlock-pve-dps-rotation-cooldowns-abilities',title='Icy Veins: Demonology Warlock rotation (Midnight)',reviewedAt='2026-10-23',revision='2026-10-12',notes='Grimoires and Summon Doomguard, which the Assisted Combat model never casts.'},
  },
- body={priority=10,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+ body={priority=10,switch={type='SPECIALIZATION',spec=266},
   cooldowns={
    block('retail.warlock.upkeep','demo-'),
    spell('demo-summon-felguard',30146,all(negate(combat()),negate({type='PET'}))),

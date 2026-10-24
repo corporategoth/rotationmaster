@@ -15,9 +15,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
 local function remain(id)return{type='BUFF_REMAIN',unit='player',spell=id,anyrank=true,ownbuff=true,operator='GREATERTHANOREQUALS',value=3}end
 local friendly={type='FRIENDLY',unit='target'}
-assert(addon:RegisterDefaultBlock({id='forever.paladin.boundaries',revision=1,families={'forever'},class='PALADIN',steps={
- stop('cast',{type='CASTING',unit='player'}),
- stop('channel',{type='CHANNELING',unit='player'}),
+assert(addon:RegisterDefaultBlock({id='forever.paladin.boundaries',revision=2,families={'forever'},class='PALADIN',steps={
+ stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})),
 }}))
 -- No aura of yours: Retribution Aura once learned, else Devotion. No Blessing of yours on you:
 -- Kings once learned, else Might. Any aura or Blessing you already chose is kept.

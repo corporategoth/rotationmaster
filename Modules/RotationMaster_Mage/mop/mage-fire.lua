@@ -16,10 +16,10 @@ local function off(id,action,conditions)local step=spell(id,action,conditions);s
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local PYRO,HEAT,ALTER=48108,48107,110909
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.mage.fire',revision=3,
- blocks={['mop.mage.boundaries']=1,['mop.mage.upkeep']=1,['mop.mage.armor-molten']=1,['mop.mage.bombs']=1,['mop.mage.fire-open']=2,['mop.mage.fire-spend']=1,['mop.mage.fire-filler']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.mage.fire',revision=4,
+ blocks={['mop.mage.boundaries']=2,['mop.mage.upkeep']=1,['mop.mage.armor-molten']=1,['mop.mage.bombs']=1,['mop.mage.fire-open']=2,['mop.mage.fire-spend']=1,['mop.mage.fire-filler']=1},
  nameKey='Default.MoP.Mage.Fire.Name',descriptionKey='Default.MoP.Mage.Fire.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE'},
  tags={'fire','leveling','single-target','aoe','wowsims','wowhead'},
  sources={
   {url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/mage/fire/apls/fire.apl.json',title='wowsims/mop: Fire Mage APL',reviewedAt='2026-10-23',revision='ec2c6c2552',notes='Pyroblast! pooling before Combustion; Presence of Mind and Alter Time sequence.'},

@@ -25,10 +25,10 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local soul=own(113858)
 local backdraft=own(117828)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.warlock.destruction',revision=3,
- blocks={['mop.warlock.boundaries']=2,['mop.warlock.upkeep']=1,['mop.warlock.pet-felhunter']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.warlock.destruction',revision=4,
+ blocks={['mop.warlock.boundaries']=3,['mop.warlock.upkeep']=1,['mop.warlock.pet-felhunter']=1},
  nameKey='Default.MoP.Warlock.Destruction.Name',descriptionKey='Default.MoP.Warlock.Destruction.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARLOCK',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARLOCK'},
  tags={'destruction','dps','caster','ranged','leveling','endgame','warcraft-tavern','method','wowtbc','wowsims'},
  sources={{url='https://www.warcrafttavern.com/mop/guides/pve-destruction-warlock-rotations-cooldowns/',title='Warcraft Tavern: Destruction Warlock rotation (MoP)',reviewedAt='2026-10-23'},
  {url='https://www.method.gg/mop-classic/destruction-warlock-class-guide-mop-classic',title='Method: Destruction Warlock guide (MoP Classic)',reviewedAt='2026-10-23',revision='2025-07-23'},

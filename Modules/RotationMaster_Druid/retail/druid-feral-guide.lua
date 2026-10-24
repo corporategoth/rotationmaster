@@ -20,16 +20,16 @@ local function refresh(id,remain)return any(negate({type='DEBUFF',unit='target',
 local fury=buff(5217)
 local berserk=any(buff(106951),buff(102543))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.druid.feral.guide',revision=3,
- blocks={['retail.druid.boundaries']=1,['retail.druid.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.druid.feral.guide',revision=4,
+ blocks={['retail.druid.boundaries']=2,['retail.druid.utility']=2},
  nameKey='Default.Retail.Druid.FeralGuide.Name',descriptionKey='Default.Retail.Druid.FeralGuide.Description',
- applicability={families={'retail'},actionContext='player',class='DRUID',specs={103},minLevel=10,maxLevel=90},
+ applicability={families={'retail'},actionContext='player',class='DRUID'},
  tags={'feral','melee','reference','icy-veins','simulationcraft'},
  sources={
   {url='https://www.icy-veins.com/wow/feral-druid-pve-dps-rotation-cooldowns-abilities',title='Icy Veins: Feral Druid rotation (12.1.5)',reviewedAt='2026-10-23',revision='2026-10-12'},
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/druid_feral.simc',title='SimulationCraft default action list: Feral',reviewedAt='2026-10-23',revision='c5fea93f'},
  },
- body={priority=10,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+ body={priority=10,disabled=true,switch={type='SPECIALIZATION',spec=103},
   cooldowns={
    block('feguide-utility','retail.druid.utility','feguide-'),
    spell('feguide-skull-bash',106839,any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})),

@@ -43,6 +43,37 @@ local function matchesClass(view,context)
     local scope=view.applicability
     return not scope or not scope.class or scope.class==context.class
 end
+-- Shipped premades keep only load-time facts in applicability; specialization
+-- and level live in the switch, so a respec or level-up changes the choice
+-- without a reload. Where rotations are saved per specialization ID (Retail,
+-- Forever), a Built In is still filed under the specializations its switch
+-- names at the top (the switch itself, or a direct child of a top-level AND:
+-- all must hold; a top-level OR of only SPECIALIZATION: any may hold), so
+-- another specialization's premade stays out of that list, as with
+-- applicability.specs. Anything else is filed under every specialization.
+local function specIn(c) return type(c)=="table" and c.type=="SPECIALIZATION" and not c.disabled and type(c.spec)=="number" end
+local function switchSpecs(view,context)
+    if view.readOnly~=true or (context.family~="retail" and context.family~="forever") then return nil end
+    local envelope=view.envelope;local body=type(envelope)=="table" and envelope.body
+    local switch=type(body)=="table" and body.switch
+    if type(switch)~="table" or switch.disabled then return nil end
+    if specIn(switch) then return {switch.spec} end
+    if type(switch.value)~="table" then return nil end
+    if switch.type=="OR" then
+        local specs={}
+        for i,child in ipairs(switch.value) do if not specIn(child) then return nil end;specs[i]=child.spec end
+        return #specs>0 and specs or nil
+    elseif switch.type=="AND" then
+        local specs
+        for _,child in ipairs(switch.value) do
+            if specIn(child) then
+                if specs and not contains(specs,child.spec) then return {} end
+                specs={child.spec}
+            end
+        end
+        return specs
+    end
+end
 local function eligible(view, context, candidates)
     if not view.enabled then return false,"disabled" end
     if not view.validation.valid or not view.validation.supported or not view.validation.resolved then return false,"invalid-or-unsupported" end
@@ -50,7 +81,8 @@ local function eligible(view, context, candidates)
     if candidates then return true end
     local scope=view.applicability
     if not scope or not contains(scope.families,context.family) then return false,"edition-mismatch" end
-    if scope.specs and not contains(scope.specs,context.spec) then return false,"specialization-mismatch" end
+    local specs=scope.specs or switchSpecs(view,context)
+    if specs and not contains(specs,context.spec) then return false,"specialization-mismatch" end
     if scope.actionContext~=context.actionContext then return false,"action-context-mismatch" end
     for _,range in ipairs({{"minLevel","maxLevel","level"},{"minBuild","maxBuild","build"}}) do
         local value=context[range[3]]
@@ -628,7 +660,7 @@ function addon:ListDefaultRotations(spec)
             -- A pack for another edition says so, before naming a condition
             -- that is unavailable here only because it is that other edition's.
             if row.eligibilityReason=="invalid-or-unsupported" and view.validation.valid and view.validation.supported then
-                local scoped,scopeReason=eligible({enabled=true,validation={valid=true,supported=true,resolved=true},applicability=view.applicability},context)
+                local scoped,scopeReason=eligible({enabled=true,validation={valid=true,supported=true,resolved=true},applicability=view.applicability,readOnly=view.readOnly,envelope=view.envelope},context)
                 if not scoped then row.eligibilityReason=scopeReason end
             end
             row.name=L[row.nameKey or id]

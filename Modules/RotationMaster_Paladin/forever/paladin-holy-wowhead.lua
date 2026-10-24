@@ -19,10 +19,10 @@ local function stop(id,conditions,attack)return{id=id,type='none',suppress_attac
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local judged={type='DEBUFF',unit='target',spell=20185,anyrank=true,owndebuff=true}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.paladin.holy.wowhead',revision=3,
- blocks={['forever.paladin.boundaries']=1,['forever.paladin.aura-blessing']=1,['forever.paladin.dispel']=1,['forever.paladin.healer-upkeep']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.paladin.holy.wowhead',revision=4,
+ blocks={['forever.paladin.boundaries']=2,['forever.paladin.aura-blessing']=1,['forever.paladin.dispel']=1,['forever.paladin.healer-upkeep']=2},
  nameKey='Default.Forever.Paladin.HolyWowhead.Name',descriptionKey='Default.Forever.Paladin.HolyWowhead.Description',
- applicability={families={'forever'},actionContext='player',class='PALADIN',minLevel=10,maxLevel=60},
+ applicability={families={'forever'},actionContext='player',class='PALADIN'},
  tags={'holy','healer','group','wowhead'},
  sources={
   {url='https://www.wowhead.com/forever/guide/classes/paladin/holy/level-30-healer-overview',title='Wowhead: Forever level 30 Holy Paladin',reviewedAt='2026-10-23',revision='2026-10-06'},

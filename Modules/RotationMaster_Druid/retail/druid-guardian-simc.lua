@@ -12,15 +12,15 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.druid.guardian.simc',revision=2,
- blocks={['retail.druid.boundaries']=1,['retail.druid.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.druid.guardian.simc',revision=3,
+ blocks={['retail.druid.boundaries']=2,['retail.druid.utility']=2},
  nameKey='Default.Retail.Druid.GuardianSimc.Name',descriptionKey='Default.Retail.Druid.GuardianSimc.Description',
- applicability={families={'retail'},actionContext='player',class='DRUID',specs={104},minLevel=10,maxLevel=90},
+ applicability={families={'retail'},actionContext='player',class='DRUID'},
  tags={'guardian','tank','reference','simulationcraft'},
  sources={
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/druid_guardian.simc',title='SimulationCraft default action list: Guardian',reviewedAt='2026-10-23',revision='c5fea93f',notes='Heart of the Wild and Feline Potential cat-weaving sub-lists left out.'},
  },
- body={priority=5,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+ body={priority=5,disabled=true,switch={type='SPECIALIZATION',spec=104},
   cooldowns={
    block('gsimc-utility','retail.druid.utility','gsimc-'),
    spell('gsimc-bear-form',5487,all(negate(combat()),negate(buff(5487)),negate(buff(102558)))),

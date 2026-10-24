@@ -13,10 +13,8 @@ local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or {}}end
 -- Casts, channels (Missiles, Blizzard, Evocation) and a target that is not ours to pull end advice.
-assert(addon:RegisterDefaultBlock({id='tbc.mage.boundaries',revision=1,families={'tbc'},class='MAGE',steps={
- stop('cast',{type='CASTING',unit='player'}),
- stop('channel',{type='CHANNELING',unit='player'}),
- stop('target',negate(all({type='ATTACKABLE',unit='target'},any(combat(),negate({type='COMBAT',unit='target'}))))),
+assert(addon:RegisterDefaultBlock({id='tbc.mage.boundaries',revision=2,families={'tbc'},class='MAGE',steps={
+ stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate(all({type='ATTACKABLE',unit='target'},any(combat(),negate({type='COMBAT',unit='target'})))))),
 }}))
 -- Frostbolt is the filler once learned (level 4); Fireball only before that.
 assert(addon:RegisterDefaultBlock({id='tbc.mage.frostbolt',revision=1,families={'tbc'},class='MAGE',steps={

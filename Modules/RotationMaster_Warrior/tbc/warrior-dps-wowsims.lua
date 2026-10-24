@@ -11,10 +11,10 @@ local function known(id)return{type='SPELL_KNOWN',spell=id}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.warrior.dps.wowsims',revision=2,
- blocks={['tbc.warrior.boundaries']=2,['tbc.warrior.upkeep']=1,['tbc.warrior.dps-upkeep']=1,['tbc.warrior.dps-opening']=1,['tbc.warrior.dps-leveling']=1,['tbc.warrior.sunder']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.warrior.dps.wowsims',revision=3,
+ blocks={['tbc.warrior.boundaries']=3,['tbc.warrior.upkeep']=1,['tbc.warrior.dps-upkeep']=1,['tbc.warrior.dps-opening']=1,['tbc.warrior.dps-leveling']=1,['tbc.warrior.sunder']=1},
  nameKey='Default.TBC.Warrior.DPS.Wowsims.Name',descriptionKey='Default.TBC.Warrior.DPS.Wowsims.Description',
- applicability={families={'tbc'},actionContext='player',class='WARRIOR',minLevel=1,maxLevel=70},
+ applicability={families={'tbc'},actionContext='player',class='WARRIOR'},
  tags={'dps','melee','leveling','endgame','aoe','wowsims','wowhead'},
  sources={{url='https://github.com/wowsims/tbc/blob/3301fca59306a747e521274c36e073e69acc7b77/sim/warrior/dps/rotation.go',title='wowsims/tbc: Warrior DPS rotation',reviewedAt='2026-10-23',revision='3301fca59306a747e521274c36e073e69acc7b77'},
  {url='https://www.wowhead.com/tbc/guide/classes/warrior/dps-rotation-cooldowns-abilities-pve',title='Wowhead: TBC Warrior DPS rotation, cooldowns and abilities',reviewedAt='2026-10-23',revision='2026-06-11'},

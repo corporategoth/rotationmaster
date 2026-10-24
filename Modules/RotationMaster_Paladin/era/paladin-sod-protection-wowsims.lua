@@ -12,10 +12,10 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function remain(id)return{type='BUFF_REMAIN',unit='player',spell=id,anyrank=true,ownbuff=true,operator='LESSTHANOREQUALS',value=1.5}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.protection.wowsims',revision=3,
- blocks={['sod.paladin.tank-upkeep']=2,['era.paladin.melee-opening']=1,['era.paladin.boundaries']=1,['sod.paladin.seal']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.protection.wowsims',revision=4,
+ blocks={['sod.paladin.tank-upkeep']=2,['era.paladin.melee-opening']=2,['sod.paladin.seal']=2},
  nameKey='Default.SoD.Paladin.Protection.Wowsims.Name',descriptionKey='Default.SoD.Paladin.Protection.Wowsims.Description',
- applicability={families={'era'},actionContext='player',class='PALADIN',minLevel=1,maxLevel=60,rulesets={'season:2'}},
+ applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},
  tags={'endgame','protection','tank','single-target','season-of-discovery','wowsims'},
  sources={{url='https://github.com/wowsims/sod/blob/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/protection_paladin/apls/p5prot.apl.json',title='wowsims/sod Phase 5 Protection APL',reviewedAt='2026-10-23',revision='0e3f6ef'}},
  body={priority=119,switch=any(own(407627),own(25780),rune(407632),rune(440658),{type='PRIMARY_TALENT_TREE',tree=2}),

@@ -16,10 +16,10 @@ local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local still=negate({type='MOVING'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.druid.restoration.wowhead',revision=2,
- blocks={['mop.druid.boundaries']=2,['mop.druid.mark']=1,['mop.druid.healer-upkeep']=1,['mop.druid.healer-open']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.druid.restoration.wowhead',revision=3,
+ blocks={['mop.druid.boundaries']=3,['mop.druid.mark']=1,['mop.druid.healer-upkeep']=1,['mop.druid.healer-open']=2},
  nameKey='Default.MoP.Druid.Restoration.Wowhead.Name',descriptionKey='Default.MoP.Druid.Restoration.Wowhead.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID'},
  tags={'restoration','healer','tank-healing','wowhead'},
  sources={
   {url='https://www.wowhead.com/mop-classic/guide/classes/druid/restoration/healer-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Restoration Druid healing (single-target scenario)',reviewedAt='2026-10-23',revision='2026-06-20'},

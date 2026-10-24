@@ -25,10 +25,10 @@ local poisoned=any(stacks(458820,4),stacks(1214170,4),stacks(2818,4))
 -- Passive runes: Carnage (bleeds pay), Cut to the Chase (finishers refresh Slice and Dice).
 local carnage,chase=rune(432276),rune(432271)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.dps',revision=3,
- blocks={['era.rogue.boundaries']=1,['era.rogue.sod-opener']=3,['era.rogue.sod-upkeep']=3,['era.rogue.sod-builders']=3,['era.rogue.expose-armor']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.dps',revision=4,
+ blocks={['era.rogue.boundaries']=2,['era.rogue.sod-opener']=3,['era.rogue.sod-upkeep']=3,['era.rogue.sod-builders']=3,['era.rogue.expose-armor']=1},
  nameKey='Default.SoD.Rogue.DPS.Name',descriptionKey='Default.SoD.Rogue.DPS.Description',
- applicability={families={'era'},actionContext='player',class='ROGUE',minLevel=1,maxLevel=60,rulesets={'season:2'}},
+ applicability={families={'era'},actionContext='player',class='ROGUE',rulesets={'season:2'}},
  tags={'dps','melee','leveling','endgame','aoe','season-of-discovery','wowsims','icy-veins','zockify'},
  sources={{url='https://github.com/wowsims/sod/tree/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/rogue/apls',title='wowsims/sod: Rogue Phase 6 APLs (Mutilate, Saber, Backstab)',reviewedAt='2026-10-23',revision='0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e'},
  {url='https://www.icy-veins.com/wow-classic/assassination-rogue-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Assassination Rogue DPS rotation',reviewedAt='2026-10-23',revision='2025-04-08'},

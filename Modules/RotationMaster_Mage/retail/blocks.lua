@@ -10,9 +10,8 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
 -- Your casts and channels (Arcane Missiles, Ray of Frost, Evocation) end advice.
-assert(addon:RegisterDefaultBlock({id='retail.mage.boundaries',revision=1,families={'retail'},class='MAGE',steps={
- stop('cast',{type='CASTING',unit='player'}),
- stop('channel',{type='CHANNELING',unit='player'}),
+assert(addon:RegisterDefaultBlock({id='retail.mage.boundaries',revision=2,families={'retail'},class='MAGE',steps={
+ stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})),
 }}))
 -- What Blizzard's Assisted Combat never suggests, for every spec: Arcane Intellect out of combat
 -- (readable there; in combat the buff is hidden), Counterspell on an interruptible cast (enemy casts

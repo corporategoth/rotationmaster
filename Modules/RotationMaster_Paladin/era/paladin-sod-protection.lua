@@ -12,10 +12,10 @@ local function own(id)return{type='BUFF',unit='player',spell=id,anyrank=true,own
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.protection',revision=3,
- blocks={['sod.paladin.tank-upkeep']=2,['era.paladin.melee-opening']=1,['era.paladin.boundaries']=1,['sod.paladin.seal']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.protection',revision=4,
+ blocks={['sod.paladin.tank-upkeep']=2,['era.paladin.melee-opening']=2,['sod.paladin.seal']=2},
  nameKey='Default.SoD.Paladin.Protection.Name',descriptionKey='Default.SoD.Paladin.Protection.Description',
- applicability={families={'era'},actionContext='player',class='PALADIN',minLevel=1,maxLevel=60,rulesets={'season:2'}},
+ applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},
  tags={'leveling','endgame','protection','tank','single-target','aoe','season-of-discovery','wowhead'},
  sources={{url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/paladin/tank-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Paladin tank rotation (Phase 8)',reviewedAt='2026-10-23',revision='2025-04-18'},
   {url='https://www.icy-veins.com/wow-classic/protection-paladin-tank-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Protection Paladin rotation (Phase 4)',reviewedAt='2026-10-23',revision='2024-07-05',notes='Hand of Reckoning on lost threat; Divine Storm if engraved.'}},

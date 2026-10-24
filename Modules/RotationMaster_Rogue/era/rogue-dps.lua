@@ -19,10 +19,10 @@ local sliced={type='BUFF',unit='player',spell=5171,anyrank=true,ownbuff=true}
 local lasting=any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'},
  {type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.2})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.rogue.dps',revision=2,
- blocks={['era.rogue.boundaries']=1,['era.rogue.opener']=2,['era.rogue.upkeep']=2,['era.rogue.builders']=2,['era.rogue.expose-armor']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.rogue.dps',revision=3,
+ blocks={['era.rogue.boundaries']=2,['era.rogue.opener']=2,['era.rogue.upkeep']=2,['era.rogue.builders']=2,['era.rogue.expose-armor']=1},
  nameKey='Default.Era.Rogue.DPS.Name',descriptionKey='Default.Era.Rogue.DPS.Description',
- applicability={families={'era'},actionContext='player',class='ROGUE',minLevel=1,maxLevel=60},
+ applicability={families={'era'},actionContext='player',class='ROGUE'},
  tags={'dps','melee','leveling','endgame','wowsims','icy-veins','wowhead'},
  sources={{url='https://github.com/wowsims/classic/tree/7779ebbf79dc7f1341e6ab939b28a3402c9a730a/ui/rogue',title='wowsims/classic: Rogue APLs and presets',reviewedAt='2026-10-23',revision='7779ebbf79dc7f1341e6ab939b28a3402c9a730a'},
  {url='https://www.icy-veins.com/wow-classic/rogue-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Rogue DPS rotation, cooldowns and abilities',reviewedAt='2026-10-23',revision='2024-11-17'},

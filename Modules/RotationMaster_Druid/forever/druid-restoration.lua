@@ -18,10 +18,10 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.druid.restoration',revision=3,
- blocks={['forever.druid.boundaries']=1,['forever.druid.upkeep']=1,['forever.druid.healer-upkeep']=2,['forever.druid.spare-damage']=1,['forever.druid.dots']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.druid.restoration',revision=4,
+ blocks={['forever.druid.boundaries']=2,['forever.druid.upkeep']=1,['forever.druid.healer-upkeep']=2,['forever.druid.spare-damage']=1,['forever.druid.dots']=2},
  nameKey='Default.Forever.Druid.Restoration.Name',descriptionKey='Default.Forever.Druid.Restoration.Description',
- applicability={families={'forever'},actionContext='player',class='DRUID',minLevel=10,maxLevel=60},
+ applicability={families={'forever'},actionContext='player',class='DRUID'},
  tags={'restoration','healer','group','warcraft-tavern'},
  sources={
   {url='https://www.warcrafttavern.com/forever/guides/restoration-druid/',title='Warcraft Tavern: Forever Restoration Druid',reviewedAt='2026-10-23'},

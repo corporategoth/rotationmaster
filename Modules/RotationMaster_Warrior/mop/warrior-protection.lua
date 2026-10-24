@@ -26,10 +26,10 @@ local dump=all(combat(),{type='HEALTHPCT',unit='target',operator='GREATERTHAN',v
 local armor={type='DEBUFF',unit='target',spell=113746}
 local function devastate(id,conditions)return{id=id,type='branch',conditions={type='SPELL_KNOWN',spell=20243},onTrue={spell(id..'-devastate',20243,conditions)},onFalse={spell(id..'-sunder',7386,conditions)}}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.protection',revision=3,
- blocks={['mop.warrior.boundaries']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.protection',revision=4,
+ blocks={['mop.warrior.boundaries']=3},
  nameKey='Default.MoP.Warrior.Protection.Name',descriptionKey='Default.MoP.Warrior.Protection.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARRIOR',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARRIOR'},
  tags={'protection','tank','melee','leveling','endgame','wowsims','icy-veins'},
  sources={{url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/warrior/protection/apls/default.apl.json',title='wowsims/mop: Protection Warrior APL (Generic)',reviewedAt='2026-10-23',revision='ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/protection-warrior-pve-rotation-cooldowns-abilities',title='Icy Veins: Protection Warrior rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'},

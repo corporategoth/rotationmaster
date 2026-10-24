@@ -24,10 +24,8 @@ local beyond={type='BEYOND_MELEE',unit='target'}
 -- Casts and channels (Fists of Fury, Spinning Crane Kick, Crackling Jade Lightning, Zen
 -- Meditation) and a target that is not attackable end advice.
 block('mop.monk.boundaries',{
- stop('cast',{type='CASTING',unit='player'}),
- stop('channel',{type='CHANNELING',unit='player'}),
- stop('target',negate({type='ATTACKABLE',unit='target'})),
-})
+ stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))),
+},2)
 -- Every specialization: Legacy of the Emperor when no stats buff from anyone is up, Spear Hand
 -- Strike on an interruptible cast.
 block('mop.monk.upkeep',{

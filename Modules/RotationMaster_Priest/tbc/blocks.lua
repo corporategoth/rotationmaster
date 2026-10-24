@@ -19,13 +19,17 @@ local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,
 -- backlash, is ready to clip it (Icy Veins, Wowhead). Other channels are never cut.
 local clip=all({type='CHANNELING_SPELL',unit='player',spell=15407},{type='CHANNELING_PROGRESS',unit='player',operator='GREATERTHANOREQUALS',value=.34},
  any({type='SPELL_AVAIL',spell=8092},all(known(32379),pct('HEALTHPCT','player','GREATERTHAN',.5),{type='SPELL_AVAIL',spell=32379})))
-assert(addon:RegisterDefaultBlock({id='tbc.priest.boundaries',revision=2,families={'tbc'},class='PRIEST',steps={
- stop('cast',{type='CASTING',unit='player'}),
- stop('channel',all({type='CHANNELING',unit='player'},negate(clip))),
+assert(addon:RegisterDefaultBlock({id='tbc.priest.boundaries',revision=3,families={'tbc'},class='PRIEST',steps={
+ stop('cast',any({type='CASTING',unit='player'},all({type='CHANNELING',unit='player'},negate(clip)))),
 }}))
 -- Damage needs a living hostile target that is not someone else's fight.
+local enemyGone=negate(all({type='ATTACKABLE',unit='target'},any(combat(),negate({type='COMBAT',unit='target'}))))
 assert(addon:RegisterDefaultBlock({id='tbc.priest.enemy-target',revision=1,families={'tbc'},class='PRIEST',steps={
- stop('target',negate(all({type='ATTACKABLE',unit='target'},any(combat(),negate({type='COMBAT',unit='target'}))))),
+ stop('target',enemyGone),
+}}))
+-- Damage premades: the boundaries above, or no such target, end advice (one Stop).
+assert(addon:RegisterDefaultBlock({id='tbc.priest.dps-boundaries',revision=1,families={'tbc'},class='PRIEST',steps={
+ stop('cast',any({type='CASTING',unit='player'},all({type='CHANNELING',unit='player'},negate(clip)),enemyGone)),
 }}))
 assert(addon:RegisterDefaultBlock({id='tbc.priest.shadowform',revision=1,families={'tbc'},class='PRIEST',steps={
  spell('shadowform',15473,negate({type='BUFF',unit='player',spell=15473})),

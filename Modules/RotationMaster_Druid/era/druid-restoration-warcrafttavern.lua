@@ -13,15 +13,15 @@ local function hp(v)return{type='HEALTHPCT',unit='target',operator='LESSTHAN',va
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function spell(id,action,conditions,ranked)return{id=id,type='spell',action=action,ranked=ranked or false,conditions=conditions or {}}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.druid.restoration.warcrafttavern',revision=2,
- blocks={['era.druid.boundaries']=2,['era.druid.upkeep']=1,['era.druid.heal-cooldowns']=1,['era.druid.resto-damage']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.druid.restoration.warcrafttavern',revision=3,
+ blocks={['era.druid.boundaries']=3,['era.druid.upkeep']=1,['era.druid.heal-cooldowns']=1,['era.druid.resto-damage']=1},
  nameKey='Default.Era.Druid.Restoration.WarcraftTavern.Name',descriptionKey='Default.Era.Druid.Restoration.WarcraftTavern.Description',
- applicability={families={'era'},actionContext='player',class='DRUID',minLevel=10,maxLevel=60},
+ applicability={families={'era'},actionContext='player',class='DRUID'},
  tags={'endgame','restoration','healer','group','warcraft-tavern'},
  sources={
   {url='https://www.warcrafttavern.com/wow-classic/guides/pve-druid-restoration/',title='Warcraft Tavern: Classic Restoration Druid',reviewedAt='2026-10-23'},
  },
- body={priority=29,switch={type='PRIMARY_TALENT_TREE',tree=3},
+ body={priority=29,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='PRIMARY_TALENT_TREE',tree=3}}},
   cooldowns={ref('era-resto-wt-upkeep','era.druid.upkeep','era-resto-wt-'),ref('era-resto-wt-cooldowns','era.druid.heal-cooldowns','era-resto-wt-')},
   rotation={
    ref('era-resto-wt-boundaries','era.druid.boundaries','era-resto-wt-'),

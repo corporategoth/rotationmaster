@@ -14,10 +14,10 @@ local function hot(id)return{type='BUFF',unit='target',spell=id,ownbuff=true}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.druid.restoration',revision=2,
- blocks={['retail.druid.boundaries']=1,['retail.druid.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.druid.restoration',revision=3,
+ blocks={['retail.druid.boundaries']=2,['retail.druid.utility']=2},
  nameKey='Default.Retail.Druid.Restoration.Name',descriptionKey='Default.Retail.Druid.Restoration.Description',
- applicability={families={'retail'},actionContext='player',class='DRUID',specs={105},minLevel=10,maxLevel=90},
+ applicability={families={'retail'},actionContext='player',class='DRUID'},
  tags={'restoration','healer','assisted-combat','icy-veins'},
  sources={
   {url='https://www.icy-veins.com/wow/restoration-druid-pve-healing-rotation-cooldowns-abilities',title='Icy Veins: Restoration Druid healing rotation (12.1.5)',reviewedAt='2026-10-23',revision='2026-10-12',notes='Maintenance casts and the Abundance cycle.'},
@@ -25,7 +25,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/Gethe/wow-ui-source/blob/live/Interface/AddOns/Blizzard_APIDocumentationGenerated/AssistedCombatDocumentation.lua',title='Blizzard API documentation: C_AssistedCombat (12.1.5.70529)',reviewedAt='2026-10-23',revision='e7aa82019d'},
   {url='https://github.com/kaminaris/MaxDps-Druid',title='MaxDps Druid (Midnight)',reviewedAt='2026-10-23',revision='01642676',notes='Assisted Combat spell plus defensive and cooldown glows.'},
  },
- body={priority=20,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+ body={priority=20,switch={type='SPECIALIZATION',spec=105},
   cooldowns={
    block('resto-utility','retail.druid.utility','resto-'),
    spell('resto-innervate',29166,combat()),

@@ -10,17 +10,17 @@ local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local noFF=all(negate({type='DEBUFF',unit='target',spell=770,anyrank=true}),negate({type='DEBUFF',unit='target',spell=16857,anyrank=true}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.druid.feral.warcrafttavern.casual',revision=2,
- blocks={['era.druid.boundaries']=2,['era.druid.upkeep']=1,['era.druid.feral-cooldowns']=2,['era.druid.stealth-opener']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.era.druid.feral.warcrafttavern.casual',revision=3,
+ blocks={['era.druid.boundaries']=3,['era.druid.upkeep']=1,['era.druid.feral-cooldowns']=2,['era.druid.stealth-opener']=1,
   ['era.druid.cat-builders']=1,['era.druid.bear']=1,['era.druid.bear-pull']=2,['era.druid.feral-humanoid']=1},
  nameKey='Default.Era.Druid.Feral.WarcraftTavernCasual.Name',descriptionKey='Default.Era.Druid.Feral.WarcraftTavernCasual.Description',
- applicability={families={'era'},actionContext='player',class='DRUID',minLevel=10,maxLevel=60},
+ applicability={families={'era'},actionContext='player',class='DRUID'},
  tags={'leveling','endgame','feral','melee','tank','single-target','warcraft-tavern'},
  sources={
   {url='https://www.warcrafttavern.com/wow-classic/guides/pve-feral-druid-dps-rotations-cooldowns/',title='Warcraft Tavern: Classic Feral DPS rotations',reviewedAt='2026-10-23'},
   {url='https://www.warcrafttavern.com/wow-classic/guides/pve-feral-druid-tank-rotations-cooldowns/',title='Warcraft Tavern: Classic Feral tank',reviewedAt='2026-10-23'},
  },
- body={priority=28,switch={type='PRIMARY_TALENT_TREE',tree=2},
+ body={priority=28,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='PRIMARY_TALENT_TREE',tree=2}}},
   cooldowns={ref('era-feral-wtc-upkeep','era.druid.upkeep','era-feral-wtc-'),ref('era-feral-wtc-cooldowns','era.druid.feral-cooldowns','era-feral-wtc-')},
   rotation={
    ref('era-feral-wtc-boundaries','era.druid.boundaries','era-feral-wtc-'),

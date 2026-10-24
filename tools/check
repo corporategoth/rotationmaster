@@ -649,6 +649,8 @@ def main():
             ['luajit', 'tests/builtin_composition.lua'],
             ['lua5.1', 'tests/premade_style.lua'],
             ['luajit', 'tests/premade_style.lua'],
+            ['lua5.1', 'tests/premade_live_context.lua'],
+            ['luajit', 'tests/premade_live_context.lua'],
             ['lua5.1', 'tests/defaults_tbc_warrior.lua'],
             ['luajit', 'tests/defaults_tbc_warrior.lua'],
             ['lua5.1', 'tests/defaults_tbc_rogue.lua'],

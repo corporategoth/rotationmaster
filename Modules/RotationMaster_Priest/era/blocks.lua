@@ -26,12 +26,16 @@ local shadowform=known(15473)
 
 -- Vanilla and Season of Discovery.
 block('era.priest.boundaries',{
- stop('cast',{type='CASTING',unit='player'}),
- stop('channel',{type='CHANNELING',unit='player'}),
-})
+ stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})),
+},2)
 -- Damage needs a living hostile target that is not someone else's fight.
+local enemyGone=negate(all({type='ATTACKABLE',unit='target'},any(combat(),negate({type='COMBAT',unit='target'}))))
 block('era.priest.enemy-target',{
- stop('target',negate(all({type='ATTACKABLE',unit='target'},any(combat(),negate({type='COMBAT',unit='target'}))))),
+ stop('target',enemyGone),
+})
+-- Damage premades: a cast or channel, or no such target, ends advice (one Stop).
+block('era.priest.dps-boundaries',{
+ stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},enemyGone)),
 })
 block('era.priest.shadowform',{
  spell('shadowform',15473,negate({type='BUFF',unit='player',spell=15473})),

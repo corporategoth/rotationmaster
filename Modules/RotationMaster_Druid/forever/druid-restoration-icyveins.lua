@@ -17,10 +17,10 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.druid.restoration.icyveins',revision=3,
- blocks={['forever.druid.boundaries']=1,['forever.druid.upkeep']=1,['forever.druid.healer-upkeep']=2,['forever.druid.spare-damage']=1,['forever.druid.dots']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.druid.restoration.icyveins',revision=4,
+ blocks={['forever.druid.boundaries']=2,['forever.druid.upkeep']=1,['forever.druid.healer-upkeep']=2,['forever.druid.spare-damage']=1,['forever.druid.dots']=2},
  nameKey='Default.Forever.Druid.RestorationIcyVeins.Name',descriptionKey='Default.Forever.Druid.RestorationIcyVeins.Description',
- applicability={families={'forever'},actionContext='player',class='DRUID',minLevel=10,maxLevel=60},
+ applicability={families={'forever'},actionContext='player',class='DRUID'},
  tags={'restoration','healer','group','icy-veins'},
  sources={
   {url='https://www.icy-veins.com/wow-forever/restoration-druid-healer-pve-guide',title='Icy Veins: Forever Restoration Druid PvE',reviewedAt='2026-10-23',revision='2026-10-16'},

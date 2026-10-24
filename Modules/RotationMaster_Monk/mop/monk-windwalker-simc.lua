@@ -21,10 +21,10 @@ local debuff={type='DEBUFF',unit='target',spell=130320,owndebuff=true}
 local capped=negate(chi('GREATERTHANOREQUALS',-1))
 local fists=all(negate({type='MOVING'}),energy('LESSTHANOREQUALS',50))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.monk.windwalker.simc',revision=3,
- blocks={['mop.monk.boundaries']=1,['mop.monk.upkeep']=1,['mop.monk.windwalker-upkeep']=2,['mop.monk.windwalker-open']=2,['mop.monk.windwalker-tail']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.monk.windwalker.simc',revision=4,
+ blocks={['mop.monk.boundaries']=2,['mop.monk.upkeep']=1,['mop.monk.windwalker-upkeep']=2,['mop.monk.windwalker-open']=2,['mop.monk.windwalker-tail']=1},
  nameKey='Default.MoP.Monk.Windwalker.Simc.Name',descriptionKey='Default.MoP.Monk.Windwalker.Simc.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK'},
  tags={'windwalker','single-target','aoe','simulationcraft','hekili','maxdps'},
  sources={
   {url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/MonkWindwalker.simc',title='Hekili MoP fork: Windwalker priority (SimC 5.4.8)',reviewedAt='2026-10-23',revision='0750b5dd98'},

@@ -10,19 +10,18 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.preservation',revision=2,
- blocks={['retail.evoker.boundaries']=1,['retail.evoker.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.preservation',revision=3,
+ blocks={['retail.evoker.heal-boundaries']=1,['retail.evoker.utility']=2},
  nameKey='Default.Retail.Evoker.Preservation.Name',descriptionKey='Default.Retail.Evoker.Preservation.Description',
- applicability={families={'retail'},actionContext='player',class='EVOKER',specs={1468},minLevel=10,maxLevel=90},
+ applicability={families={'retail'},actionContext='player',class='EVOKER'},
  tags={'preservation','healer','reference','icy-veins'},
  sources={
   {url='https://www.icy-veins.com/wow/preservation-evoker-pve-healing-rotation-cooldowns-abilities',title='Icy Veins: Preservation Evoker healing rotation (12.1.5)',reviewedAt='2026-10-23',revision='2026-10-12',notes='Healing order kept as reference text only; Disintegrate when nobody needs healing.'},
  },
- body={priority=10,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+ body={priority=10,disabled=true,switch={type='SPECIALIZATION',spec=1468},
   cooldowns={block('pres-utility','retail.evoker.utility','pres-')},
   rotation={
-   block('pres-boundaries','retail.evoker.boundaries','pres-'),
-   stop('pres-not-hostile',negate({type='ATTACKABLE',unit='target'})),
+   block('pres-boundaries','retail.evoker.heal-boundaries','pres-'),
    spell('pres-moving-azure-strike',362969,{type='MOVING'}),
    spell('pres-fire-breath',357208),
    spell('pres-disintegrate',356995),

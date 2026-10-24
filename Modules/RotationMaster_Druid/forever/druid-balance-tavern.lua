@@ -11,10 +11,10 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id,conditions,attack)return{id=id,type='none',suppress_attack=not attack,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.druid.balance.tavern',revision=3,
- blocks={['forever.druid.boundaries']=1,['forever.druid.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.druid.balance.tavern',revision=4,
+ blocks={['forever.druid.boundaries']=2,['forever.druid.upkeep']=1},
  nameKey='Default.Forever.Druid.BalanceTavern.Name',descriptionKey='Default.Forever.Druid.BalanceTavern.Description',
- applicability={families={'forever'},actionContext='player',class='DRUID',minLevel=1,maxLevel=60},
+ applicability={families={'forever'},actionContext='player',class='DRUID'},
  tags={'balance','leveling','multi-dot','warcraft-tavern'},
  sources={
   {url='https://www.warcrafttavern.com/forever/guides/balance-druid/',title='Warcraft Tavern: Forever Balance Druid (Multi-DoT build)',reviewedAt='2026-10-23'},

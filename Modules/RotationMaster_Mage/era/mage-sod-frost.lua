@@ -19,11 +19,11 @@ local fingers=any(buff(400647),buff(400669),buff(400670))
 local function fingersStacks(n)return any({type='BUFF_STACKS',unit='player',spell=400647,operator='GREATERTHANOREQUALS',value=n},
  {type='BUFF_STACKS',unit='player',spell=400669,operator='GREATERTHANOREQUALS',value=n},{type='BUFF_STACKS',unit='player',spell=400670,operator='GREATERTHANOREQUALS',value=n})end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.mage.frost',revision=3,
- blocks={['era.mage.boundaries']=1,['era.mage.wand-finish']=1,['sod.mage.balefire']=1,['sod.mage.balefire-brain-freeze']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.mage.frost',revision=4,
+ blocks={['era.mage.boundaries']=2,['era.mage.wand-finish']=1,['sod.mage.balefire']=1,['sod.mage.balefire-brain-freeze']=1,
   ['sod.mage.living-bomb']=1,['sod.mage.armor']=2,['sod.mage.upkeep']=2},
  nameKey='Default.SoD.Mage.Frost.Name',descriptionKey='Default.SoD.Mage.Frost.Description',
- applicability={families={'era'},actionContext='player',class='MAGE',minLevel=10,maxLevel=60,rulesets={'season:2'}},
+ applicability={families={'era'},actionContext='player',class='MAGE',rulesets={'season:2'}},
  tags={'frost','raid','single-target','aoe','season-of-discovery'},
  sources={
   {url='https://github.com/wowsims/sod/blob/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/mage/builds/p7_frost.build.json',title='wowsims/sod Phase 7 Frost build',reviewedAt='2026-10-23',revision='0e3f6ef'},
@@ -32,7 +32,7 @@ assert(addon:RegisterDefaultRotation({
  },
  body={
   priority=103,
-  switch={type='PRIMARY_TALENT_TREE',tree=3},
+  switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='PRIMARY_TALENT_TREE',tree=3}}},
   cooldowns={block(P..'armor','sod.mage.armor',P),
    spell(P..'frozen-orb',440802,all({type='COMBAT',unit='player'},negate(fingersStacks(2)))),
    block(P..'upkeep','sod.mage.upkeep',P)},

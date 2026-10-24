@@ -38,9 +38,8 @@ local function druid(id,steps,revision)assert(addon:RegisterDefaultBlock({id=id,
 
 -- Casts and channels (Starfire, Hurricane, Tranquility, Healing Touch) and travel forms halt advice and Attack.
 druid('era.druid.boundaries',{
- stop('casting',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})),
- stop('travelling',travelling()),
-},2)
+ stop('casting',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},travelling())),
+},3)
 -- Out-of-combat self buffs every source keeps: Mark (unless Gift is up), Thorns while soloing,
 -- Omen of Clarity (a cast self-buff in vanilla) once talented.
 druid('era.druid.upkeep',{

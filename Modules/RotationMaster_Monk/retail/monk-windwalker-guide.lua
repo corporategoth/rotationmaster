@@ -21,16 +21,16 @@ local heart=any(buff(443421),buff(443616))
 local zenith=buff(1249625)
 local bok={type='BUFF_STACKS',unit='player',spell=116768,ownbuff=true,operator='GREATERTHANOREQUALS',value=2}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.monk.windwalker.guide',revision=2,
- blocks={['retail.monk.boundaries']=1,['retail.monk.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.monk.windwalker.guide',revision=3,
+ blocks={['retail.monk.boundaries']=2,['retail.monk.utility']=2},
  nameKey='Default.Retail.Monk.WindwalkerGuide.Name',descriptionKey='Default.Retail.Monk.WindwalkerGuide.Description',
- applicability={families={'retail'},actionContext='player',class='MONK',specs={269},minLevel=10,maxLevel=90},
+ applicability={families={'retail'},actionContext='player',class='MONK'},
  tags={'windwalker','melee','reference','icy-veins','simulationcraft'},
  sources={
   {url='https://www.icy-veins.com/wow/windwalker-monk-pve-dps-rotation-cooldowns-abilities',title='Icy Veins: Windwalker Monk rotation (12.1.5)',reviewedAt='2026-10-23',revision='2026-10-12'},
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/monk_windwalker.simc',title='SimulationCraft default action list: Windwalker',reviewedAt='2026-10-23',revision='c5fea93f',notes='Same order with more energy and Heart of the Jade Serpent gates.'},
  },
- body={priority=10,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+ body={priority=10,disabled=true,switch={type='SPECIALIZATION',spec=269},
   cooldowns={
    block('wguide-utility','retail.monk.utility','wguide-'),
    spell('wguide-touch-of-karma',122470,{type='COMBAT',unit='player'}),

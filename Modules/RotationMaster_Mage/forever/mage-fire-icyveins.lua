@@ -15,10 +15,10 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.mage.fire.icyveins',revision=4,
- blocks={['forever.mage.boundaries']=1,['forever.mage.fire-moving']=1,['forever.mage.fire-aoe']=1,['forever.mage.wand']=2,['forever.mage.upkeep']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.mage.fire.icyveins',revision=5,
+ blocks={['forever.mage.boundaries']=2,['forever.mage.fire-moving']=1,['forever.mage.fire-aoe']=1,['forever.mage.wand']=2,['forever.mage.upkeep']=2},
  nameKey='Default.Forever.Mage.FireIcyVeins.Name',descriptionKey='Default.Forever.Mage.FireIcyVeins.Description',
- applicability={families={'forever'},actionContext='player',class='MAGE',minLevel=10,maxLevel=60},
+ applicability={families={'forever'},actionContext='player',class='MAGE'},
  tags={'fire','leveling','single-target','aoe','icy-veins'},
  sources={
   {url='https://www.icy-veins.com/wow-forever/fire-mage-leveling',title='Icy Veins: Forever Fire Mage leveling',reviewedAt='2026-10-23',revision='2026-10-16'},

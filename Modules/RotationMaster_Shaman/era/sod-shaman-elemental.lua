@@ -22,16 +22,16 @@ local charged={type='BUFF_STACKS',unit='player',spell=324,anyrank=true,operator=
 local surge=buff(440285)
 local refresh=any(negate(flamed),flame('LESSTHAN',3))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.shaman.elemental',revision=1,
- blocks={['era.shaman.manual']=1,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.caster-totems']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.shaman.elemental',revision=2,
+ blocks={['era.shaman.manual-target']=1,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.caster-totems']=1},
  nameKey='Default.SoD.Shaman.Elemental.Name',descriptionKey='Default.SoD.Shaman.Elemental.Description',
- applicability={families={'era'},actionContext='player',class='SHAMAN',minLevel=10,maxLevel=60,rulesets={'season:2'}},
+ applicability={families={'era'},actionContext='player',class='SHAMAN',rulesets={'season:2'}},
  tags={'dps','ranged','caster','leveling','endgame','aoe','season-of-discovery','wowsims','wowhead','icy-veins'},
  sources={{url='https://github.com/wowsims/sod/blob/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/elemental_shaman/apls/phase_6.apl.json',title='wowsims/sod: Elemental Shaman Phase 6 APL',reviewedAt='2026-10-23',revision='0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e'},
  {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/shaman/elemental/dps-rotation-cooldowns-abilities',title='Wowhead: SoD Elemental Shaman DPS rotation',reviewedAt='2026-10-23',revision='2025-01-20'},
  {url='https://www.icy-veins.com/wow-classic/elemental-shaman-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Elemental Shaman DPS rotation',reviewedAt='2026-10-23',revision='2025-04-08'},
  {url='https://www.icy-veins.com/wow-classic/elemental-shaman-dps-season-of-discovery-leveling',title='Icy Veins: SoD Elemental Shaman leveling',reviewedAt='2026-10-23',revision='2026-07-18'}},
- body={priority=50,switch={type='PRIMARY_TALENT_TREE',tree=1},
+ body={priority=50,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='PRIMARY_TALENT_TREE',tree=1}}},
  cooldowns={
   spell('sod-ele-flametongue',8024,negate(imbue({5,4,3,523,1665,1666,7567}))),
   block('era.shaman.shield','sod-ele-'),
@@ -43,8 +43,7 @@ assert(addon:RegisterDefaultRotation({
   block('era.shaman.caster-totems','sod-ele-'),
  },
  rotation={
- block('era.shaman.manual','sod-ele-'),
- {id='sod-ele-no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
+ block('era.shaman.manual-target','sod-ele-'),
  block('era.shaman.interrupt','sod-ele-'),
  {id='sod-ele-moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
   spell('sod-ele-moving-flame-shock',8050,refresh),

@@ -21,10 +21,10 @@ local evil=any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',u
 local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
 local crusaded={type='DEBUFF',unit='target',spell=21183,anyrank=true}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.paladin.retribution',revision=3,
- blocks={['forever.paladin.boundaries']=1,['forever.paladin.aura-blessing']=1,['forever.paladin.main-seal']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.paladin.retribution',revision=4,
+ blocks={['forever.paladin.boundaries']=2,['forever.paladin.aura-blessing']=1,['forever.paladin.main-seal']=1},
  nameKey='Default.Forever.Paladin.Retribution.Name',descriptionKey='Default.Forever.Paladin.Retribution.Description',
- applicability={families={'forever'},actionContext='player',class='PALADIN',minLevel=1,maxLevel=60},
+ applicability={families={'forever'},actionContext='player',class='PALADIN'},
  tags={'retribution','melee','leveling','single-target','aoe','wowhead','icy-veins'},
  sources={
   {url='https://www.wowhead.com/forever/guide/classes/paladin/retribution/level-30-dps-overview',title='Wowhead: Forever level 30 Retribution Paladin',reviewedAt='2026-10-23',revision='2026-10-10'},

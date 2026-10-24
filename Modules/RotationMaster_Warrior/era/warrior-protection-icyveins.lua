@@ -18,13 +18,13 @@ local shield={type='WEAPON_TYPE',slot='offhand',kind='shield'}
 local tanked={type='ISSAME',unit='targettarget',otherunit='player'}
 local unqueued=all(negate(queued(78)),negate(queued(845)))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.warrior.protection.icyveins',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.era.warrior.protection.icyveins',revision=3,
  blocks={['era.warrior.boundaries']=2,['era.warrior.upkeep']=1},
  nameKey='Default.Era.Warrior.Protection.IcyVeins.Name',descriptionKey='Default.Era.Warrior.Protection.IcyVeins.Description',
- applicability={families={'era'},actionContext='player',class='WARRIOR',minLevel=10,maxLevel=60},
+ applicability={families={'era'},actionContext='player',class='WARRIOR'},
  tags={'tank','melee','endgame','aoe','icy-veins'},
  sources={{url='https://www.icy-veins.com/wow-classic/warrior-tank-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Warrior tank rotation (Battle Shout tanking)',reviewedAt='2026-10-23',revision='2024-11-17'}},
- body={priority=25,switch={type='FORM',form=71},
+ body={priority=25,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='FORM',form=71}}},
  cooldowns={block('era.warrior.upkeep','warrior-prot-iv-'),
   spell('warrior-prot-iv-shield-block',2565,all(combat(),shield,tanked,negate({type='CASTING',unit='target'}),negate({type='BUFF',unit='player',spell=2565}))),
   spell('warrior-prot-iv-bloodrage',2687,all(combat(),rage('LESSTHAN',60),{type='HEALTHPCT',unit='player',operator='GREATERTHAN',value=.5})),

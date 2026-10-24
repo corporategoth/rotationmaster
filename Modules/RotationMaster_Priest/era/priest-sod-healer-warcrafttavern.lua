@@ -18,11 +18,11 @@ local function any(...)return{type='OR',value={...}}end
 local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
 local P='priest-sod-wct-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.priest.healer.warcrafttavern',revision=3,
- blocks={['era.priest.boundaries']=1,['era.priest.enemy-target']=1,['era.priest.dispels']=1,['era.priest.big-heal']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.priest.healer.warcrafttavern',revision=4,
+ blocks={['era.priest.boundaries']=2,['era.priest.enemy-target']=1,['era.priest.dispels']=1,['era.priest.big-heal']=1,
   ['era.priest.friend-fortitude']=1,['era.priest.upkeep']=1,['era.priest.divine-spirit']=1,['sod.priest.healer-damage']=1,['sod.priest.healer-upkeep']=1},
  nameKey='Default.SoD.Priest.Healer.WarcraftTavern.Name',descriptionKey='Default.SoD.Priest.Healer.WarcraftTavern.Description',
- applicability={families={'era'},actionContext='player',class='PRIEST',minLevel=10,maxLevel=60,rulesets={'season:2'}},
+ applicability={families={'era'},actionContext='player',class='PRIEST',rulesets={'season:2'}},
  tags={'holy','discipline','healer','dungeon','raid','season-of-discovery','warcraft-tavern'},
  sources={
   {url='https://www.warcrafttavern.com/wow-classic-sod/guides/holy-priest-healer/',title='Warcraft Tavern: SoD Holy Priest healer',reviewedAt='2026-10-23',notes='Phase 4 text.'},
@@ -30,7 +30,7 @@ assert(addon:RegisterDefaultRotation({
  },
  body={
   priority=115,
-  switch={type='AND',value={{type='GROUP'},{type='OR',value={{type='PRIMARY_TALENT_TREE',tree=2},{type='PRIMARY_TALENT_TREE',tree=1}}}}},
+  switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='GROUP'},{type='OR',value={{type='PRIMARY_TALENT_TREE',tree=2},{type='PRIMARY_TALENT_TREE',tree=1}}}}},
   cooldowns={block(P..'upkeep','era.priest.upkeep',P),block(P..'spirit','era.priest.divine-spirit',P),block(P..'sod-upkeep','sod.priest.healer-upkeep',P)},
   rotation={
    block(P..'boundaries','era.priest.boundaries',P),

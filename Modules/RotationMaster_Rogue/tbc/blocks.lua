@@ -21,9 +21,8 @@ local offhand={22054,22053,20844,8985,8984,2893,2892}
 for _,id in ipairs(instant)do offhand[#offhand+1]=id end
 -- Boundaries: manual casts/channels, no attackable target, the stealth opener, then Riposte.
 assert(addon:RegisterDefaultBlock({
- id='tbc.rogue.opening',revision=2,families={'tbc'},class='ROGUE',steps={
- {id='manual',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
- {id='no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
+ id='tbc.rogue.opening',revision=3,families={'tbc'},class='ROGUE',steps={
+ {id='manual',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))},
  {id='stealth',type='branch',conditions={type='STEALTHED'},onFalse={},onTrue={
   spell('premeditation',14183),
   {id='opener',type='branch',conditions={type='GROUP'},onTrue={spell('group-garrote',703)},onFalse={spell('cheap-shot',1833)}},

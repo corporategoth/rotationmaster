@@ -18,10 +18,10 @@ local fingers=any({type='BUFF',unit='player',spell=400669},{type='BUFF',unit='pl
 local frozen=any({type='DEBUFF',unit='target',spell=122,anyrank=true},{type='DEBUFF',unit='target',spell=12494})
 local barrage=any({type='BUFF',unit='player',spell=400589},{type='BUFF',unit='player',spell=1326083})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.mage.frost',revision=3,
- blocks={['forever.mage.lance-batch']=1,['forever.mage.boundaries']=1,['forever.mage.frostbolt']=1,['forever.mage.wand']=2,['forever.mage.upkeep']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.mage.frost',revision=4,
+ blocks={['forever.mage.lance-batch']=1,['forever.mage.boundaries']=2,['forever.mage.frostbolt']=1,['forever.mage.wand']=2,['forever.mage.upkeep']=2},
  nameKey='Default.Forever.Mage.Frost.Name',descriptionKey='Default.Forever.Mage.Frost.Description',
- applicability={families={'forever'},actionContext='player',class='MAGE',minLevel=1,maxLevel=60},
+ applicability={families={'forever'},actionContext='player',class='MAGE'},
  tags={'frost','leveling','single-target','aoe','icy-veins'},
  sources={
   {url='https://www.icy-veins.com/wow-forever/frost-mage-ranged-dps-pve-guide',title='Icy Veins: Forever Frost Mage PvE',reviewedAt='2026-10-23',revision='2026-10-16'},

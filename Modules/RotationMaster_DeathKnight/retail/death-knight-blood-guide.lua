@@ -16,16 +16,16 @@ local exterminate=any(buff(441416),buff(447954))
 local lowBones=any(negate(buff(195181)),{type='BUFF_STACKS',unit='player',spell=195181,ownbuff=true,operator='LESSTHAN',value=5},
  {type='BUFF_REMAIN',unit='player',spell=195181,ownbuff=true,operator='LESSTHAN',value=3},exterminate)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.blood.guide',revision=3,
- blocks={['retail.deathknight.boundaries']=1,['retail.deathknight.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.blood.guide',revision=4,
+ blocks={['retail.deathknight.boundaries']=2,['retail.deathknight.utility']=2},
  nameKey='Default.Retail.DeathKnight.BloodGuide.Name',descriptionKey='Default.Retail.DeathKnight.BloodGuide.Description',
- applicability={families={'retail'},actionContext='player',class='DEATHKNIGHT',specs={250},minLevel=8,maxLevel=90},
+ applicability={families={'retail'},actionContext='player',class='DEATHKNIGHT'},
  tags={'blood','tank','reference','icy-veins','wowhead'},
  sources={
   {url='https://www.icy-veins.com/wow/blood-death-knight-pve-tank-rotation-cooldowns-abilities',title='Icy Veins: Blood Death Knight rotation (12.1.5)',reviewedAt='2026-10-23',revision='2026-10-12'},
   {url='https://www.wowhead.com/guide/classes/death-knight/blood/rotation-cooldowns-pve-tank',title='Wowhead: Blood Death Knight rotation (Midnight Season 2)',reviewedAt='2026-10-23',revision='2026-08-13',notes='Read from a Wayback snapshot; Death Strike at 75 runic power.'},
  },
- body={priority=10,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=8},
+ body={priority=10,disabled=true,switch={type='SPECIALIZATION',spec=250},
   cooldowns={
    block('bguide-utility','retail.deathknight.utility','bguide-'),
    spell('bguide-raise-dead',46585,combat()),

@@ -9,11 +9,11 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function totem(slot)return{type='TOTEM',spell=slot}end
 local function ttd(op,s)return{type='TT_HEALTH',unit='target',health=0,operator=op,value=s}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.enhancement.icyveins',revision=3,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.enhancement.icyveins',revision=4,
  blocks={['tbc.shaman.enhancement-upkeep']=2,['tbc.shaman.mainhand-imbue']=1,['tbc.shaman.shield']=1,['tbc.shaman.bloodlust']=1,
-  ['tbc.shaman.enhancement-opening']=2,['tbc.shaman.boundaries']=1,['tbc.shaman.interrupt']=1},
+  ['tbc.shaman.enhancement-opening']=2,['tbc.shaman.boundaries']=2,['tbc.shaman.interrupt']=1},
  nameKey='Default.TBC.Shaman.Enhancement.IcyVeins.Name',descriptionKey='Default.TBC.Shaman.Enhancement.IcyVeins.Description',
- applicability={families={'tbc'},actionContext='player',class='SHAMAN',minLevel=1,maxLevel=70},
+ applicability={families={'tbc'},actionContext='player',class='SHAMAN'},
  tags={'leveling','endgame','enhancement','melee','single-target','aoe','icy-veins'},
  sources={{url='https://www.icy-veins.com/tbc-classic/enhancement-shaman-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Enhancement Shaman rotation',reviewedAt='2026-10-23',revision='2026-01-12'},
   {url='https://www.icy-veins.com/tbc-classic/enhancement-shaman-leveling-guide',title='Icy Veins: Enhancement Shaman leveling',reviewedAt='2026-10-23',revision='2026-01-12'},

@@ -10,11 +10,11 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.ranged.mobalytics',revision=3,
- blocks={['forever.hunter.boundaries']=1,['forever.hunter.deadzone']=2,['forever.hunter.pull']=2,['forever.hunter.moving']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.ranged.mobalytics',revision=4,
+ blocks={['forever.hunter.boundaries']=3,['forever.hunter.deadzone']=2,['forever.hunter.pull']=2,['forever.hunter.moving']=1,
   ['forever.hunter.aspects-ranged']=1,['forever.hunter.pet-care']=2,['forever.hunter.burst']=1},
  nameKey='Default.Forever.Hunter.RangedMobalytics.Name',descriptionKey='Default.Forever.Hunter.RangedMobalytics.Description',
- applicability={families={'forever'},actionContext='player',class='HUNTER',minLevel=1,maxLevel=60},
+ applicability={families={'forever'},actionContext='player',class='HUNTER'},
  tags={'beast-mastery','marksmanship','ranged','leveling','mana-saving','mobalytics'},
  sources={
   {url='https://mobalytics.gg/wow-forever/classes/hunter-leveling-guide',title='Mobalytics: Forever Hunter leveling 1–30',reviewedAt='2026-10-23',revision='2026-10-18'},
@@ -31,7 +31,6 @@ assert(addon:RegisterDefaultRotation({
    spell('saver-intimidation',19577,all({type='COMBAT',unit='player'},{type='THREAT',unit='target',threat=3})),
   },
   rotation={
-   stop('saver-target',negate({type='ATTACKABLE',unit='target'})),
    block('saver-boundaries','forever.hunter.boundaries','saver-'),
    block('saver-deadzone','forever.hunter.deadzone','saver-'),
    block('saver-pull','forever.hunter.pull','saver-'),

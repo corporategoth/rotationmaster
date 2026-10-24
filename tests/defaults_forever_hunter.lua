@@ -15,7 +15,7 @@ test('the Hunter premades load, validate and declare Forever only',function()
  local a=hunter();local rows=M.rows(a)
  for _,id in ipairs({RANGED,SAVER,SV,WEAVE})do
   local row=assert(rows[id],id);local scope=row.applicability
-  assert(row.readOnly and row.builtin and scope.families[1]=='forever'and #scope.families==1 and scope.class=='HUNTER'and scope.maxLevel==60,id)
+  assert(row.readOnly and row.builtin and scope.families[1]=='forever'and #scope.families==1 and scope.class=='HUNTER'and scope.maxLevel==nil and scope.minLevel==nil,id)
   local variant=id==SAVER or id==WEAVE
   assert(row.eligible==not variant,id..(variant and ' variant is not off by default' or ' not eligible on the probe Forever context'))
   assert((row.envelope.body.disabled==true)==variant,id..' disabled flag')

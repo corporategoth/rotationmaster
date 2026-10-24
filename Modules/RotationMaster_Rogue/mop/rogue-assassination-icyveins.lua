@@ -22,10 +22,10 @@ local sliced=own(5171)
 local boss={type='CLASSIFICATION',unit='target',value='worldboss'}
 local dying=all(points('GREATERTHANOREQUALS',2),lifetime('LESSTHAN',4))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.assassination.icyveins',revision=3,
- blocks={['mop.rogue.boundaries']=1,['mop.rogue.assassination-opener']=2,['mop.rogue.out-of-combat']=2,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.assassination.icyveins',revision=4,
+ blocks={['mop.rogue.boundaries']=2,['mop.rogue.assassination-opener']=2,['mop.rogue.out-of-combat']=2,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1},
  nameKey='Default.MoP.Rogue.Assassination.IcyVeins.Name',descriptionKey='Default.MoP.Rogue.Assassination.IcyVeins.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE'},
  tags={'assassination','dps','melee','leveling','endgame','icy-veins','method'},
  sources={{url='https://www.icy-veins.com/mists-of-pandaria-classic/assassination-rogue-pve-rotation-cooldowns-abilities',title='Icy Veins: Assassination Rogue rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2025-09-23'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/assassination-rogue-leveling',title='Icy Veins: Assassination Rogue levelling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-09-23'},

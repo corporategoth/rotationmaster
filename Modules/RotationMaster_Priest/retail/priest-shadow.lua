@@ -13,17 +13,17 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.priest.shadow',revision=2,
- blocks={['retail.priest.boundaries']=1,['retail.priest.upkeep']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.priest.shadow',revision=3,
+ blocks={['retail.priest.boundaries']=2,['retail.priest.upkeep']=2},
  nameKey='Default.Retail.Priest.Shadow.Name',descriptionKey='Default.Retail.Priest.Shadow.Description',
- applicability={families={'retail'},actionContext='player',class='PRIEST',specs={258},minLevel=10,maxLevel=90},
+ applicability={families={'retail'},actionContext='player',class='PRIEST'},
  tags={'shadow','ranged','assisted-combat','single-target','aoe','simulationcraft'},
  sources={
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/assisted_combat/priest_shadow.simc',title='SimulationCraft: Assisted Combat model, Shadow Priest',reviewedAt='2026-10-23',revision='c5fea93fb77d',notes='Power Infusion during Voidform is in its cooldowns list, not the suggestion.'},
   {url='https://github.com/Gethe/wow-ui-source/blob/e7aa82019dc298e0351c7159d60c2a9b916b9b67/Interface/AddOns/Blizzard_APIDocumentationGenerated/AssistedCombatDocumentation.lua',title='Blizzard API documentation: C_AssistedCombat (12.1.5)',reviewedAt='2026-10-23',revision='e7aa82019d'},
   {url='https://github.com/kaminaris/MaxDps-Priest',title='MaxDps Priest module (Midnight)',reviewedAt='2026-10-23',revision='0ecad695',notes='No priority in Midnight: the Assisted Combat spell plus cooldown glows.'},
  },
- body={priority=10,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+ body={priority=10,switch={type='SPECIALIZATION',spec=258},
   cooldowns={
    block('retail.priest.upkeep','shadow-'),
    spell('shadow-shadowform',232698,all(negate(combat()),negate(own(232698)),negate(own(194249)))),

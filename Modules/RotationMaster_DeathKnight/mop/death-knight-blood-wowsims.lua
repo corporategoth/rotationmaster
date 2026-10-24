@@ -17,16 +17,16 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local FEVER,PLAGUE=55095,55078
 local shield={type='BUFF',unit='player',spell=77535,ownbuff=true}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.deathknight.blood.wowsims',revision=2,
- blocks={['mop.deathknight.boundaries']=1,['mop.deathknight.upkeep']=1,['mop.deathknight.blood-upkeep']=2,['mop.deathknight.blood-pull']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.deathknight.blood.wowsims',revision=3,
+ blocks={['mop.deathknight.boundaries']=2,['mop.deathknight.upkeep']=1,['mop.deathknight.blood-upkeep']=2,['mop.deathknight.blood-pull']=1},
  nameKey='Default.MoP.DeathKnight.Blood.Wowsims.Name',descriptionKey='Default.MoP.DeathKnight.Blood.Wowsims.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DEATHKNIGHT',minLevel=55,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DEATHKNIGHT'},
  tags={'blood','tank','single-target','wowsims'},
  sources={
   {url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/death_knight/blood/apls/iron_juggernaut.apl.json',title='wowsims/mop Blood Iron Juggernaut APL',reviewedAt='2026-10-23',revision='ec2c6c2552'},
   {url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/death_knight/blood/apls/sha.apl.json',title='wowsims/mop Blood Sha APL',reviewedAt='2026-10-23',revision='ec2c6c2552'},
  },
- body={priority=25,disabled=true,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=250}}},
+ body={priority=25,disabled=true,switch={type='SPECIALIZATION',spec=250},
   cooldowns={
    block('bsim-upkeep','mop.deathknight.blood-upkeep','bsim-'),
    block('bsim-class','mop.deathknight.upkeep','bsim-'),

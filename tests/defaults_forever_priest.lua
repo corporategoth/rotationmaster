@@ -16,7 +16,7 @@ test('the Priest premades load, validate and declare Forever only',function()
  local a=priest();local rows=M.rows(a)
  for _,id in ipairs({DPS,DOT,HEAL})do
   local row=assert(rows[id],id);local scope=row.applicability
-  assert(row.readOnly and row.builtin and scope.families[1]=='forever'and #scope.families==1 and scope.class=='PRIEST'and scope.maxLevel==60,id)
+  assert(row.readOnly and row.builtin and scope.families[1]=='forever'and #scope.families==1 and scope.class=='PRIEST'and scope.maxLevel==nil and scope.minLevel==nil,id)
   local variant=id==DOT
   assert(row.eligible==not variant,id..(variant and ' variant is not off by default' or ' not eligible on the probe Forever context'))
   assert((row.envelope.body.disabled==true)==variant,id..' disabled flag')

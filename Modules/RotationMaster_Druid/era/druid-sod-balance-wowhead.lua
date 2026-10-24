@@ -12,11 +12,11 @@ local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name
 local function spell(id,action,conditions,ranked)return{id=id,type='spell',action=action,ranked=ranked or false,conditions=conditions or {}}end
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or {}}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.druid.balance.wowhead',revision=3,
- blocks={['era.druid.boundaries']=2,['era.druid.upkeep']=1,['era.druid.caster-cooldowns']=2,['sod.druid.maul']=2,['sod.druid.balance-cooldowns']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.druid.balance.wowhead',revision=4,
+ blocks={['era.druid.boundaries']=3,['era.druid.upkeep']=1,['era.druid.caster-cooldowns']=2,['sod.druid.maul']=2,['sod.druid.balance-cooldowns']=1,
   ['sod.druid.forms']=2,['sod.druid.cat']=2,['era.druid.stealth-opener']=1,['era.druid.cat-builders']=1,['era.druid.powershift']=1,['sod.druid.bear']=1},
  nameKey='Default.SoD.Druid.Balance.Wowhead.Name',descriptionKey='Default.SoD.Druid.Balance.Wowhead.Description',
- applicability={families={'era'},actionContext='player',class='DRUID',minLevel=1,maxLevel=60,rulesets={'season:2'}},
+ applicability={families={'era'},actionContext='player',class='DRUID',rulesets={'season:2'}},
  tags={'season-of-discovery','endgame','balance','caster','single-target','aoe','wowhead'},
  sources={
   {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/druid/balance/dps-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Balance Druid rotation (Phase 8)',reviewedAt='2026-10-23',revision='2025-04-11'},

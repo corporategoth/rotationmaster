@@ -24,9 +24,8 @@ local lives=any({type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.3}
 local attacked={type='ISSAME',unit='targettarget',otherunit='player'}
 local loneWolf={type='RUNE_ENGRAVED',spell=415370}
 -- Casts and channels (Aimed Shot, Steady Shot, Volley, Mend Pet) and a missing target end advice.
-assert(addon:RegisterDefaultBlock({id='era.hunter.boundaries',revision=1,families={'era'},class='HUNTER',steps={
- {id='manual',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
- {id='no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
+assert(addon:RegisterDefaultBlock({id='era.hunter.boundaries',revision=2,families={'era'},class='HUNTER',steps={
+ {id='manual',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))},
 }}))
 -- Vanilla dead zone: inside melee range only the melee buttons work.
 assert(addon:RegisterDefaultBlock({id='era.hunter.dead-zone',revision=2,families={'era'},class='HUNTER',steps={

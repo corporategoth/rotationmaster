@@ -13,12 +13,12 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local outside=negate({type='INSTANCE',value='raid'})
 local lasting=any({type='GROUP'},{type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'},
  {type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.4})
-local blocks={['era.warlock.boundaries']=1,['era.warlock.procs']=1,['era.warlock.group-finish']=1,['era.warlock.dying']=1,['era.warlock.curse']=2,
+local blocks={['era.warlock.boundaries']=2,['era.warlock.procs']=1,['era.warlock.group-finish']=1,['era.warlock.dying']=1,['era.warlock.curse']=2,
  ['era.warlock.moving']=1,['era.warlock.aoe']=1,['era.warlock.sustain']=2,['era.warlock.filler']=1,['era.warlock.armor']=1,['era.warlock.pets']=1,['era.warlock.safety']=1}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.warlock.dps.icyveins',revision=2,blocks=blocks,
+ format='RotationMaster',schemaVersion=1,id='rm.era.warlock.dps.icyveins',revision=3,blocks=blocks,
  nameKey='Default.Era.Warlock.DPS.IcyVeins.Name',descriptionKey='Default.Era.Warlock.DPS.IcyVeins.Description',
- applicability={families={'era'},actionContext='player',class='WARLOCK',minLevel=1,maxLevel=60},
+ applicability={families={'era'},actionContext='player',class='WARLOCK'},
  tags={'dps','ranged','caster','leveling','endgame','icy-veins'},
  sources={{url='https://www.icy-veins.com/wow-classic/warlock-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Warlock DPS rotation',reviewedAt='2026-10-23',revision='2024-11-18'},
  {url='https://www.icy-veins.com/wow-classic/classic-warlock-leveling-guide',title='Icy Veins: Classic Warlock leveling guide',reviewedAt='2026-10-23',revision='2024-11-18'},

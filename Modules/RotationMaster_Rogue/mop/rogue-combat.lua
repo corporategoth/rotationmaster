@@ -24,10 +24,10 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local boss={type='CLASSIFICATION',unit='target',value='worldboss'}
 local lust=any(buff(2825),buff(32182),buff(80353),buff(90355))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.combat',revision=3,
- blocks={['mop.rogue.boundaries']=1,['mop.rogue.combat-opener']=1,['mop.rogue.out-of-combat']=2,['mop.rogue.combat-aoe']=1,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1,['mop.rogue.combat-upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.combat',revision=4,
+ blocks={['mop.rogue.boundaries']=2,['mop.rogue.combat-opener']=1,['mop.rogue.out-of-combat']=2,['mop.rogue.combat-aoe']=1,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1,['mop.rogue.combat-upkeep']=1},
  nameKey='Default.MoP.Rogue.Combat.Name',descriptionKey='Default.MoP.Rogue.Combat.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE'},
  tags={'combat','dps','melee','leveling','endgame','wowhead','wowsims'},
  sources={{url='https://www.wowhead.com/mop-classic/guide/classes/rogue/combat/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Combat Rogue rotation (MoP Classic, Phase 5)',reviewedAt='2026-10-23',revision='2026-06-29'},
  {url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/rogue/combat/apls/combat.apl.json',title='wowsims/mop: Combat Rogue APL',reviewedAt='2026-10-23',revision='ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9'},

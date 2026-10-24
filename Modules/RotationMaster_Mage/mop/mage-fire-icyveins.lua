@@ -13,10 +13,10 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local PYRO,HEAT,ALTER=48108,48107,110909
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.mage.fire.icyveins',revision=3,
- blocks={['mop.mage.boundaries']=1,['mop.mage.upkeep']=1,['mop.mage.armor-molten']=1,['mop.mage.bombs']=1,['mop.mage.fire-open']=2,['mop.mage.fire-spend']=1,['mop.mage.fire-filler']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.mage.fire.icyveins',revision=4,
+ blocks={['mop.mage.boundaries']=2,['mop.mage.upkeep']=1,['mop.mage.armor-molten']=1,['mop.mage.bombs']=1,['mop.mage.fire-open']=2,['mop.mage.fire-spend']=1,['mop.mage.fire-filler']=1},
  nameKey='Default.MoP.Mage.Fire.IcyVeins.Name',descriptionKey='Default.MoP.Mage.Fire.IcyVeins.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE'},
  tags={'fire','leveling','single-target','aoe','icy-veins'},
  sources={
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/fire-mage-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Fire Mage rotation',reviewedAt='2026-10-23',revision='2025-06-17'},

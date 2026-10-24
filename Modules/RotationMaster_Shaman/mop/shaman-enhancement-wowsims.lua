@@ -21,11 +21,11 @@ local flame={type='DEBUFF',unit='target',spell=8050,owndebuff=true}
 local fits=any(maelstrom(5),all(maelstrom(4),swing(.5)),all(maelstrom(3),swing(1)),all(maelstrom(2),swing(1.5)),all(maelstrom(1),swing(2)))
 local unleashed=own(73683)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.enhancement.wowsims',revision=3,
- blocks={['mop.shaman.manual']=1,['mop.shaman.lightning-shield']=1,['mop.shaman.group']=1,['mop.shaman.fire-totems']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.enhancement.wowsims',revision=4,
+ blocks={['mop.shaman.manual-target']=1,['mop.shaman.lightning-shield']=1,['mop.shaman.group']=1,['mop.shaman.fire-totems']=1,
   ['mop.shaman.enhancement-upkeep']=2,['mop.shaman.enhancement-aoe']=1},
  nameKey='Default.MoP.Shaman.Enhancement.Wowsims.Name',descriptionKey='Default.MoP.Shaman.Enhancement.Wowsims.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='SHAMAN',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='SHAMAN'},
  tags={'enhancement','dps','melee','endgame','wowsims','wowtbc'},
  sources={{url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/shaman/enhancement/apls/p3.apl.json',title='wowsims/mop: Enhancement Shaman P3 APL',reviewedAt='2026-10-23',revision='ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9'},
  {url='https://wowtbc.gg/mop/class-guides/enhancement-shaman/',title='wowtbc.gg: Enhancement Shaman (MoP Classic)',reviewedAt='2026-10-23'}},
@@ -35,8 +35,7 @@ assert(addon:RegisterDefaultRotation({
   spell('shaman-enh-sim-shamanistic-rage',30823,all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.6})),
  },
  rotation={
- block('mop.shaman.manual','shaman-enh-sim-'),
- {id='shaman-enh-sim-no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
+ block('mop.shaman.manual-target','shaman-enh-sim-'),
  {id='shaman-enh-sim-pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('shaman-enh-sim-pull-unleash',73680),
   {id='shaman-enh-sim-pull-stop',type='none',suppress_attack=false,conditions={}},

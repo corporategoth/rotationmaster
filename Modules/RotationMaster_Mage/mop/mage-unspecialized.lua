@@ -12,10 +12,10 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.mage.unspecialized',revision=2,
- blocks={['mop.mage.boundaries']=1,['mop.mage.upkeep']=1,['mop.mage.armor-molten']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.mage.unspecialized',revision=3,
+ blocks={['mop.mage.boundaries']=2,['mop.mage.upkeep']=1,['mop.mage.armor-molten']=1},
  nameKey='Default.MoP.Mage.Unspecialized.Name',descriptionKey='Default.MoP.Mage.Unspecialized.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE',minLevel=1,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE'},
  tags={'leveling','single-target','aoe'},
  sources={
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/frost-mage-leveling',title='Icy Veins: MoP Classic Frost Mage leveling',reviewedAt='2026-10-23',revision='2025-06-17',notes='Spell training levels only; no level 1-9 priority.'},

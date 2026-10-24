@@ -16,13 +16,16 @@ local function travelling()return any(form(783),form(1066),form(33943),form(4012
 local function druid(id,steps,revision)assert(addon:RegisterDefaultBlock({id=id,revision=revision or 1,families={'tbc'},class='DRUID',steps=steps}))end
 -- Casts and channels (Starfire, Hurricane, Tranquility) and travel forms halt advice and Attack.
 druid('tbc.druid.boundaries',{
- {id='casting',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
- {id='travelling',type='none',suppress_attack=true,conditions=travelling()},
-},2)
+ {id='casting',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},travelling())},
+},3)
 -- A caster spec in Cat or Bear form chose to be there; no caster advice.
 druid('tbc.druid.feral-form-stop',{
  {id='feral-form',type='none',conditions=feral()},
 },2)
+-- Balance: the same, or no attackable target (one Stop).
+druid('tbc.druid.feral-form-target',{
+ {id='feral-form',type='none',conditions=any(feral(),negate({type='ATTACKABLE',unit='target'}))},
+})
 -- Out-of-combat self buffs every source keeps: Mark (unless Gift is up), Thorns while
 -- soloing, Omen of Clarity once talented.
 druid('tbc.druid.upkeep',{

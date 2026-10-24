@@ -34,10 +34,10 @@ local dying=all(points('GREATERTHANOREQUALS',2),lifetime('LESSTHAN',4))
 local four1,four2=spend('rogue-assassination-four',fourPoint)
 local dying1,dying2=spend('rogue-assassination-dying',dying)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.assassination',revision=3,
- blocks={['mop.rogue.boundaries']=1,['mop.rogue.assassination-opener']=2,['mop.rogue.out-of-combat']=2,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.assassination',revision=4,
+ blocks={['mop.rogue.boundaries']=2,['mop.rogue.assassination-opener']=2,['mop.rogue.out-of-combat']=2,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1},
  nameKey='Default.MoP.Rogue.Assassination.Name',descriptionKey='Default.MoP.Rogue.Assassination.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE'},
  tags={'assassination','dps','melee','leveling','endgame','wowsims','wowhead','icy-veins'},
  sources={{url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/rogue/assassination/apls/assassination.apl.json',title='wowsims/mop: Assassination Rogue APL',reviewedAt='2026-10-23',revision='ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9'},
  {url='https://www.wowhead.com/mop-classic/guide/classes/rogue/assassination/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Assassination Rogue rotation (MoP Classic, Phase 5)',reviewedAt='2026-10-23',revision='2026-06-29'},

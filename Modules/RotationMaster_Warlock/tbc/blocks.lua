@@ -23,11 +23,9 @@ local function block(id,name,prefix)return{id=id,type='block',block=name,prefix=
 local fire=any(buff(18789),all(talent(3,16,1),negate(buff(18791))))
 local curses={980,603,1490,704,1714,702}
 local function ownCurse()local list={};for i,id in ipairs(curses)do list[i]=own(id)end;return{type='OR',value=list}end
-assert(addon:RegisterDefaultBlock({id='tbc.warlock.boundaries',revision=1,families={'tbc'},class='WARLOCK',steps={
- stop('cast',{type='CASTING',unit='player'}),
+assert(addon:RegisterDefaultBlock({id='tbc.warlock.boundaries',revision=2,families={'tbc'},class='WARLOCK',steps={
  -- Drain Life, Drain Soul, Hellfire, Rain of Fire and Health Funnel run to the end.
- stop('channel',{type='CHANNELING',unit='player'}),
- stop('target',negate(all({type='ATTACKABLE',unit='target'},any(combat(),negate({type='COMBAT',unit='target'}))))),
+ stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate(all({type='ATTACKABLE',unit='target'},any(combat(),negate({type='COMBAT',unit='target'})))))),
 }}))
 -- Instant procs expire, so they come first: Nightfall's Shadow Trance and Backlash.
 assert(addon:RegisterDefaultBlock({id='tbc.warlock.procs',revision=1,families={'tbc'},class='WARLOCK',steps={

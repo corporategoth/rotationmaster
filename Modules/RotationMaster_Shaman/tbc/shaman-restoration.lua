@@ -10,15 +10,15 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function hurt(v)return{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=v}end
 local function group()return{type='GROUP'}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.restoration',revision=1,
- blocks={['tbc.shaman.shield']=1,['tbc.shaman.bloodlust']=1,['tbc.shaman.boundaries']=1,['tbc.shaman.interrupt']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.restoration',revision=2,
+ blocks={['tbc.shaman.shield']=1,['tbc.shaman.bloodlust']=1,['tbc.shaman.boundaries']=2,['tbc.shaman.interrupt']=1},
  nameKey='Default.TBC.Shaman.Restoration.Name',descriptionKey='Default.TBC.Shaman.Restoration.Description',
- applicability={families={'tbc'},actionContext='player',class='SHAMAN',minLevel=10,maxLevel=70},
+ applicability={families={'tbc'},actionContext='player',class='SHAMAN'},
  tags={'leveling','endgame','restoration','healer','icy-veins','wowhead'},
  sources={{url='https://www.icy-veins.com/tbc-classic/restoration-shaman-healer-pve-rotation-cooldowns-abilities',title='Icy Veins: Restoration Shaman rotation',reviewedAt='2026-10-23',revision='2026-01-12'},
   {url='https://www.icy-veins.com/tbc-classic/restoration-shaman-leveling-guide',title='Icy Veins: Restoration Shaman leveling',reviewedAt='2026-10-23',revision='2026-01-12'},
   {url='https://www.wowhead.com/tbc/guide/classes/shaman/healer-rotation-cooldowns-abilities-pve',title='Wowhead: Restoration Shaman healing',reviewedAt='2026-10-23',revision='2024-02-28',notes='Water Shield and Earth Shield upkeep.'}},
- body={priority=30,switch={type='PRIMARY_TALENT_TREE',tree=3},
+ body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='PRIMARY_TALENT_TREE',tree=3}}},
   cooldowns={
    {id='resto-shield',type='block',block='tbc.shaman.shield',prefix='resto-'},
    {id='resto-earth-shield-focus',type='spell',action=974,ranked=false,conditions=all({type='FRIENDLY',unit='focus'},negate({type='BUFF',unit='focus',spell=974,anyrank=true,ownbuff=true}))},

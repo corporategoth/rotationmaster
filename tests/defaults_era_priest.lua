@@ -25,7 +25,7 @@ test('all eight Priest premades register valid, localized, sourced, composed and
  M.registered(a,f,VANILLA,'PRIEST');M.registered(a,f,SOD,'PRIEST')
  for _,id in ipairs(VANILLA)do assert(a:GetDefaultRotationComposition(id),id..' is not composed')end
  for _,id in ipairs(SOD)do assert(a:GetDefaultRotationComposition(id),id..' is not composed')end
- assert(M.row(a,DPS).applicability.minLevel==1 and M.row(a,HEAL).applicability.minLevel==10 and M.row(a,SHEAL).applicability.minLevel==10)
+ for _,id in ipairs({HEAL,SHEAL})do local sw=M.row(a,id).envelope.body.switch;assert(sw.type=='AND'and sw.value[1].type=='LEVEL'and sw.value[1].value==10,id..' switch holds level 10')end
  for _,source in ipairs(M.row(a,TAVERN).envelope.sources)do assert(source.url:find('warcrafttavern'),'Tavern variant cites another source')end
  for _,source in ipairs(M.row(a,SSPIKE).envelope.sources)do assert(not source.url:find('wowsims'),'Mind Spike variant cites wowsims')end
 end)
@@ -33,7 +33,7 @@ end)
 test('standard realm: damage owns low levels, solo play, no points and ties; healer in a group with Holy or Discipline',function()
  local a,s=priest(1)
  assert(M.selected(a)==DPS,'level 1')
- assert(not M.row(a,HEAL).eligible,'healer below level 10')
+ assert(M.switch(a,HEAL)=='no-match','healer below level 10')
  s.setLevel(60);for _,id in ipairs(SOD)do assert(not M.row(a,id).eligible and M.row(a,id).eligibilityReason=='ruleset-mismatch',id..' eligible on a standard realm')end
  s.setLevel(30);s.group=true;assert(M.selected(a)==DPS,'group with no talent points stays damage')
  assert(M.switch(a,HEAL)=='unavailable')

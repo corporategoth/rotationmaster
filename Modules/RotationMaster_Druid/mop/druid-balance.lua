@@ -27,10 +27,10 @@ local worth=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASS
  {type='CLASSIFICATION',unit='target',value='worldboss'},{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=25})
 local dream=all(talent(17),negate(own(DREAM)),negate(aligned))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.druid.balance',revision=3,
- blocks={['mop.druid.boundaries']=2,['mop.druid.target']=1,['mop.druid.mark']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.druid.balance',revision=4,
+ blocks={['mop.druid.boundaries']=3,['mop.druid.target']=1,['mop.druid.mark']=1},
  nameKey='Default.MoP.Druid.Balance.Name',descriptionKey='Default.MoP.Druid.Balance.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID'},
  tags={'balance','leveling','single-target','aoe','wowhead','wowsims'},
  sources={
   {url='https://www.wowhead.com/mop-classic/guide/classes/druid/balance/dps-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Balance Druid rotation',reviewedAt='2026-10-23',revision='2026-06-20'},

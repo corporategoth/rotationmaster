@@ -21,10 +21,10 @@ local function stop(id,conditions,attack)return{id=id,type='none',suppress_attac
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local evil=any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',unit='target',value='DEMON'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.paladin.holy',revision=3,
- blocks={['forever.paladin.boundaries']=1,['forever.paladin.aura-blessing']=1,['forever.paladin.dispel']=1,['forever.paladin.healer-upkeep']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.paladin.holy',revision=4,
+ blocks={['forever.paladin.boundaries']=2,['forever.paladin.aura-blessing']=1,['forever.paladin.dispel']=1,['forever.paladin.healer-upkeep']=2},
  nameKey='Default.Forever.Paladin.Holy.Name',descriptionKey='Default.Forever.Paladin.Holy.Description',
- applicability={families={'forever'},actionContext='player',class='PALADIN',minLevel=10,maxLevel=60},
+ applicability={families={'forever'},actionContext='player',class='PALADIN'},
  tags={'holy','healer','group','icy-veins'},
  sources={
   {url='https://www.icy-veins.com/wow-forever/holy-paladin-healer-pve-guide',title='Icy Veins: Forever Holy Paladin PvE',reviewedAt='2026-10-23',revision='2026-10-20'},

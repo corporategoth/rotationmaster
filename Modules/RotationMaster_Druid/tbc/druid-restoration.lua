@@ -13,16 +13,16 @@ local function hot(id)return{type='BUFF',unit='target',spell=id,anyrank=true,own
 local function hurt(v)return{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=v}end
 local function combat()return{type='COMBAT',unit='player'}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.druid.restoration',revision=2,
- blocks={['tbc.druid.boundaries']=2,['tbc.druid.feral-form-stop']=2,['tbc.druid.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.druid.restoration',revision=3,
+ blocks={['tbc.druid.boundaries']=3,['tbc.druid.feral-form-stop']=2,['tbc.druid.upkeep']=1},
  nameKey='Default.TBC.Druid.Restoration.Name',descriptionKey='Default.TBC.Druid.Restoration.Description',
- applicability={families={'tbc'},actionContext='player',class='DRUID',minLevel=10,maxLevel=70},
+ applicability={families={'tbc'},actionContext='player',class='DRUID'},
  tags={'leveling','endgame','restoration','healer','icy-veins','wowhead','warcraft-tavern'},
  sources={{url='https://www.icy-veins.com/tbc-classic/restoration-druid-healer-pve-rotation-cooldowns-abilities',title='Icy Veins: Restoration Druid rotation',reviewedAt='2026-10-23',revision='2026-01-12'},
   {url='https://www.icy-veins.com/tbc-classic/restoration-druid-leveling-guide',title='Icy Veins: Restoration Druid leveling',reviewedAt='2026-10-23',revision='2026-01-12'},
   {url='https://www.wowhead.com/tbc/guide/classes/druid/healer-rotation-cooldowns-abilities-pve',title='Wowhead: Restoration Druid healing',reviewedAt='2026-10-23',revision='2024-05-18'},
   {url='https://www.warcrafttavern.com/tbc/guides/pve-restoration-druid-healing-rotation-cooldowns-abilities/',title='Warcraft Tavern: Restoration Druid healing',reviewedAt='2026-10-23'}},
- body={priority=30,switch={type='PRIMARY_TALENT_TREE',tree=3},
+ body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='PRIMARY_TALENT_TREE',tree=3}}},
   cooldowns={
    {id='resto-upkeep',type='block',block='tbc.druid.upkeep',prefix='resto-'},
    {id='resto-tree-of-life',type='spell',action=33891,ranked=false,conditions=negate(any({type='FORM',form=33891},{type='FORM',form=768},{type='FORM',form=5487},{type='FORM',form=9634},{type='FORM',form=783},{type='FORM',form=1066},{type='FORM',form=33943},{type='FORM',form=40120}))},

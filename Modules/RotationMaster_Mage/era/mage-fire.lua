@@ -19,11 +19,11 @@ local scorch={type='TALENT',layout='tree',tree=2,talent=10,operator='GREATERTHAN
 local stacked={type='DEBUFF_STACKS',unit='target',spell=22959,operator='GREATERTHANOREQUALS',value=5}
 local elite=any(class('elite'),class('rareelite'),class('worldboss'))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.mage.fire',revision=2,
- blocks={['era.mage.boundaries']=1,['era.mage.moving']=1,['era.mage.nova']=1,['era.mage.execute']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.era.mage.fire',revision=3,
+ blocks={['era.mage.boundaries']=2,['era.mage.moving']=1,['era.mage.nova']=1,['era.mage.execute']=1,
   ['era.mage.wand-finish']=1,['era.mage.armor']=1,['era.mage.upkeep']=1},
  nameKey='Default.Era.Mage.Fire.Name',descriptionKey='Default.Era.Mage.Fire.Description',
- applicability={families={'era'},actionContext='player',class='MAGE',minLevel=10,maxLevel=60},
+ applicability={families={'era'},actionContext='player',class='MAGE'},
  tags={'fire','leveling','raid','single-target','aoe'},
  sources={
   {url='https://www.icy-veins.com/wow-classic/mage-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Mage DPS rotation',reviewedAt='2026-10-23',revision='2024-11-17'},
@@ -36,8 +36,8 @@ assert(addon:RegisterDefaultRotation({
  body={
   priority=10,
   -- Readable arm first: any Fire point and no Frost point; then Fire as the main tree.
-  switch=any(all({type='TALENT_TREE_POINTS',tree=3,operator='EQUALS',value=0},{type='TALENT_TREE_POINTS',tree=2,operator='GREATERTHANOREQUALS',value=1}),
-   {type='PRIMARY_TALENT_TREE',tree=2}),
+  switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},any(all({type='TALENT_TREE_POINTS',tree=3,operator='EQUALS',value=0},{type='TALENT_TREE_POINTS',tree=2,operator='GREATERTHANOREQUALS',value=1}),
+   {type='PRIMARY_TALENT_TREE',tree=2})}},
   cooldowns={block(P..'armor','era.mage.armor',P),
    spell(P..'combustion',11129,all({type='COMBAT',unit='player'},any(stacked,negate(scorch)),any(elite,lives('GREATERTHAN',10)))),
    block(P..'upkeep','era.mage.upkeep',P)},

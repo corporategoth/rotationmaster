@@ -21,16 +21,16 @@ local motE=own(260734)
 local shocked={type='DEBUFF',unit='target',spell=188389,owndebuff=true}
 local refresh=any(negate(shocked),{type='DEBUFF_REMAIN',unit='target',spell=188389,owndebuff=true,operator='LESSTHAN',value=5.4})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.shaman.elemental.icyveins',revision=3,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.shaman.elemental.icyveins',revision=4,
  blocks={['retail.shaman.boundaries']=1,['retail.shaman.upkeep']=2,['retail.shaman.lightning-shield']=1},
  nameKey='Default.Retail.Shaman.Elemental.IcyVeins.Name',descriptionKey='Default.Retail.Shaman.Elemental.IcyVeins.Description',
- applicability={families={'retail'},actionContext='player',class='SHAMAN',specs={262},minLevel=10,maxLevel=90},
+ applicability={families={'retail'},actionContext='player',class='SHAMAN'},
  tags={'elemental','ranged','reference','single-target','aoe','icy-veins','simulationcraft'},
  sources={
   {url='https://www.icy-veins.com/wow/elemental-shaman-pve-dps-rotation-cooldowns-abilities',title='Icy Veins: Elemental Shaman rotation (Midnight)',reviewedAt='2026-10-23',revision='2026-10-12'},
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/shaman_elemental.simc',title='SimulationCraft: Elemental Shaman default list',reviewedAt='2026-10-23',revision='c5fea93fb77d'},
  },
- body={priority=5,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+ body={priority=5,disabled=true,switch={type='SPECIALIZATION',spec=262},
   cooldowns={
    block('retail.shaman.upkeep','eleiv-'),
    block('retail.shaman.lightning-shield','eleiv-'),

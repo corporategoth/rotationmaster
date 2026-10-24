@@ -16,10 +16,10 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local SHUFFLE=115307
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.monk.brewmaster.offensive',revision=3,
- blocks={['mop.monk.boundaries']=1,['mop.monk.upkeep']=1,['mop.monk.brewmaster-upkeep']=2,['mop.monk.brewmaster-pull']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.monk.brewmaster.offensive',revision=4,
+ blocks={['mop.monk.boundaries']=2,['mop.monk.upkeep']=1,['mop.monk.brewmaster-upkeep']=2,['mop.monk.brewmaster-pull']=2},
  nameKey='Default.MoP.Monk.Brewmaster.Offensive.Name',descriptionKey='Default.MoP.Monk.Brewmaster.Offensive.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK'},
  tags={'brewmaster','tank','single-target','wowsims'},
  sources={
   {url='https://github.com/wowsims/mop/blob/master/ui/specs/monk/brewmaster/apls/offensive.apl.json',title='wowsims/mop: Brewmaster Offensive APL (Phase 5)',reviewedAt='2026-10-23',revision='ec2c6c2552'},

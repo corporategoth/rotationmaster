@@ -28,10 +28,10 @@ local function paladin(id,steps,revision)assert(addon:RegisterDefaultBlock({id=i
 paladin('era.paladin.boundaries',{
  {id='casting',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
 })
+-- Melee premades: a cast or channel, or no attackable target, ends advice (one Stop).
 paladin('era.paladin.melee-opening',{
- {id='boundaries',type='block',block='era.paladin.boundaries'},
- {id='no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
-})
+ {id='casting',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))},
+},2)
 -- Solo safety (Icy Veins Hardcore overview): bubble below 20% health unless Forbearance
 -- blocks it, Divine Protection before Divine Shield is learned, Lay on Hands below 10%.
 paladin('era.paladin.safety',{

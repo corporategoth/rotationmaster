@@ -167,4 +167,122 @@ test('inverted TBC Branches give the same advice as their negated form (true, fa
         assert(seen.unavailable=='nil unavailable suppress',case[2]..'/'..id..' unavailable: '..seen.unavailable)
     end
 end)
+-- Efficient rotations: never two consecutive Stops (at the same level) where one Stop with an OR of
+-- their conditions does the same job, and never two consecutive Branches with the same arms (one
+-- Branch with an OR). Two Stops that differ in suppress_attack, or with only one disabled, cannot be
+-- one Stop and stay allowed. Checked on every authored block (and override) and pack, and on every
+-- composed pack, where the two Stops may come from different blocks.
+local function canonical(v,noid)
+    local t=type(v)
+    if t=='string' then return string.format('%q',v) elseif t=='number' then return string.format('%.17g',v) elseif t~='table' then return tostring(v) end
+    local keys={};for k in pairs(v) do if not (noid and k=='id') then keys[#keys+1]=k end end
+    table.sort(keys,function(x,y) if type(x)==type(y) then return x<y end;return type(x)=='number' end)
+    local out={};for _,k in ipairs(keys) do out[#out+1]=canonical(k)..'='..canonical(v[k],noid) end
+    return '{'..table.concat(out,',')..'}'
+end
+local function isStop(step) return type(step)=='table' and step.type=='none' end
+local function mergeable(a,b)
+    return isStop(a) and isStop(b) and (a.suppress_attack==true)==(b.suppress_attack==true) and (a.disabled==true)==(b.disabled==true)
+end
+local function sameArms(a,b)
+    return type(a)=='table' and type(b)=='table' and a.type=='branch' and b.type=='branch'
+        and canonical(a.onTrue or {},true)==canonical(b.onTrue or {},true) and canonical(a.onFalse or {},true)==canonical(b.onFalse or {},true)
+end
+local function redundancies(owner,list,out)
+    for i,step in ipairs(list or {}) do
+        local nxt=list[i+1]
+        if mergeable(step,nxt) then out[#out+1]=owner..': Stops '..tostring(step.id)..' + '..tostring(nxt.id) end
+        if sameArms(step,nxt) then out[#out+1]=owner..': Branches '..tostring(step.id)..' + '..tostring(nxt.id)..' (same arms)' end
+        if type(step)=='table' and step.type=='branch' then redundancies(owner,step.onTrue,out);redundancies(owner,step.onFalse,out) end
+    end
+    return out
+end
+
+test('no authored Built In block, override or pack has two consecutive mergeable Stops or same-arm Branches',function()
+    local defs=authored();local out={}
+    for _,row in ipairs(defs.blocks) do local b=row.def
+        redundancies(row.path..': '..b.id,b.steps,out)
+        for i,override in ipairs(b.overrides or {}) do redundancies(row.path..': '..b.id..' override '..i,override.steps,out) end
+    end
+    for _,row in ipairs(defs.packs) do local p=row.def
+        redundancies(row.path..': '..p.id..' rotation',p.body.rotation,out);redundancies(row.path..': '..p.id..' cooldowns',p.body.cooldowns,out)
+    end
+    assert(#out==0,'merge into one step with an OR condition: '..table.concat(out,'; '))
+end)
+
+test('no composed Built In expands to two consecutive mergeable Stops or same-arm Branches',function()
+    local _,packs=corpus.load(5,1,'ROGUE');local out={}
+    for _,p in ipairs(packs) do redundancies(p.id..' rotation',p.body.rotation,out);redundancies(p.id..' cooldowns',p.body.cooldowns,out) end
+    assert(#out==0,'merge into one step with an OR condition (a shared block can take the extra condition, or a block variant): '..table.concat(out,'; '))
+end)
+
+-- A fixture of the two rules, so the checks above cannot pass vacuously.
+test('the efficiency check names consecutive Stops and same-arm Branches, and allows what cannot merge',function()
+    local cast,chan={type='CASTING',unit='player'},{type='CHANNELING',unit='player'}
+    local list={{id='a',type='none',suppress_attack=true,conditions=cast},{id='b',type='none',suppress_attack=true,conditions=chan},
+        {id='c',type='none',suppress_attack=false,conditions=cast},
+        {id='x',type='branch',conditions=cast,onTrue={{id='x1',type='spell',action=1}},onFalse={}},
+        {id='y',type='branch',conditions=chan,onTrue={{id='y1',type='spell',action=1}},onFalse={}}}
+    local out=redundancies('fixture',list,{})
+    assert(#out==2 and out[1]=='fixture: Stops a + b' and out[2]=='fixture: Branches x + y (same arms)',table.concat(out,'; '))
+end)
+
+-- OR evaluates its children in order and stops at the first that matches or is unavailable
+-- (Core/conditions.lua evaluate() and its condition plans alike). So one Stop on OR(c1..cn) ends the
+-- walk exactly when the consecutive Stops c1..cn would, with the same status: the first child that
+-- is not a no-match decides (match: stopped; unavailable: unavailable and Attack suppressed). Proved
+-- here for every shipped Stop whose condition is an OR, for every combination of its children being
+-- true, false or unavailable, on the real sequence executor, the ordinary evaluator and the
+-- condition plans the lean engine runs.
+test('every shipped OR Stop walks exactly like consecutive Stops on its children (true, false, unavailable)',function()
+    local f,packs=corpus.load(5,1,'ROGUE');local a=f.addon;f.load('Core/rotation_sequence.lua')
+    local compile,evaluatePlan=a:ConsumeConditionPlans()
+    for _,definition in pairs(a.conditionDefinitions) do
+        definition.evaluate=function(value) if forced[value]~=nil then return force(value) end;return false end
+    end
+    local function walk(list)
+        local result=a:EvaluateRotationSequence({rotation=list},function(c,ctx) return a:evaluateConditionResult(c,ctx) end,function() end)
+        return result.status..(result.suppressAttack and ' suppress' or '')
+    end
+    -- Leaves of one child forced so the child evaluates to status; false when no assignment does.
+    local function forceChild(child,status)
+        local list=leaves(child)
+        if status=='unavailable' then for _,leaf in ipairs(list) do forced[leaf]='unavailable' end;return a:evaluateConditionResult(child).status==status end
+        if #list>12 then return false end
+        for bits=0,2^#list-1 do
+            local n=bits;for _,leaf in ipairs(list) do forced[leaf]=n%2==1;n=math.floor(n/2) end
+            if a:evaluateConditionResult(child).status==status then return true end
+        end
+        return false
+    end
+    local stops,combos=0,0
+    local function visit(list)
+        for _,step in ipairs(list or {}) do
+            if step.type=='branch' then visit(step.onTrue);visit(step.onFalse)
+            elseif isStop(step) and type(step.conditions)=='table' and step.conditions.type=='OR' and not step.disabled then
+                local children=step.conditions.value;stops=stops+1
+                local split={};for i,child in ipairs(children) do split[i]={id=step.id..'-split-'..i,type='none',suppress_attack=step.suppress_attack,conditions=child} end
+                local merged={step};local plan=compile(step.conditions);local plans={};for i,child in ipairs(children) do plans[i]=compile(child) end
+                local statuses={'match','no-match','unavailable'}
+                for code=0,3^#children-1 do
+                    for k in pairs(forced) do forced[k]=nil end
+                    local n,reachable,wanted=code,true,{}
+                    for i,child in ipairs(children) do wanted[i]=statuses[n%3+1];if not forceChild(child,wanted[i]) then reachable=false end;n=math.floor(n/3) end
+                    -- A leaf shared between children can undo an earlier child's forcing.
+                    for i,child in ipairs(children) do if a:evaluateConditionResult(child).status~=wanted[i] then reachable=false end end
+                    if reachable then
+                        combos=combos+1
+                        local x,y=walk(merged),walk(split)
+                        assert(x==y,step.id..' code '..code..': merged '..x..' | split '..y)
+                        local sequential='no-match'
+                        for i in ipairs(children) do local s=evaluatePlan(plans[i],{},0,step.id);if s~='no-match' then sequential=s;break end end
+                        assert(evaluatePlan(plan,{},0,step.id)==sequential,step.id..' code '..code..': plan differs')
+                    end
+                end
+            end
+        end
+    end
+    for _,p in ipairs(packs) do visit(p.body.rotation) end
+    assert(stops>200 and combos>2000,stops..' OR Stops, '..combos..' combinations')
+end)
 finish()

@@ -21,17 +21,17 @@ local flamed={type='DEBUFF',unit='target',spell=8050,anyrank=true,owndebuff=true
 local surge={type='BUFF',unit='player',spell=440285}
 local group=all(combat(),{type='GROUP'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.shaman.tank',revision=3,
- blocks={['era.shaman.manual']=1,['era.shaman.interrupt']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.shaman.tank',revision=4,
+ blocks={['era.shaman.manual']=2,['era.shaman.interrupt']=1},
  nameKey='Default.SoD.Shaman.Tank.Name',descriptionKey='Default.SoD.Shaman.Tank.Description',
- applicability={families={'era'},actionContext='player',class='SHAMAN',minLevel=30,maxLevel=60,rulesets={'season:2'}},
+ applicability={families={'era'},actionContext='player',class='SHAMAN',rulesets={'season:2'}},
  tags={'tank','melee','endgame','aoe','season-of-discovery','icy-veins','wowhead','wowsims','warcraft-tavern'},
  sources={{url='https://www.icy-veins.com/wow-classic/enhancement-shaman-tank-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Enhancement Shaman tank rotation',reviewedAt='2026-10-23',revision='2025-04-08'},
  {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/shaman/tank-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Shaman tank rotation',reviewedAt='2026-10-23',revision='2025-04-07'},
  {url='https://github.com/wowsims/sod/tree/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/warden_shaman/apls',title='wowsims/sod: Shaman tank Phase 4 APLs (Enhancement and Elemental)',reviewedAt='2026-10-23',revision='0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e'},
  {url='https://www.warcrafttavern.com/wow-classic/guides/sod-shaman-tank/',title='Warcraft Tavern: SoD Shaman tank (Phase 4)',reviewedAt='2026-10-23'}},
  -- Way of Earth: 408531 is the rune's first taught spell (wowsims/exporter), 408680 the same name on Wowhead.
- body={priority=70,switch=any({type='RUNE_ENGRAVED',spell=408531},{type='RUNE_ENGRAVED',spell=408680}),
+ body={priority=70,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=30},any({type='RUNE_ENGRAVED',spell=408531},{type='RUNE_ENGRAVED',spell=408680})}},
  cooldowns={
   spell('sod-tank-rockbiter',8017,negate(rockbiter)),
   spell('sod-tank-lightning-shield',324,negate({type='BUFF',unit='player',spell=324,anyrank=true})),

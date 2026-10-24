@@ -21,10 +21,10 @@ local unshielded=negate({type='DEBUFF',unit='player',spell=6788})
 local tough=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},
  {type='CLASSIFICATION',unit='target',value='worldboss'},{type='LEVEL',unit='target',operator='GREATERTHANOREQUALS',value=2,relative=true})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.priest.dps.mobalytics',revision=3,
- blocks={['forever.priest.boundaries']=1,['forever.priest.upkeep']=1,['forever.priest.dps-upkeep']=2,['forever.priest.wand']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.priest.dps.mobalytics',revision=4,
+ blocks={['forever.priest.dps-boundaries']=1,['forever.priest.upkeep']=1,['forever.priest.dps-upkeep']=2,['forever.priest.wand']=1},
  nameKey='Default.Forever.Priest.DpsMobalytics.Name',descriptionKey='Default.Forever.Priest.DpsMobalytics.Description',
- applicability={families={'forever'},actionContext='player',class='PRIEST',minLevel=1,maxLevel=60},
+ applicability={families={'forever'},actionContext='player',class='PRIEST'},
  tags={'shadow','leveling','dot','wand','mobalytics'},
  sources={
   {url='https://mobalytics.gg/wow-forever/classes/priest-leveling-guide-1-60',title='Mobalytics: Forever Priest leveling 1–60',reviewedAt='2026-10-23',revision='2026-10-07'},
@@ -39,8 +39,7 @@ assert(addon:RegisterDefaultRotation({
    spell('dot-cure-disease',528,{type='DISPELLABLE',unit='player',debufftype='Disease'}),
   },
   rotation={
-   block('dot-boundaries','forever.priest.boundaries','dot-'),
-   stop('dot-target',negate({type='ATTACKABLE',unit='target'})),
+   block('dot-boundaries','forever.priest.dps-boundaries','dot-'),
    spell('dot-shadowform',15473,negate(shadowform)),
    {id='dot-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell('dot-pull-holy-fire',14914,all(tough,negate(known(15473)))),

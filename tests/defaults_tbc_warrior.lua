@@ -17,16 +17,18 @@ local function first(f,s,id)return(M.first(f,s,id))end
 local function cd(s,id)s.cooldown[id]={startTime=99,duration=6,isEnabled=true,modRate=1}end
 local function eligible(f)local out={};for _,r in ipairs(f.addon:ListDefaultRotations(0))do if r.eligible then out[r.id]=true end end;return out end
 
-test('four premades register valid, scoped 1/10–70, and cite only their own source family',function()
+test('four premades register valid at every level, the tank switch holds level 10, and each cites only its own source family',function()
  local f,s=warrior(1);local a=f.addon
- for _,level in ipairs({1,9,10,40,70,71})do
+ -- Applicability holds only load-time facts: every premade is eligible at any level; level lives in the switch.
+ for _,level in ipairs({1,9,10,40,70})do
   s.level=level;a.longtermCache={};local e=eligible(f)
-  assert((e[DW]and e[DI]and true or false)==(level<=70),'DPS scope at '..level)
-  assert((e[PW]and e[PI]and true or false)==(level>=10 and level<=70),'tank scope at '..level)
+  assert(e[DW]and e[DI]and e[PW]and e[PI],'scope at '..level)
  end
+ s.forms=3;s.shift(71)
+ for _,case in ipairs({{9,false},{10,true}})do s.level=case[1];a.longtermCache={};assert(M.switches(f,PW)==case[2]and M.switches(f,PI)==case[2],'tank switch at '..case[1])end
  for id,host in pairs({[DI]='icy%-veins%.com',[PI]='icy%-veins%.com'})do for _,src in ipairs(a:GetDefaultRotation(id).envelope.sources)do assert(src.url:find(host),id..' cites '..src.url)end end
  for _,src in ipairs(a:GetDefaultRotation(PW).envelope.sources)do assert(not src.url:find('icy%-veins'),PW..' cites Icy Veins')end
- for _,id in ipairs({DW,DI,PW,PI})do local v=a:GetDefaultRotation(id);assert(v.validation.valid and v.readOnly and v.revision==((id==PW or id==PI)and 3 or 2))end
+ for _,id in ipairs({DW,DI,PW,PI})do local v=a:GetDefaultRotation(id);assert(v.validation.valid and v.readOnly and v.revision==((id==PW or id==PI)and 4 or 3))end
 end)
 
 test('variants share their sibling switch; Defensive Stance selects the tank, anything else DPS, recommended first',function()
