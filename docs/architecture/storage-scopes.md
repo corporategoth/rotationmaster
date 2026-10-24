@@ -19,7 +19,6 @@ RM stores one account SavedVariables table per client installation, using AceDB'
 | Global item sets | Global; a same-ID profile set takes precedence |
 | Condition Test samples | Global, keyed by condition identifier; restored samples do not authorize debugging |
 | Observation-cache choice (`diagnosticCacheBypass`) | Global; absent defaults to direct, explicit false selects cached and true selects direct; selected after database initialization and takes effect on reload |
-| Display language (`language`) | Global; `auto` (the default, not saved) follows the game, or a locale code. Read before RM's files run (`LoadSavedVariablesFirst`) and takes effect on reload; see `Locales/language.lua` |
 | Item-set action-bar bindings and optional specialization labels | Character |
 | Which profile is selected | Character, managed by AceDB |
 | Observation caches, compiled registries, combat histories, editor drafts/camera/undo and diagnostics | Runtime only |

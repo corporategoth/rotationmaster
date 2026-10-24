@@ -620,6 +620,9 @@ function addon:init()
     end
 
     upgradeTexturesToEffects()
+    -- The language picker was retired: Rotation Master follows the game's
+    -- language. Drop a choice it saved, which the validator would report.
+    addon.db.global.language = nil
     upgradeGlobalRotationstoPlayer()
     upgradeItemsToItemSets()
     cacheItems()
