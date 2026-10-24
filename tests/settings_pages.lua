@@ -31,7 +31,10 @@ test('General controls preserve live callbacks and close their effect preview',f
     a.ScheduleRepeatingTimer=function() scheduled=scheduled+1;return 9 end;a.CancelTimer=function() end
     local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildGeneralSettings(form) end)
     p.fields.enable:Click();assert(not a.db.profile.enable and enabled==-1)
-    p.fields.live_config_update:SetValue(3);assert(a.db.profile.live_config_update==3 and scheduled==1)
+    -- The live dots run only while the rotation editor is open: with none
+    -- open, a new frequency schedules nothing; an open one is restarted.
+    local restarted=0;a.RestartLiveStatus=function() restarted=restarted+1 end
+    p.fields.live_config_update:SetValue(3);assert(a.db.profile.live_config_update==3 and scheduled==0 and restarted==1)
     local stale=p.fields.enable.scripts.OnClick;p:Release();assert(cleared>0);stale();assert(enabled==-1)
 end)
 test('General CPU capture controls bypass pending edits and retain callback leases',function()

@@ -97,6 +97,8 @@ end
 local function help_action_group(group, singular)
     group:AddChild(CreateText(L["Actions automatically require a learned spell or carried item, usable resources, cooldown readiness and valid range. Conditions can additionally test other actions."]))
     group:AddChild(Gap())
+    group:AddChild(CreateText(L["Actions must also be on an action bar: Rotation Master highlights an action by lighting the button that holds it, so a step or cooldown that no button holds is skipped, and its card shows an amber warning."]))
+    group:AddChild(Gap())
     group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Action Type"] .. color.RESET .. " - " ..
             "The type of action to highlight on your action bars."))
 

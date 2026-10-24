@@ -1055,9 +1055,10 @@ function addon:OnEnable()
     if self.initializationErrorReport then return end
     self:info(L["Starting up version %s"], GetAddOnMetadata(addon_name, "Version"))
 
-    if self.db.profile.live_config_update and not self.conditionEvalTimer then
-        self.conditionEvalTimer = self:ScheduleRepeatingTimer('UpdateCurrentCondition', self.db.profile.live_config_update)
-    end
+    -- Live Status Update Frequency drives the rotation editor's live dots,
+    -- which run their own timer only while the editor is open (see
+    -- UI/rotation_editor.lua). Nothing is scheduled here, so a closed editor
+    -- costs nothing.
 
     if self.db.profile.enable then
         self:enable()

@@ -1,6 +1,10 @@
 local _,addon=...
 local data=addon.RotationData
 local cardWidth,headerHeight,gap,armGap,armLead,armJoin=340,84,24,40,40,24
+-- A normal card whose action is on no action bar shows one warning row
+-- (view.unbound, filled by the editor from the button index).
+local noticeHeight=30
+addon.RotationCardNoticeHeight=noticeHeight
 local function copy(path) local result={};for i,key in ipairs(path) do result[i]=key end;return result end
 local function extend(path,key) local result=copy(path);result[#result+1]=key;return result end
 local function height(value)
@@ -32,6 +36,7 @@ function addon:BuildRotationCanvas(body,view)
         local row=rows[step]
         local mode=state(step)
         local ownHeader=mode=='compact' and 28 or mode=='expanded' and 28 or (step.type=='branch' and 68 or 78)+math.max(0,height((view.summaryHeights or {})[step.id])-28)
+        if mode=='normal' and step.type~='branch' and type(view.unbound)=='table' and view.unbound[step.id] then ownHeader=ownHeader+noticeHeight end
         local conditionHeight=mode=='expanded' and step.type~='branch' and math.max(24,height((view.summaryHeights or {})[step.id])) or 0
         local node={step=step,row=row,ownHeader=ownHeader,conditionHeight=conditionHeight,header=mode=='expanded' and math.max(72,ownHeader+height(details[step.id])+(conditionHeight>0 and conditionHeight+4 or 0)) or ownHeader,width=cardWidth}
         node.height=node.header;node.left=cardWidth/2;node.right=cardWidth/2

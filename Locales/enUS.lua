@@ -2547,7 +2547,7 @@ L["Help.General.idle_poll"] = "Out of combat with no target and no focus, Rotati
 L["Help.General.autoswitch_poll"] = "With automatic switching, Rotation Master checks this often, in and out of combat, whether a different rotation's switch conditions now match, so conditions that change on their own (nearby enemy count, threat, movement, health) take effect. Target, focus and pet changes are checked straight away. Zero turns automatic switching off. Choosing a rotation manually still overrides automatic switching until you choose Auto again."
 L["Help.General.disable_autoswitch"] = "Keep Rotation Master from automatically selecting another rotation from its switch condition. This preference survives reloads. Manually choosing a rotation with /rm set <rotation> also suspends automatic switching until you choose automatic selection again."
 L["Help.General.disable_buttons"] = "Hide the main rotation recommendation on action bars. Independent cooldown highlights remain available. Enable Preview Spells if you want to see the main advice in a separate window; with both displays off, the main recommendation has no visible icon."
-L["Help.General.live_config_update"] = "Set the refresh interval for condition status while editing, in seconds. Zero turns off periodic status updates. This is separate from the recommendation polling interval and does not enable live condition testing unless you explicitly choose it."
+L["Help.General.live_config_update"] = "How often, in seconds, the rotation editor checks each card's condition for its live dot: green when it is satisfied for you right now, red when it is not, grey when it cannot be read at the moment (hover a dot for why and when it was checked). Conditions are checked only while the editor is open; zero turns the dots off. This is separate from the recommendation polling interval."
 L["Help.General.minimap"] = "Show the Rotation Master minimap icon. Left-click toggles the configuration window. Right-click opens the quick menu for enabling recommendations and choosing a rotation or automatic switching."
 L["Help.General.rotation_view"] = "Choose Diagram or List as the starting rotation view. This profile preference applies when opening a rotation; changing the view inside the editor does not change this setting. Cooldowns always use a scrolling grid."
 L["Help.General.spell_history"] = "Choose how many seconds of previous spell casts to retain for history-based conditions. Older casts are removed as recommendations update. A longer history retains more records."
@@ -3977,6 +3977,31 @@ L["Help.Conditions.SPECIALIZATION"] = "Your talent specialization. Choose a clas
 L["Help.Conditions.SPECIALIZATION.editions"] = "Retail and Mists of Pandaria Classic compare your active specialization. Classic Era, Burning Crusade and Wrath compare your primary talent tree, the one tree with the most points; Feral and Guardian both mean Feral Combat there. Forever cannot tell its specializations apart this way. No specialization yet, tied or unspent trees and unreadable values are unavailable, including under NOT. The answer is cached until your talents or specialization change."
 L["Help.Conditions.WEAPON_TYPE"] = "What is equipped in the main hand, off hand or ranged slot: nothing, any weapon, a one-handed, two-handed or ranged weapon, a shield, an off-hand item, or one weapon type such as Daggers. Types are read from the item's class and subclass, so they work in every language. The answer is cached until your equipment changes."
 L["Help.Conditions.WEAPON_TYPE.examples"] = "Dual wielding: off hand holds any weapon. Titan's Grip: off hand holds a two-handed weapon. Backstab and Ambush: main hand holds Daggers. Shield Slam or a tank set: off hand holds a shield. The ranged slot exists only before Mists of Pandaria; elsewhere, and while item data is still loading, this condition is unavailable, including under NOT."
+
+-- Steps whose action is on no action bar (buttons.lua GetStepBinding).
+L["Not on your action bars, so it can't be highlighted. It is skipped."] = true
+L["Some suggestions are not on your action bars, so they can't be highlighted. They are skipped."] = true
+L["Rotation Master highlights a step by lighting the action button that holds it. No action bar button holds this action right now, so this step is skipped and the next step is used instead. Put it on an action bar to use it. Spells inside macros count only where the game lets addons read macros (not on Retail)."] = true
+L["Rotation Master highlights a cooldown by lighting the action button that holds it. No action bar button holds this action right now, so this cooldown is never shown or announced. Put it on an action bar to use it. Spells inside macros count only where the game lets addons read macros (not on Retail)."] = true
+L["Blizzard can suggest %s, but no action bar button holds it. Rotation Master highlights an action by lighting the button that holds it, so when one of these is suggested this step is skipped and the next step is used instead. Put them on an action bar to use them."] = true
+L["Skipped, not on your action bars (they cannot be highlighted): %s."] = true
+L["step %s"] = true
+L["cooldown"] = true
+L["Not on your action bars"] = true
+L["An amber border and warning mark a card whose action no action bar button holds right now. Rotation Master highlights an action by lighting the button that holds it, so that step is skipped (a cooldown is never shown) until you put it on a bar. The warning updates when your bars change. Red still marks invalid data."] = true
+L["Actions must also be on an action bar: Rotation Master highlights an action by lighting the button that holds it, so a step or cooldown that no button holds is skipped, and its card shows an amber warning."] = true
+
+-- Live condition dots (UI/rotation_cards.lua, UI/rotation_editor.lua).
+L["Currently satisfied"] = true
+L["Not satisfied"] = true
+L["Unavailable: %s"] = true
+L["unreadable right now"] = true
+L["the condition could not be evaluated"] = true
+L["Checked %d seconds ago."] = true
+L["Rotation Master is advising this step now."] = true
+L["This cooldown is showing now."] = true
+L["This rotation is advising now."] = true
+L["Not on your action bars, so it can't be highlighted. It is never shown."] = true
 
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true
