@@ -8,8 +8,8 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.monk.brewmaster',revision=1,
- blocks={['retail.monk.boundaries']=1,['retail.monk.utility']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.monk.brewmaster',revision=2,
+ blocks={['retail.monk.boundaries']=1,['retail.monk.utility']=2},
  nameKey='Default.Retail.Monk.Brewmaster.Name',descriptionKey='Default.Retail.Monk.Brewmaster.Description',
  applicability={families={'retail'},actionContext='player',class='MONK',specs={268},minLevel=10,maxLevel=90},
  tags={'brewmaster','tank','assisted-combat','icy-veins'},

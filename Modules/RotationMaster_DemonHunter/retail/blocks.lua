@@ -14,9 +14,9 @@ assert(addon:RegisterDefaultBlock({id='retail.demonhunter.boundaries',revision=1
  stop('channel',{type='CHANNELING',unit='player'}),
 }}))
 -- What Blizzard's Assisted Combat never suggests, for every spec: Disrupt on an interruptible cast
--- and Blur below 35% health. Enemy casts and your health are secret in Midnight combat, so both
--- light only where they can be read.
-assert(addon:RegisterDefaultBlock({id='retail.demonhunter.utility',revision=1,families={'retail'},class='DEMONHUNTER',steps={
+-- (enemy casts are secret in Midnight combat, so it lights only where they can be read) and Blur
+-- whenever it is ready in combat: health is secret on Retail, so the defensive is a cooldown reminder.
+assert(addon:RegisterDefaultBlock({id='retail.demonhunter.utility',revision=2,families={'retail'},class='DEMONHUNTER',steps={
  spell('disrupt',183752,any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})),
- spell('blur',198589,all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.35})),
+ spell('blur',198589,combat()),
 }}))

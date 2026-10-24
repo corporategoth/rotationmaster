@@ -12,6 +12,7 @@
 -- (tests/retail_combat_readiness.lua), as Retail does in combat.
 local F=dofile('tests/fixtures/addon.lua')
 local M={}
+local unpack=unpack or table.unpack
 local SECRET=setmetatable({},{__tostring=function()return 'secret'end})
 -- The class's Built In module files (tools/builtin_modules.lua reads its TOC).
 local function packPaths(class)
@@ -62,7 +63,10 @@ function M.new(class,options)
  e.UnitPlayerOrPetInRaid=function()return false end
  e.UnitPosition=function(unit)if unit=='player'or member(unit)then return 0,0,0,1 end end
  e.UnitHealth=function(unit)if member(unit)then return member(unit).health end;return s.health[unit]or 100 end;e.UnitHealthMax=function()return 100 end
- e.UnitThreatSituation=function(_,unit)local entry=enemy(unit);return entry and entry.threat end
+ -- Your threat status on the target follows whom it attacks (3: you hold it; s.targetThreat overrides).
+ e.UnitThreatSituation=function(_,unit)
+  if unit=='target'then if s.targetThreat~=nil then return s.targetThreat end;if not s.exists then return nil end;return s.targetTarget=='player'and 3 or 0 end
+  local entry=enemy(unit);return entry and entry.threat end
  -- Power: the current type (mana 0, rage 1, energy 3...); combo points 4, soul shards 7 and holy
  -- power 9 read s.points (max s.maxPoints).
  e.UnitPowerType=function()return s.powerType end
@@ -207,7 +211,7 @@ function M.checkSlots(a,specs)
     assert(not row.eligible,id..' eligible in slot '..spec)
    end
   end end
-  assert(M.selected(a,spec)==ids[1],'slot '..spec..' selected '..tostring(M.selected(a,spec))..', expected '..ids[1])
+  assert(M.selected(a,spec)==ids[1],'slot '..spec..' selected '..tostring((M.selected(a,spec)))..', expected '..ids[1])
  end
 end
 -- The Assisted step follows Blizzard's suggestion, falls through when there is none, and keeps
@@ -222,18 +226,34 @@ function M.checkAssisted(a,s,spec,id,suggestion)
  s.cast=true;M.expect(a,s,spec,id,nil,'stopped','casting');s.cast=false
  s.channel=true;M.expect(a,s,spec,id,nil,'stopped','channelling');s.channel=false
 end
--- On the real restricted client: listed, incomplete (a condition the
--- restricted policy keeps secret) or disabled, nothing auto-selected.
-function M.checkRestricted(class,specs,learn)
+-- On the real restricted client: listed and complete (every condition readable there),
+-- the references disabled, and the highest-priority enabled premade of each slot auto-selected.
+-- recommended maps a spec to the premade expected to auto-select there.
+function M.checkRestricted(class,specs,learn,recommended)
  local f,s=M.new(class,{policy='restricted'});local a=f.addon;if learn then s.learn(unpack(learn))end
- local support=dofile('tests/fixtures/client_support.lua');support.install(f)
+ local support=dofile('tests/fixtures/client_support.lua');support.install(f,{stubNatives=true})
  for spec,ids in pairs(specs)do
   local rows=M.rows(a,spec)
-  for _,id in ipairs(ids)do
-   assert(rows[id]and rows[id].readOnly,id..' not listed')
-   if rows[id].eligibilityReason~='disabled' then support.incomplete(rows[id],id) else assert(not rows[id].eligible,id) end
-  end
-  assert(next(a:GetRuntimeRotations(spec))==nil and M.selected(a,spec)==nil,'a restricted client auto-selected a packaged rotation in slot '..spec)
+  for _,id in ipairs(ids)do assert(rows[id]and rows[id].readOnly,id..' not listed');support.complete(rows[id],id)end
+  -- recommended[spec]==false: nothing auto-selects (only references ship for that slot).
+  local want=recommended and recommended[spec];if want==nil then want=ids[1] end;if want==false then want=nil end
+  assert(M.selected(a,spec)==want,'slot '..spec..' auto-selected '..tostring((M.selected(a,spec)))..', expected '..want)
  end
+end
+-- Before a specialization (below level 10) the game reports the class's initial specialization;
+-- its Blizzard Assisted premade auto-selects for a level-4 character, follows the suggestion and
+-- is complete on the real restricted client. learn[1] is the suggested spell.
+function M.initial(class,spec,id,learn)
+ local f,s=M.new(class);local a=f.addon;s.setLevel(4);s.learn(unpack(learn))
+ local row=M.row(a,spec,id);local scope=row.applicability
+ assert(#scope.specs==1 and scope.specs[1]==spec and scope.minLevel==1,id..' scope')
+ assert(M.selected(a,spec)==id,'initial spec auto-selected '..tostring((M.selected(a,spec))))
+ for other,listed in pairs(M.rows(a,spec))do if other~=id then assert(not listed.eligible,other..' eligible in the initial spec')end end
+ s.suggest=learn[1];M.expect(a,s,spec,id,learn[1],nil,'the Assisted suggestion')
+ s.cast=true;M.expect(a,s,spec,id,nil,'stopped','casting');s.cast=false
+ local g,gs=M.new(class,{policy='restricted'});local b=g.addon;gs.setLevel(4)
+ local support=dofile('tests/fixtures/client_support.lua');support.install(g,{stubNatives=true})
+ assert(support.complete(M.rows(b,spec)[id],id)=='eligible')
+ assert(M.selected(b,spec)==id,'restricted initial spec auto-selected '..tostring((M.selected(b,spec))))
 end
 return M

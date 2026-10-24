@@ -16,13 +16,13 @@ assert(addon:RegisterDefaultBlock({id='retail.evoker.boundaries',revision=1,fami
  stop('channel',{type='CHANNELING',unit='player'}),
 }}))
 -- What Blizzard's Assisted Combat never suggests, for every spec: Quell on an interruptible cast,
--- Obsidian Scales below 35% health, and out of combat Blessing of the Bronze when it is missing and
--- Source of Magic on a friendly target in your group. Enemy casts and your health are secret in
--- Midnight combat, so the first two light only where they can be read. Dracthyr have no racial
--- cooldown to add.
-assert(addon:RegisterDefaultBlock({id='retail.evoker.utility',revision=1,families={'retail'},class='EVOKER',steps={
+-- Obsidian Scales whenever it is ready in combat, and out of combat Blessing of the Bronze when it is
+-- missing and Source of Magic on a friendly target in your group. Enemy casts are secret in Midnight
+-- combat, so Quell lights only where they can be read; health is secret on Retail, so the defensive
+-- is a cooldown reminder. Dracthyr have no racial cooldown to add.
+assert(addon:RegisterDefaultBlock({id='retail.evoker.utility',revision=2,families={'retail'},class='EVOKER',steps={
  spell('quell',351338,any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})),
- spell('obsidian-scales',363916,all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.35})),
+ spell('obsidian-scales',363916,combat()),
  spell('blessing-of-the-bronze',364342,all(negate(combat()),negate({type='BUFF',unit='player',spell=381748}))),
  spell('source-of-magic',369459,all(negate(combat()),{type='GROUP'},{type='FRIENDLY',unit='target'},negate({type='BUFF',unit='target',spell=369459,ownbuff=true}))),
 }}))

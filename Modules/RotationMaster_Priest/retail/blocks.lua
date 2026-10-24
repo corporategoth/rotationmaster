@@ -17,13 +17,12 @@ assert(addon:RegisterDefaultBlock({
  {id='no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
 }}))
 -- Reminders every Priest premade shares: Power Word: Fortitude (anyone's) between pulls, Silence
--- on an interruptible cast (Shadow), Desperate Prayer below half health (health and the target's
--- cast are hidden in Midnight combat, so these two light only where they can be read).
+-- on an interruptible cast (Shadow; the target's cast is hidden in Midnight combat, so it lights only
+-- where it can be read). Health is secret on Retail, so Desperate Prayer is yours.
 assert(addon:RegisterDefaultBlock({
- id='retail.priest.upkeep',revision=1,families={'retail'},class='PRIEST',steps={
+ id='retail.priest.upkeep',revision=2,families={'retail'},class='PRIEST',steps={
  spell('fortitude',21562,all(negate(combat()),negate({type='BUFF',unit='player',spell=21562}))),
  spell('silence',15487,all(combat(),interrupt)),
- spell('desperate-prayer',19236,all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.5})),
 }}))
 -- Discipline cooldowns both guides keep on hand: Power Word: Radiance, Evangelism and Ultimate
 -- Penitence in combat, Pain Suppression on a friendly target; when to press them is yours.

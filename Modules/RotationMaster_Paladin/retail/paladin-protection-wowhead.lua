@@ -1,14 +1,14 @@
--- Retail (Midnight) Protection Paladin, Wowhead: a reference, disabled by default (health is hidden
--- in Midnight combat). Judgment on cooldown, Shield of the Righteous, Avenger's Shield, Divine
--- Toll, Blessed Hammer or Hammer of the Righteous, Word of Glory below half health, and
--- Consecration only as the filler. Divine Toll only at 0 Holy Power, as Wowhead says (Holy Power
+-- Retail (Midnight) Protection Paladin, Wowhead: a reference, disabled by default. Judgment on
+-- cooldown, Shield of the Righteous, Avenger's Shield, Divine Toll, Blessed Hammer or Hammer of the
+-- Righteous, and Consecration only as the filler. Health is secret on Retail, so Word of Glory below
+-- half health is left to you. Divine Toll only at 0 Holy Power, as Wowhead says (Holy Power
 -- is never secret for the player in Midnight).
 local _,addon=...
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.protection.wowhead',revision=2,
- blocks={['retail.paladin.boundaries']=1,['retail.paladin.upkeep']=1,['retail.paladin.prot-defensives']=1,['retail.paladin.prot-cooldowns']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.protection.wowhead',revision=3,
+ blocks={['retail.paladin.boundaries']=1,['retail.paladin.upkeep']=2,['retail.paladin.prot-defensives']=2,['retail.paladin.prot-cooldowns']=1},
  nameKey='Default.Retail.Paladin.Protection.Wowhead.Name',descriptionKey='Default.Retail.Paladin.Protection.Wowhead.Description',
  applicability={families={'retail'},actionContext='player',class='PALADIN',specs={66},minLevel=10,maxLevel=90},
  tags={'protection','tank','reference','single-target','aoe','wowhead'},
@@ -29,7 +29,6 @@ assert(addon:RegisterDefaultRotation({
    spell('protwh-divine-toll',375576,{type='POINT',unit='player',operator='EQUALS',value=0}),
    spell('protwh-blessed-hammer',204019),
    spell('protwh-hammer-of-the-righteous',53595),
-   spell('protwh-word-of-glory',85673,{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.5}),
    spell('protwh-consecration',26573),
   },
  },

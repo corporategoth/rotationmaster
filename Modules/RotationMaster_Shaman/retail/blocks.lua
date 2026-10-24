@@ -20,13 +20,13 @@ assert(addon:RegisterDefaultBlock({
  {id='no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
 }}))
 -- Reminders every Shaman premade shares: Skyfury (anyone's) between pulls, Wind Shear on an
--- interruptible cast, Astral Shift below 40% health (the last two light only where Midnight lets
--- the target's cast and health be read).
+-- interruptible cast (it lights only where Midnight lets the target's cast be read), Astral Shift
+-- whenever it is ready in combat (health is secret on Retail, so it is a cooldown reminder).
 assert(addon:RegisterDefaultBlock({
- id='retail.shaman.upkeep',revision=1,families={'retail'},class='SHAMAN',steps={
+ id='retail.shaman.upkeep',revision=2,families={'retail'},class='SHAMAN',steps={
  spell('skyfury',462854,all(rest,negate({type='BUFF',unit='player',spell=462854}))),
  spell('wind-shear',57994,all(combat(),interrupt)),
- spell('astral-shift',108271,all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.4})),
+ spell('astral-shift',108271,combat()),
 }}))
 -- Elemental and Enhancement between pulls: Lightning Shield. Retail has no weapon-imbue
 -- condition (WEAPON is a Classic-family condition), so Flametongue, Windfury and Thunderstrike

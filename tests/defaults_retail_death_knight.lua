@@ -57,8 +57,8 @@ test('Assisted in Midnight combat: secret cooldowns, health and auras still give
  s.cooling(49998,8);M.expect(a,s,P..'blood',nil,nil,'cooling by the never-secret flag');s.cooldown={}
  s.health.player=20;s.targetCast=true
  local lit=M.upkeep(a,s,P..'blood')
- assert(lit[55233]and lit[46585]and lit[26297],'in-combat reminders did not light on the readable cooldown flags')
- assert(not lit[48792]and not lit[47528],'a reminder gated on hidden health or enemy casts lit')
+ assert(lit[55233]and lit[46585]and lit[26297]and lit[48792],'in-combat reminders (Icebound Fortitude too) did not light on the readable cooldown flags')
+ assert(not lit[47528],'a reminder gated on hidden enemy casts lit')
  s.secrets(false);lit=M.upkeep(a,s,P..'blood')
  assert(lit[48792]and lit[47528],'Icebound Fortitude and Mind Freeze did not light where readable')
  s.cooling(55233,30);lit=M.upkeep(a,s,P..'blood');assert(not lit[55233],'a cooling reminder lit')
@@ -70,9 +70,8 @@ test('Blood reference: pull, Death Strike, Bone Shield, Gift of the San\'layn, C
  s.combat=false;M.expect(a,s,G,195292,nil,'pull: Death\'s Caress');s.combat=true
  s.buff('player',195181,{applications=8,expirationTime=120})
  s.debuff('target',55078)
- M.expect(a,s,G,206930,nil,'Heart Strike filler')
- s.energy=80;M.expect(a,s,G,49998,nil,'Death Strike at 75 runic power');s.energy=50
- s.health.player=40;M.expect(a,s,G,49998,nil,'Death Strike at low health');s.health.player=100
+ M.expect(a,s,G,49998,nil,'Death Strike whenever it is affordable (runic power and health are secret)')
+ s.power[49998]=true;M.expect(a,s,G,206930,nil,'Heart Strike filler while Death Strike is unaffordable')
  s.clearAuras();s.debuff('target',55078);M.expect(a,s,G,195182,nil,'Marrowrend with no Bone Shield')
  s.targetRange={10,15};s.range[195182]=false;M.expect(a,s,G,195292,nil,'Death\'s Caress out of melee');s.targetRange={0,5};s.range[195182]=nil
  s.buff('player',195181,{applications=3,expirationTime=120});M.expect(a,s,G,195182,nil,'Marrowrend under five charges')
@@ -80,8 +79,8 @@ test('Blood reference: pull, Death Strike, Bone Shield, Gift of the San\'layn, C
  M.expect(a,s,G,50842,nil,'Blood Boil with Blood Plague missing')
  s.debuff('target',55078);s.buff('player',81141);M.expect(a,s,G,43265,nil,'Death and Decay on Crimson Scourge')
  s.clearAuras();s.buff('player',195181,{applications=8,expirationTime=120});s.debuff('target',55078)
- s.learn(433895);s.buff('player',434153);s.energy=72;M.expect(a,s,G,49998,nil,'Gift: Death Strike above 70')
- s.energy=50;M.expect(a,s,G,50842,nil,'Gift: one Blood Boil');s.history(50842,2)
+ s.learn(433895);s.buff('player',434153);s.power[49998]=nil;M.expect(a,s,G,49998,nil,'Gift: Death Strike when affordable')
+ s.power[49998]=true;M.expect(a,s,G,50842,nil,'Gift: one Blood Boil');s.history(50842,2)
  M.expect(a,s,G,206930,nil,'Gift: Heart Strike once Blood Boil was cast')
  s.cooling(206930,2);M.expect(a,s,G,nil,'stopped','Gift: nothing else outside the window')
  local lit=M.upkeep(a,s,G);assert(not lit[49028],'Dancing Rune Weapon without Reaper\'s Mark known');s.learn(49028)
@@ -89,11 +88,10 @@ test('Blood reference: pull, Death Strike, Bone Shield, Gift of the San\'layn, C
  s.learn(439843);lit=M.upkeep(a,s,G);assert(not lit[49028]and lit[439843],'Deathbringer: Reaper\'s Mark first')
  s.debuff('target',434765);lit=M.upkeep(a,s,G);assert(lit[49028],'Dancing Rune Weapon after Reaper\'s Mark')
 end)
-test('Blood SimulationCraft reference: runic power dump, Death and Decay upkeep, Death\'s Caress while runes are short',function()
+test('Blood SimulationCraft reference: Death and Decay upkeep, Death\'s Caress while runes are short, Death Strike when affordable',function()
  local a,s=dk(BLOOD);local G=P..'blood.simc';enable(a,G)
  s.learn(49998,195182,195292,206930,50842,43265,439843)
  s.buff('player',188290);s.buff('player',195181,{applications=8,expirationTime=120});s.cooling(439843,20)
- s.energy=90;M.expect(a,s,G,49998,nil,'Death Strike near the cap');s.energy=30
  s.usable[49998]=false;M.expect(a,s,G,50842,nil,'Blood Boil when Death Strike is unaffordable');s.usable[49998]=nil
  M.expect(a,s,G,49998,nil,'Death Strike above Blood Boil and Heart Strike')
  s.clearAuras();s.buff('player',188290);s.points=2;M.expect(a,s,G,195292,nil,'Death\'s Caress for Bone Shield with two runes')
@@ -104,12 +102,12 @@ test('Frost reference: Killing Machine, Razorice, Rime, runic power cap, AoE swa
  local a,s=dk(FROST);local G=P..'frost.guide';enable(a,G)
  s.learn(49020,49143,49184,207230,194913)
  M.expect(a,s,G,49143,nil,'Frost Strike before an Obliterate without Killing Machine')
+ s.energy=90;s.buff('player',51124,{applications=1});M.expect(a,s,G,49020,nil,'runic power is secret: no cap check before Killing Machine');s.clearAuras();s.energy=50
  s.usable[49143]=false;M.expect(a,s,G,49020,nil,'Obliterate last');s.usable[49143]=nil
  s.buff('player',51124,{applications=2});M.expect(a,s,G,49020,nil,'two Killing Machines');s.clearAuras()
  s.buff('player',51124,{applications=1});s.points=2;s.buff('player',59052);M.expect(a,s,G,49184,nil,'one Killing Machine and two runes: Rime first')
  s.points=3;M.expect(a,s,G,49020,nil,'one Killing Machine and three runes: Obliterate before Rime')
  s.clearAuras();s.buff('player',51124,{applications=1});M.expect(a,s,G,49020,nil,'Obliterate on Killing Machine');s.clearAuras()
- s.energy=90;M.expect(a,s,G,49143,nil,'Frost Strike before capping');s.energy=50
  s.learn(207057);s.debuff('target',51714,{applications=5});s.buff('player',51124,{applications=2});M.expect(a,s,G,49020,nil,'Killing Machines before Shattering Blade')
  s.clearAuras();s.debuff('target',51714,{applications=5});M.expect(a,s,G,49143,nil,'Shattering Blade at five Razorice');s.clearAuras()
  s.near(3);s.buff('player',51124,{applications=2});M.expect(a,s,G,207230,nil,'three enemies: Frostscythe');s.clearAuras()
@@ -118,7 +116,8 @@ test('Frost reference: Killing Machine, Razorice, Rime, runic power cap, AoE swa
  s.usable[49020]=false;s.usable[49143]=false;s.targetRange={20,25};M.expect(a,s,G,49184,nil,'Howling Blast out of melee')
  local lit=M.upkeep(a,s,G);s.learn(51271,152279,279302,47568);lit=M.upkeep(a,s,G)
  assert(lit[51271]and not lit[152279]and not lit[279302],'Pillar first, Breath and Frostwyrm\'s Fury inside it')
- s.charges[47568]={current=1,max=2};s.buff('player',51271);s.energy=10;lit=M.upkeep(a,s,G);assert(lit[152279]and lit[279302]and lit[47568],'Pillar window and Empower Rune Weapon at low runic power')
+ s.charges[47568]={current=1,max=2};s.buff('player',51271);s.energy=10;lit=M.upkeep(a,s,G);assert(lit[152279]and lit[279302]and not lit[47568],'Pillar window; Empower Rune Weapon waits for two charges (runic power is secret)')
+ s.charges[47568]={current=2,max=2};lit=M.upkeep(a,s,G);assert(lit[47568],'Empower Rune Weapon at two charges')
 end)
 test('Frost Wowhead reference: Empower Rune Weapon at two charges and cooldowns inside the rotation',function()
  local a,s=dk(FROST);local G=P..'frost.wowhead';enable(a,G)
@@ -126,7 +125,7 @@ test('Frost Wowhead reference: Empower Rune Weapon at two charges and cooldowns 
  s.charges[47568]={current=2,max=2};M.expect(a,s,G,47568,nil,'Empower Rune Weapon at two charges')
  s.charges[47568]={current=1,max=2};M.expect(a,s,G,439843,nil,'Reaper\'s Mark');s.cooling(439843,30)
  M.expect(a,s,G,51271,nil,'Pillar of Frost');s.cooling(51271,30)
- s.buff('player',59052);s.energy=95;M.expect(a,s,G,49184,nil,'Rime above the runic power cap');s.clearAuras();s.energy=50
+ s.buff('player',59052);s.energy=95;M.expect(a,s,G,49184,nil,'Rime (no runic power cap check)');s.clearAuras();s.energy=50
  M.expect(a,s,G,47568,nil,'Empower Rune Weapon for a Killing Machine')
  s.buff('player',51124,{applications=1});M.expect(a,s,G,49020,nil,'Obliterate on Killing Machine')
 end)
@@ -137,7 +136,8 @@ test('Unholy reference: ghoul, Soul Reaper, Putrefy, procs, Lesser Ghoul build a
  s.combat=false;M.expect(a,s,G,85948,nil,'no Unholy pull Stop: the priority runs');s.combat=true
  M.expect(a,s,G,85948,nil,'Festering Strike with no Lesser Ghoul charges')
  s.buff('player',1254252,{applications=2});M.expect(a,s,G,55090,nil,'Scourge Strike with charges')
- s.health.target=30;M.expect(a,s,G,343294,nil,'Soul Reaper below 35%');s.health.target=100
+ s.health.target=30;M.expect(a,s,G,55090,nil,'target health is secret: no Soul Reaper execute');s.health.target=100
+ s.buff('player',1242654);M.expect(a,s,G,343294,nil,'Soul Reaper on Reaping');s.clearAuras();s.buff('player',1254252,{applications=2})
  s.auras.pet={HELPFUL={{spellId=1233448,name='Spell 1233448',sourceUnit='player'}},HARMFUL={}}
  M.expect(a,s,G,1247378,nil,'Putrefy in Dark Transformation');s.auras.pet=nil;s.cooling(1247378,20)
  s.buff('player',81340);M.expect(a,s,G,47541,nil,'Death Coil on Sudden Doom')
@@ -150,7 +150,7 @@ end)
 test('Unholy SimulationCraft reference: Death Coil spending and the AoE arm',function()
  local a,s=dk(UNHOLY);local G=P..'unholy.simc';enable(a,G)
  s.learn(85948,55090,47541,207317,1247378,42650);s.pet=true
- s.energy=95;M.expect(a,s,G,47541,nil,'Death Coil near the cap');s.energy=30
+ s.energy=95;M.expect(a,s,G,85948,nil,'runic power is secret: no Death Coil cap dump');s.energy=30
  s.cooling(42650,60);M.expect(a,s,G,47541,nil,'Death Coil while Army of the Dead is far off');s.cooldown={}
  s.buff('player',1254252,{applications=2});M.expect(a,s,G,55090,nil,'Scourge Strike with Lesser Ghoul charges when Army is ready');s.clearAuras()
  M.expect(a,s,G,85948,nil,'Festering Strike')
@@ -158,7 +158,10 @@ test('Unholy SimulationCraft reference: Death Coil spending and the AoE arm',fun
  s.buff('player',1254252,{applications=3});M.expect(a,s,G,55090,nil,'AoE: Scourge Strike at three')
  s.buff('player',81340);M.expect(a,s,G,207317,nil,'AoE: Epidemic on Sudden Doom')
 end)
-test('on the real restricted Retail client the Death Knight premades are listed but never auto-selected',function()
+test('on the real restricted Retail client every Death Knight premade is complete and the Assisted premade auto-selects',function()
  M.restricted('death-knight','DEATHKNIGHT',ids)
+end)
+test('before a specialization (initial spec 1455) a level-4 Death Knight gets the Blizzard Assisted premade, complete',function()
+ M.initial('death-knight','DEATHKNIGHT',1455,P..'initial',{49998})
 end)
 finish()

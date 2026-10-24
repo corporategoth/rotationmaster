@@ -14,7 +14,7 @@ local function points(op,n)return{type='POINT',unit='player',operator=op,value=n
 local function classified(kind)return{type='CLASSIFICATION',unit='target',value=kind}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function item(id,items,conditions)return{id=id,type='item',action=items,conditions=conditions}end
-local tanked={type='ISSAME',unit='targettarget',otherunit='player'}
+local tanked={type='THREAT',unit='target',threat=3}
 -- Instant Poison I-VI; the off hand prefers Deadly Poison I-V (30) and falls back to Instant.
 local instant={8928,8927,8926,6950,6949,6947}
 local offhand={20844,8985,8984,2893,2892}
@@ -28,7 +28,7 @@ assert(addon:RegisterDefaultBlock({
 -- The end of every stealth opener: Ambush when the target is not facing you, Garrote, then
 -- Sinister Strike before either is learned; Stop so the opener never falls into the builders.
 assert(addon:RegisterDefaultBlock({
- id='forever.rogue.stealth-fallback',revision=1,families={'forever'},class='ROGUE',steps={
+ id='forever.rogue.stealth-fallback',revision=2,families={'forever'},class='ROGUE',steps={
  spell('ambush',8676,negate(tanked)),
  spell('garrote',703),
  spell('sinister',1752),
@@ -49,18 +49,20 @@ assert(addon:RegisterDefaultBlock({
   any(negate({type='DEBUFF',unit='target',spell=8647,anyrank=true,owndebuff=true}),
    {type='DEBUFF_REMAIN',unit='target',spell=8647,anyrank=true,owndebuff=true,operator='LESSTHAN',value=3}))),
 }}))
--- Independent reminders: poisons per weapon, Thistle Tea, Kick, the talent cooldowns, and
--- Evasion (solo) / Feint (group) when the target turns on you.
+-- Independent reminders: poisons per weapon, Thistle Tea in combat outside Adrenaline Rush, Kick,
+-- the talent cooldowns, and Evasion (solo) / Feint (group) when the target turns on you. Energy and
+-- health are secret on Forever, so Thistle Tea no longer waits for low energy and Evasion no longer
+-- waits for low health.
 assert(addon:RegisterDefaultBlock({
- id='forever.rogue.upkeep',revision=1,families={'forever'},class='ROGUE',steps={
+ id='forever.rogue.upkeep',revision=2,families={'forever'},class='ROGUE',steps={
  item('mainhand-poison',instant,negate({type='WEAPON'})),
  item('offhand-poison',offhand,all({type='SWING_TIME',offhand=true,operator='GREATERTHAN',value=0},negate({type='WEAPON',offhand=true}))),
- item('thistle-tea',{7676},all(combat(),{type='POWER',unit='player',operator='LESSTHAN',value=30},negate({type='BUFF',unit='player',spell=13750,ownbuff=true}))),
+ item('thistle-tea',{7676},all(combat(),negate({type='BUFF',unit='player',spell=13750,ownbuff=true}))),
  spell('kick',1766,any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})),
  spell('blade-flurry',13877,all(combat(),any(classified('worldboss'),classified('elite'),{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2}))),
  spell('adrenaline-rush',13750,all(combat(),any(classified('worldboss'),classified('elite'),{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2}))),
  -- Venom known (Assassination): empower a Mutilate at two points or fewer; else a five-point Eviscerate.
  spell('cold-blood',14177,all(combat(),any(all(known(1310703),points('LESSTHANOREQUALS',2)),all(negate(known(1310703)),points('GREATERTHANOREQUALS',5))))),
- spell('evasion',5277,all(combat(),negate({type='GROUP'}),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.5},tanked)),
+ spell('evasion',5277,all(combat(),negate({type='GROUP'}),tanked)),
  spell('feint',1966,all(combat(),{type='GROUP'},{type='THREAT',unit='target',threat=2})),
 }}))

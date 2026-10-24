@@ -57,10 +57,10 @@ test('Assisted in Midnight combat: secret data still gives advice; hidden-data r
  s.health.player=10;s.targetCast=true
  local lit=M.upkeep(a,s,P..'marksmanship')
  assert(lit[288613]and lit[26297],'Trueshot and the racial did not light on the readable cooldown flags')
- assert(not lit[109304]and not lit[264735]and not lit[147362],'a reminder gated on hidden health or enemy casts lit')
+ assert(lit[264735],'Survival of the Fittest did not light on the readable cooldown flag')
+ assert(not lit[109304]and not lit[147362],'Exhilaration (yours: health is secret) or an interrupt on a hidden cast lit')
  s.secrets(false);lit=M.upkeep(a,s,P..'marksmanship')
- assert(lit[109304]and lit[264735]and lit[147362],'defensives and Counter Shot did not light where readable')
- s.health.player=45;lit=M.upkeep(a,s,P..'marksmanship');assert(lit[264735]and not lit[109304],'health tiers')
+ assert(lit[264735]and lit[147362]and not lit[109304],'Survival of the Fittest and Counter Shot where readable; never Exhilaration')
  s.combat=false;lit=M.upkeep(a,s,P..'marksmanship');assert(not lit[288613]and not lit[26297],'combat reminders lit out of combat')
  local b,t=hunter(SV);t.learn(1250646,187707);t.targetCast=true;lit=M.upkeep(b,t,P..'survival')
  assert(lit[1250646]and lit[187707]and not lit[147362],'Survival: Takedown and Muzzle, no Counter Shot')
@@ -76,8 +76,8 @@ test('Beast Mastery reference: pet, mark, Barbed Shot pooling, Bestial Wrath, Ki
  M.expect(a,s,G,217200,nil,'Barbed Shot just before Bestial Wrath')
  s.usable[217200]=false;M.expect(a,s,G,19574,nil,'Bestial Wrath');s.usable[217200]=nil;s.cooling(19574,30)
  M.expect(a,s,G,34026,nil,'Kill Command while Bestial Wrath is far off')
- s.cooling(19574,4);M.expect(a,s,G,217200,nil,'banking: Barbed Shot below 75 Focus')
- s.energy=90;M.expect(a,s,G,193455,nil,'banking with Focus: Cobra Shot');s.energy=50
+ s.cooling(19574,4);M.expect(a,s,G,193455,nil,'banking: Cobra Shot while affordable (Focus is secret)')
+ s.power[193455]=true;M.expect(a,s,G,217200,nil,'banking: Barbed Shot when Cobra Shot is unaffordable');s.power[193455]=nil
  s.buff('player',471878);M.expect(a,s,G,34026,nil,'Kill Command on Howl of the Pack Leader');s.clearAuras();s.debuff('target',257284)
  s.cooling(19574,30);s.cooling(34026,5);s.buff('player',1299389);M.expect(a,s,G,193455,nil,'Cobra Shot on Cobra Fang');s.clearAuras();s.debuff('target',257284)
  s.charges[217200]={current=2,max=2};s.energy=90;M.expect(a,s,G,217200,nil,'Barbed Shot before it caps')
@@ -145,7 +145,10 @@ test('Hunter boundaries: no pet, casts and channels in every reference',function
   s.channel=true;M.expect(a,s,list[2],nil,'stopped','channelling');s.channel=false
  end
 end)
-test('on the real restricted Retail client the Hunter premades are listed but never auto-selected',function()
+test('on the real restricted Retail client every Hunter premade is complete and the Assisted premade auto-selects',function()
  M.restricted('hunter','HUNTER',ids)
+end)
+test('before a specialization (initial spec 1448) a level-4 Hunter gets the Blizzard Assisted premade, complete',function()
+ M.initial('hunter','HUNTER',1448,P..'initial',{185358})
 end)
 finish()

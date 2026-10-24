@@ -16,7 +16,9 @@ test('the Hunter premades load, validate and declare Forever only',function()
  for _,id in ipairs({RANGED,SAVER,SV,WEAVE})do
   local row=assert(rows[id],id);local scope=row.applicability
   assert(row.readOnly and row.builtin and scope.families[1]=='forever'and #scope.families==1 and scope.class=='HUNTER'and scope.maxLevel==60,id)
-  assert(row.eligible,id..' not eligible on the probe Forever context')
+  local variant=id==SAVER or id==WEAVE
+  assert(row.eligible==not variant,id..(variant and ' variant is not off by default' or ' not eligible on the probe Forever context'))
+  assert((row.envelope.body.disabled==true)==variant,id..' disabled flag')
  end
 end)
 test('switch: every Hunter is ranged until Strider Kick; Survival melee after',function()
@@ -49,7 +51,8 @@ test('ranged: Sting, the Hawk cycle, Arcane before Hawk, Aimed Shot',function()
  M.expect(a,s,RANGED,1978,nil,'own Serpent Sting first')
  s.debuff('target',3043);M.expect(a,s,RANGED,3044,nil,'own Scorpid Sting is kept')
  s.clearAuras();s.debuff('target',1130);s.debuff('target',1978,{sourceUnit='party1'});M.expect(a,s,RANGED,1978,nil,'another Hunter\'s Sting is not yours')
- s.health.target=25;M.expect(a,s,RANGED,3044,nil,'no Sting on a dying target; Arcane on cooldown before Summon Hawk');s.health.target=100
+ s.health.target=25;M.expect(a,s,RANGED,1978,nil,'target health is secret: Sting even on a dying target')
+ s.debuff('target',1978);M.expect(a,s,RANGED,3044,nil,'Arcane on cooldown before Summon Hawk');s.health.target=100
  s.debuff('target',1978);s.cooling(3044,4);M.expect(a,s,RANGED,19434,nil,'Aimed Shot while Arcane cools');s.cooldown={}
  s.setLevel(30);s.learn(1293241)
  M.expect(a,s,RANGED,1293241,nil,'first Hawk')
@@ -66,7 +69,7 @@ test('ranged: moving, Auto Shot restart, Mark and the AoE branch',function()
  s.moving=true;M.expect(a,s,RANGED,2643,nil,'moving: Multi-Shot');s.cooling(2643,3);M.expect(a,s,RANGED,3044,nil,'moving: Arcane')
  s.cooling(3044,3);local r=M.expect(a,s,RANGED,nil,'stopped','moving: nothing else');s.cooldown={};s.moving=false
  M.expect(a,s,RANGED,75,nil,'Auto Shot is restarted');s.repeatActive=true
- s.clearAuras();s.debuff('target',1978);M.expect(a,s,RANGED,1130,nil,'Mark on a healthy target');s.debuff('target',1130)
+ s.clearAuras();s.debuff('target',1978);s.health.target=20;M.expect(a,s,RANGED,1130,nil,'Mark on every target (health is secret)');s.debuff('target',1130);s.health.target=100
  s.near(2);M.expect(a,s,RANGED,2643,nil,'two enemies: Multi-Shot')
  s.near(3);M.expect(a,s,RANGED,13813,nil,'three: Explosive Trap')
  s.cooling(13813,20);s.cooling(2643,3);s.near(5);M.expect(a,s,RANGED,1510,nil,'five: Volley')
@@ -77,19 +80,18 @@ test('ranged reminders: aspects, Trueshot Aura, pet care, burst on elites',funct
  local lit=M.upkeep(a,s,RANGED);assert(lit[13165]and not lit[13163]and lit[1299346]and lit[883],'Hawk, Trueshot, Call Pet')
  assert(not lit[3045]and not lit[19574],'no burst on a normal mob')
  s.buff('player',13165);s.buff('player',1299346);s.pet=true;s.health.pet=30;lit=M.upkeep(a,s,RANGED)
- assert(not lit[13165]and not lit[1299346]and not lit[883]and lit[136],'Mend Pet below 40%')
+ assert(not lit[13165]and not lit[1299346]and not lit[883]and not lit[136],'Mend Pet is yours (health is secret)')
  s.petDead=true;lit=M.upkeep(a,s,RANGED);assert(lit[982]and not lit[136],'Revive a dead pet')
  s.petDead=false;s.classification='elite';lit=M.upkeep(a,s,RANGED);assert(lit[3045]and lit[19574]and lit[20572]and lit[19577],'burst on an elite; Intimidation when the mob is on you')
  s.classification='normal';s.instance='party';lit=M.upkeep(a,s,RANGED);assert(lit[3045],'burst in a dungeon')
  s.known[13165]=nil;s.clearAuras();lit=M.upkeep(a,s,RANGED);assert(lit[13163],'Monkey before Hawk')
  s.combat=false;lit=M.upkeep(a,s,RANGED);assert(not lit[13163]and not lit[5118],'no aspect nagging out of combat; Cheetah is opt-in')
 end)
-test('mana-saving variant: one Hawk, Aimed, second Hawk on healthy targets, no Arcane with Hawk',function()
+test('mana-saving variant: one Hawk, Aimed, no Arcane with Hawk',function()
  local a,s=hunter();s.learn(75,1978,3044,19434,1293241,2643);s.repeatActive=true;s.debuff('target',1130);s.debuff('target',1978)
  M.expect(a,s,SAVER,1293241,nil,'first Hawk')
  s.history(1293241,3);M.expect(a,s,SAVER,19434,nil,'Aimed Shot while a Hawk is up')
- s.cooling(19434,4);M.expect(a,s,SAVER,1293241,nil,'second Hawk on a healthy target')
- s.health.target=40;local r=M.expect(a,s,SAVER,nil,'stopped','no Arcane Shot once Summon Hawk is known')
+ s.cooling(19434,4);local r=M.expect(a,s,SAVER,nil,'stopped','no second Hawk (target health is secret) and no Arcane Shot once Summon Hawk is known')
  s.known[1293241]=nil;M.expect(a,s,SAVER,3044,nil,'Arcane Shot before Hawk')
  s.near(2);s.cooldown={};M.expect(a,s,SAVER,2643,nil,'Multi-Shot on two')
 end)
@@ -117,12 +119,7 @@ test('Survival weave: exit with Strider Kick, shoot outside, return when Raptor 
  s.targetRange={8,25};s.cooling(2973,4);M.expect(a,s,WEAVE,3044,nil,'outside: Arcane Shot')
  s.cooling(2973,0.5);local r=M.expect(a,s,WEAVE,nil,'stopped','Raptor nearly ready: go back in');assert(not r.suppressAttack)
 end)
-test('on the real restricted Forever client the Hunter premades are listed but incomplete, never auto-selected',function()
- local f,s=M.new('hunter',{policy='restricted'});local a=f.addon;local support=dofile('tests/fixtures/client_support.lua');support.install(f);s.learn(75,1317257)
- local rows=M.rows(a)
- for _,id in ipairs({RANGED,SAVER,SV,WEAVE})do
-  assert(rows[id]and rows[id].readOnly,id..' not listed');support.incomplete(rows[id],id)
- end
- assert(next(a:GetRuntimeRotations(0))==nil and M.selected(a)==nil,'a restricted client auto-selected a packaged rotation')
+test('on the real restricted Forever client every Hunter premade is complete and the ranged premade auto-selects',function()
+ M.checkRestricted('hunter',{RANGED,SAVER,SV,WEAVE},function(s)s.learn(75,1317257)end,RANGED)
 end)
 finish()

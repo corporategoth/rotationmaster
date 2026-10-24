@@ -2,7 +2,8 @@
 -- reference): Barbed Shot pooled around Bestial Wrath, Kill Command banked for it, Cobra Shot on
 -- Cobra Fang, and Beast Cleave started with Wild Thrash on three or more enemies (two with Beast
 -- Cleave talented). Dark Ranger adds Black Arrow in Withering Fire and Wailing Arrow as it ends.
--- Disabled: Focus, charges, cooldowns and procs are secret in Midnight combat.
+-- Focus is secret on Retail, so Pack Leader's low-Focus Barbed Shot comes after Cobra Shot (when Cobra
+-- Shot is unaffordable). Disabled: charges, cooldowns and procs are secret in Midnight combat.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
@@ -24,8 +25,8 @@ local withering=buff(466991)
 -- Kill Command on Howl of the Pack Leader or Nature's Ally, or freely while Bestial Wrath is far off.
 local kill=any(buff(471878),buff(472324),buff(472325),buff(1276720),{type='SPELL_COOLDOWN',spell=WRATH,operator='GREATERTHAN',value=5})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.beastmastery.guide',revision=2,
- blocks={['retail.hunter.boundaries']=1,['retail.hunter.utility']=1,['retail.hunter.mark']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.beastmastery.guide',revision=3,
+ blocks={['retail.hunter.boundaries']=1,['retail.hunter.utility']=2,['retail.hunter.mark']=1},
  nameKey='Default.Retail.Hunter.BeastMasteryGuide.Name',descriptionKey='Default.Retail.Hunter.BeastMasteryGuide.Description',
  applicability={families={'retail'},actionContext='player',class='HUNTER',specs={253},minLevel=10,maxLevel=90},
  tags={'beast-mastery','ranged','pet','reference','simulationcraft','icy-veins'},
@@ -65,8 +66,8 @@ assert(addon:RegisterDefaultRotation({
      spell('bmguide-pl-wild-thrash',THRASH,engaged(2)),
      spell('bmguide-pl-kill',KILL,kill),
      spell('bmguide-pl-fang',COBRA,buff(1299389)),
-     spell('bmguide-pl-barbed-focus',BARBED,any({type='POWER',unit='player',operator='LESSTHAN',value=75},capping)),
-     spell('bmguide-pl-cobra',COBRA,negate(wrathSoon))}},
+     spell('bmguide-pl-cobra',COBRA,negate(wrathSoon)),
+     spell('bmguide-pl-barbed-focus',BARBED)}},
   },
  },
 }))

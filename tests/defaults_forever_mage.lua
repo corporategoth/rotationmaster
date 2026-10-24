@@ -15,7 +15,9 @@ test('the Mage premades load, validate and declare Forever only',function()
  for _,id in ipairs({FROST,FIRE,IVFIRE,ARCANE})do
   local row=assert(rows[id],id);local scope=row.applicability
   assert(row.readOnly and row.builtin and scope.families[1]=='forever'and #scope.families==1 and scope.class=='MAGE'and scope.maxLevel==60,id)
-  assert(row.eligible,id..' not eligible on the probe Forever context')
+  local variant=id==IVFIRE
+  assert(row.eligible==not variant,id..(variant and ' variant is not off by default' or ' not eligible on the probe Forever context'))
+  assert((row.envelope.body.disabled==true)==variant,id..' disabled flag')
  end
 end)
 test('switch by talent tree (1 Arcane, 2 Fire, 3 Frost): Frost owns 1-9, empty trees and ties; Fire and Arcane from 11 points as the main tree',function()
@@ -53,8 +55,8 @@ test('Frost: Ice Lance procs and freezes, Winter\'s Chill Cone, Missile Barrage,
  s.buff('player',400589);M.expect(a,s,FROST,5143,nil,'Missile Barrage');s.clearAuras()
  s.moving=true;M.expect(a,s,FROST,1312002,nil,'moving: Ice Lance');s.cooling(1312002,1);M.expect(a,s,FROST,2136,nil,'moving: Fire Blast')
  s.cooling(2136,3);M.expect(a,s,FROST,nil,'stopped','moving: nothing castable');s.cooldown={};s.moving=false
- s.health.target=10;M.expect(a,s,FROST,2136,nil,'finish with Fire Blast');s.health.target=100
- s.mana.player=10;s.usable[116]=false;M.expect(a,s,FROST,5019,nil,'wand when out of mana solo')
+ s.health.target=10;M.expect(a,s,FROST,116,nil,'target health is secret: no Fire Blast finisher');s.health.target=100
+ s.usable[116]=false;M.expect(a,s,FROST,5019,nil,'wand when solo and Frostbolt is unaffordable (mana is secret)')
  s.repeatActive=true;local r=M.expect(a,s,FROST,nil,'stopped','wand already running');assert(r.suppressAttack)
  s.group=true;s.repeatActive=false;r=M.expect(a,s,FROST,nil,'stopped','no wand advice in a group');assert(r.suppressAttack)
 end)
@@ -73,7 +75,7 @@ test('Frost and Mage reminders: intellect, armor choice, Ice Barrier, Nova, Coun
  s.group=false;s.clearAuras();s.known[7302]=nil;lit=M.upkeep(a,s,FROST);assert(lit[168],'Frost Armor before Ice Armor')
  s.combat=true;s.targetRange={0,5};lit=M.upkeep(a,s,FROST);assert(lit[122]and not lit[1459],'Frost Nova when the mob reaches you')
  s.classification='worldboss';lit=M.upkeep(a,s,FROST);assert(not lit[122],'no Frost Nova on a boss')
- s.mana.player=10;lit=M.upkeep(a,s,FROST);assert(lit[12051],'Evocation when drained')
+ s.mana.player=10;lit=M.upkeep(a,s,FROST);assert(not lit[12051],'Evocation is yours (mana is secret)')
 end)
 test('Fire: Heating Up Pyroblast, Fire Blast, Scorch refresh, Frostfire before Fireball, AoE',function()
  local a,s=mage();s.learn(11366,133,2136,2948,401502,2120,11113,1449,1312002)
@@ -92,12 +94,12 @@ test('Fire: Heating Up Pyroblast, Fire Blast, Scorch refresh, Frostfire before F
  s.near(4);M.expect(a,s,FIRE,2120,nil,'four: Flamestrike');s.debuff('target',2120);M.expect(a,s,FIRE,11113,nil,'burning: Blast Wave')
  s.near(0);s.clearAuras();s.moving=true;s.cooldown={};M.expect(a,s,FIRE,2136,nil,'moving: Fire Blast')
 end)
-test('Icy Veins Fire: Pyroblast pull, Fire Blast only to finish or on Wake of Fire, Scorch close',function()
+test('Icy Veins Fire: Pyroblast pull, Fire Blast only on Wake of Fire, Scorch close',function()
  local a,s=mage();s.learn(11366,133,2136,2948,401502)
  s.combat=false;M.expect(a,s,IVFIRE,11366,nil,'pull: Pyroblast');s.combat=true
  s.buff('player',400625,{applications=3});M.expect(a,s,IVFIRE,401502,nil,'no Heating Up step, no routine Fire Blast');s.clearAuras()
  s.buff('player',1312934);M.expect(a,s,IVFIRE,2136,nil,'Wake of Fire: Fire Blast');s.clearAuras()
- s.health.target=15;M.expect(a,s,IVFIRE,2136,nil,'low target: Fire Blast');s.cooling(2136,5);M.expect(a,s,IVFIRE,2948,nil,'low target: Scorch')
+ s.health.target=15;M.expect(a,s,IVFIRE,401502,nil,'target health is secret: no low-target Fire Blast or Scorch')
  s.health.target=100;s.targetRange={5,8};M.expect(a,s,IVFIRE,2948,nil,'mob closing: Scorch')
 end)
 test('Arcane: Barrage, Clearcasting, stack caps by target, Arcane Wrath, filler, Fire Blast fallback',function()
@@ -108,7 +110,7 @@ test('Arcane: Barrage, Clearcasting, stack caps by target, Arcane Wrath, filler,
  s.classification='elite';M.expect(a,s,ARCANE,400574,nil,'elite: keep building')
  s.clearAuras();s.buff('player',400573,{applications=3});M.expect(a,s,ARCANE,1326079,nil,'three stacks: Arcane Wrath')
  s.cooling(1326079,4);M.expect(a,s,ARCANE,400574,nil,'Wrath cooling, elite, below four');s.classification='normal'
- s.mana.player=30;s.clearAuras();M.expect(a,s,ARCANE,401502,nil,'below 35% mana: no Arcane Blast')
+ s.clearAuras();s.power[400574]=true;M.expect(a,s,ARCANE,401502,nil,'Arcane Blast unaffordable: filler');s.power[400574]=nil
  s.buff('player',12536);M.expect(a,s,ARCANE,400574,nil,'Clearcasting: Arcane Blast')
  s.buff('player',1326083);M.expect(a,s,ARCANE,5143,nil,'Missile Barrage first');s.clearAuras();s.mana.player=100
  s.known[1326079]=nil;s.buff('player',400573,{applications=2});M.expect(a,s,ARCANE,2136,nil,'no Arcane Wrath: Fire Blast spends the stacks')
@@ -116,12 +118,9 @@ test('Arcane: Barrage, Clearcasting, stack caps by target, Arcane Wrath, filler,
  s.near(0);s.moving=true;M.expect(a,s,ARCANE,2136,nil,'moving: Fire Blast')
  s.learn(12043,12042);s.moving=false;s.classification='elite';local lit=M.upkeep(a,s,ARCANE);assert(lit[12043]and lit[12042],'Presence of Mind and Arcane Power on elites')
 end)
-test('on the real restricted Forever client the Mage premades are listed but incomplete, never auto-selected',function()
- local f,s=M.new('mage',{policy='restricted'});local a=f.addon;local support=dofile('tests/fixtures/client_support.lua');support.install(f);s.learn(133,11366)
- local rows=M.rows(a)
- for _,id in ipairs({FROST,FIRE,IVFIRE,ARCANE})do
-  assert(rows[id]and rows[id].readOnly,id..' not listed');support.incomplete(rows[id],id)
- end
- assert(next(a:GetRuntimeRotations(0))==nil and M.selected(a)==nil,'a restricted client auto-selected a packaged rotation')
+test('on the real restricted Forever client every Mage premade is complete and Frost auto-selects for an untalented Mage',function()
+ M.checkRestricted('mage',{FROST,FIRE,IVFIRE,ARCANE},function(s)s.learn(133,11366)end,FROST)
+ -- Talent trees read through trait groups are supported there: an 11-point Fire Mage gets Fire.
+ M.checkRestricted('mage',{FIRE},function(s)s.learn(133,11366);s.setLevel(30);s.setTrees({0,11,0})end,FIRE)
 end)
 finish()

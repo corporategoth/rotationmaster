@@ -1,7 +1,7 @@
 -- Retail (Midnight 12.x) Blood Death Knight after Icy Veins and Wowhead (optimal reference): Death
--- Strike for health or runic power, Bone Shield upkeep, the San'layn Gift window, Crimson Scourge,
--- Blood Boil, Heart Strike. Disabled: own buffs, target debuffs, runic power and health are secret in
--- Midnight combat, so it only runs where they can be read.
+-- Strike whenever it is affordable (health and runic power are secret on Retail), Bone Shield upkeep,
+-- the San'layn Gift window, Crimson Scourge, Blood Boil, Heart Strike. Disabled: own buffs and target
+-- debuffs are secret in Midnight combat, so those steps only run where they can be read.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
@@ -9,7 +9,6 @@ local function negate(c)return{type='NOT',value=c}end
 local function buff(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
 local function known(id)return{type='SPELL_KNOWN',spell=id}end
 local function combat()return{type='COMBAT',unit='player'}end
-local function rp(op,v)return{type='POWER',unit='player',operator=op,value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
@@ -17,8 +16,8 @@ local exterminate=any(buff(441416),buff(447954))
 local lowBones=any(negate(buff(195181)),{type='BUFF_STACKS',unit='player',spell=195181,ownbuff=true,operator='LESSTHAN',value=5},
  {type='BUFF_REMAIN',unit='player',spell=195181,ownbuff=true,operator='LESSTHAN',value=3},exterminate)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.blood.guide',revision=2,
- blocks={['retail.deathknight.boundaries']=1,['retail.deathknight.utility']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.blood.guide',revision=3,
+ blocks={['retail.deathknight.boundaries']=1,['retail.deathknight.utility']=2},
  nameKey='Default.Retail.DeathKnight.BloodGuide.Name',descriptionKey='Default.Retail.DeathKnight.BloodGuide.Description',
  applicability={families={'retail'},actionContext='player',class='DEATHKNIGHT',specs={250},minLevel=8,maxLevel=90},
  tags={'blood','tank','reference','icy-veins','wowhead'},
@@ -37,10 +36,10 @@ assert(addon:RegisterDefaultRotation({
   rotation={
    block('bguide-boundaries','retail.deathknight.boundaries','bguide-'),
    {id='bguide-pull',type='branch',conditions=combat(),onTrue={},onFalse={spell('bguide-pull-caress',195292),stop('bguide-pull-stop')}},
-   spell('bguide-death-strike',49998,any({type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.5},rp('GREATERTHANOREQUALS',75))),
+   spell('bguide-death-strike',49998),
    {id='bguide-bones',type='branch',conditions=lowBones,onFalse={},onTrue={spell('bguide-marrowrend',195182),spell('bguide-bones-caress',195292)}},
    {id='bguide-gift',type='branch',conditions=all(known(433895),buff(434153)),onFalse={},onTrue={
-    spell('bguide-gift-death-strike',49998,rp('GREATERTHAN',70)),
+    spell('bguide-gift-death-strike',49998),
     spell('bguide-gift-blood-boil',50842,negate({type='SPELL_HISTORY_TIME',spell=50842,operator='LESSTHAN',value=10})),
     spell('bguide-gift-death-and-decay',43265,all(buff(81141),negate(buff(434159)))),
     spell('bguide-gift-heart-strike',206930),

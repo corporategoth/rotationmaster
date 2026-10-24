@@ -6,7 +6,6 @@ local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function combat()return{type='COMBAT',unit='player'}end
-local function health(v)return all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=v})end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
 -- Your casts and channels (Aimed Shot, Steady Shot, Rapid Fire) end advice.
@@ -15,17 +14,15 @@ assert(addon:RegisterDefaultBlock({id='retail.hunter.boundaries',revision=1,fami
  stop('channel',{type='CHANNELING',unit='player'}),
 }}))
 -- What Blizzard's Assisted Combat never suggests, for every spec: Counter Shot (Beast Mastery,
--- Marksmanship) or Muzzle (Survival) on an interruptible cast, Survival of the Fittest below 50%,
--- Exhilaration below 35% and Aspect of the Turtle below 20% health, and the racial cooldowns in
--- combat. Enemy casts and your health are secret in Midnight combat, so the interrupt and the
--- defensives light only where they can be read.
+-- Marksmanship) or Muzzle (Survival) on an interruptible cast (enemy casts are secret in Midnight
+-- combat, so it lights only where they can be read), and Survival of the Fittest and the racial
+-- cooldowns whenever they are ready in combat. Health is secret on Retail, so the damage reduction
+-- is a cooldown reminder, and the emergency buttons (Exhilaration, Aspect of the Turtle) stay yours.
 local interruptible=any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})
-assert(addon:RegisterDefaultBlock({id='retail.hunter.utility',revision=1,families={'retail'},class='HUNTER',steps={
+assert(addon:RegisterDefaultBlock({id='retail.hunter.utility',revision=2,families={'retail'},class='HUNTER',steps={
  spell('counter-shot',147362,interruptible),
  spell('muzzle',187707,interruptible),
- spell('survival-of-the-fittest',264735,health(.5)),
- spell('exhilaration',109304,health(.35)),
- spell('aspect-of-the-turtle',186265,health(.2)),
+ spell('survival-of-the-fittest',264735,combat()),
  spell('blood-fury',20572,combat()),
  spell('berserking',26297,combat()),
  spell('fireblood',265221,combat()),

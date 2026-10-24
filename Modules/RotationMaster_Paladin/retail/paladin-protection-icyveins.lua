@@ -12,8 +12,8 @@ local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.protection.icyveins',revision=3,
- blocks={['retail.paladin.boundaries']=1,['retail.paladin.upkeep']=1,['retail.paladin.prot-defensives']=1,['retail.paladin.prot-cooldowns']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.protection.icyveins',revision=4,
+ blocks={['retail.paladin.boundaries']=1,['retail.paladin.upkeep']=2,['retail.paladin.prot-defensives']=2,['retail.paladin.prot-cooldowns']=1},
  nameKey='Default.Retail.Paladin.Protection.IcyVeins.Name',descriptionKey='Default.Retail.Paladin.Protection.IcyVeins.Description',
  applicability={families={'retail'},actionContext='player',class='PALADIN',specs={66},minLevel=10,maxLevel=90},
  tags={'protection','tank','reference','single-target','aoe','icy-veins','simulationcraft'},

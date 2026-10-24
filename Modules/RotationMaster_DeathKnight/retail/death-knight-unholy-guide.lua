@@ -1,9 +1,9 @@
 -- Retail (Midnight 12.x) Unholy Death Knight after Icy Veins and Wowhead (optimal reference): ghoul
--- up; Festering Scythe to keep its plague haste; Soul Reaper in execute or with Reaping; Putrefy in
--- Dark Transformation; Death Coil (Epidemic on four or more) on Sudden Doom, Forbidden Knowledge or,
--- for San'layn, above 50 runic power; Festering Strike with no Lesser Ghoul charges, Scourge Strike
--- with them; Death Coil. Disabled: procs, plagues, runic power and target health are secret in
--- Midnight combat.
+-- up; Festering Scythe to keep its plague haste; Soul Reaper with Reaping; Putrefy in Dark
+-- Transformation; Death Coil (Epidemic on four or more) on Sudden Doom or Forbidden Knowledge;
+-- Festering Strike with no Lesser Ghoul charges, Scourge Strike with them; Death Coil. Target health
+-- and runic power are secret on Retail, so the execute window and the San'layn runic power spend are
+-- left out. Disabled: procs and plagues are secret in Midnight combat.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
@@ -16,8 +16,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local ghouls=buff(1254252)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.unholy.guide',revision=1,
- blocks={['retail.deathknight.boundaries']=1,['retail.deathknight.utility']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.unholy.guide',revision=2,
+ blocks={['retail.deathknight.boundaries']=1,['retail.deathknight.utility']=2},
  nameKey='Default.Retail.DeathKnight.UnholyGuide.Name',descriptionKey='Default.Retail.DeathKnight.UnholyGuide.Description',
  applicability={families={'retail'},actionContext='player',class='DEATHKNIGHT',specs={252},minLevel=8,maxLevel=90},
  tags={'unholy','melee','pet','reference','icy-veins','wowhead'},
@@ -36,9 +36,9 @@ assert(addon:RegisterDefaultRotation({
    block('uguide-boundaries','retail.deathknight.boundaries','uguide-'),
    spell('uguide-raise-dead',46584,negate({type='PET'})),
    spell('uguide-festering-scythe',85948,all(buff(458123),any(negate(debuff(1241077)),{type='DEBUFF_REMAIN',unit='target',spell=1241077,owndebuff=true,operator='LESSTHAN',value=5}))),
-   spell('uguide-soul-reaper',343294,any({type='HEALTHPCT',unit='target',operator='LESSTHAN',value=.35},buff(1242654))),
+   spell('uguide-soul-reaper',343294,buff(1242654)),
    spell('uguide-putrefy',1247378,{type='BUFF',unit='pet',spell=1233448}),
-   {id='uguide-spend',type='branch',conditions=any(buff(81340),buff(1242223),all(known(433895),{type='POWER',unit='player',operator='GREATERTHAN',value=50})),onFalse={},onTrue={
+   {id='uguide-spend',type='branch',conditions=any(buff(81340),buff(1242223)),onFalse={},onTrue={
     spell('uguide-spend-epidemic',207317,{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=4}),
     spell('uguide-spend-death-coil',47541)}},
    spell('uguide-festering-strike',85948,negate(ghouls)),

@@ -1,10 +1,11 @@
 -- Retail (Midnight) Assassination Rogue, Icy Veins and SimulationCraft's default list: the optimal
--- reference, disabled by default because bleed timers, energy and buffs are hidden in Midnight
+-- reference, disabled by default because bleed timers and buffs are hidden in Midnight
 -- combat. Bleeds first in their last 30%: Garrote while not at full combo points, Rupture at 5+.
 -- At 5+ combo points spend (Coup de Grace, Envenom); below, build: Crimson Tempest on three or
 -- more enemies, Fan of Knives on two or more close by, Ambush (Blindside), Mutilate. From stealth
 -- Garrote, then Ambush. Reminders: Deathmark with both bleeds up, Kingsbane alongside it, Vanish
--- with Deathmark ready, Shiv on a Deathstalker's Mark target, Thistle Tea when low on energy.
+-- with Deathmark ready, Shiv on a Deathstalker's Mark target, Thistle Tea whenever it is ready in
+-- combat (energy is secret on Retail).
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
@@ -18,8 +19,8 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 local bled=all(dot(703),dot(1943))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.assassination.icyveins',revision=1,
- blocks={['retail.rogue.boundaries']=1,['retail.rogue.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.assassination.icyveins',revision=2,
+ blocks={['retail.rogue.boundaries']=1,['retail.rogue.upkeep']=2},
  nameKey='Default.Retail.Rogue.Assassination.IcyVeins.Name',descriptionKey='Default.Retail.Rogue.Assassination.IcyVeins.Description',
  applicability={families={'retail'},actionContext='player',class='ROGUE',specs={259},minLevel=10,maxLevel=90},
  tags={'assassination','melee','reference','single-target','aoe','icy-veins','simulationcraft'},
@@ -34,7 +35,7 @@ assert(addon:RegisterDefaultRotation({
    spell('assaiv-kingsbane',385627,all(fight,bled,any(dot(360194),negate({type='SPELL_AVAIL',spell=360194})))),
    spell('assaiv-vanish',1856,all(fight,negate({type='STEALTHED'}),{type='SPELL_AVAIL',spell=360194})),
    spell('assaiv-shiv',5938,all(fight,dot(457129))),
-   spell('assaiv-thistle-tea',381623,all(fight,{type='POWER',unit='player',operator='LESSTHAN',value=30})),
+   spell('assaiv-thistle-tea',381623,fight),
   },
   rotation={
    block('retail.rogue.boundaries','assaiv-'),

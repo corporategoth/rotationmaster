@@ -15,13 +15,12 @@ assert(addon:RegisterDefaultBlock({id='retail.mage.boundaries',revision=1,famili
  stop('channel',{type='CHANNELING',unit='player'}),
 }}))
 -- What Blizzard's Assisted Combat never suggests, for every spec: Arcane Intellect out of combat
--- (readable there; in combat the buff is hidden), Counterspell on an interruptible cast, Ice Block
--- below 20% health, and the racial cooldowns in combat. Enemy casts and your health are secret in
--- Midnight combat, so Counterspell and Ice Block light only where they can be read.
-assert(addon:RegisterDefaultBlock({id='retail.mage.utility',revision=1,families={'retail'},class='MAGE',steps={
+-- (readable there; in combat the buff is hidden), Counterspell on an interruptible cast (enemy casts
+-- are secret in Midnight combat, so it lights only where they can be read), and the racial cooldowns
+-- in combat. Health is secret on Retail, so Ice Block, an emergency button, stays yours.
+assert(addon:RegisterDefaultBlock({id='retail.mage.utility',revision=2,families={'retail'},class='MAGE',steps={
  spell('arcane-intellect',1459,all(negate(combat()),negate({type='BUFF',unit='player',spell=1459}))),
  spell('counterspell',2139,any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})),
- spell('ice-block',45438,all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.2})),
  spell('blood-fury',33702,combat()),
  spell('berserking',26297,combat()),
  spell('fireblood',265221,combat()),

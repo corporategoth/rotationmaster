@@ -19,8 +19,8 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 local dance=own(185422)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.subtlety.icyveins',revision=1,
- blocks={['retail.rogue.boundaries']=1,['retail.rogue.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.subtlety.icyveins',revision=2,
+ blocks={['retail.rogue.boundaries']=1,['retail.rogue.upkeep']=2},
  nameKey='Default.Retail.Rogue.Subtlety.IcyVeins.Name',descriptionKey='Default.Retail.Rogue.Subtlety.IcyVeins.Description',
  applicability={families={'retail'},actionContext='player',class='ROGUE',specs={261},minLevel=10,maxLevel=90},
  tags={'subtlety','melee','reference','single-target','aoe','icy-veins','simulationcraft','wowhead'},

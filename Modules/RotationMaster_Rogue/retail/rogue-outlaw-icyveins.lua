@@ -20,8 +20,8 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 local rolled=any(own(193356),own(199600),own(193358),own(193357),own(199603),own(193359))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.outlaw.icyveins',revision=1,
- blocks={['retail.rogue.boundaries']=1,['retail.rogue.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.outlaw.icyveins',revision=2,
+ blocks={['retail.rogue.boundaries']=1,['retail.rogue.upkeep']=2},
  nameKey='Default.Retail.Rogue.Outlaw.IcyVeins.Name',descriptionKey='Default.Retail.Rogue.Outlaw.IcyVeins.Description',
  applicability={families={'retail'},actionContext='player',class='ROGUE',specs={260},minLevel=10,maxLevel=90},
  tags={'outlaw','melee','reference','single-target','aoe','icy-veins','simulationcraft','wowhead'},

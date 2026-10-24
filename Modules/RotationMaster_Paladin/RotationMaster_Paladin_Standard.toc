@@ -11,6 +11,7 @@
 
 bind.lua
 retail/blocks.lua
+retail/paladin-initial.lua
 retail/paladin-retribution.lua
 retail/paladin-retribution-icyveins.lua
 retail/paladin-protection.lua

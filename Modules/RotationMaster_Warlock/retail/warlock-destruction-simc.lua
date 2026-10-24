@@ -17,8 +17,8 @@ local function shards(op,v)return{type='POINT',unit='player',operator=op,value=v
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.destruction.simc',revision=2,
- blocks={['retail.warlock.boundaries']=1,['retail.warlock.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.destruction.simc',revision=3,
+ blocks={['retail.warlock.boundaries']=1,['retail.warlock.upkeep']=2},
  nameKey='Default.Retail.Warlock.Destruction.Simc.Name',descriptionKey='Default.Retail.Warlock.Destruction.Simc.Description',
  applicability={families={'retail'},actionContext='player',class='WARLOCK',specs={267},minLevel=10,maxLevel=90},
  tags={'destruction','ranged','reference','single-target','aoe','simulationcraft'},

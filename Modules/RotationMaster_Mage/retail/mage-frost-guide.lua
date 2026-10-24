@@ -19,8 +19,8 @@ local brainFreeze,fingers,thermal,spike=buff(190446),buff(44544),buff(1247730),b
 local twoFingers={type='BUFF_STACKS',unit='player',spell=44544,ownbuff=true,operator='GREATERTHANOREQUALS',value=2}
 local frozenRain=all(buff(270232),engaged(3))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.mage.frost.guide',revision=2,
- blocks={['retail.mage.boundaries']=1,['retail.mage.utility']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.mage.frost.guide',revision=3,
+ blocks={['retail.mage.boundaries']=1,['retail.mage.utility']=2},
  nameKey='Default.Retail.Mage.FrostGuide.Name',descriptionKey='Default.Retail.Mage.FrostGuide.Description',
  applicability={families={'retail'},actionContext='player',class='MAGE',specs={64},minLevel=10,maxLevel=90},
  tags={'frost','caster','reference','icy-veins','simulationcraft'},
@@ -31,7 +31,7 @@ assert(addon:RegisterDefaultRotation({
  body={priority=10,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
    block('frguide-utility','retail.mage.utility','frguide-'),
-   spell('frguide-barrier',11426,all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.5})),
+   spell('frguide-barrier',11426,combat()),
    spell('frguide-water-elemental',31687,negate({type='PET'})),
   },
   rotation={

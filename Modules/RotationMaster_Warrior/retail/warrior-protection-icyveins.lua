@@ -1,21 +1,21 @@
 -- Retail (Midnight) Protection Warrior, Icy Veins and SimulationCraft's default list: the optimal
--- reference, disabled by default because rage, Shield Block, Thunder Blast and Colossal Might are
+-- reference, disabled by default because Shield Block, Thunder Blast and Colossal Might are
 -- hidden in Midnight combat. Charge to open. Ravager, Thunder Blast at two stacks, Demolish at
 -- five Colossal Might, Shield Charge, Thunder Blast, Shield Slam, Thunder Clap, Execute, Revenge,
--- Devastate. Reminders: Shield Block when its buff is down and you are tanking, Ignore Pain near
--- the rage cap, Avatar, Demoralizing Shout, Champion's Spear, Shield Wall and Last Stand when low.
+-- Devastate. Reminders: Shield Block when its buff is down and you are tanking, Ignore Pain, Avatar,
+-- Demoralizing Shout, Champion's Spear, Shield Wall and Last Stand whenever ready in combat (rage
+-- and health are secret on Retail).
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
-local function health(op,v)return{type='HEALTHPCT',unit='player',operator=op,value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
-local tanking={type='ISSAME',unit='targettarget',otherunit='player'}
+local tanking={type='THREAT',unit='target',threat=3}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.protection.icyveins',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.protection.icyveins',revision=3,
  blocks={['retail.warrior.boundaries']=1,['retail.warrior.upkeep']=1,['retail.warrior.charge']=2},
  nameKey='Default.Retail.Warrior.Protection.IcyVeins.Name',descriptionKey='Default.Retail.Warrior.Protection.IcyVeins.Description',
  applicability={families={'retail'},actionContext='player',class='WARRIOR',specs={73},minLevel=10,maxLevel=90},
@@ -28,12 +28,12 @@ assert(addon:RegisterDefaultRotation({
   cooldowns={
    block('retail.warrior.upkeep','protiv-'),
    spell('protiv-shield-block',2565,all(fight,tanking,negate(own(132404)))),
-   spell('protiv-ignore-pain',190456,all(fight,{type='POWER',unit='player',operator='LESSTHANOREQUALS',value=-35})),
+   spell('protiv-ignore-pain',190456,fight),
    spell('protiv-avatar',107574,fight),
    spell('protiv-demoralizing-shout',1160,fight),
    spell('protiv-champions-spear',376079,fight),
-   spell('protiv-shield-wall',871,all(combat(),health('LESSTHAN',.35))),
-   spell('protiv-last-stand',12975,all(combat(),health('LESSTHAN',.25))),
+   spell('protiv-shield-wall',871,combat()),
+   spell('protiv-last-stand',12975,combat()),
   },
   rotation={
    block('retail.warrior.boundaries','protiv-'),

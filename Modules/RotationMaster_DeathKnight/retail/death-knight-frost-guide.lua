@@ -1,8 +1,9 @@
 -- Retail (Midnight 12.x) Frost Death Knight after Icy Veins and SimulationCraft (optimal reference):
 -- Obliterate on two Killing Machines (or one with runes to spare), Frost Strike into five Razorice
--- with Shattering Blade, Howling Blast on Rime, Frost Strike before runic power caps, Obliterate on
--- Killing Machine, Frost Strike, Obliterate. Three or more enemies: Frostscythe and Glacial Advance
--- take their places. Disabled: procs, debuffs and runic power are secret in Midnight combat.
+-- with Shattering Blade, Howling Blast on Rime, Obliterate on Killing Machine, Frost Strike,
+-- Obliterate (runic power is secret on Retail, so there is no cap check). Three or more enemies:
+-- Frostscythe and Glacial Advance take their places. Disabled: procs and debuffs are secret in
+-- Midnight combat.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
@@ -16,16 +17,15 @@ local pillar=buff(51271)
 local km=buff(51124)
 local strong=any({type='BUFF_STACKS',unit='player',spell=51124,ownbuff=true,operator='GREATERTHANOREQUALS',value=2},all(km,{type='POINT',unit='player',operator='GREATERTHANOREQUALS',value=3}))
 local shatter=all({type='DEBUFF_STACKS',unit='target',spell=51714,owndebuff=true,operator='GREATERTHANOREQUALS',value=5},known(207057))
-local capping={type='POWER',unit='player',operator='LESSTHAN',value=-20}
 -- One priority, written for a builder (Obliterate or Frostscythe) and a spender (Frost Strike or Glacial Advance).
 local function priority(p,builder,spender)return{
  spell(p..'strong',builder,strong),spell(p..'shatter',spender,shatter),spell(p..'rime',49184,buff(59052)),
- spell(p..'capping',spender,capping),spell(p..'killing-machine',builder,km),spell(p..'spend',spender),spell(p..'build',builder)}end
+ spell(p..'killing-machine',builder,km),spell(p..'spend',spender),spell(p..'build',builder)}end
 local aoe=priority('fguide-aoe-',207230,194913)
 aoe[#aoe+1]=spell('fguide-aoe-obliterate',49020);aoe[#aoe+1]=spell('fguide-aoe-frost-strike',49143)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.frost.guide',revision=1,
- blocks={['retail.deathknight.boundaries']=1,['retail.deathknight.utility']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.frost.guide',revision=2,
+ blocks={['retail.deathknight.boundaries']=1,['retail.deathknight.utility']=2},
  nameKey='Default.Retail.DeathKnight.FrostGuide.Name',descriptionKey='Default.Retail.DeathKnight.FrostGuide.Description',
  applicability={families={'retail'},actionContext='player',class='DEATHKNIGHT',specs={251},minLevel=8,maxLevel=90},
  tags={'frost','melee','reference','icy-veins','simulationcraft'},
@@ -42,7 +42,7 @@ assert(addon:RegisterDefaultRotation({
    spell('fguide-reapers-mark',439843,combat()),
    spell('fguide-frostwyrms-fury',279302,pillar),
    spell('fguide-raise-dead',46585,combat()),
-   spell('fguide-empower-rune-weapon',47568,all(combat(),any({type='SPELL_CHARGES',spell=47568,operator='GREATERTHANOREQUALS',value=2},all(negate(km),{type='POWER',unit='player',operator='LESSTHAN',value=30})))),
+   spell('fguide-empower-rune-weapon',47568,all(combat(),{type='SPELL_CHARGES',spell=47568,operator='GREATERTHANOREQUALS',value=2})),
   },
   rotation={
    block('fguide-boundaries','retail.deathknight.boundaries','fguide-'),

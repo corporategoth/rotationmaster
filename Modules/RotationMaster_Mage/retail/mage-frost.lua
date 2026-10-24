@@ -1,7 +1,7 @@
 -- Retail (Midnight 12.x) Frost Mage, Blizzard Assisted (recommended): the rotation is Blizzard's
 -- Assisted Combat suggestion, the one rotation input an addon can still read in combat. Around it,
--- highlights for what Assisted Combat leaves to you: Ice Barrier below half health, Summon Water
--- Elemental when you have none, Arcane Intellect, Counterspell, Ice Block and racial cooldowns.
+-- highlights for what Assisted Combat leaves to you: Ice Barrier whenever it is ready in combat, Summon
+-- Water Elemental when you have none, Arcane Intellect, Counterspell and racial cooldowns.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
@@ -9,8 +9,8 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.mage.frost',revision=1,
- blocks={['retail.mage.boundaries']=1,['retail.mage.utility']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.mage.frost',revision=2,
+ blocks={['retail.mage.boundaries']=1,['retail.mage.utility']=2},
  nameKey='Default.Retail.Mage.Frost.Name',descriptionKey='Default.Retail.Mage.Frost.Description',
  applicability={families={'retail'},actionContext='player',class='MAGE',specs={64},minLevel=10,maxLevel=90},
  tags={'frost','caster','assisted-combat'},
@@ -22,7 +22,7 @@ assert(addon:RegisterDefaultRotation({
  body={priority=20,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
    block('frost-utility','retail.mage.utility','frost-'),
-   spell('frost-barrier',11426,all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.5})),
+   spell('frost-barrier',11426,combat()),
    spell('frost-water-elemental',31687,negate({type='PET'})),
   },
   rotation={

@@ -20,13 +20,12 @@ assert(addon:RegisterDefaultBlock({
  {id='manual',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
  {id='ghost-wolf',type='none',suppress_attack=true,conditions=any(buff(2645),buff(415233),buff(1238640))},
 }}))
--- Every Shaman: a shield (Water Shield once talented, else Lightning Shield, refreshed in combat
--- only with half mana) and the Earth Shock interrupt.
+-- Every Shaman: a shield (Water Shield once talented, else Lightning Shield; mana is secret on
+-- Forever, so it is refreshed in combat too) and the Earth Shock interrupt.
 assert(addon:RegisterDefaultBlock({
- id='forever.shaman.upkeep',revision=1,families={'forever'},class='SHAMAN',steps={
+ id='forever.shaman.upkeep',revision=2,families={'forever'},class='SHAMAN',steps={
  spell('water-shield',408510,negate(any(buff(408510),buff(324)))),
- spell('lightning-shield',324,all(negate(known(408510)),negate(buff(324)),
-  any(negate(combat()),{type='MANAPCT',unit='player',operator='GREATERTHANOREQUALS',value=.5}))),
+ spell('lightning-shield',324,all(negate(known(408510)),negate(buff(324)))),
  spell('interrupt',8042,any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})),
 }}))
 -- Main-hand imbue (Forever has no Shaman Dual Wield): Windfury once known, else Flametongue,

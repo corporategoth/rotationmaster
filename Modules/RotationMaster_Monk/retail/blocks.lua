@@ -15,12 +15,12 @@ assert(addon:RegisterDefaultBlock({id='retail.monk.boundaries',revision=1,famili
  stop('channel',{type='CHANNELING',unit='player'}),
 }}))
 -- What Blizzard's Assisted Combat never suggests, for every spec: Spear Hand Strike on an
--- interruptible cast, Fortifying Brew below 35% health, and the racial cooldowns in combat. Enemy
--- casts and your health are secret in Midnight combat, so the first two light only where they can
--- be read.
-assert(addon:RegisterDefaultBlock({id='retail.monk.utility',revision=1,families={'retail'},class='MONK',steps={
+-- interruptible cast (enemy casts are secret in Midnight combat, so it lights only where they can be
+-- read), and Fortifying Brew and the racial cooldowns whenever they are ready in combat. Health is
+-- secret on Retail, so the defensive is a cooldown reminder, not a health trigger.
+assert(addon:RegisterDefaultBlock({id='retail.monk.utility',revision=2,families={'retail'},class='MONK',steps={
  spell('spear-hand-strike',116705,any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})),
- spell('fortifying-brew',115203,all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.35})),
+ spell('fortifying-brew',115203,combat()),
  spell('blood-fury',33697,combat()),
  spell('berserking',26297,combat()),
  spell('fireblood',265221,combat()),

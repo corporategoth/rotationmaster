@@ -14,11 +14,12 @@ assert(addon:RegisterDefaultBlock({id='retail.deathknight.boundaries',revision=1
  stop('channel',{type='CHANNELING',unit='player'}),
 }}))
 -- What Blizzard's Assisted Combat never suggests, for every spec: Mind Freeze on an interruptible
--- cast, Icebound Fortitude below 35% health, and the racial cooldowns in combat. Enemy casts and
--- your health are secret in Midnight combat, so the first two light only where they can be read.
-assert(addon:RegisterDefaultBlock({id='retail.deathknight.utility',revision=1,families={'retail'},class='DEATHKNIGHT',steps={
+-- cast (enemy casts are secret in Midnight combat, so it lights only where they can be read), and
+-- Icebound Fortitude and the racial cooldowns whenever they are ready in combat. Health is secret
+-- on Retail, so the defensive is a cooldown reminder, not a health trigger.
+assert(addon:RegisterDefaultBlock({id='retail.deathknight.utility',revision=2,families={'retail'},class='DEATHKNIGHT',steps={
  spell('mind-freeze',47528,any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})),
- spell('icebound-fortitude',48792,all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.35})),
+ spell('icebound-fortitude',48792,combat()),
  spell('blood-fury',20572,combat()),
  spell('berserking',26297,combat()),
  spell('fireblood',265221,combat()),

@@ -19,8 +19,8 @@ local howl=any(buff(471878),buff(472324),buff(472325))
 -- Kill Command just before a ready Takedown, without Twin Fangs and with no Tip of the Spear.
 local beforeTakedown=all(negate(known(1272139)),negate(tip),{type='SPELL_AVAIL',spell=TAKEDOWN})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.survival.guide',revision=2,
- blocks={['retail.hunter.boundaries']=1,['retail.hunter.utility']=1,['retail.hunter.mark']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.survival.guide',revision=3,
+ blocks={['retail.hunter.boundaries']=1,['retail.hunter.utility']=2,['retail.hunter.mark']=1},
  nameKey='Default.Retail.Hunter.SurvivalGuide.Name',descriptionKey='Default.Retail.Hunter.SurvivalGuide.Description',
  applicability={families={'retail'},actionContext='player',class='HUNTER',specs={255},minLevel=10,maxLevel=90},
  tags={'survival','melee','pet','reference','simulationcraft'},

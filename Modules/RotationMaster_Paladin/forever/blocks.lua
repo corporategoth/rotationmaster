@@ -11,7 +11,6 @@ local function negate(c)return{type='NOT',value=c}end
 local function own(id,unit)return{type='BUFF',unit=unit or'player',spell=id,anyrank=true,ownbuff=true}end
 local function known(id)return{type='SPELL_KNOWN',spell=id}end
 local function combat()return{type='COMBAT',unit='player'}end
-local function health(unit,op,v)return{type='HEALTHPCT',unit=unit,operator=op,value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
 local function remain(id)return{type='BUFF_REMAIN',unit='player',spell=id,anyrank=true,ownbuff=true,operator='GREATERTHANOREQUALS',value=3}end
@@ -41,25 +40,22 @@ assert(addon:RegisterDefaultBlock({id='forever.paladin.dispel',revision=1,famili
 }}))
 -- Tank taunt: the target is fighting and not attacking you. Judgement with Seal of Fury taunts;
 -- Swift Judgement resets it when it is cooling.
-assert(addon:RegisterDefaultBlock({id='forever.paladin.taunt',revision=1,families={'forever'},class='PALADIN',steps={
- {id='taunt',type='branch',conditions=all({type='COMBAT',unit='target'},negate({type='ISSAME',unit='targettarget',otherunit='player'})),onFalse={},onTrue={
+assert(addon:RegisterDefaultBlock({id='forever.paladin.taunt',revision=2,families={'forever'},class='PALADIN',steps={
+ {id='taunt',type='branch',conditions=all({type='COMBAT',unit='target'},negate({type='THREAT',unit='target',threat=3})),onFalse={},onTrue={
   spell('taunt-judgement',20271,own(1311649)),
   spell('taunt-swift-judgement',1310994)}},
 }}))
--- Tank reminders: Righteous Fury, Seal of Fury (missing or under 3 s), Templar's Bulwark when
--- low without Forbearance, Holy Shield while tanking, Lay on Hands as the last resort.
-assert(addon:RegisterDefaultBlock({id='forever.paladin.tank-upkeep',revision=1,families={'forever'},class='PALADIN',steps={
+-- Tank reminders: Righteous Fury, Seal of Fury (missing or under 3 s), Holy Shield while tanking.
+-- Health is secret on Forever, so Templar's Bulwark and Lay on Hands are the player's call.
+assert(addon:RegisterDefaultBlock({id='forever.paladin.tank-upkeep',revision=2,families={'forever'},class='PALADIN',steps={
  spell('righteous-fury',25780,negate(own(25780))),
  spell('seal-fury',1311649,negate(remain(1311649))),
- spell('templars-bulwark',1311015,all(combat(),health('player','LESSTHAN',.4),negate({type='DEBUFF',unit='player',spell=25771}))),
- spell('holy-shield',20925,all(combat(),negate(own(20925)),{type='ISSAME',unit='targettarget',otherunit='player'})),
- spell('lay-on-hands',633,all(combat(),health('player','LESSTHAN',.15))),
+ spell('holy-shield',20925,all(combat(),negate(own(20925)),{type='THREAT',unit='target',threat=3})),
 }}))
--- Healer reminders: Seal of Light when you have no seal, Divine Favor before a big heal, Lay on
--- Hands on a dying friendly target.
+-- Healer reminders: Seal of Light when you have no seal, Divine Favor in combat on a friendly
+-- target. Health is secret on Forever, so Lay on Hands is the player's call.
 local seals=any(own(20165),own(20166),own(20154),own(20375),own(21082),own(20164),own(1311649))
-assert(addon:RegisterDefaultBlock({id='forever.paladin.healer-upkeep',revision=1,families={'forever'},class='PALADIN',steps={
+assert(addon:RegisterDefaultBlock({id='forever.paladin.healer-upkeep',revision=2,families={'forever'},class='PALADIN',steps={
  spell('seal-light',20165,negate(seals)),
- spell('divine-favor',20216,all(combat(),friendly,health('target','LESSTHAN',.5))),
- spell('lay-on-hands',633,all(combat(),friendly,health('target','LESSTHAN',.15))),
+ spell('divine-favor',20216,all(combat(),friendly)),
 }}))

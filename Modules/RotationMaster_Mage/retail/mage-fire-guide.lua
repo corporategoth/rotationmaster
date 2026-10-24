@@ -28,8 +28,8 @@ local function priority(p,spender)return{
  spell(p..'moving-scorch',2948,{type='MOVING'}),
  spell(p..'fire-blast',108853,heating)}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.mage.fire.guide',revision=3,
- blocks={['retail.mage.boundaries']=1,['retail.mage.utility']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.mage.fire.guide',revision=4,
+ blocks={['retail.mage.boundaries']=1,['retail.mage.utility']=2},
  nameKey='Default.Retail.Mage.FireGuide.Name',descriptionKey='Default.Retail.Mage.FireGuide.Description',
  applicability={families={'retail'},actionContext='player',class='MAGE',specs={63},minLevel=10,maxLevel=90},
  tags={'fire','caster','reference','icy-veins','wowhead','simulationcraft'},
@@ -41,7 +41,7 @@ assert(addon:RegisterDefaultRotation({
  body={priority=10,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
    block('fguide-utility','retail.mage.utility','fguide-'),
-   spell('fguide-barrier',235313,all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.5})),
+   spell('fguide-barrier',235313,combat()),
    spell('fguide-combustion',190319,all(combat(),hardcast,{type='CASTING_REMAIN',unit='player',operator='LESSTHAN',value=1})),
   },
   rotation={

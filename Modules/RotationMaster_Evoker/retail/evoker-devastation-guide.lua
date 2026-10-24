@@ -19,8 +19,8 @@ local burstRoom={type='BUFF_STACKS',unit='player',spell=359618,ownbuff=true,oper
 local flames=all(buff(375802),buff(370901))
 local sweep=buff(1265871)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.devastation.guide',revision=2,
- blocks={['retail.evoker.boundaries']=1,['retail.evoker.utility']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.devastation.guide',revision=3,
+ blocks={['retail.evoker.boundaries']=1,['retail.evoker.utility']=2},
  nameKey='Default.Retail.Evoker.DevastationGuide.Name',descriptionKey='Default.Retail.Evoker.DevastationGuide.Description',
  applicability={families={'retail'},actionContext='player',class='EVOKER',specs={1467},minLevel=10,maxLevel=90},
  tags={'devastation','ranged','reference','simulationcraft','icy-veins'},

@@ -11,6 +11,7 @@
 
 bind.lua
 retail/blocks.lua
+retail/hunter-initial.lua
 retail/hunter-beast-mastery.lua
 retail/hunter-beast-mastery-guide.lua
 retail/hunter-marksmanship.lua

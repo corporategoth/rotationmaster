@@ -1,21 +1,21 @@
 -- Retail (Midnight 12.x) Restoration Druid (recommended): on an enemy, Blizzard's Assisted Combat
 -- suggestion (Blizzard's Restoration list is a damage list, cat or caster by form); otherwise Icy
 -- Veins' maintenance casts on your friendly target (or yourself): Lifebloom, Efflorescence,
--- Swiftmend on a Rejuvenation, Wild Growth when three allies are hurt, Regrowth on Clearcasting or
--- high Abundance, Rejuvenation. Ally health and HoTs are secret in Midnight combat, so in combat the
--- healing steps that need them stay dark; choosing whom to heal is yours.
+-- Swiftmend on a Rejuvenation, Wild Growth in a group, Regrowth on Clearcasting or high Abundance,
+-- Rejuvenation when missing. Health is secret on Retail, so these follow your target choice, not how
+-- hurt anyone is; HoTs are secret in Midnight combat, so the steps that read them wait there. Choosing
+-- whom to heal is yours.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function hot(id)return{type='BUFF',unit='target',spell=id,ownbuff=true}end
-local function hurt(v)return{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.druid.restoration',revision=1,
- blocks={['retail.druid.boundaries']=1,['retail.druid.utility']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.druid.restoration',revision=2,
+ blocks={['retail.druid.boundaries']=1,['retail.druid.utility']=2},
  nameKey='Default.Retail.Druid.Restoration.Name',descriptionKey='Default.Retail.Druid.Restoration.Description',
  applicability={families={'retail'},actionContext='player',class='DRUID',specs={105},minLevel=10,maxLevel=90},
  tags={'restoration','healer','assisted-combat','icy-veins'},
@@ -28,7 +28,7 @@ assert(addon:RegisterDefaultRotation({
  body={priority=20,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
    block('resto-utility','retail.druid.utility','resto-'),
-   spell('resto-innervate',29166,all(combat(),{type='MANAPCT',unit='player',operator='LESSTHAN',value=.75})),
+   spell('resto-innervate',29166,combat()),
   },
   rotation={
    block('resto-boundaries','retail.druid.boundaries','resto-'),
@@ -37,10 +37,10 @@ assert(addon:RegisterDefaultRotation({
     onFalse={
      spell('resto-lifebloom',33763,negate(hot(33763))),
      spell('resto-efflorescence',145205,all(combat(),negate({type='BUFF',unit='player',spell=145205,ownbuff=true}))),
-     spell('resto-swiftmend',18562,all(hot(774),hurt(.7))),
-     spell('resto-wild-growth',48438,{type='PROXIMITY_HEALTHPCT_COUNT',unit='player',healthoperator='LESSTHAN',health=.85,operator='GREATERTHANOREQUALS',value=3,distance=30}),
-     spell('resto-regrowth',8936,all(hurt(.9),any({type='BUFF',unit='player',spell=16870,ownbuff=true},{type='BUFF_STACKS',unit='player',spell=207640,ownbuff=true,operator='GREATERTHANOREQUALS',value=5}))),
-     spell('resto-rejuvenation',774,all(hurt(.95),negate(hot(774)))),
+     spell('resto-swiftmend',18562,hot(774)),
+     spell('resto-wild-growth',48438,all(combat(),{type='GROUP'})),
+     spell('resto-regrowth',8936,any({type='BUFF',unit='player',spell=16870,ownbuff=true},{type='BUFF_STACKS',unit='player',spell=207640,ownbuff=true,operator='GREATERTHANOREQUALS',value=5})),
+     spell('resto-rejuvenation',774,negate(hot(774))),
     }},
   },
  },

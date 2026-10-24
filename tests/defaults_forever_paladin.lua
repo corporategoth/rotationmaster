@@ -16,7 +16,9 @@ test('the Paladin premades load, validate and declare Forever only',function()
  for _,id in ipairs({RET,PROT,IVPROT,HOLY,WHHOLY})do
   local row=assert(rows[id],id);local scope=row.applicability
   assert(row.readOnly and row.builtin and scope.families[1]=='forever'and #scope.families==1 and scope.class=='PALADIN'and scope.maxLevel==60,id)
-  assert(row.eligible,id..' not eligible on the probe Forever context')
+  local variant=id==IVPROT or id==WHHOLY
+  assert(row.eligible==not variant,id..(variant and ' variant is not off by default' or ' not eligible on the probe Forever context'))
+  assert((row.envelope.body.disabled==true)==variant,id..' disabled flag')
  end
 end)
 test('switch by talent tree (1 Holy, 2 Protection, 3 Retribution): Retribution by default; Righteous Fury or the Protection tree tanks; grouped deep Holy heals',function()
@@ -36,11 +38,12 @@ test('Retribution: boundaries, seal upkeep, Crusader once, Command for slow weap
  local a,s=paladin();s.learn(unpack(retKit))
  s.cast=true;M.expect(a,s,RET,nil,'stopped','casting');s.cast=false
  s.hostile=false;local r=M.expect(a,s,RET,nil,'stopped','no hostile target');assert(not r.suppressAttack);s.hostile=true
- M.expect(a,s,RET,21082,nil,'no seal, healthy target, Judgement ready: Crusader')
+ M.expect(a,s,RET,20154,nil,'a normal mob gets no Crusader (target health is secret, so only elites do)');s.classification='elite'
+ M.expect(a,s,RET,21082,nil,'no seal, elite, Judgement ready: Crusader')
  s.debuff('target',21183,{sourceUnit='party1'});M.expect(a,s,RET,20154,nil,'target already judged: Righteousness')
  s.swing=3.4;M.expect(a,s,RET,20375,nil,'slow weapon: Command');s.swing=2.6
- s.clearAuras();s.health.target=50;M.expect(a,s,RET,20154,nil,'a weakened normal mob gets no Crusader')
- s.health.target=100;s.cooling(20271,5);M.expect(a,s,RET,20154,nil,'Judgement cooling: no Crusader yet');s.cooldown={}
+ s.clearAuras();s.classification='normal';s.health.target=50;M.expect(a,s,RET,20154,nil,'a normal mob gets no Crusader')
+ s.classification='elite';s.health.target=100;s.cooling(20271,5);M.expect(a,s,RET,20154,nil,'Judgement cooling: no Crusader yet');s.cooldown={}
  s.buff('player',20154,{expirationTime=110,duration=30});M.expect(a,s,RET,679,nil,'seal up: Holy Strike')
  s.clearAuras();s.buff('player',20154,{expirationTime=102,duration=30});M.expect(a,s,RET,21082,nil,'seal under 3 s: reseal')
  s.clearAuras();s.buff('player',21082,{expirationTime=120,duration=30});s.debuff('target',21183);M.expect(a,s,RET,20154,nil,'Crusader judged: swap to the main seal')
@@ -50,9 +53,8 @@ test('Retribution: Holy Strike, Shockadin, Exorcism, AoE Consecration, Hammer of
  M.expect(a,s,RET,679,nil,'Holy Strike');s.cooling(679,5)
  M.expect(a,s,RET,1311606,nil,'Holy Shock');s.cooling(1311606,8)
  M.expect(a,s,RET,1310911,nil,'Light\'s Vigil while Holy Shock cools');s.cooling(1310911,4)
- M.expect(a,s,RET,26573,nil,'Consecration with mana to spare');s.mana.player=70
- local r=M.expect(a,s,RET,24275,nil,'Hammer of Wrath with spare mana')
- s.mana.player=40;r=M.expect(a,s,RET,nil,'complete','otherwise melee');assert(not r.suppressAttack)
+ s.usable[24275]=false;local r=M.expect(a,s,RET,nil,'complete','Hammer of Wrath outside its execute range: melee (no mana-to-spare Consecration)');assert(not r.suppressAttack)
+ s.usable[24275]=nil;M.expect(a,s,RET,24275,nil,'Hammer of Wrath once it can be cast');s.usable[24275]=false
  s.creature='UNDEAD';M.expect(a,s,RET,879,nil,'Exorcism on Undead');s.creature='HUMANOID'
  s.mana.player=60;s.near(3);M.expect(a,s,RET,26573,nil,'three engaged: Consecration')
  s.cooling(26573,5);s.creature='DEMON';M.expect(a,s,RET,879,nil,'Exorcism before the AoE branch on Demons')
@@ -62,10 +64,9 @@ test('Retribution reminders: Judgement, aura and Blessing, healing out of combat
  local lit=M.upkeep(a,s,RET);assert(lit[7294]and not lit[465]and lit[20217]and not lit[19740]and not lit[20271],'aura and Blessing, no Judgement without a seal')
  s.buff('player',465);s.buff('player',19740);s.buff('player',20375);lit=M.upkeep(a,s,RET);assert(not lit[7294]and not lit[20217]and lit[20271],'your choices are kept; Judgement with a seal up')
  assert(not lit[853],'Hammer of Justice step is off by default')
- s.mana.player=10;lit=M.upkeep(a,s,RET);assert(not lit[20271],'Judgement skipped when low on mana')
- s.combat=false;s.health.player=50;lit=M.upkeep(a,s,RET);assert(lit[19750]and not lit[635],'Flash of Light out of combat')
- s.known[19750]=nil;lit=M.upkeep(a,s,RET);assert(lit[635],'Holy Light before Flash of Light')
- s.combat=true;s.health.player=10;lit=M.upkeep(a,s,RET);assert(lit[633],'Lay on Hands')
+ s.mana.player=10;lit=M.upkeep(a,s,RET);assert(lit[20271],'Judgement whenever a seal is up (mana is secret)')
+ s.combat=false;s.health.player=50;lit=M.upkeep(a,s,RET);assert(not lit[19750]and not lit[635],'healing yourself is yours (health is secret)')
+ s.combat=true;s.health.player=10;lit=M.upkeep(a,s,RET);assert(not lit[633],'Lay on Hands is yours')
 end)
 test('Protection: taunt branch, AoE and single-target orders, tank reminders',function()
  local a,s=paladin();s.learn(1311015,1310994,20271,679,26573,879,2812,25780,1311649,20925,633)
@@ -73,14 +74,13 @@ test('Protection: taunt branch, AoE and single-target orders, tank reminders',fu
  s.targetTarget='party1';M.expect(a,s,PROT,20271,nil,'taunt: Judgement');s.cooling(20271,5)
  M.expect(a,s,PROT,1310994,nil,'Judgement cooling: Swift Judgement');s.cooldown={};s.targetTarget='player'
  M.expect(a,s,PROT,679,nil,'one enemy: Holy Strike');s.cooling(679,5)
- M.expect(a,s,PROT,26573,nil,'then Consecration with mana');s.mana.player=50
- local r=M.expect(a,s,PROT,nil,'complete','below 60% mana: melee');assert(not r.suppressAttack);s.cooldown={}
+ s.mana.player=50;M.expect(a,s,PROT,26573,nil,'then Consecration (mana is secret, so at any mana)');s.cooling(26573,5)
+ local r=M.expect(a,s,PROT,nil,'complete','everything cooling: melee');assert(not r.suppressAttack);s.cooldown={}
  s.near(2);M.expect(a,s,PROT,26573,nil,'two engaged: Consecration first')
- s.mana.player=20;M.expect(a,s,PROT,679,nil,'low mana AoE: Holy Strike');s.mana.player=100
+ s.cooling(26573,5);M.expect(a,s,PROT,679,nil,'AoE: Holy Strike while Consecration cools');s.cooldown={};s.mana.player=100
  s.creature='UNDEAD';s.cooling(26573,5);M.expect(a,s,PROT,879,nil,'Exorcism on Undead in AoE')
  local lit=M.upkeep(a,s,PROT);assert(lit[20271]and lit[20925]and not lit[25780]and not lit[1311649],'Judgement and Holy Shield; Fury and seal up')
- s.clearAuras();s.health.player=30;lit=M.upkeep(a,s,PROT);assert(lit[25780]and lit[1311649]and lit[1311015],'Righteous Fury, Seal of Fury, Templar\'s Bulwark')
- s.debuff('player',25771);lit=M.upkeep(a,s,PROT);assert(not lit[1311015],'no Bulwark with Forbearance')
+ s.clearAuras();s.health.player=30;lit=M.upkeep(a,s,PROT);assert(lit[25780]and lit[1311649]and not lit[1311015]and not lit[633],'Righteous Fury, Seal of Fury; Templar\'s Bulwark and Lay on Hands are yours (health is secret)')
 end)
 test('Icy Veins Protection: Consecration first, Judgement held for taunts',function()
  local a,s=paladin();s.learn(1311015,1310994,20271,679,26573,879);s.buff('player',25780);s.buff('player',1311649,{expirationTime=120,duration=30})
@@ -92,20 +92,20 @@ end)
 test('Holy: heals the friendly target, party heal with Light\'s Vigil, dispels, hostile list',function()
  local a,s=paladin();s.learn(1311606,1310911,4987,1152,635,19750,20271,679,879)
  s.members(100,100,100,100);s.hostile=false;s.friendly=true;s.health.target=95
- local r=M.expect(a,s,HOLY,nil,'stopped','nothing to heal');assert(r.suppressAttack)
- s.health.target=80;M.expect(a,s,HOLY,19750,nil,'Flash of Light')
- s.health.target=40;M.expect(a,s,HOLY,635,nil,'Holy Light for a big deficit')
+ M.expect(a,s,HOLY,1310911,nil,'Light\'s Vigil in combat (health is secret: your target decides)');s.cooling(1310911,30)
+ M.expect(a,s,HOLY,19750,nil,'Flash of Light as the main heal')
+ s.health.target=40;M.expect(a,s,HOLY,19750,nil,'no Holy Light for a big deficit (health is secret)')
  s.buff('player',437063);s.health.target=65;M.expect(a,s,HOLY,635,nil,'Infusion of Light: Holy Light');s.clearAuras()
- s.health.target=20;M.expect(a,s,HOLY,1311606,nil,'emergency: Holy Shock');s.health.target=80
+ s.health.target=20;M.expect(a,s,HOLY,19750,nil,'no emergency Holy Shock (health is secret)');s.health.target=80
  s.moving=true;M.expect(a,s,HOLY,1311606,nil,'moving: Holy Shock');s.moving=false
  s.debuff('target',1,{dispelName='Poison'});M.expect(a,s,HOLY,4987,nil,'Cleanse a poison');s.known[4987]=nil;M.expect(a,s,HOLY,1152,nil,'Purify before Cleanse');s.clearAuras()
- s.members(60,70,50,100);M.expect(a,s,HOLY,1310911,nil,'party hurt: Light\'s Vigil')
  s.buff('target',1310909);M.expect(a,s,HOLY,1311606,nil,'your Vigil on the target: Holy Shock heals the party');s.clearAuras()
+ s.usable[19750]=false;local r=M.expect(a,s,HOLY,nil,'stopped','nothing castable');assert(r.suppressAttack);s.usable[19750]=nil
  s.friendly=false;s.hostile=true;s.buff('player',20165);M.expect(a,s,HOLY,20271,nil,'enemy with Seal of Light: Judgement of Light')
  s.debuff('target',20185);M.expect(a,s,HOLY,1311606,nil,'then Holy Shock with mana')
- s.mana.player=50;M.expect(a,s,HOLY,679,nil,'low on mana: Holy Strike')
+ s.cooling(1311606,8);M.expect(a,s,HOLY,679,nil,'Holy Strike while Holy Shock and Light\'s Vigil cool')
  s.learn(20165,20216,633);s.clearAuras();s.friendly=true;s.hostile=false;s.health.target=10
- local lit=M.upkeep(a,s,HOLY);assert(lit[20165]and lit[20216]and lit[633],'Seal of Light, Divine Favor, Lay on Hands on the target')
+ local lit=M.upkeep(a,s,HOLY);assert(lit[20165]and lit[20216]and not lit[633],'Seal of Light, Divine Favor; Lay on Hands is yours (health is secret)')
 end)
 test('Wowhead Holy: Holy Shock on cooldown; Judgement of Light by seal swap',function()
  local a,s=paladin();s.learn(1311606,635,19750,20271,679,20165,20154,879,26573)
@@ -116,12 +116,8 @@ test('Wowhead Holy: Holy Shock on cooldown; Judgement of Light by seal swap',fun
  s.debuff('target',20185);M.expect(a,s,WHHOLY,20154,nil,'swap back to Righteousness')
  s.clearAuras();s.debuff('target',20185);s.buff('player',20154);M.expect(a,s,WHHOLY,20271,nil,'Judgement with Righteousness')
 end)
-test('on the real restricted Forever client the Paladin premades are listed but incomplete, never auto-selected',function()
- local f,s=M.new('paladin',{policy='restricted'});local a=f.addon;local support=dofile('tests/fixtures/client_support.lua');support.install(f);s.learn(20154,1311015)
- local rows=M.rows(a)
- for _,id in ipairs({RET,PROT,IVPROT,HOLY,WHHOLY})do
-  assert(rows[id]and rows[id].readOnly,id..' not listed');support.incomplete(rows[id],id)
- end
- assert(next(a:GetRuntimeRotations(0))==nil and M.selected(a)==nil,'a restricted client auto-selected a packaged rotation')
+test('on the real restricted Forever client every Paladin premade is complete and the right one auto-selects',function()
+ M.checkRestricted('paladin',{RET,PROT,IVPROT,HOLY,WHHOLY},function(s)s.learn(20154,1311015)end,RET)
+ M.checkRestricted('paladin',{PROT},function(s)s.learn(20154);s.buff('player',25780)end,PROT)
 end)
 finish()

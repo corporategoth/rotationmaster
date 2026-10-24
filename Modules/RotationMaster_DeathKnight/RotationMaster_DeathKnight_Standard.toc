@@ -11,6 +11,7 @@
 
 bind.lua
 retail/blocks.lua
+retail/death-knight-initial.lua
 retail/death-knight-blood.lua
 retail/death-knight-blood-guide.lua
 retail/death-knight-blood-simc.lua

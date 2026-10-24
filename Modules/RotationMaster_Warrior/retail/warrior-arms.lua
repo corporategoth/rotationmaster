@@ -11,7 +11,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.arms',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.arms',revision=2,
  blocks={['retail.warrior.boundaries']=1,['retail.warrior.upkeep']=1},
  nameKey='Default.Retail.Warrior.Arms.Name',descriptionKey='Default.Retail.Warrior.Arms.Description',
  applicability={families={'retail'},actionContext='player',class='WARRIOR',specs={71},minLevel=10,maxLevel=90},
@@ -28,7 +28,7 @@ assert(addon:RegisterDefaultRotation({
    spell('arms-avatar',107574,fight),
    spell('arms-heroic-strike',1269383,fight),
    spell('arms-champions-spear',376079,fight),
-   spell('arms-die-by-the-sword',118038,all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.4})),
+   spell('arms-die-by-the-sword',118038,combat()),
   },
   rotation={
    block('retail.warrior.boundaries','arms-'),

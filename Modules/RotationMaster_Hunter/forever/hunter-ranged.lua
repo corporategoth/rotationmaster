@@ -2,8 +2,9 @@
 -- levels 1–60; the Hunter catch-all (lowest priority). Wowhead's level-30 Hawk cycle: Hunter's Mark,
 -- own Serpent Sting, Summon Hawk, Summon Hawk, Arcane Shot on their shared cooldown, Aimed Shot
 -- (Multi-Shot on two or more enemies, as they share a cooldown). Sniper Shot while Rapid Killing
--- lasts or on elites; Explosive Trap and Volley on packs. Uses no mana reading: Forever is
--- reported to hide the player's mana in combat. Pet commands stay with the player.
+-- lasts or on elites; Explosive Trap and Volley on packs. Uses no mana or health reading: Forever
+-- hides both, so Hunter's Mark and Serpent Sting go on every target. Pet commands stay with the
+-- player.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
@@ -18,9 +19,9 @@ local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASS
 local arcaneTurn=all({type='SPELL_HISTORY_TIME',spell=1293241,operator='LESSTHAN',value=7},
  negate({type='SPELL_HISTORY_TIME',spell=3044,operator='LESSTHAN',value=17}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.ranged',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.ranged',revision=3,
  blocks={['forever.hunter.boundaries']=1,['forever.hunter.deadzone']=2,['forever.hunter.pull']=2,['forever.hunter.moving']=1,
-  ['forever.hunter.aspects-ranged']=1,['forever.hunter.pet-care']=1,['forever.hunter.burst']=1},
+  ['forever.hunter.aspects-ranged']=1,['forever.hunter.pet-care']=2,['forever.hunter.burst']=1},
  nameKey='Default.Forever.Hunter.Ranged.Name',descriptionKey='Default.Forever.Hunter.Ranged.Description',
  applicability={families={'forever'},actionContext='player',class='HUNTER',minLevel=1,maxLevel=60},
  tags={'beast-mastery','marksmanship','ranged','leveling','single-target','aoe','wowhead'},
@@ -38,8 +39,8 @@ assert(addon:RegisterDefaultRotation({
    spell('ranged-trueshot-aura',1299346,negate({type='BUFF',unit='player',spell=1299346,anyrank=true})),
    block('ranged-pet-care','forever.hunter.pet-care','ranged-'),
    block('ranged-burst','forever.hunter.burst','ranged-'),
-   spell('ranged-intimidation',19577,all(combat(),{type='ISSAME',unit='targettarget',otherunit='player'})),
-   {id='ranged-feign-death',type='spell',action=5384,ranked=false,disabled=true,conditions=all(combat(),{type='GROUP'},{type='ISSAME',unit='targettarget',otherunit='player'})},
+   spell('ranged-intimidation',19577,all(combat(),{type='THREAT',unit='target',threat=3})),
+   {id='ranged-feign-death',type='spell',action=5384,ranked=false,disabled=true,conditions=all(combat(),{type='GROUP'},{type='THREAT',unit='target',threat=3})},
   },
   rotation={
    stop('ranged-target',negate({type='ATTACKABLE',unit='target'})),
@@ -51,14 +52,14 @@ assert(addon:RegisterDefaultRotation({
     negate({type='ISSAME',unit='targettarget',otherunit='pet'}),{type='TIME_IN_COMBAT',operator='LESSTHAN',value=2})},
    block('ranged-moving','forever.hunter.moving','ranged-'),
    spell('ranged-auto-shot',75,negate({type='SPELL_AUTOREPEAT',spell=75,ranked=true})),
-   spell('ranged-mark',1130,all(negate({type='DEBUFF',unit='target',spell=1130,anyrank=true}),any(elite,{type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.5}))),
+   spell('ranged-mark',1130,negate({type='DEBUFF',unit='target',spell=1130,anyrank=true})),
    {id='ranged-aoe',type='branch',conditions=engaged(2),onFalse={},onTrue={
     spell('ranged-explosive-trap',13813,enemies(3)),
     spell('ranged-aoe-hawk',1293241,negate(arcaneTurn)),
     spell('ranged-multi-shot',2643),
     spell('ranged-volley',1510,engaged(5))}},
    spell('ranged-serpent-sting',1978,all(negate({type='DEBUFF',unit='target',spell=1978,anyrank=true,owndebuff=true}),
-    negate({type='DEBUFF',unit='target',spell=3043,anyrank=true,owndebuff=true}),{type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.3})),
+    negate({type='DEBUFF',unit='target',spell=3043,anyrank=true,owndebuff=true}))),
    spell('ranged-hawk',1293241,negate(arcaneTurn)),
    spell('ranged-arcane-shot',3044,any(negate({type='SPELL_KNOWN',spell=1293241}),arcaneTurn)),
    spell('ranged-sniper-shot',1310687,any({type='BUFF',unit='player',spell=415407},elite)),

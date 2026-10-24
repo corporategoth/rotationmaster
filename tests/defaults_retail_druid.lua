@@ -57,8 +57,8 @@ test('Assisted reminders: forms between pulls, Mark of the Wild, interrupts, Iro
  local G=P..'guardian'
  s.combat=false;local lit=M.upkeep(a,s,G);assert(lit[5487]and lit[1126]and not lit[192081],'out of combat: Bear Form and Mark of the Wild')
  s.buff('player',5487);s.buff('player',1126,{sourceUnit='party1'});lit=M.upkeep(a,s,G);assert(not lit[5487]and not lit[1126],'form and Mark already up')
- s.combat=true;lit=M.upkeep(a,s,G);assert(lit[192081]and lit[26297]and not lit[22842]and not lit[22812],'in combat: Ironfur and racial, no defensives at full health')
- s.health.player=30;s.targetCast=true;lit=M.upkeep(a,s,G);assert(lit[22842]and lit[61336]and lit[22812]and lit[106839],'low health and an enemy cast')
+ s.combat=true;lit=M.upkeep(a,s,G);assert(lit[192081]and lit[26297]and lit[22842]and lit[61336]and lit[22812]and not lit[106839],'in combat: Ironfur, racial and the defensives on readiness (health is secret)')
+ s.targetCast=true;lit=M.upkeep(a,s,G);assert(lit[106839],'Skull Bash on an interruptible cast')
  local b,t=druid(BALANCE);t.learn(24858,78675);t.combat=false;lit=M.upkeep(b,t,P..'balance');assert(lit[24858],'Moonkin Form between pulls')
  t.buff('player',102560);lit=M.upkeep(b,t,P..'balance');assert(not lit[24858],'Incarnation is a Moonkin Form')
  local c,u=druid(FERAL);u.learn(768,61336);u.combat=false;lit=M.upkeep(c,u,P..'feral');assert(lit[768],'Cat Form between pulls')
@@ -73,8 +73,8 @@ test('Assisted in Midnight combat: secret data still gives advice; hidden-data r
  s.cooling(33917,4);M.expect(a,s,P..'guardian',nil,nil,'cooling by the never-secret flag');s.cooldown={}
  s.health.player=20;s.targetCast=true
  local lit=M.upkeep(a,s,P..'guardian')
- assert(lit[192081]and lit[26297],'in-combat reminders did not light on the readable cooldown flags')
- assert(not lit[22842]and not lit[106839],'a reminder gated on hidden health or enemy casts lit')
+ assert(lit[192081]and lit[26297]and lit[22842],'in-combat reminders did not light on the readable cooldown flags')
+ assert(not lit[106839],'a reminder gated on hidden enemy casts lit')
  s.secrets(false);lit=M.upkeep(a,s,P..'guardian');assert(lit[22842]and lit[106839],'readable again')
 end)
 test('Balance reference: pull, DoTs, Eclipse, spenders on procs and cap, Moons, filler by Eclipse',function()
@@ -88,11 +88,11 @@ test('Balance reference: pull, DoTs, Eclipse, spenders on procs and cap, Moons, 
  s.near(3);M.expect(a,s,G,1233272,nil,'three enemies: Lunar Eclipse')
  s.buff('player',48518);M.expect(a,s,G,191034,nil,'packs: Starfall');s.near(0)
  M.expect(a,s,G,274281,nil,'New Moon');s.cooling(274281,10)
+ M.expect(a,s,G,78674,nil,'Starsurge whenever affordable (Astral Power is secret)');s.power[78674]=true
  M.expect(a,s,G,194153,nil,'Lunar Eclipse: Starfire');s.auras.player.HELPFUL[2]={spellId=48517,name='x',sourceUnit='player'}
- s.buff('player',393944);M.expect(a,s,G,78674,nil,'Starsurge on Starweaver\'s Weft')
+ s.power[78674]=nil;s.buff('player',393944);M.expect(a,s,G,78674,nil,'Starsurge on Starweaver\'s Weft')
  s.clearAuras();s.buff('player',24858);s.buff('player',48517);s.debuff('target',164815,{expirationTime=200});s.debuff('target',164812,{expirationTime=200})
- s.energy=90;M.expect(a,s,G,78674,nil,'Starsurge before Astral Power caps');s.energy=20
- M.expect(a,s,G,5176,nil,'Solar Eclipse: Wrath')
+ s.power[78674]=true;M.expect(a,s,G,5176,nil,'Solar Eclipse: Wrath while Starsurge is unaffordable')
  s.buff('player',393942);M.expect(a,s,G,191034,nil,'Starfall on Starweaver\'s Warp')
 end)
 test('Feral reference: opener, Apex, five-point finishers and pooling, bleeds and builders',function()
@@ -108,8 +108,8 @@ test('Feral reference: opener, Apex, five-point finishers and pooling, bleeds an
  s.usable[22568]=false;M.expect(a,s,G,nil,'stopped','five points: pool for the finisher');s.usable[22568]=nil
  s.near(2);M.expect(a,s,G,285381,nil,'two enemies: Primal Wrath');s.near(0)
  s.points=2;s.near(3);M.expect(a,s,G,213764,nil,'three enemies: Swipe');s.near(0)
- s.learn(5217);s.energy=40;local lit=M.upkeep(a,s,G);assert(lit[5217],'Tiger\'s Fury 50 below the energy cap')
- s.energy=80;lit=M.upkeep(a,s,G);assert(not lit[5217],'Tiger\'s Fury waits at high energy and few points')
+ s.learn(5217);s.energy=80;local lit=M.upkeep(a,s,G);assert(lit[5217],'Tiger\'s Fury whenever it is ready in combat (energy is secret)')
+ s.combat=false;lit=M.upkeep(a,s,G);assert(not lit[5217],'Tiger\'s Fury out of combat');s.combat=true
  s.learn(106951,274837);s.buff('player',5217);lit=M.upkeep(a,s,G);assert(lit[106951]and lit[274837],'Berserk and Feral Frenzy in Tiger\'s Fury')
 end)
 test('Guardian references: Thrash, Mangle, Red Moon, Galactic Guardian, rage spenders; SimC Ironfur first',function()
@@ -120,12 +120,12 @@ test('Guardian references: Thrash, Mangle, Red Moon, Galactic Guardian, rage spe
  M.expect(a,s,G,1252871,nil,'Red Moon on one target');s.cooling(1252871,20)
  M.expect(a,s,G,8921,nil,'Moonfire missing');s.debuff('target',164812)
  s.buff('player',213708);M.expect(a,s,G,8921,nil,'Moonfire on Galactic Guardian');s.clearAuras();s.debuff('target',164812)
- s.energy=85;M.expect(a,s,G,6807,nil,'Maul above 80 rage');s.energy=30
- M.expect(a,s,G,213771,nil,'Swipe filler')
- s.learn(192081);local lit=M.upkeep(a,s,G);assert(not lit[192081],'Ironfur under 40 rage');s.energy=45;lit=M.upkeep(a,s,G);assert(lit[192081],'Ironfur at 40 rage')
+ s.energy=85;M.expect(a,s,G,213771,nil,'rage is secret: no Maul dump above 80, Swipe filler');s.energy=30
+ s.learn(192081);local lit=M.upkeep(a,s,G);assert(lit[192081],'Ironfur whenever it is ready in combat')
  local b,t=druid(GUARDIAN);local S=P..'guardian.simc';enable(b,S)
  t.learn(192081,77758,33917,1252871,6807,213771,8921);t.energy=45
- M.expect(b,t,S,192081,nil,'SimC: Ironfur at 40 rage');t.energy=20
+ M.expect(b,t,S,77758,nil,'SimC: rage is secret, so Ironfur waits for Berserk; Thrash missing')
+ t.buff('player',50334);M.expect(b,t,S,192081,nil,'SimC: Ironfur first in Berserk');t.clearAuras();t.energy=20
  M.expect(b,t,S,77758,nil,'SimC: Thrash missing');t.debuff('target',192090,{applications=3,expirationTime=200})
  t.buff('player',1307881);M.expect(b,t,S,6807,nil,'SimC: Maul on Gory Fur');t.clearAuras();t.debuff('target',192090,{applications=3,expirationTime=200})
  M.expect(b,t,S,1252871,nil,'SimC: Red Moon');t.debuff('target',1252871)
@@ -138,15 +138,19 @@ test('Restoration: Assisted damage on an enemy, maintenance heals on a friend, h
  s.hostile=false;s.friendly=true;s.health.target=60
  M.expect(a,s,R,33763,nil,'friendly target: Lifebloom');s.auras.target.HELPFUL[1]={spellId=33763,name='x',sourceUnit='player'}
  M.expect(a,s,R,145205,nil,'Efflorescence in combat');s.buff('player',145205)
- M.expect(a,s,R,774,nil,'Rejuvenation on a hurt ally');s.auras.target.HELPFUL[2]={spellId=774,name='x',sourceUnit='player'}
+ M.expect(a,s,R,774,nil,'Rejuvenation when missing');s.auras.target.HELPFUL[2]={spellId=774,name='x',sourceUnit='player'}
  M.expect(a,s,R,18562,nil,'Swiftmend on a Rejuvenation')
  s.cooling(18562,10);s.buff('player',16870);M.expect(a,s,R,8936,nil,'Regrowth on Clearcasting');s.cooldown={}
- s.members(50,60,70);s.cooling(18562,10);M.expect(a,s,R,48438,nil,'Wild Growth on three hurt allies');s.cooldown={}
- s.secrets();s.party={};M.expect(a,s,R,nil,nil,'hidden HoTs and health: the healing steps stay dark')
+ s.members(100,100,100);s.cooling(18562,10);M.expect(a,s,R,48438,nil,'Wild Growth in a group (health is secret)');s.cooldown={}
+ s.secrets();M.expect(a,s,R,48438,nil,'hidden HoTs: Wild Growth still lights on the readable group and readiness')
+ s.party={};s.group=false;M.expect(a,s,R,nil,nil,'hidden HoTs, solo: the healing steps stay dark')
  s.secrets(false);s.hostile=true;s.friendly=false;s.secrets();M.expect(a,s,R,5176,nil,'hostile target in Midnight combat: suggestion')
- s.learn(29166);s.secrets(false);s.mana.player=50;local lit=M.upkeep(a,s,R);assert(lit[29166],'Innervate below 75% mana')
+ s.learn(29166);s.secrets(false);local lit=M.upkeep(a,s,R);assert(lit[29166],'Innervate whenever it is ready in combat (mana is secret)')
 end)
-test('on the real restricted Retail client the Druid premades are listed but never auto-selected',function()
+test('on the real restricted Retail client every Druid premade is complete and the recommended premade auto-selects',function()
  M.restricted('druid','DRUID',ids)
+end)
+test('before a specialization (initial spec 1447) a level-4 Druid gets the Blizzard Assisted premade, complete',function()
+ M.initial('druid','DRUID',1447,P..'initial',{5176})
 end)
 finish()

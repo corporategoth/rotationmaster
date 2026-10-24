@@ -8,8 +8,6 @@ local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function buff(id)return{type='BUFF',unit='player',spell=id,anyrank=true}end
 local function combat()return{type='COMBAT',unit='player'}end
-local function health(unit,op,v)return{type='HEALTHPCT',unit=unit,operator=op,value=v}end
-local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
 local shadowform={type='BUFF',unit='player',spell=15473}
@@ -28,18 +26,16 @@ assert(addon:RegisterDefaultBlock({id='forever.priest.upkeep',revision=1,familie
  spell('touch-of-weakness',2652,all(negate(combat()),negate(buff(2652)))),
  spell('shadowguard',18137,all(negate(combat()),negate(buff(18137)))),
 }}))
--- Damage-dealer reminders: Vampiric Embrace on a fight that hurts or in a group, Inner Focus with
--- Mind Blast, Silence on interruptible casts, Dark Sacrifice, Elune's Light; Psychic Scream (it can
--- pull more mobs) is off by default.
-assert(addon:RegisterDefaultBlock({id='forever.priest.dps-upkeep',revision=1,families={'forever'},class='PRIEST',steps={
- spell('vampiric-embrace',15286,all(combat(),{type='ATTACKABLE',unit='target'},negate({type='DEBUFF',unit='target',spell=15286,owndebuff=true}),
-  any({type='GROUP'},health('player','LESSTHAN',.8)))),
+-- Damage-dealer reminders: Vampiric Embrace on every fight, Inner Focus with Mind Blast, Silence on
+-- interruptible casts, Elune's Light in combat; Psychic Scream (it can pull more mobs) is off by
+-- default. Health and mana are secret on Forever, so Dark Sacrifice is the player's call.
+assert(addon:RegisterDefaultBlock({id='forever.priest.dps-upkeep',revision=2,families={'forever'},class='PRIEST',steps={
+ spell('vampiric-embrace',15286,all(combat(),{type='ATTACKABLE',unit='target'},negate({type='DEBUFF',unit='target',spell=15286,owndebuff=true}))),
  spell('inner-focus',14751,all(combat(),{type='SPELL_AVAIL',spell=8092})),
  spell('silence',15487,{type='CAST_INTERRUPTABLE',unit='target'}),
- spell('dark-sacrifice',1277324,all(mana('LESSTHAN',.4),health('player','GREATERTHAN',.6))),
  {id='psychic-scream',type='spell',action=8122,ranked=false,disabled=true,conditions=all(combat(),
-  {type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=2},health('player','LESSTHAN',.4))},
- spell('elunes-light',1259799,all(combat(),health('target','GREATERTHAN',.5))),
+  {type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=2})},
+ spell('elunes-light',1259799,combat()),
 }}))
 -- Wand: never toggle a running wand off (Shoot is a toggle).
 assert(addon:RegisterDefaultBlock({id='forever.priest.wand',revision=1,families={'forever'},class='PRIEST',steps={

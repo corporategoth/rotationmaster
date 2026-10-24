@@ -8,8 +8,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.monk.mistweaver',revision=1,
- blocks={['retail.monk.boundaries']=1,['retail.monk.utility']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.monk.mistweaver',revision=2,
+ blocks={['retail.monk.boundaries']=1,['retail.monk.utility']=2},
  nameKey='Default.Retail.Monk.Mistweaver.Name',descriptionKey='Default.Retail.Monk.Mistweaver.Description',
  applicability={families={'retail'},actionContext='player',class='MONK',specs={270},minLevel=10,maxLevel=90},
  tags={'mistweaver','healer','reference','icy-veins'},

@@ -1,9 +1,10 @@
 -- Retail (Midnight 12.x) Balance Druid after Icy Veins, SimulationCraft and Wowhead (optimal
 -- reference): Moonkin Form and two Wraths before the pull; Sunfire and Moonfire kept up; Eclipse
 -- entered when neither is active (Lunar on three or more enemies, Solar otherwise); Starfall on
--- Starweaver's Warp, Touch the Cosmos or packs; Starsurge before Astral Power caps or on
--- Starweaver's Weft; the Moons; Wild Mushroom in an Eclipse; Starfire in a Lunar Eclipse or on packs,
--- else Wrath. Disabled: DoTs, Eclipse, procs and Astral Power are secret in Midnight combat.
+-- Starweaver's Warp, Touch the Cosmos or packs; Starsurge on Starweaver's Weft or Touch the Cosmos;
+-- the Moons; Wild Mushroom in an Eclipse; Starsurge whenever it is affordable; Starfire in a Lunar
+-- Eclipse or on packs, else Wrath. Astral Power is secret on Retail, so Starsurge spends at its cost
+-- instead of before the cap. Disabled: DoTs, Eclipse and procs are secret in Midnight combat.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
@@ -19,8 +20,8 @@ local eclipse=any(buff(48517),buff(48518))
 local aligned=any(buff(194223),buff(102560))
 local moonkin=any(buff(24858),buff(102560))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.druid.balance.guide',revision=2,
- blocks={['retail.druid.boundaries']=1,['retail.druid.utility']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.druid.balance.guide',revision=3,
+ blocks={['retail.druid.boundaries']=1,['retail.druid.utility']=2},
  nameKey='Default.Retail.Druid.BalanceGuide.Name',descriptionKey='Default.Retail.Druid.BalanceGuide.Description',
  applicability={families={'retail'},actionContext='player',class='DRUID',specs={102},minLevel=10,maxLevel=90},
  tags={'balance','ranged','reference','icy-veins','simulationcraft','wowhead'},
@@ -37,7 +38,7 @@ assert(addon:RegisterDefaultRotation({
    spell('baguide-incarnation',102560,combat()),
    spell('baguide-fury-of-elune',202770,all(combat(),negate(eclipse))),
    spell('baguide-force-of-nature',205636,all(combat(),negate(eclipse))),
-   spell('baguide-convoke',391528,all(aligned,{type='POWER',unit='player',operator='LESSTHAN',value=40})),
+   spell('baguide-convoke',391528,aligned),
   },
   rotation={
    block('baguide-boundaries','retail.druid.boundaries','baguide-'),
@@ -48,11 +49,12 @@ assert(addon:RegisterDefaultRotation({
    {id='baguide-eclipse',type='branch',conditions=eclipse,onTrue={},onFalse={
     spell('baguide-lunar-eclipse',1233272,engaged(3)),spell('baguide-solar-eclipse',1233346)}},
    spell('baguide-starfall',191034,any(buff(393942),buff(450360),engaged(3))),
-   spell('baguide-starsurge',78674,any({type='POWER',unit='player',operator='LESSTHAN',value=-20},buff(393944),buff(450360))),
+   spell('baguide-starsurge',78674,any(buff(393944),buff(450360))),
    spell('baguide-new-moon',274281),
    spell('baguide-half-moon',274282),
    spell('baguide-full-moon',274283),
    spell('baguide-wild-mushroom',88747,eclipse),
+   spell('baguide-starsurge-spend',78674),
    spell('baguide-starfire',194153,any(buff(48518),engaged(3))),
    spell('baguide-wrath',5176),
   },

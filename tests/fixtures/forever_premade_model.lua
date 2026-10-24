@@ -56,7 +56,10 @@ function M.new(class,options)
  e.UnitPosition=function(unit)if unit=='player'or member(unit)then return 0,0,0,1 end end
  e.UnitHealth=function(unit)if member(unit)then return member(unit).health end;return s.health[unit]or 100 end;e.UnitHealthMax=function()return 100 end
  -- Power: mana (0), combo points (4, on the player as on Mainline-engine clients), else rage/energy.
- e.UnitThreatSituation=function(_,unit)local entry=enemy(unit);return entry and entry.threat end
+ -- Your threat status on the target follows whom it attacks (3: you hold it; s.targetThreat overrides).
+ e.UnitThreatSituation=function(_,unit)
+  if unit=='target'then if s.targetThreat~=nil then return s.targetThreat end;if not s.exists then return nil end;return s.targetTarget=='player'and 3 or 0 end
+  local entry=enemy(unit);return entry and entry.threat end
  e.UnitPowerType=function()return s.powerType end
  e.UnitPower=function(unit,kind)
   if kind==nil then kind=s.powerType end
@@ -182,5 +185,17 @@ function M.expect(a,s,id,want,status,label)
  assert(got==want,(label or id)..': expected '..tostring(want)..', got '..tostring(got)..' ('..tostring(result.status)..')')
  if status then assert(result.status==status,(label or id)..': expected status '..status..', got '..tostring(result.status))end
  return result
+end
+-- On the real restricted Forever client: every premade listed and complete (every condition it uses
+-- is readable there), the player-chosen variants disabled, and want auto-selected for the character
+-- setup(s,a) describes.
+function M.checkRestricted(class,ids,setup,want)
+ local f,s=M.new(class,{policy='restricted'});local a=f.addon
+ local support=dofile('tests/fixtures/client_support.lua');support.install(f,{stubNatives=true})
+ if setup then setup(s,a)end
+ assert(a.Platform:GetClientInfo().combatDataPolicy=='restricted','not the restricted policy')
+ local rows=M.rows(a)
+ for _,id in ipairs(ids)do assert(rows[id]and rows[id].readOnly,id..' not listed');support.complete(rows[id],id)end
+ assert(M.selected(a)==want,'restricted Forever auto-selected '..tostring((M.selected(a)))..', expected '..tostring(want))
 end
 return M

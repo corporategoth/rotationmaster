@@ -11,6 +11,7 @@
 
 bind.lua
 retail/blocks.lua
+retail/warlock-initial.lua
 retail/warlock-affliction.lua
 retail/warlock-affliction-icyveins.lua
 retail/warlock-demonology.lua

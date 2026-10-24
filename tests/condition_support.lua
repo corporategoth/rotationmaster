@@ -77,6 +77,21 @@ test('talent references follow the client talent layout, and never read talents'
     assert(mists:GetConditionSupport('TALENT',mists.conditionDefinitions.TALENT,grid)==nil)
     assert(mists:GetConditionSupport('TALENT',mists.conditionDefinitions.TALENT,tree)=='talent-layout-mismatch')
     assert(mists:GetConditionSupport('TALENT_TREE_POINTS',mists.conditionDefinitions.TALENT_TREE_POINTS,{type='TALENT_TREE_POINTS'})=='talent-layout-mismatch')
+    -- Forever's classic trees are trait node groups read through C_Traits; Retail's tree has none.
+    local points,primary={type='TALENT_TREE_POINTS',tree=2,operator='GREATERTHAN',value=0},{type='PRIMARY_TALENT_TREE',tree=2}
+    local ff,forever=client(18,12)
+    local rf,retail=client(1,12)
+    for _,value in ipairs({points,primary}) do
+        local definition=forever.conditionDefinitions[value.type]
+        ff.env.C_Traits=nil;ff.env.GetNumTalentTabs=nil
+        assert(forever:GetConditionSupport(value.type,definition,value)=='missing-api',value.type..' without the group reader')
+        ff.env.C_Traits={GetGroupDisplayInfoByTreeID=function() error('support read talents') end}
+        assert(forever:GetConditionSupport(value.type,definition,value)==nil,value.type..' refused on Forever')
+        rf.env.C_Traits={GetGroupDisplayInfoByTreeID=function() error('support read talents') end}
+        assert(retail:GetConditionSupport(value.type,retail.conditionDefinitions[value.type],value)=='talent-layout-mismatch',value.type..' accepted on Retail')
+        getfenv(era.GetConditionSupport).GetNumTalentTabs=function() error('support read talents') end
+        assert(era:GetConditionSupport(value.type,era.conditionDefinitions[value.type],value)==nil,value.type..' refused on Era')
+    end
 end)
 
 test('momentary causes stay runtime-only: range and distance conditions are supported',function()
@@ -201,10 +216,15 @@ test('restricted clients run complete Built Ins; incomplete ones say why',functi
     local copy=a.RotationData.CopyData(shipped);copy.id='rm.test.complete'
     local level={type='LEVEL',unit='player',operator='GREATERTHAN',value=0}
     copy.body.rotation={{id='x',type='spell',action=1752,conditions=level}};copy.body.cooldowns={};copy.body.switch=level
-    assert(a:RegisterDefaultRotation(copy));assert(a:InitializeRotationLibrary());state.level=60
+    assert(a:RegisterDefaultRotation(copy))
+    -- Shipped Retail premades use only readable conditions; one that reads health is incomplete.
+    local hurt=a.RotationData.CopyData(copy);hurt.id='rm.test.incomplete'
+    hurt.body.rotation={{id='x',type='spell',action=1752,conditions={type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.5}}}
+    f.env.UnitHealth=f.env.UnitHealth or function() end;f.env.UnitHealthMax=f.env.UnitHealthMax or function() end
+    assert(a:RegisterDefaultRotation(hurt));assert(a:InitializeRotationLibrary());state.level=60
     local rows={};for _,row in ipairs(a:ListDefaultRotations(shipped.applicability.specs[1])) do rows[row.id]=row end
     assert(rows['rm.test.complete'] and rows['rm.test.complete'].eligible,'a complete Retail Built In is refused: '..tostring(rows['rm.test.complete'] and rows['rm.test.complete'].eligibilityReason))
-    local incomplete=rows[shipped.id]
+    local incomplete=rows['rm.test.incomplete']
     assert(incomplete and not incomplete.eligible and incomplete.eligibilityReason=='invalid-or-unsupported',tostring(incomplete and incomplete.eligibilityReason))
     local message
     for _,d in ipairs(incomplete.validation.diagnostics) do message=a:DescribeUnsupportedCondition(d);if message then break end end

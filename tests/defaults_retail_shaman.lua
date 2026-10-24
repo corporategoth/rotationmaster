@@ -45,8 +45,8 @@ test('Elemental reference: pre-pull, AoE list, Master of the Elements windows, s
  M.expect(a,s,262,ELEIV,470057,nil,'no Lava Surge or charges: Voltaic Blaze');s.cooling(470057,8)
  s.buff('player',260734);M.expect(a,s,262,ELEIV,452201,nil,'Master of the Elements: Tempest');s.known[452201]=nil
  M.expect(a,s,262,ELEIV,117014,nil,'then Elemental Blast');s.known[117014]=nil;M.expect(a,s,262,ELEIV,8042,nil,'Earth Shock')
- s.clearAuras();s.debuff('target',188389,{expirationTime=115,duration=18});M.expect(a,s,262,ELEIV,188196,nil,'Lightning Bolt filler')
- s.energy=90;M.expect(a,s,262,ELEIV,8042,nil,'near full Maelstrom: Earth Shock');s.energy=40
+ s.clearAuras();s.debuff('target',188389,{expirationTime=115,duration=18});M.expect(a,s,262,ELEIV,8042,nil,'Earth Shock whenever affordable (Maelstrom is secret)')
+ s.power[8042]=true;M.expect(a,s,262,ELEIV,188196,nil,'Lightning Bolt filler while Earth Shock is unaffordable');s.power[8042]=nil
  s.moving=true;M.expect(a,s,262,ELEIV,470411,nil,'moving: Flame Shock');s.cooling(470411,5);M.expect(a,s,262,ELEIV,196840,nil,'then Frost Shock');s.moving=false;s.cooldown={}
  s.near(3);s.cooling(191634,50);s.cooling(443454,20);M.expect(a,s,262,ELEIV,61882,nil,'three engaged, Flame Shock up: Earthquake')
  s.buff('player',191634);M.expect(a,s,262,ELEIV,188443,nil,'Stormkeeper: Chain Lightning')
@@ -92,7 +92,10 @@ test('Restoration: friendly heals by readiness, enemy damage, no target stops, h
  s.combat=true;lit=M.upkeep(a,s,264,RESTO);assert(lit[378081]and not lit[108280],'Nature\'s Swiftness; group cooldowns wait')
  s.group=true;lit=M.upkeep(a,s,264,RESTO);assert(lit[108280]and lit[98008],'grouped: Healing Tide and Spirit Link')
 end)
-test('on the real restricted Retail client the Shaman premades are listed but never auto-selected',function()
+test('on the real restricted Retail client every Shaman premade is complete and the recommended premade auto-selects',function()
  M.checkRestricted('shaman',SPECS,{51505,17364,61295})
+end)
+test('before a specialization (initial spec 1444) a level-4 Shaman gets the Blizzard Assisted premade, complete',function()
+ M.initial('shaman',1444,'rm.retail.shaman.initial',{188196})
 end)
 finish()

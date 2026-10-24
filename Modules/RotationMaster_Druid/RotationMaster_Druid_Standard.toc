@@ -11,6 +11,7 @@
 
 bind.lua
 retail/blocks.lua
+retail/druid-initial.lua
 retail/druid-balance.lua
 retail/druid-balance-guide.lua
 retail/druid-feral.lua

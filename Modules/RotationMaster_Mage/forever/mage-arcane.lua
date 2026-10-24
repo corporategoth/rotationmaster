@@ -3,7 +3,8 @@
 -- current Arcane Blast (a 15 s stacking spell-power buff that other spells do not consume, with
 -- Arcane Wrath to spend it), after Warcraft Tavern: Missiles on Barrage, Clearcasting on Arcane
 -- Blast, Arcane Wrath at three stacks, Arcane Blast to four stacks on elites and two otherwise
--- while mana lasts, then Frostfire Bolt, Frostbolt or Fireball to fish for Barrage. Without Arcane
+-- (mana is secret on Forever, so while it is affordable), then Frostfire Bolt, Frostbolt or
+-- Fireball to fish for Barrage. Without Arcane
 -- Wrath (the older beta design) Fire Blast spends the stacks, as Icy Veins and Wowhead advise.
 local _,addon=...
 -- Talent trees in the Forever talent window's order (assumed classic: 1 Arcane, 2 Fire, 3 Frost; verify in game).
@@ -16,7 +17,6 @@ local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function known(...)local list={};for i,id in ipairs({...})do list[i]={type='SPELL_KNOWN',spell=id}end;return{type='OR',value=list}end
-local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v}end
 local function stacks(op,v)return{type='BUFF_STACKS',unit='player',spell=400573,operator=op,value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
@@ -26,8 +26,8 @@ local charged={type='BUFF',unit='player',spell=400573}
 local barrage=any({type='BUFF',unit='player',spell=400589},{type='BUFF',unit='player',spell=1326083})
 local function below(n)return any(negate(charged),stacks('LESSTHAN',n))end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.mage.arcane',revision=3,
- blocks={['forever.mage.boundaries']=1,['forever.mage.frostbolt']=1,['forever.mage.wand']=1,['forever.mage.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.mage.arcane',revision=4,
+ blocks={['forever.mage.boundaries']=1,['forever.mage.frostbolt']=1,['forever.mage.wand']=2,['forever.mage.upkeep']=2},
  nameKey='Default.Forever.Mage.Arcane.Name',descriptionKey='Default.Forever.Mage.Arcane.Description',
  applicability={families={'forever'},actionContext='player',class='MAGE',minLevel=10,maxLevel=60},
  tags={'arcane','leveling','single-target','aoe','warcraft-tavern'},
@@ -42,7 +42,7 @@ assert(addon:RegisterDefaultRotation({
   cooldowns={
    block('arcane-upkeep','forever.mage.upkeep','arcane-'),
    spell('arcane-presence-of-mind',12043,all(combat(),elite)),
-   spell('arcane-power',12042,all(combat(),elite,mana('GREATERTHAN',.5))),
+   spell('arcane-power',12042,all(combat(),elite)),
   },
   rotation={
    block('arcane-boundaries','forever.mage.boundaries','arcane-'),
@@ -56,8 +56,8 @@ assert(addon:RegisterDefaultRotation({
     spell('arcane-explosion',1449),stop('arcane-aoe-stop')}},
    spell('arcane-wrath',1326079,stacks('GREATERTHANOREQUALS',3)),
    {id='arcane-big',type='branch',conditions=elite,
-    onTrue={spell('arcane-blast-four',400574,all(below(4),mana('GREATERTHAN',.35)))},
-    onFalse={spell('arcane-blast-two',400574,all(below(2),mana('GREATERTHAN',.35)))}},
+    onTrue={spell('arcane-blast-four',400574,below(4))},
+    onFalse={spell('arcane-blast-two',400574,below(2))}},
    spell('arcane-dump-fire-blast',2136,all(negate(known(1326079,1326080,1326081,1326082)),charged)),
    spell('arcane-frostfire',401502),
    block('arcane-filler','forever.mage.frostbolt','arcane-'),

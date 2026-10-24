@@ -14,8 +14,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local friend=all({type='LEVEL',unit='target',operator='GREATERTHAN',value=0},{type='FRIENDLY',unit='target'},negate({type='DEAD',unit='target'}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.priest.discipline',revision=1,
- blocks={['retail.priest.upkeep']=1,['retail.priest.disc-cooldowns']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.priest.discipline',revision=2,
+ blocks={['retail.priest.upkeep']=2,['retail.priest.disc-cooldowns']=1},
  nameKey='Default.Retail.Priest.Discipline.Name',descriptionKey='Default.Retail.Priest.Discipline.Description',
  applicability={families={'retail'},actionContext='player',class='PRIEST',specs={256},minLevel=10,maxLevel=90},
  tags={'discipline','healer','atonement','reference','icy-veins'},

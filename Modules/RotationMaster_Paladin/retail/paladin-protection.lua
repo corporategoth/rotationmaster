@@ -5,8 +5,8 @@
 local _,addon=...
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.protection',revision=1,
- blocks={['retail.paladin.boundaries']=1,['retail.paladin.upkeep']=1,['retail.paladin.prot-defensives']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.protection',revision=2,
+ blocks={['retail.paladin.boundaries']=1,['retail.paladin.upkeep']=2,['retail.paladin.prot-defensives']=2},
  nameKey='Default.Retail.Paladin.Protection.Name',descriptionKey='Default.Retail.Paladin.Protection.Description',
  applicability={families={'retail'},actionContext='player',class='PALADIN',specs={66},minLevel=10,maxLevel=90},
  tags={'protection','tank','assisted-combat','single-target','aoe','simulationcraft'},
