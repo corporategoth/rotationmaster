@@ -62,7 +62,7 @@ test('/rm set takes a handle in any case, names it with its handle, and explains
     local list=table.concat(a:GetRotationHandleReport(),'\n')
     assert(list:find('brewmaster — Monk: Brewmaster (Retail, Blizzard Assisted with brews) (Built In) — active',1,true),list)
     assert(list:find('default — Default (fallback) — cannot be selected',1,true),list)
-    assert(list:find('brewmaster-guide — ',1,true) and list:find('ships disabled',1,true) and list:find('windwalker — ',1,true) and list:find('not for this character now',1,true),list)
+    assert(list:find('brewmaster-guide — ',1,true) and list:find('ships disabled',1,true) and list:find('windwalker — ',1,true) and list:find('it is for another specialization',1,true),list)
     assert(table.concat(a:GetRotationEligibilityReport(),'\n'):find('(Built In) [brewmaster]: ready',1,true))
     -- The minimap menu shows the handle in brackets.
     local rows={};f.env.UIDropDownMenu_AddButton=function(r) rows[#rows+1]=r.text end;f.env.minimapInitialize()
