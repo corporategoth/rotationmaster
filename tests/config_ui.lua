@@ -89,7 +89,7 @@ test('header help displays the selected section article and releases it when nav
     shell.help:Click();assert(shell.helpPane:IsShown() and shell.helpContent==nil)
     shell.close:Click()
 end)
-test('Plater-style chrome exposes compact bars slider bordered tabs metadata and honest installed-language menu',function()
+test('Plater-style chrome exposes compact bars slider bordered tabs metadata and the language menu',function()
     local f=F.new();local a=f.addon;local _,create=dofile('tests/fixtures/native_ui.lua')(f.env)
     nativePages(f)
     f.env.C_AddOns={GetAddOnMetadata=function(_,key) return ({Author='Makiel',Version='9.9', ['X-Website']='https://example.invalid/rm'})[key] end}
@@ -99,11 +99,23 @@ test('Plater-style chrome exposes compact bars slider bordered tabs metadata and
     assert(shell.scaleSlider and shell.scaleSlider.kind=='Slider' and shell.scaleSlider.minimum==70 and shell.scaleSlider.maximum==130)
     assert(shell.footer:GetHeight()==20 and shell.header:GetHeight()<=38 and shell.tabs[1]:GetHeight()==22)
     assert(shell.version:GetText():find('9.9',1,true) and shell.edition:GetText():find('TBC',1,true) and shell.author:GetText():find('Makiel',1,true))
-    -- deDE is an installed translation, so it is the language in use.
-    assert(shell.language and shell.language.value=='deDE' and shell.language.template==nil)
-    assert(shell.language.tooltip:find('deDE',1,true),'installed-language tooltip hides the actual game locale')
-    shell.language:Click();assert(shell.languageMenu:IsShown() and #shell.languageRows==1 and shell.languageRows[1].selected)
-    shell.languageRows[1]:Click();assert(not shell.languageMenu:IsShown())
+    -- No translation is loaded in this fixture, so English is in use; Automatic is the saved choice.
+    assert(shell.language and shell.language.value=='enUS' and shell.language:GetText()=='English' and shell.language.template==nil)
+    assert(shell.language.tooltip:find('Automatic follows',1,true),'language tooltip does not explain Automatic')
+    shell.language:Click();assert(shell.languageMenu:IsShown() and #shell.languageRows==12)
+    local expected={'Automatic (game language)','English','Deutsch','Español (España)','Español (Latinoamérica)','Français','Italiano','한국어','Português (Brasil)','Русский','简体中文','繁體中文'}
+    for index,row in ipairs(shell.languageRows) do assert(row:GetText()==expected[index],'language row '..index..' reads '..tostring(row:GetText()));assert(row.selected==(index==1)) end
+    local reloads=0;f.env.ReloadUI=function() reloads=reloads+1 end
+    shell.languageRows[3]:Click();assert(not shell.languageMenu:IsShown() and a.db.global.language=='deDE')
+    local prompt=assert(shell.languagePrompt,'choosing a language did not offer a reload');assert(prompt.frame:IsShown() and prompt.text:GetText():find('Deutsch',1,true) and prompt.reload:GetText()=='Reload now')
+    assert(shell.language.tooltip:find('Deutsch shows after the interface reloads',1,true))
+    prompt.later:Click();assert(not prompt.frame:IsShown() and reloads==0)
+    shell.language:Click();assert(shell.languageRows[3].selected and not shell.languageRows[1].selected)
+    shell.languageRows[3]:Click();assert(not prompt.frame:IsShown(),'choosing the saved language again asked for a reload')
+    shell.language:Click();shell.languageRows[11]:Click();assert(a.db.global.language=='zhCN' and prompt.frame:IsShown() and prompt.text:GetText():find('简体中文',1,true))
+    prompt.reload:Click();assert(reloads==1 and not prompt.frame:IsShown())
+    -- English is already in use, so choosing it needs no reload.
+    shell.language:Click();shell.languageRows[2]:Click();assert(a.db.global.language=='enUS' and not prompt.frame:IsShown())
     for _,tab in ipairs(shell.tabs) do assert(tab.selectionLine==nil and tab.border and tab.border:IsShown()==tab.selected) end
     assert(shell.website:GetText()=='Website','the website link shows its URL instead of reading Website')
     shell.website:Click();assert(shell.linkInput:GetText()=='https://example.invalid/rm' and shell.linkInput.focused and shell.linkInput.selection and shell.linkInput.selection[1]==0 and shell.linkInput.selection[2]==-1,'Website does not open the highlighted copy box')

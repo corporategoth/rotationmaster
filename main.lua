@@ -274,6 +274,7 @@ local defaults = {
     },
     global = {
         uiScale = 1,
+        language = "auto",
         itemsets = {},
         effects = {},
         custom_conditions = {},
@@ -758,6 +759,9 @@ function addon:OnInitializeInternal()
 end
 
 function addon:OnInitialize()
+    -- The chosen language replaces the provisional one before anything else
+    -- reads text (Locales/language.lua), on clients that load settings late.
+    if self.FinishLanguageSelection then self:FinishLanguageSelection() end
     -- A failed initializer must not be followed by OnEnable or gameplay events
     -- using half-built state. Diagnostics stays independent of the database.
     self.initializationErrorReport=0
