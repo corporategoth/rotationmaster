@@ -931,6 +931,18 @@ L["a fallback saved for this character takes precedence"] = true
 L["automatic"] = true
 L["Cooldown %d"] = true
 L["%d Built In rotations are disabled."] = true
+L["%d other Built In rotations are disabled (for another specialization, level or edition)."] = true
+L["%s: disabled by you (turn it back on in Rotations, in its Built In view)."] = true
+L["%s: ships disabled, an alternative to the recommended one (turn it on in Rotations, in its Built In view)."] = true
+L["then the fallback (%s)"] = true
+L["Automatic switching tries: %s. Higher numbers are tried first; your own rotations are always tried before Built Ins."] = true
+L["Automatic switching would choose: %s"] = true
+L["%d Built In disabled: %s"] = true
+L["Disabled by you"] = true
+L["Ships disabled"] = true
+L["Built In rotations turned back on (they had been switched off without your choice): %s"] = true
+L["Disabled Built In rotations"] = true
+L["Open Rotations, select the Built In and turn it back on to make it selectable."] = true
 L["Fallback (%s)"] = true
 L["has an action type this version does not understand"] = true
 L["has an invalid setting (%s)"] = true
@@ -1839,7 +1851,7 @@ L["Priority %d"] = true
 L["Invalid priority"] = true
 L["Switch priority must be a whole number between -100000 and 100000."] = true
 L["Edit the description, tags, switch priority, author, realm, email, website and version. Source citations remain separate from your attribution. Use changes updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values."] = true
-L["Higher priority wins within custom or Built In rotations. Custom rotations and a valid saved fallback take precedence over Built In rotations. Equal priorities use name, then identity. Blank means zero."] = true
+L["Higher numbers are tried first; your own rotations are always tried before Built Ins. The fallback is used only when no switch condition of another rotation matches. Equal priorities use name, then identity. Blank means zero."] = true
 L["Invalid switch priority for %s:%s; explicit repair resets it to zero."] = true
 
 -- Rank-aware aura families.

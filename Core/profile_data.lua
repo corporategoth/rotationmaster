@@ -85,6 +85,10 @@ function addon:ValidateProfileTransfer(value)
                 count=count+1
                 if count>64 or type(name)~='string' or #name>128 or not name:find('%S') or name=='auto' or name=='plain' or disabled~=true then return false end
             end
+        elseif key=='builtinPreferenceRepairs' then
+            -- One-time Built In preference repair, done per class token.
+            if type(item)~='table' or getmetatable(item)~=nil then return false end
+            for class,done in pairs(item) do if type(class)~='string' or not class:match('^%u+$') or #class>32 or done~=true then return false end end
         elseif key=='rotationChoicePreferences' then
             -- Closed optional schema checked before generic recursive copying.
         elseif key=='stockTargets' then
@@ -105,7 +109,7 @@ function addon:ValidateProfileTransfer(value)
             -- no global definitions, functions or executable imports are loaded.
             for field,rows in pairs(item) do
                 if not ({preferences=true,origins=true,comparisons=true,imports=true})[field] or type(rows)~='table' then return false end
-                if field=='preferences' then for id,preference in pairs(rows) do if type(id)~='string' or not fields(preference,{enabled='boolean'}) then return false end end
+                if field=='preferences' then for id,preference in pairs(rows) do if type(id)~='string' or not fields(preference,{enabled='boolean',priority='number'}) or preference.priority~=nil and not self.RotationData.GetRotationPriority(preference.priority) then return false end end
                 else for spec,records in pairs(rows) do
                     if type(spec)~='number' or spec<0 or spec%1~=0 or type(records)~='table' then return false end
                     for id,record in pairs(records) do

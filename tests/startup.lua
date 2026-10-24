@@ -370,8 +370,12 @@ test('live autoswitch reads packaged rotations through the facade and prefers ex
     assert(addon.currentRotation=='user','default displaced an existing matching custom rotation')
     addon.db.profile.rotations[0].user=nil
     addon.db.profile.rotations[0][env.DEFAULT or 'Default']={name='Saved fallback',rotation={{type='spell',action=324}}}
+    -- The saved fallback is the last resort: an enabled pack whose switch matches is chosen first.
     addon:UpdateAutoSwitch();addon:SwitchRotation()
-    assert(addon.currentRotation==(env.DEFAULT or 'Default'),'pack displaced the saved fallback')
+    assert(addon.currentRotation and addon:IsDefaultRuntimeRotation(0,addon.currentRotation),'saved fallback displaced a matching enabled pack')
+    assert(addon:SetDefaultRotationEnabled(pack.id,false));addon:UpdateAutoSwitch();addon:SwitchRotation()
+    assert(addon.currentRotation==(env.DEFAULT or 'Default'),'disabled pack displaced the saved fallback')
+    assert(addon:SetDefaultRotationEnabled(pack.id,true))
     addon.db.profile.rotations[0][env.DEFAULT or 'Default']=nil
     addon:UpdateAutoSwitch();addon:SwitchRotation()
     local selected=addon.currentRotation
@@ -420,7 +424,7 @@ test('switching revisits previously inapplicable packs and clears outgoing coold
     assert(glowing==false and cleared,'outgoing ineligible pack retained highlights')
 end)
 
-test('live autoswitch uses explicit priority and keeps fallback precedence without extra evaluation',function()
+test('live autoswitch uses explicit priority and tries packs before the fallback',function()
     local env,a,load=fixture(true,true);load('main.lua');initialize(a)
     a.currentSpec=0
     local function body(name,priority) return {name=name,priority=priority,switch={type='COMBAT'},rotation={{type='spell',action=403}}} end
@@ -433,7 +437,8 @@ test('live autoswitch uses explicit priority and keeps fallback precedence witho
     a:UpdateAutoSwitch();a:SwitchRotation();assert(a.currentRotation=='high' and calls==1,'priority selection executed extra candidates or chose alphabetically')
     rows.high.priority=-5;a:UpdateAutoSwitch();a:SwitchRotation();assert(a.currentRotation=='low')
     rows.low.disabled=true;rows.high.disabled=true;rows[env.DEFAULT]=body('My fallback',-100000)
-    a:UpdateAutoSwitch();calls=0;a:SwitchRotation();assert(a.currentRotation==env.DEFAULT and calls==0,'packaged priority displaced the user fallback')
+    a:UpdateAutoSwitch();calls=0;a:SwitchRotation();assert(a.currentRotation=='pack' and calls==1,'the fallback displaced a matching pack')
+    rows.pack.disabled=true;a:UpdateAutoSwitch();calls=0;a:SwitchRotation();assert(a.currentRotation==env.DEFAULT and calls==0,'fallback not chosen when nothing else can be')
 end)
 
 test('invalid switch priority makes even a fallback body unavailable to auto-selection',function()

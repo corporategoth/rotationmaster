@@ -803,10 +803,29 @@ function minimapInitialize()
         for id, rot in pairs(runtimeRows(addon,addon.currentSpec)) do
             if id ~= DEFAULT then
                 info.text, info.arg1, info.checked = rot.name, id, (addon.manualRotation == true and addon.currentRotation == id)
-                if addon:IsDefaultRuntimeRotation(addon.currentSpec,id) then info.text="|cff5bc0eb"..rot.name.."|r ("..L["Built In · read-only"]..")" end
+                -- Built Ins are told apart by colour; the tooltip says so.
+                info.tooltipTitle,info.tooltipText,info.tooltipOnButton=nil,nil,nil
+                if addon:IsDefaultRuntimeRotation(addon.currentSpec,id) then
+                    info.text="|cff5bc0eb"..tostring(rot.name).."|r"
+                    info.tooltipTitle,info.tooltipText,info.tooltipOnButton=rot.name,L["Built In · read-only"],true
+                end
                 UIDropDownMenu_AddButton(info)
             end
         end
+    end
+    -- A Built In that would apply now but is switched off is not offered;
+    -- say so, so a forgotten toggle is not mistaken for a missing rotation.
+    local hidden=addon.GetDisabledApplicableBuiltins and addon:GetDisabledApplicableBuiltins(addon.currentSpec)
+    if hidden and #hidden>0 then
+        local names={};for _,row in ipairs(hidden) do names[#names+1]=row.name end
+        info=UIDropDownMenu_CreateInfo()
+        info.notCheckable=true
+        info.text="|cff808080"..string.format(L["%d Built In disabled: %s"],#hidden,table.concat(names,", ")).."|r"
+        info.tooltipTitle=L["Disabled Built In rotations"]
+        info.tooltipText=L["Open Rotations, select the Built In and turn it back on to make it selectable."]
+        info.tooltipOnButton=true
+        info.func=function() addon:ShowConfig("Rotations") end
+        UIDropDownMenu_AddButton(info)
     end
 end
 
@@ -1077,14 +1096,12 @@ function addon:SwitchRotation()
         return activeChangeCurrent(self,change) and self.currentSpec==selectedSpec and self.db.profile==selectedProfile and self.currentRotation==selectedRotation
             and autoSwitchEnabled(self.db.profile) and not self.manualRotation and (not selectionPass or selectionPass:IsCurrent())
     end
+    -- Your own rotations are tried first, then enabled Built Ins, each by
+    -- priority (GetOrderedAutoSwitchRotations); the fallback (Default) is the
+    -- last resort when no switch condition matches. A Built In you do not want
+    -- picked is disabled, or ranked, in its Built In view.
     for _, v in ipairs(self.autoswitchRotation) do
         if not switchOwnerCurrent()then return end
-        -- A packaged recommendation must not displace the user's saved fallback.
-        if self:IsDefaultRuntimeRotation(self.currentSpec,v) and rotations[DEFAULT]
-            and self:rotationValidConditions(rotations[DEFAULT],self.currentSpec) then
-            newRotation=DEFAULT
-            break
-        end
         local matched=rotations[v] and switchConditionMatches(rotations[v].switch,switchOwnerCurrent)
         if not switchOwnerCurrent()then return end
         if matched then
@@ -1146,12 +1163,26 @@ local function autoSwitchCandidate(self)
         local why;rotations,why=pass:Candidates(false);if why then return nil,false end
     else rotations=runtimeRows(self,spec) end
     for _, v in ipairs(self.autoswitchRotation) do
-        if self:IsDefaultRuntimeRotation(spec,v) and rotations[DEFAULT]
-            and self:rotationValidConditions(rotations[DEFAULT],spec) then return DEFAULT,true end
         if rotations[v] and switchConditionMatches(rotations[v].switch) then return v,true end
     end
     if rotations[DEFAULT] ~= nil and self:rotationValidConditions(rotations[DEFAULT], spec) then return DEFAULT,true end
     return nil,true
+end
+
+-- Whether a switch condition matches now (true/false; nil when it cannot be
+-- evaluated). Commands and menus only; polling uses the paths above.
+function addon:SwitchConditionMatchesNow(condition)
+    if type(condition)~='table' then return nil end
+    local ok,matched=pcall(switchConditionMatches,condition)
+    if not ok then return nil end
+    return matched and true or false
+end
+
+-- /rm why: the rotation automatic switching would choose now (nil when none),
+-- by the same order and checks as the re-check above. Command only.
+function addon:PreviewAutoSwitch()
+    if not self.autoswitchRotation then return nil end
+    return (autoSwitchCandidate(self))
 end
 
 function addon:AutoSwitchTick()

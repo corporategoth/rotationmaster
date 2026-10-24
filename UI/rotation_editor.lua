@@ -110,8 +110,11 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         for _,control in ipairs({self.compare,self.clone}) do if self.workspace.pending then control:Disable() else control:Enable() end end
         self.clone:SetText(self.workspace.readOnly and L['Clone to edit'] or L['Duplicate'])
         if self.workspace.readOnly or workspace.fallback or self.workspace.pending then self.delete:Disable() else self.delete:Enable() end
-        self.enable:SetSelected(self.workspace.readOnly and self.workspace.source.enabled or not self.workspace.readOnly and not snapshot.disabled)
-        self.enable:SetText(self.workspace.readOnly and (self.workspace.source.enabled and L['Enabled'] or L['Disabled']) or snapshot.disabled and L['Disabled'] or L['Enabled'])
+        -- A Built In's switch is read live (never the workspace's cached copy)
+        -- and apart from validity, so the pill shows exactly what a click flips.
+        local builtinOn=self.workspace.readOnly and addon:GetBuiltinSwitch(self.workspace.builtin)
+        self.enable:SetSelected(self.workspace.readOnly and builtinOn==true or not self.workspace.readOnly and not snapshot.disabled)
+        self.enable:SetText(self.workspace.readOnly and (builtinOn and L['Enabled'] or L['Disabled']) or snapshot.disabled and L['Disabled'] or L['Enabled'])
     end
     function pane:RotationDisplayName() return addon:PlainWorkbenchName(self.nameDirty and self.name:GetText() or self.workspace:Snapshot().name or self.workspace.title) end
     function pane:EditCondition(target)
@@ -176,8 +179,8 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     table.remove(pane.tools);pane.clone:Hide()
     pane.enable=tool(workspace.readOnly and L['Enable Built In'] or L['Enabled'],116,function()
         if workspace.readOnly then
-            local current=workspace.source.enabled;local ok,problem=addon:SetDefaultRotationEnabled(workspace.builtin,not current)
-            if ok then workspace.source.enabled=not current;pane:RefreshAdvice();if pane.active and pane.workspace==workspace then pane:Render() end else pane:Message(problem) end
+            local current=addon:GetBuiltinSwitch(workspace.builtin)==true;local ok,problem=addon:SetDefaultRotationEnabled(workspace.builtin,not current)
+            if ok then if workspace.source then workspace.source.enabled=not current end;pane:RefreshAdvice();if pane.active and pane.workspace==workspace then pane:Render() end else pane:Message(problem) end
         else pane:Command('SetBodyField','disabled',not workspace:Snapshot().disabled) end
     end)
     local oldEnable=pane.enable;oldEnable:Hide();table.remove(pane.tools)
