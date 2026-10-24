@@ -443,19 +443,17 @@ test('advanced pending repaint respects invalid owners read-only input and relea
  valid=false;local update=c.frame:GetScript('OnUpdate');for tick=1,10 do update(c.frame,1/60) end;assert(paints==0,'invalid owner repainted')
  c:Release();update(c.frame,1);assert(paints==0 and not input.queryEditor,'released callback repainted or revived editor state')
 end)
-test('actual workbench provider supports source-free diagnostics and reversible arrow probes across release',function()
+test('actual workbench provider supports source-free diagnostics across release',function()
  local f,a=fixture();f.load('UI/lua_input_diagnostics.lua');f.env.C_AddOns=f.env.C_AddOns or {};f.env.C_AddOns.IsAddOnLoaded=function(name) return name=='!!!LuaWorkbench' end
  local valid=true;local code=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() end,function() return valid end,'LuaWorkbench');local c=code.inner
  assert(c.provider=='LuaWorkbench' and c.scroll==c.engine.Query.Console.input.scrollFrame and c.valid,'workbench diagnostics control contract missing')
- assert(a.luaInputEditor==c and c.ToggleNativeArrowProbe,'actual provider was not registered with diagnostics')
+ assert(a.luaInputEditor==c and c.ResetInputTrace,'actual provider was not registered with diagnostics')
+ assert(c.ToggleNativeArrowProbe==nil,'the retired native arrow probe is still installed')
  code:SetText('SECRET_BUFFER_TEXT');local owner={code=code,session=91};a.configWindow={pane={inlineFunction=owner}}
  local report=a:LuaEditorInputReport();assert(report:find('provider=LuaWorkbench',1,true) and report:find('matches source editor=true',1,true) and report:find('source kind=function',1,true),'wrapped provider owner not matched')
  assert(not report:find('SECRET_BUFFER_TEXT',1,true),'diagnostics included source text')
- local arrow=c.edit:GetScript('OnArrowPressed');assert(type(arrow)=='function');assert(c:ToggleNativeArrowProbe()==true and c.edit:GetScript('OnArrowPressed')==nil)
- assert(c:ToggleNativeArrowProbe()==false and c.edit:GetScript('OnArrowPressed')==arrow,'probe did not restore the actual attached handler')
- assert(c:ToggleNativeArrowProbe()==true);local newer=function() end;c.edit:SetScript('OnArrowPressed',newer);assert(c:ToggleNativeArrowProbe()==false and c.edit:GetScript('OnArrowPressed')==newer,'probe overwrote newer handler');c.edit:SetScript('OnArrowPressed',arrow)
- valid=false;assert(c:ToggleNativeArrowProbe()==nil,'invalid owner enabled probe');valid=true;assert(c:ToggleNativeArrowProbe()==true)
- code:Release();assert(c.released and not c.nativeArrowProbe and not c.engine.Query.Console.input.queryEditor,'release retained probe/editor state');assert(c:ToggleNativeArrowProbe()==nil,'released provider accepted probe')
+ local arrow=c.edit:GetScript('OnArrowPressed');assert(type(arrow)=='function');assert(report:find('arrowHook=true',1,true),'attached arrow handler missing from report')
+ code:Release();assert(c.released and not c.engine.Query.Console.input.queryEditor,'release retained editor state')
 end)
 test('settled workbench layouts and idle ticks do not rewrite geometry or redraw gutters',function()
  for _,gutter in ipairs({false,true}) do

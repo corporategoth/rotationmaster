@@ -2333,8 +2333,6 @@ L['Arrows: on'] = true
 L['Arrows'] = true
 L['Info'] = true
 L['Show input diagnostics for this open Lua editor.'] = true
-L['Temporary native arrow test enabled. Click to restore the editor hook.'] = true
-L['Temporarily remove the editor arrow hook to test native navigation.'] = true
 L['Move'] = true
 L['Edit fields opens a graphical schema draft. Add, name, reorder or remove fields, choose primitive or nested types, and edit nested fields. Apply stages the schema and its field order. Advanced exposes the equivalent raw schema, parsed as data without executing Lua.'] = true
 

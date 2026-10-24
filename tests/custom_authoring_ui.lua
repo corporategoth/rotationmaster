@@ -325,40 +325,19 @@ test('condition host idle action and cursor updates do not rewrite editor geomet
     for i=1,120 do if p.frame.scripts.OnUpdate then p.frame.scripts.OnUpdate(p.frame,1/60) end;d.frame.scripts.OnUpdate(d.frame,1/60);code.edit.scripts.OnCursorChanged(code.edit,24,-16,1,16) end
     assert(writes==0 and code.layoutCounts.calls==before and code.edit:GetCursorPosition()==3,'host idle or cursor notifications invalidate native editor geometry')
 end)
-test('temporary native arrow probe restores exact handler without changing input state',function()
-    local f,a=fixture();local valid=true;local code=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() error('probe edited source') end,function() return valid end,'plain');local edit=code.edit
-    local arrow=function() end;local key=function() end;edit:SetScript('OnArrowPressed',arrow);edit:SetScript('OnKeyDown',key);code:SetText('PRIVATE_ARROW_BODY');edit:SetFocus();edit:SetCursorPosition(4)
-    assert(type(code.ToggleNativeArrowProbe)=='function','native arrow probe missing')
-    assert(code:ToggleNativeArrowProbe()==true and edit:GetScript('OnArrowPressed')==nil)
-    local report=a:LuaEditorInputReport();assert(report:find('arrowHook=false probe=true',1,true) and not report:find('PRIVATE_ARROW_BODY',1,true),'arrow probe report absent or exposes source')
-    assert(edit:GetScript('OnKeyDown')==key and edit:GetText()=='PRIVATE_ARROW_BODY' and edit:GetCursorPosition()==4 and edit:HasFocus(),'probe changed unrelated native state')
-    assert(code:ToggleNativeArrowProbe()==false and edit:GetScript('OnArrowPressed')==arrow,'probe did not restore exact original hook')
-    assert(a:LuaEditorInputReport():find('arrowHook=true probe=false',1,true),'restored arrow hook missing from report')
-    edit:SetScript('OnArrowPressed',nil);assert(code:ToggleNativeArrowProbe()==true);assert(code:ToggleNativeArrowProbe()==false and edit:GetScript('OnArrowPressed')==nil,'original nil arrow script changed')
-    valid=false;assert(code:ToggleNativeArrowProbe()==nil,'invalid owner accepted arrow probe');valid=true
-    assert(code:ToggleNativeArrowProbe()==true);local newer=function() end;edit:SetScript('OnArrowPressed',newer);assert(code:ToggleNativeArrowProbe()==false and edit:GetScript('OnArrowPressed')==newer,'probe overwrote a newer lease handler')
-end)
-test('arrow probe release and reacquisition cannot restore stale handlers',function()
-    local f,a=fixture();local code=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() end,function() return true end,'plain');local edit=code.edit;local arrow=function() end;edit:SetScript('OnArrowPressed',arrow)
-    assert(type(code.ToggleNativeArrowProbe)=='function','native arrow probe missing');assert(code:ToggleNativeArrowProbe()==true);code:Release()
-    assert(not code.nativeArrowProbe and edit:GetScript('OnArrowPressed')==arrow and code:ToggleNativeArrowProbe()==nil,'release failed to end probe or closed control accepted it')
-    local newLease=function() end;edit:SetScript('OnArrowPressed',newLease);code:Acquire(function() end,function() return true end)
-    assert(not code.nativeArrowProbe and edit:GetScript('OnArrowPressed')==newLease,'acquisition restored stale arrow handler')
-    assert(code:ToggleNativeArrowProbe()==true);code:ResetInputTrace();assert(not code.nativeArrowProbe and edit:GetScript('OnArrowPressed')==newLease,'trace reset retained a temporary probe')
-    assert(a.ShowLuaEditorArrowProbe==nil,'the /rm editorarrows probe command is retired');code:Release()
-end)
 test('editor diagnostic commands remain source free without temporary buttons in either provider',function()
     for _,provider in ipairs({'plain','LuaWorkbench'}) do
         local f,a=dofile('tests/fixtures/lua_workbench.lua')();f.load('UI/lua_input_diagnostics.lua');f.env.IsAddOnLoaded=function() return true end
         local changes=0;local code=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() changes=changes+1 end,function() return true end,provider);local c=code.inner or code
         code:SetText('PRIVATE_COMMAND_BODY');c.edit:SetCursorPosition(3);c.edit:SetFocus()
         assert(not c.inputDiagnosticsToolbar and not c.LayoutInputDiagnostics,'temporary diagnostic controls remain in the editor')
+        assert(c.ToggleNativeArrowProbe==nil and c.ResetNativeArrowProbe==nil and c.arrowProbeLifecycle==nil,'the retired native arrow probe is still installed')
         local report;a.ShowConditionText=function(_,text) report=text end;a:ShowLuaEditorInputReport()
         assert(report:find('state=open',1,true) and report:find('focus=true',1,true) and not report:find('PRIVATE_COMMAND_BODY',1,true),'command lost source-free input snapshot')
         a:ShowLuaInputProbe();assert(a.luaInputProbe.edit~=c.edit and a.luaInputProbe.edit:GetText()~='PRIVATE_COMMAND_BODY' and not next(a.luaInputProbe.edit.scripts),'explicit input sample is not isolated')
         a.luaInputProbe:Hide();assert(code:GetText()=='PRIVATE_COMMAND_BODY' and c.edit:GetCursorPosition()==3 and changes==0,'commands changed source/caret/history')
         code:Release();assert(not c.lineNumberQueue,'release retained gutter queue');code:Acquire(function() end,function() return true end)
-        local active=code.inner or code;assert(not active.inputDiagnosticsToolbar and not active.LayoutInputDiagnostics and not active.nativeArrowProbe,'reopening retained temporary controls or experiment');code:Release()
+        local active=code.inner or code;assert(not active.inputDiagnosticsToolbar and not active.LayoutInputDiagnostics ,'reopening retained temporary controls');code:Release()
     end
 end)
 test('condition signature uses its full width without temporary editor controls',function()
