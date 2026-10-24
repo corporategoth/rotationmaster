@@ -2212,9 +2212,7 @@ L["Choose a whole number of upcoming recommendations, from zero (hidden) to five
 
 L["Arrange preview icons horizontally (default) or vertically. Below the opacity slider, Lock, Direction and Reset share one row."] = true
 
-L["Prevent moving the preview by its title bar or resizing it by its lower-right corner. Unlock this option in General to adjust it again."] = true
 
-L["Adjust the preview background and title bar opacity without fading its icons. At zero only the icons remain, and the hidden frame does not intercept blank-space clicks. Restore opacity in General to access the title bar and resize handle."] = true
 
 L["Immediately return the preview window to the screen center and restore 64-pixel icons without Apply. Other pending settings are preserved."] = true
 
