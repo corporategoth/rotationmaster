@@ -77,6 +77,11 @@ local PetButtons = {}
 local Flags = {}
 local SpellsGlowing = {}
 local FramePool = {}
+-- For /rm debug glow (Diagnostics/glow.lua): scan count and time, and the
+-- last recommendation glow request and what became of it. Written only when
+-- the bars are scanned or the recommended spell changes, never per poll.
+local FetchCount,LastFetchAt=0,nil
+local LastGlow = {}
 
 local HighlightOverlay = {
 	type = "dazzle",
@@ -996,6 +1001,7 @@ function addon:Fetch()
 	SpellsGlowing = {}
 
     fetchedPolicy=readClientPolicy(addon.Platform)
+    FetchCount=FetchCount+1;LastFetchAt=type(GetTime)=='function' and GetTime() or nil
     -- Restricted clients (Retail, Forever) run complete rotations too, so
     -- their bars are scanned as well. Action slot contents are not combat
     -- data: every read below is guarded with CanReadValue, so a secret slot
@@ -1196,6 +1202,8 @@ function addon:GlowSpell(spellId,itemId)
 	if spellId == nil then
 		return
 	end
+    LastGlow.spell,LastGlow.item,LastGlow.hidden,LastGlow.lit=spellId,itemId,false,0
+    LastGlow.at=type(GetTime)=='function' and GetTime() or nil
 
 	if Spells[spellId] ~= nil and addon.db.global.effects[self.db.profile.effect] then
 		for _, button in pairs(Spells[spellId]) do
@@ -1203,11 +1211,15 @@ function addon:GlowSpell(spellId,itemId)
 			addon:Glow(button, 'next', addon.db.global.effects[self.db.profile.effect], self.db.profile.color,
 				 self.db.profile.magnification, self.db.profile.setpoint,
 				 self.db.profile.xoffs, self.db.profile.yoffs, self.db.profile.angle)
+                LastGlow.lit=LastGlow.lit+1
             end
 		end
 
 		SpellsGlowing[spellId] = {itemId=itemId}
+        LastGlow.result='lit'
 		addon:verbose(spellId .. " is now glowing")
+    else
+        LastGlow.result=Spells[spellId]==nil and 'no-button' or 'no-effect'
 	end
 end
 
@@ -1227,6 +1239,7 @@ function addon:GlowNextSpell(spellId,itemId,hidden)
 	self:GlowClear()
 	if hidden then
 		if spellId~=nil and Spells[spellId]~=nil then SpellsGlowing[spellId]={itemId=itemId,hidden=true} end
+        LastGlow.spell,LastGlow.item,LastGlow.hidden,LastGlow.lit,LastGlow.result=spellId,itemId,true,0,'hidden'
 		return
 	end
 	self:GlowSpell(spellId,itemId)
@@ -1266,6 +1279,90 @@ function addon:HighlightSlots(slots)
 	end
 end
 
+
+-- BEGIN GLOW DIAGNOSTIC SUPPORT
+-- Read-only observations for /rm debug glow (Diagnostics/glow.lua). Nothing
+-- here runs unless that command does, and every native read is protected.
+local function diagnosticName(frame)
+    if type(frame)~='table' then return tostring(frame) end
+    if type(frame.GetName)=='function' then
+        local ok,name=pcall(frame.GetName,frame)
+        if ok and type(name)=='string' then return name end
+    end
+    return tostring(frame)
+end
+local function diagnosticRead(frame,method)
+    if type(frame)~='table' or type(frame[method])~='function' then return nil end
+    local ok,value=pcall(frame[method],frame)
+    if ok and addon.Platform:CanReadValue(value) then return value end
+end
+-- The Blizzard bars a Retail client builds (Blizzard_ActionBar ActionBar.lua
+-- names them ActionButtonN and <bar>ButtonN), whether or not the scan reads them.
+local DIAGNOSED_BARS={'Action','MultiBarBottomLeft','MultiBarBottomRight','MultiBarRight','MultiBarLeft','MultiBar5','MultiBar6','MultiBar7'}
+function addon:GetGlowDiagnosticBars() return DIAGNOSED_BARS end
+
+-- One standard action button, read exactly the way the scan reads it.
+function addon:DiagnoseActionButton(button)
+    local record={name=diagnosticName(button),shown=diagnosticRead(button,'IsShown'),visible=diagnosticRead(button,'IsVisible')}
+    if type(button)~='table' or type(button.GetAttribute)~='function' then record.error='not a button';return record end
+    local ok,kind=pcall(button.GetAttribute,button,'type')
+    record.kind=not ok and 'error' or self.Platform:CanReadValue(kind) and kind or 'secret'
+    local slotOk,slot=pcall(GetActionSlot,button)
+    if slotOk then record.slot=slot else record.slotError=tostring(slot) end
+    local readOk,actionKind,action=pcall(ReadStandardAction,button)
+    if not readOk then record.error=tostring(actionKind)
+    else
+        record.actionKind,record.action=actionKind,action
+        if actionKind then
+            local resolved,spell,item=pcall(ResolveStandardAction,actionKind,action)
+            if resolved then record.spell,record.item=spell,item else record.error=tostring(spell) end
+        end
+    end
+    record.indexed=ButtonSpells[button]
+    return record
+end
+
+-- Counts in the live index, and the buttons one spell maps to.
+function addon:GetButtonIndexDiagnostic()
+    local buttons,spells,ids=0,0,{}
+    for _ in pairs(ButtonSpells) do buttons=buttons+1 end
+    for spell in pairs(Spells) do spells=spells+1;if #ids<24 then ids[#ids+1]=spell end end
+    table.sort(ids)
+    return {buttons=buttons,spells=spells,ids=ids,policy=fetchedPolicy,fetches=FetchCount,lastFetch=LastFetchAt}
+end
+function addon:GetSpellButtonNames(spellId)
+    local names={}
+    for _,button in ipairs(Spells[spellId] or {}) do names[#names+1]=diagnosticName(button) end
+    return names
+end
+
+-- What the last recommendation glow did, and what is lit now, frame by frame.
+function addon:GetGlowDiagnostic()
+    local result={last={},glowing={}}
+    for key,value in pairs(LastGlow) do result.last[key]=value end
+    for spell,state in pairs(SpellsGlowing) do
+        local entry={spell=spell,item=state.itemId,hidden=state.hidden==true,buttons={}}
+        for _,button in ipairs(Spells[spell] or {}) do
+            local overlay=type(button.rmOverlays)=='table' and button.rmOverlays.next or nil
+            local row={name=diagnosticName(button),shown=diagnosticRead(button,'IsShown'),visible=diagnosticRead(button,'IsVisible'),
+                strata=diagnosticRead(button,'GetFrameStrata'),level=diagnosticRead(button,'GetFrameLevel'),
+                width=diagnosticRead(button,'GetWidth'),height=diagnosticRead(button,'GetHeight'),
+                pixel=rawget(button,'_PixelGlownext')~=nil,autocast=rawget(button,'_AutoCastGlownext')~=nil,
+                blizzard=rawget(button,'_ButtonGlow')~=nil,proc=rawget(button,'_ProcGlownext')~=nil}
+            if overlay then
+                row.overlay={shown=diagnosticRead(overlay,'IsShown'),visible=diagnosticRead(overlay,'IsVisible'),
+                    strata=diagnosticRead(overlay,'GetFrameStrata'),level=diagnosticRead(overlay,'GetFrameLevel'),
+                    width=diagnosticRead(overlay,'GetWidth'),height=diagnosticRead(overlay,'GetHeight'),
+                    alpha=diagnosticRead(overlay,'GetAlpha'),native=overlay.rmNative~=nil,timer=overlay.sequenceTimer~=nil,
+                    texture=overlay.rmOverlayTexture}
+            end
+            entry.buttons[#entry.buttons+1]=row
+        end
+        result.glowing[#result.glowing+1]=entry
+    end
+    return result
+end
+-- END GLOW DIAGNOSTIC SUPPORT
 
 -- BEGIN CPU ACTIVITY HANDOFF
 -- Only the private RM button maps and their current logical slots are inspected.

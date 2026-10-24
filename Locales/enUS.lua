@@ -958,6 +958,15 @@ L["No rotation can run until your specialization is available."] = true
 L["Reason: %s. Type /rm why to check every rotation."] = true
 L["/rm why                 - Explain why each rotation can or cannot be selected."] = true
 L["Rotation eligibility opened in a window you can copy from."] = true
+-- Glow diagnostic (/rm debug glow, Diagnostics/glow.lua)
+L["/rm debug glow [seconds] - Explain why a recommendation does or does not light a button."] = true
+L['Glow diagnostic'] = true
+L['Glow diagnostic saved.'] = true
+L['Glow diagnostic saved. Watching for %d seconds.'] = true
+L['Glow watch finished. Run /rm debug glow show to view it.'] = true
+L['Glow stops at: %s'] = true
+L['No glow diagnostic is saved yet. Run /rm debug glow.'] = true
+L['Usage: /rm debug glow [seconds|show]'] = 'Usage: /rm debug glow [seconds||show]'
 L["rotations cannot be read (%s)"] = true
 L["Rotation %s cannot be selected."] = true
 L["Rotation settings"] = true
