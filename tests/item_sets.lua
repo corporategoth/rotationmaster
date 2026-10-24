@@ -1,6 +1,8 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local function fixture(native)
-    local f=F.new();local a,e=f.addon,f.env
+    -- The native shape is Retail's (C_Item with boolean cooldowns, C_Container); no current
+    -- client still has the legacy container globals, so that route runs unguarded.
+    local f=native and F.new(1,12) or F.new(nil,nil,nil,{clientApi=false});local a,e=f.addon,f.env
     a.db.profile.itemsets={s={items={10,11}}};a.db.global.itemsets={g={items={11}}};a.combatCache={};a.bagContents={[99]={count=100,slots={1}}}
     local state={bags={[10]=2,[11]=1},equipped={},names=true,calls=0}
     local api={GetItemInfoInstant=function(value) state.calls=state.calls+1;if state.names then return value=='Potion' and 10 or value=='item:11' and 11 or tonumber(value) end end,

@@ -90,12 +90,17 @@ function M.fixture(class,options)
   if unit=='target'and s.targetCast then return s.targetCast,nil,nil,99000,101000,false,'cast',not s.targetInterruptible end
  end
  e.UnitChannelInfo=function(unit)if unit=='player'and s.channel then return 'Channel in progress',nil,nil,99000,101000,false,false end end
- e.GetWeaponEnchantInfo=function()return s.mainEnchant,1000,0,1,s.offEnchant,1000,0,1 end
+ -- Forever has GetWeaponEnchantInfo only behind loadDeprecationFallbacks; the client's own
+ -- source is C_PaperDollInfo (one record per hand: enchant 1, one second left, no charges).
+ e.INVSLOT_MAINHAND,e.INVSLOT_OFFHAND=16,17
+ e.C_PaperDollInfo={GetTemporaryEnchantmentInfo=function(slot)
+  if slot==16 and s.mainEnchant or slot==17 and s.offEnchant then return {enchantID=1,remainingTimeMs=1000,hasExpirationTime=true,chargesRemaining=0} end end}
  e.UnitAttackSpeed=function()return 2.6,s.offSpeed end
  -- Totem slots 1 Fire, 2 Earth, 3 Water, 4 Air: an entry is the remaining duration.
  e.GetNumTotemSlots=function()return 4 end
  e.GetTotemInfo=function(slot)local left=s.totems[slot];if not left then return false,'',0,0,0 end;return true,'Totem',100,left,136000 end
- e.GetItemCount=function(id)return s.items[id] or 0 end
+ -- No GetItemCount global on Forever: C_Item.
+ e.C_Item=e.C_Item or {};e.C_Item.GetItemCount=function(id)return s.items[id] or 0 end
  -- One backpack whose slots hold the modeled item stacks (item ID -> count).
  local function stacks()local list={};for id,count in pairs(s.items)do if count>0 then list[#list+1]={itemID=id,stackCount=count}end end
   table.sort(list,function(x,y)return x.itemID<y.itemID end);return list end
@@ -105,7 +110,9 @@ function M.fixture(class,options)
  e.UnitThreatSituation=function(_,unit)
   if unit=='target'then if s.threat~=nil then return s.threat end;if not s.exists then return nil end;return s.targettarget=='player'and 3 or 0 end
   local n=tonumber(unit:match('^nameplate(%d+)$') or '');local v=n and s.enemies[n];if v==false then return nil end;return v end
- e.IsSpellKnown=function(id)return s.known[id]==true end
+ -- IsSpellKnown is fallback-only on Forever; C_SpellBook with the spell bank enum is native.
+ e.Enum.SpellBookSpellBank={Player=0,Pet=1}
+ e.C_SpellBook=e.C_SpellBook or {};e.C_SpellBook.IsSpellKnown=function(id,bank)return bank~=1 and s.known[id]==true end
  -- Forever talents (C_ClassTalents/C_Traits, as the Camelot talent frame reads them): the three classic
  -- trees are node groups of one trait tree, in display order. s.trees = points per tree, s.nodes[node] =
  -- a node's rank (absent: not in the tree), s.config=false = no active config yet (below level 10).
@@ -234,7 +241,8 @@ function M.publisher(f,s)
   local button={id=id};function button:GetAttribute(key)if key=='type'then return 'action'elseif key=='action'then return slot end end
   e[bars[math.floor((slot-1)/12)+1]..'Button'..((slot-1)%12+1)]=button
  end
- e.HasAction=function(slot)return actions[slot]~=nil and s.mapped[actions[slot]]~=false end
+ -- Forever's bars answer through C_ActionBar (HasAction is a loadDeprecationFallbacks alias).
+ e.C_ActionBar=e.C_ActionBar or {};e.C_ActionBar.HasAction=function(slot)return actions[slot]~=nil and s.mapped[actions[slot]]~=false end
  e.GetActionInfo=function(slot)return 'spell',actions[slot]end
  e.C_AddOns.IsAddOnLoaded=function()return false end;e.GetTime=function()return 100 end
  e.UnitName=function(unit)return unit end

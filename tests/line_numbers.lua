@@ -5,7 +5,7 @@ local function tick(frame)
 end
 local function flush(c,C) if C then C:UpdateLineNumbers() end;tick(c.frame) end
 local function fixture(provider)
- local f,a=dofile('tests/fixtures/lua_workbench.lua')();f.load('UI/lua_input_diagnostics.lua');f.env.IsAddOnLoaded=function() return true end
+ local f,a=dofile('tests/fixtures/lua_workbench.lua')();f.load('UI/lua_input_diagnostics.lua');f.env.C_AddOns=f.env.C_AddOns or {};f.env.C_AddOns.IsAddOnLoaded=function() return true end
  local changes=0;local code=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() changes=changes+1 end,function() return true end,provider or 'plain');local c=code.inner or code
  c.frame:SetSize(620,300);code:SetText('first line\nsecond line\nthird line');code:SetContext({kind='function',id='GUTTER',source={args={},bindings={}}});c.edit:SetCursorPosition(2);c:Layout();tick(c.frame)
  local engine=c.completionEngine or c.engine;local C=engine.Query.Console;local input=C.input;local state=assert(input.queryLineNumbers)
@@ -242,7 +242,7 @@ end)
 
 for _,provider in ipairs({'plain','LuaWorkbench'}) do
  test(provider..' frame update installation preserves deferred hooks under native SetScript replacement',function()
-  local f,a=dofile('tests/fixtures/lua_workbench.lua')();f.load('UI/lua_input_diagnostics.lua');f.env.IsAddOnLoaded=function() return true end
+  local f,a=dofile('tests/fixtures/lua_workbench.lua')();f.load('UI/lua_input_diagnostics.lua');f.env.C_AddOns=f.env.C_AddOns or {};f.env.C_AddOns.IsAddOnLoaded=function() return true end
   local create=f.env.CreateFrame
   f.env.CreateFrame=function(...)
    local frame=create(...);local set=frame.SetScript
@@ -302,7 +302,7 @@ test('active acquire repairs invalidated or stale gutter attachments without res
  end
 end)
 test('active and recovered acquisition preserve callback argument and nil-result arity',function()
- local f,a=dofile('tests/fixtures/lua_workbench.lua')();f.load('UI/lua_input_diagnostics.lua');f.env.IsAddOnLoaded=function()return true end
+ local f,a=dofile('tests/fixtures/lua_workbench.lua')();f.load('UI/lua_input_diagnostics.lua');f.env.C_AddOns=f.env.C_AddOns or {};f.env.C_AddOns.IsAddOnLoaded=function()return true end
  local install=a.InstallLuaLineNumberControl
  a.InstallLuaLineNumberControl=function(self,c,...)
   local acquire=c.Acquire

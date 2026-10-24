@@ -184,7 +184,8 @@ function M.fixture(class,options)
  a.Platform.GetClientInfo=function(self)local info=get(self);assert(info.family=='progression'and info.expansion==(options.expansion or 4));
   if options.policy then info.combatDataPolicy=options.policy end;return info end
  for _,path in ipairs(options.packs or M.packs(class))do f.load(path)end
- e.BOOKTYPE_SPELL,e.BOOKTYPE_PET='spell','pet';e.GetAddOnMetadata=function() return 'Rotation Master test' end
+ e.BOOKTYPE_SPELL,e.BOOKTYPE_PET='spell','pet';-- No client has a GetAddOnMetadata global any more; metadata comes from C_AddOns.
+ e.C_AddOns={GetAddOnMetadata=function()return 'Rotation Master test'end,IsAddOnLoaded=function()return false end}
  f.libraries['AceAddon-3.0']={NewAddon=function(_,object) return object end};f.libraries['AceEvent-3.0']={}
  f.libraries['LibDBIcon-1.0']={};f.libraries['LibSharedMedia-3.0']={}
  f.libraries['LibDataBroker-1.1']={NewDataObject=function(_,_,object) return object end}
@@ -283,7 +284,7 @@ function M.publisher(f,s)
  end
  e.HasAction=function(slot)return actions[slot]~=nil and s.mapped[actions[slot]]~=false end
  e.GetActionInfo=function(slot)return 'spell',actions[slot]end
- e.C_AddOns={IsAddOnLoaded=function()return false end};e.GetTime=function()return 100 end
+ e.C_AddOns.IsAddOnLoaded=function()return false end;e.GetTime=function()return 100 end
  e.UnitName=function(unit)return unit end
  f.load('Platform/macros.lua');f.load('Core/presentation.lua');f.load('buttons.lua')
  local glow,messages={},{}

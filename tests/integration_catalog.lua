@@ -5,7 +5,9 @@ local function fixture(legacy)
  local f=F.new();local present,versions,calls={},{},{}
  local function loaded(id)calls[#calls+1]={'loaded',id};return present[id]==true end
  local function metadata(id,key)assert(key=='Version');calls[#calls+1]={'version',id};return versions[id]end
- if legacy then f.env.C_AddOns=nil;f.env.IsAddOnLoaded=loaded;f.env.GetAddOnMetadata=metadata
+ -- No current client has the legacy addon globals (C_AddOns everywhere): they model an older
+ -- build, placed past the fixture's client guard.
+ if legacy then f.env.C_AddOns=nil;rawset(f.env,'IsAddOnLoaded',loaded);rawset(f.env,'GetAddOnMetadata',metadata)
  else f.env.C_AddOns={IsAddOnLoaded=loaded,GetAddOnMetadata=metadata} end
  local fn=loadfile('Integrations/catalog.lua');assert(fn,'integration inventory module missing');setfenv(fn,f.env);fn('RotationMaster',f.addon)
  assert(type(f.addon.ListIntegrationStatus)=='function','integration inventory API missing')

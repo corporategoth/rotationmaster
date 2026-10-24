@@ -137,11 +137,12 @@ test('specialization: unreadable, malformed or failed reads are unavailable and 
     end
     local _,a,s=fixture(MISTS,4,'WARLOCK',3);s.throw='spec';unknown(a,node(0));assert(count(s,'current')==0)
     s.throw=nil;s.current=20;assert(status(a,node(2))=='match','a new pass recovers')
-    -- The legacy global serves a client without C_SpecializationInfo.
+    -- The legacy global serves a client without C_SpecializationInfo: an older build (Mists
+    -- 5.5 has no GetSpecialization global at all), placed past the fixture's client guard.
     local f;f,a,s=fixture(MISTS,4,'WARLOCK',2);f.env.C_SpecializationInfo=nil
-    f.env.GetSpecialization=function(...) assert(select('#',...)==0);s.calls[#s.calls+1]={'spec'};return 2 end
+    rawset(f.env,'GetSpecialization',function(...) assert(select('#',...)==0);s.calls[#s.calls+1]={'spec'};return 2 end)
     s.current=500;assert(status(a,node(500))=='match');reads(s,POWER.DemonicFury,false,'legacy')
-    f.env.GetSpecialization=nil;unknown(a,node(0))
+    rawset(f.env,'GetSpecialization',nil);unknown(a,node(0))
     local v,why=a.conditionDefinitions.POINT.evaluate(node(0),{});assert(v==nil and why=='missing-api',tostring(why))
 end)
 

@@ -40,7 +40,8 @@ test('unknown membership stays unknown while unavailable permission does not era
 end)
 test('legacy raid-leader fallback has no unit argument and is never retried after native failure',function()
     local f,p=fixture();f.env.IsInRaid=function() return true end;local calls=0
-    f.env.IsRaidLeader=function(...) assert(select('#',...)==0,'legacy leader received a unit');calls=calls+1;return true end
+    -- No current client has IsRaidLeader (UnitIsGroupLeader everywhere): an older build, past the guard.
+    rawset(f.env,'IsRaidLeader',function(...) assert(select('#',...)==0,'legacy leader received a unit');calls=calls+1;return true end)
     local g=assert(p:GetAnnouncementGroup());assert(g.isLeader==true and calls==1)
     f.env.UnitIsGroupLeader=function() error('restricted') end;g=assert(p:GetAnnouncementGroup());assert(g.isLeader==nil and calls==1)
 end)

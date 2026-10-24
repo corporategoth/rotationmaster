@@ -47,7 +47,7 @@ test('native fallback uses released completion for RM symbols and never loads Wo
  code:Release();assert(not e.Autocomplete.input);code:Acquire(function() end,function() return true end);code:SetText('return true');assert(code:GetText()=='return true');code:Release()
 end)
 test('optional provider detection and plain opt-out preserve host context and debug test arguments',function()
- local f,a=fixture();f.env.IsAddOnLoaded=function(name) return name=='!!!LuaWorkbench' end
+ local f,a=fixture();f.env.C_AddOns=f.env.C_AddOns or {};f.env.C_AddOns.IsAddOnLoaded=function(name) return name=='!!!LuaWorkbench' end
  local code=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() end,function() return true end,'LuaWorkbench');assert(code.provider=='LuaWorkbench')
  code:SetText('print(value.amount)');code:SetContext({kind='function',id='CHECK',source={args={{name='value',type='table'}},bindings={}}})
  local c=code.inner;c.arguments:SetText('{ {amount=17} }');assert(c:Debug())
@@ -66,7 +66,7 @@ test('native completion shortcut removes only its own native space insertion',fu
  assert(code:GetText()=='eval unrelated','completion shortcut erased unrelated input');code:Release()
 end)
 test('optional provider can reopen with its new owner callbacks and context',function()
- local f,a=fixture();f.env.IsAddOnLoaded=function(name) return name=='!!!LuaWorkbench' end
+ local f,a=fixture();f.env.C_AddOns=f.env.C_AddOns or {};f.env.C_AddOns.IsAddOnLoaded=function(name) return name=='!!!LuaWorkbench' end
  local oldCalls,newCalls=0,0;local oldValid=true;local newValid=true
  local code=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() oldCalls=oldCalls+1 end,function() return oldValid end,'LuaWorkbench')
  code:SetContext({kind='function',id='REOPEN',source={args={},bindings={}}});code:SetText('return 1');local previous=code.inner
@@ -444,7 +444,7 @@ test('advanced pending repaint respects invalid owners read-only input and relea
  c:Release();update(c.frame,1);assert(paints==0 and not input.queryEditor,'released callback repainted or revived editor state')
 end)
 test('actual workbench provider supports source-free diagnostics and reversible arrow probes across release',function()
- local f,a=fixture();f.load('UI/lua_input_diagnostics.lua');f.env.IsAddOnLoaded=function(name) return name=='!!!LuaWorkbench' end
+ local f,a=fixture();f.load('UI/lua_input_diagnostics.lua');f.env.C_AddOns=f.env.C_AddOns or {};f.env.C_AddOns.IsAddOnLoaded=function(name) return name=='!!!LuaWorkbench' end
  local valid=true;local code=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() end,function() return valid end,'LuaWorkbench');local c=code.inner
  assert(c.provider=='LuaWorkbench' and c.scroll==c.engine.Query.Console.input.scrollFrame and c.valid,'workbench diagnostics control contract missing')
  assert(a.luaInputEditor==c and c.ToggleNativeArrowProbe,'actual provider was not registered with diagnostics')

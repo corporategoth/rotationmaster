@@ -114,7 +114,7 @@ test('field schema history and root Add stay above the scrolled cards',function(
     assert(g.cards and not next(g.cards));g.form.fields.add:Click();assert(g.cards['1'].y==4,'redundant Fields heading still reserves space');g.undo:Click();assert(not next(g.cards));g.redo:Click();assert(g.cards['1'])
 end)
 test('bundle transfer shares Copy Clear X and child right-click close controls',function()
-    local f,a,host=fixture();local down,focus=false,nil;f.env.IsMouseButtonDown=function() return down end;f.env.GetMouseFocus=function() return focus end
+    local f,a,host=fixture();local down,focus=false,nil;f.env.IsMouseButtonDown=function() return down end;f.env.GetMouseFoci=function() return {focus} end
     a.db.global.custom_functions.A=source('Alpha');a:InitializeFunctionRegistry();local p=a:OpenNativeSettings(host,'Functions');p.fields.transfer:Click();local d=p.functionBundleTransfer
     assert(d.sharedTransferShell and d.clear and d.frame.rmRightClickWatcher,'bundle does not use the common transfer shell');d:Review();assert(d.plan.valid);d.clear:Click();assert(d.input:GetText()=='' and not d.apply:IsEnabled() and not d.plan)
     d.close:Click();assert(not d.frame:IsShown());p.fields.transfer:Click();focus=d.input;down=true;d.frame.rmRightClickWatcher.scripts.OnUpdate();assert(not d.frame:IsShown(),'right-click on a child did not close the bundle')

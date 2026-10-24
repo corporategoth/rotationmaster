@@ -5,8 +5,12 @@ local function fixture(project,expansion,version,interface)
     e.GetBuildInfo=function() return version or '3.4.0','1','',interface or 30400 end
     e.UnitClass=function() return 'Shaman','SHAMAN',s.class end
     e.IsInGroup=function() s.calls.group=(s.calls.group or 0)+1;return s.group end;e.IsInRaid=function() s.calls.raid=(s.calls.raid or 0)+1;return s.raid end
-    e.GetItemInfoInstant=function(id) return id,'Glyph','Shaman','',1,s.itemClass,s.subClass end
-    e.GetItemInfo=function() s.calls.item=(s.calls.item or 0)+1;return s.name,s.name and '|Hitem:123|h[Glyph of Test]|h' end
+    local function instant(id) return id,'Glyph','Shaman','',1,s.itemClass,s.subClass end
+    e.GetItemInfoInstant=instant
+    local function info() s.calls.item=(s.calls.item or 0)+1;return s.name,s.name and '|Hitem:123|h[Glyph of Test]|h' end
+    e.GetItemInfo=info
+    -- Every current client also has these in C_Item (the globals are gone on Retail/Forever).
+    e.C_Item={GetItemInfoInstant=instant,GetItemInfo=info}
     e.GetNumGlyphSockets=function() s.calls.count=(s.calls.count or 0)+1;return s.count end
     e.GetGlyphSocketInfo=function(index) if s.unknownSlot==index then return end;if s.otherSlot==index then return true,1,9002,9002 end;if project==14 or project==19 then return s.enabled,1,2,s.socket,1 end;return s.enabled,1,s.socket,1 end
     e.GetSpellInfo=function(id) s.calls.spell=(s.calls.spell or 0)+1;if id==9002 then return s.otherName end;if id==s.socket then return s.spellName end end
@@ -38,7 +42,7 @@ test('glyph uses actual Wrath Cata and Mists spell positions and ignores locked 
 end)
 test('glyph missing names APIs classification and restricted observations cannot authorize absence',function()
     for _,mode in ipairs({'item-name','spell-name','item-api','socket-api','count-api','secret-item','secret-spell','wrong-class','unsupported'}) do local f,a,s=fixture();local opaque={};f.env.canaccessvalue=function(v) return not rawequal(v,opaque) end
-        if mode=='item-name' then s.name=nil elseif mode=='spell-name' then s.spellName=nil elseif mode=='item-api' then f.env.GetItemInfo=nil elseif mode=='socket-api' then f.env.GetGlyphSocketInfo=nil elseif mode=='count-api' then f.env.GetNumGlyphSockets=nil elseif mode=='secret-item' then s.name=opaque elseif mode=='secret-spell' then s.spellName=opaque elseif mode=='wrong-class' then s.subClass=8 else f.env.WOW_PROJECT_ID=1 end
+        if mode=='item-name' then s.name=nil elseif mode=='spell-name' then s.spellName=nil elseif mode=='item-api' then f.env.GetItemInfo=nil;f.env.C_Item.GetItemInfo=nil elseif mode=='socket-api' then f.env.GetGlyphSocketInfo=nil elseif mode=='count-api' then f.env.GetNumGlyphSockets=nil elseif mode=='secret-item' then s.name=opaque elseif mode=='secret-spell' then s.spellName=opaque elseif mode=='wrong-class' then s.subClass=8 else f.env.WOW_PROJECT_ID=1 end
         unknown(a,{type='GLYPH',item=123})
     end
 end)
@@ -67,8 +71,9 @@ test('registered clones preserve repaired APIs and old private identities while 
     local oldGlyph=a:GetBuiltinConditionSource('GLYPH');oldGlyph.evaluate='local name=addon.getCached(addon.longtermCache,GetItemInfo,value.item);for i=1,GetNumGlyphSockets() do local spell=select(3,addon.getCached(addon.combatCache,GetGlyphSocketInfo,i));if addon.getCached(addon.longtermCache,GetSpellInfo,spell)==name then return true end end;return false';local savedGlyph=assert(a:CompileCustomCondition('SAVED_GLYPH',oldGlyph));s.name='Glyph of Test';assert(savedGlyph.evaluate({item=123},{})==true)
     local old=a:GetBuiltinConditionSource('GROUP');old.evaluate='return value.raid and addon.getCached(cache,IsInRaid) or addon.getCached(cache,IsInGroup)';local copy=assert(a:CompileCustomCondition('SAVED_GROUP',old));s.raid=false;assert(copy.evaluate({raid=true},{})==true)
 end)
+-- Forever reports expansion 0 and registers no GLYPH (its old {18,12} case modelled another expansion).
 test('all registration branches preserve GLYPH editing availability independently of runtime layout',function()
-    for _,case in ipairs({{1,12,true},{2,0,false},{5,1,false},{11,2,true},{14,3,true},{19,4,true},{18,12,true},{999,4,true}}) do
+    for _,case in ipairs({{1,12,true},{2,0,false},{5,1,false},{11,2,true},{14,3,true},{19,4,true},{18,0,false},{999,4,true}}) do
         local _,a=fixture(case[1],case[2]);assert((a.conditionDefinitions.GLYPH~=nil)==case[3]);assert(a.conditionDefinitions.GROUP)
         if case[3] then assert(a.conditionDefinitions.GLYPH.valid(0,{item=123}));if case[1]~=11 then unknown(a,{type='GLYPH',item=123}) end end
     end

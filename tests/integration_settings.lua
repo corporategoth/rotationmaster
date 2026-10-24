@@ -248,8 +248,8 @@ test('version display prioritizes explicit addon load evidence independently of 
   p:Draw();assert(rendered()==case.show,'load evidence lost to connection state '..case.state)
  end
  -- Actual catalog: native load/version succeeds while cached Questie status fails.
- f.env.IsAddOnLoaded=function(id)return id=='Questie'end
- f.env.GetAddOnMetadata=function(_,field)assert(field=='Version');return version end
+ -- Addon state comes from C_AddOns on every current client.
+ f.env.C_AddOns={IsAddOnLoaded=function(id)return id=='Questie'end,GetAddOnMetadata=function(_,field)assert(field=='Version');return version end}
  a.Platform.CanReadValue=function()return true end
  a.GetQuestieIntegrationStatus=function()error('private cached connection failure')end
  f.load('Integrations/catalog.lua')

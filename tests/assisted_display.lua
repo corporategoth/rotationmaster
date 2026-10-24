@@ -357,10 +357,11 @@ test('settings: the choice shows where Blizzard\'s highlight exists, applies thr
     if not pcall(require,'bit') then print('SKIP settings page under plain Lua 5.1 (no bit library)');return end
     local source=assert(io.open('tests/settings_pages.lua')):read('*a')
     local settings=assert(loadstring(assert(source:match('^(.-)\ntest%('))..'\nreturn fixture'))()
+    -- Retail has Blizzard's Assisted Combat and its highlighter; a Classic client has neither.
     local function open(support)
-        local f,parent=settings();local a,e=f.addon,f.env
+        local f,parent=settings(support~='classic' and 1 or nil);local a,e=f.addon,f.env
         e.C_AssistedCombat=model({available=support~='spec'})
-        if support~='forever' then e.AssistedCombatManager={} end
+        if support~='classic' then e.AssistedCombatManager={} end
         local cvars={assistedCombatHighlight='0'};e.C_CVar={GetCVar=function(n) return cvars[n] end,SetCVar=function(n,v) cvars[n]=v end}
         f.load('Platform/assisted_combat.lua');f.load('Core/assisted_highlight.lua')
         a.db.profile.color={r=1,g=1,b=1,a=1};a.db.global.effects={}
@@ -380,7 +381,7 @@ test('settings: the choice shows where Blizzard\'s highlight exists, applies thr
     for _,entry in ipairs(help) do if entry.id=='assisted_highlight' then found=true end end;assert(found,'help entry missing')
     p:Release()
     local _,q=open('spec');assert(q.fields.assisted_highlight,'hidden for a specialization without Assisted Combat');q:Release()
-    local b,r=open('forever');assert(not r.fields.assisted_highlight,'shown without Blizzard\'s highlighter')
+    local b,r=open('classic');assert(not r.fields.assisted_highlight,'shown without Blizzard\'s highlighter')
     for _,entry in ipairs(b:GetGeneralOptionHelp()) do assert(entry.id~='assisted_highlight','help for a hidden control') end
     r:Release()
 end)

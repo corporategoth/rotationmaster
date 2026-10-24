@@ -5,7 +5,8 @@ local F = {}
 -- on Blizzard's deprecation fallbacks), the Classic families with it on (their default).
 -- options.fallbacks overrides that; options.clientApi=false keeps an unrestricted env.
 function F.new(product, expansion, class, options)
-    options = options or {}
+    -- Some suites pass a fourth positional value F.new never read; only a table is options.
+    if type(options) ~= 'table' then options = {} end
     local env = setmetatable({}, {__index = _G})
     env._G = env
     local client = dofile('tests/fixtures/client_api.lua')

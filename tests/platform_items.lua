@@ -1,7 +1,7 @@
 local F=dofile('tests/fixtures/addon.lua')
 local test,finish=F.suite()
-local function fixture()
-    local f=F.new();f.load('Platform/client.lua');f.load('Platform/items.lua');return f
+local function fixture(...)
+    local f=F.new(...);f.load('Platform/client.lua');f.load('Platform/items.lua');return f
 end
 test('modern and legacy item-use metadata returns detached canonical spell records for IDs names and links',function()
     local f=fixture();local p=f.addon.Platform
@@ -113,8 +113,9 @@ test('item range requires a positive observation or an explicit rangeless shape 
     f.env.C_Item=nil;f.env.IsItemInRange=nil
     assert(p:GetItemRangeState(5512,'target')==nil)
 end)
+-- C_Item.GetItemCooldown is Retail's and Forever's (tests/fixtures/client_api_*.lua).
 test('current Item cooldown namespace supplies canonical boolean records and readiness without old globals',function()
-    local f=fixture();local p=f.addon.Platform;local enabled=true;local start,duration=0,0
+    local f=fixture(1,12);local p=f.addon.Platform;local enabled=true;local start,duration=0,0
     f.env.C_Item={GetItemCount=function() return 1 end,IsUsableItem=function() return true,false end,
         GetItemCooldown=function(id) assert(id==5512);return start,duration,enabled end,
         GetItemInfoInstant=function() return 5512 end}
@@ -125,8 +126,10 @@ test('current Item cooldown namespace supplies canonical boolean records and rea
     enabled=true;start=90;duration=30;assert(p:IsItemReady(5512,100)==false)
     start=70;assert(p:IsItemReady(5512,100)==true)
 end)
+-- Precedence across backends no single client has together (Retail's C_Item, Classic's
+-- C_Container, an older build's global): an unguarded environment.
 test('item cooldown backend precedence and legacy aliases normalize bool or zero-one without failure fallback',function()
-    local f=fixture();local p=f.addon.Platform;local used={}
+    local f=fixture(nil,nil,nil,{clientApi=false});local p=f.addon.Platform;local used={}
     local function backend(name,flag) return function() used[#used+1]=name;return 10,20,flag end end
     f.env.C_Item={GetItemCooldown=backend('item',true)};f.env.C_Container={GetItemCooldown=backend('container',1)};f.env.GetItemCooldown=backend('legacy',1)
     assert(p:GetItemCooldown(5512).isEnabled and table.concat(used,',')=='item')

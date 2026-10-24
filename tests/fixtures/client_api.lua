@@ -33,13 +33,14 @@ function M.status(client,name)
         for _,entry in ipairs(m[kind]) do if entry==name then return kind end end
     end
 end
-local function guardNamespace(namespace,banned,dropped,prefix)
-    for field in pairs(banned) do rawset(namespace,field,nil) end
-    if getmetatable(namespace)~=nil then return end
-    setmetatable(namespace,{__newindex=function(t,k,v)
-        if banned[k] then dropped[prefix..'.'..k]=true;return end
-        rawset(t,k,v)
-    end})
+-- Namespace tables stay plain tables (the client's have no metatable, and the compiled
+-- condition runtime declines to certify a namespace that has one): the functions the client
+-- lacks are removed when the namespace is installed or assigned. A later direct field
+-- assignment (e.C_X.F=...) is not intercepted.
+local function stripNamespace(namespace,banned,dropped,prefix)
+    for field in pairs(banned) do
+        if rawget(namespace,field)~=nil then dropped[prefix..'.'..field]=true;rawset(namespace,field,nil) end
+    end
 end
 -- Returns the record of dropped assignments (name -> true) for diagnostics.
 function M.install(env,client,options)
@@ -54,21 +55,17 @@ function M.install(env,client,options)
     for name in pairs(top) do rawset(env,name,nil) end
     for ns,banned in pairs(fields) do
         local namespace=rawget(env,ns)
-        if type(namespace)=='table' then guardNamespace(namespace,banned,dropped,ns) end
+        if type(namespace)=='table' then stripNamespace(namespace,banned,dropped,ns) end
     end
-    local old=getmetatable(env) or {}
-    local index=old.__index
-    setmetatable(env,{
-        __index=function(t,k)
-            if top[k] then return nil end
-            if type(index)=='function' then return index(t,k) end
-            if type(index)=='table' then return index[k] end
-        end,
-        __newindex=function(t,k,v)
-            if top[k] then dropped[k]=true;return end
-            if fields[k] and type(v)=='table' then guardNamespace(v,fields[k],dropped,k) end
-            rawset(t,k,v)
-        end})
+    -- Reads fall through to the environment's own __index (the host Lua globals, which hold no
+    -- WoW name); only assignments are filtered.
+    local mt=getmetatable(env)
+    if mt==nil then mt={};setmetatable(env,mt) end
+    mt.__newindex=function(t,k,v)
+        if top[k] then dropped[k]=true;return end
+        if fields[k] and type(v)=='table' then stripNamespace(v,fields[k],dropped,k) end
+        rawset(t,k,v)
+    end
     M.installed[env]={client=client,fallbacks=options and options.fallbacks==true,dropped=dropped}
     return dropped
 end

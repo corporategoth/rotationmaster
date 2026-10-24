@@ -59,7 +59,8 @@ end)
 test('reminders: armor choice, Brilliance, gem, Counterspell, Mirror Image, tier 6 and Ice Floes',function()
  local a,s,f=mage();s.learn(BLAST,7302,30482,1459,759,2139,55342,12051,116011,108839)
  -- One bag slot holding s.bag (an item ID) or nothing.
- f.env.NUM_TOTAL_EQUIPPED_BAG_SLOTS=0
+ -- Mists has no NUM_TOTAL_EQUIPPED_BAG_SLOTS (Retail/Forever); NUM_BAG_SLOTS=0 is the backpack alone.
+ f.env.NUM_BAG_SLOTS=0
  f.env.C_Container={GetContainerNumSlots=function()return 1 end,GetContainerItemInfo=function()if s.bag then return{itemID=s.bag,stackCount=1}end end}
  s.combat=false;local lit=M.upkeep(a,s,ARCANE)
  assert(lit[7302]and not lit[30482]and lit[1459]and lit[759],'Frost Armor, Brilliance, Conjure Mana Gem')

@@ -36,7 +36,7 @@ local function split(s)local at=s:find('\n'..heading,1,true);return at and s:sub
 test('actual retained maps and temporary global result listener report counts without source values',function()
  local f,a,s=fixture()
  f.libraries['AceAddon-3.0']={NewAddon=function(_,object)return object end};f.libraries['AceEvent-3.0']={};f.libraries['LibDBIcon-1.0']={};f.libraries['LibDataBroker-1.1']={NewDataObject=function()return {}end};f.libraries['ThreatClassic-1.0']={Disable=function()end}
- f.env.UnitGUID=function()return 'Player-PRIVATE'end;f.env.GetAddOnMetadata=function(_,key)return key=='Title' and 'Rotation Master' or 'test'end;f.load('main.lua');a.debug=function()end
+ f.env.UnitGUID=function()return 'Player-PRIVATE'end;f.env.C_AddOns={GetAddOnMetadata=function(_,key)return key=='Title' and 'Rotation Master' or 'test'end};f.load('main.lua');a.debug=function()end
  assert(s.listeners()==0);assert(a:StartCPUProfile());assert(s.listeners()==1,'capture event observer absent')
  for id=1,1000 do a:SPELL_DATA_LOAD_RESULT('SPELL_DATA_LOAD_RESULT',id,true);a:ITEM_DATA_LOAD_RESULT('ITEM_DATA_LOAD_RESULT',id,true);s.fire('SPELL_DATA_LOAD_RESULT',id,true);s.fire('ITEM_DATA_LOAD_RESULT',id,true)end
  for id=1,1000 do a.SpellCatalog:UpdateSpell(id);a:UpdateReferenceItem(id)end
@@ -76,7 +76,7 @@ local function visuals(countButtons)
   glow.AutoCastGlow_Stop=function(button,id)local x=button['_AutoCastGlow'..tostring(id or '')];if x then x:Hide()end end
   glow.ButtonGlow_Stop=function(button)if button._ButtonGlow then button._ButtonGlow:Hide()end end
   f.libraries['LibCustomGlow-1.0']=glow
-  e.IsAddOnLoaded=function(name)return name=='G15Buttons' and s.g15 or false end;e.GetAddOnMetadata=function(_,field)return field=='Title' and 'Rotation Master' or 'test'end
+  e.C_AddOns={IsAddOnLoaded=function(name)return name=='G15Buttons' and s.g15 or false end,GetAddOnMetadata=function(_,field)return field=='Title' and 'Rotation Master' or 'test'end}
   e.tinsert=table.insert;e.tremove=table.remove;e.HasAction=function()return true end;e.GetActionInfo=function(slot)return 'spell',1000+slot end
   local create=e.CreateFrame;e.CreateFrame=function(...)local w=create(...);local texture=w.CreateTexture;w.CreateTexture=function(...)local t=texture(...);t.SetBlendMode=function()end;t.SetRotation=function()end;return t end;return w end
   s.buttons={};for i=1,countButtons or 4 do local w=e.CreateFrame('Button',nil,e.UIParent);local slot=i;function w:GetAttribute(key)if key=='type'then return 'action'elseif key=='action'then return slot end end;s.buttons[i]=w;if i<=12 then e['ActionButton'..i]=w else e['objG15_btn_'..(i-11)]=w;s.g15=true end end
