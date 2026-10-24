@@ -51,6 +51,7 @@ local issueText={
     ['unexpected-assisted-action']=L['has a setting this version does not understand (%s)'],
     ['unexpected-stop-option']=L['has a setting this version does not understand (%s)'],
     ['invalid-priority']=L['has an invalid switch priority'],
+    ['invalid-handle']=L['has an invalid handle'],
 }
 local refusalText={
     ['disabled']=L['it is disabled'],
@@ -201,6 +202,12 @@ function addon:ExplainRotationRefusal(spec,value)
         if text then return text,code end
         return L['it has incomplete or unsupported data'],code
     end
+    if code=='disabled' and self.GetDefaultIdForRuntime and self.GetBuiltinSwitch then
+        local id=self:GetDefaultIdForRuntime(spec,value)
+        local state;if id then local _,found=self:GetBuiltinSwitch(id);state=found end
+        if state=='user-disabled' then return L['you switched it off (turn it back on in Rotations)'],code end
+        if state=='shipped-disabled' then return L['it ships disabled, an alternative to the recommended one (turn it on in Rotations)'],code end
+    end
     return refusalText[code] or string.format(L['it is unavailable (%s)'],tostring(code)),code
 end
 -- A rotation's priority as automatic switching ranks it (nil when unknown).
@@ -253,6 +260,9 @@ function addon:GetRotationEligibilityReport()
     verdict(string.format(L['Fallback (%s)'],DEFAULT),DEFAULT)
     local headers=self.ListRotationHeaders and self:ListRotationHeaders(spec)
     if type(headers)~='table' then return lines end
+    local handles={}
+    if self.ListRotationHandles then for _,entry in ipairs(self:ListRotationHandles(spec)) do handles[entry.key]=entry.handle end end
+    local function tagged(text,key) return handles[key] and string.format('%s [%s]',text,handles[key]) or text end
     -- Built Ins that are off are named when they would otherwise apply here,
     -- with who switched them off; the rest are only counted.
     local states={}
@@ -262,7 +272,7 @@ function addon:GetRotationEligibilityReport()
         if row.fallback then
         elseif row.kind=='builtin' then
             local state=states[row.canonicalId]
-            local name=string.format(L['%s (Built In)'],row.name)
+            local name=tagged(string.format(L['%s (Built In)'],row.name),row.key)
             if state and (state.state=='invalid' or state.fits and not state.applies and state.reason=='invalid-or-unsupported') then
                 local problem=row.problem and self:DescribeRotationIssue(row.problem)
                 lines[#lines+1]=string.format(L['%s: cannot be selected, %s.'],name,problem and (problem:gsub('%.$','')) or L['it has incomplete or unsupported data'])
@@ -272,7 +282,7 @@ function addon:GetRotationEligibilityReport()
                 lines[#lines+1]=string.format(L['%s: ships disabled, an alternative to the recommended one (turn it on in Rotations, in its Built In view).'],name)
             elseif not row.enabled then disabled=disabled+1
             else verdict(name,row.key) end
-        else verdict(row.name,row.key) end
+        else verdict(tagged(row.name,row.key),row.key) end
     end
     if disabled>0 then lines[#lines+1]=string.format(L['%d other Built In rotations are disabled (for another specialization, level or edition).'],disabled) end
     -- The order automatic switching tries them in, and what it would choose now.
@@ -347,6 +357,11 @@ local function meets(a,b)
         local any=false;for spec in pairs(a.specs) do if b.specs[spec] then any=true;break end end
         if not any then return false end
     end
+    -- Packs for different season or realm rules never load together.
+    if a.rulesets and b.rulesets then
+        local any=false;for name in pairs(a.rulesets) do if b.rulesets[name] then any=true;break end end
+        if not any then return false end
+    end
     return true
 end
 local function subset(a,b) if a.count>b.count then return false end;for key in pairs(a.atoms) do if not b.atoms[key] then return false end end;return true end
@@ -363,6 +378,7 @@ function addon:GetSwitchRegion(switch,applicability)
         if type(applicability.specs)=='table' then narrowSpecs(region,applicability.specs) end
         if type(applicability.minLevel)=='number' then region.lo=math.max(region.lo,applicability.minLevel) end
         if type(applicability.maxLevel)=='number' then region.hi=math.min(region.hi,applicability.maxLevel) end
+        if type(applicability.rulesets)=='table' then region.rulesets={};for _,name in ipairs(applicability.rulesets) do region.rulesets[name]=true end end
     end
     addCondition(region,switch)
     return region
@@ -453,3 +469,119 @@ function addon:DescribeApplicability(scope)
     return string.format(L['Loads only for: %s. The switch condition decides the rest.'],table.concat(parts,' · '))
 end
 -- END SWITCH OVERLAP
+
+-- BEGIN ROTATION HANDLES
+-- Every rotation for a specialization has a handle (Data/validation.lua):
+-- a Built In's comes from its pack (GetBuiltinHandle), yours is stored in
+-- the rotation (body.handle) or, until you set one, made from its name. The
+-- fallback is "default". Stored handles and Built Ins claim theirs first;
+-- the rest are derived in name order, a clash taking -2, -3...
+local function sortedUnstored(list) table.sort(list,function(a,b) if a.name~=b.name then return a.name<b.name end;return tostring(a.canonicalId)<tostring(b.canonicalId) end) end
+function addon:ListRotationHandles(spec,headers)
+    headers=headers or self.ListRotationHeaders and self:ListRotationHeaders(spec)
+    local rows,used,pending={},{},{}
+    for _,row in ipairs(type(headers)=='table' and headers or {}) do
+        local entry={key=row.key,name=row.name,kind=row.kind,canonicalId=row.canonicalId,fallback=row.fallback,row=row}
+        if row.fallback then entry.handle='default';entry.stored=true
+        elseif row.kind=='builtin' then entry.handle=row.handle
+        elseif row.handle then entry.handle=row.handle;entry.stored=true end
+        if entry.handle then
+            if used[entry.handle] and not row.fallback then entry.duplicateOf=used[entry.handle] end
+            used[entry.handle]=used[entry.handle] or entry
+        elseif not row.fallback then pending[#pending+1]=entry end
+        rows[#rows+1]=entry
+    end
+    sortedUnstored(pending)
+    for _,entry in ipairs(pending) do
+        local base=data.SlugRotationHandle(entry.name);local handle,n=base,2
+        while used[handle] do handle=data.SlugRotationHandle(base:sub(1,29)..'-'..n);n=n+1 end
+        entry.handle=handle;entry.derived=true;used[handle]=entry
+    end
+    return rows,used
+end
+function addon:GetRotationHandle(spec,key)
+    if key==DEFAULT then return 'default' end
+    local rows=self:ListRotationHandles(spec)
+    for _,entry in ipairs(rows) do if entry.key==key then return entry.handle,entry end end
+end
+-- A free handle made from a name, for a new rotation or a copy.
+function addon:NewRotationHandle(spec,name,except)
+    local _,used=self:ListRotationHandles(spec)
+    local base=data.SlugRotationHandle(name);local handle,n=base,2
+    while used[handle] and used[handle].key~=except do handle=data.SlugRotationHandle(base:sub(1,29)..'-'..n);n=n+1 end
+    return handle
+end
+-- nil when `text` can be this rotation's handle; else a sentence why.
+function addon:CheckRotationHandle(spec,key,text)
+    local handle,why=data.NormalizeRotationHandle(text)
+    if not handle then
+        if why=='reserved-handle' then return string.format(L['%s is reserved for /rm set.'],tostring(text)) end
+        return L['A handle starts with a letter, then letters, digits, _ or -, up to 32 characters.']
+    end
+    local _,used=self:ListRotationHandles(spec)
+    local owner=used[handle]
+    if owner and owner.key~=key then return string.format(L['%s already uses the handle %s.'],owner.name,handle) end
+    return nil,handle
+end
+-- The rotation a handle names among those selectable now; nil, and the
+-- valid handles, when none or several do.
+function addon:ResolveRotationHandle(spec,text,selectable)
+    local wanted=type(text)=='string' and text:lower():match('^%s*(.-)%s*$')
+    if not wanted or wanted=='' then return nil end
+    local rows=self:ListRotationHandles(spec);local found,valid={},{}
+    for _,entry in ipairs(rows) do
+        if not selectable or entry.fallback or selectable[entry.key] then
+            valid[#valid+1]=entry.handle
+            if entry.handle==wanted then found[#found+1]=entry end
+        end
+    end
+    table.sort(valid)
+    if #found==1 then return found[1].fallback and DEFAULT or found[1].key,found[1] end
+    return nil,nil,valid,#found>1
+end
+-- The handles of the rotations in `selectable` (runtime rows), sorted.
+function addon:ListSelectableHandles(spec,selectable)
+    local list={}
+    for _,entry in ipairs(self:ListRotationHandles(spec)) do if entry.fallback and selectable[DEFAULT] or selectable[entry.key] then list[#list+1]=entry.handle end end
+    table.sort(list);return list
+end
+-- "Name [handle]" for chat and menus.
+function addon:GetRotationLabel(key,spec)
+    spec=spec or self.currentSpec
+    local name=key==DEFAULT and DEFAULT or self:GetRotationName(key)
+    if not name then return nil end
+    local handle=key~=DEFAULT and self:GetRotationHandle(spec,key) or nil
+    return handle and string.format('%s [%s]',name,handle) or name
+end
+-- /rm list: handle, name and status of every rotation for the live spec.
+function addon:GetRotationHandleReport()
+    local spec=self.currentSpec;local lines={}
+    if spec==nil then return {L['No rotation can run until your specialization is available.']} end
+    lines[1]=string.format(L['Rotations for %s (use /rm set <handle>):'],self:DescribeRotationSpec(spec))
+    local states={}
+    for _,row in ipairs(self.GetBuiltinStates and self:GetBuiltinStates(spec) or {}) do states[row.id]=row end
+    for _,entry in ipairs(self:ListRotationHandles(spec)) do
+        local status
+        if entry.kind=='builtin' then
+            local state=states[entry.canonicalId]
+            if state and state.state=='user-disabled' then status=L['disabled by you']
+            elseif state and state.state=='shipped-disabled' then status=L['ships disabled']
+            elseif state and not state.applies then status=L['not for this character now'] end
+        end
+        if not status then
+            local why=self:ExplainRotationRefusal(spec,entry.fallback and DEFAULT or entry.key)
+            status=why and string.format(L['cannot be selected: %s'],why) or (self.currentRotation==(entry.fallback and DEFAULT or entry.key) and L['active'] or L['ready'])
+        end
+        local kind=entry.fallback and L['fallback'] or entry.kind=='builtin' and L['Built In'] or L['yours']
+        lines[#lines+1]=string.format('%s — %s (%s) — %s',entry.handle,entry.name,kind,status)
+    end
+    return lines
+end
+function addon:ShowRotationHandleReport()
+    local lines=self:GetRotationHandleReport()
+    if #lines<=6 or not self.ShowConditionText then for _,line in ipairs(lines) do self:print(line) end;return lines end
+    self:print(L['The rotation list opened in a window you can copy from.'])
+    self:ShowConditionText(table.concat(lines,'\n'),L['Rotations and their handles'])
+    return lines
+end
+-- END ROTATION HANDLES

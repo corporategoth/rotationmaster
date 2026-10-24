@@ -36,6 +36,7 @@ function addon:InstallRotationUnsaved(pane)
         local details=description~=(baseline.description or '') or not addon:UnsavedDataEqual(metadata,baseline.metadata) or not addon:UnsavedDataEqual(tags,self:EffectiveTags(baseline))
         -- Priority is in the header beside Enabled, with its own marker.
         addon:SetWorkbenchUnsaved(self.priority,writable and priority~=(baseline.priority or 0))
+        if self.handle then addon:SetWorkbenchUnsaved(self.handle,writable and self.handleDirty==true and self.handle:GetText():lower()~=(baseline.handle or '')) end
         local scopeChanged=self:BaselineScope()~=nil and self:EffectiveScope()~=self:BaselineScope()
         addon:SetWorkbenchUnsaved(self.info,writable and (details or scopeChanged))
         local index=addon.RotationData.IndexRotationSteps(current)
