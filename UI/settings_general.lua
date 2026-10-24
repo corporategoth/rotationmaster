@@ -24,7 +24,7 @@ function addon:BuildGeneralSettings(p)
         if profile.live_config_update==v then return end;profile.live_config_update=v
         p:RunSettingsEffect('conditionTimer',function()
         if self.conditionEvalTimer then self:CancelTimer(self.conditionEvalTimer);self.conditionEvalTimer=nil end
-        if v>0 then self.conditionEvalTimer=self:ScheduleRepeatingTimer('UpdateCurrentCondition',v) end
+        if self.RestartLiveStatus then self:RestartLiveStatus() end
         end)
     end)
     p:Choice('rotation_view',L['Default rotation view'],profile.rotation_view or 'diagram',{{value='diagram',text=L['Diagram view']},{value='list',text=L['List view']}},function(v) profile.rotation_view=v end)

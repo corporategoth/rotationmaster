@@ -2540,7 +2540,7 @@ L["Help.General.idle_poll"] = "Out of combat with no target and no focus, Rotati
 L["Help.General.autoswitch_poll"] = "With automatic switching, Rotation Master checks this often, in and out of combat, whether a different rotation's switch conditions now match, so conditions that change on their own (nearby enemy count, threat, movement, health) take effect. Target, focus and pet changes are checked straight away. Zero turns automatic switching off. Choosing a rotation manually still overrides automatic switching until you choose Auto again."
 L["Help.General.disable_autoswitch"] = "Keep Rotation Master from automatically selecting another rotation from its switch condition. This preference survives reloads. Manually choosing a rotation with /rm set <rotation> also suspends automatic switching until you choose automatic selection again."
 L["Help.General.disable_buttons"] = "Hide the main rotation recommendation on action bars. Independent cooldown highlights remain available. Enable Preview Spells if you want to see the main advice in a separate window; with both displays off, the main recommendation has no visible icon."
-L["Help.General.live_config_update"] = "Set the refresh interval for condition status while editing, in seconds. Zero turns off periodic status updates. This is separate from the recommendation polling interval and does not enable live condition testing unless you explicitly choose it."
+L["Help.General.live_config_update"] = "How often, in seconds, the rotation editor checks each card's condition for its live dot: green when it is satisfied for you right now, red when it is not, grey when it cannot be read at the moment (hover a dot for why and when it was checked). Conditions are checked only while the editor is open; zero turns the dots off. This is separate from the recommendation polling interval."
 L["Help.General.minimap"] = "Show the Rotation Master minimap icon. Left-click toggles the configuration window. Right-click opens the quick menu for enabling recommendations and choosing a rotation or automatic switching."
 L["Help.General.rotation_view"] = "Choose Diagram or List as the starting rotation view. This profile preference applies when opening a rotation; changing the view inside the editor does not change this setting. Cooldowns always use a scrolling grid."
 L["Help.General.spell_history"] = "Choose how many seconds of previous spell casts to retain for history-based conditions. Older casts are removed as recommendations update. A longer history retains more records."
@@ -3983,6 +3983,18 @@ L["cooldown"] = true
 L["Not on your action bars"] = true
 L["An amber border and warning mark a card whose action no action bar button holds right now. Rotation Master highlights an action by lighting the button that holds it, so that step is skipped (a cooldown is never shown) until you put it on a bar. The warning updates when your bars change. Red still marks invalid data."] = true
 L["Actions must also be on an action bar: Rotation Master highlights an action by lighting the button that holds it, so a step or cooldown that no button holds is skipped, and its card shows an amber warning."] = true
+
+-- Live condition dots (UI/rotation_cards.lua, UI/rotation_editor.lua).
+L["Currently satisfied"] = true
+L["Not satisfied"] = true
+L["Unavailable: %s"] = true
+L["unreadable right now"] = true
+L["the condition could not be evaluated"] = true
+L["Checked %d seconds ago."] = true
+L["Rotation Master is advising this step now."] = true
+L["This cooldown is showing now."] = true
+L["This rotation is advising now."] = true
+L["Not on your action bars, so it can't be highlighted. It is never shown."] = true
 
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true

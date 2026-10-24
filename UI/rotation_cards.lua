@@ -19,6 +19,46 @@ local function unboundTooltip(model)
     end
     return L["Rotation Master highlights a step by lighting the action button that holds it. No action bar button holds this action right now, so this step is skipped and the next step is used instead. Put it on an action bar to use it. Spells inside macros count only where the game lets addons read macros (not on Retail)."]
 end
+-- The live dot: the card's condition for the player right now (the editor's
+-- model.live, refreshed at the Live Status Update Frequency while the editor
+-- is open). Green satisfied, red not, grey unavailable; none without a
+-- condition. The tooltip says when it was checked, and carries the
+-- not-on-your-bars warning when the card has one.
+local LIVE_TEXTURES={satisfied='Interface\\COMMON\\Indicator-Green',unsatisfied='Interface\\COMMON\\Indicator-Red',unavailable='Interface\\COMMON\\Indicator-Gray'}
+function addon:LiveStatusTexture(status) return LIVE_TEXTURES[status] end
+function addon:DescribeLiveStatus(state)
+    local lines={}
+    if state.status=='satisfied' then lines[1]=L['Currently satisfied']
+    elseif state.status=='unsatisfied' then lines[1]=L['Not satisfied']
+    else lines[1]=string.format(L['Unavailable: %s'],tostring(state.reason or L['unreadable right now'])) end
+    if state.chosen then lines[#lines+1]=state.chosen end
+    if type(state.at)=='number' and type(GetTime)=='function' then
+        lines[#lines+1]=string.format(L['Checked %d seconds ago.'],math.max(0,math.floor(GetTime()-state.at+.5)))
+    end
+    return lines
+end
+function addon:ShowLiveStatusTooltip(owner,state,extra)
+    if not GameTooltip or type(state)~='table' then return end
+    local lines=self:DescribeLiveStatus(state)
+    GameTooltip:SetOwner(owner,'ANCHOR_RIGHT');GameTooltip:SetText(lines[1],1,1,1,1,true)
+    for i=2,#lines do GameTooltip:AddLine(lines[i],.85,.85,.85,true) end
+    if extra then GameTooltip:AddLine(extra,1,.72,.25,true) end
+    GameTooltip:Show()
+end
+function addon:CreateLiveStatusDot(parent)
+    local dot=CreateFrame('Button',nil,parent);dot:SetSize(12,12)
+    dot.dot=dot:CreateTexture(nil,'OVERLAY');dot.dot:SetAllPoints(dot)
+    function dot:SetState(state)
+        self.state=state
+        if type(state)~='table' then self:Hide();return end
+        self.dot:SetTexture(LIVE_TEXTURES[state.status] or LIVE_TEXTURES.unavailable)
+        self.dot:SetAlpha(state.status=='unavailable' and .55 or 1)
+        self:Show()
+    end
+    addon:SetUIScript(dot,'OnLeave',function() if GameTooltip and GameTooltip:IsOwned(dot) then GameTooltip:Hide() end end)
+    dot:Hide()
+    return dot
+end
 function addon:CreateRotationCard(parent)
     local card={frame=CreateFrame('Frame',nil,parent),controls={}}
     local frame=card.frame;frame:EnableMouse(true)
@@ -45,6 +85,12 @@ function addon:CreateRotationCard(parent)
     card.unbound.icon:SetVertexColor(tones.amber[1],tones.amber[2],tones.amber[3],1)
     do local caption=card.unbound:GetFontString();caption:SetTextColor(tones.amber[1],tones.amber[2],tones.amber[3]);caption:SetWordWrap(true) end
     card.unbound:Hide()
+    card.live=self:CreateLiveStatusDot(frame)
+    addon:SetUIScript(card.live,'OnEnter',function(control)
+        local model=card.model
+        if not model or type(control.state)~='table' then return end
+        addon:ShowLiveStatusTooltip(control,control.state,model.unbound and (model.section=='cooldowns' and L["Not on your action bars, so it can't be highlighted. It is never shown."] or L["Not on your action bars, so it can't be highlighted. It is skipped."]) or nil)
+    end)
     function card:Place(model,readOnly)
         self.model=model;frame:ClearAllPoints();frame:SetPoint('TOPLEFT',parent,'TOPLEFT',model.x,-model.y);frame:SetSize(model.width,model.height)
         self:SetValidation(model.invalid)
@@ -97,6 +143,7 @@ function addon:CreateRotationCard(parent)
             self.condition:ClearAllPoints();self.condition:SetPoint('TOPLEFT',26,-model.height+model.conditionHeight+4);self.condition:SetSize(model.width-56,model.conditionHeight);self.condition:GetFontString():SetWidth(model.width-62)
         end
         self:PlaceUnbound(model,unboundRow,pillWidth,branch)
+        self:PlaceLive(model,branch)
         if self.name:HasFocus() then self.name:Show();self.title:Hide()
         else self.name:Hide();self.title:Show() end
         for key,control in pairs(self.controls) do if (readOnly and key~='help') or (key=='up' and not model.canMoveUp) or (key=='down' and not model.canMoveDown) then control:Disable() else control:Enable() end end
@@ -130,6 +177,17 @@ function addon:CreateRotationCard(parent)
         end
         warning:Show()
     end
+    -- Under the reorder arrows (where they sit on rotation cards, so cooldown
+    -- cards line up too); at the right of the title when compact.
+    function card:PlaceLive(model,branch)
+        local dot=self.live;dot:ClearAllPoints()
+        if model.compact then
+            dot:SetPoint('TOPRIGHT',frame,'TOPRIGHT',(model.unbound and not branch) and -28 or -8,-8)
+        elseif branch then dot:SetPoint('TOPLEFT',frame,'TOPLEFT',7,-60)
+        else dot:SetPoint('TOPLEFT',frame,'TOPLEFT',7,-66) end
+        dot:SetState(model.live)
+    end
+    function card:SetLive(state) if self.model then self.model.live=state end;self.live:SetState(state) end
     function card:SetValidation(invalid)
         self.model.invalid=invalid
         local tone=invalid and tones.red or self.model.unbound and not self.model.inactive and tones.amber or tones[self.model.border] or tones.green

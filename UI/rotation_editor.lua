@@ -62,6 +62,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
             model.displayName=self:FieldText(model.id,'name',model.step.name or '')
             model.expanded=not model.compact and self.view.expanded[model.id]==true
             model.unbound=self.view.unbound[model.id]
+            model.live=self.liveStates and self.liveStates[model.id] or nil
         end
         return scene
     end
@@ -154,6 +155,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         if workspace.fallback then self.switch:Disable() else self.switch:Enable() end
         self.switchNoteText,self.switchNoteAmber=self:SwitchNotes();self.switchNoteWorkspace=self.workspace
         self:BuildScene();self:LayoutGeometry();self.canvas:Render()
+        if self.liveTimer then self:RefreshLiveStatus() else self.switchLive:SetState(nil) end
         for _,control in ipairs({self.compare,self.clone}) do if self.workspace.pending then control:Disable() else control:Enable() end end
         self.clone:SetText(self.workspace.readOnly and L['Clone to edit'] or L['Duplicate'])
         if self.workspace.readOnly or workspace.fallback or self.workspace.pending then self.delete:Disable() else self.delete:Enable() end
@@ -262,6 +264,8 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     pane.switchButton=addon:CreateWorkbenchButton(pane.frame,'',300);pane.switch=pane.switchButton
     pane.switchText=pane.switchButton:GetFontString();pane.switchText:ClearAllPoints();pane.switchText:SetPoint('TOPLEFT',6,-4);pane.switchText:SetWordWrap(true);pane.switchText:SetJustifyH('LEFT')
     pane.switchLabel=addon:CreateWorkbenchButton(pane.frame,L['Switch condition'],180);addon:StyleWorkbenchHeader(pane.switchLabel:GetFontString());pane.switchLabel.art:SetAlpha(.1);addon:AlignWorkbenchTextLeft(pane.switchLabel,0)
+    pane.switchLive=addon:CreateLiveStatusDot(pane.frame)
+    addon:SetUIScript(pane.switchLive,'OnEnter',function(control) addon:ShowLiveStatusTooltip(control,control.state) end)
     pane.switch.tooltip=L['Click condition text on any card to view or edit its conditions.']
     pane.compare=tool(L['Compare rotations'],126,function()
         pane:RequestLeave(function() if addon.ShowRotationComparison then addon:ShowRotationComparison(spec,id) end end)
@@ -513,6 +517,9 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         if available then self.validationButton:Hide() else self.validationButton:Show() end
         local switchTop=y+30+(available and 0 or 24)
         self.switchLabel:ClearAllPoints();self.switchLabel:SetPoint('TOPLEFT',8,-switchTop)
+        -- The switch condition's live dot follows the header text.
+        local caption=self.switchLabel:GetFontString();local textWidth=type(caption.GetStringWidth)=='function' and caption:GetStringWidth() or nil
+        self.switchLive:ClearAllPoints();self.switchLive:SetPoint('LEFT',self.switchLabel,'LEFT',math.min(168,(tonumber(textWidth) or 100)+8),0)
         self.switch:ClearAllPoints();self.switch:SetPoint('TOPLEFT',8,-switchTop-22)
         self.switchText:SetWidth(math.max(100,width-28))
         self.switchText:SetText(addon:PlainWorkbenchName(workspace.fallback and L['No other rotations match.'] or addon:DescribeCardCondition(self.workspace:Snapshot().switch or {},spec)))
@@ -543,6 +550,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         if addon.CancelWorkbenchReflow then addon:CancelWorkbenchReflow(self) end
         self.active=false;self.generation=(self.generation or 0)+1;self.canvas:Release();self.name:ClearFocus();self.description:ClearFocus();self.frame:Hide()
         if addon.WatchButtonIndex then addon:WatchButtonIndex(self,nil) end
+        self:StopLiveStatus();if addon.liveStatusLastPane==self then addon.liveStatusLastPane=nil end
     end
     function pane:Open(nextSpec,nextId,nextSelect)
         local selected,problem=addon:GetRotationEditWorkspace(nextSpec,nextId);if not selected then return nil,problem end
@@ -650,8 +658,106 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         end)
         if workspace.readOnly then self.apply:Disable();self.discard:Disable() else self.apply:Enable();self.discard:Enable() end
         for _,control in ipairs({self.compare,self.clone}) do if workspace.pending then control:Disable() else control:Enable() end end
-        self.name:EnableMouse(not workspace.readOnly and not workspace.fallback);self.canvas.frame:Show();self.frame:Show();self:Message('')
-        self.frame:SetSize(parent:GetWidth(),parent:GetHeight());self:Layout();return self
+        self.opening=true;self.name:EnableMouse(not workspace.readOnly and not workspace.fallback);self.canvas.frame:Show();self.frame:Show();self.opening=nil;self:Message('')
+        self.frame:SetSize(parent:GetWidth(),parent:GetHeight());self:Layout();self:StartLiveStatus();return self
+    end
+    -- Live condition dots. Each card's condition (and the switch condition)
+    -- is evaluated with the real evaluator against the player's state now,
+    -- every Live Status Update Frequency seconds (profile.live_config_update,
+    -- 0 = off), only while this editor is open and on screen. Only bound
+    -- (visible) cards are evaluated; Release, or a tick that finds the editor
+    -- hidden, cancels the timer, so a closed editor costs nothing.
+    local function onScreen(frame)
+        if type(frame.IsVisible)=='function' then return frame:IsVisible() end
+        while frame do
+            if not frame:IsShown() then return false end
+            frame=frame.GetParent and frame:GetParent() or nil
+        end
+        return true
+    end
+    function pane:LiveInterval()
+        local value=tonumber(addon.db.profile.live_config_update)
+        return value and value>0 and value or nil
+    end
+    function pane:StopLiveStatus()
+        if self.liveTimer then
+            local timer=self.liveTimer;self.liveTimer=nil
+            if addon.CancelTimer then addon:CancelTimer(timer) end
+        end
+        if addon.liveStatusPane==self then addon.liveStatusPane=nil end
+    end
+    function pane:StartLiveStatus()
+        self:StopLiveStatus();addon.liveStatusLastPane=self
+        local interval=self:LiveInterval()
+        if not self.active or not interval or type(addon.ScheduleRepeatingTimer)~='function' then self:ClearLiveStatus();return end
+        local token=self.generation
+        local timer
+        timer=addon:ScheduleRepeatingTimer(function()
+            if self.liveTimer~=timer then if addon.CancelTimer then addon:CancelTimer(timer) end;return end
+            if not self.active or self.generation~=token then self:StopLiveStatus();return end
+            self:RefreshLiveStatus()
+        end,interval)
+        self.liveTimer=timer;addon.liveStatusPane=self
+        self:RefreshLiveStatus()
+    end
+    function pane:ClearLiveStatus()
+        self.liveStates=nil
+        for _,card in ipairs(self.canvas.cards) do if card.token and card.model and card.SetLive then card:SetLive(nil) end end
+        self.switchLive:SetState(nil)
+    end
+    -- Whether this rotation is the one advising now, and which step it chose
+    -- (the last recommendation /rm debug glow recorded), for the tooltips.
+    function pane:LiveSelection()
+        local key=addon.currentRotation
+        if key==nil or addon.currentSpec~=spec then return false end
+        local active=key==self.workspace.id or self.workspace.effectiveFallback and key==DEFAULT
+        if not active then return false end
+        local recent=addon.GetRecentRecommendations and addon:GetRecentRecommendations()
+        local last=type(recent)=='table' and recent[#recent] or nil
+        return true,last and last.rotation==key and last.spell~=nil and last.id or nil
+    end
+    local function liveResult(result,now)
+        if type(result)~='table' then return {status='unavailable',reason=L['the condition could not be evaluated'],at=now} end
+        if result.status=='match' then return {status='satisfied',at=now} end
+        if result.status=='no-match' then return {status='unsatisfied',at=now} end
+        return {status='unavailable',reason=result.reason,at=now}
+    end
+    function pane:EvaluateLive(model,now,active,chosen)
+        local step=model.step
+        if step.type=='branch' and (step.mode or 'evaluate')~='evaluate' then return nil end
+        local condition=step.conditions
+        if type(condition)~='table' or condition.type==nil then return nil end
+        if type(addon.evaluateConditionResult)~='function' then return nil end
+        local ok,result=pcall(addon.evaluateConditionResult,addon,condition,{stepId=step.id})
+        local state=liveResult(ok and result or nil,now)
+        if active and step.type~='branch' then
+            if model.section=='cooldowns' then
+                if type(addon.avail_announced)=='table' and addon.avail_announced[step.id]~=nil then state.chosen=L['This cooldown is showing now.'] end
+            elseif chosen~=nil and chosen==step.id then state.chosen=L['Rotation Master is advising this step now.'] end
+        end
+        return state
+    end
+    function pane:RefreshLiveStatus()
+        if not self.active or not self.liveTimer then return end
+        if not onScreen(self.frame) then self:StopLiveStatus();return end
+        local now=type(GetTime)=='function' and GetTime() or 0
+        local active,chosen=self:LiveSelection()
+        local states={}
+        for _,card in ipairs(self.canvas.cards) do
+            if card.token and card.model and card.frame:IsShown() then
+                local state=self:EvaluateLive(card.model,now,active,chosen)
+                states[card.model.id]=state;card:SetLive(state)
+            end
+        end
+        self.liveStates=states
+        local switch=not self.workspace.fallback and self.workspace:Snapshot().switch
+        if type(switch)=='table' and switch.type~=nil and type(addon.SwitchConditionMatchesNow)=='function' then
+            local matched=addon:SwitchConditionMatchesNow(switch)
+            local state=matched==true and {status='satisfied',at=now} or matched==false and {status='unsatisfied',at=now}
+                or {status='unavailable',reason=L['unreadable right now'],at=now}
+            if active then state.chosen=L['This rotation is advising now.'] end
+            self.switchLive:SetState(state)
+        else self.switchLive:SetState(nil) end
     end
     -- A resize lays out the header and viewport at once. Cards follow through
     -- the shared reflow driver, once per rendered frame at most, by geometry
@@ -678,9 +784,17 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         end
     end
     addon:SetUIScript(pane.frame,'OnSizeChanged',function() pane:Resized() end)
+    -- Shown again without being reopened: the live dots resume.
+    addon:SetUIScript(pane.frame,'OnShow',function() if pane.active and pane.ready and not pane.opening and not pane.liveTimer then pane:StartLiveStatus() end end)
     addon:InstallRotationMetadata(pane)
     addon:InstallRotationUnsaved(pane);addon:InstallRotationChangeReview(pane)
     pane.ready=true;parent.rmRotationEditor=pane
     if addon.InstallRotationNavigation then addon:InstallRotationNavigation(pane) end
     return pane:Open(spec,id,onSelect)
+end
+-- General > Live Status Update Frequency changed: the open editor (if any)
+-- restarts its dots at the new interval, or clears them at 0.
+function addon:RestartLiveStatus()
+    local pane=self.liveStatusLastPane
+    if pane and pane.active then pane:StartLiveStatus() end
 end
