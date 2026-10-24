@@ -41,7 +41,7 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
 
     local spell = addon:CreateSpellEditBox(editbox,value.spell)
     local initialSpell=type(value.spell)=="string" and SpellData:GetSpellId(value.spell) or value.spell
-    local spellIcon = addon:CreateSpellActionIcon(spec == BOOKTYPE_PET and "pet" or "spell",initialSpell,isvalid)
+    local spellIcon = addon:CreateSpellActionIcon(spec == (BOOKTYPE_PET or "pet") and "pet" or "spell",initialSpell,isvalid)
     spellIcon:SetWidth(44)
     spellIcon:SetHeight(44)
     spellIcon:SetText(value.spell)
@@ -78,7 +78,7 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
     spellIcon:SetDisabled(value.disabled)
     spell_group:AddChild(spellIcon)
 
-    if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and spec ~= BOOKTYPE_PET then
+    if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and spec ~= (BOOKTYPE_PET or "pet") then
         local nr_button = addon:CreateConditionCheckBox()
         nr_button:SetLabel(L["Use this exact spell rank"])
         nr_button:SetValue(value.ranked or false)
@@ -130,7 +130,7 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update, sto
 
     local spell = addon:CreateSpellEditBox(editbox,value.spell)
     local initialSpell=type(value.spell)=="string" and SpellData:GetSpellId(value.spell) or value.spell
-    local spellIcon = addon:CreateSpellActionIcon(spec == BOOKTYPE_PET and "pet" or "spell",initialSpell,isvalid)
+    local spellIcon = addon:CreateSpellActionIcon(spec == (BOOKTYPE_PET or "pet") and "pet" or "spell",initialSpell,isvalid)
     spellIcon:SetWidth(44)
     spellIcon:SetHeight(44)
     if value.spell then

@@ -427,7 +427,7 @@ end
 local function upgradePetSpellToAnySpell()
     if addon.db.profile.version == nil or addon.db.profile.version < 1 then
         updateRotationData(function(rot)
-            if rot.type ~= nil and rot.type == BOOKTYPE_PET then
+            if rot.type ~= nil and rot.type == (BOOKTYPE_PET or "pet") then
                 rot.type = "any"
             end
         end, function(cond)
