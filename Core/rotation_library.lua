@@ -734,10 +734,10 @@ function addon:GetBuiltinStates(spec)
             elseif saved==false then state='user-disabled'
             elseif saved==true or not shipped then state='enabled'
             else state='shipped-disabled' end
-            local applies,reason=eligible({enabled=true,validation=view.validation,applicability=view.applicability},context)
+            local applies,reason=eligible({enabled=true,validation=view.validation,applicability=view.applicability,readOnly=view.readOnly,envelope=view.envelope},context)
             -- Whether its scope (edition, class, specialization, level...) fits,
             -- whatever its validity: a pack that fits but cannot run says why.
-            local fits=applies or reason=='invalid-or-unsupported' and eligible({enabled=true,validation={valid=true,supported=true,resolved=true},applicability=view.applicability},context)
+            local fits=applies or reason=='invalid-or-unsupported' and eligible({enabled=true,validation={valid=true,supported=true,resolved=true},applicability=view.applicability,readOnly=view.readOnly,envelope=view.envelope},context)
             rows[#rows+1]={id=id,name=L[view.nameKey or id],state=state,shippedDisabled=shipped,userChoice=saved,
                 applies=applies,reason=reason,fits=fits==true,key=scoped and scoped:Key({kind='builtin',id=id}) or runtimeKey(id,custom),body=active.bodies[id]}
         end

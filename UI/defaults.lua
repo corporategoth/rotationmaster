@@ -63,7 +63,9 @@ function addon:CreateDefaultRotationOptions(frame,spec,id,onClone,onRefresh)
     local function build()
         label(frame,row.name,'Heading');label(frame,L['Built In · read-only']);label(frame,row.description)
         local scope=row.applicability or {}
-        label(frame,string.format(L['Level range: %s–%s; revision %s'],scope.minLevel or '1',scope.maxLevel or '?',row.revision or '?'))
+        -- Only what decides loading (edition, class...); specialization and
+        -- level are part of the switch condition shown in the editor.
+        label(frame,(addon.DescribeApplicability and addon:DescribeApplicability(scope) or '')..' '..string.format(L['Revision %s'],tostring(row.revision or '?')))
         -- Name the first condition this client cannot support, when that is why.
         local unsupported
         if not row.eligible and row.eligibilityReason=='invalid-or-unsupported' and type(row.validation)=='table' and addon.DescribeUnsupportedCondition then
