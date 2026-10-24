@@ -478,6 +478,7 @@ function addon:HandleCommand(str)
         addon:print(L["/rm set [auto|profile]  - Switch to a specific rotation, or use automatic switching again."])
         addon:print(L["                          Manual choices are remembered for this character, specialization and action context."])
         addon:print(L["/rm why                 - Explain why each rotation can or cannot be selected."])
+        addon:print(L["/rm debug glow [seconds] - Explain why a recommendation does or does not light a button."])
         addon:print(L["/rm check               - Check the database integrity."])
         addon:print(L["/rm repair              - Fix any DB errors found in the data with internal validation."])
         addon:print(L["/rm errors              - View and copy Rotation Master errors."])
@@ -495,6 +496,9 @@ function addon:HandleCommand(str)
 
     elseif cmd == "why" then
         self:ShowRotationEligibilityReport()
+
+    elseif cmd == "debug" and self.HandleDebugCommand then
+        self:HandleDebugCommand(string.sub(str,npos))
 
     elseif cmd == 'editorinfo' then
         self:ShowLuaEditorInputReport()
