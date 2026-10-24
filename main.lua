@@ -1122,10 +1122,11 @@ function addon:SwitchRotation()
         return activeChangeCurrent(self,change) and self.currentSpec==selectedSpec and self.db.profile==selectedProfile and self.currentRotation==selectedRotation
             and autoSwitchEnabled(self.db.profile) and not self.manualRotation and (not selectionPass or selectionPass:IsCurrent())
     end
-    -- Your own rotations are tried first, then enabled Built Ins, each by
-    -- priority (GetOrderedAutoSwitchRotations); the fallback (Default) is the
-    -- last resort when no switch condition matches. A Built In you do not want
-    -- picked is disabled, or ranked, in its Built In view.
+    -- Enabled rotations, yours and Built Ins alike, are tried by priority
+    -- (GetOrderedAutoSwitchRotations: higher first, then name); the first
+    -- whose switch condition matches wins. The fallback (Default) is the last
+    -- resort when none matches. A Built In you do not want picked is disabled,
+    -- or ranked, in its Built In view.
     for _, v in ipairs(self.autoswitchRotation) do
         if not switchOwnerCurrent()then return end
         local matched=rotations[v] and switchConditionMatches(rotations[v].switch,switchOwnerCurrent)

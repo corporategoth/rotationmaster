@@ -29,12 +29,16 @@ for _,class in ipairs({'WARRIOR','ROGUE','HUNTER'})do
   end
   assert(same(a.db.profile.rotationLibrary.origins,saved[class].rotationLibrary.origins),'origins rewritten')
  end)
- test(class..': a matching clone still runs and auto-selects ahead of the new premades',function()
+ test(class..': a matching clone still runs and competes with the new premades on priority',function()
   local f,s,p=load(class,bracket[class][1]);local a=f.addon;local clone
   for _,id in ipairs(p.clones)do if a:GetSourcedRotationView(0,id).lineage.sourceId==bracket[class][2]then clone=id end end
   assert(clone and a:GetRuntimeRotation(0,clone),'bracket clone is not runnable')
   local poll,selected=M.publisher(f,s)
-  poll();assert(selected()==clone,class..' selected '..tostring(selected()))
+  -- Your rotations and Built Ins compete on priority alone: the new premade's higher
+  -- priority wins until the clone's priority is raised above it.
+  poll();assert(selected()==new[class][1],class..' selected '..tostring(selected())..' over the higher-priority premade')
+  a.db.profile.rotations[0][clone].priority=100
+  poll();assert(selected()==clone,class..' selected '..tostring(selected())..' over a higher-priority clone')
   assert(f.addon.currentSpell==bracket[class][3],'clone advice '..tostring(f.addon.currentSpell))
   -- Outside the clone's saved bracket the new premade takes over.
   s.level=70;poll();assert(selected()==new[class][1],'level 70 selected '..tostring(selected()))

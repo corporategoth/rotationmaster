@@ -1,8 +1,9 @@
 local addon_name,addon=...
 local data=addon.RotationData
 
--- Build the candidate order without evaluating switch conditions. Missing
--- priorities retain the historical alphabetical order; IDs break equal names.
+-- Build the candidate order without evaluating switch conditions: by
+-- priority (higher first), then name, then identity. Your rotations and Built
+-- Ins compete on priority alone. Missing priorities are zero.
 function addon:GetOrderedAutoSwitchRotations(spec,rotations)
     local candidates={}
     for id,body in pairs(rotations) do
@@ -12,12 +13,10 @@ function addon:GetOrderedAutoSwitchRotations(spec,rotations)
             and self:validateCondition(body.switch,spec) and self:rotationValidConditions(body,spec) then
             local tie=id;local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
             if scoped then local ref=scoped:Resolve(spec,id);if ref then if ref.kind=='builtin' then tie='builtin:'..ref.id else local a=ref.address;tie=table.concat({a.scope,a.class,a.owner,tostring(a.spec),a.id},'\0') end end end
-            candidates[#candidates+1]={id=id,tie=tie,priority=priority,name=type(body.name)=='string' and body.name or id,
-                builtin=self:IsDefaultRuntimeRotation(spec,id)==true}
+            candidates[#candidates+1]={id=id,tie=tie,priority=priority,name=type(body.name)=='string' and body.name or id}
         end
     end
     table.sort(candidates,function(left,right)
-        if left.builtin~=right.builtin then return not left.builtin end
         if left.priority~=right.priority then return left.priority>right.priority end
         if left.name~=right.name then return left.name<right.name end
         return left.tie<right.tie
@@ -306,7 +305,7 @@ function addon:GetRotationEligibilityReport()
             lines[#lines+1]=string.format(L['Automatic switching tries nothing else, then the fallback (%s): no enabled rotation here has a switch condition it can use.'],DEFAULT)
         else
             names[#names+1]=string.format(L['then the fallback (%s)'],DEFAULT)
-            lines[#lines+1]=string.format(L['Automatic switching tries: %s. Higher numbers are tried first; your own rotations are always tried before Built Ins.'],table.concat(names,', '))
+            lines[#lines+1]=string.format(L['Automatic switching tries: %s. Higher numbers are tried first; equal priorities go by name.'],table.concat(names,', '))
         end
         local choice=self.PreviewAutoSwitch and self:PreviewAutoSwitch()
         lines[#lines+1]=string.format(L['Automatic switching would choose: %s'],choice and (choice==DEFAULT and DEFAULT or self:GetRotationName(choice) or tostring(choice)) or L['None'])
@@ -326,9 +325,9 @@ end
 -- END ROTATION ELIGIBILITY EXPLANATIONS
 
 -- BEGIN SWITCH OVERLAP
--- Rotations of one tier (your own, or Built In) whose switch conditions can
--- match at the same time, so that priority alone decides between them (a
--- tie, by name). Static: each switch becomes a region (specializations and
+-- Rotations (your own and Built Ins alike, which compete on priority) whose
+-- switch conditions can match at the same time, so that priority alone
+-- decides between them (a tie, by name). Static: each switch becomes a region (specializations and
 -- a player level range, from SPECIALIZATION and LEVEL conditions joined by
 -- AND, narrowed by a Built In's applicability) plus its other conditions;
 -- two overlap when their regions meet and one's other conditions are a
@@ -441,13 +440,11 @@ function addon:GetSwitchOverlaps(spec)
     end
     for i=1,#rows do for j=i+1,#rows do
         local a,b=rows[i],rows[j]
-        if a.builtin==b.builtin then
-            local kind=self:CompareSwitchRegions(a.region,b.region)
-            local live=a.live and b.live
-            if kind or live then
-                local reverse=kind=='subsumes' and 'subsumed' or kind=='subsumed' and 'subsumes' or kind
-                add(a,b,kind or 'live',live);add(b,a,reverse or 'live',live)
-            end
+        local kind=self:CompareSwitchRegions(a.region,b.region)
+        local live=a.live and b.live
+        if kind or live then
+            local reverse=kind=='subsumes' and 'subsumed' or kind=='subsumed' and 'subsumes' or kind
+            add(a,b,kind or 'live',live);add(b,a,reverse or 'live',live)
         end
     end end
     overlapCache={order=order,spec=spec,registry=self.conditionRegistryVersion,result=result}

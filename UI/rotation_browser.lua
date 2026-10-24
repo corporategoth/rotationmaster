@@ -159,7 +159,7 @@ local function create(parent)
         local blockedText=blocked and string.format(L['This rotation cannot be selected. %s.'],entry.problem and addon.DescribeRotationIssue and addon:DescribeRotationIssue(entry.problem) or L['It has incomplete or unsupported data']) or nil
         addon:SetWorkbenchProblem(control,blockedText)
         -- Grey when it is switched off (by you, or as it ships); amber when
-        -- its switch can match together with another of its tier, so only
+        -- its switch can match together with another rotation, so only
         -- priority decides (stronger on a tie). The tooltip says which apply.
         local disabledText
         if entry.readOnly and entry.builtinState=='user-disabled' then disabledText=L['Disabled by you: automatic switching skips it. Select it and click Disabled to turn it back on.']
@@ -177,7 +177,7 @@ local function create(parent)
         if overlapText then lines[#lines+1]=overlapText end
         local handle=self.handles and self.handles[key]
         if handle then lines[#lines+1]=string.format(L['Handle: %s (/rm set %s)'],handle,handle) end
-        if not entry.fallback then lines[#lines+1]=L['Higher numbers are tried first; your own rotations are always tried before Built Ins.'] end
+        if not entry.fallback then lines[#lines+1]=L['Higher numbers are tried first; equal priorities go by name. Your rotations and Built Ins compete on priority alone.'] end
         control.tooltip=#lines>0 and table.concat(lines,'\n\n') or nil
         local function requestValid() return browser.active and browser.serial==serial and browser.profile==profile and profile==addon.db.profile and browser.spec==spec and browser.navigationRevision==navigation and browser.rowsByKey[key]~=nil end
         -- A Built In you switched off turns back on from the list in one click.
@@ -244,13 +244,11 @@ local function create(parent)
         end
         if self.pendingId and byKey[self.pendingId] and not byKey[self.pendingId].pending then self.pendingId=nil end
         self.allByKey=byKey
-        -- The order automatic switching tries them in: your own rotations,
-        -- then Built Ins, each by priority (higher first), then name; the
-        -- fallback, the last resort, comes last.
+        -- The order automatic switching tries them in: by priority (higher
+        -- first), then name, your rotations and Built Ins alike; the fallback,
+        -- the last resort, comes last.
         table.sort(all,function(a,b)
             if a.fallback~=b.fallback then return b.fallback==true end
-            local ab,bb=a.kind=='builtin',b.kind=='builtin'
-            if ab~=bb then return bb end
             local ap,bp=a.priority or -math.huge,b.priority or -math.huge
             if ap~=bp then return ap>bp end
             if a.name~=b.name then return a.name<b.name end

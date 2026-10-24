@@ -11,10 +11,10 @@ local function fixture()
     return f.addon
 end
 local function body(name,priority) return {name=name,priority=priority,switch={type='COMBAT'},rotation={{type='spell',action=403}}} end
-test('explicit priorities sort high first within ownership with stable name and identity ties',function()
-    local a=fixture();local rows={z=body('Same',7),a=body('Same',7),b=body('Before',7),low=body('A',-2),['pack:high']=body('Pack',1000)}
+test('explicit priorities sort high first, packs and yours alike, with stable name and identity ties',function()
+    local a=fixture();local rows={z=body('Same',7),a=body('Same',7),b=body('Before',7),low=body('A',-2),['pack:high']=body('Pack',1000),['pack:tie']=body('Bz',7)}
     local order=a:GetOrderedAutoSwitchRotations(0,rows)
-    assert(table.concat(order,',')=='b,a,z,low,pack:high')
+    assert(table.concat(order,',')=='pack:high,b,pack:tie,a,z,low',table.concat(order,','))
     assert(rows.low.priority==-2 and rows.a.name=='Same','selection mutated saved rotations')
 end)
 test('missing priorities retain alphabetical behavior and invalid or disabled candidates stay out',function()
