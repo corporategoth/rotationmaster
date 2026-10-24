@@ -168,7 +168,8 @@ local FORECAST={SECRET_HEALTH,LOG,UNIT,{'UnitGUID'},{'UnitHealth'},{'GetTime'}}
 local LOC={POLICY,{'C_LossOfControl.GetActiveLossOfControlDataCount'},{'C_LossOfControl.GetActiveLossOfControlData'}}
 local PROXIMITY={UNIT,{'IsInRaid'},{'IsInGroup'},{'UnitIsUnit'},{'UnitPosition'}}
 local MOBINFO={POLICY,UNIT,{'UnitName'},{'UnitLevel'}}
-local WEAPON={{'GetWeaponEnchantInfo'}}
+-- Retail/Forever read C_PaperDollInfo (the global is a loadDeprecationFallbacks alias there).
+local WEAPON={{'C_PaperDollInfo.GetTemporaryEnchantmentInfo','GetWeaponEnchantInfo'}}
 local SWING={{'UnitAttackSpeed'}}
 local TOTEM={{'GetTotemInfo'}}
 local TOTEM_SPELL={{'GetNumTotemSlots'},{'GetTotemInfo'}}
