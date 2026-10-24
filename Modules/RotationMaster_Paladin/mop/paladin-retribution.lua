@@ -22,10 +22,10 @@ local free=any(buff(90174),buff(105809))
 local inquisition=any(buff(INQ),negate(known(INQ)))
 local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.retribution',revision=2,
- blocks={['mop.paladin.boundaries']=1,['mop.paladin.upkeep']=1,['mop.paladin.seal-truth']=2,['mop.paladin.defensives']=1,['mop.paladin.ret-survival']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.retribution',revision=3,
+ blocks={['mop.paladin.damage-boundaries']=1,['mop.paladin.upkeep']=1,['mop.paladin.seal-truth']=2,['mop.paladin.defensives']=1,['mop.paladin.ret-survival']=1},
  nameKey='Default.MoP.Paladin.Retribution.Name',descriptionKey='Default.MoP.Paladin.Retribution.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN'},
  tags={'retribution','leveling','single-target','aoe','wowsims','hekili','wowhead','icy-veins'},
  sources={
   {url='https://github.com/wowsims/mop/blob/master/ui/specs/paladin/retribution/apls/default.apl.json',title='wowsims MoP: Retribution default APL',reviewedAt='2026-10-23',revision='ec2c6c2552'},
@@ -45,8 +45,7 @@ assert(addon:RegisterDefaultRotation({
    block('ret-defensives','mop.paladin.defensives','ret-'),
   },
   rotation={
-   block('ret-boundaries','mop.paladin.boundaries','ret-'),
-   stop('ret-target',negate({type='ATTACKABLE',unit='target'})),
+   block('ret-boundaries','mop.paladin.damage-boundaries','ret-'),
    {id='ret-pull',type='branch',conditions=all(negate(combat()),{type='BEYOND_MELEE',unit='target'}),onFalse={},onTrue={
     spell('ret-pull-judgment',20271),spell('ret-pull-exorcism',879),stop('ret-pull-stop')}},
    block('ret-survival','mop.paladin.ret-survival','ret-'),

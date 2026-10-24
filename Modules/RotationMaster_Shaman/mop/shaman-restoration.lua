@@ -22,10 +22,10 @@ local someone=any(hurt(.95),around(.9,1))
 local heavy=around(.6,3)
 local rain=all({type='SPELL_AVAIL',spell=73920},around(.9,3))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.restoration',revision=2,
- blocks={['mop.shaman.manual']=1,['mop.shaman.group']=1,['mop.shaman.restoration-upkeep']=1,['mop.shaman.restoration-damage']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.restoration',revision=3,
+ blocks={['mop.shaman.manual']=2,['mop.shaman.group']=1,['mop.shaman.restoration-upkeep']=1,['mop.shaman.restoration-damage']=1},
  nameKey='Default.MoP.Shaman.Restoration.Name',descriptionKey='Default.MoP.Shaman.Restoration.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='SHAMAN',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='SHAMAN'},
  tags={'restoration','healer','caster','leveling','endgame','icy-veins','wowhead'},
  sources={{url='https://www.icy-veins.com/mists-of-pandaria-classic/restoration-shaman-pve-rotation-cooldowns-abilities',title='Icy Veins: Restoration Shaman rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2025-06-22'},
  {url='https://www.wowhead.com/mop-classic/guide/classes/shaman/restoration/healer-rotation-cooldowns-abilities-pve',title='Wowhead: Restoration Shaman healing (MoP Classic)',reviewedAt='2026-10-23',revision='2026-06-21'},

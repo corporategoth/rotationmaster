@@ -18,10 +18,10 @@ local shadowform={type='BUFF',unit='player',spell=15473}
 local solo=negate({type='GROUP'})
 local unshielded=negate({type='DEBUFF',unit='player',spell=6788})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.priest.dps',revision=3,
- blocks={['forever.priest.boundaries']=1,['forever.priest.upkeep']=1,['forever.priest.dps-upkeep']=2,['forever.priest.wand']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.priest.dps',revision=4,
+ blocks={['forever.priest.dps-boundaries']=1,['forever.priest.upkeep']=1,['forever.priest.dps-upkeep']=2,['forever.priest.wand']=1},
  nameKey='Default.Forever.Priest.Dps.Name',descriptionKey='Default.Forever.Priest.Dps.Description',
- applicability={families={'forever'},actionContext='player',class='PRIEST',minLevel=1,maxLevel=60},
+ applicability={families={'forever'},actionContext='player',class='PRIEST'},
  tags={'shadow','leveling','single-target','icy-veins','wowhead'},
  sources={
   {url='https://www.icy-veins.com/wow-forever/shadow-priest-leveling',title='Icy Veins: Forever Shadow Priest leveling',reviewedAt='2026-10-23',revision='2026-10-17'},
@@ -39,8 +39,7 @@ assert(addon:RegisterDefaultRotation({
    block('dps-reminders','forever.priest.dps-upkeep','dps-'),
   },
   rotation={
-   block('dps-boundaries','forever.priest.boundaries','dps-'),
-   stop('dps-target',negate({type='ATTACKABLE',unit='target'})),
+   block('dps-boundaries','forever.priest.dps-boundaries','dps-'),
    spell('dps-shadowform',15473,negate(shadowform)),
    {id='dps-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell('dps-pull-shield',17,all(solo,unshielded)),

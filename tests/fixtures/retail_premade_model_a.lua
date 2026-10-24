@@ -131,11 +131,17 @@ function M.new(class,token,spec,options)
   GetNextCastSpell=function(check)s.assistedCheck=check;return s.suggest end,
   GetRotationSpells=function()return s.rotationSpells or{}end,
   GetActionSpell=function()return nil end}
+ s.specID=spec
+ -- The player's specialization, which the premades' SPECIALIZATION switches read (index 1 and its ID;
+ -- an initial spec below 10 is reported the same way). s.respec(id) changes it mid-session.
+ e.C_SpecializationInfo={GetSpecialization=function()if s.specID then return 1 end end,
+  GetSpecializationInfo=function(index)if index==1 then return s.specID end end}
  for _,path in ipairs({'Platform/inventory.lua','Platform/unit_states.lua','Platform/spells.lua','Platform/auras.lua','Platform/range.lua','Platform/actions.lua','Platform/talents.lua','Platform/assisted_combat.lua','Core/action_policy.lua',
   'Core/conditions.lua','Core/aura_conditions.lua','Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/validation.lua','Data/catalog.lua','Data/diff.lua',
   'Core/rotation_library.lua','Conditions/common.lua','Conditions/spell.lua','Conditions/known_spell.lua','Conditions/character.lua','Conditions/buffs.lua',
   'Conditions/debuffs.lua','Conditions/combat.lua','Conditions/casting.lua','Conditions/channeling.lua','Conditions/stats.lua','Conditions/talent.lua',
-  'Conditions/item.lua','Conditions/spatial.lua','Conditions/spatial_stats.lua','Conditions/unit_states.lua','Conditions/range.lua','Conditions/misc.lua','Conditions/weapon.lua','Conditions/assisted.lua'})do f.load(path)end
+  'Conditions/item.lua','Conditions/spatial.lua','Conditions/spatial_stats.lua','Conditions/unit_states.lua','Conditions/range.lua','Conditions/misc.lua','Conditions/weapon.lua','Conditions/assisted.lua',
+  'Core/build_context.lua','Conditions/specialization.lua'})do f.load(path)end
  for _,path in ipairs(packPaths(class))do f.load(path)end
  -- The client has no BOOKTYPE_* globals (removed in 11.0) and reads addon metadata through C_AddOns.
  e.C_AddOns={GetAddOnMetadata=function()return 'Rotation Master test'end,IsAddOnLoaded=function()return false end}
@@ -157,6 +163,7 @@ function M.new(class,token,spec,options)
  s.learn=function(...)for _,id in ipairs({...})do s.known[id]=true;a.SpellCatalog:UpdateSpell(id)end end
  s.ranged=function(...)for _,id in ipairs({...})do s.range[id]=true end end
  s.setLevel=function(level)s.level=level;a.longtermCache={};a:PLAYER_LEVEL_UP('PLAYER_LEVEL_UP')end
+ s.respec=function(id)s.specID=id;a.currentSpec=id;a:InvalidateBuildContext('talents')end
  s.near=function(count,range,threat)
   s.enemies={};a.unitsInRange={}
   for i=1,count do local unit,guid='nameplate'..i,'Creature-np'..i;s.enemies[i]={unit=unit,guid=guid,range=range or{0,5},threat=threat or 0};a.unitsInRange[guid]={unit=unit}end
@@ -234,7 +241,8 @@ end
 function M.initial(class,token,spec,id,learn)
  local f,s=M.new(class,token,spec);local a=f.addon;s.setLevel(4);s.learn(unpack(learn))
  local row=M.row(a,id);local scope=row.applicability
- assert(#scope.specs==1 and scope.specs[1]==spec and scope.minLevel==1,id..' scope')
+ assert(scope.specs==nil and scope.minLevel==nil and scope.maxLevel==nil,id..' scope: load-time facts only')
+ local switch=row.envelope.body.switch;assert(switch.type=='SPECIALIZATION'and switch.spec==spec,id..' switch')
  assert(M.selected(a)==id,'initial spec auto-selected '..tostring((M.selected(a))))
  for other,listed in pairs(M.rows(a))do if other~=id then assert(not listed.eligible,other..' eligible in the initial spec')end end
  s.suggest=learn[1];M.expect(a,s,id,learn[1],nil,'the Assisted suggestion')

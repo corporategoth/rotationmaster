@@ -21,11 +21,11 @@ local ARROW=3674
 local arrow=all(any(negate({type='DEBUFF',unit='target',spell=ARROW,owndebuff=true}),{type='DEBUFF_REMAIN',unit='target',spell=ARROW,owndebuff=true,operator='LESSTHAN',value=2}),
  {type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=8})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.survival',revision=3,
- blocks={['mop.hunter.boundaries']=1,['mop.hunter.mark']=1,['mop.hunter.pet']=1,['mop.hunter.aspect']=1,['mop.hunter.utility']=1,['mop.hunter.burst']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.survival',revision=4,
+ blocks={['mop.hunter.boundaries']=2,['mop.hunter.mark']=1,['mop.hunter.pet']=1,['mop.hunter.aspect']=1,['mop.hunter.utility']=1,['mop.hunter.burst']=1,
   ['mop.hunter.talents']=1,['mop.hunter.talent-shots']=1,['mop.hunter.serpent']=1,['mop.hunter.filler']=1},
  nameKey='Default.MoP.Hunter.Survival.Name',descriptionKey='Default.MoP.Hunter.Survival.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='HUNTER',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='HUNTER'},
  tags={'survival','leveling','single-target','aoe','wowhead','wowsims'},
  sources={
   {url='https://www.wowhead.com/mop-classic/guide/classes/hunter/survival/dps-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Survival Hunter rotation (Phase 5)',reviewedAt='2026-10-23',revision='2026-06-20'},

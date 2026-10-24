@@ -228,14 +228,15 @@ function M.expect(a,s,id,want,status,label)
  if status then assert(result.status==status,(label or id)..': expected status '..status..', got '..tostring(result.status))end
  return result
 end
--- Every premade of a class: listed read-only, Mists only (progression, expansion 4), from level
--- minLevel to 90, eligible on the modeled Mists client, and never registered on a Wrath client.
+-- Every premade of a class: listed read-only, Mists only (progression, expansion 4), applicability
+-- holding only load-time facts (level and specialization live in the switch), eligible on the modeled
+-- Mists client, and never registered on a Wrath client. minLevel is kept for the callers' record.
 function M.scope(class,ids,minLevel)
  local f,s=M.new(class);local a=f.addon;local rows=M.rows(a);local token=(class:gsub('%-','')):upper()
  for _,id in ipairs(ids)do
   local row=assert(rows[id],id);local scope=row.applicability
   assert(row.readOnly and row.builtin and scope.families[1]=='progression'and #scope.families==1 and scope.class==token,id)
-  assert(scope.minExpansion==4 and scope.maxExpansion==4 and scope.maxLevel==90 and scope.minLevel==(minLevel or 1),id..' scope')
+  assert(scope.minExpansion==4 and scope.maxExpansion==4 and scope.maxLevel==nil and scope.minLevel==nil and scope.specs==nil,id..' scope')
   -- A player-chosen variant ships disabled: listed, ineligible only because it is off.
   if row.envelope.body.disabled then assert(not row.eligible and row.eligibilityReason=='disabled',id..': '..tostring(row.eligibilityReason))
   else assert(row.eligible,id..' not eligible on the Mists client: '..tostring(row.eligibilityReason))end

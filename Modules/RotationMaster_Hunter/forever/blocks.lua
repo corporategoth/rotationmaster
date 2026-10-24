@@ -24,10 +24,9 @@ local arcaneTurn=all({type='SPELL_HISTORY_TIME',spell=1293241,operator='LESSTHAN
  negate({type='SPELL_HISTORY_TIME',spell=3044,operator='LESSTHAN',value=17}))
 local worth=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},
  {type='CLASSIFICATION',unit='target',value='worldboss'},{type='INSTANCE',value='party'},{type='INSTANCE',value='raid'})
--- Your casts and channels (Aimed Shot, Sniper Shot, Volley, Mend Pet) end advice.
-assert(addon:RegisterDefaultBlock({id='forever.hunter.boundaries',revision=1,families={'forever'},class='HUNTER',steps={
- stop('cast',{type='CASTING',unit='player'}),
- stop('channel',{type='CHANNELING',unit='player'}),
+-- No attackable target, or your casts and channels (Aimed Shot, Sniper Shot, Volley, Mend Pet), end advice.
+assert(addon:RegisterDefaultBlock({id='forever.hunter.boundaries',revision=3,families={'forever'},class='HUNTER',steps={
+ stop('cast',any(negate({type='ATTACKABLE',unit='target'}),{type='CASTING',unit='player'},{type='CHANNELING',unit='player'})),
 }}))
 -- A ranged Hunter whose target is in melee (levels 1–9, or a mob that reached you): melee
 -- strikes, then auto attack. Wing Clip, Disengage and traps for kiting stay with the player.

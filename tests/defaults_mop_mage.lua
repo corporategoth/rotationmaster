@@ -19,7 +19,7 @@ test('the Mage premades are Mists only, from 1 (catch-all) or 10 to 90, and neve
  for _,id in ipairs({ARCANEIV,FIREIV})do
   local scope=rows[id].applicability
   assert(rows[id].envelope.body.disabled and rows[id].eligibilityReason=='disabled','source variants ship disabled: '..id)
-  assert(scope.families[1]=='progression'and scope.minExpansion==4 and scope.maxExpansion==4 and scope.minLevel==10 and scope.maxLevel==90,id)
+  assert(scope.families[1]=='progression'and scope.minExpansion==4 and scope.maxExpansion==4 and scope.minLevel==nil and scope.maxLevel==nil,id)
   assert(a:SetDefaultRotationEnabled(id,true)and M.row(a,id).eligible,id..' enabled is eligible')
  end
  assert(not rows[ARCANE].envelope.body.disabled and not rows[FIRE].envelope.body.disabled and not rows[FROST].envelope.body.disabled)

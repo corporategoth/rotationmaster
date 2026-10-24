@@ -9,7 +9,7 @@ local _,addon=...
 -- Talent trees in the Forever talent window's order (assumed classic: 1 Assassination, 2 Combat, 3 Subtlety; verify in game).
 -- Level 10 first (no talent config below it), then the points (an empty tree is a clean no-match),
 -- then the primary tree, which settles hybrids.
-local function tree(n,points)return{type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+local function tree(n,points)return{type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=25},
  {type='TALENT_TREE_POINTS',tree=n,operator='GREATERTHANOREQUALS',value=points},{type='PRIMARY_TALENT_TREE',tree=n}}}end
 local function all(...)return{type='AND',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
@@ -18,10 +18,10 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local behind=negate({type='THREAT',unit='target',threat=3})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.rogue.subtlety.warcrafttavern',revision=3,
- blocks={['forever.rogue.boundaries']=1,['forever.rogue.stealth-fallback']=2,['forever.rogue.reactive']=1,['forever.rogue.expose-armor']=1,['forever.rogue.upkeep']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.rogue.subtlety.warcrafttavern',revision=4,
+ blocks={['forever.rogue.boundaries']=2,['forever.rogue.stealth-fallback']=2,['forever.rogue.reactive']=1,['forever.rogue.expose-armor']=1,['forever.rogue.upkeep']=2},
  nameKey='Default.Forever.Rogue.Subtlety.WarcraftTavern.Name',descriptionKey='Default.Forever.Rogue.Subtlety.WarcraftTavern.Description',
- applicability={families={'forever'},actionContext='player',class='ROGUE',minLevel=25,maxLevel=60},
+ applicability={families={'forever'},actionContext='player',class='ROGUE'},
  tags={'dps','melee','leveling','endgame','subtlety','warcraft-tavern'},
  sources={
  {url='https://github.com/simulationcraft/simc/blob/4dd64b4a212e946cdbf22219f7d7c42f2fe0e23d/engine/dbc/generated/trait_data.inc',title='SimulationCraft Forever trait data (1.60.1.70425): talent node IDs',reviewedAt='2026-10-23',revision='4dd64b4'},

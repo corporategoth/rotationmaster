@@ -19,16 +19,16 @@ local howl=any(buff(471878),buff(472324),buff(472325))
 -- Kill Command just before a ready Takedown, without Twin Fangs and with no Tip of the Spear.
 local beforeTakedown=all(negate(known(1272139)),negate(tip),{type='SPELL_AVAIL',spell=TAKEDOWN})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.survival.guide',revision=3,
- blocks={['retail.hunter.boundaries']=1,['retail.hunter.utility']=2,['retail.hunter.mark']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.survival.guide',revision=4,
+ blocks={['retail.hunter.boundaries']=2,['retail.hunter.utility']=2,['retail.hunter.mark']=1},
  nameKey='Default.Retail.Hunter.SurvivalGuide.Name',descriptionKey='Default.Retail.Hunter.SurvivalGuide.Description',
- applicability={families={'retail'},actionContext='player',class='HUNTER',specs={255},minLevel=10,maxLevel=90},
+ applicability={families={'retail'},actionContext='player',class='HUNTER'},
  tags={'survival','melee','pet','reference','simulationcraft'},
  sources={
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/hunter_survival.simc',title='SimulationCraft default action list: Survival',reviewedAt='2026-10-23',revision='c5fea93f'},
   {url='https://www.icy-veins.com/wow/survival-hunter-pve-dps-rotation-cooldowns-abilities',title='Icy Veins: Survival Hunter rotation (12.1.5)',reviewedAt='2026-10-23',revision='2026-10-12',notes='Openers only; they match SimulationCraft.'},
  },
- body={priority=10,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+ body={priority=10,disabled=true,switch={type='SPECIALIZATION',spec=255},
   cooldowns={
    block('svguide-utility','retail.hunter.utility','svguide-'),
    spell('svguide-aspect-of-the-eagle',186289,all(combat(),{type='BEYOND_MELEE',unit='target'})),
@@ -66,8 +66,7 @@ assert(addon:RegisterDefaultRotation({
      spell('svguide-sen-chakram',CHAKRAM),
      spell('svguide-sen-raptor',RAPTOR),
      spell('svguide-sen-kill-filler',KILL),
-     spell('svguide-sen-bomb-filler',BOMB),
-     spell('svguide-sen-takedown-filler',TAKEDOWN)}},
+     spell('svguide-sen-bomb-filler',BOMB)}},
   },
  },
 }))

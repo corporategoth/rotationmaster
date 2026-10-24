@@ -1,22 +1,22 @@
 -- Retail (Midnight 12.x) Demon Hunter before a specialization (levels 1-9; the game reports the class's
 -- initial specialization, ID 1456, from Blizzard's ChrSpecialization data), Blizzard Assisted
 -- (recommended): the rotation is Blizzard's Assisted Combat suggestion, the one rotation input an
--- addon can still read in combat, after the shared cast/channel Stops. The shared Demon Hunter reminders
+-- addon can still read in combat, after the shared cast/channel Stop. The shared Demon Hunter reminders
 -- ride alongside; each lights only once its spell is known. A specialization's premades take over
 -- once one is chosen.
 local _,addon=...
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.initial',revision=1,
- blocks={['retail.demonhunter.boundaries']=1,['retail.demonhunter.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.initial',revision=2,
+ blocks={['retail.demonhunter.boundaries']=2,['retail.demonhunter.utility']=2},
  nameKey='Default.Retail.DemonHunter.Initial.Name',descriptionKey='Default.Retail.DemonHunter.Initial.Description',
- applicability={families={'retail'},actionContext='player',class='DEMONHUNTER',specs={1456},minLevel=1,maxLevel=90},
+ applicability={families={'retail'},actionContext='player',class='DEMONHUNTER'},
  tags={'leveling','assisted-combat'},
  sources={
   {url='https://github.com/Gethe/wow-ui-source/blob/live/Interface/AddOns/Blizzard_APIDocumentationGenerated/AssistedCombatDocumentation.lua',title='Blizzard API documentation: C_AssistedCombat (12.1.5.70529)',reviewedAt='2026-10-23',revision='e7aa82019d'},
   {url='https://wago.tools/db2/ChrSpecialization',title='Blizzard client data: ChrSpecialization (the class initial specializations, order index 4)',reviewedAt='2026-10-23',revision='12.1.5',notes='Demon Hunter initial specialization 1456.'},
  },
- body={priority=20,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=20,switch={type='SPECIALIZATION',spec=1456},
   cooldowns={
    block('initial-utility','retail.demonhunter.utility','initial-'),
   },

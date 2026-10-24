@@ -22,10 +22,10 @@ local function shocked()return{type='DEBUFF',unit='target',spell=8050,anyrank=tr
 local stationary=negate({type='MOVING'})
 local ranged={type='BEYOND_MELEE',unit='target'}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.shaman.enhancement',revision=3,
- blocks={['forever.shaman.manual']=1,['forever.shaman.upkeep']=2,['forever.shaman.imbue']=1,['forever.shaman.group-totems']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.shaman.enhancement',revision=4,
+ blocks={['forever.shaman.manual-target']=1,['forever.shaman.upkeep']=2,['forever.shaman.imbue']=1,['forever.shaman.group-totems']=1},
  nameKey='Default.Forever.Shaman.Enhancement.Name',descriptionKey='Default.Forever.Shaman.Enhancement.Description',
- applicability={families={'forever'},actionContext='player',class='SHAMAN',minLevel=1,maxLevel=60},
+ applicability={families={'forever'},actionContext='player',class='SHAMAN'},
  tags={'dps','melee','leveling','endgame','aoe','icy-veins'},
  sources={{url='https://www.icy-veins.com/wow-forever/enhancement-shaman-melee-dps-pve-guide',title='Icy Veins: Forever Enhancement Shaman PvE guide',reviewedAt='2026-10-23',revision='2026-10-17'},
  {url='https://www.icy-veins.com/wow-forever/enhancement-shaman-leveling',title='Icy Veins: Forever Enhancement Shaman leveling',reviewedAt='2026-10-23',revision='2026-10-17'},
@@ -38,8 +38,7 @@ assert(addon:RegisterDefaultRotation({
   spell('shaman-enh-rage-of-the-farseer',425336,all(combat(),any(big(),enemies(3)))),
   spell('shaman-enh-stoneclaw-totem',5730,all(combat(),negate({type='GROUP'}),enemies(2)))},
  rotation={
- block('forever.shaman.manual','shaman-enh-'),
- {id='shaman-enh-no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
+ block('forever.shaman.manual-target','shaman-enh-'),
  {id='shaman-enh-pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('shaman-enh-pull-bolt',403,all(ranged,stationary)),
   {id='shaman-enh-pull-stop',type='none',suppress_attack=false,conditions={}},

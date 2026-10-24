@@ -26,10 +26,10 @@ local cursed={type='OR',value={}};for i,id in ipairs(curses)do cursed.value[i]=o
 local incinerated=all(buff(412758),{type='BUFF_REMAIN',unit='player',spell=412758,operator='GREATERTHANOREQUALS',value=1.8})
 local summon=all(negate({type='PET'}),negate(combat()))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.fire',revision=3,
- blocks={['era.warlock.boundaries']=1,['era.warlock.armor']=1,['era.warlock.safety']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.fire',revision=4,
+ blocks={['era.warlock.boundaries']=2,['era.warlock.armor']=1,['era.warlock.safety']=1},
  nameKey='Default.SoD.Warlock.Fire.Name',descriptionKey='Default.SoD.Warlock.Fire.Description',
- applicability={families={'era'},actionContext='player',class='WARLOCK',minLevel=1,maxLevel=60,rulesets={'season:2'}},
+ applicability={families={'era'},actionContext='player',class='WARLOCK',rulesets={'season:2'}},
  tags={'dps','ranged','caster','leveling','endgame','aoe','season-of-discovery','wowsims','wowhead'},
  sources={{url='https://github.com/wowsims/sod/blob/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/warlock/apls/p6/destruction.apl.json',title='wowsims/sod: Destruction Warlock Phase 6 APL',reviewedAt='2026-10-23',revision='0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e'},
  {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/warlock/dps-talent-builds-runes',title='Wowhead: SoD Warlock DPS talents and runes (Phase 6)',reviewedAt='2026-10-23',revision='2025-01-13'},

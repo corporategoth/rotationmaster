@@ -25,16 +25,16 @@ local tanked={type='THREAT',unit='target',threat=3}
 local unqueued=all(negate(queued(78)),negate(queued(845)))
 local function rend()return spell('warrior-prot-rend',772,negate(debuff(772,true)))end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.warrior.protection',revision=3,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.warrior.protection',revision=4,
  blocks={['forever.warrior.boundaries']=2,['forever.warrior.upkeep']=2},
  nameKey='Default.Forever.Warrior.Protection.Name',descriptionKey='Default.Forever.Warrior.Protection.Description',
- applicability={families={'forever'},actionContext='player',class='WARRIOR',minLevel=10,maxLevel=60},
+ applicability={families={'forever'},actionContext='player',class='WARRIOR'},
  tags={'tank','melee','leveling','endgame','aoe','icy-veins','method'},
  sources={{url='https://www.icy-veins.com/wow-forever/protection-warrior-tank-pve-guide',title='Icy Veins: Forever Protection Warrior tank PvE guide',reviewedAt='2026-10-23',revision='2026-10-17'},
  {url='https://www.icy-veins.com/wow-forever/protection-warrior-leveling',title='Icy Veins: Forever Protection Warrior leveling',reviewedAt='2026-10-23',revision='2026-10-17'},
  {url='https://www.method.gg/wow-forever/wow-forever-warrior-leveling-guide-and-talents',title='Method: Forever Warrior leveling guide and talents',reviewedAt='2026-10-23',revision='2026-10-09'},
  {url='https://worldofwarcraft.blizzard.com/en-us/news/24301514',title='Blizzard: Forever class deep dives, Priest and Warrior',reviewedAt='2026-10-23',revision='2026-09-30'}},
- body={priority=25,switch={type='FORM',value=2},
+ body={priority=25,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='FORM',value=2}}},
  cooldowns={block('forever.warrior.upkeep','warrior-prot-'),
   spell('warrior-prot-shield-block',2565,all(combat(),tanked,negate({type='BUFF',unit='player',spell=2565}))),
   spell('warrior-prot-heroic-strike',78,all(combat(),unqueued,enemies('LESSTHAN',2),negate({type='SPELL_AVAIL',spell=23922}),negate({type='SPELL_AVAIL',spell=6572}))),

@@ -9,12 +9,12 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='priest-sod-wh-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.priest.dps.wowhead',revision=3,
- blocks={['era.priest.boundaries']=1,['era.priest.enemy-target']=1,['era.priest.shadowform']=1,['era.priest.pull-shield']=1,['era.priest.wand-finish']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.priest.dps.wowhead',revision=4,
+ blocks={['era.priest.dps-boundaries']=1,['era.priest.shadowform']=1,['era.priest.pull-shield']=1,['era.priest.wand-finish']=1,
   ['era.priest.wand-fallback']=1,['era.priest.upkeep']=1,['era.priest.dps-upkeep']=1,['sod.priest.upkeep']=2,['sod.priest.pull']=2,['sod.priest.aoe']=1,
   ['sod.priest.moving']=1,['sod.priest.dots']=2,['sod.priest.procs']=1,['sod.priest.filler']=1},
  nameKey='Default.SoD.Priest.Dps.Wowhead.Name',descriptionKey='Default.SoD.Priest.Dps.Wowhead.Description',
- applicability={families={'era'},actionContext='player',class='PRIEST',minLevel=1,maxLevel=60,rulesets={'season:2'}},
+ applicability={families={'era'},actionContext='player',class='PRIEST',rulesets={'season:2'}},
  tags={'shadow','damage','raid','single-target','aoe','season-of-discovery','wowhead','warcraft-tavern'},
  sources={
   {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/priest/dps-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Priest DPS rotation',reviewedAt='2026-10-23',revision='2025-02-01',notes='Phase 7 text.'},
@@ -25,8 +25,7 @@ assert(addon:RegisterDefaultRotation({
   switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
   cooldowns={block(P..'upkeep','era.priest.upkeep',P),block(P..'dps-upkeep','era.priest.dps-upkeep',P),block(P..'sod-upkeep','sod.priest.upkeep',P)},
   rotation={
-   block(P..'boundaries','era.priest.boundaries',P),
-   block(P..'target','era.priest.enemy-target',P),
+   block(P..'boundaries','era.priest.dps-boundaries',P),
    block(P..'form','era.priest.shadowform',P),
    block(P..'pull','sod.priest.pull',P),
    block(P..'aoe','sod.priest.aoe',P),

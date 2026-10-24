@@ -19,10 +19,10 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local focus={type='FRIENDLY',unit='focus'}
 local function onFocus(...)local list={};for i,id in ipairs({...})do list[i]={type='BUFF',unit='focus',spell=id,ownbuff=true}end;return{type='OR',value=list}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.holy',revision=2,
- blocks={['mop.paladin.boundaries']=1,['mop.paladin.upkeep']=1,['mop.paladin.seal-insight']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.holy',revision=3,
+ blocks={['mop.paladin.boundaries']=2,['mop.paladin.upkeep']=1,['mop.paladin.seal-insight']=2},
  nameKey='Default.MoP.Paladin.Holy.Name',descriptionKey='Default.MoP.Paladin.Holy.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN'},
  tags={'holy','healer','leveling','icy-veins','warcraft-tavern'},
  sources={
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/holy-paladin-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Holy Paladin rotation',reviewedAt='2026-10-23',revision='2025-06-10'},

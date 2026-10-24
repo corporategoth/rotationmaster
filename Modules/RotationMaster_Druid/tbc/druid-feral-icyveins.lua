@@ -11,11 +11,11 @@ local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
 local function rip()return{type='DEBUFF',unit='target',spell=1079,anyrank=true,owndebuff=true}end
 local function energy(op,v)return{type='POWER',unit='player',operator=op,value=v}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.druid.feral.icyveins',revision=2,
- blocks={['tbc.druid.boundaries']=2,['tbc.druid.upkeep']=1,['tbc.druid.feral-cooldowns']=2,['tbc.druid.cat-opening']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.druid.feral.icyveins',revision=3,
+ blocks={['tbc.druid.boundaries']=3,['tbc.druid.upkeep']=1,['tbc.druid.feral-cooldowns']=2,['tbc.druid.cat-opening']=1,
   ['tbc.druid.cat-builders']=1,['tbc.druid.bear-core']=1,['tbc.druid.feral-humanoid']=1},
  nameKey='Default.TBC.Druid.Feral.IcyVeins.Name',descriptionKey='Default.TBC.Druid.Feral.IcyVeins.Description',
- applicability={families={'tbc'},actionContext='player',class='DRUID',minLevel=10,maxLevel=70},
+ applicability={families={'tbc'},actionContext='player',class='DRUID'},
  tags={'leveling','endgame','feral','melee','tank','single-target','aoe','icy-veins','warcraft-tavern','wowsims'},
  sources={{url='https://www.icy-veins.com/tbc-classic/feral-druid-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Feral Druid DPS rotation',reviewedAt='2026-10-23',revision='2026-01-12'},
   {url='https://www.icy-veins.com/tbc-classic/feral-druid-tank-pve-rotation-cooldowns-abilities',title='Icy Veins: Feral Druid tank rotation',reviewedAt='2026-10-23',revision='2026-01-12'},
@@ -23,7 +23,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.warcrafttavern.com/tbc/guides/pve-feral-druid-dps-rotation-abilities/',title='Warcraft Tavern: Feral DPS rotation',reviewedAt='2026-10-23'},
   {url='https://www.warcrafttavern.com/tbc/guides/pve-feral-druid-tank-rotation-abilities/',title='Warcraft Tavern: Feral tank rotation',reviewedAt='2026-10-23'},
   {url='https://github.com/wowsims/tbc/blob/3301fca59306a747e521274c36e073e69acc7b77/sim/druid/feral/rotation.go',title='wowsims/tbc Feral cat and tank rotations',reviewedAt='2026-10-23',revision='3301fca59306a747e521274c36e073e69acc7b77'}},
- body={priority=30,switch={type='PRIMARY_TALENT_TREE',tree=2},
+ body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='PRIMARY_TALENT_TREE',tree=2}}},
   cooldowns={
    {id='feral-icy-upkeep',type='block',block='tbc.druid.upkeep',prefix='feral-icy-'},
    {id='feral-icy-cooldowns',type='block',block='tbc.druid.feral-cooldowns',prefix='feral-icy-'},

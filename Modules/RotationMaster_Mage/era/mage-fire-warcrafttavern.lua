@@ -14,19 +14,19 @@ local function stop(id)return{id=id,type='none',suppress_attack=true,conditions=
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='mage-fire-wct-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.mage.fire.warcrafttavern',revision=2,
- blocks={['era.mage.boundaries']=1,['era.mage.moving']=1,['era.mage.nova']=1,['era.mage.execute']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.era.mage.fire.warcrafttavern',revision=3,
+ blocks={['era.mage.boundaries']=2,['era.mage.moving']=1,['era.mage.nova']=1,['era.mage.execute']=1,
   ['era.mage.wand-finish']=1,['era.mage.armor']=1,['era.mage.upkeep']=1},
  nameKey='Default.Era.Mage.Fire.WarcraftTavern.Name',descriptionKey='Default.Era.Mage.Fire.WarcraftTavern.Description',
- applicability={families={'era'},actionContext='player',class='MAGE',minLevel=10,maxLevel=60},
+ applicability={families={'era'},actionContext='player',class='MAGE'},
  tags={'fire','raid','single-target','aoe','warcraft-tavern'},
  sources={
   {url='https://www.warcrafttavern.com/wow-classic/guides/pve-fire-mage-rotations-cooldowns/',title='Warcraft Tavern: Classic Fire Mage PvE',reviewedAt='2026-10-23'},
  },
  body={
   priority=9,
-  switch=any(all({type='TALENT_TREE_POINTS',tree=3,operator='EQUALS',value=0},{type='TALENT_TREE_POINTS',tree=2,operator='GREATERTHANOREQUALS',value=1}),
-   {type='PRIMARY_TALENT_TREE',tree=2}),
+  switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},any(all({type='TALENT_TREE_POINTS',tree=3,operator='EQUALS',value=0},{type='TALENT_TREE_POINTS',tree=2,operator='GREATERTHANOREQUALS',value=1}),
+   {type='PRIMARY_TALENT_TREE',tree=2})}},
   cooldowns={block(P..'armor','era.mage.armor',P),
    spell(P..'combustion',11129,any(class('elite'),class('rareelite'),class('worldboss'))),
    block(P..'upkeep','era.mage.upkeep',P)},

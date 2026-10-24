@@ -22,9 +22,13 @@ local big=any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLA
 local long=any({type='GROUP'},big,{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHAN',value=20})
 -- Manual casts and channels, and Ghost Wolf, end advice and Attack.
 assert(addon:RegisterDefaultBlock({
- id='era.shaman.manual',revision=1,families={'era'},class='SHAMAN',steps={
- {id='manual',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
- {id='ghost-wolf',type='none',suppress_attack=true,conditions=buff(2645)},
+ id='era.shaman.manual',revision=2,families={'era'},class='SHAMAN',steps={
+ {id='manual',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},buff(2645))},
+}}))
+-- Damage premades: the same, or no attackable target, ends advice (one Stop).
+assert(addon:RegisterDefaultBlock({
+ id='era.shaman.manual-target',revision=1,families={'era'},class='SHAMAN',steps={
+ {id='manual',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},buff(2645),negate({type='ATTACKABLE',unit='target'}))},
 }}))
 -- Earth Shock interrupts an interruptible cast or channel (every source).
 assert(addon:RegisterDefaultBlock({

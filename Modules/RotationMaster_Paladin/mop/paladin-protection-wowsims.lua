@@ -16,10 +16,10 @@ local function hp(op,v)return{type='POINT',unit='player',operator=op,value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.protection.wowsims',revision=3,
- blocks={['mop.paladin.boundaries']=1,['mop.paladin.upkeep']=1,['mop.paladin.seal-insight']=2,['mop.paladin.prot-upkeep']=1,['mop.paladin.prot-open']=2,['mop.paladin.prot-aoe']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.protection.wowsims',revision=4,
+ blocks={['mop.paladin.damage-boundaries']=1,['mop.paladin.upkeep']=1,['mop.paladin.seal-insight']=2,['mop.paladin.prot-upkeep']=1,['mop.paladin.prot-open']=3,['mop.paladin.prot-aoe']=1},
  nameKey='Default.MoP.Paladin.Protection.Wowsims.Name',descriptionKey='Default.MoP.Paladin.Protection.Wowsims.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN'},
  tags={'protection','tank','single-target','aoe','wowsims'},
  sources={
   {url='https://github.com/wowsims/mop/blob/master/ui/specs/paladin/protection/apls/sha.apl.json',title='wowsims MoP: Protection APLs (Sha, Horridon, Iron Juggernaut)',reviewedAt='2026-10-23',revision='ec2c6c2552'},
@@ -37,7 +37,7 @@ assert(addon:RegisterDefaultRotation({
    spell('protsim-avenging-wrath',31884,combat()),
   },
   rotation={
-   block('protsim-boundaries','mop.paladin.boundaries','protsim-'),
+   block('protsim-boundaries','mop.paladin.damage-boundaries','protsim-'),
    block('protsim-open','mop.paladin.prot-open','protsim-'),
    block('protsim-aoe','mop.paladin.prot-aoe','protsim-'),
    spell('protsim-crusader-strike',35395),

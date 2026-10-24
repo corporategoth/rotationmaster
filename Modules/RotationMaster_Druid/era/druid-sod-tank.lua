@@ -8,11 +8,11 @@ local function any(...)return{type='OR',value={...}}end
 local function form(id)return{type='FORM',form=id}end
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.druid.tank',revision=3,
- blocks={['era.druid.boundaries']=2,['era.druid.upkeep']=1,['sod.druid.maul']=2,['sod.druid.tank-cooldowns']=2,['sod.druid.bear']=1,['sod.druid.cat']=2,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.druid.tank',revision=4,
+ blocks={['era.druid.boundaries']=3,['era.druid.upkeep']=1,['sod.druid.maul']=2,['sod.druid.tank-cooldowns']=2,['sod.druid.bear']=1,['sod.druid.cat']=2,
   ['era.druid.stealth-opener']=1,['era.druid.cat-builders']=1,['era.druid.powershift']=1,['sod.druid.tank-humanoid']=1},
  nameKey='Default.SoD.Druid.Tank.Name',descriptionKey='Default.SoD.Druid.Tank.Description',
- applicability={families={'era'},actionContext='player',class='DRUID',minLevel=1,maxLevel=60,rulesets={'season:2'}},
+ applicability={families={'era'},actionContext='player',class='DRUID',rulesets={'season:2'}},
  tags={'season-of-discovery','leveling','endgame','feral','tank','melee','single-target','aoe','icy-veins','wowsims','warcraft-tavern'},
  sources={
   {url='https://www.icy-veins.com/wow-classic/feral-druid-tank-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Feral Druid tank rotation',reviewedAt='2026-10-23',revision='2025-04-08'},

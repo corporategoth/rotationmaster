@@ -23,10 +23,10 @@ local lasting=any({type='GROUP'},{type='CLASSIFICATION',unit='target',value='wor
 local curses={980,603,1490,17862,704,1714,702,18223}
 local cursed={type='OR',value={}};for i,id in ipairs(curses)do cursed.value[i]=own(id)end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.tank',revision=3,
- blocks={['era.warlock.boundaries']=1,['era.warlock.armor']=1,['era.warlock.pets']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.tank',revision=4,
+ blocks={['era.warlock.boundaries']=2,['era.warlock.armor']=1,['era.warlock.pets']=1},
  nameKey='Default.SoD.Warlock.Tank.Name',descriptionKey='Default.SoD.Warlock.Tank.Description',
- applicability={families={'era'},actionContext='player',class='WARLOCK',minLevel=1,maxLevel=60,rulesets={'season:2'}},
+ applicability={families={'era'},actionContext='player',class='WARLOCK',rulesets={'season:2'}},
  tags={'tank','ranged','caster','endgame','aoe','season-of-discovery','wowsims','icy-veins','wowhead','warcraft-tavern'},
  sources={{url='https://github.com/wowsims/sod/tree/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/tank_warlock/apls',title='wowsims/sod: Warlock tank Phase 4 APLs',reviewedAt='2026-10-23',revision='0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e'},
  {url='https://www.icy-veins.com/wow-classic/demonology-warlock-tank-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Demonology Warlock tank rotation',reviewedAt='2026-10-23',revision='2025-04-08'},

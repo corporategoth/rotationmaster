@@ -14,10 +14,10 @@ local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name
 local function spell(id,action,conditions,ranked)return{id=id,type='spell',action=action,ranked=ranked or false,conditions=conditions or {}}end
 local rake={type='DEBUFF',unit='target',spell=1822,anyrank=true,owndebuff=true}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.druid.tank.wowsims',revision=3,
- blocks={['era.druid.boundaries']=2,['era.druid.upkeep']=1,['sod.druid.maul']=2,['sod.druid.tank-cooldowns']=2,['sod.druid.bear']=1,['sod.druid.tank-humanoid']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.druid.tank.wowsims',revision=4,
+ blocks={['era.druid.boundaries']=3,['era.druid.upkeep']=1,['sod.druid.maul']=2,['sod.druid.tank-cooldowns']=2,['sod.druid.bear']=1,['sod.druid.tank-humanoid']=1},
  nameKey='Default.SoD.Druid.Tank.Wowsims.Name',descriptionKey='Default.SoD.Druid.Tank.Wowsims.Description',
- applicability={families={'era'},actionContext='player',class='DRUID',minLevel=1,maxLevel=60,rulesets={'season:2'}},
+ applicability={families={'era'},actionContext='player',class='DRUID',rulesets={'season:2'}},
  tags={'season-of-discovery','endgame','feral','tank','melee','single-target','wowsims'},
  sources={
   {url='https://github.com/wowsims/sod/blob/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/feral_tank_druid/apls/catweave_rake.apl.json',title='wowsims/sod Feral tank cat-weave APL (Phase 7)',reviewedAt='2026-10-23',revision='0e3f6ef'},

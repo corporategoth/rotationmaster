@@ -18,10 +18,10 @@ local curses={980,603,1490,17862,704,1714,702,18223}
 local cursed={type='OR',value={}};for i,id in ipairs(curses)do cursed.value[i]=own(id)end
 local summon=all(negate({type='PET'}),negate(combat()))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.fire.icyveins',revision=2,
- blocks={['era.warlock.boundaries']=1,['era.warlock.armor']=1,['era.warlock.safety']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.fire.icyveins',revision=3,
+ blocks={['era.warlock.boundaries']=2,['era.warlock.armor']=1,['era.warlock.safety']=1},
  nameKey='Default.SoD.Warlock.Fire.IcyVeins.Name',descriptionKey='Default.SoD.Warlock.Fire.IcyVeins.Description',
- applicability={families={'era'},actionContext='player',class='WARLOCK',minLevel=1,maxLevel=60,rulesets={'season:2'}},
+ applicability={families={'era'},actionContext='player',class='WARLOCK',rulesets={'season:2'}},
  tags={'dps','ranged','caster','endgame','aoe','season-of-discovery','icy-veins','warcraft-tavern'},
  sources={{url='https://www.icy-veins.com/wow-classic/destruction-warlock-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Destruction Warlock DPS rotation',reviewedAt='2026-10-23',revision='2025-04-08'},
  {url='https://www.warcrafttavern.com/wow-classic-sod/guides/destruction-warlock-dps/',title='Warcraft Tavern: SoD Destruction Warlock DPS (Phase 4)',reviewedAt='2026-10-23'}},

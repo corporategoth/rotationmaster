@@ -29,7 +29,7 @@ test('every Monk premade is Mists only, listed and eligible',function()
  local rows=M.rows(monk())
  for _,id in ipairs({BMO,WWS})do
   local scope=rows[id].applicability
-  assert(scope.minExpansion==4 and scope.maxExpansion==4 and scope.minLevel==10 and scope.maxLevel==90 and scope.families[1]=='progression',id)
+  assert(scope.minExpansion==4 and scope.maxExpansion==4 and scope.minLevel==nil and scope.maxLevel==nil and scope.families[1]=='progression',id)
   assert(not rows[id].eligible and rows[id].eligibilityReason=='disabled',id..' '..tostring(rows[id].eligibilityReason))
  end
  assert(rows[BMO].envelope.body.disabled and rows[WWS].envelope.body.disabled,'source variants ship disabled')

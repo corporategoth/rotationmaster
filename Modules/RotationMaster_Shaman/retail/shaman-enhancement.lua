@@ -11,17 +11,17 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.shaman.enhancement',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.shaman.enhancement',revision=3,
  blocks={['retail.shaman.boundaries']=1,['retail.shaman.upkeep']=2,['retail.shaman.lightning-shield']=1},
  nameKey='Default.Retail.Shaman.Enhancement.Name',descriptionKey='Default.Retail.Shaman.Enhancement.Description',
- applicability={families={'retail'},actionContext='player',class='SHAMAN',specs={263},minLevel=10,maxLevel=90},
+ applicability={families={'retail'},actionContext='player',class='SHAMAN'},
  tags={'enhancement','melee','assisted-combat','single-target','aoe','simulationcraft'},
  sources={
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/assisted_combat/shaman_enhancement.simc',title='SimulationCraft: Assisted Combat model, Enhancement Shaman',reviewedAt='2026-10-23',revision='c5fea93fb77d',notes='Ascendance and Doom Winds are in its cooldowns list.'},
   {url='https://github.com/Gethe/wow-ui-source/blob/e7aa82019dc298e0351c7159d60c2a9b916b9b67/Interface/AddOns/Blizzard_APIDocumentationGenerated/AssistedCombatDocumentation.lua',title='Blizzard API documentation: C_AssistedCombat (12.1.5)',reviewedAt='2026-10-23',revision='e7aa82019d'},
   {url='https://github.com/kaminaris/MaxDps-Shaman',title='MaxDps Shaman module (Midnight)',reviewedAt='2026-10-23',revision='d3ad3b9b10',notes='No priority in Midnight: the Assisted Combat spell plus a permanent Doom Winds glow and defensive and interrupt glows.'},
  },
- body={priority=10,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+ body={priority=10,switch={type='SPECIALIZATION',spec=263},
   cooldowns={
    block('retail.shaman.upkeep','enh-'),
    block('retail.shaman.lightning-shield','enh-'),

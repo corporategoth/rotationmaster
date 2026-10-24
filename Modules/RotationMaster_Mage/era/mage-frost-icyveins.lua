@@ -12,11 +12,11 @@ local function stop(id)return{id=id,type='none',suppress_attack=true,conditions=
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='mage-grind-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.mage.frost.icyveins',revision=2,
- blocks={['era.mage.boundaries']=1,['era.mage.frostbolt']=1,['era.mage.moving']=1,['era.mage.execute']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.era.mage.frost.icyveins',revision=3,
+ blocks={['era.mage.boundaries']=2,['era.mage.frostbolt']=1,['era.mage.moving']=1,['era.mage.execute']=1,
   ['era.mage.wand-finish']=1,['era.mage.armor']=1,['era.mage.upkeep']=1},
  nameKey='Default.Era.Mage.Frost.IcyVeins.Name',descriptionKey='Default.Era.Mage.Frost.IcyVeins.Description',
- applicability={families={'era'},actionContext='player',class='MAGE',minLevel=20,maxLevel=60},
+ applicability={families={'era'},actionContext='player',class='MAGE'},
  tags={'frost','leveling','aoe','icy-veins'},
  sources={
   {url='https://www.icy-veins.com/wow-classic/aoe-grinding-frost-mage-leveling-talent-build-from-1-to-60',title='Icy Veins: AoE grinding Frost Mage leveling',reviewedAt='2026-10-23',revision='2026-07-18'},
@@ -26,7 +26,7 @@ assert(addon:RegisterDefaultRotation({
  },
  body={
   priority=5,
-  switch={type='AND',value={{type='NOT',value={type='GROUP'}},{type='TALENT',layout='tree',tree=3,talent=10,operator='GREATERTHANOREQUALS',value=1}}},
+  switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=20},{type='NOT',value={type='GROUP'}},{type='TALENT',layout='tree',tree=3,talent=10,operator='GREATERTHANOREQUALS',value=1}}},
   cooldowns={block(P..'armor','era.mage.armor',P),
    spell(P..'pull-mana-shield',1463,all(negate({type='COMBAT',unit='player'}),negate({type='BUFF',unit='player',spell=1463,anyrank=true}),
     {type='MANAPCT',unit='player',operator='GREATERTHAN',value=.6})),

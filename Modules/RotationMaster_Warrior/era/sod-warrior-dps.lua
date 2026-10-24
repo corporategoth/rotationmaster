@@ -34,10 +34,10 @@ local unqueued=all(negate(queued(78)),negate(queued(845)))
 local immune=any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',unit='target',value='MECHANICAL'},{type='CREATURE',unit='target',value='ELEMENTAL'})
 local enraged=any(buff(12880),buff(425415),buff(427066),buff(29131),buff(18499))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.warrior.dps',revision=3,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.warrior.dps',revision=4,
  blocks={['era.warrior.boundaries']=2,['era.warrior.upkeep']=1,['era.warrior.aoe-strikes']=1},
  nameKey='Default.SoD.Warrior.DPS.Name',descriptionKey='Default.SoD.Warrior.DPS.Description',
- applicability={families={'era'},actionContext='player',class='WARRIOR',minLevel=1,maxLevel=60,rulesets={'season:2'}},
+ applicability={families={'era'},actionContext='player',class='WARRIOR',rulesets={'season:2'}},
  tags={'dps','melee','leveling','endgame','aoe','season-of-discovery','wowsims','wowhead'},
  sources={{url='https://github.com/wowsims/sod/tree/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/warrior/apls',title='wowsims/sod: Warrior APLs (Phase 1-6, two-hander and dual wield)',reviewedAt='2026-10-23',revision='0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e'},
  {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/warrior/dps-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Warrior DPS rotation (Phase 7/8)',reviewedAt='2026-10-23',revision='2025-04-12'},

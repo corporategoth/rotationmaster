@@ -18,11 +18,11 @@ test('all four premades register valid, localized, sourced and composed',functio
  for _,id in ipairs(ALL)do local row=M.row(a,id)
   assert(row.readOnly and row.validation.valid and row.validation.resolved,id)
   assert(f.translations[row.nameKey]and f.translations[row.descriptionKey],id..' untranslated')
-  assert(#row.envelope.sources>=1 and row.envelope.revision==2,id)
+  assert(#row.envelope.sources>=1 and row.envelope.revision==3,id)
   assert(a:GetDefaultRotationComposition(id),id..' is not composed from the shared Mage blocks')
-  assert(row.applicability.class=='MAGE'and row.applicability.maxLevel==70 and row.applicability.families[1]=='tbc')
+  assert(row.applicability.class=='MAGE'and row.applicability.maxLevel==nil and row.applicability.minLevel==nil and row.applicability.families[1]=='tbc')
  end
- assert(M.row(a,FROST).applicability.minLevel==1 and M.row(a,FIRE).applicability.minLevel==10)
+ do local sw=M.row(a,FIRE).envelope.body.switch;assert(sw.type=='AND'and sw.value[1].type=='LEVEL'and sw.value[1].value==10,'Fire switch holds level 10')end
  -- Each variant cites only its own sources.
  for _,source in ipairs(M.row(a,FIREWH).envelope.sources)do assert(not source.url:find('icy%-veins'),'Wowhead variant cites Icy Veins')end
  for _,source in ipairs(M.row(a,FIRE).envelope.sources)do assert(not source.url:find('wowhead'),'Icy Veins variant cites Wowhead')end
@@ -30,7 +30,7 @@ end)
 
 test('auto-select: Frost owns low levels and no talents; Fire, Arcane and Frost by primary tree',function()
  local a,s=fixture(5)
- assert(M.selected(a)==FROST and M.row(a,FROST).eligible and not M.row(a,FIRE).eligible)
+ assert(M.selected(a)==FROST and M.row(a,FROST).eligible and M.switch(a,FIRE)=='no-match')
  s.setLevel(9);assert(M.selected(a)==FROST)
  s.setLevel(30);assert(M.selected(a)==FROST,'no points spent must still select Frost')
  assert(M.switch(a,FIRE)=='unavailable'and M.switch(a,ARCANE)=='unavailable')

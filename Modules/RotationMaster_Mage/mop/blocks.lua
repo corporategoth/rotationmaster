@@ -28,10 +28,8 @@ local function block(id,steps,revision)assert(addon:RegisterDefaultBlock({id=id,
 local MISSILES,ALTER,FLOES,POM=79683,110909,108839,12043
 -- Casts and channels (Arcane Missiles, Evocation, Blizzard) and a target that is not attackable end advice.
 block('mop.mage.boundaries',{
- stop('cast',{type='CASTING',unit='player'}),
- stop('channel',{type='CHANNELING',unit='player'}),
- stop('target',negate({type='ATTACKABLE',unit='target'})),
-})
+ stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))),
+},2)
 -- Every Mage: Brilliance, Counterspell (off the GCD), a Mana Gem in the bags, Mirror Image when the
 -- images get their full 30 s, Ice Barrier and Ice Floes when talented, the tier-6 upkeep (Invocation's
 -- Evocation, Rune of Power) and, with neither, Evocation for mana. Time Warp and Spellsteal are

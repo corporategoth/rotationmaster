@@ -18,10 +18,10 @@ local INQ,WINGS=84963,31884
 local inquisition=any(buff(INQ),negate(known(INQ)))
 local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.retribution.warcrafttavern',revision=2,
- blocks={['mop.paladin.boundaries']=1,['mop.paladin.upkeep']=1,['mop.paladin.seal-truth']=2,['mop.paladin.defensives']=1,['mop.paladin.ret-survival']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.retribution.warcrafttavern',revision=3,
+ blocks={['mop.paladin.damage-boundaries']=1,['mop.paladin.upkeep']=1,['mop.paladin.seal-truth']=2,['mop.paladin.defensives']=1,['mop.paladin.ret-survival']=1},
  nameKey='Default.MoP.Paladin.Retribution.WarcraftTavern.Name',descriptionKey='Default.MoP.Paladin.Retribution.WarcraftTavern.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN'},
  tags={'retribution','leveling','single-target','aoe','warcraft-tavern'},
  sources={
   {url='https://www.warcrafttavern.com/mop/guides/pve-retribution-paladin-dps-rotations-cooldowns/',title='Warcraft Tavern: MoP Retribution Paladin rotation',reviewedAt='2026-10-23'},
@@ -36,8 +36,7 @@ assert(addon:RegisterDefaultRotation({
    block('rettav-defensives','mop.paladin.defensives','rettav-'),
   },
   rotation={
-   block('rettav-boundaries','mop.paladin.boundaries','rettav-'),
-   stop('rettav-target',negate({type='ATTACKABLE',unit='target'})),
+   block('rettav-boundaries','mop.paladin.damage-boundaries','rettav-'),
    {id='rettav-pull',type='branch',conditions=all(negate(combat()),{type='BEYOND_MELEE',unit='target'}),onFalse={},onTrue={
     spell('rettav-pull-exorcism',879),spell('rettav-pull-judgment',20271),stop('rettav-pull-stop')}},
    block('rettav-survival','mop.paladin.ret-survival','rettav-'),

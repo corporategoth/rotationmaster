@@ -28,10 +28,10 @@ local boss={type='CLASSIFICATION',unit='target',value='worldboss'}
 local hidden={type='STEALTHED'}
 local worth=any(boss,lifetime('GREATERTHAN',8))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.subtlety',revision=3,
- blocks={['mop.rogue.boundaries']=1,['mop.rogue.out-of-combat']=2,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1,['mop.rogue.subtlety-builders']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.subtlety',revision=4,
+ blocks={['mop.rogue.boundaries']=2,['mop.rogue.out-of-combat']=2,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1,['mop.rogue.subtlety-builders']=2},
  nameKey='Default.MoP.Rogue.Subtlety.Name',descriptionKey='Default.MoP.Rogue.Subtlety.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE'},
  tags={'subtlety','dps','melee','leveling','endgame','wowsims','wowhead','icy-veins'},
  sources={{url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/rogue/subtlety/apls/subtlety.apl.json',title='wowsims/mop: Subtlety Rogue APL',reviewedAt='2026-10-23',revision='ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9'},
  {url='https://www.wowhead.com/mop-classic/guide/classes/rogue/subtlety/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Subtlety Rogue rotation (MoP Classic, Phase 5)',reviewedAt='2026-10-23',revision='2026-06-29'},

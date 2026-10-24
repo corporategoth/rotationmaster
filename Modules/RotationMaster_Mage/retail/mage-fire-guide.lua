@@ -28,17 +28,17 @@ local function priority(p,spender)return{
  spell(p..'moving-scorch',2948,{type='MOVING'}),
  spell(p..'fire-blast',108853,heating)}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.mage.fire.guide',revision=4,
- blocks={['retail.mage.boundaries']=1,['retail.mage.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.mage.fire.guide',revision=5,
+ blocks={['retail.mage.boundaries']=2,['retail.mage.utility']=2},
  nameKey='Default.Retail.Mage.FireGuide.Name',descriptionKey='Default.Retail.Mage.FireGuide.Description',
- applicability={families={'retail'},actionContext='player',class='MAGE',specs={63},minLevel=10,maxLevel=90},
+ applicability={families={'retail'},actionContext='player',class='MAGE'},
  tags={'fire','caster','reference','icy-veins','wowhead','simulationcraft'},
  sources={
   {url='https://www.icy-veins.com/wow/fire-mage-pve-dps-rotation-cooldowns-abilities',title='Icy Veins: Fire Mage rotation (12.1.5)',reviewedAt='2026-10-23',revision='2026-10-12'},
   {url='https://www.wowhead.com/guide/classes/mage/fire/rotation-cooldowns-pve-dps',title='Wowhead: Fire Mage rotation (Midnight Season 2)',reviewedAt='2026-10-23',revision='2026-08-16',notes='Read from a Wayback snapshot of 2026-09-17.'},
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/mage_fire.simc',title='SimulationCraft default action list: Fire',reviewedAt='2026-10-23',revision='c5fea93f'},
  },
- body={priority=10,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+ body={priority=10,disabled=true,switch={type='SPECIALIZATION',spec=63},
   cooldowns={
    block('fguide-utility','retail.mage.utility','fguide-'),
    spell('fguide-barrier',235313,combat()),

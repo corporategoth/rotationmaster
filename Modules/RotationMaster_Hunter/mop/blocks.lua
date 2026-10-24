@@ -15,7 +15,7 @@ local function lives(v)return{type='TT_HEALTH',unit='target',health=0,operator='
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function off(id,action,conditions)local step=spell(id,action,conditions);step.disabled=true;return step end
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
-local function block(id,steps)assert(addon:RegisterDefaultBlock({id=id,revision=1,families={'progression'},class='HUNTER',steps=steps}))end
+local function block(id,steps,revision)assert(addon:RegisterDefaultBlock({id=id,revision=revision or 1,families={'progression'},class='HUNTER',steps=steps}))end
 local function classified(kind)return{type='CLASSIFICATION',unit='target',value=kind}end
 -- Worth a major cooldown: an elite or boss, any dungeon or raid, or a target that will live 20 s
 -- (the forecast last, because it can be unavailable).
@@ -23,10 +23,8 @@ local worth=all(combat(),any(classified('elite'),classified('rareelite'),classif
 -- Casts and channels (Aimed, Steady, Cobra, Powershot, Barrage) and a target that is not
 -- attackable end advice.
 block('mop.hunter.boundaries',{
- stop('cast',{type='CASTING',unit='player'}),
- stop('channel',{type='CHANNELING',unit='player'}),
- stop('target',negate({type='ATTACKABLE',unit='target'})),
-})
+ stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))),
+},2)
 -- Hunter's Mark before the pull when nobody's mark is on the target; Kill Command, Chimera and
 -- Explosive Shot apply it in combat.
 block('mop.hunter.mark',{

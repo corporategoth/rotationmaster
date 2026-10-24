@@ -21,7 +21,7 @@ test('every premade registers valid; vanilla on every realm, SoD only on Season 
  for _,id in ipairs(SEASON)do assert(M.row(f,id).validation.valid and not M.row(f,id).eligible,id..' leaked onto a standard realm')end
  s.season=2;for _,id in ipairs({SENH,SELE,SRESTO,STANK})do assert(M.row(f,id).eligible,id)end
  for _,id in ipairs(SEASON)do for _,v in ipairs(VANILLA)do assert(M.body(a,id).priority>M.body(a,v).priority,id..' must outrank '..v)end end
- assert(M.row(f,STANK).applicability.minLevel==30)
+ do local sw=M.row(f,STANK).envelope.body.switch;assert(sw.type=='AND'and sw.value[1].type=='LEVEL'and sw.value[1].value==30,'tank switch holds level 30')end
 end)
 
 test('auto-select by talent tree, with Enhancement owning levels 1–9, no points and ties; the Way of Earth tank by its imbue',function()

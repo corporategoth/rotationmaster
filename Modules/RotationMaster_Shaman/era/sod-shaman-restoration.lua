@@ -17,14 +17,14 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local friendly={type='FRIENDLY',unit='target'}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.shaman.restoration',revision=1,
- blocks={['era.shaman.manual']=1,['era.shaman.shield']=1,['era.shaman.cures']=1,['era.shaman.healer-damage']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.shaman.restoration',revision=2,
+ blocks={['era.shaman.manual']=2,['era.shaman.shield']=1,['era.shaman.cures']=1,['era.shaman.healer-damage']=1},
  nameKey='Default.SoD.Shaman.Restoration.Name',descriptionKey='Default.SoD.Shaman.Restoration.Description',
- applicability={families={'era'},actionContext='player',class='SHAMAN',minLevel=10,maxLevel=60,rulesets={'season:2'}},
+ applicability={families={'era'},actionContext='player',class='SHAMAN',rulesets={'season:2'}},
  tags={'healer','leveling','endgame','season-of-discovery','icy-veins','wowhead'},
  sources={{url='https://www.icy-veins.com/wow-classic/restoration-shaman-healer-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Restoration Shaman healer rotation',reviewedAt='2026-10-23',revision='2025-04-08'},
  {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/shaman/healer-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Shaman healer rotation',reviewedAt='2026-10-23',revision='2024-09-26'}},
- body={priority=60,switch={type='PRIMARY_TALENT_TREE',tree=3},
+ body={priority=60,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='PRIMARY_TALENT_TREE',tree=3}}},
  cooldowns={
   block('era.shaman.shield','sod-resto-'),
   spell('sod-resto-earth-shield',408514,all(friendly,negate({type='BUFF',unit='target',spell=408514,ownbuff=true}))),

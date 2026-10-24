@@ -35,10 +35,12 @@ local roar=any(own(52610),own(127538))
 local lives=any(elite,{type='HEALTHPCT',unit='target',operator='GREATERTHANOREQUALS',value=.3},{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=6})
 -- Casts and channels (Astral Communion, Hurricane, Tranquility) and travel forms end advice.
 block('mop.druid.boundaries',{
- stop('cast',{type='CASTING',unit='player'}),
- stop('channel',{type='CHANNELING',unit='player'}),
- stop('travel',travelling),
-},2)
+ stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},travelling)),
+},3)
+-- Feral, Guardian and the catch-all: the boundaries above, or no attackable target, end advice (one Stop).
+block('mop.druid.melee-boundaries',{
+ stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},travelling,negate({type='ATTACKABLE',unit='target'}))),
+})
 -- Damage and tank premades: nothing to do without an attackable target.
 block('mop.druid.target',{
  stop('target',negate({type='ATTACKABLE',unit='target'})),

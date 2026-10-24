@@ -11,10 +11,10 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.arms',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.arms',revision=3,
  blocks={['retail.warrior.boundaries']=1,['retail.warrior.upkeep']=1},
  nameKey='Default.Retail.Warrior.Arms.Name',descriptionKey='Default.Retail.Warrior.Arms.Description',
- applicability={families={'retail'},actionContext='player',class='WARRIOR',specs={71},minLevel=10,maxLevel=90},
+ applicability={families={'retail'},actionContext='player',class='WARRIOR'},
  tags={'arms','melee','assisted-combat','single-target','aoe','simulationcraft'},
  sources={
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/assisted_combat/warrior_arms.simc',title='SimulationCraft: Assisted Combat model, Arms Warrior',reviewedAt='2026-10-23',revision='c5fea93fb77d'},
@@ -22,7 +22,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/kaminaris/MaxDps-Warrior',title='MaxDps Warrior module (Midnight)',reviewedAt='2026-10-23',revision='c3bf773f37',notes='No priority in Midnight: the Assisted Combat spell plus cooldown, defensive and interrupt glows.'},
   {url='https://www.icy-veins.com/wow/arms-warrior-pve-dps-rotation-cooldowns-abilities',title='Icy Veins: Arms Warrior rotation (Midnight)',reviewedAt='2026-10-23',revision='2026-10-12',notes='Heroic Strike is a rotational button that the Assisted Combat model never casts.'},
  },
- body={priority=10,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+ body={priority=10,switch={type='SPECIALIZATION',spec=71},
   cooldowns={
    block('retail.warrior.upkeep','arms-'),
    spell('arms-avatar',107574,fight),

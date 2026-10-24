@@ -27,11 +27,11 @@ local function summon()return all(negate({type='PET'}),any(negate(combat()),buff
 local function bane()return all(negate(own(980)),negate(own(603)),negate(any(own(1324473),own(1225228))))end
 local destruction=known(1293817)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.warlock.dps.wowhead',revision=3,
- blocks={['forever.warlock.boundaries']=1,['forever.warlock.upkeep']=2,['forever.warlock.procs']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.warlock.dps.wowhead',revision=4,
+ blocks={['forever.warlock.boundaries']=2,['forever.warlock.upkeep']=2,['forever.warlock.procs']=1,
   ['forever.warlock.moving']=2,['forever.warlock.wand']=1},
  nameKey='Default.Forever.Warlock.DPS.Wowhead.Name',descriptionKey='Default.Forever.Warlock.DPS.Wowhead.Description',
- applicability={families={'forever'},actionContext='player',class='WARLOCK',minLevel=1,maxLevel=60},
+ applicability={families={'forever'},actionContext='player',class='WARLOCK'},
  tags={'dps','ranged','caster','leveling','wowhead'},
  sources={{url='https://www.wowhead.com/forever/guide/classes/warlock/affliction/level-30-dps-overview',title='Wowhead: Forever level 30 Affliction Warlock',reviewedAt='2026-10-23',revision='2026-10-09'},
  {url='https://www.wowhead.com/forever/guide/classes/warlock/demonology/level-30-dps-overview',title='Wowhead: Forever level 30 Demonology Warlock',reviewedAt='2026-10-23',revision='2026-10-09'},

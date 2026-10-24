@@ -35,9 +35,8 @@ local dualWield={type='WEAPON_TYPE',slot='offhand',kind='weapon'}
 local dagger={type='WEAPON_TYPE',slot='mainhand',subclass=15}
 -- Boundaries: manual casts/channels (bandages) and no attackable target end advice and Attack.
 assert(addon:RegisterDefaultBlock({
- id='era.rogue.boundaries',revision=1,families={'era'},class='ROGUE',steps={
- {id='manual',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
- {id='no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
+ id='era.rogue.boundaries',revision=2,families={'era'},class='ROGUE',steps={
+ {id='manual',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))},
 }}))
 -- Vanilla stealth opener: Premeditation, Ambush from behind with a dagger, Cheap Shot solo, Garrote outside
 -- raids, else Sinister Strike; then stop so Attack does not break Stealth.

@@ -18,11 +18,11 @@ local function stop(id,conditions,attack)return{id=id,type='none',suppress_attac
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.survival',revision=4,
- blocks={['forever.hunter.boundaries']=1,['forever.hunter.survival-pull']=2,['forever.hunter.range-shots']=1,['forever.hunter.melee-aoe']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.survival',revision=5,
+ blocks={['forever.hunter.boundaries']=3,['forever.hunter.survival-pull']=2,['forever.hunter.range-shots']=1,['forever.hunter.melee-aoe']=1,
   ['forever.hunter.pet-care']=2,['forever.hunter.burst']=1},
  nameKey='Default.Forever.Hunter.Survival.Name',descriptionKey='Default.Forever.Hunter.Survival.Description',
- applicability={families={'forever'},actionContext='player',class='HUNTER',minLevel=10,maxLevel=60},
+ applicability={families={'forever'},actionContext='player',class='HUNTER'},
  tags={'survival','melee','leveling','wowhead'},
  sources={
   {url='https://www.wowhead.com/forever/guide/classes/hunter/survival/level-30-dps-overview',title='Wowhead: Forever level 30 Survival Hunter',reviewedAt='2026-10-23',revision='2026-10-11'},
@@ -40,7 +40,6 @@ assert(addon:RegisterDefaultRotation({
    block('sv-pet-care','forever.hunter.pet-care','sv-'),
   },
   rotation={
-   stop('sv-target',negate({type='ATTACKABLE',unit='target'})),
    block('sv-boundaries','forever.hunter.boundaries','sv-'),
    block('sv-pull','forever.hunter.survival-pull','sv-'),
    {id='sv-range',type='branch',conditions={type='BEYOND_MELEE',unit='target'},onFalse={},onTrue={

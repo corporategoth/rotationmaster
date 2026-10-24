@@ -18,15 +18,15 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local solo=negate({type='GROUP'})
 local big=any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.shaman.restoration',revision=1,
- blocks={['era.shaman.manual']=1,['era.shaman.cures']=1,['era.shaman.healer-damage']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.shaman.restoration',revision=2,
+ blocks={['era.shaman.manual']=2,['era.shaman.cures']=1,['era.shaman.healer-damage']=1},
  nameKey='Default.Era.Shaman.Restoration.Name',descriptionKey='Default.Era.Shaman.Restoration.Description',
- applicability={families={'era'},actionContext='player',class='SHAMAN',minLevel=10,maxLevel=60},
+ applicability={families={'era'},actionContext='player',class='SHAMAN'},
  tags={'healer','leveling','endgame','icy-veins','wowhead'},
  sources={{url='https://www.icy-veins.com/wow-classic/restoration-shaman-healer-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Restoration Shaman healer rotation',reviewedAt='2026-10-23',revision='2024-11-17'},
  {url='https://www.icy-veins.com/wow-classic/restoration-shaman-leveling-guide-1-60',title='Icy Veins: Classic Restoration Shaman leveling 1-60',reviewedAt='2026-10-23',revision='2026-07-18'},
  {url='https://www.wowhead.com/classic/guide/classes/shaman/healer-rotation-cooldowns-abilities-pve',title='Wowhead: Classic Shaman healer rotation and downranking',reviewedAt='2026-10-23',revision='2025-03-20'}},
- body={priority=30,switch={type='PRIMARY_TALENT_TREE',tree=3},
+ body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='PRIMARY_TALENT_TREE',tree=3}}},
  cooldowns={
   spell('resto-lightning-shield',324,all(solo,negate({type='BUFF',unit='player',spell=324,anyrank=true}))),
   spell('resto-rockbiter-weapon',8017,all(solo,negate({type='WEAPON'}))),

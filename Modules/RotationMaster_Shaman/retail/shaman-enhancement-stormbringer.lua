@@ -22,17 +22,17 @@ local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 local shocked={type='DEBUFF',unit='target',spell=188389,owndebuff=true}
 local nearly=all(mw(8),any(soon(470057),soon(187874)))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.shaman.enhancement.stormbringer',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.shaman.enhancement.stormbringer',revision=3,
  blocks={['retail.shaman.boundaries']=1,['retail.shaman.upkeep']=2,['retail.shaman.lightning-shield']=1},
  nameKey='Default.Retail.Shaman.Enhancement.Stormbringer.Name',descriptionKey='Default.Retail.Shaman.Enhancement.Stormbringer.Description',
- applicability={families={'retail'},actionContext='player',class='SHAMAN',specs={263},minLevel=10,maxLevel=90},
+ applicability={families={'retail'},actionContext='player',class='SHAMAN'},
  tags={'enhancement','melee','reference','stormbringer','single-target','aoe','icy-veins','simulationcraft','wowhead'},
  sources={
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/shaman_enhancement.simc',title='SimulationCraft: Enhancement Shaman default list (single_sb, aoe)',reviewedAt='2026-10-23',revision='c5fea93fb77d'},
   {url='https://www.icy-veins.com/wow/enhancement-shaman-pve-dps-rotation-cooldowns-abilities',title='Icy Veins: Enhancement Shaman rotation (Midnight)',reviewedAt='2026-10-23',revision='2026-10-12'},
   {url='https://www.wowhead.com/guide/classes/shaman/enhancement/rotation-cooldowns-pve-dps',title='Wowhead: Enhancement Shaman rotation',reviewedAt='2026-10-23',revision='2026-08-12'},
  },
- body={priority=5,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+ body={priority=5,disabled=true,switch={type='SPECIALIZATION',spec=263},
   cooldowns={
    block('retail.shaman.upkeep','enhsb-'),
    block('retail.shaman.lightning-shield','enhsb-'),

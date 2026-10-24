@@ -7,16 +7,16 @@
 local _,addon=...
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.initial',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.initial',revision=2,
  blocks={['retail.warrior.boundaries']=1,['retail.warrior.upkeep']=1},
  nameKey='Default.Retail.Warrior.Initial.Name',descriptionKey='Default.Retail.Warrior.Initial.Description',
- applicability={families={'retail'},actionContext='player',class='WARRIOR',specs={1446},minLevel=1,maxLevel=90},
+ applicability={families={'retail'},actionContext='player',class='WARRIOR'},
  tags={'leveling','assisted-combat'},
  sources={
   {url='https://github.com/Gethe/wow-ui-source/blob/live/Interface/AddOns/Blizzard_APIDocumentationGenerated/AssistedCombatDocumentation.lua',title='Blizzard API documentation: C_AssistedCombat (12.1.5.70529)',reviewedAt='2026-10-23',revision='e7aa82019d'},
   {url='https://wago.tools/db2/ChrSpecialization',title='Blizzard client data: ChrSpecialization (the class initial specializations, order index 4)',reviewedAt='2026-10-23',revision='12.1.5',notes='Warrior initial specialization 1446.'},
  },
- body={priority=10,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=10,switch={type='SPECIALIZATION',spec=1446},
   cooldowns={
    block('retail.warrior.upkeep','initial-'),
   },

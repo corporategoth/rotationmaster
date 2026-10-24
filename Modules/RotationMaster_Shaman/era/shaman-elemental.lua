@@ -19,16 +19,16 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local big=any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'})
 local melee=negate({type='BEYOND_MELEE',unit='target'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.shaman.elemental',revision=1,
- blocks={['era.shaman.manual']=1,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.self-heal']=1,['era.shaman.caster-totems']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.shaman.elemental',revision=2,
+ blocks={['era.shaman.manual-target']=1,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.self-heal']=1,['era.shaman.caster-totems']=1},
  nameKey='Default.Era.Shaman.Elemental.Name',descriptionKey='Default.Era.Shaman.Elemental.Description',
- applicability={families={'era'},actionContext='player',class='SHAMAN',minLevel=10,maxLevel=60},
+ applicability={families={'era'},actionContext='player',class='SHAMAN'},
  tags={'dps','ranged','caster','leveling','endgame','aoe','icy-veins','wowhead'},
  sources={{url='https://www.icy-veins.com/wow-classic/elemental-shaman-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Elemental Shaman DPS rotation',reviewedAt='2026-10-23',revision='2024-11-17'},
  {url='https://www.icy-veins.com/wow-classic/elemental-shaman-leveling-guide-1-60',title='Icy Veins: Classic Elemental Shaman leveling 1-60',reviewedAt='2026-10-23',revision='2026-07-18'},
  {url='https://www.wowhead.com/classic/guide/classes/shaman/elemental/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Classic Elemental Shaman DPS rotation',reviewedAt='2026-10-23',revision='2025-03-20'},
  {url='https://www.wowhead.com/classic/guide/classes/shaman/elemental/leveling-tips',title='Wowhead: Classic Elemental Shaman leveling tips',reviewedAt='2026-10-23',revision='2024-11-20'}},
- body={priority=30,switch={type='PRIMARY_TALENT_TREE',tree=1},
+ body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='PRIMARY_TALENT_TREE',tree=1}}},
  cooldowns={
   block('era.shaman.shield','ele-'),
   spell('ele-rockbiter-weapon',8017,all(negate({type='WEAPON'}),negate({type='INSTANCE',value='raid'}))),
@@ -41,8 +41,7 @@ assert(addon:RegisterDefaultRotation({
   optional(spell('ele-berserking',26297,all(combat(),buff(16166)))),
  },
  rotation={
- block('era.shaman.manual','ele-'),
- {id='ele-no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
+ block('era.shaman.manual-target','ele-'),
  block('era.shaman.interrupt','ele-'),
  spell('ele-execute-shock',8042,lifetime('LESSTHAN',2.5)),
  {id='ele-moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={

@@ -19,16 +19,16 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 local bled=all(dot(703),dot(1943))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.assassination.icyveins',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.assassination.icyveins',revision=3,
  blocks={['retail.rogue.boundaries']=1,['retail.rogue.upkeep']=2},
  nameKey='Default.Retail.Rogue.Assassination.IcyVeins.Name',descriptionKey='Default.Retail.Rogue.Assassination.IcyVeins.Description',
- applicability={families={'retail'},actionContext='player',class='ROGUE',specs={259},minLevel=10,maxLevel=90},
+ applicability={families={'retail'},actionContext='player',class='ROGUE'},
  tags={'assassination','melee','reference','single-target','aoe','icy-veins','simulationcraft'},
  sources={
   {url='https://www.icy-veins.com/wow/assassination-rogue-pve-dps-rotation-cooldowns-abilities',title='Icy Veins: Assassination Rogue rotation (Midnight)',reviewedAt='2026-10-23',revision='2026-10-12'},
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/rogue_assassination.simc',title='SimulationCraft: Assassination Rogue default list',reviewedAt='2026-10-23',revision='c5fea93fb77d'},
  },
- body={priority=5,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+ body={priority=5,disabled=true,switch={type='SPECIALIZATION',spec=259},
   cooldowns={
    block('retail.rogue.upkeep','assaiv-'),
    spell('assaiv-deathmark',360194,all(fight,bled)),

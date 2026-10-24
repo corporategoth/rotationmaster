@@ -18,10 +18,10 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local curses={980,603,1490,17862,704,1714,702,18223}
 local others={type='OR',value={}};for i,id in ipairs(curses)do if id~=980 then others.value[#others.value+1]=own(id)end end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.shadow.wowsims',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.shadow.wowsims',revision=3,
  blocks={['era.warlock.armor']=1,['era.warlock.pets']=1,['era.warlock.safety']=1},
  nameKey='Default.SoD.Warlock.Shadow.Wowsims.Name',descriptionKey='Default.SoD.Warlock.Shadow.Wowsims.Description',
- applicability={families={'era'},actionContext='player',class='WARLOCK',minLevel=1,maxLevel=60,rulesets={'season:2'}},
+ applicability={families={'era'},actionContext='player',class='WARLOCK',rulesets={'season:2'}},
  tags={'dps','ranged','caster','endgame','season-of-discovery','wowsims'},
  sources={{url='https://github.com/wowsims/sod/blob/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/warlock/apls/p6/affliction.apl.json',title='wowsims/sod: Affliction Warlock Phase 6 APL (Drain Soul filler)',reviewedAt='2026-10-23',revision='0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e'}},
  body={priority=55,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
@@ -29,9 +29,8 @@ assert(addon:RegisterDefaultRotation({
   spell('sod-ws-pet-life-tap',1454,all(combat(),{type='PET'},{type='MANAPCT',unit='pet',operator='LESSTHAN',value=.3},{type='HEALTHPCT',unit='player',operator='GREATERTHAN',value=.6})),
   block('era.warlock.safety','sod-ws-')},
  rotation={
- stop('sod-ws-cast',{type='CASTING',unit='player'}),
- stop('sod-ws-channel',all({type='CHANNELING',unit='player'},negate({type='CHANNELING_SPELL',unit='player',spell=1120}))),
- stop('sod-ws-target',negate(all({type='ATTACKABLE',unit='target'},any(combat(),negate({type='COMBAT',unit='target'}),{type='GROUP'})))),
+ stop('sod-ws-cast',any({type='CASTING',unit='player'},all({type='CHANNELING',unit='player'},negate({type='CHANNELING_SPELL',unit='player',spell=1120})),
+  negate(all({type='ATTACKABLE',unit='target'},any(combat(),negate({type='COMBAT',unit='target'}),{type='GROUP'}))))),
  spell('sod-ws-unstable-affliction',427717,due(427717,7.5)),
  spell('sod-ws-drain-life',403677,negate(own(403677))),
  spell('sod-ws-shadowflame',426320,due(426320,7.5)),

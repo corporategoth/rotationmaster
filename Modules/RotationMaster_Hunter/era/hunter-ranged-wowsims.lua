@@ -14,11 +14,11 @@ local function cooling(id)return any(negate(known(id)),{type='SPELL_COOLDOWN',sp
 local stingless=all(negate({type='DEBUFF',unit='target',spell=1978,anyrank=true,owndebuff=true}),
  negate({type='DEBUFF',unit='target',spell=3043,anyrank=true,owndebuff=true}),negate({type='DEBUFF',unit='target',spell=3034,anyrank=true,owndebuff=true}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.hunter.ranged.wowsims',revision=2,
- blocks={['era.hunter.boundaries']=1,['era.hunter.dead-zone']=2,['era.hunter.opening']=2,['era.hunter.solo']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.era.hunter.ranged.wowsims',revision=3,
+ blocks={['era.hunter.boundaries']=2,['era.hunter.dead-zone']=2,['era.hunter.opening']=2,['era.hunter.solo']=1,
   ['era.hunter.hawk']=1,['era.hunter.upkeep']=1,['era.hunter.cooldowns']=1},
  nameKey='Default.Era.Hunter.Ranged.Wowsims.Name',descriptionKey='Default.Era.Hunter.Ranged.Wowsims.Description',
- applicability={families={'era'},actionContext='player',class='HUNTER',minLevel=1,maxLevel=60},
+ applicability={families={'era'},actionContext='player',class='HUNTER'},
  tags={'dps','ranged','endgame','raid','wowsims'},
  sources={
   {url='https://github.com/wowsims/classic/blob/7779ebbf79dc7f1341e6ab939b28a3402c9a730a/ui/hunter/apls/p1.apl.json',title='wowsims/classic: Hunter P1 APL',reviewedAt='2026-10-23',revision='7779ebb'},

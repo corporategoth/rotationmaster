@@ -18,10 +18,10 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local big={type='OR',value={{type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'}}}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.rogue.dps',revision=2,
- blocks={['forever.rogue.boundaries']=1,['forever.rogue.stealth-fallback']=2,['forever.rogue.reactive']=1,['forever.rogue.expose-armor']=1,['forever.rogue.upkeep']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.rogue.dps',revision=3,
+ blocks={['forever.rogue.boundaries']=2,['forever.rogue.stealth-fallback']=2,['forever.rogue.reactive']=1,['forever.rogue.expose-armor']=1,['forever.rogue.upkeep']=2},
  nameKey='Default.Forever.Rogue.DPS.Name',descriptionKey='Default.Forever.Rogue.DPS.Description',
- applicability={families={'forever'},actionContext='player',class='ROGUE',minLevel=1,maxLevel=60},
+ applicability={families={'forever'},actionContext='player',class='ROGUE'},
  tags={'dps','melee','leveling','endgame','icy-veins','wowhead','warcraft-tavern'},
  sources={{url='https://www.icy-veins.com/wow-forever/assassination-rogue-melee-dps-pve-guide',title='Icy Veins: Forever Assassination Rogue PvE guide',reviewedAt='2026-10-23',revision='2026-10-19'},
  {url='https://www.icy-veins.com/wow-forever/combat-rogue-leveling',title='Icy Veins: Forever Combat Rogue leveling',reviewedAt='2026-10-23',revision='2026-10-17'},

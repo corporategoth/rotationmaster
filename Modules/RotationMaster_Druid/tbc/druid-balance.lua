@@ -12,10 +12,10 @@ local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
 local function dot(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
 local function combat()return{type='COMBAT',unit='player'}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.druid.balance',revision=3,
- blocks={['tbc.druid.boundaries']=2,['tbc.druid.feral-form-stop']=2,['tbc.druid.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.druid.balance',revision=4,
+ blocks={['tbc.druid.feral-form-target']=1,['tbc.druid.boundaries']=3,['tbc.druid.upkeep']=1},
  nameKey='Default.TBC.Druid.Balance.Name',descriptionKey='Default.TBC.Druid.Balance.Description',
- applicability={families={'tbc'},actionContext='player',class='DRUID',minLevel=1,maxLevel=70},
+ applicability={families={'tbc'},actionContext='player',class='DRUID'},
  tags={'leveling','endgame','balance','caster','single-target','aoe','icy-veins','wowhead','warcraft-tavern','wowsims'},
  sources={{url='https://www.icy-veins.com/tbc-classic/balance-druid-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Balance Druid rotation',reviewedAt='2026-10-23',revision='2026-01-12'},
   {url='https://www.icy-veins.com/tbc-classic/balance-druid-leveling-guide',title='Icy Veins: Balance Druid leveling',reviewedAt='2026-10-23',revision='2026-01-12'},
@@ -31,8 +31,7 @@ assert(addon:RegisterDefaultRotation({
   },
   rotation={
    {id='balance-boundaries',type='block',block='tbc.druid.boundaries',prefix='balance-'},
-   {id='balance-forms',type='block',block='tbc.druid.feral-form-stop',prefix='balance-'},
-   {id='balance-no-target',type='none',conditions=negate({type='ATTACKABLE',unit='target'})},
+   {id='balance-forms',type='block',block='tbc.druid.feral-form-target',prefix='balance-'},
    {id='balance-moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
     {id='balance-moving-swarm',type='spell',action=5570,ranked=false,conditions=negate(dot(5570))},
     {id='balance-moving-moonfire',type='spell',action=8921,ranked=false,conditions=negate(dot(8921))},

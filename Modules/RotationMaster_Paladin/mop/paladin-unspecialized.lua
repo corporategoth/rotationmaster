@@ -11,10 +11,10 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.unspecialized',revision=2,
- blocks={['mop.paladin.boundaries']=1,['mop.paladin.upkeep']=1,['mop.paladin.seal-truth']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.unspecialized',revision=3,
+ blocks={['mop.paladin.damage-boundaries']=1,['mop.paladin.upkeep']=1,['mop.paladin.seal-truth']=2},
  nameKey='Default.MoP.Paladin.Unspecialized.Name',descriptionKey='Default.MoP.Paladin.Unspecialized.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN',minLevel=1,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN'},
  tags={'leveling','single-target','icy-veins'},
  sources={
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/retribution-paladin-leveling',title='Icy Veins: MoP Classic Retribution Paladin leveling',reviewedAt='2026-10-23',revision='2025-09-23',notes='Generators, then Word of Glory when in danger; no guide writes a list for levels 1-9.'},
@@ -26,8 +26,7 @@ assert(addon:RegisterDefaultRotation({
    spell('starter-flash-of-light',19750,all(negate(combat()),health('LESSTHAN',.7))),
   },
   rotation={
-   block('starter-boundaries','mop.paladin.boundaries','starter-'),
-   stop('starter-target',negate({type='ATTACKABLE',unit='target'})),
+   block('starter-boundaries','mop.paladin.damage-boundaries','starter-'),
    {id='starter-pull',type='branch',conditions=all(negate(combat()),{type='BEYOND_MELEE',unit='target'}),onFalse={},onTrue={
     spell('starter-pull-judgment',20271),stop('starter-pull-stop')}},
    spell('starter-word-of-glory',85673,health('LESSTHAN',.4)),

@@ -13,11 +13,11 @@ local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.paladin.retribution',revision=2,
- blocks={['era.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=1,['era.paladin.boundaries']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.era.paladin.retribution',revision=3,
+ blocks={['era.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=2,
   ['era.paladin.crusader-opener']=1,['era.paladin.seal']=2,['era.paladin.undead']=1},
  nameKey='Default.Era.Paladin.Retribution.Name',descriptionKey='Default.Era.Paladin.Retribution.Description',
- applicability={families={'era'},actionContext='player',class='PALADIN',minLevel=1,maxLevel=60},
+ applicability={families={'era'},actionContext='player',class='PALADIN'},
  tags={'leveling','endgame','retribution','melee','single-target','icy-veins','wowhead','warcraft-tavern'},
  sources={{url='https://www.icy-veins.com/wow-classic/retribution-paladin-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Retribution Paladin rotation',reviewedAt='2026-10-23',revision='2024-11-18'},
   {url='https://www.icy-veins.com/wow-classic/retribution-paladin-leveling-talent-build-from-1-to-60',title='Icy Veins: Retribution Paladin leveling 1-60',reviewedAt='2026-10-23',revision='2026-07-18'},

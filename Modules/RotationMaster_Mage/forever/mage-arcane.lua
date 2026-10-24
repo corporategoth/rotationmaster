@@ -26,10 +26,10 @@ local charged={type='BUFF',unit='player',spell=400573}
 local barrage=any({type='BUFF',unit='player',spell=400589},{type='BUFF',unit='player',spell=1326083})
 local function below(n)return any(negate(charged),stacks('LESSTHAN',n))end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.mage.arcane',revision=4,
- blocks={['forever.mage.boundaries']=1,['forever.mage.frostbolt']=1,['forever.mage.wand']=2,['forever.mage.upkeep']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.mage.arcane',revision=5,
+ blocks={['forever.mage.boundaries']=2,['forever.mage.frostbolt']=1,['forever.mage.wand']=2,['forever.mage.upkeep']=2},
  nameKey='Default.Forever.Mage.Arcane.Name',descriptionKey='Default.Forever.Mage.Arcane.Description',
- applicability={families={'forever'},actionContext='player',class='MAGE',minLevel=10,maxLevel=60},
+ applicability={families={'forever'},actionContext='player',class='MAGE'},
  tags={'arcane','leveling','single-target','aoe','warcraft-tavern'},
  sources={
   {url='https://www.warcrafttavern.com/forever/guides/arcane-mage/',title='Warcraft Tavern: Forever Arcane Mage',reviewedAt='2026-10-23'},

@@ -27,12 +27,12 @@ local cursed={type='OR',value={}};for i,id in ipairs(curses)do cursed.value[i]=o
 -- Siphon (Drain Soul ticks three times faster and drains far more below 20%).
 local invocation,soulSiphon=rune(426243),rune(403511)
 local function invoke(id)return all(invocation,remain(id,6))end
-local blocks={['era.warlock.boundaries']=1,['era.warlock.procs']=1,['era.warlock.dying']=1,['era.warlock.curse']=2,['era.warlock.moving']=1,['era.warlock.aoe']=1,
+local blocks={['era.warlock.boundaries']=2,['era.warlock.procs']=1,['era.warlock.dying']=1,['era.warlock.curse']=2,['era.warlock.moving']=1,['era.warlock.aoe']=1,
  ['era.warlock.sustain']=2,['era.warlock.filler']=1,['era.warlock.armor']=1,['era.warlock.pets']=1,['era.warlock.safety']=1}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.shadow',revision=3,blocks=blocks,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.shadow',revision=4,blocks=blocks,
  nameKey='Default.SoD.Warlock.Shadow.Name',descriptionKey='Default.SoD.Warlock.Shadow.Description',
- applicability={families={'era'},actionContext='player',class='WARLOCK',minLevel=1,maxLevel=60,rulesets={'season:2'}},
+ applicability={families={'era'},actionContext='player',class='WARLOCK',rulesets={'season:2'}},
  tags={'dps','ranged','caster','leveling','endgame','aoe','season-of-discovery','wowsims','wowhead','icy-veins'},
  sources={{url='https://github.com/wowsims/sod/tree/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/warlock/apls/p6',title='wowsims/sod: Affliction and Demonology Warlock Phase 6 APLs',reviewedAt='2026-10-23',revision='0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e'},
  {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/warlock/dps-talent-builds-runes',title='Wowhead: SoD Warlock DPS talents and runes (Phase 6)',reviewedAt='2026-10-23',revision='2025-01-13'},

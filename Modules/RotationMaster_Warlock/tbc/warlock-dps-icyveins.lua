@@ -19,11 +19,11 @@ local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='warlock-iv-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.warlock.dps.icyveins',revision=2,
- blocks={['tbc.warlock.boundaries']=1,['tbc.warlock.procs']=1,['tbc.warlock.moving']=1,['tbc.warlock.curse']=2,['tbc.warlock.aoe']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.warlock.dps.icyveins',revision=3,
+ blocks={['tbc.warlock.boundaries']=2,['tbc.warlock.procs']=1,['tbc.warlock.moving']=1,['tbc.warlock.curse']=2,['tbc.warlock.aoe']=1,
   ['tbc.warlock.finishers']=1,['tbc.warlock.filler']=1,['tbc.warlock.armor']=1,['tbc.warlock.upkeep']=1},
  nameKey='Default.TBC.Warlock.DpsIcyVeins.Name',descriptionKey='Default.TBC.Warlock.DpsIcyVeins.Description',
- applicability={families={'tbc'},actionContext='player',class='WARLOCK',minLevel=1,maxLevel=70},
+ applicability={families={'tbc'},actionContext='player',class='WARLOCK'},
  tags={'affliction','demonology','destruction','icy-veins','leveling','raid','single-target','aoe'},
  sources={
   {url='https://www.icy-veins.com/tbc-classic/affliction-warlock-leveling-guide',title='Icy Veins: Affliction Warlock leveling',reviewedAt='2026-10-23',revision='2026-01-12'},

@@ -12,11 +12,11 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local function healthy()return{type='HEALTHPCT',unit='player',operator='GREATERTHAN',value=.5}end
 local P='priest-wh-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.priest.dps.wowhead',revision=3,
- blocks={['tbc.priest.boundaries']=2,['tbc.priest.enemy-target']=1,['tbc.priest.shadowform']=1,['tbc.priest.moving']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.priest.dps.wowhead',revision=4,
+ blocks={['tbc.priest.dps-boundaries']=1,['tbc.priest.shadowform']=1,['tbc.priest.moving']=1,
   ['tbc.priest.dots']=1,['tbc.priest.filler']=1,['tbc.priest.upkeep']=1},
  nameKey='Default.TBC.Priest.DpsWowhead.Name',descriptionKey='Default.TBC.Priest.DpsWowhead.Description',
- applicability={families={'tbc'},actionContext='player',class='PRIEST',minLevel=1,maxLevel=70},
+ applicability={families={'tbc'},actionContext='player',class='PRIEST'},
  tags={'shadow','damage','wowhead','leveling','raid','single-target'},
  sources={
   {url='https://www.wowhead.com/tbc/guide/classes/priest/shadow/leveling-tips',title='Wowhead: Shadow Priest leveling',reviewedAt='2026-10-23',revision='2026-01-12'},
@@ -30,8 +30,7 @@ assert(addon:RegisterDefaultRotation({
    spell(P..'inner-focus',14751,all({type='COMBAT',unit='player'},{type='SPELL_COOLDOWN',spell=8092,operator='LESSTHANOREQUALS',value=1.5})),
    spell(P..'scream',8122,all({type='THREAT_COUNT',threat=3,operator='GREATERTHANOREQUALS',value=2},{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.5}))},
   rotation={
-   block(P..'boundaries','tbc.priest.boundaries',P),
-   block(P..'target','tbc.priest.enemy-target',P),
+   block(P..'boundaries','tbc.priest.dps-boundaries',P),
    block(P..'form','tbc.priest.shadowform',P),
    {id=P..'pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell(P..'pull-blast',8092),spell(P..'pull-touch',34914),spell(P..'pull-holy-fire',14914,negate(known(15407))),spell(P..'pull-smite',585),stop(P..'pull-stop')}},

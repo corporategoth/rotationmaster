@@ -18,11 +18,11 @@ local function stop(id,conditions,attack)return{id=id,type='none',suppress_attac
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function raptor(op,v)return{type='SPELL_COOLDOWN',spell=2973,operator=op,value=v}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.survival.weave',revision=4,
- blocks={['forever.hunter.boundaries']=1,['forever.hunter.survival-pull']=2,['forever.hunter.range-shots']=1,['forever.hunter.melee-aoe']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.survival.weave',revision=5,
+ blocks={['forever.hunter.boundaries']=3,['forever.hunter.survival-pull']=2,['forever.hunter.range-shots']=1,['forever.hunter.melee-aoe']=1,
   ['forever.hunter.pet-care']=2,['forever.hunter.burst']=1},
  nameKey='Default.Forever.Hunter.SurvivalWeave.Name',descriptionKey='Default.Forever.Hunter.SurvivalWeave.Description',
- applicability={families={'forever'},actionContext='player',class='HUNTER',minLevel=10,maxLevel=60},
+ applicability={families={'forever'},actionContext='player',class='HUNTER'},
  tags={'survival','melee','two-hander','weave','wowhead'},
  sources={
   {url='https://www.wowhead.com/forever/guide/classes/hunter/survival/level-30-dps-overview',title='Wowhead: Forever level 30 Survival Hunter (two-hand weave)',reviewedAt='2026-10-23',revision='2026-10-11'},
@@ -36,7 +36,6 @@ assert(addon:RegisterDefaultRotation({
    block('weave-pet-care','forever.hunter.pet-care','weave-'),
   },
   rotation={
-   stop('weave-target',negate({type='ATTACKABLE',unit='target'})),
    block('weave-boundaries','forever.hunter.boundaries','weave-'),
    block('weave-pull','forever.hunter.survival-pull','weave-'),
    {id='weave-range',type='branch',conditions={type='BEYOND_MELEE',unit='target'},onFalse={},onTrue={

@@ -19,11 +19,11 @@ local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASS
 local arcaneTurn=all({type='SPELL_HISTORY_TIME',spell=1293241,operator='LESSTHAN',value=7},
  negate({type='SPELL_HISTORY_TIME',spell=3044,operator='LESSTHAN',value=17}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.ranged',revision=3,
- blocks={['forever.hunter.boundaries']=1,['forever.hunter.deadzone']=2,['forever.hunter.pull']=2,['forever.hunter.moving']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.ranged',revision=4,
+ blocks={['forever.hunter.boundaries']=3,['forever.hunter.deadzone']=2,['forever.hunter.pull']=2,['forever.hunter.moving']=1,
   ['forever.hunter.aspects-ranged']=1,['forever.hunter.pet-care']=2,['forever.hunter.burst']=1},
  nameKey='Default.Forever.Hunter.Ranged.Name',descriptionKey='Default.Forever.Hunter.Ranged.Description',
- applicability={families={'forever'},actionContext='player',class='HUNTER',minLevel=1,maxLevel=60},
+ applicability={families={'forever'},actionContext='player',class='HUNTER'},
  tags={'beast-mastery','marksmanship','ranged','leveling','single-target','aoe','wowhead'},
  sources={
   {url='https://www.wowhead.com/forever/guide/classes/hunter/beast-mastery/level-30-dps-overview',title='Wowhead: Forever level 30 Beast Mastery Hunter',reviewedAt='2026-10-23',revision='2026-10-11'},
@@ -43,7 +43,6 @@ assert(addon:RegisterDefaultRotation({
    {id='ranged-feign-death',type='spell',action=5384,ranked=false,disabled=true,conditions=all(combat(),{type='GROUP'},{type='THREAT',unit='target',threat=3})},
   },
   rotation={
-   stop('ranged-target',negate({type='ATTACKABLE',unit='target'})),
    block('ranged-boundaries','forever.hunter.boundaries','ranged-'),
    block('ranged-deadzone','forever.hunter.deadzone','ranged-'),
    block('ranged-pull','forever.hunter.pull','ranged-'),

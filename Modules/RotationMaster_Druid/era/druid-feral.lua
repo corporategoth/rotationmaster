@@ -8,11 +8,11 @@ local function any(...)return{type='OR',value={...}}end
 local function form(id)return{type='FORM',form=id}end
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.druid.feral',revision=2,
- blocks={['era.druid.boundaries']=2,['era.druid.upkeep']=1,['era.druid.feral-cooldowns']=2,['era.druid.cat']=1,['era.druid.stealth-opener']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.era.druid.feral',revision=3,
+ blocks={['era.druid.boundaries']=3,['era.druid.upkeep']=1,['era.druid.feral-cooldowns']=2,['era.druid.cat']=1,['era.druid.stealth-opener']=1,
   ['era.druid.cat-builders']=1,['era.druid.powershift']=1,['era.druid.bear']=1,['era.druid.bear-pull']=2,['era.druid.feral-humanoid']=1},
  nameKey='Default.Era.Druid.Feral.Name',descriptionKey='Default.Era.Druid.Feral.Description',
- applicability={families={'era'},actionContext='player',class='DRUID',minLevel=10,maxLevel=60},
+ applicability={families={'era'},actionContext='player',class='DRUID'},
  tags={'leveling','endgame','feral','melee','tank','single-target','aoe','icy-veins','wowhead','warcraft-tavern','wowsims'},
  sources={
   {url='https://www.icy-veins.com/wow-classic/feral-druid-melee-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Feral Druid DPS rotation',reviewedAt='2026-10-23',revision='2024-11-17'},
@@ -23,7 +23,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.warcrafttavern.com/wow-classic/guides/druid-leveling-guide/',title='Warcraft Tavern: Druid leveling',reviewedAt='2026-10-23'},
   {url='https://github.com/wowsims/classic/blob/7779ebbf79dc7f1341e6ab939b28a3402c9a730a/ui/feral_druid/apls/feral.apl.json',title='wowsims/classic Feral APL',reviewedAt='2026-10-23',revision='7779ebb'},
  },
- body={priority=30,switch={type='PRIMARY_TALENT_TREE',tree=2},
+ body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='PRIMARY_TALENT_TREE',tree=2}}},
   cooldowns={ref('era-feral-upkeep','era.druid.upkeep','era-feral-'),ref('era-feral-cooldowns','era.druid.feral-cooldowns','era-feral-')},
   rotation={
    ref('era-feral-boundaries','era.druid.boundaries','era-feral-'),

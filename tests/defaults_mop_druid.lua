@@ -24,7 +24,7 @@ test('the Druid premades load, validate and declare Mists only',function()
  local a=druid();local rows=M.rows(a)
  for _,id in ipairs({FIV,RST})do
   local row=assert(rows[id],id);local scope=row.applicability
-  assert(row.readOnly and row.envelope.body.disabled and scope.minExpansion==4 and scope.maxExpansion==4 and scope.minLevel==10 and scope.maxLevel==90,id)
+  assert(row.readOnly and row.envelope.body.disabled and scope.minExpansion==4 and scope.maxExpansion==4 and scope.minLevel==nil and scope.maxLevel==nil,id)
   assert(a:GetDefaultRotationComposition(id),id..' uses the shared Druid blocks')
  end
 end)

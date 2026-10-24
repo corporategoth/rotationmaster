@@ -33,10 +33,8 @@ local sacrificed={type='OR',value={buff(18789),buff(18790),buff(18791),buff(1879
 local healthstones={19013,19012,9421,19011,19010,5510,19009,19008,5509,19007,19006,5511,19005,19004,5512}
 -- Manual casts and channels (Drain Life, Drain Soul, Hellfire, Rain of Fire, Health Funnel) run to
 -- the end; no attackable target, or one someone else is fighting while you are not, ends advice.
-assert(addon:RegisterDefaultBlock({id='era.warlock.boundaries',revision=1,families={'era'},class='WARLOCK',steps={
- stop('cast',{type='CASTING',unit='player'}),
- stop('channel',{type='CHANNELING',unit='player'}),
- stop('target',negate(all({type='ATTACKABLE',unit='target'},any(combat(),negate({type='COMBAT',unit='target'}),group())))),
+assert(addon:RegisterDefaultBlock({id='era.warlock.boundaries',revision=2,families={'era'},class='WARLOCK',steps={
+ stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate(all({type='ATTACKABLE',unit='target'},any(combat(),negate({type='COMBAT',unit='target'}),group()))))),
 }}))
 -- Nightfall's Shadow Trance makes the next Shadow Bolt instant; it expires, so it comes first.
 assert(addon:RegisterDefaultBlock({id='era.warlock.procs',revision=1,families={'era'},class='WARLOCK',steps={

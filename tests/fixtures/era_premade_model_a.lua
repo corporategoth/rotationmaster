@@ -249,7 +249,7 @@ function M.registered(a,f,ids,class)
   assert(row.readOnly and row.builtin and row.validation.valid and row.validation.resolved,id..' invalid')
   assert(f.translations[row.nameKey]and f.translations[row.descriptionKey],id..' untranslated')
   assert(#row.envelope.sources>=1,id..' unsourced')
-  assert(#scope.families==1 and scope.families[1]=='era'and scope.class==class and scope.maxLevel==60 and scope.actionContext=='player',id..' scope')
+  assert(#scope.families==1 and scope.families[1]=='era'and scope.class==class and scope.maxLevel==nil and scope.minLevel==nil and scope.specs==nil and scope.actionContext=='player',id..' scope')
   local sod=id:match('^rm%.sod%.')~=nil
   assert((scope.rulesets~=nil)==sod,id..' rulesets')
   if sod then assert(#scope.rulesets==1 and scope.rulesets[1]=='season:2',id..' must be Season of Discovery only')end

@@ -23,10 +23,10 @@ local fingers=any({type='BUFF',unit='player',spell=400669},{type='BUFF',unit='pl
 local frozen=any({type='DEBUFF',unit='target',spell=122,anyrank=true},{type='DEBUFF',unit='target',spell=12494})
 local vulnerable={type='DEBUFF',unit='target',spell=22959,owndebuff=true}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.mage.fire',revision=4,
- blocks={['forever.mage.lance-batch']=1,['forever.mage.boundaries']=1,['forever.mage.fire-moving']=1,['forever.mage.fire-aoe']=1,['forever.mage.wand']=2,['forever.mage.upkeep']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.mage.fire',revision=5,
+ blocks={['forever.mage.lance-batch']=1,['forever.mage.boundaries']=2,['forever.mage.fire-moving']=1,['forever.mage.fire-aoe']=1,['forever.mage.wand']=2,['forever.mage.upkeep']=2},
  nameKey='Default.Forever.Mage.Fire.Name',descriptionKey='Default.Forever.Mage.Fire.Description',
- applicability={families={'forever'},actionContext='player',class='MAGE',minLevel=10,maxLevel=60},
+ applicability={families={'forever'},actionContext='player',class='MAGE'},
  tags={'fire','leveling','single-target','aoe','warcraft-tavern','wowhead'},
  sources={
   {url='https://github.com/simulationcraft/simc/blob/4dd64b4a212e946cdbf22219f7d7c42f2fe0e23d/engine/dbc/generated/trait_data.inc',title='SimulationCraft Forever trait data (1.60.1.70425): talent node IDs',reviewedAt='2026-10-23',revision='4dd64b4'},

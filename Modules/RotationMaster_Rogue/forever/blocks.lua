@@ -21,9 +21,8 @@ local offhand={20844,8985,8984,2893,2892}
 for _,id in ipairs(instant)do offhand[#offhand+1]=id end
 -- Manual casts/channels (bandages, Pick Lock, poisons) and a missing target end advice and Attack.
 assert(addon:RegisterDefaultBlock({
- id='forever.rogue.boundaries',revision=1,families={'forever'},class='ROGUE',steps={
- {id='manual',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
- {id='no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
+ id='forever.rogue.boundaries',revision=2,families={'forever'},class='ROGUE',steps={
+ {id='manual',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))},
 }}))
 -- The end of every stealth opener: Ambush when the target is not facing you, Garrote, then
 -- Sinister Strike before either is learned; Stop so the opener never falls into the builders.

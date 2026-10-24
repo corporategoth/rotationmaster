@@ -14,10 +14,10 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local P='mage-sarcane-'
 local combat={type='COMBAT',unit='player'}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.mage.arcane',revision=3,
- blocks={['era.mage.boundaries']=1,['era.mage.wand-finish']=1,['sod.mage.balefire']=1,['sod.mage.armor']=2,['sod.mage.upkeep']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.mage.arcane',revision=4,
+ blocks={['era.mage.boundaries']=2,['era.mage.wand-finish']=1,['sod.mage.balefire']=1,['sod.mage.armor']=2,['sod.mage.upkeep']=2},
  nameKey='Default.SoD.Mage.Arcane.Name',descriptionKey='Default.SoD.Mage.Arcane.Description',
- applicability={families={'era'},actionContext='player',class='MAGE',minLevel=10,maxLevel=60,rulesets={'season:2'}},
+ applicability={families={'era'},actionContext='player',class='MAGE',rulesets={'season:2'}},
  tags={'arcane','raid','single-target','aoe','season-of-discovery','icy-veins'},
  sources={
   {url='https://www.icy-veins.com/wow-classic/arcane-mage-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Arcane Mage rotation (Phase 4)',reviewedAt='2026-10-23',revision='2025-04-08'},
@@ -26,7 +26,7 @@ assert(addon:RegisterDefaultRotation({
  body={
   priority=104,
   -- The engraved rune first, so a character with no talent points is a clean no-match.
-  switch=all({type='RUNE_ENGRAVED',spell=400574},{type='PRIMARY_TALENT_TREE',tree=1}),
+  switch=all({type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='RUNE_ENGRAVED',spell=400574},{type='PRIMARY_TALENT_TREE',tree=1}),
   cooldowns={block(P..'armor','sod.mage.armor',P),
    spell(P..'arcane-power',12042,all(combat,any(class('elite'),class('rareelite'),class('worldboss'),{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHAN',value=15}))),
    spell(P..'presence-of-mind',12043,all(combat,any({type='BUFF',unit='player',spell=12042},{type='MOVING'}))),

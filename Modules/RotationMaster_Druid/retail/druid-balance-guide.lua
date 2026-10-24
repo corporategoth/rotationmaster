@@ -20,17 +20,17 @@ local eclipse=any(buff(48517),buff(48518))
 local aligned=any(buff(194223),buff(102560))
 local moonkin=any(buff(24858),buff(102560))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.druid.balance.guide',revision=3,
- blocks={['retail.druid.boundaries']=1,['retail.druid.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.druid.balance.guide',revision=4,
+ blocks={['retail.druid.boundaries']=2,['retail.druid.utility']=2},
  nameKey='Default.Retail.Druid.BalanceGuide.Name',descriptionKey='Default.Retail.Druid.BalanceGuide.Description',
- applicability={families={'retail'},actionContext='player',class='DRUID',specs={102},minLevel=10,maxLevel=90},
+ applicability={families={'retail'},actionContext='player',class='DRUID'},
  tags={'balance','ranged','reference','icy-veins','simulationcraft','wowhead'},
  sources={
   {url='https://www.icy-veins.com/wow/balance-druid-pve-dps-rotation-cooldowns-abilities',title='Icy Veins: Balance Druid rotation (12.1.5)',reviewedAt='2026-10-23',revision='2026-10-12'},
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/druid_balance.simc',title='SimulationCraft default action list: Balance',reviewedAt='2026-10-23',revision='c5fea93f'},
   {url='https://www.wowhead.com/guide/classes/druid/balance/rotation-cooldowns-pve-dps',title='Wowhead: Balance Druid rotation',reviewedAt='2026-10-23',revision='2026-04-19',notes='Read from a Wayback snapshot.'},
  },
- body={priority=10,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+ body={priority=10,disabled=true,switch={type='SPECIALIZATION',spec=102},
   cooldowns={
    block('baguide-utility','retail.druid.utility','baguide-'),
    spell('baguide-solar-beam',78675,any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})),

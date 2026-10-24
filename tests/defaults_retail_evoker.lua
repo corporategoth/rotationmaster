@@ -22,7 +22,8 @@ test('every Evoker premade loads for its own specialization only and declares Re
   for _,id in ipairs(list)do
    local row=assert(rows[id],id);local scope=row.applicability
    assert(row.readOnly and row.builtin and #scope.families==1 and scope.families[1]=='retail'and scope.class=='EVOKER',id)
-   assert(#scope.specs==1 and scope.specs[1]==spec and scope.minLevel==10 and scope.maxLevel==90,id..' scope')
+   assert(scope.specs==nil and scope.minLevel==nil and scope.maxLevel==nil,id..' scope: load-time facts only')
+   assert(row.envelope.body.switch.type=='SPECIALIZATION'and row.envelope.body.switch.spec==spec,id..' switch')
    assert(row.eligible==(enabledByDefault[id]==true),id..' default enablement')
   end
   for other,list2 in pairs(ids)do if other~=spec then for _,id in ipairs(list2)do assert(rows[id]==nil or not rows[id].eligible,id..' eligible in spec '..spec)end end end
@@ -35,7 +36,7 @@ test('auto-select: Assisted for Devastation, the Icy Veins Ebon Might list for A
  assert(M.switch(a,P..'augmentation.assisted')=='match')
  assert(a:SetDefaultRotationEnabled(P..'augmentation',false));assert(M.selected(a)==P..'augmentation.assisted','the Assisted alternative is the fallback')
  a=evoker(PRES);assert(M.selected(a)==nil,'Preservation is reference only')
- assert(M.selected(evoker(DEV,9))==nil,'below level 10')
+ do local low,ls=evoker(DEV,9);ls.respec(1465);assert(M.selected(low)==P..'initial','below 10 the game reports the initial spec: '..tostring(M.selected(low)))end
 end)
 test('Assisted: follows the suggestion, falls through, waits on casts, channels and empowers',function()
  for _,id in ipairs({P..'devastation',P..'augmentation.assisted'})do

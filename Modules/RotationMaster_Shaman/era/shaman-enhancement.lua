@@ -23,10 +23,10 @@ local big=any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLA
 local ranged=all({type='BEYOND_MELEE',unit='target'},negate({type='MOVING'}))
 local near={type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=2}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.shaman.enhancement',revision=2,
- blocks={['era.shaman.manual']=1,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.self-heal']=1,['era.shaman.melee-totems']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.shaman.enhancement',revision=3,
+ blocks={['era.shaman.manual']=2,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.self-heal']=1,['era.shaman.melee-totems']=1},
  nameKey='Default.Era.Shaman.Enhancement.Name',descriptionKey='Default.Era.Shaman.Enhancement.Description',
- applicability={families={'era'},actionContext='player',class='SHAMAN',minLevel=1,maxLevel=60},
+ applicability={families={'era'},actionContext='player',class='SHAMAN'},
  tags={'dps','melee','leveling','endgame','aoe','icy-veins','wowhead','wowsims'},
  sources={{url='https://www.icy-veins.com/wow-classic/enhancement-shaman-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Enhancement Shaman DPS rotation',reviewedAt='2026-10-23',revision='2024-11-17'},
  {url='https://www.icy-veins.com/wow-classic/enhancement-shaman-leveling-guide-1-60',title='Icy Veins: Classic Enhancement Shaman leveling 1-60',reviewedAt='2026-10-23',revision='2026-07-18'},

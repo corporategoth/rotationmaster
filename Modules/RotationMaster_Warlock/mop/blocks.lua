@@ -30,10 +30,8 @@ local petless=all(negate(combat()),negate({type='PET'}),negate(buff(108503)))
 -- the next action stays visible; the channel is read by spell), run to the end; no target to attack, no
 -- advice.
 assert(addon:RegisterDefaultBlock({
- id='mop.warlock.boundaries',revision=2,families={'progression'},class='WARLOCK',steps={
- stop('cast',{type='CASTING',unit='player'}),
- stop('channel',all({type='CHANNELING',unit='player'},negate({type='CHANNELING_SPELL',unit='player',spell=103103}),negate({type='CHANNELING_SPELL',unit='player',spell=1120}))),
- stop('no-target',negate({type='ATTACKABLE',unit='target'})),
+ id='mop.warlock.boundaries',revision=3,families={'progression'},class='WARLOCK',steps={
+ stop('cast',any({type='CASTING',unit='player'},all({type='CHANNELING',unit='player'},negate({type='CHANNELING_SPELL',unit='player',spell=103103}),negate({type='CHANNELING_SPELL',unit='player',spell=1120})),negate({type='ATTACKABLE',unit='target'}))),
 }}))
 -- Reminders every specialization shares: Dark Intent, Curse of the Elements in a group when nobody has it
 -- up, Grimoire of Sacrifice (tier 5), the Doomguard (Terrorguard with Grimoire of Supremacy) on an elite or

@@ -10,8 +10,8 @@ local _,addon=...
 -- Talent trees in the Forever talent window's order (assumed classic: 1 Balance, 2 Feral Combat, 3 Restoration; verify in game).
 -- Level 10 first (no talent config below it), then the points (an empty tree is a clean no-match),
 -- then the primary tree, which settles hybrids.
-local function tree(n,points)return{type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
- {type='TALENT_TREE_POINTS',tree=n,operator='GREATERTHANOREQUALS',value=points},{type='PRIMARY_TALENT_TREE',tree=n}}}end
+local function tree(n,points)return{type='AND',value={{type='TALENT_TREE_POINTS',tree=n,operator='GREATERTHANOREQUALS',value=points},
+ {type='PRIMARY_TALENT_TREE',tree=n}}}end
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
@@ -59,10 +59,10 @@ local casterSection={
  stop('feral-caster-stop'),
 }
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.druid.feral',revision=4,
- blocks={['forever.druid.boundaries']=1,['forever.druid.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.druid.feral',revision=5,
+ blocks={['forever.druid.boundaries']=2,['forever.druid.upkeep']=1},
  nameKey='Default.Forever.Druid.Feral.Name',descriptionKey='Default.Forever.Druid.Feral.Description',
- applicability={families={'forever'},actionContext='player',class='DRUID',minLevel=10,maxLevel=60},
+ applicability={families={'forever'},actionContext='player',class='DRUID'},
  tags={'feral','cat','bear','tank','melee','leveling','icy-veins'},
  sources={
   {url='https://www.icy-veins.com/wow-forever/feral-druid-leveling',title='Icy Veins: Forever Feral Druid leveling',reviewedAt='2026-10-23',revision='2026-10-18'},
@@ -76,8 +76,8 @@ assert(addon:RegisterDefaultRotation({
   -- 11 Feral points (Feral Charge's tier) first: readable, so a talented feral never waits on an aura
   -- read; then the forms; then Feral as the main tree before its first talent spell, last so a tie
   -- (unavailable) cannot hide a form.
-  switch=any(all({type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='TALENT_TREE_POINTS',tree=2,operator='GREATERTHANOREQUALS',value=11}),
-   aura(768),aura(5487),aura(9634),tree(2,1)),
+  switch=all({type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},any({type='TALENT_TREE_POINTS',tree=2,operator='GREATERTHANOREQUALS',value=11},
+   aura(768),aura(5487),aura(9634),tree(2,1))),
   cooldowns={
    block('feral-upkeep','forever.druid.upkeep','feral-'),
    spell('feral-maul',6807,all(bear,combat(),negate({type='SPELL_ACTIVE',spell=6807}))),

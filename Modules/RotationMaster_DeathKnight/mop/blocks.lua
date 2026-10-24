@@ -30,10 +30,8 @@ local noPresence=all(negate({type='FORM',form=48263}),negate({type='FORM',form=4
 local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
 -- Casts and channels (Army of the Dead) and a target that is not attackable end advice.
 block('mop.deathknight.boundaries',{
- stop('cast',{type='CASTING',unit='player'}),
- stop('channel',{type='CHANNELING',unit='player'}),
- stop('target',negate({type='ATTACKABLE',unit='target'})),
-})
+ stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))),
+},2)
 -- Every specialization: Horn of Winter when no attack power shout is up (they do not stack), Mind
 -- Freeze on an interruptible cast, Army of the Dead before a group boss pull.
 block('mop.deathknight.upkeep',{

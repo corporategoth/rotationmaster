@@ -23,10 +23,10 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local tanked={type='ISSAME',unit='targettarget',otherunit='player'}
 local instant={8928,8927,8926,6950,6949,6947}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.tank',revision=3,
- blocks={['era.rogue.boundaries']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.tank',revision=4,
+ blocks={['era.rogue.boundaries']=2},
  nameKey='Default.SoD.Rogue.Tank.Name',descriptionKey='Default.SoD.Rogue.Tank.Description',
- applicability={families={'era'},actionContext='player',class='ROGUE',minLevel=1,maxLevel=60,rulesets={'season:2'}},
+ applicability={families={'era'},actionContext='player',class='ROGUE',rulesets={'season:2'}},
  tags={'tank','melee','endgame','aoe','season-of-discovery','wowsims','icy-veins','zockify','warcraft-tavern'},
  sources={{url='https://github.com/wowsims/sod/tree/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/tank_rogue/apls',title='wowsims/sod: Rogue tank Phase 6 APLs (Main Gauche, Saber Slash)',reviewedAt='2026-10-23',revision='0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e'},
  {url='https://www.icy-veins.com/wow-classic/combat-rogue-tank-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Combat Rogue tank rotation',reviewedAt='2026-10-23',revision='2025-04-08'},

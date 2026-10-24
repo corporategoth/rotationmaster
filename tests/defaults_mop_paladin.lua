@@ -20,7 +20,7 @@ test('the Paladin premades load, validate and declare Mists of Pandaria only',fu
  -- Disabled variants: same scope, eligible once enabled.
  for _,id in ipairs({RETTAV,PROTSIM})do
   local scope=rows[id].applicability
-  assert(scope.minExpansion==4 and scope.maxExpansion==4 and scope.minLevel==10 and scope.maxLevel==90 and scope.families[1]=='progression',id)
+  assert(scope.minExpansion==4 and scope.maxExpansion==4 and scope.minLevel==nil and scope.maxLevel==nil and scope.families[1]=='progression',id)
   assert(not rows[id].eligible and rows[id].eligibilityReason=='disabled',id)
   assert(a:SetDefaultRotationEnabled(id,true));assert(M.rows(a)[id].eligible,id..' not eligible once enabled')
  end

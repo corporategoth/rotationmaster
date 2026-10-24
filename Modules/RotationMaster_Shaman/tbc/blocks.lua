@@ -17,9 +17,8 @@ local function boss()return all({type='GROUP'},{type='CLASSIFICATION',unit='targ
 local function shaman(id,steps,revision)assert(addon:RegisterDefaultBlock({id=id,revision=revision or 1,families={'tbc'},class='SHAMAN',steps=steps}))end
 -- Casts, channels and Ghost Wolf halt advice and implicit Attack.
 shaman('tbc.shaman.boundaries',{
- {id='casting',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
- {id='ghost-wolf',type='none',suppress_attack=true,conditions=own(2645)},
-})
+ {id='casting',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},own(2645))},
+},2)
 -- Every source interrupts with Earth Shock.
 shaman('tbc.shaman.interrupt',{
  {id='interrupt',type='spell',action=8042,ranked=false,conditions=any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})},

@@ -37,11 +37,18 @@ local SPECS={
     [265]={"WARLOCK",1,"Affliction"},[266]={"WARLOCK",2,"Demonology"},[267]={"WARLOCK",3,"Destruction"},
     [268]={"MONK",nil,"Brewmaster"},[269]={"MONK",nil,"Windwalker"},[270]={"MONK",nil,"Mistweaver"},
     [102]={"DRUID",1,"Balance"},[103]={"DRUID",2,"Feral"},[104]={"DRUID",2,"Guardian"},[105]={"DRUID",3,"Restoration"},
-    [577]={"DEMONHUNTER",nil,"Havoc"},[581]={"DEMONHUNTER",nil,"Vengeance"},
+    [577]={"DEMONHUNTER",nil,"Havoc"},[581]={"DEMONHUNTER",nil,"Vengeance"},[1480]={"DEMONHUNTER",nil,"Devourer"},
     [1467]={"EVOKER",nil,"Devastation"},[1468]={"EVOKER",nil,"Preservation"},[1473]={"EVOKER",nil,"Augmentation"},
+    -- Retail's initial specializations (levels 1-9, Platform/specializations.lua INITIAL_SPECS),
+    -- so the Built In premades for that stage can switch on them without a client lookup.
+    [1446]={"WARRIOR",nil,"Initial"},[1451]={"PALADIN",nil,"Initial"},[1448]={"HUNTER",nil,"Initial"},
+    [1453]={"ROGUE",nil,"Initial"},[1452]={"PRIEST",nil,"Initial"},[1455]={"DEATHKNIGHT",nil,"Initial"},
+    [1444]={"SHAMAN",nil,"Initial"},[1449]={"MAGE",nil,"Initial"},[1454]={"WARLOCK",nil,"Initial"},
+    [1450]={"MONK",nil,"Initial"},[1447]={"DRUID",nil,"Initial"},[1456]={"DEMONHUNTER",nil,"Initial"},
+    [1465]={"EVOKER",nil,"Initial"},
 }
 local SPEC_ORDER={71,72,73,65,66,70,253,254,255,259,260,261,256,257,258,250,251,252,262,263,264,
-    62,63,64,265,266,267,268,269,270,102,103,104,105,577,581,1467,1468,1473}
+    62,63,64,265,266,267,268,269,270,102,103,104,105,577,581,1480,1467,1468,1473}
 local CLASS_IDS={WARRIOR=1,PALADIN=2,HUNTER=3,ROGUE=4,PRIEST=5,DEATHKNIGHT=6,SHAMAN=7,MAGE=8,
     WARLOCK=9,MONK=10,DRUID=11,DEMONHUNTER=12,EVOKER=13}
 

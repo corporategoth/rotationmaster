@@ -17,11 +17,11 @@ local P='mage-frost-'
 local onMe={type='THREAT',unit='target',threat=3}
 local frozen={type='DEBUFF',unit='target',spell=122,anyrank=true}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.mage.frost',revision=2,
- blocks={['era.mage.boundaries']=1,['era.mage.frostbolt']=1,['era.mage.moving']=1,['era.mage.nova']=1,['era.mage.execute']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.era.mage.frost',revision=3,
+ blocks={['era.mage.boundaries']=2,['era.mage.frostbolt']=1,['era.mage.moving']=1,['era.mage.nova']=1,['era.mage.execute']=1,
   ['era.mage.wand-finish']=1,['era.mage.armor']=1,['era.mage.upkeep']=1},
  nameKey='Default.Era.Mage.Frost.Name',descriptionKey='Default.Era.Mage.Frost.Description',
- applicability={families={'era'},actionContext='player',class='MAGE',minLevel=1,maxLevel=60},
+ applicability={families={'era'},actionContext='player',class='MAGE'},
  tags={'frost','arcane','leveling','raid','single-target','aoe'},
  sources={
   {url='https://www.icy-veins.com/wow-classic/mage-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Mage DPS rotation',reviewedAt='2026-10-23',revision='2024-11-17'},

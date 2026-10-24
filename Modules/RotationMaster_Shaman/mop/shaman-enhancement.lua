@@ -22,11 +22,11 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local flame={type='DEBUFF',unit='target',spell=8050,owndebuff=true}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.enhancement',revision=3,
- blocks={['mop.shaman.manual']=1,['mop.shaman.lightning-shield']=1,['mop.shaman.group']=1,['mop.shaman.fire-totems']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.enhancement',revision=4,
+ blocks={['mop.shaman.manual-target']=1,['mop.shaman.lightning-shield']=1,['mop.shaman.group']=1,['mop.shaman.fire-totems']=1,
   ['mop.shaman.enhancement-upkeep']=2,['mop.shaman.enhancement-aoe']=1},
  nameKey='Default.MoP.Shaman.Enhancement.Name',descriptionKey='Default.MoP.Shaman.Enhancement.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='SHAMAN',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='SHAMAN'},
  tags={'enhancement','dps','melee','leveling','endgame','wowhead','warcraft-tavern'},
  sources={{url='https://www.wowhead.com/mop-classic/guide/classes/shaman/enhancement/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Enhancement Shaman rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2026-06-29'},
  {url='https://www.wowhead.com/mop-classic/guide/classes/shaman/enhancement/dps-leveling-talent-builds-tips',title='Wowhead: Enhancement Shaman levelling (MoP Classic)',reviewedAt='2026-10-23',revision='2026-06-29'},
@@ -38,8 +38,7 @@ assert(addon:RegisterDefaultRotation({
   spell('shaman-enh-shamanistic-rage',30823,all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.6})),
  },
  rotation={
- block('mop.shaman.manual','shaman-enh-'),
- {id='shaman-enh-no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
+ block('mop.shaman.manual-target','shaman-enh-'),
  {id='shaman-enh-pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('shaman-enh-pull-unleash',73680),
   spell('shaman-enh-pull-bolt',403,all(negate(known(73680)),{type='BEYOND_MELEE',unit='target'})),

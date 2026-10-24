@@ -16,11 +16,11 @@ local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='priest-sod-heal-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.priest.healer',revision=2,
- blocks={['era.priest.boundaries']=1,['era.priest.enemy-target']=1,['era.priest.dispels']=1,['era.priest.big-heal']=1,['era.priest.renew']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.priest.healer',revision=3,
+ blocks={['era.priest.boundaries']=2,['era.priest.enemy-target']=1,['era.priest.dispels']=1,['era.priest.big-heal']=1,['era.priest.renew']=1,
   ['era.priest.friend-fortitude']=1,['era.priest.upkeep']=1,['era.priest.divine-spirit']=1,['sod.priest.healer-damage']=1,['sod.priest.healer-upkeep']=1},
  nameKey='Default.SoD.Priest.Healer.Name',descriptionKey='Default.SoD.Priest.Healer.Description',
- applicability={families={'era'},actionContext='player',class='PRIEST',minLevel=10,maxLevel=60,rulesets={'season:2'}},
+ applicability={families={'era'},actionContext='player',class='PRIEST',rulesets={'season:2'}},
  tags={'holy','discipline','healer','dungeon','raid','season-of-discovery','icy-veins'},
  sources={
   {url='https://www.icy-veins.com/wow-classic/discipline-priest-healer-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Discipline Priest healer',reviewedAt='2026-10-23',revision='2025-04-08',notes='Text describes Phase 4.'},
@@ -29,7 +29,7 @@ assert(addon:RegisterDefaultRotation({
  },
  body={
   priority=120,
-  switch={type='AND',value={{type='GROUP'},{type='OR',value={{type='PRIMARY_TALENT_TREE',tree=2},{type='PRIMARY_TALENT_TREE',tree=1}}}}},
+  switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='GROUP'},{type='OR',value={{type='PRIMARY_TALENT_TREE',tree=2},{type='PRIMARY_TALENT_TREE',tree=1}}}}},
   cooldowns={block(P..'upkeep','era.priest.upkeep',P),block(P..'spirit','era.priest.divine-spirit',P),block(P..'sod-upkeep','sod.priest.healer-upkeep',P)},
   rotation={
    block(P..'boundaries','era.priest.boundaries',P),

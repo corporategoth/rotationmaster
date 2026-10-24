@@ -30,11 +30,11 @@ local frenzy=any({type='BUFF_STACKS',unit='pet',spell=19615,operator='GREATERTHA
 local focusFire=all(negate(wrath),frenzy)
 local thrill=buff(34720)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.beastmastery',revision=3,
- blocks={['mop.hunter.boundaries']=1,['mop.hunter.mark']=1,['mop.hunter.pet']=1,['mop.hunter.aspect']=1,['mop.hunter.utility']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.beastmastery',revision=4,
+ blocks={['mop.hunter.boundaries']=2,['mop.hunter.mark']=1,['mop.hunter.pet']=1,['mop.hunter.aspect']=1,['mop.hunter.utility']=1,
   ['mop.hunter.talents']=1,['mop.hunter.talent-shots']=1,['mop.hunter.serpent']=1,['mop.hunter.filler']=1},
  nameKey='Default.MoP.Hunter.BeastMastery.Name',descriptionKey='Default.MoP.Hunter.BeastMastery.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='HUNTER',minLevel=10,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='HUNTER'},
  tags={'beast-mastery','leveling','single-target','aoe','wowhead','wowsims'},
  sources={
   {url='https://www.wowhead.com/mop-classic/guide/classes/hunter/beast-mastery/dps-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Beast Mastery Hunter rotation (Phase 5)',reviewedAt='2026-10-23',revision='2026-06-20'},

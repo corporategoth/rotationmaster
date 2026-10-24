@@ -10,10 +10,10 @@ local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local idle=negate({type='SPELL_AUTOREPEAT',spell=75,ranked=true})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.unspecialized',revision=2,
- blocks={['mop.hunter.boundaries']=1,['mop.hunter.mark']=1,['mop.hunter.pet']=1,['mop.hunter.aspect']=1,['mop.hunter.serpent']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.unspecialized',revision=3,
+ blocks={['mop.hunter.boundaries']=2,['mop.hunter.mark']=1,['mop.hunter.pet']=1,['mop.hunter.aspect']=1,['mop.hunter.serpent']=1},
  nameKey='Default.MoP.Hunter.Unspecialized.Name',descriptionKey='Default.MoP.Hunter.Unspecialized.Description',
- applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='HUNTER',minLevel=1,maxLevel=90},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='HUNTER'},
  tags={'leveling','single-target'},
  sources={
   {url='https://www.warcrafttavern.com/mop/guides/hunter-leveling-guide/',title='Warcraft Tavern: MoP Hunter leveling guide',reviewedAt='2026-10-23'},

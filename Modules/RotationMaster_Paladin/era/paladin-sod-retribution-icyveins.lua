@@ -12,10 +12,10 @@ local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution.icyveins',revision=2,
- blocks={['sod.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=1,['era.paladin.boundaries']=1,['sod.paladin.seal']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution.icyveins',revision=3,
+ blocks={['sod.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=2,['sod.paladin.seal']=2},
  nameKey='Default.SoD.Paladin.Retribution.IcyVeins.Name',descriptionKey='Default.SoD.Paladin.Retribution.IcyVeins.Description',
- applicability={families={'era'},actionContext='player',class='PALADIN',minLevel=1,maxLevel=60,rulesets={'season:2'}},
+ applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},
  tags={'leveling','retribution','melee','single-target','season-of-discovery','icy-veins','warcraft-tavern'},
  sources={{url='https://www.icy-veins.com/wow-classic/retribution-paladin-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Retribution Paladin rotation (Phase 4)',reviewedAt='2026-10-23',revision='2024-07-07'},
   {url='https://www.icy-veins.com/wow-classic/retribution-paladin-dps-season-of-discovery-leveling',title='Icy Veins: SoD Retribution Paladin leveling (Phase 4)',reviewedAt='2026-10-23',revision='2024-07-02'},

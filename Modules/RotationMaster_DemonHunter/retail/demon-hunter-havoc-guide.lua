@@ -17,17 +17,17 @@ local aldrachi=known(442294)
 local glaive=any(buff(444686),buff(444764))
 local scarredMeta=all(negate(aldrachi),buff(162264))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.havoc.guide',revision=2,
- blocks={['retail.demonhunter.boundaries']=1,['retail.demonhunter.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.havoc.guide',revision=3,
+ blocks={['retail.demonhunter.boundaries']=2,['retail.demonhunter.utility']=2},
  nameKey='Default.Retail.DemonHunter.HavocGuide.Name',descriptionKey='Default.Retail.DemonHunter.HavocGuide.Description',
- applicability={families={'retail'},actionContext='player',class='DEMONHUNTER',specs={577},minLevel=8,maxLevel=90},
+ applicability={families={'retail'},actionContext='player',class='DEMONHUNTER'},
  tags={'havoc','melee','reference','icy-veins','simulationcraft','wowhead'},
  sources={
   {url='https://www.icy-veins.com/wow/havoc-demon-hunter-pve-dps-rotation-cooldowns-abilities',title='Icy Veins: Havoc Demon Hunter rotation (12.1.5)',reviewedAt='2026-10-23',revision='2026-10-12'},
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/demonhunter_havoc.simc',title='SimulationCraft default action list: Havoc',reviewedAt='2026-10-23',revision='c5fea93f'},
   {url='https://www.wowhead.com/guide/classes/demon-hunter/havoc/rotation-cooldowns-pve-dps',title='Wowhead: Havoc Demon Hunter rotation (Midnight Season 2)',reviewedAt='2026-10-23',revision='2026-08-17',notes='Read from a Wayback snapshot.'},
  },
- body={priority=10,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=8},
+ body={priority=10,disabled=true,switch={type='SPECIALIZATION',spec=577},
   cooldowns={
    block('hguide-utility','retail.demonhunter.utility','hguide-'),
    spell('hguide-metamorphosis',191427,all(combat(),negate({type='SPELL_AVAIL',spell=198013}),negate({type='SPELL_AVAIL',spell=188499}))),

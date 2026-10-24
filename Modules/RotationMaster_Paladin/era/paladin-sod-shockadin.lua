@@ -10,13 +10,13 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function sealRemain(id)return{type='BUFF_REMAIN',unit='player',spell=id,anyrank=true,ownbuff=true,operator='LESSTHANOREQUALS',value=1.5}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.shockadin',revision=3,
- blocks={['sod.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=1,['era.paladin.boundaries']=1,['sod.paladin.seal']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.shockadin',revision=4,
+ blocks={['sod.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=2,['sod.paladin.seal']=2},
  nameKey='Default.SoD.Paladin.Shockadin.Name',descriptionKey='Default.SoD.Paladin.Shockadin.Description',
- applicability={families={'era'},actionContext='player',class='PALADIN',minLevel=40,maxLevel=60,rulesets={'season:2'}},
+ applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},
  tags={'endgame','raid','holy','melee','single-target','season-of-discovery','wowsims'},
  sources={{url='https://github.com/wowsims/sod/tree/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/retribution_paladin',title='wowsims/sod Phase 8 Shockadin APLs',reviewedAt='2026-10-23',revision='0e3f6ef'}},
- body={priority=100,disabled=true,switch={type='AND',value={{type='RUNE_ENGRAVED',spell=462834},{type='PRIMARY_TALENT_TREE',tree=1}}},
+ body={priority=100,disabled=true,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=40},{type='RUNE_ENGRAVED',spell=462834},{type='PRIMARY_TALENT_TREE',tree=1}}},
   cooldowns={block('shock-upkeep','sod.paladin.ret-upkeep','shock-'),block('shock-safety','era.paladin.safety','shock-')},
   rotation={
    block('shock-opening','era.paladin.melee-opening','shock-'),
