@@ -15,15 +15,15 @@ local function lit(f,s,id)local out={};for k in pairs(H.upkeep(f,s,id))do out[#o
 local function stopped(f,s,id,suppress)local spell,r=H.first(f,s,id);return spell==nil and r.status=='stopped'and(suppress==nil or r.suppressAttack==suppress)end
 local RET70={CRUSADER,COMMAND,BLOOD,WISDOM,CS,26573,879,24275,20218,7294,19742,19740,19750,31884,20473}
 
-test('seven sourced, localized, valid premades replace the manual seal/aura previews; twisting is opt-in',function()
+test('seven sourced, localized, valid premades replace the manual seal/aura previews; twisting and the same-switch variants are opt-in',function()
  local f,s,a=fixture()
  for _,id in ipairs({RET,RIV,TWIST,PROT,PIV,HOLY,HWH})do
   local r=H.row(a,id);local e=r.envelope
   assert(r.validation.valid and r.validation.supported and r.validation.resolved,id)
   assert(f.translations[r.nameKey]and f.translations[r.descriptionKey],id..' localization')
-  assert(#e.sources>0 and e.revision==((id==HOLY or id==HWH)and 3 or 4)and e.applicability.class=='PALADIN'and e.applicability.maxLevel==nil and e.applicability.families[1]=='tbc')
+  assert(#e.sources>0 and e.revision==({[RET]=4,[RIV]=5,[TWIST]=4,[PROT]=4,[PIV]=5,[HOLY]=3,[HWH]=4})[id]and e.applicability.class=='PALADIN'and e.applicability.maxLevel==nil and e.applicability.families[1]=='tbc')
   assert(a:GetDefaultRotationComposition(id),id..' uses the shared Paladin blocks')
-  assert(r.enabled==(id~=TWIST),id..' default enable state')
+  assert(r.enabled==(id==RET or id==PROT or id==HOLY),id..' default enable state')
  end
  for _,old in ipairs({'rm.tbc.paladin.starter','rm.tbc.paladin.starter.20-29','rm.tbc.paladin.starter.30-39','rm.tbc.paladin.starter.40-49'})do assert(not a:GetDefaultRotation(old),old)end
 end)
@@ -47,7 +47,8 @@ test('auto-select: Retribution by default, Protection by tree or Righteous Fury,
  assert(not body.disabled,'enabled twist pack still carries the shipped disabled flag')
  if a.GetOrderedAutoSwitchRotations then local found=false;for _,id in ipairs(a:GetOrderedAutoSwitchRotations(0,a:GetRuntimeRotations(0)))do found=found or id==key end;assert(found,'auto-switch ignores the enabled twist pack')end
  s.known[BLOOD]=nil;assert(H.selected(f,s)==RET,'twisting needs Blood or Martyr')
- assert(a:SetDefaultRotationEnabled(RET,false));assert(H.selected(f,s)==RIV)
+ assert(a:SetDefaultRotationEnabled(RET,false));assert(H.selected(f,s)~=RIV,'the disabled Icy Veins variant was chosen')
+ assert(a:SetDefaultRotationEnabled(RIV,true));assert(H.selected(f,s)==RIV)
 end)
 test('Retribution (Wowhead & wowsims) leveling: Crusader opener, Righteousness, Judgement of Righteousness',function()
  local f,s=fixture(10);H.learn(f,s,CRUSADER);fight(s)

@@ -1,5 +1,5 @@
 -- TBC Mage Fire after Wowhead and wowsims, levels 10–70 when Fire is the primary talent tree.
--- Same switch as the Icy Veins Fire premade but a lower priority: choose or enable it to use it.
+-- Same switch as the Icy Veins Fire premade but a lower priority, shipped disabled: enable it to use it.
 -- It differs in two places: no Pyroblast opener, and Fire Blast is woven in whenever it is
 -- ready while standing still (more damage, more mana), not kept for movement only.
 local _,addon=...
@@ -8,7 +8,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id)return{id=id,type='none',suppress_attack=true,conditions={}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.mage.fire.wowhead',revision=3,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.mage.fire.wowhead',revision=4,
  blocks={['tbc.mage.boundaries']=2,['tbc.mage.wand-finish']=1,['tbc.mage.moving-fire-blast']=1,['tbc.mage.fire-aoe']=1,
   ['tbc.mage.improved-scorch']=1,['tbc.mage.armor-molten']=1,['tbc.mage.upkeep']=1},
  nameKey='Default.TBC.Mage.FireWowhead.Name',descriptionKey='Default.TBC.Mage.FireWowhead.Description',
@@ -21,7 +21,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/wowsims/tbc/blob/3301fca59306a747e521274c36e073e69acc7b77/ui/core/talents/mage.ts',title='wowsims TBC Mage talent layout (Improved Scorch is Fire talent 10)',reviewedAt='2026-10-23',revision='3301fca',notes='Talent position only.'},
  },
  body={
-  priority=10,
+  priority=10,disabled=true,
   switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='PRIMARY_TALENT_TREE',tree=2}}},
   cooldowns={block('mage-firewh-armor','tbc.mage.armor-molten','mage-firewh-'),block('mage-firewh-upkeep','tbc.mage.upkeep','mage-firewh-')},
   rotation={

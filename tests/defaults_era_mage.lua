@@ -34,7 +34,9 @@ test('standard realm: Frost owns levels 1-9, no points and ties; Fire by points;
  local a,s=mage(1)
  assert(M.selected(a)==FROST,'level 1')
  s.setLevel(30);assert(M.selected(a)==FROST,'no talent points still selects Frost')
- for _,id in ipairs(SOD)do assert(not M.row(a,id).eligible and M.row(a,id).eligibilityReason=='ruleset-mismatch',id..' eligible on a standard realm')end
+ -- The Tavern SoD Frost variant ships disabled, which is reported first.
+ for _,id in ipairs(SOD)do assert(not M.row(a,id).eligible and M.row(a,id).eligibilityReason==(id==SFROSTWCT and 'disabled' or 'ruleset-mismatch'),id..' eligible on a standard realm')end
+ assert(M.row(a,FIREWCT).envelope.body.disabled==true and M.row(a,SFROSTWCT).envelope.body.disabled==true,'the Tavern variants ship disabled')
  s.setTalents({0,5,0});assert(M.selected(a)==FIRE,'Fire points and no Frost points')
  s.setTalents({17,13,0});assert(M.selected(a)==FIRE,'Arcane/Fire without Frost plays Fireball')
  s.setTalents({0,31,3});assert(M.selected(a)==FIRE,'Fire primary with an Elemental Precision dip')
@@ -43,7 +45,8 @@ test('standard realm: Frost owns levels 1-9, no points and ties; Fire by points;
  s.setTalents({0,0,21});s.setTalent(3,10,1);assert(M.selected(a)==GRIND,'solo with Improved Blizzard: AoE grinding')
  s.group=true;assert(M.selected(a)==FROST,'in a group: Frost');s.group=false
  s.setTalents({0,31,3});assert(M.switch(a,FIREWCT)=='match','the Tavern Fire variant shares the Fire switch')
- assert(a:SetDefaultRotationEnabled(FIRE,false));assert(M.selected(a)==FIREWCT,'disabling Fire selects the Tavern variant')
+ assert(a:SetDefaultRotationEnabled(FIRE,false));assert(M.selected(a)==GRIND,'disabling Fire falls back to Frost (solo, Improved Blizzard still talented: grinding) while the Tavern variant is off: '..tostring((M.selected(a))))
+ assert(a:SetDefaultRotationEnabled(FIREWCT,true));assert(M.selected(a)==FIREWCT,'enabling the Tavern variant selects it')
  assert(a:SetDefaultRotationEnabled(FIRE,true));assert(M.selected(a)==FIRE)
  s.setSeason(3,true);assert(M.selected(a)==FIRE,'Hardcore realms use the vanilla premades')
 end)
@@ -53,7 +56,8 @@ test('Season of Discovery: the SoD premades win; Fire is the default, Frost by t
  assert(M.selected(a)==SFIRE,'level 1 on SoD')
  s.setLevel(40);assert(M.selected(a)==SFIRE,'no points')
  s.setTalents({0,0,25});assert(M.selected(a)==SFROST,'Frost primary')
- assert(M.switch(a,SFROSTWCT)=='match');assert(a:SetDefaultRotationEnabled(SFROST,false));assert(M.selected(a)==SFROSTWCT)
+ assert(M.switch(a,SFROSTWCT)=='match');assert(a:SetDefaultRotationEnabled(SFROST,false));assert(M.selected(a)==SFIRE,'the Tavern variant ships disabled')
+ assert(a:SetDefaultRotationEnabled(SFROSTWCT,true));assert(M.selected(a)==SFROSTWCT)
  assert(a:SetDefaultRotationEnabled(SFROST,true))
  s.setTalents({25,0,0});assert(M.selected(a)==SFIRE,'Arcane primary without Arcane Blast plays Fire')
  s.learn(400574);assert(M.selected(a)==SFIRE,'a known Arcane Blast whose rune is not engraved is not the rune')

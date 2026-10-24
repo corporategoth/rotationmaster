@@ -10,13 +10,13 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.shaman.elemental.wowsims',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.era.shaman.elemental.wowsims',revision=3,
  blocks={['era.shaman.manual-target']=1,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.self-heal']=1,['era.shaman.caster-totems']=1},
  nameKey='Default.Era.Shaman.Elemental.Wowsims.Name',descriptionKey='Default.Era.Shaman.Elemental.Wowsims.Description',
  applicability={families={'era'},actionContext='player',class='SHAMAN'},
  tags={'dps','ranged','caster','endgame','wowsims'},
  sources={{url='https://github.com/wowsims/classic/blob/7779ebbf79dc7f1341e6ab939b28a3402c9a730a/ui/elemental_shaman/apls/default.apl.json',title='wowsims/classic: Elemental Shaman default APL',reviewedAt='2026-10-23',revision='7779ebbf79dc7f1341e6ab939b28a3402c9a730a'}},
- body={priority=21,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='PRIMARY_TALENT_TREE',tree=1}}},
+ body={priority=21,disabled=true,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='PRIMARY_TALENT_TREE',tree=1}}},
  cooldowns={
   block('era.shaman.shield','ele-ws-'),
   block('era.shaman.caster-totems','ele-ws-'),

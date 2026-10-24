@@ -17,14 +17,15 @@ local function both(f,s,g,t,a,b)local x,y=first(f,s,HS),first(g,t,HW);local want
 local function each(s,t,fn)fn(s);fn(t)end
 local function cd(s,id)s.cooldown[id]={startTime=95,duration=10,isEnabled=true,modRate=1}end
 
-test('both premades register valid 1–70, share the switch, and the wowsims premade auto-selects',function()
+test('both premades register valid 1–70, share the switch, the wowsims premade auto-selects and the Wowhead one ships disabled',function()
  local f,s=hunter(1);local a=f.addon
- for _,level in ipairs({1,30,70})do s.level=level;a.longtermCache={};for _,r in ipairs(a:ListDefaultRotations(0))do assert(r.eligible,r.id..' at '..level)end
+ for _,level in ipairs({1,30,70})do s.level=level;a.longtermCache={};for _,r in ipairs(a:ListDefaultRotations(0))do assert(r.eligible==(r.id~=HW),r.id..' at '..level)end
   assert(M.switches(f,HS)and M.switches(f,HW))end
  for _,src in ipairs(a:GetDefaultRotation(HW).envelope.sources)do assert(src.url:find('wowhead%.com'),src.url)end
  for _,src in ipairs(a:GetDefaultRotation(HS).envelope.sources)do assert(not src.url:find('wowhead'),src.url)end
  local poll,selected=M.publisher(f,s);s.autorepeat=false;poll();assert(selected()==HS and f.addon.currentSpell==75)
- assert(a:SetDefaultRotationEnabled(HS,false));poll();assert(selected()==HW)
+ assert(a:SetDefaultRotationEnabled(HS,false));poll();assert(selected()~=HW,'the disabled Wowhead premade was chosen')
+ assert(a:SetDefaultRotationEnabled(HW,true));poll();assert(selected()==HW)
 end)
 
 test('casts and channels stop with Attack suppressed; no target stops; melee range uses melee strikes then white hits',function()

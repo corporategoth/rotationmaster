@@ -23,7 +23,7 @@ test('four sourced, localized, valid premades replace the caster-only previews',
   local r=H.row(a,id);local e=r.envelope
   assert(r.validation.valid and r.validation.supported and r.validation.resolved,id)
   assert(f.translations[r.nameKey]and f.translations[r.descriptionKey],id..' localization')
-  assert(#e.sources>0 and e.revision==(id==BAL and 4 or 3)and e.applicability.class=='DRUID'and e.applicability.maxLevel==nil and e.applicability.families[1]=='tbc')
+  assert(#e.sources>0 and e.revision==((id==BAL or id==FWH)and 4 or 3)and r.enabled==(id~=FWH)and e.applicability.class=='DRUID'and e.applicability.maxLevel==nil and e.applicability.families[1]=='tbc')
   assert(a:GetDefaultRotationComposition(id),id..' uses the shared Druid blocks')
  end
  for _,old in ipairs({'rm.tbc.druid.caster.starter','rm.tbc.druid.caster.starter.20-29','rm.tbc.druid.caster.starter.30-39','rm.tbc.druid.caster.starter.40-49'})do assert(not a:GetDefaultRotation(old),old)end
@@ -34,7 +34,9 @@ test('auto-select: Balance below 10, without talents and on ties; Feral and Rest
   s.level,s.talents=case[1],case[2];assert(H.selected(f,s)==case[3],table.concat(case[2],'/')..' chose '..tostring(H.selected(f,s)))
  end
  for _,talents in ipairs({{0,0,0},{0,11,0},{11,0,0},{5,5,0}})do s.talents=talents;assert(H.switch(a,FWH)==H.switch(a,FER),'Wowhead Feral shares the Feral switch')end
- s.level,s.talents=70,{0,47,14};assert(a:SetDefaultRotationEnabled(FER,false));assert(H.selected(f,s)==FWH)
+ -- Wowhead Feral ships disabled: with Icy Veins Feral off the Balance catch-all runs until it is enabled.
+ s.level,s.talents=70,{0,47,14};assert(a:SetDefaultRotationEnabled(FER,false));assert(H.selected(f,s)==BAL)
+ assert(a:SetDefaultRotationEnabled(FWH,true));assert(H.selected(f,s)==FWH)
 end)
 test('Balance leveling: Wrath pull, Moonfire, then Wrath; moving only instants',function()
  local f,s=fixture(8)

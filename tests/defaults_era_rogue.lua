@@ -23,10 +23,12 @@ test('every premade registers valid 1–60; vanilla runs on every realm, SoD onl
   assert(a:GetDefaultRotationComposition(id),id..' is not composed')
  end
  for _,season in ipairs({false,3,11})do s.season=season or nil
-  for _,id in ipairs(VANILLA)do assert(M.row(f,id).eligible,id)end
+  for _,id in ipairs(VANILLA)do assert(M.row(f,id).eligible==(id==DPS),id)end
   for _,id in ipairs(SEASON)do assert(not M.row(f,id).eligible,id..' leaked onto a non-SoD realm')end
  end
- s.season=2;for _,id in ipairs({DPS,TAV,SIM,SOD,SIV,SZK})do assert(M.row(f,id).eligible,id)end
+ s.season=2;for _,id in ipairs({DPS,SOD})do assert(M.row(f,id).eligible,id)end
+ -- The same-switch source variants ship disabled.
+ for _,id in ipairs({TAV,SIM,SIV,SZK})do assert(not M.row(f,id).eligible and M.body(a,id).disabled==true,id..' must ship disabled')end
  for _,id in ipairs(SEASON)do local body=M.body(a,id);for _,v in ipairs(VANILLA)do assert(body.priority>M.body(a,v).priority,id..' must outrank '..v)end end
  for _,src in ipairs(a:GetDefaultRotation(TAV).envelope.sources)do assert(src.url:find('warcrafttavern'),src.url)end
  for _,src in ipairs(a:GetDefaultRotation(SZK).envelope.sources)do assert(src.url:find('zockify'),src.url)end
@@ -39,7 +41,8 @@ test('auto-select: the recommended premade at every level and realm; variants wh
   s.season=2;assert(M.selected(f,s)==SOD,'SoD at '..level)end
  M.know(s,410412);assert(M.selected(f,s)==SOD,'Tease known without the rune: still DPS');s.known[410412]=false
  M.engrave(s,400014);assert(M.selected(f,s)==TANK,'Just a Flesh Wound (a passive rune) engraved: tank');M.unengrave(s,400014)
-assert(a:SetDefaultRotationEnabled(SOD,false));assert(M.selected(f,s)==SIV)
+ assert(a:SetDefaultRotationEnabled(SOD,false));assert(M.selected(f,s)==DPS,'the SoD variants ship disabled: the vanilla premade runs')
+ for _,id in ipairs({SIV,SZK,TAV,SIM})do assert(a:SetDefaultRotationEnabled(id,true))end;assert(M.selected(f,s)==SIV)
  assert(a:SetDefaultRotationEnabled(SIV,false));assert(M.selected(f,s)==SZK)
  s.season=nil;assert(a:SetDefaultRotationEnabled(DPS,false));assert(M.selected(f,s)==TAV)
  assert(a:SetDefaultRotationEnabled(TAV,false));assert(M.selected(f,s)==SIM)

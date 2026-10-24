@@ -11,7 +11,7 @@ local function points(n)return{type='POINT',unit='player',operator='GREATERTHANO
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.rogue.dps.wowhead',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.rogue.dps.wowhead',revision=5,
  blocks={['tbc.rogue.opening']=3,['tbc.rogue.upkeep']=2,['tbc.rogue.builders']=3},
  nameKey='Default.TBC.Rogue.DPS.Wowhead.Name',descriptionKey='Default.TBC.Rogue.DPS.Wowhead.Description',
  applicability={families={'tbc'},actionContext='player',class='ROGUE'},
@@ -20,7 +20,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://www.wowhead.com/tbc/guide/classes/rogue/leveling-tips',title='Wowhead: TBC Rogue leveling',reviewedAt='2026-10-23',revision='2026-09-04'},
  {url='https://www.wowhead.com/tbc/guide/classes/rogue/subtlety/leveling-tips',title='Wowhead: TBC Subtlety Rogue leveling (Cheap Shot opener)',reviewedAt='2026-10-23',revision='2025-12-26'},
  {url='https://warcrafttavern.com/tbc/guides/pve-subtlety-rogue-rotation-cooldowns-abilities/',title='Warcraft Tavern: Subtlety Rogue PvE rotation (stealth openers)',reviewedAt='2026-10-23'}},
- body={priority=5,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=5,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
  cooldowns={block('tbc.rogue.upkeep','rogue-')},
  rotation={
  block('tbc.rogue.opening','rogue-'),

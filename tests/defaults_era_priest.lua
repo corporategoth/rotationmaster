@@ -34,7 +34,8 @@ test('standard realm: damage owns low levels, solo play, no points and ties; hea
  local a,s=priest(1)
  assert(M.selected(a)==DPS,'level 1')
  assert(M.switch(a,HEAL)=='no-match','healer below level 10')
- s.setLevel(60);for _,id in ipairs(SOD)do assert(not M.row(a,id).eligible and M.row(a,id).eligibilityReason=='ruleset-mismatch',id..' eligible on a standard realm')end
+ s.setLevel(60);for _,id in ipairs(SOD)do assert(not M.row(a,id).eligible and M.row(a,id).eligibilityReason==((id==SSPIKE or id==STAVERN)and 'disabled' or 'ruleset-mismatch'),id..' eligible on a standard realm')end
+ for _,id in ipairs({TAVERN,SIMS,SSPIKE,STAVERN})do assert(M.row(a,id).envelope.body.disabled==true,id..' must ship disabled')end
  s.setLevel(30);s.group=true;assert(M.selected(a)==DPS,'group with no talent points stays damage')
  assert(M.switch(a,HEAL)=='unavailable')
  s.setTalents({0,21,0});assert(M.selected(a)==HEAL,'Holy in a group heals')
@@ -44,7 +45,8 @@ test('standard realm: damage owns low levels, solo play, no points and ties; hea
  s.setTalents({31,20,0});s.group=false;assert(M.selected(a)==DPS,'solo Discipline does damage')
  s.setLevel(60);s.group=true;assert(M.selected(a)==HEAL)
  assert(M.switch(a,TAVERN)=='match'and M.switch(a,SIMS)=='match','variants share the damage switch')
- assert(a:SetDefaultRotationEnabled(DPS,false));s.group=false;assert(M.selected(a)==TAVERN,'disabling the default selects the Tavern variant')
+ assert(a:SetDefaultRotationEnabled(DPS,false));s.group=false;assert(M.selected(a)==nil,'the variants ship disabled')
+ assert(a:SetDefaultRotationEnabled(TAVERN,true)and a:SetDefaultRotationEnabled(SIMS,true));assert(M.selected(a)==TAVERN,'enabled, the Tavern variant is next')
  assert(a:SetDefaultRotationEnabled(TAVERN,false));assert(M.selected(a)==SIMS)
 end)
 
@@ -53,10 +55,12 @@ test('Season of Discovery realm: SoD premades win over every vanilla premade',fu
  assert(M.selected(a)==SDPS,'level 1 on SoD')
  s.setLevel(60);s.group=true;s.setTalents({0,31,20});assert(M.selected(a)==SHEAL,'SoD healer')
  assert(M.switch(a,STAVERN)=='match')
- assert(a:SetDefaultRotationEnabled(SHEAL,false));assert(M.selected(a)==STAVERN)
+ assert(a:SetDefaultRotationEnabled(SHEAL,false));assert(M.selected(a)==SDPS,'the Tavern healer ships disabled')
+ assert(a:SetDefaultRotationEnabled(STAVERN,true));assert(M.selected(a)==STAVERN)
  assert(a:SetDefaultRotationEnabled(SHEAL,true))
  s.group=false;assert(M.selected(a)==SDPS)
- assert(a:SetDefaultRotationEnabled(SDPS,false));assert(M.selected(a)==SSPIKE,'Mind Spike variant next')
+ assert(a:SetDefaultRotationEnabled(SDPS,false));assert(M.selected(a)~=SSPIKE,'the Mind Spike variant ships disabled')
+ assert(a:SetDefaultRotationEnabled(SSPIKE,true));assert(M.selected(a)==SSPIKE,'enabled, the Mind Spike variant is next')
  s.setSeason(3,true);assert(M.selected(a)==DPS,'Hardcore uses the vanilla premades')
 end)
 

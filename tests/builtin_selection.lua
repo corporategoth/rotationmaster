@@ -152,8 +152,12 @@ test('Classic (TBC): an enabled Built In whose switch matches is chosen before t
     assert(current(f)=='rm.tbc.shaman.enhancement.icyveins','auto-switch chose '..tostring(current(f)))
     assert(menuText(menu(f)):find('|cff5bc0ebShaman: Enhancement (Icy Veins) [enhancement-icyveins]|r',1,true))
     assert(why(f):find('Automatic switching would choose: Shaman: Enhancement (Icy Veins)',1,true))
+    -- The same-switch alternative ships disabled: with the recommended one off, the fallback runs
+    -- until the player enables the alternative.
     assert(a:SetDefaultRotationEnabled('rm.tbc.shaman.enhancement.icyveins',false));select(f)
-    assert(current(f)=='rm.tbc.shaman.enhancement.wowsims','next pack by priority not chosen: '..tostring(current(f)))
+    assert(not tostring(current(f)):find('^rm%.'),'a disabled Built In was chosen: '..tostring(current(f)))
+    assert(a:SetDefaultRotationEnabled('rm.tbc.shaman.enhancement.wowsims',true));select(f)
+    assert(current(f)=='rm.tbc.shaman.enhancement.wowsims','the enabled alternative was not chosen: '..tostring(current(f)))
 end)
 
 finish()

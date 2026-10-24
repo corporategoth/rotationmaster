@@ -15,13 +15,13 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local unsliced=negate({type='BUFF',unit='player',spell=5171,anyrank=true,ownbuff=true})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.dps.zockify',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.dps.zockify',revision=5,
  blocks={['era.rogue.boundaries']=2,['era.rogue.sod-opener']=3,['era.rogue.sod-upkeep']=3,['era.rogue.sod-builders']=3},
  nameKey='Default.SoD.Rogue.DPS.Zockify.Name',descriptionKey='Default.SoD.Rogue.DPS.Zockify.Description',
  applicability={families={'era'},actionContext='player',class='ROGUE',rulesets={'season:2'}},
  tags={'dps','melee','endgame','season-of-discovery','zockify'},
  sources={{url='https://www.zockify.com/wowclassic/rogue/dps/',title='Zockify: SoD DPS Rogue (Phase 8)',reviewedAt='2026-10-23',revision='2025-04-07'}},
- body={priority=42,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=42,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
  cooldowns={block('era.rogue.sod-upkeep','rogue-')},
  rotation={
  block('era.rogue.boundaries','rogue-'),

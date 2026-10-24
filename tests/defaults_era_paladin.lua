@@ -22,8 +22,9 @@ test('every Paladin premade registers valid, localized, sourced, composed and sc
  local all={};for _,id in ipairs(VANILLA)do all[#all+1]=id end;for _,id in ipairs(SOD)do all[#all+1]=id end
  M.registered(a,f,all,'PALADIN')
  for _,id in ipairs(all)do assert(a:GetDefaultRotationComposition(id),id..' is not composed from the shared blocks')end
- for _,id in ipairs({TWIST,STWIST,SSTACK,SHOCK})do assert(M.row(a,id).envelope.body.disabled==true,id..' must ship disabled')end
- for _,id in ipairs({RET,PROT,PROTIV,HOLY,SRET,SRETIV,SPROT,SPROTWS,SHOLY,SHOLYWH})do assert(not M.row(a,id).envelope.body.disabled,id..' must ship enabled')end
+ -- Opt-in builds and same-switch source variants ship disabled.
+ for _,id in ipairs({TWIST,STWIST,SSTACK,SHOCK,PROTIV,SRETIV,SPROTWS,SHOLYWH})do assert(M.row(a,id).envelope.body.disabled==true,id..' must ship disabled')end
+ for _,id in ipairs({RET,PROT,HOLY,SRET,SPROT,SHOLY})do assert(not M.row(a,id).envelope.body.disabled,id..' must ship enabled')end
  local top=0;for _,id in ipairs(VANILLA)do top=math.max(top,M.row(a,id).envelope.body.priority or 0)end
  for _,id in ipairs(SOD)do assert((M.row(a,id).envelope.body.priority or 0)>top,id..' must outrank every vanilla premade')end
  for _,source in ipairs(M.row(a,PROTIV).envelope.sources)do assert(not source.url:find('wowsims'),'Icy Veins variant cites wowsims')end
@@ -40,13 +41,15 @@ test('standard realm: Retribution by default, Righteous Fury or the Protection t
  s.group=false;s.setLevel(60);s.setTalents({11,5,35});s.learn(20375);assert(M.selected(a)==RET,'twisting is opt-in')
  assert(M.switch(a,TWIST)=='match')
  assert(a:SetDefaultRotationEnabled(TWIST,true));assert(M.selected(a)==TWIST);assert(a:SetDefaultRotationEnabled(TWIST,false))
- assert(a:SetDefaultRotationEnabled(PROT,false));s.setTalents({0,31,20});assert(M.selected(a)==PROTIV,'disabling Protection selects the Icy Veins variant')
+ assert(a:SetDefaultRotationEnabled(PROT,false));s.setTalents({0,31,20});assert(M.selected(a)==RET,'the Icy Veins variant ships disabled')
+ assert(a:SetDefaultRotationEnabled(PROTIV,true));assert(M.selected(a)==PROTIV,'enabling the Icy Veins variant selects it')
  for _,id in ipairs(SOD)do assert(not M.row(a,id).eligible and M.row(a,id).eligibilityReason=='ruleset-mismatch'or M.row(a,id).envelope.body.disabled,id..' eligible off SoD')end
 end)
 
 test('Season of Discovery realm: SoD premades win; runes and the Holy tree pick the role',function()
  local a,s=paladin(1,2);assert(M.selected(a)==SRET,'level 1 on SoD')
- for _,id in ipairs({SRET,SRETIV,SPROT,SPROTWS,SHOLY,SHOLYWH})do assert(M.row(a,id).eligible,id)end
+ for _,id in ipairs({SRET,SPROT,SHOLY})do assert(M.row(a,id).eligible,id)end
+ for _,id in ipairs({SRETIV,SPROTWS,SHOLYWH})do assert(not M.row(a,id).eligible and M.row(a,id).eligibilityReason=='disabled',id)end
  s.learn(407632);assert(M.selected(a)==SRET,'a known Hammer of the Righteous whose rune is not engraved');s.unlearn(407632)
  s.engrave(407632);assert(M.selected(a)==SPROT,'Hammer of the Righteous engraved');s.unengrave(407632)
  s.buff('player',407627);assert(M.selected(a)==SPROT,'SoD Righteous Fury');s.clearAuras()
@@ -57,7 +60,8 @@ test('Season of Discovery realm: SoD premades win; runes and the Holy tree pick 
  s.unengrave(462834)
  s.engrave(407676);assert(M.selected(a)==SRET,'Holy tree with Crusader Strike is a damage build')
  s.group=false;s.setTalents({0,0,0});assert(M.selected(a)==SRET,'no points on SoD')
- assert(a:SetDefaultRotationEnabled(SRET,false));assert(M.selected(a)==SRETIV,'the Icy Veins Phase 4 variant is next')
+ assert(a:SetDefaultRotationEnabled(SRET,false));assert(M.selected(a)~=SRETIV,'the Icy Veins Phase 4 variant ships disabled')
+ assert(a:SetDefaultRotationEnabled(SRETIV,true));assert(M.selected(a)==SRETIV,'the enabled Icy Veins Phase 4 variant is next')
  assert(a:SetDefaultRotationEnabled(SRET,true))
  s.setLevel(60);s.setTalents({5,11,35});s.learn(20375);s.engrave(407778);assert(M.switch(a,STWIST)=='match'and M.switch(a,SSTACK)=='match')
  assert(M.selected(a)==SRET,'twisting and stacking are opt-in')

@@ -12,6 +12,8 @@ local SBAL,SBALIV,SBALWH,SFER,STANK,STANKWS,SRES='rm.sod.druid.balance','rm.sod.
 local VANILLA={BAL,BALIV,FER,FERWT,FERWTC,FERWH,RES,RESWT}
 local SOD={SBAL,SBALIV,SBALWH,SFER,STANK,STANKWS,SRES}
 local ALL={};for _,list in ipairs({VANILLA,SOD})do for _,id in ipairs(list)do ALL[#ALL+1]=id end end
+-- Shipped disabled: the opt-in cat-weave tank and every same-switch source variant.
+local OFF={[STANKWS]=true,[BALIV]=true,[FERWT]=true,[FERWTC]=true,[FERWH]=true,[RESWT]=true,[SBALIV]=true,[SBALWH]=true}
 local CAT,BEAR,DIRE,TRAVEL=768,5487,9634,783
 local FORMS={[CAT]=true,[BEAR]=true,[DIRE]=true,[TRAVEL]=true,[1066]=true,[24858]=true}
 local SR,LACERATE,LIFEBLOOM,STARSURGE=407988,414644,408124,417157
@@ -45,6 +47,7 @@ test('fifteen sourced, localized, composed premades: vanilla and Season of Disco
  assert(prio[BAL]>prio[BALIV]and prio[FER]>prio[FERWT]and prio[FERWT]>prio[FERWTC]and prio[FERWTC]>prio[FERWH]and prio[RES]>prio[RESWT])
  assert(prio[SBAL]>prio[SBALWH]and prio[SBALWH]>prio[SBALIV]and prio[STANK]>prio[STANKWS]and prio[STANK]>prio[SFER])
  assert(M.row(a,STANKWS).envelope.body.disabled==true and not M.row(a,STANKWS).eligible,'the cat-weave tank is opt-in')
+ for _,id in ipairs(ALL)do assert((M.row(a,id).envelope.body.disabled==true)==(OFF[id]==true),id..' shipped enablement')end
  for _,id in ipairs({FER,RES})do local sw=M.row(a,id).envelope.body.switch;assert(sw.type=='AND'and sw.value[1].type=='LEVEL'and sw.value[1].value==10,id..' switch holds level 10')end
 end)
 
@@ -58,7 +61,9 @@ test('standard realm: Balance owns levels 1-9, no points and ties; Feral and Res
  s.setTalents({0,0,0});assert(M.switch(a,FER)=='unavailable'and M.selected(a)==BAL,'no points: Balance')
  s.setTalents({0,30,21})
  for _,id in ipairs({FERWT,FERWTC,FERWH})do assert(M.switch(a,id)=='match',id..' shares the Feral switch')end
- assert(a:SetDefaultRotationEnabled(FER,false));assert(M.selected(a)==FERWT)
+ -- The variants ship disabled: with Feral off the Balance catch-all runs until one is enabled.
+ assert(a:SetDefaultRotationEnabled(FER,false));assert(M.selected(a)==BAL)
+ for _,id in ipairs({FERWT,FERWTC,FERWH,BALIV,RESWT})do assert(a:SetDefaultRotationEnabled(id,true))end;assert(M.selected(a)==FERWT)
  assert(a:SetDefaultRotationEnabled(FERWT,false));assert(M.selected(a)==FERWTC)
  assert(a:SetDefaultRotationEnabled(FERWTC,false));assert(M.selected(a)==FERWH)
  s.setTalents({0,0,0});assert(a:SetDefaultRotationEnabled(BAL,false));assert(M.selected(a)==BALIV)
@@ -68,7 +73,7 @@ end)
 test('Season of Discovery: the legs rune decides the role; vanilla premades never win',function()
  local a,s=druid(1);s.setSeason(2)
  assert(M.selected(a)==SBAL,'level 1 SoD druid')
- for _,id in ipairs(SOD)do if id~=STANKWS then assert(M.row(a,id).eligible,id..' not eligible on SoD')end end
+ for _,id in ipairs(SOD)do assert(M.row(a,id).eligible==not OFF[id],id..' eligibility on SoD')end
  s.setLevel(25);s.learn(SR);assert(M.selected(a)==SBAL,'Savage Roar known (from gear) without the rune: not the cat switch')
  s.unlearn(SR);s.engrave(SR);assert(M.selected(a)==SFER,'Savage Roar engraved: cat')
  s.unengrave(SR);s.engrave(LACERATE);assert(M.selected(a)==STANK,'Lacerate: tank')

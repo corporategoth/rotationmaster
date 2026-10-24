@@ -22,6 +22,7 @@ test('all four premades register valid, localized, sourced and composed',functio
   assert(row.readOnly and row.validation.valid and row.validation.resolved,id)
   assert(f.translations[row.nameKey]and f.translations[row.descriptionKey]and a:GetDefaultRotationComposition(id),id)
   assert(row.applicability.class=='PRIEST'and row.applicability.maxLevel==nil)
+  assert(row.enabled==(id~=DWH and id~=HIV),id..' shipped enablement')
  end
  do local sw=M.row(a,HWH).envelope.body.switch.value[2];assert(sw.type=='LEVEL'and sw.value==10,'healer switch holds level 10')end
  for _,source in ipairs(M.row(a,DWH).envelope.sources)do assert(source.url:find('wowhead'),'Wowhead damage cites another source')end
@@ -38,8 +39,11 @@ test('auto-select: damage solo and for Shadow, healer in a group as Holy or Disc
  s.talents={0,0,21};assert(M.selected(a)==DIV)
  s.talents={10,10,0};assert(M.selected(a)==DIV,'tied trees fall back to damage')
  s.talents={0,21,0};s.group=false;assert(M.selected(a)==DIV,'a Holy priest questing solo deals damage')
- s.group=true;assert(a:SetDefaultRotationEnabled(HWH,false));assert(M.selected(a)==HIV)
- s.group=false;assert(a:SetDefaultRotationEnabled(DIV,false));assert(M.selected(a)==DWH)
+ -- The alternatives ship disabled: switching off a recommended premade does not reach them until they are enabled.
+ s.group=true;assert(a:SetDefaultRotationEnabled(HWH,false));assert(M.selected(a)==DIV)
+ assert(a:SetDefaultRotationEnabled(HIV,true));assert(M.selected(a)==HIV)
+ s.group=false;assert(a:SetDefaultRotationEnabled(DIV,false));assert(M.selected(a)~=DWH)
+ assert(a:SetDefaultRotationEnabled(DWH,true));assert(M.selected(a)==DWH)
  assert(M.switch(a,DWH)=='match')
 end)
 
