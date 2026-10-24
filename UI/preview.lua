@@ -36,17 +36,25 @@ function addon:CreateNativePreviewWindow()
         local frame=addon:TrackWorkbenchSize(CreateFrame('Frame',nil,UIParent));frame:SetFrameStrata('MEDIUM');frame:SetMovable(true);frame:SetResizable(true);frame:SetClampedToScreen(true);frame:EnableMouse(false)
         window={frame=frame,icons={},count=0,nativePreview=true};self.nativePreviewWindow=window
         window.body=frame:CreateTexture(nil,'BACKGROUND');window.body:SetAllPoints(frame);window.body:SetColorTexture(.055,.065,.075,1)
-        window.header=CreateFrame('Frame',nil,frame);window.header:SetPoint('TOPLEFT');window.header:SetPoint('TOPRIGHT');window.header:SetHeight(20);window.header:EnableMouse(true);window.header:RegisterForDrag('LeftButton')
-        window.header.art=window.header:CreateTexture(nil,'BACKGROUND');window.header.art:SetAllPoints(window.header);window.header.art:SetColorTexture(.15,.16,.18,1)
-        window.title=window.header:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');window.title:SetPoint('LEFT',5,0);window.title:SetJustifyH('LEFT');window.title:SetText(addon.pretty_name or L['Rotation Master'])
-        window.close=addon:CreateWorkbenchIconButton(window.header,'close',L['Close']);window.close:SetSize(18,18);window.close.icon:SetSize(14,14);window.close:SetPoint('TOPRIGHT',-1,-1)
-        window.grip=CreateFrame('Button',nil,frame);window.grip:SetSize(12,12);window.grip:SetPoint('BOTTOMRIGHT',0,0)
-        local grip=window.grip:CreateTexture(nil,'OVERLAY');grip:SetAllPoints(window.grip);grip:SetTexture('Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up')
+        -- No title bar or close button: the window is only its icons and their
+        -- padded background. Unlocked, the whole body is the drag handle and the
+        -- lower-right grip appears on hover. Visibility is Preview Spells alone.
+        frame:RegisterForDrag('LeftButton')
+        window.grip=CreateFrame('Button',nil,frame);window.grip:SetSize(12,12);window.grip:SetPoint('BOTTOMRIGHT',0,0);window.grip:SetFrameLevel(frame:GetFrameLevel()+5)
+        local grip=window.grip:CreateTexture(nil,'OVERLAY');grip:SetAllPoints(window.grip);grip:SetTexture('Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up');window.grip:SetAlpha(0)
         function window:Valid() return self.active and addon.db.profile==self.profile and addon.nextWindow==self end
         local nativeValid=window.Valid
         function window:EnsureIcon(index)
             local icon=self.icons[index]
-            if not icon then icon=CreateFrame('Button',nil,self.frame);icon.texture=icon:CreateTexture(nil,'ARTWORK');icon.texture:SetAllPoints(icon);icon:Hide();self.icons[index]=icon end
+            if not icon then
+                icon=CreateFrame('Button',nil,self.frame);icon.texture=icon:CreateTexture(nil,'ARTWORK');icon.texture:SetAllPoints(icon);icon:Hide();self.icons[index]=icon
+                -- Icons already take the mouse for tooltips. Left-drag moves an
+                -- unlocked window; right-click opens the window menu.
+                icon:RegisterForDrag('LeftButton');icon:RegisterForClicks('RightButtonUp')
+                addon:SetUIScript(icon,'OnDragStart',function() self:BeginMove() end)
+                addon:SetUIScript(icon,'OnDragStop',function() self:EndMove() end)
+                addon:SetUIScript(icon,'OnClick',function(_,button) if button=='RightButton' then self:OpenMenu() end end)
+            end
             return icon
         end
         function window:ReleaseChildren()
@@ -82,18 +90,13 @@ function addon:CreateNativePreviewWindow()
         end
         function window:DoLayout()
             if not self.active then return end
-            local n=self.slots or 1;local size=self.iconSize;local pad=self.opacity>0 and 4 or 0;local title=self.opacity>0 and 20 or 0
-            local width,height=(self.vertical and 1 or n)*size+2*pad,(self.vertical and n or 1)*size+2*pad+title
+            local n=self.slots or 1;local size=self.iconSize;local pad=self.opacity>0 and 4 or 0
+            local width,height=(self.vertical and 1 or n)*size+2*pad,(self.vertical and n or 1)*size+2*pad
             self.layouting=true
-            local currentWidth=self.frame:GetWidth()
-            if not sameGeometry(currentWidth,width) or not sameGeometry(self.frame:GetHeight(),height) or (currentWidth<140)~=(width<140) then self.frame:SetSize(width,height) end
+            if not sameGeometry(self.frame:GetWidth(),width) or not sameGeometry(self.frame:GetHeight(),height) then self.frame:SetSize(width,height) end
             self.layouting=false
-            local titleWidth=math.max(0,self.frame:GetWidth()-28)
-            if not sameGeometry(self.title:GetWidth(),titleWidth) then self.title:SetWidth(titleWidth) end
-            local text=(self.sampleCount or 0)>0 and L['Preview'] or self.frame:GetWidth()<140 and 'RM' or addon.pretty_name or L['Rotation Master']
-            if self.title:GetText()~=text then self.title:SetText(text) end
             for i,icon in ipairs(self.icons) do
-                local x,y=pad+(self.vertical and 0 or i-1)*size,-title-pad-(self.vertical and i-1 or 0)*size
+                local x,y=pad+(self.vertical and 0 or i-1)*size,-pad-(self.vertical and i-1 or 0)*size
                 local pointCount=icon:GetNumPoints();local point,parent,relative,oldx,oldy
                 if pointCount==1 then point,parent,relative,oldx,oldy=icon:GetPoint(1) end
                 if pointCount~=1 or point~='TOPLEFT' or parent~=self.frame or relative~='TOPLEFT' or not sameGeometry(oldx,x) or not sameGeometry(oldy,y) then
@@ -108,10 +111,11 @@ function addon:CreateNativePreviewWindow()
             if not self.active then return end
             local profile=self.profile
             self.slots=addon:IsPreviewSampleEnabled() and (profile.preview_spells or 0)<=0 and 3 or math.floor(clamp(profile.preview_spells,1,5,1));self.iconSize=clamp(profile.preview_icon_size,24,160,64);self.vertical=profile.preview_vertical==true;self.locked=profile.preview_locked==true;self.opacity=clamp(profile.preview_opacity,0,1,1)
-            self.body:SetAlpha(self.opacity);self.header:SetAlpha(self.opacity)
-            if self.opacity>0 then self.header:Show() else self.header:Hide() end
-            self.header:EnableMouse(not self.locked and self.opacity>0);if self.locked then self.frame:StopMovingOrSizing() end
-            if not self.locked and self.opacity>0 then self.grip:Show() else self.grip:Hide() end
+            self.body:SetAlpha(self.opacity)
+            -- Locked or fully transparent, the background never intercepts
+            -- the mouse; only the icons keep their own tooltips and clicks.
+            self.frame:EnableMouse(not self.locked and self.opacity>0);if self.locked then self.frame:StopMovingOrSizing() end
+            if not self.locked and self.opacity>0 then self.grip:Show() else self.grip:Hide();self:SetHover(false) end
             for i,icon in ipairs(self.icons) do if i>self.slots then icon:Hide() end end
             if addon.ConfigureMasquePreview then addon:ConfigureMasquePreview(self) end
             self:PaintSamples()
@@ -119,8 +123,8 @@ function addon:CreateNativePreviewWindow()
         end
         function window:Resize(width,height)
             if not self:Valid() or self.locked then self:DoLayout();return end
-            local pad=self.opacity>0 and 4 or 0;local title=self.opacity>0 and 20 or 0
-            local x=(width-2*pad)/(self.vertical and 1 or self.slots);local y=(height-2*pad-title)/(self.vertical and self.slots or 1)
+            local pad=self.opacity>0 and 4 or 0
+            local x=(width-2*pad)/(self.vertical and 1 or self.slots);local y=(height-2*pad)/(self.vertical and self.slots or 1)
             local size=math.abs(x-self.iconSize)>=math.abs(y-self.iconSize) and x or y
             self.profile.preview_icon_size=math.floor(clamp(size,24,160,64)+.5);self:Configure()
         end
@@ -199,32 +203,86 @@ function addon:CreateNativePreviewWindow()
                 if self.generation~=generation or self.profile~=profile then return end
             end
             if sampleProfile==self.profile then sampleProfile=nil end;self.sampleBatch=false;self:ReleaseChildren();self.active=false;self.frame:StopMovingOrSizing();self.frame:Hide();if addon.ReleaseMasquePreview then addon:ReleaseMasquePreview(self) end end
+        function window:SetHover(over) self.hovered=over==true;self.grip:SetAlpha((self.hovered or self.gripHovered) and 1 or 0) end
+        function window:BeginMove() if self:Valid() and not self.locked then self.moving=true;self.frame:StartMoving() end end
+        function window:EndMove()
+            local moving=self.moving;self.moving=nil
+            if not moving or not self:Valid() or self.locked then return end;self.frame:StopMovingOrSizing()
+            local point,_,relative,x,y=self.frame:GetPoint(1);self.profile.preview_window={point=point,relpoint=relative,xoffs=x,yoffs=y};self.profile.previewHeaderlessGeometry=true
+        end
+        -- The menu never hides the window: it is shown exactly while Preview
+        -- Spells is above zero (or samples are on) and hidden at zero.
+        function window:MenuEntries()
+            if not self:Valid() then return nil end
+            local locked,generation=self.locked==true,self.generation
+            local function current() return self:Valid() and self.generation==generation end
+            return {
+                {text=addon.pretty_name or L['Rotation Master'],isTitle=true},
+                {text=L['Lock position and size'],checked=locked,func=function() if current() then addon:SetPreviewLocked(not locked) end end},
+                {text=L['Open General settings'],func=function() if current() then addon:ShowConfig('General') end end},
+            }
+        end
+        function window:OpenMenu()
+            local entries=self:MenuEntries();if not entries then return end
+            -- The same dropdown API as the minimap menu; every client provides it natively.
+            if UIDropDownMenu_Initialize and ToggleDropDownMenu and UIDropDownMenu_CreateInfo and UIDropDownMenu_AddButton then
+                self.menu=self.menu or CreateFrame('Frame',addon_name..'PreviewMenu',UIParent,'UIDropDownMenuTemplate')
+                UIDropDownMenu_Initialize(self.menu,function()
+                    for _,entry in ipairs(entries) do
+                        local info=UIDropDownMenu_CreateInfo();info.text=entry.text
+                        if entry.isTitle then info.isTitle=true;info.notCheckable=true
+                        elseif entry.checked~=nil then info.isNotRadio=true;info.checked=entry.checked;info.func=entry.func
+                        else info.notCheckable=true;info.func=entry.func end
+                        UIDropDownMenu_AddButton(info)
+                    end
+                end,'MENU')
+                ToggleDropDownMenu(1,nil,self.menu,'cursor',5,-10)
+            end
+        end
         function window:SetWidth(width) self:Resize(width,self.frame:GetHeight()) end
         function window:SetHeight(height) self:Resize(self.frame:GetWidth(),height) end
         function window:ClearAllPoints() self.frame:ClearAllPoints() end
         function window:SetPoint(...) self.frame:SetPoint(...) end
         function window:GetPoint(...) return self.frame:GetPoint(...) end
         addon:SetUIScript(frame,'OnSizeChanged',function(_,width,height) if not window.layouting then window:Resize(width,height) end end)
+        addon:SetUIScript(frame,'OnDragStart',function() window:BeginMove() end)
+        addon:SetUIScript(frame,'OnDragStop',function() window:EndMove() end)
+        addon:SetUIScript(frame,'OnMouseUp',function(_,button) if button=='RightButton' then window:OpenMenu() end end)
+        addon:SetUIScript(frame,'OnEnter',function() window:SetHover(true) end)
+        addon:SetUIScript(frame,'OnLeave',function() window:SetHover(false) end)
+        addon:SetUIScript(window.grip,'OnEnter',function() window.gripHovered=true;window:SetHover(window.hovered) end)
+        addon:SetUIScript(window.grip,'OnLeave',function() window.gripHovered=false;window:SetHover(window.hovered) end)
+        addon:SetUIScript(window.grip,'OnMouseDown',function(_,button) if button=='LeftButton' and window:Valid() and not window.locked and window.opacity>0 then window.frame:StartSizing('BOTTOMRIGHT') end end)
+        addon:SetUIScript(window.grip,'OnMouseUp',function() if window:Valid() then window.frame:StopMovingOrSizing() end end)
     end
     if window.active and addon.ReleaseMasquePreview then addon:ReleaseMasquePreview(window) end
     local profile=self.db.profile;window.profile=profile;window.active=true;window.sampleBatch=false;window.generation=(window.generation or 0)+1;window:ReleaseChildren();self.nextWindow=window
-    local generation=window.generation
-    local function valid() return window:Valid() and generation==window.generation end
-    addon:SetUIScript(window.close,'OnClick',function()
-        if not valid() then return end
-        window:Release();addon.nextWindow=nil;profile.preview_spells=0;if addon.preview_closed_func then addon.preview_closed_func() end
-    end)
-    addon:SetUIScript(window.header,'OnDragStart',function() if valid() and not window.locked and window.opacity>0 then window.frame:StartMoving() end end)
-    addon:SetUIScript(window.header,'OnDragStop',function()
-        if not valid() or window.locked then return end;window.frame:StopMovingOrSizing()
-        local point,_,relative,x,y=window.frame:GetPoint(1);profile.preview_window={point=point,relpoint=relative,xoffs=x,yoffs=y}
-    end)
-    addon:SetUIScript(window.grip,'OnMouseDown',function(_,button) if valid() and button=='LeftButton' and not window.locked and window.opacity>0 then window.frame:StartSizing('BOTTOMRIGHT') end end)
-    addon:SetUIScript(window.grip,'OnMouseUp',function() if valid() then window.frame:StopMovingOrSizing() end end)
+    window.moving=nil
     window:Configure();window.frame:ClearAllPoints()
+    addon:MigratePreviewHeaderGeometry(profile,window.opacity)
     local position=profile.preview_window
     if type(position)=='table' and position.point and position.relpoint then window.frame:SetPoint(position.point,UIParent,position.relpoint,position.xoffs or 0,position.yoffs or 0) else window.frame:SetPoint('CENTER',UIParent,'CENTER',0,0) end
     window.frame:Show();return window
+end
+-- The window lost its 20-pixel title bar. A position saved with it anchored
+-- the old outer frame, so shift it once per profile to keep the icons where
+-- they were: the header sat on top, so top anchors drop 20 pixels, middle
+-- anchors 10 and bottom anchors stay. Opacity zero reserved no header.
+-- The flag means "the saved position is headerless"; a drag saves one too.
+-- With no saved position there is nothing to shift and nothing is written.
+function addon:MigratePreviewHeaderGeometry(profile,opacity)
+    if type(profile)~='table' or profile.previewHeaderlessGeometry==true then return end
+    local position=profile.preview_window
+    if type(position)~='table' or type(position.point)~='string' or type(position.relpoint)~='string' then return end
+    local point=position.point:upper();local shift=(opacity or 1)<=0 and 0 or point:find('^TOP') and 20 or point:find('^BOTTOM') and 0 or 10
+    if shift>0 then profile.preview_window={point=position.point,relpoint=position.relpoint,xoffs=position.xoffs or 0,yoffs=(position.yoffs or 0)-shift} end
+    profile.previewHeaderlessGeometry=true
+end
+function addon:SetPreviewLocked(locked)
+    locked=locked==true;self.db.profile.preview_locked=locked
+    if self.previewLockChanged then self.previewLockChanged(locked) end
+    if self.RefreshPreviewWindow then self:RefreshPreviewWindow() end
+    return locked
 end
 function addon:RefreshPreviewWindow()
     local count=self.db.profile.preview_spells or 0

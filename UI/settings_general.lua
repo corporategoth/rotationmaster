@@ -42,17 +42,24 @@ function addon:BuildGeneralSettings(p)
     local locked=p:Check('preview_locked',L['Lock position and size'],self.db.profile.preview_locked==true,function() end)
     -- Locking is an immediate window action, like moving or resetting it.
     -- Synchronize only this field so unrelated General edits remain pending.
-    self:SetUIScript(locked,'OnClick',p:Guard(function()
-        local value=self.db.profile.preview_locked~=true
+    local function syncLocked(value)
         for _,settings in ipairs({self.db.profile,profile,p.draftBaseline and p.draftBaseline.profile or {}}) do settings.preview_locked=value end
         locked:SetChecked(value)
         if p.BindUnsaved then p:BindUnsaved('preview_locked',locked,value,'Check') end
+    end
+    self:SetUIScript(locked,'OnClick',p:Guard(function()
+        syncLocked(self.db.profile.preview_locked~=true)
         if self.RefreshPreviewWindow then self:RefreshPreviewWindow() end
     end))
+    -- The preview's right-click menu locks too; keep this page's field and
+    -- draft in step so a later Apply cannot write the old value back.
+    local lockChanged=p:Guard(function(value) syncLocked(value==true) end)
+    self.previewLockChanged=lockChanged
+    p.cleanups[#p.cleanups+1]=function() if self.previewLockChanged==lockChanged then self.previewLockChanged=nil end end
     local orientation=p:Toggle('preview_vertical',nil,profile.preview_vertical==true,L['Horizontal'],L['Vertical'],function(v) profile.preview_vertical=v;previewChanged();p:Draw() end)
     local reset=p:Button('preview_reset',L['Reset'],function() end)
     local resetToken=p.generation
-    -- Moving the preview is immediate, like dragging its title bar. Synchronize
+    -- Moving the preview is immediate, like dragging the window. Synchronize
     -- only these baselines so an unrelated staged setting stays staged.
     self:SetUIScript(reset,'OnClick',function()
         if not p:Valid(resetToken) then return end
@@ -112,8 +119,6 @@ function addon:BuildGeneralSettings(p)
     if type(self.SetPreviewSampleEnabled)=='function' and type(self.IsPreviewSampleEnabled)=='function' then
         self:SetUIScript(sample,'OnClick',p:Guard(function() self:SetPreviewSampleEnabled(not self:IsPreviewSampleEnabled()) end))
     else sample:Disable() end
-    -- This callback belongs to the long-lived preview, never to a released tab.
-    local previewOwner=self.db.profile;self.preview_closed_func=function() if addon.db.profile==previewOwner then previewOwner.preview_spells=0 end end
     p:Column(2)
     p:Heading(L['Effect Options'])
     -- The preview icon has no caption: it sits left of Effect and
