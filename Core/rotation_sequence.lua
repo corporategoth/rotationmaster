@@ -42,7 +42,7 @@ local function execute(body,evaluate,visit,rows,ordinal,kind,each,managed)
                 if status=="unavailable" then result.status="unavailable";result.suppressAttack=true;return false end
                 if not walk(status=="match" and step.onTrue or step.onFalse) then return false end
             elseif not step.disabled then
-                if step.type=="none" then
+                if step.type=="stop" then
                     local status=check(step,row)
                     if status~="no-match" then
                         result.status=status=="unavailable" and "unavailable" or "stopped"

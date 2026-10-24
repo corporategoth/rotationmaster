@@ -13,7 +13,7 @@ local function known(id)return{type='SPELL_KNOWN',spell=id}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function engaged(n)return{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=n}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local BARBED,WRATH,KILL,COBRA,THRASH,BLACK,WAILING=217200,19574,34026,193455,1264359,466930,392060
 -- Barbed Shot about to reach two charges; Bestial Wrath within a global cooldown.
@@ -25,8 +25,8 @@ local withering=buff(466991)
 -- Kill Command on Howl of the Pack Leader or Nature's Ally, or freely while Bestial Wrath is far off.
 local kill=any(buff(471878),buff(472324),buff(472325),buff(1276720),{type='SPELL_COOLDOWN',spell=WRATH,operator='GREATERTHAN',value=5})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.beastmastery.guide',revision=4,
- blocks={['retail.hunter.boundaries']=2,['retail.hunter.utility']=2,['retail.hunter.mark']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.beastmastery.guide',revision=5,
+ blocks={['retail.hunter.boundaries']=3,['retail.hunter.utility']=2,['retail.hunter.mark']=1},
  nameKey='Default.Retail.Hunter.BeastMasteryGuide.Name',descriptionKey='Default.Retail.Hunter.BeastMasteryGuide.Description',
  applicability={families={'retail'},actionContext='player',class='HUNTER'},
  tags={'beast-mastery','ranged','pet','reference','simulationcraft','icy-veins'},

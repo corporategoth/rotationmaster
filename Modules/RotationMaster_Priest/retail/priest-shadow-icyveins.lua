@@ -20,7 +20,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 local madness=dot(335467)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.priest.shadow.icyveins',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.priest.shadow.icyveins',revision=6,
  blocks={['retail.priest.upkeep']=2},
  nameKey='Default.Retail.Priest.Shadow.IcyVeins.Name',descriptionKey='Default.Retail.Priest.Shadow.IcyVeins.Description',
  applicability={families={'retail'},actionContext='player',class='PRIEST'},
@@ -38,12 +38,12 @@ assert(addon:RegisterDefaultRotation({
    spell('shadowiv-power-infusion',10060,all(fight,own(194249))),
   },
   rotation={
-   {id='shadowiv-casting',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},all({type='CHANNELING',unit='player'},
+   {id='shadowiv-casting',type='stop',suppress_attack=true,conditions=any({type='CASTING',unit='player'},all({type='CHANNELING',unit='player'},
     negate(all(any({type='CHANNELING_SPELL',unit='player',spell=15407},{type='CHANNELING_SPELL',unit='player',spell=391403}),{type='SPELL_AVAIL',spell=8092}))),
     negate({type='ATTACKABLE',unit='target'}))},
    {id='shadowiv-pull',type='branch',conditions=combat(),onTrue={},onFalse={
     spell('shadowiv-pull-vampiric-touch',34914,negate(dot(34914))),
-    {id='shadowiv-pull-stop',type='none',suppress_attack=true,conditions={}},
+    {id='shadowiv-pull-stop',type='stop',suppress_attack=true,conditions={}},
    }},
    spell('shadowiv-tentacle-touch',1227280,negate(dot(34914))),
    spell('shadowiv-vampiric-touch',34914,any(negate(dot(34914)),dotRemain(34914,6.3))),

@@ -16,8 +16,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.fury.thane',revision=4,
- blocks={['retail.warrior.boundaries']=1,['retail.warrior.upkeep']=1,['retail.warrior.charge']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.fury.thane',revision=5,
+ blocks={['retail.warrior.boundaries']=2,['retail.warrior.upkeep']=1,['retail.warrior.charge']=3},
  nameKey='Default.Retail.Warrior.Fury.Thane.Name',descriptionKey='Default.Retail.Warrior.Fury.Thane.Description',
  applicability={families={'retail'},actionContext='player',class='WARRIOR'},
  tags={'fury','melee','reference','mountain-thane','single-target','aoe','icy-veins','simulationcraft'},

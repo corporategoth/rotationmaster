@@ -45,7 +45,7 @@ function addon:CreateRotationStepCard(parent,step,spec,position,kind,status)
         label(card,mode=="evaluate" and L["Evaluate condition"] or mode=="true" and L["Always true"] or mode=="false" and L["Always false"] or L["Unknown branch mode"])
     elseif step.type=="assisted" then
         label(card,L["Recommends the spell Blizzard's Assisted Combat suggests"])
-    elseif step.type=="none" then
+    elseif step.type=="stop" then
         label(card,L["Stop the sequence here"])
         label(card,step.suppress_attack and L["Implicit Attack is suppressed by this Stop."] or L["Implicit Attack may still be recommended after this Stop."])
     elseif step.type=="item" then

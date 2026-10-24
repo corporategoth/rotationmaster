@@ -18,8 +18,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local behind=negate({type='THREAT',unit='target',threat=3})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.rogue.subtlety.warcrafttavern',revision=4,
- blocks={['forever.rogue.boundaries']=2,['forever.rogue.stealth-fallback']=2,['forever.rogue.reactive']=1,['forever.rogue.expose-armor']=1,['forever.rogue.upkeep']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.rogue.subtlety.warcrafttavern',revision=5,
+ blocks={['forever.rogue.boundaries']=3,['forever.rogue.stealth-fallback']=3,['forever.rogue.reactive']=1,['forever.rogue.expose-armor']=1,['forever.rogue.upkeep']=2},
  nameKey='Default.Forever.Rogue.Subtlety.WarcraftTavern.Name',descriptionKey='Default.Forever.Rogue.Subtlety.WarcraftTavern.Description',
  applicability={families={'forever'},actionContext='player',class='ROGUE'},
  tags={'dps','melee','leveling','endgame','subtlety','warcraft-tavern'},
@@ -42,7 +42,7 @@ assert(addon:RegisterDefaultRotation({
   spell('rogue-tavern-slice',5171,negate({type='BUFF',unit='player',spell=5171,anyrank=true,ownbuff=true})),
   block('forever.rogue.expose-armor','rogue-tavern-'),
   spell('rogue-tavern-eviscerate',2098),
-  {id='rogue-tavern-pool',type='none',suppress_attack=false,conditions={}},
+  {id='rogue-tavern-pool',type='stop',suppress_attack=false,conditions={}},
  }},
  spell('rogue-tavern-ghostly-strike',14278),
  spell('rogue-tavern-backstab',53,behind),

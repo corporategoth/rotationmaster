@@ -8,15 +8,15 @@ local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function cp(op,v)return{type='POINT',unit='player',operator=op,value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
-local function swing(id,conditions)return{id=id,type='none',conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
+local function swing(id,conditions)return{id=id,type='stop',conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local lives=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'},
  {type='HEALTHPCT',unit='target',operator='GREATERTHANOREQUALS',value=.3},{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=6})
 local moving={type='MOVING'}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.druid.unspecialized',revision=4,
- blocks={['mop.druid.melee-boundaries']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.druid.unspecialized',revision=5,
+ blocks={['mop.druid.melee-boundaries']=2},
  nameKey='Default.MoP.Druid.Unspecialized.Name',descriptionKey='Default.MoP.Druid.Unspecialized.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID'},
  tags={'leveling','single-target','warcraft-tavern'},

@@ -184,6 +184,14 @@ test('a refused rotation names the step and the reason in plain words, for set b
     c.tick()
 end)
 
+test('a Stop saved under its retired type name none is an unknown action type, named in the refusal',function()
+    local c,a=wholePoll()
+    save(a,0,'old',{name='Old stop',priority=1,switch={},cooldowns={},rotation={{id='halt',type='none',suppress_attack=true,conditions={}},{id='bolt',type='spell',action=403,conditions={}}}})
+    local why=a:ExplainRotationRefusal(0,'old')
+    assert(why and why:find('Rotation step 1: has an action type this version does not understand (none)',1,true),tostring(why))
+    c.tick()
+end)
+
 test('/rm why lists every rotation with its first blocking issue, in a copyable window when long',function()
     local c,a=wholePoll();secretHealth(c,a)
     save(a,0,'broken',brokenCooldown())
@@ -250,7 +258,7 @@ end)
 
 test('editor: a broken Branch or Stop child marks Rotation red from either tab and reds its branch card',function()
     local a,parent=editor({mine={name='Mine',switch={},cooldowns={},rotation={{id='branch',type='branch',conditions={},
-        onTrue={{id='fine',type='none',conditions={}}},onFalse={{id='stop',type='none',conditions=health('player')}}}}}})
+        onTrue={{id='fine',type='stop',conditions={}}},onFalse={{id='stop',type='stop',conditions=health('player')}}}}}})
     local pane=assert(a:CreateRotationEditor(parent,0,'mine'))
     assert(marked(pane.contentTabs.rotation) and pane.contentTabs.rotation.tooltip:find('Rotation step 1 › No 1 (Stop)',1,true),tostring(pane.contentTabs.rotation.tooltip))
     assert(not marked(pane.contentTabs.cooldowns))

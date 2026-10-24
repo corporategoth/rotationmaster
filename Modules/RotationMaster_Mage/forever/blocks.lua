@@ -10,7 +10,7 @@ local function buff(id)return{type='BUFF',unit='player',spell=id,anyrank=true}en
 local function known(id)return{type='SPELL_KNOWN',spell=id}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local fingers=any({type='BUFF',unit='player',spell=400669},{type='BUFF',unit='player',spell=400670})
 -- Fingers of Frost while a Frostbolt is still casting: Ice Lance now (cancel, or batch it as the
 -- bolt lands; the guides differ, the highlight serves both).
@@ -18,7 +18,7 @@ assert(addon:RegisterDefaultBlock({id='forever.mage.lance-batch',revision=1,fami
  spell('lance-batch',1312002,all({type='CASTING',unit='player'},fingers)),
 }}))
 -- Casts and channels (Missiles, Blizzard, Evocation) and a target that is not attackable end advice.
-assert(addon:RegisterDefaultBlock({id='forever.mage.boundaries',revision=2,families={'forever'},class='MAGE',steps={
+assert(addon:RegisterDefaultBlock({id='forever.mage.boundaries',revision=3,families={'forever'},class='MAGE',steps={
  stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))),
 }}))
 -- Frostbolt once learned (level 4); Fireball only before it.
@@ -28,14 +28,14 @@ assert(addon:RegisterDefaultBlock({id='forever.mage.frostbolt',revision=1,famili
 }}))
 -- Solo with no spell castable before it (mana is secret on Forever; an unaffordable spell is not
 -- ready): wand, never toggling an active wand off. Casters never melee.
-assert(addon:RegisterDefaultBlock({id='forever.mage.wand',revision=2,families={'forever'},class='MAGE',steps={
+assert(addon:RegisterDefaultBlock({id='forever.mage.wand',revision=3,families={'forever'},class='MAGE',steps={
  {id='wand',type='branch',conditions={type='GROUP'},onTrue={},onFalse={
   stop('wand-active',{type='SPELL_AUTOREPEAT',spell=5019,ranked=true}),
   spell('shoot',5019)}},
  stop('exhausted'),
 }}))
 -- Fire on the move: Fire Blast, then Ice Lance for a Frost-dipping hybrid.
-assert(addon:RegisterDefaultBlock({id='forever.mage.fire-moving',revision=1,families={'forever'},class='MAGE',steps={
+assert(addon:RegisterDefaultBlock({id='forever.mage.fire-moving',revision=2,families={'forever'},class='MAGE',steps={
  {id='moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
   spell('moving-fire-blast',2136),spell('moving-ice-lance',1312002),stop('moving-stop')}},
 }}))

@@ -11,8 +11,8 @@ local function negate(c)return{type='NOT',value=c}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.rogue.dps.warcrafttavern',revision=4,
- blocks={['era.rogue.boundaries']=2,['era.rogue.opener']=2,['era.rogue.upkeep']=2,['era.rogue.builders']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.era.rogue.dps.warcrafttavern',revision=5,
+ blocks={['era.rogue.boundaries']=3,['era.rogue.opener']=3,['era.rogue.upkeep']=2,['era.rogue.builders']=2},
  nameKey='Default.Era.Rogue.DPS.WarcraftTavern.Name',descriptionKey='Default.Era.Rogue.DPS.WarcraftTavern.Description',
  applicability={families={'era'},actionContext='player',class='ROGUE'},
  tags={'dps','melee','leveling','endgame','warcraft-tavern'},
@@ -29,7 +29,7 @@ assert(addon:RegisterDefaultRotation({
   spell('rogue-slice',5171,all({type='SPELL_KNOWN',spell=6774},any(negate({type='BUFF',unit='player',spell=5171,anyrank=true,ownbuff=true}),
    {type='BUFF_REMAIN',unit='player',spell=5171,anyrank=true,ownbuff=true,operator='LESSTHAN',value=3}))),
   spell('rogue-eviscerate',2098),
-  {id='rogue-pool',type='none',suppress_attack=false,conditions={}},
+  {id='rogue-pool',type='stop',suppress_attack=false,conditions={}},
  }},
  block('era.rogue.builders','rogue-'),
  spell('rogue-sinister',1752),

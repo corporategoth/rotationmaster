@@ -21,8 +21,8 @@ local heart=any(buff(443421),buff(443616))
 local zenith=buff(1249625)
 local bok={type='BUFF_STACKS',unit='player',spell=116768,ownbuff=true,operator='GREATERTHANOREQUALS',value=2}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.monk.windwalker.guide',revision=3,
- blocks={['retail.monk.boundaries']=2,['retail.monk.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.monk.windwalker.guide',revision=4,
+ blocks={['retail.monk.boundaries']=3,['retail.monk.utility']=2},
  nameKey='Default.Retail.Monk.WindwalkerGuide.Name',descriptionKey='Default.Retail.Monk.WindwalkerGuide.Description',
  applicability={families={'retail'},actionContext='player',class='MONK'},
  tags={'windwalker','melee','reference','icy-veins','simulationcraft'},

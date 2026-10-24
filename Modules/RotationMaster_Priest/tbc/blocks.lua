@@ -13,29 +13,29 @@ local function own(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,o
 local function combat()return{type='COMBAT',unit='player'}end
 local function pct(kind,unit,op,v)return{type=kind,unit=unit,operator=op,value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or {}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or {}}end
 -- A cast stops the list; a channel too, unless it is Mind Flay (any rank) past its first tick (a third
 -- of the channel: ticks are evenly spaced) and Mind Blast, or Shadow Word: Death while you can take the
 -- backlash, is ready to clip it (Icy Veins, Wowhead). Other channels are never cut.
 local clip=all({type='CHANNELING_SPELL',unit='player',spell=15407},{type='CHANNELING_PROGRESS',unit='player',operator='GREATERTHANOREQUALS',value=.34},
  any({type='SPELL_AVAIL',spell=8092},all(known(32379),pct('HEALTHPCT','player','GREATERTHAN',.5),{type='SPELL_AVAIL',spell=32379})))
-assert(addon:RegisterDefaultBlock({id='tbc.priest.boundaries',revision=3,families={'tbc'},class='PRIEST',steps={
+assert(addon:RegisterDefaultBlock({id='tbc.priest.boundaries',revision=4,families={'tbc'},class='PRIEST',steps={
  stop('cast',any({type='CASTING',unit='player'},all({type='CHANNELING',unit='player'},negate(clip)))),
 }}))
 -- Damage needs a living hostile target that is not someone else's fight.
 local enemyGone=negate(all({type='ATTACKABLE',unit='target'},any(combat(),negate({type='COMBAT',unit='target'}))))
-assert(addon:RegisterDefaultBlock({id='tbc.priest.enemy-target',revision=1,families={'tbc'},class='PRIEST',steps={
+assert(addon:RegisterDefaultBlock({id='tbc.priest.enemy-target',revision=2,families={'tbc'},class='PRIEST',steps={
  stop('target',enemyGone),
 }}))
 -- Damage premades: the boundaries above, or no such target, end advice (one Stop).
-assert(addon:RegisterDefaultBlock({id='tbc.priest.dps-boundaries',revision=1,families={'tbc'},class='PRIEST',steps={
+assert(addon:RegisterDefaultBlock({id='tbc.priest.dps-boundaries',revision=2,families={'tbc'},class='PRIEST',steps={
  stop('cast',any({type='CASTING',unit='player'},all({type='CHANNELING',unit='player'},negate(clip)),enemyGone)),
 }}))
 assert(addon:RegisterDefaultBlock({id='tbc.priest.shadowform',revision=1,families={'tbc'},class='PRIEST',steps={
  spell('shadowform',15473,negate({type='BUFF',unit='player',spell=15473})),
 }}))
 -- Moving: instants only, then stop. Shadow Word: Death only while you can take the backlash.
-assert(addon:RegisterDefaultBlock({id='tbc.priest.moving',revision=1,families={'tbc'},class='PRIEST',steps={
+assert(addon:RegisterDefaultBlock({id='tbc.priest.moving',revision=2,families={'tbc'},class='PRIEST',steps={
  {id='moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
   spell('moving-pain',589,negate(own(589))),
   spell('moving-death',32379,pct('HEALTHPCT','player','GREATERTHAN',.5)),
@@ -53,7 +53,7 @@ assert(addon:RegisterDefaultBlock({id='tbc.priest.dots',revision=1,families={'tb
 }}))
 -- Filler: Mind Flay once learned; without it (early levels, Holy and Discipline questing)
 -- Holy Fire, Holy Nova on three attackers, Smite. Then the wand; priests never melee.
-assert(addon:RegisterDefaultBlock({id='tbc.priest.filler',revision=1,families={'tbc'},class='PRIEST',steps={
+assert(addon:RegisterDefaultBlock({id='tbc.priest.filler',revision=2,families={'tbc'},class='PRIEST',steps={
  {id='flay-known',type='branch',conditions=known(15407),onTrue={spell('flay',15407)},onFalse={
   spell('holy-fire',14914,negate(own(14914))),
   spell('holy-nova',15237,{type='THREAT_COUNT',threat=3,operator='GREATERTHANOREQUALS',value=3}),
@@ -89,7 +89,7 @@ assert(addon:RegisterDefaultBlock({id='tbc.priest.big-heal',revision=1,families=
    {id='heal-known',type='branch',conditions=known(2054),onTrue={spell('heal',2054)},onFalse={spell('lesser-heal',2050)}}}}}},
 }}))
 -- An enemy target instead of a friend: light damage (own Pain, own Holy Fire, Smite).
-assert(addon:RegisterDefaultBlock({id='tbc.priest.healer-damage',revision=1,families={'tbc'},class='PRIEST',steps={
+assert(addon:RegisterDefaultBlock({id='tbc.priest.healer-damage',revision=2,families={'tbc'},class='PRIEST',steps={
  {id='enemy',type='branch',conditions=all({type='ATTACKABLE',unit='target'},any(combat(),negate({type='COMBAT',unit='target'}))),onFalse={},onTrue={
   spell('enemy-pain',589,negate(own(589))),spell('enemy-holy-fire',14914,negate(own(14914))),spell('enemy-smite',585)}},
  stop('idle'),

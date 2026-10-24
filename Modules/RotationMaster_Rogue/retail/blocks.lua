@@ -15,9 +15,9 @@ local interrupt=any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INT
 local lethal=any(own(2823),own(315584),own(8679),own(381664))
 -- Casting or channelling ends advice; no attackable target ends it too.
 assert(addon:RegisterDefaultBlock({
- id='retail.rogue.boundaries',revision=1,families={'retail'},class='ROGUE',steps={
- {id='casting',type='none',suppress_attack=false,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
- {id='no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
+ id='retail.rogue.boundaries',revision=2,families={'retail'},class='ROGUE',steps={
+ {id='casting',type='stop',suppress_attack=false,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
+ {id='no-target',type='stop',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
 }}))
 -- Reminders every Rogue premade shares. Between pulls: a lethal poison (Deadly, else Instant;
 -- Wound or Amplifying count), a non-lethal one (Crippling; Atrophic or Numbing count), Stealth on

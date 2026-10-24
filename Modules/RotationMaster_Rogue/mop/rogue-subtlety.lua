@@ -28,8 +28,8 @@ local boss={type='CLASSIFICATION',unit='target',value='worldboss'}
 local hidden={type='STEALTHED'}
 local worth=any(boss,lifetime('GREATERTHAN',8))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.subtlety',revision=4,
- blocks={['mop.rogue.boundaries']=2,['mop.rogue.out-of-combat']=2,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1,['mop.rogue.subtlety-builders']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.subtlety',revision=5,
+ blocks={['mop.rogue.boundaries']=3,['mop.rogue.out-of-combat']=3,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1,['mop.rogue.subtlety-builders']=2},
  nameKey='Default.MoP.Rogue.Subtlety.Name',descriptionKey='Default.MoP.Rogue.Subtlety.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE'},
  tags={'subtlety','dps','melee','leveling','endgame','wowsims','wowhead','icy-veins'},
@@ -56,7 +56,7 @@ assert(addon:RegisterDefaultRotation({
   }},
   spell('rogue-subtlety-ambush',8676,any(points('LESSTHANOREQUALS',4),all({type='TALENT',layout='grid',value=18},any(negate(own(115189)),{type='BUFF_STACKS',unit='player',spell=115189,ownbuff=true,operator='LESSTHAN',value=3})))),
   spell('rogue-subtlety-garrote',703),
-  {id='rogue-subtlety-window-stop',type='none',suppress_attack=true,conditions={}},
+  {id='rogue-subtlety-window-stop',type='stop',suppress_attack=true,conditions={}},
  }},
  block('mop.rogue.out-of-combat','rogue-'),
  {id='rogue-subtlety-aoe',type='branch',conditions=all(enemies('GREATERTHANOREQUALS',3),known(51723)),onFalse={},onTrue={
@@ -64,7 +64,7 @@ assert(addon:RegisterDefaultRotation({
   spell('rogue-subtlety-crimson-tempest',121411,all(points('GREATERTHANOREQUALS',5),any(negate(mine(122233)),remain(122233,'LESSTHANOREQUALS',2)))),
   spell('rogue-subtlety-aoe-eviscerate',2098,points('GREATERTHANOREQUALS',5)),
   spell('rogue-subtlety-fan',51723),
-  {id='rogue-subtlety-aoe-stop',type='none',suppress_attack=false,conditions={}},
+  {id='rogue-subtlety-aoe-stop',type='stop',suppress_attack=false,conditions={}},
  }},
  spell('rogue-subtlety-slice',5171,all(points('GREATERTHANOREQUALS',1),negate(sliced))),
  block('mop.rogue.solo','rogue-'),
@@ -72,7 +72,7 @@ assert(addon:RegisterDefaultRotation({
   spell('rogue-subtlety-finisher-slice',5171,buffRemain(5171,'LESSTHANOREQUALS',2)),
   spell('rogue-subtlety-rupture',1943,all(any(negate(mine(1943)),remain(1943,'LESSTHANOREQUALS',2)),worth)),
   spell('rogue-subtlety-eviscerate',2098,any(negate(known(1943)),negate(mine(1943)),all(remain(1943,'GREATERTHANOREQUALS',4),buffRemain(5171,'GREATERTHANOREQUALS',4)))),
-  {id='rogue-subtlety-pool',type='none',suppress_attack=false,conditions={}},
+  {id='rogue-subtlety-pool',type='stop',suppress_attack=false,conditions={}},
  }},
  spell('rogue-subtlety-dying',2098,all(points('GREATERTHANOREQUALS',2),lifetime('LESSTHAN',4))),
  block('mop.rogue.subtlety-builders','rogue-'),

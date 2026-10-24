@@ -18,7 +18,7 @@ local function talent(n)return{type='TALENT',layout='grid',value=n}end
 local function health(op,v)return{type='HEALTHPCT',unit='player',operator=op,value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function off(id,action,conditions)local step=spell(id,action,conditions);step.disabled=true;return step end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local SOLAR,LUNAR,CA,INCARNATION,GRACE,DREAM=48517,48518,112071,102560,16886,145151
 local solar,lunar,aligned=own(SOLAR),own(LUNAR),own(CA)
@@ -27,8 +27,8 @@ local worth=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASS
  {type='CLASSIFICATION',unit='target',value='worldboss'},{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=25})
 local dream=all(talent(17),negate(own(DREAM)),negate(aligned))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.druid.balance',revision=4,
- blocks={['mop.druid.boundaries']=3,['mop.druid.target']=1,['mop.druid.mark']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.druid.balance',revision=5,
+ blocks={['mop.druid.boundaries']=4,['mop.druid.target']=2,['mop.druid.mark']=1},
  nameKey='Default.MoP.Druid.Balance.Name',descriptionKey='Default.MoP.Druid.Balance.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID'},
  tags={'balance','leveling','single-target','aoe','wowhead','wowsims'},
@@ -57,7 +57,7 @@ assert(addon:RegisterDefaultRotation({
   },
   rotation={
    block('balance-boundaries','mop.druid.boundaries','balance-'),
-   {id='balance-forms',type='none',conditions=any(form(768),form(5487))},
+   {id='balance-forms',type='stop',conditions=any(form(768),form(5487))},
    block('balance-target','mop.druid.target','balance-'),
    {id='balance-pull',type='branch',conditions=combat(),onTrue={},onFalse={
     spell('balance-pull-dream',5185,all(talent(17),negate(own(DREAM)))),

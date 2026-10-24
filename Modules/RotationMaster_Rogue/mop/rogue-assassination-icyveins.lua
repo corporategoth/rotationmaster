@@ -22,8 +22,8 @@ local sliced=own(5171)
 local boss={type='CLASSIFICATION',unit='target',value='worldboss'}
 local dying=all(points('GREATERTHANOREQUALS',2),lifetime('LESSTHAN',4))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.assassination.icyveins',revision=4,
- blocks={['mop.rogue.boundaries']=2,['mop.rogue.assassination-opener']=2,['mop.rogue.out-of-combat']=2,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.assassination.icyveins',revision=5,
+ blocks={['mop.rogue.boundaries']=3,['mop.rogue.assassination-opener']=3,['mop.rogue.out-of-combat']=3,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1},
  nameKey='Default.MoP.Rogue.Assassination.IcyVeins.Name',descriptionKey='Default.MoP.Rogue.Assassination.IcyVeins.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE'},
  tags={'assassination','dps','melee','leveling','endgame','icy-veins','method'},
@@ -47,7 +47,7 @@ assert(addon:RegisterDefaultRotation({
   {id='rogue-assassination-iv-aoe-spend',type='branch',conditions=points('GREATERTHANOREQUALS',5),onFalse={},onTrue={
    spell('rogue-assassination-iv-aoe-envenom',32645),spell('rogue-assassination-iv-aoe-eviscerate',2098)}},
   spell('rogue-assassination-iv-fan',51723),
-  {id='rogue-assassination-iv-aoe-stop',type='none',suppress_attack=false,conditions={}},
+  {id='rogue-assassination-iv-aoe-stop',type='stop',suppress_attack=false,conditions={}},
  }},
  spell('rogue-assassination-iv-slice',5171,all(points('GREATERTHANOREQUALS',1),negate(sliced))),
  block('mop.rogue.solo','rogue-'),
@@ -55,7 +55,7 @@ assert(addon:RegisterDefaultRotation({
   any(boss,lifetime('GREATERTHAN',8)))),
  {id='rogue-assassination-iv-finisher',type='branch',conditions=points('GREATERTHANOREQUALS',5),onFalse={},onTrue={
   spell('rogue-assassination-iv-envenom',32645),spell('rogue-assassination-iv-eviscerate',2098),
-  {id='rogue-assassination-iv-pool',type='none',suppress_attack=false,conditions={}}}},
+  {id='rogue-assassination-iv-pool',type='stop',suppress_attack=false,conditions={}}}},
  spell('rogue-assassination-iv-dying-envenom',32645,dying),
  spell('rogue-assassination-iv-dying-eviscerate',2098,dying),
  spell('rogue-assassination-iv-dispatch',111240,all({type='WEAPON_TYPE',slot='mainhand',subclass=15},any(target('LESSTHAN',.35),own(121153)))),

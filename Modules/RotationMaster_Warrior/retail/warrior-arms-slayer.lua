@@ -19,8 +19,8 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 local smashSoon={type='SPELL_COOLDOWN',spell=167105,operator='LESSTHAN',value=1.5}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.arms.slayer',revision=4,
- blocks={['retail.warrior.boundaries']=1,['retail.warrior.upkeep']=1,['retail.warrior.charge']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.arms.slayer',revision=5,
+ blocks={['retail.warrior.boundaries']=2,['retail.warrior.upkeep']=1,['retail.warrior.charge']=3},
  nameKey='Default.Retail.Warrior.Arms.Slayer.Name',descriptionKey='Default.Retail.Warrior.Arms.Slayer.Description',
  applicability={families={'retail'},actionContext='player',class='WARRIOR'},
  tags={'arms','melee','reference','slayer','single-target','aoe','icy-veins','simulationcraft','wowhead'},

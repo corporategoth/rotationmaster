@@ -12,8 +12,8 @@ local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution.icyveins',revision=4,
- blocks={['sod.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=2,['sod.paladin.seal']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution.icyveins',revision=5,
+ blocks={['sod.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=3,['sod.paladin.seal']=2},
  nameKey='Default.SoD.Paladin.Retribution.IcyVeins.Name',descriptionKey='Default.SoD.Paladin.Retribution.IcyVeins.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},
  tags={'leveling','retribution','melee','single-target','season-of-discovery','icy-veins','warcraft-tavern'},
@@ -31,7 +31,7 @@ assert(addon:RegisterDefaultRotation({
    {id='sretiv-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell('sretiv-pull-exorcism',415068),
     spell('sretiv-pull-judgement',20271),
-    {id='sretiv-pull-stop',type='none',conditions={}},
+    {id='sretiv-pull-stop',type='stop',conditions={}},
    }},
    spell('sretiv-exorcism',415068),
    spell('sretiv-crusader-strike',407676),

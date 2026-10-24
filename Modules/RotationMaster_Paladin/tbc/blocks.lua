@@ -20,12 +20,12 @@ local function noBlessing()return negate(list({19740,19742,20217,1038,20911,1997
  function(id)return{type='BUFF',unit='player',spell=id,anyrank=true}end))end
 local function paladin(id,steps,revision)assert(addon:RegisterDefaultBlock({id=id,revision=revision or 1,families={'tbc'},class='PALADIN',steps=steps}))end
 paladin('tbc.paladin.boundaries',{
- {id='casting',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
-})
+ {id='casting',type='stop',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
+},2)
 paladin('tbc.paladin.melee-opening',{
  {id='boundaries',type='block',block='tbc.paladin.boundaries'},
- {id='no-target',type='none',conditions=negate({type='ATTACKABLE',unit='target'})},
-})
+ {id='no-target',type='stop',conditions=negate({type='ATTACKABLE',unit='target'})},
+},2)
 -- Retribution upkeep (Icy Veins, Wowhead): Sanctity, else Retribution, else Devotion
 -- Aura; Wisdom, else Might, on yourself; top off after a fight; Avenging Wrath on a
 -- target that lives, never under Forbearance.
@@ -63,15 +63,15 @@ paladin('tbc.paladin.holy-hostile',{
   negate(any({type='DEBUFF',unit='target',spell=20186,anyrank=true},{type='DEBUFF',unit='target',spell=20185,anyrank=true})))},
  {id='seal-of-wisdom',type='spell',action=20166,ranked=false,conditions=all(negate(any(own(20166),own(20165))),
   negate(any({type='DEBUFF',unit='target',spell=20186,anyrank=true},{type='DEBUFF',unit='target',spell=20185,anyrank=true})))},
- {id='hostile-stop',type='none',suppress_attack=true,conditions={}},
-})
+ {id='hostile-stop',type='stop',suppress_attack=true,conditions={}},
+},2)
 -- Healer emergencies and utility both Holy sources agree on: Lay on Hands, else Holy
 -- Shock, for a dying target; Cleanse (Purify before 42); Holy Shock while moving.
 paladin('tbc.paladin.holy-emergency',{
- {id='enemy',type='none',suppress_attack=true,conditions={type='ENEMY',unit='target'}},
+ {id='enemy',type='stop',suppress_attack=true,conditions={type='ENEMY',unit='target'}},
  {id='lay-on-hands',type='spell',action=633,ranked=false,conditions=all(combat(),hurt(0.2))},
  {id='emergency-shock',type='spell',action=20473,ranked=false,conditions=hurt(0.2)},
  {id='cleanse',type='spell',action=4987,ranked=false,conditions=any({type='DISPELLABLE',unit='target',debufftype='Magic'},{type='DISPELLABLE',unit='target',debufftype='Poison'},{type='DISPELLABLE',unit='target',debufftype='Disease'})},
  {id='purify',type='spell',action=1152,ranked=false,conditions=all(negate(known(4987)),any({type='DISPELLABLE',unit='target',debufftype='Poison'},{type='DISPELLABLE',unit='target',debufftype='Disease'}))},
  {id='moving-shock',type='spell',action=20473,ranked=false,conditions=all({type='MOVING'},hurt(0.9))},
-})
+},2)

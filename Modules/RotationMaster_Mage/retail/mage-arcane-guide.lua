@@ -17,12 +17,12 @@ local function last(id)return{type='SPELL_HISTORY',spell=id,operator='EQUALS',va
 local function combat()return{type='COMBAT',unit='player'}end
 local function engaged(n)return{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=n}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local clearcasting,soul,surge=buff(263725),buff(451038),buff(365362)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.mage.arcane.guide',revision=5,
- blocks={['retail.mage.boundaries']=2,['retail.mage.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.mage.arcane.guide',revision=6,
+ blocks={['retail.mage.boundaries']=3,['retail.mage.utility']=2},
  nameKey='Default.Retail.Mage.ArcaneGuide.Name',descriptionKey='Default.Retail.Mage.ArcaneGuide.Description',
  applicability={families={'retail'},actionContext='player',class='MAGE'},
  tags={'arcane','caster','reference','icy-veins','simulationcraft'},

@@ -25,8 +25,8 @@ local taste=own(60503)
 local worth=any(classified('worldboss'),classified('elite'),{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=15})
 local burst=all(combat(),any(negate({type='SPELL_KNOWN',spell=86346}),smashed),worth)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.arms',revision=4,
- blocks={['mop.warrior.boundaries']=3,['mop.warrior.gap']=1,['mop.warrior.dps-upkeep']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.arms',revision=5,
+ blocks={['mop.warrior.boundaries']=4,['mop.warrior.gap']=1,['mop.warrior.dps-upkeep']=2},
  nameKey='Default.MoP.Warrior.Arms.Name',descriptionKey='Default.MoP.Warrior.Arms.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARRIOR'},
  tags={'arms','dps','melee','leveling','endgame','wowsims','wowtbc'},

@@ -14,8 +14,8 @@ local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.holy',revision=4,
- blocks={['sod.paladin.holy-upkeep']=2,['era.paladin.boundaries']=1,['era.paladin.cleanse']=1,['sod.paladin.holy-hostile']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.holy',revision=5,
+ blocks={['sod.paladin.holy-upkeep']=2,['era.paladin.boundaries']=2,['era.paladin.cleanse']=1,['sod.paladin.holy-hostile']=3},
  nameKey='Default.SoD.Paladin.Holy.Name',descriptionKey='Default.SoD.Paladin.Holy.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},
  tags={'leveling','endgame','holy','healer','dungeon','raid','season-of-discovery','icy-veins','warcraft-tavern'},
@@ -31,7 +31,7 @@ assert(addon:RegisterDefaultRotation({
     spell('sholy-divine-light',458856,all(hurt(0.6),mana('GREATERTHANOREQUALS',0.5))),
     spell('sholy-holy-light',635,hurt(0.6)),
     spell('sholy-flash',19750,hurt(0.9)),
-    {id='sholy-friend-stop',type='none',suppress_attack=true,conditions={}},
+    {id='sholy-friend-stop',type='stop',suppress_attack=true,conditions={}},
    }},
    block('sholy-hostile','sod.paladin.holy-hostile','sholy-'),
   },

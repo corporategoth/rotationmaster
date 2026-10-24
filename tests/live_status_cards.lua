@@ -8,7 +8,7 @@ local function cond(tag) return {type=tag} end
 local function body() return {name='Mine',switch=cond('SW'),
     rotation={{id='yes',type='spell',action=100,conditions=cond('YES')},{id='no',type='spell',action=100,conditions=cond('NO')},
         {id='odd',type='spell',action=100,conditions=cond('ODD')},{id='plain',type='spell',action=100,conditions={}},
-        {id='stop',type='none',conditions=cond('YES')},
+        {id='stop',type='stop',conditions=cond('YES')},
         {id='branch',type='branch',conditions=cond('NO'),onTrue={},onFalse={{id='inner',type='spell',action=100,conditions=cond('YES')}}},
         {id='forced',type='branch',mode='true',conditions=cond('NO'),onTrue={},onFalse={}}},
     cooldowns={{id='cd',type='spell',action=100,conditions=cond('YES')}}} end

@@ -18,10 +18,10 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local raid={type='INSTANCE',value='raid'}
 local lasting=any({type='GROUP'},{type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'},
  {type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.4})
-local blocks={['era.warlock.boundaries']=2,['era.warlock.procs']=1,['era.warlock.group-finish']=1,['era.warlock.dying']=1,['era.warlock.curse']=2,
- ['era.warlock.moving']=1,['era.warlock.aoe']=1,['era.warlock.sustain']=2,['era.warlock.filler']=1,['era.warlock.armor']=1,['era.warlock.pets']=1,['era.warlock.safety']=1}
+local blocks={['era.warlock.boundaries']=3,['era.warlock.procs']=1,['era.warlock.group-finish']=1,['era.warlock.dying']=2,['era.warlock.curse']=2,
+ ['era.warlock.moving']=2,['era.warlock.aoe']=1,['era.warlock.sustain']=3,['era.warlock.filler']=2,['era.warlock.armor']=1,['era.warlock.pets']=1,['era.warlock.safety']=1}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.warlock.dps',revision=3,blocks=blocks,
+ format='RotationMaster',schemaVersion=1,id='rm.era.warlock.dps',revision=4,blocks=blocks,
  nameKey='Default.Era.Warlock.DPS.Name',descriptionKey='Default.Era.Warlock.DPS.Description',
  applicability={families={'era'},actionContext='player',class='WARLOCK'},
  tags={'dps','ranged','caster','leveling','endgame','aoe','wowhead','icy-veins','warcraft-tavern','wowsims'},

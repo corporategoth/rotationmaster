@@ -29,8 +29,8 @@ local worth=any(classified('worldboss'),classified('elite'),{type='TT_HEALTH',un
 -- Heroic Strike / Cleave dump: 60 rage in the window, 90 outside it (not in execute).
 local dump=any(all(smashed,rage('GREATERTHANOREQUALS',60)),all(target('GREATERTHANOREQUALS',.2),rage('GREATERTHANOREQUALS',90)))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.fury',revision=4,
- blocks={['mop.warrior.boundaries']=3,['mop.warrior.gap']=1,['mop.warrior.dps-upkeep']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.fury',revision=5,
+ blocks={['mop.warrior.boundaries']=4,['mop.warrior.gap']=1,['mop.warrior.dps-upkeep']=2},
  nameKey='Default.MoP.Warrior.Fury.Name',descriptionKey='Default.MoP.Warrior.Fury.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARRIOR'},
  tags={'fury','dps','melee','leveling','endgame','wowsims'},

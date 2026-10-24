@@ -7,8 +7,8 @@
 local _,addon=...
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.initial',revision=2,
- blocks={['retail.warrior.boundaries']=1,['retail.warrior.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.initial',revision=3,
+ blocks={['retail.warrior.boundaries']=2,['retail.warrior.upkeep']=1},
  nameKey='Default.Retail.Warrior.Initial.Name',descriptionKey='Default.Retail.Warrior.Initial.Description',
  applicability={families={'retail'},actionContext='player',class='WARRIOR'},
  tags={'leveling','assisted-combat'},

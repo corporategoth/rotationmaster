@@ -8,14 +8,14 @@ local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 -- Your casts, channels (Disintegrate) and empowers (Fire Breath, Eternity Surge, Upheaval, Dream
 -- Breath: the game reports an empower as a channel) end advice.
-assert(addon:RegisterDefaultBlock({id='retail.evoker.boundaries',revision=2,families={'retail'},class='EVOKER',steps={
+assert(addon:RegisterDefaultBlock({id='retail.evoker.boundaries',revision=3,families={'retail'},class='EVOKER',steps={
  stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})),
 }}))
 -- The healer: the same, or no attackable target, ends advice (one Stop).
-assert(addon:RegisterDefaultBlock({id='retail.evoker.heal-boundaries',revision=1,families={'retail'},class='EVOKER',steps={
+assert(addon:RegisterDefaultBlock({id='retail.evoker.heal-boundaries',revision=2,families={'retail'},class='EVOKER',steps={
  stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))),
 }}))
 -- What Blizzard's Assisted Combat never suggests, for every spec: Quell on an interruptible cast,

@@ -7,8 +7,8 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.devastation',revision=3,
- blocks={['retail.evoker.boundaries']=2,['retail.evoker.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.devastation',revision=4,
+ blocks={['retail.evoker.boundaries']=3,['retail.evoker.utility']=2},
  nameKey='Default.Retail.Evoker.Devastation.Name',descriptionKey='Default.Retail.Evoker.Devastation.Description',
  applicability={families={'retail'},actionContext='player',class='EVOKER'},
  tags={'devastation','ranged','assisted-combat'},

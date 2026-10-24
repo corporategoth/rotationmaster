@@ -13,15 +13,15 @@ local function negate(c)return{type='NOT',value=c}end
 local function buff(id)return{type='BUFF',unit='player',spell=id}end
 local function hp(op,v)return{type='HEALTHPCT',unit='target',operator=op,value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or {}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or {}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='mage-sheal-'
 local combat={type='COMBAT',unit='player'}
 local beacon={type='BUFF',unit='target',spell=400735,ownbuff=true}
 local fingers=any(buff(400647),buff(400669),buff(400670))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.mage.healer',revision=4,
- blocks={['era.mage.wand-finish']=1,['sod.mage.balefire']=1,['sod.mage.armor']=2,['sod.mage.upkeep']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.mage.healer',revision=5,
+ blocks={['era.mage.wand-finish']=2,['sod.mage.balefire']=1,['sod.mage.armor']=2,['sod.mage.upkeep']=2},
  nameKey='Default.SoD.Mage.Healer.Name',descriptionKey='Default.SoD.Mage.Healer.Description',
  applicability={families={'era'},actionContext='player',class='MAGE',rulesets={'season:2'}},
  tags={'arcane','healer','group','season-of-discovery'},

@@ -13,8 +13,8 @@ local function buff(id)return{type='BUFF',unit='player',spell=id,anyrank=true}en
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.hunter.ranged.wowhead',revision=4,
- blocks={['tbc.hunter.opening']=3,['tbc.hunter.leveling']=1,['tbc.hunter.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.hunter.ranged.wowhead',revision=5,
+ blocks={['tbc.hunter.opening']=4,['tbc.hunter.leveling']=2,['tbc.hunter.upkeep']=1},
  nameKey='Default.TBC.Hunter.Ranged.Wowhead.Name',descriptionKey='Default.TBC.Hunter.Ranged.Wowhead.Description',
  applicability={families={'tbc'},actionContext='player',class='HUNTER'},
  tags={'dps','ranged','leveling','endgame','wowhead'},
@@ -30,12 +30,12 @@ assert(addon:RegisterDefaultRotation({
  {id='hunter-moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
   spell('hunter-moving-multi-shot',2643),
   spell('hunter-moving-arcane-shot',3044),
-  {id='hunter-moving-stop',type='none',suppress_attack=true,conditions={}},
+  {id='hunter-moving-stop',type='stop',suppress_attack=true,conditions={}},
  }},
  {id='hunter-steady',type='branch',conditions={type='SPELL_KNOWN',spell=34120},onTrue={
   spell('hunter-multi-shot',2643),
   spell('hunter-steady-shot',34120,{type='SPELL_HISTORY_TIME',spell=75,ranked=true,operator='LESSTHANOREQUALS',value=.5}),
-  {id='hunter-wait-auto',type='none',suppress_attack=true,conditions={}},
+  {id='hunter-wait-auto',type='stop',suppress_attack=true,conditions={}},
  },onFalse={block('tbc.hunter.leveling','hunter-leveling-')}},
  }},
 }))

@@ -486,11 +486,10 @@ function addon:HandleCommand(str)
         addon:print(L["                          Manual choices are remembered for this character, specialization and action context."])
         addon:print(L["/rm why                 - Explain why each rotation can or cannot be selected."])
         addon:print(L["/rm debug glow [seconds] - Explain why a recommendation does or does not light a button."])
+        addon:print(L['/rm debug editor        - Copy native Lua input diagnostics.'])
         addon:print(L["/rm check               - Check the database integrity."])
         addon:print(L["/rm repair              - Fix any DB errors found in the data with internal validation."])
         addon:print(L["/rm errors              - View and copy Rotation Master errors."])
-        addon:print(L['/rm editorinfo          - Copy native Lua input diagnostics.'])
-        addon:print(L['/rm editorarrows        - Temporarily test native arrows in an open editor.'])
         addon:print(L['/rm perf cpu|runtime|memory [seconds|stop|report] - Capture performance observations.'])
         addon:print(L['/rm perf probe - Check native profiler access.'])
         addon:print(L['/rm perf engine [lean|standard] - Show or choose the rotation evaluation engine.'])
@@ -509,12 +508,6 @@ function addon:HandleCommand(str)
 
     elseif cmd == "debug" and self.HandleDebugCommand then
         self:HandleDebugCommand(string.sub(str,npos))
-
-    elseif cmd == 'editorinfo' then
-        self:ShowLuaEditorInputReport()
-
-    elseif cmd == 'editorarrows' then
-        self:ShowLuaEditorArrowProbe()
 
     elseif cmd == 'perf' then
         self:HandlePerformanceCommand(string.sub(str,npos))
@@ -1078,7 +1071,7 @@ function addon:rotationValidConditions(rot,spec)
                 if (step.mode==nil or step.mode=="evaluate") and not self:validateCondition(step.conditions,spec) then return false end
             else
                 if step.type==nil or not self:validateCondition(step.conditions,spec) then return false end
-                if step.type~="none" and step.action==nil and not (step.type=="assisted" and row.section=="rotation") then return false end
+                if step.type~="stop" and step.action==nil and not (step.type=="assisted" and row.section=="rotation") then return false end
                 if step.type=="item" then
                     if type(step.action)=="string" then
                         local itemset=itemsets[step.action] or global_itemsets[step.action]
@@ -1764,7 +1757,7 @@ local function leanWalk(plan, list)
             local ended = leanWalk(plan, status == "match" and entry.onTrue or entry.onFalse)
             if ended then return ended end
         elseif not step.disabled then
-            if step.type == "none" then
+            if step.type == "stop" then
                 local status = evaluateConditionPlan(entry.conditions, plan.cache, plan.now, step.id)
                 if status ~= "no-match" then
                     plan.suppressAttack = status == "unavailable" or step.suppress_attack == true

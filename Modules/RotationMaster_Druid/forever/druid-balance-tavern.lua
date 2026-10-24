@@ -8,11 +8,11 @@ local function all(...)return{type='AND',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function dot(id,mine)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=mine}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions,attack)return{id=id,type='none',suppress_attack=not attack,conditions=conditions or{}}end
+local function stop(id,conditions,attack)return{id=id,type='stop',suppress_attack=not attack,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.druid.balance.tavern',revision=4,
- blocks={['forever.druid.boundaries']=2,['forever.druid.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.druid.balance.tavern',revision=5,
+ blocks={['forever.druid.boundaries']=3,['forever.druid.upkeep']=1},
  nameKey='Default.Forever.Druid.BalanceTavern.Name',descriptionKey='Default.Forever.Druid.BalanceTavern.Description',
  applicability={families={'forever'},actionContext='player',class='DRUID'},
  tags={'balance','leveling','multi-dot','warcraft-tavern'},

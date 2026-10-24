@@ -31,7 +31,7 @@ test('forced branches skip their guard evaluator and inherit chosen ancestry',fu
     assert(r.status=='complete' and #seen==1 and seen[1]=='right')
 end)
 test('Stop in a nested arm ends the entire sequence and preserves explicit Attack policy',function()
-    local stop={id='stop',type='none',conditions={type='stop'}}
+    local stop={id='stop',type='stop',conditions={type='stop'}}
     local b=body({branch('b',nil,{action('before'),branch('n','true',{stop,action('excluded')})},{action('false')}),action('tail')})
     local r,seen=run(b,{b='match',stop='match'})
     assert(r.status=='stopped' and not r.suppressAttack and #seen==1 and seen[1].id=='before')
@@ -45,7 +45,7 @@ test('unavailable guards never select False or fall through to later actions or 
     end
     local r=a:EvaluateRotationSequence(b,function() return nil end,function() error('unknown guard fell through') end)
     assert(r.status=='unavailable' and r.suppressAttack)
-    b.rotation={branch('b','true',{{id='stop',type='none',conditions={type='stop'}}}),action('tail')}
+    b.rotation={branch('b','true',{{id='stop',type='stop',conditions={type='stop'}}}),action('tail')}
     r,seen=run(b,{stop='unavailable'});assert(r.status=='unavailable' and r.suppressAttack and #seen==0)
 end)
 test('preview selection stops traversal before later guards and optional actions are not visited',function()
@@ -56,7 +56,7 @@ test('preview selection stops traversal before later guards and optional actions
     assert(r.status=='selected' and #seen==3 and seen[3].id=='tail')
 end)
 test('flat legacy bodies retain ordinal positions and disabled Stops never evaluate',function()
-    local stop={id='stop',type='none',disabled=true,conditions={type='stop'}}
+    local stop={id='stop',type='stop',disabled=true,conditions={type='stop'}}
     local disabled=action('disabled');disabled.disabled=true
     local b=body({disabled,stop,{type='spell',action=403}})
     local r,seen,contexts=run(b)
@@ -68,7 +68,7 @@ test('malformed nested structures fail closed before any condition or action cal
     assert(r.status=='unavailable' and r.suppressAttack and r.diagnostic.code=='duplicate-step-id')
 end)
 test('callback path changes cannot corrupt later contexts or saved tree structure',function()
-    local b=body({branch('b','evaluate',{{id='stop',type='none',conditions={type='stop'}}})})
+    local b=body({branch('b','evaluate',{{id='stop',type='stop',conditions={type='stop'}}})})
     local r=a:EvaluateRotationSequence(b,function(condition,context)
         if condition.type=='b' then context.stepPath[1]='changed';return {status='match'} end
         assert(table.concat(context.stepPath,'/')=='rotation/1/onTrue/1');return {status='no-match'}

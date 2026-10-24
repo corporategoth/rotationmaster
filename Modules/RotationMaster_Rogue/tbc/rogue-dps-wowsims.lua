@@ -15,8 +15,8 @@ local function lifetime(op,n)return{type='TT_HEALTH',unit='target',health=0,oper
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.rogue.dps.wowsims',revision=4,
- blocks={['tbc.rogue.opening']=3,['tbc.rogue.upkeep']=2,['tbc.rogue.builders']=3},
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.rogue.dps.wowsims',revision=5,
+ blocks={['tbc.rogue.opening']=4,['tbc.rogue.upkeep']=2,['tbc.rogue.builders']=3},
  nameKey='Default.TBC.Rogue.DPS.Wowsims.Name',descriptionKey='Default.TBC.Rogue.DPS.Wowsims.Description',
  applicability={families={'tbc'},actionContext='player',class='ROGUE'},
  tags={'dps','melee','leveling','endgame','wowsims','icy-veins'},
@@ -35,7 +35,7 @@ assert(addon:RegisterDefaultRotation({
   spell('rogue-rupture',1943,all(negate({type='DEBUFF',unit='target',spell=1943,anyrank=true,owndebuff=true}),
    negate({type='BUFF',unit='player',spell=13877,anyrank=true,ownbuff=true}),lifetime('GREATERTHAN',16))),
   spell('rogue-eviscerate',2098),
-  {id='rogue-pool',type='none',suppress_attack=false,conditions={}},
+  {id='rogue-pool',type='stop',suppress_attack=false,conditions={}},
  }},
  block('tbc.rogue.builders','rogue-'),
  }},

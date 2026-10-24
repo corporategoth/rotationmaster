@@ -18,8 +18,8 @@ local curses={980,603,1490,17862,704,1714,702,18223}
 local cursed={type='OR',value={}};for i,id in ipairs(curses)do cursed.value[i]=own(id)end
 local summon=all(negate({type='PET'}),negate(combat()))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.fire.icyveins',revision=4,
- blocks={['era.warlock.boundaries']=2,['era.warlock.armor']=1,['era.warlock.safety']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.fire.icyveins',revision=5,
+ blocks={['era.warlock.boundaries']=3,['era.warlock.armor']=1,['era.warlock.safety']=1},
  nameKey='Default.SoD.Warlock.Fire.IcyVeins.Name',descriptionKey='Default.SoD.Warlock.Fire.IcyVeins.Description',
  applicability={families={'era'},actionContext='player',class='WARLOCK',rulesets={'season:2'}},
  tags={'dps','ranged','caster','endgame','aoe','season-of-discovery','icy-veins','warcraft-tavern'},
@@ -37,7 +37,7 @@ assert(addon:RegisterDefaultRotation({
   spell('sod-fire-iv-moving-doom',603,all(negate(cursed),big,lifetime('GREATERTHAN',60))),
   spell('sod-fire-iv-moving-agony',980,negate(cursed)),
   spell('sod-fire-iv-moving-lake-of-fire',460692),
-  {id='sod-fire-iv-moving-stop',type='none',suppress_attack=true,conditions={}},
+  {id='sod-fire-iv-moving-stop',type='stop',suppress_attack=true,conditions={}},
  }},
  {id='sod-fire-iv-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
   spell('sod-fire-iv-aoe-incinerate',412758,negate(buff(412758))),

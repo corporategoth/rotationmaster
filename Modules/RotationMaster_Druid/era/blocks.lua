@@ -31,15 +31,15 @@ local function bear()return any(form(5487),form(9634))end
 local function feral()return any(form(768),form(5487),form(9634))end
 local function travelling()return any(form(783),form(1066))end
 local function spell(id,action,conditions,ranked)return{id=id,type='spell',action=action,ranked=ranked or false,conditions=conditions or {}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or {}}end
-local function wait(id)return{id=id,type='none',conditions={}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or {}}end
+local function wait(id)return{id=id,type='stop',conditions={}}end
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function druid(id,steps,revision)assert(addon:RegisterDefaultBlock({id=id,revision=revision or 1,families={'era'},class='DRUID',steps=steps}))end
 
 -- Casts and channels (Starfire, Hurricane, Tranquility, Healing Touch) and travel forms halt advice and Attack.
 druid('era.druid.boundaries',{
  stop('casting',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},travelling())),
-},3)
+},4)
 -- Out-of-combat self buffs every source keeps: Mark (unless Gift is up), Thorns while soloing,
 -- Omen of Clarity (a cast self-buff in vanilla) once talented.
 druid('era.druid.upkeep',{
@@ -69,7 +69,7 @@ druid('era.druid.stealth-opener',{
  stop('no-target',negate({type='ATTACKABLE',unit='target'})),
  {id='stealth',type='branch',conditions={type='STEALTHED'},onFalse={},onTrue={
   spell('ravage',6785),spell('shred',5221),spell('mangle',407993,{},true),spell('claw',1082),stop('stealth-stop')}},
-})
+},2)
 -- Positional builder: with the target on you, Mangle (Cat) or Claw; from behind, Shred.
 druid('era.druid.cat-builders',{
  {id='facing',type='branch',conditions=front(),onTrue={spell('front-mangle',407993,{},true),spell('front-claw',1082)},
@@ -81,7 +81,7 @@ druid('era.druid.powershift',{
  spell('powershift',768,all({type='TALENT',layout='tree',tree=3,talent=2,operator='GREATERTHANOREQUALS',value=5},energy('LESSTHANOREQUALS',27),
   mana('GREATERTHANOREQUALS',.15),negate(own(417141)))),
  wait('wait'),
-})
+},2)
 -- Vanilla cat (Icy Veins, Wowhead, wowsims, Warcraft Tavern leveling): Faerie Fire (Feral) kept up,
 -- Clearcasting on Shred, a finisher from four combo points (Rip before Ferocious Bite is learned,
 -- else on long-lived targets outside raids; Bite under 63 energy), Rake outside raids, builder.
@@ -102,7 +102,7 @@ druid('era.druid.bear-pull',{
  {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('pull-faerie-fire',16857,{type='BEYOND_MELEE',unit='target'}),
   spell('pull-enrage',5229,energy('LESSTHAN',20))}},
-},2)
+},3)
 -- Vanilla bear (Icy Veins, Warcraft Tavern): Enrage when starved solo, Demoralizing Roar on packs
 -- and elites unless a warrior's Shout covers it, Swipe on two or more, Swipe to dump rage,
 -- Faerie Fire (Feral) as the free filler. Maul is a reminder.
@@ -115,7 +115,7 @@ druid('era.druid.bear',{
  spell('swipe',779,energy('GREATERTHANOREQUALS',60)),
  spell('faerie-fire',16857),
  wait('wait'),
-})
+},2)
 -- In Cat or Bear while playing a caster list: the vanilla cat and bear sections.
 druid('era.druid.forms',{
  {id='cat',type='branch',conditions=cat(),onFalse={},onTrue={ref('cat-section','era.druid.cat','cat-')}},
@@ -130,13 +130,13 @@ druid('era.druid.feral-humanoid',{
  spell('moonfire',8921,negate(mine(8921))),
  spell('wrath',5176,negate(moving())),
  stop('humanoid-stop'),
-})
+},2)
 -- Caster pull: Starfire or Wrath standing, Moonfire on the move, then stop.
 druid('era.druid.caster-pull',{
  stop('no-target',negate({type='ATTACKABLE',unit='target'})),
  {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('pull-starfire',2912,negate(moving())),spell('pull-wrath',5176,negate(moving())),spell('pull-moonfire',8921),stop('pull-stop')}},
-},2)
+},3)
 -- Vanilla Balance (Wowhead 2025, Warcraft Tavern, wowsims): Faerie Fire in a group, Hurricane on
 -- three or more, Moonfire and Insect Swarm on targets that live (mana floor), Starfire (on a Nature's
 -- Grace proc first), Wrath before Starfire is learned, melee when dry.
@@ -152,7 +152,7 @@ druid('era.druid.caster',{
  spell('starfire',2912),
  spell('wrath',5176),
  wait('dry'),
-})
+},2)
 -- Healer reminders: Nature's Swiftness in an emergency, Tranquility on a hurt group, Innervate,
 -- Rebirth on a dead friendly target, poison and curse removal on a friendly target.
 local friendly=all({type='FRIENDLY',unit='target'},negate({type='DEAD',unit='target'}))
@@ -173,7 +173,7 @@ druid('era.druid.resto-damage',{
   spell('insect-swarm',5570,negate(mine(5570))),
   spell('wrath',5176,negate(moving())),
   wait('damage-wait')}},
-})
+},2)
 
 -- Season of Discovery.
 -- Cat (Wowhead SoD, wowsims P5, Icy Veins): Faerie Fire when none is up, Savage Roar, Swipe (Cat)
@@ -206,7 +206,7 @@ druid('sod.druid.bear',{
  spell('lacerate',414644,{},true),
  spell('swipe',779),
  wait('wait'),
-})
+},2)
 -- In Cat or Bear while playing a SoD caster list: the SoD cat and bear sections.
 druid('sod.druid.forms',{
  {id='cat',type='branch',conditions=cat(),onFalse={},onTrue={ref('cat-section','sod.druid.cat','cat-')}},
@@ -235,7 +235,7 @@ druid('sod.druid.tank-humanoid',{
  spell('moonfire',8921,negate(mine(8921))),
  spell('wrath',5176,negate(moving())),
  stop('humanoid-stop'),
-})
+},2)
 -- SoD Balance reminders: Starfall, an instant Healing Touch from Fury of Stormrage on a dying friend,
 -- curse and poison removal, Wild Growth (hybrid) on a hurt group.
 druid('sod.druid.balance-cooldowns',{
@@ -250,4 +250,4 @@ druid('sod.druid.caster-pull',{
  stop('no-target',negate({type='ATTACKABLE',unit='target'})),
  {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('pull-starsurge',417157,{},true),spell('pull-wrath',5176,negate(moving())),spell('pull-sunfire',414684,{},true),spell('pull-moonfire',8921),stop('pull-stop')}},
-},2)
+},3)

@@ -17,7 +17,7 @@ local function health(op,v)return{type='HEALTHPCT',unit='player',operator=op,val
 local function energy(op,v)return{type='POWER',unit='player',operator=op,value=v}end
 local function chi(op,v)return{type='POINT',unit='player',operator=op,value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,steps,revision)assert(addon:RegisterDefaultBlock({id=id,revision=revision or 1,families={'progression'},class='MONK',steps=steps}))end
 local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
 local beyond={type='BEYOND_MELEE',unit='target'}
@@ -25,7 +25,7 @@ local beyond={type='BEYOND_MELEE',unit='target'}
 -- Meditation) and a target that is not attackable end advice.
 block('mop.monk.boundaries',{
  stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))),
-},2)
+},3)
 -- Every specialization: Legacy of the Emperor when no stats buff from anyone is up, Spear Hand
 -- Strike on an interruptible cast.
 block('mop.monk.upkeep',{
@@ -48,8 +48,8 @@ block('mop.monk.brewmaster-pull',{
   spell('pull-dizzying-haze',115180,beyond),
   spell('pull-clash',122057,beyond),
   spell('pull-keg-smash',121253),
-  {id='pull-stop',type='none',conditions={}}}},
-},2)
+  {id='pull-stop',type='stop',conditions={}}}},
+},3)
 -- Both Windwalker premades: Fierce Tiger, Legacy of the White Tiger, Energizing Brew when its
 -- energy fits, Xuen, Storm, Earth, and Fire at two or more enemies (cast it on the other target
 -- yourself), Touch of Karma and defensives when low.
@@ -69,9 +69,9 @@ block('mop.monk.windwalker-open',{
  {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('pull-chi-wave',115098),
   spell('pull-chi-burst',123986),
-  {id='pull-stop',type='none',conditions={}}}},
+  {id='pull-stop',type='stop',conditions={}}}},
  spell('touch-of-death',115080),
-},2)
+},3)
 -- Windwalker talent spenders shared by both premades' single-target lists.
 block('mop.monk.windwalker-tail',{
  spell('expel-harm',115072,all(health('LESSTHAN',.9),chi('GREATERTHANOREQUALS',-2))),

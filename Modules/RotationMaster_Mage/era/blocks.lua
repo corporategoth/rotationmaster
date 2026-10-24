@@ -20,7 +20,7 @@ local function lives(seconds)return{type='TT_HEALTH',unit='target',health=0,oper
 local function class(kind)return{type='CLASSIFICATION',unit='target',value=kind}end
 local function cooling(id,v)return{type='SPELL_COOLDOWN',spell=id,operator='GREATERTHAN',value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or {}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or {}}end
 local function block(id,steps,revision)assert(addon:RegisterDefaultBlock({id=id,revision=revision or 1,families={'era'},class='MAGE',steps=steps}))end
 local group={type='GROUP'}
 local solo=negate(group)
@@ -31,7 +31,7 @@ local onMe={type='THREAT',unit='target',threat=3}
 -- Casts, channels (Blizzard, Arcane Missiles, Evocation) and a target that is not ours to pull end advice.
 block('era.mage.boundaries',{
  stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate(all({type='ATTACKABLE',unit='target'},any(combat(),negate({type='COMBAT',unit='target'})))))),
-},2)
+},3)
 -- Frostbolt once learned (level 4); Fireball before that.
 block('era.mage.frostbolt',{
  {id='frostbolt-known',type='branch',conditions=known(116),onTrue={spell('frostbolt',116)},onFalse={spell('fireball',133)}},
@@ -40,7 +40,7 @@ block('era.mage.frostbolt',{
 block('era.mage.moving',{
  {id='moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
   spell('moving-fire-blast',2136,pct('MANAPCT','player','GREATERTHAN',.4)),stop('moving-stop')}},
-})
+},2)
 -- A mob is hitting you: Frost Nova it off (raid bosses are root-immune); Blink stays with you.
 block('era.mage.nova',{
  spell('frost-nova',122,all(near(1),onMe,negate(class('worldboss')))),
@@ -50,14 +50,14 @@ block('era.mage.execute',{
  spell('execute-fire-blast',2136,all(class('normal'),pct('HEALTHPCT','target','LESSTHAN',.1))),
  {id='execute-wand',type='branch',conditions=all(solo,class('normal'),pct('HEALTHPCT','target','LESSTHAN',.15),known(5019)),onFalse={},onTrue={
   stop('execute-wand-active',{type='SPELL_AUTOREPEAT',spell=5019,ranked=true}),spell('execute-shoot',5019)}},
-})
+},2)
 -- Out of mana or spells: wand, never toggling an active wand off; casters never melee.
 block('era.mage.wand-finish',{
  {id='wand-known',type='branch',conditions=known(5019),onFalse={},onTrue={
   stop('wand-active',{type='SPELL_AUTOREPEAT',spell=5019,ranked=true}),
   spell('shoot',5019)}},
  stop('exhausted'),
-})
+},2)
 -- Armor: any armor already up is the player's choice. With none up: Mage Armor in a group, Ice
 -- Armor solo (or when Mage Armor is not learned), Frost Armor before Ice Armor is learned.
 local function bare(...)return all(missing(168),missing(7302),missing(6117),missing(428741),...)end

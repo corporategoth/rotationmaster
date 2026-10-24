@@ -13,14 +13,14 @@ local function freezing(v)return{type='DEBUFF_STACKS',unit='target',spell=122138
 local function combat()return{type='COMBAT',unit='player'}end
 local function engaged(n)return{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=n}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local brainFreeze,fingers,thermal,spike=buff(190446),buff(44544),buff(1247730),buff(199844)
 local twoFingers={type='BUFF_STACKS',unit='player',spell=44544,ownbuff=true,operator='GREATERTHANOREQUALS',value=2}
 local frozenRain=all(buff(270232),engaged(3))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.mage.frost.guide',revision=4,
- blocks={['retail.mage.boundaries']=2,['retail.mage.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.mage.frost.guide',revision=5,
+ blocks={['retail.mage.boundaries']=3,['retail.mage.utility']=2},
  nameKey='Default.Retail.Mage.FrostGuide.Name',descriptionKey='Default.Retail.Mage.FrostGuide.Description',
  applicability={families={'retail'},actionContext='player',class='MAGE'},
  tags={'frost','caster','reference','icy-veins','simulationcraft'},

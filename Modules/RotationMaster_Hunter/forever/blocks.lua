@@ -15,7 +15,7 @@ local function known(id)return{type='SPELL_KNOWN',spell=id}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function autoShot()return{type='SPELL_AUTOREPEAT',spell=75,ranked=true}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions,attack)return{id=id,type='none',suppress_attack=not attack,conditions=conditions or{}}end
+local function stop(id,conditions,attack)return{id=id,type='stop',suppress_attack=not attack,conditions=conditions or{}}end
 local function engaged(n)return{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=n}end
 local moving={type='MOVING'}
 -- Summon Hawk and Arcane Shot share one 6 s cooldown. Arcane takes the slot only when a Hawk was
@@ -25,12 +25,12 @@ local arcaneTurn=all({type='SPELL_HISTORY_TIME',spell=1293241,operator='LESSTHAN
 local worth=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},
  {type='CLASSIFICATION',unit='target',value='worldboss'},{type='INSTANCE',value='party'},{type='INSTANCE',value='raid'})
 -- No attackable target, or your casts and channels (Aimed Shot, Sniper Shot, Volley, Mend Pet), end advice.
-assert(addon:RegisterDefaultBlock({id='forever.hunter.boundaries',revision=3,families={'forever'},class='HUNTER',steps={
+assert(addon:RegisterDefaultBlock({id='forever.hunter.boundaries',revision=4,families={'forever'},class='HUNTER',steps={
  stop('cast',any(negate({type='ATTACKABLE',unit='target'}),{type='CASTING',unit='player'},{type='CHANNELING',unit='player'})),
 }}))
 -- A ranged Hunter whose target is in melee (levels 1–9, or a mob that reached you): melee
 -- strikes, then auto attack. Wing Clip, Disengage and traps for kiting stay with the player.
-assert(addon:RegisterDefaultBlock({id='forever.hunter.deadzone',revision=2,families={'forever'},class='HUNTER',steps={
+assert(addon:RegisterDefaultBlock({id='forever.hunter.deadzone',revision=3,families={'forever'},class='HUNTER',steps={
  {id='melee',type='branch',conditions={type='BEYOND_MELEE',unit='target'},onTrue={},onFalse={
   spell('raptor-strike',2973,negate({type='SPELL_ACTIVE',spell=2973})),
   spell('mongoose-bite',1495),
@@ -39,7 +39,7 @@ assert(addon:RegisterDefaultBlock({id='forever.hunter.deadzone',revision=2,famil
 }}))
 -- The pull: Hunter's Mark unless someone's Mark is up, Sniper Shot while Rapid Killing lasts,
 -- Auto Shot. Sending the pet in first stays with the player.
-assert(addon:RegisterDefaultBlock({id='forever.hunter.pull',revision=2,families={'forever'},class='HUNTER',steps={
+assert(addon:RegisterDefaultBlock({id='forever.hunter.pull',revision=3,families={'forever'},class='HUNTER',steps={
  {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('pull-mark',1130,negate(marked())),
   spell('pull-sniper',1310687,{type='BUFF',unit='player',spell=415407}),
@@ -47,7 +47,7 @@ assert(addon:RegisterDefaultBlock({id='forever.hunter.pull',revision=2,families=
   stop('pull-stop')}},
 }}))
 -- On the move only instants: Summon Hawk (keeping the cycle), Multi-Shot, Arcane Shot, own Sting.
-assert(addon:RegisterDefaultBlock({id='forever.hunter.moving',revision=1,families={'forever'},class='HUNTER',steps={
+assert(addon:RegisterDefaultBlock({id='forever.hunter.moving',revision=2,families={'forever'},class='HUNTER',steps={
  {id='moving',type='branch',conditions=moving,onFalse={},onTrue={
   spell('moving-hawk',1293241,negate(arcaneTurn)),
   spell('moving-multi-shot',2643),
@@ -63,7 +63,7 @@ assert(addon:RegisterDefaultBlock({id='forever.hunter.range-shots',revision=1,fa
  spell('auto-shot',75,all(negate(autoShot()),negate(moving))),
 }}))
 -- Survival pull: Mark, own Sting from range, then run in (auto attack allowed).
-assert(addon:RegisterDefaultBlock({id='forever.hunter.survival-pull',revision=2,families={'forever'},class='HUNTER',steps={
+assert(addon:RegisterDefaultBlock({id='forever.hunter.survival-pull',revision=3,families={'forever'},class='HUNTER',steps={
  {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('pull-mark',1130,negate(marked())),
   spell('pull-serpent-sting',1978,all(negate(sting()),{type='BEYOND_MELEE',unit='target'})),

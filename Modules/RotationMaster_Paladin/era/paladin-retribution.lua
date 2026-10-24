@@ -13,8 +13,8 @@ local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.paladin.retribution',revision=3,
- blocks={['era.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=2,
+ format='RotationMaster',schemaVersion=1,id='rm.era.paladin.retribution',revision=4,
+ blocks={['era.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=3,
   ['era.paladin.crusader-opener']=1,['era.paladin.seal']=2,['era.paladin.undead']=1},
  nameKey='Default.Era.Paladin.Retribution.Name',descriptionKey='Default.Era.Paladin.Retribution.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN'},
@@ -34,7 +34,7 @@ assert(addon:RegisterDefaultRotation({
    block('ret-seal','era.paladin.seal','ret-'),
    {id='ret-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell('ret-pull-judgement',20271),
-    {id='ret-pull-stop',type='none',conditions={}},
+    {id='ret-pull-stop',type='stop',conditions={}},
    }},
    block('ret-undead','era.paladin.undead','ret-'),
    spell('ret-hammer-of-wrath',24275,mana('GREATERTHANOREQUALS',0.2)),

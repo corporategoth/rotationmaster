@@ -22,8 +22,8 @@ local function shocked()return{type='DEBUFF',unit='target',spell=8050,anyrank=tr
 local stationary=negate({type='MOVING'})
 local ranged={type='BEYOND_MELEE',unit='target'}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.shaman.enhancement',revision=4,
- blocks={['forever.shaman.manual-target']=1,['forever.shaman.upkeep']=2,['forever.shaman.imbue']=1,['forever.shaman.group-totems']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.shaman.enhancement',revision=5,
+ blocks={['forever.shaman.manual-target']=2,['forever.shaman.upkeep']=2,['forever.shaman.imbue']=1,['forever.shaman.group-totems']=1},
  nameKey='Default.Forever.Shaman.Enhancement.Name',descriptionKey='Default.Forever.Shaman.Enhancement.Description',
  applicability={families={'forever'},actionContext='player',class='SHAMAN'},
  tags={'dps','melee','leveling','endgame','aoe','icy-veins'},
@@ -41,7 +41,7 @@ assert(addon:RegisterDefaultRotation({
  block('forever.shaman.manual-target','shaman-enh-'),
  {id='shaman-enh-pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('shaman-enh-pull-bolt',403,all(ranged,stationary)),
-  {id='shaman-enh-pull-stop',type='none',suppress_attack=false,conditions={}},
+  {id='shaman-enh-pull-stop',type='stop',suppress_attack=false,conditions={}},
  }},
  spell('shaman-enh-stormstrike',17364),
  spell('shaman-enh-maelstrom-bolt',403,{type='BUFF_STACKS',unit='player',spell=408505,operator='GREATERTHANOREQUALS',value=5}),

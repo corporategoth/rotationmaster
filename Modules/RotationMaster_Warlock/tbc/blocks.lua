@@ -17,13 +17,13 @@ local function health(op,v)return{type='HEALTHPCT',unit='player',operator=op,val
 local function talent(tree,index,value)return{type='TALENT',layout='tree',tree=tree,talent=index,operator='GREATERTHANOREQUALS',value=value}end
 local function shards(op,v)return{type='CARRYING',item={6265},operator=op,value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or {}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or {}}end
 local function block(id,name,prefix)return{id=id,type='block',block=name,prefix=prefix}end
 -- Fire build: Burning Wish (sacrificed Imp), or Emberstorm without Touch of Shadow.
 local fire=any(buff(18789),all(talent(3,16,1),negate(buff(18791))))
 local curses={980,603,1490,704,1714,702}
 local function ownCurse()local list={};for i,id in ipairs(curses)do list[i]=own(id)end;return{type='OR',value=list}end
-assert(addon:RegisterDefaultBlock({id='tbc.warlock.boundaries',revision=2,families={'tbc'},class='WARLOCK',steps={
+assert(addon:RegisterDefaultBlock({id='tbc.warlock.boundaries',revision=3,families={'tbc'},class='WARLOCK',steps={
  -- Drain Life, Drain Soul, Hellfire, Rain of Fire and Health Funnel run to the end.
  stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate(all({type='ATTACKABLE',unit='target'},any(combat(),negate({type='COMBAT',unit='target'})))))),
 }}))
@@ -45,7 +45,7 @@ assert(addon:RegisterDefaultBlock({id='tbc.warlock.curse',revision=2,families={'
  }},
 }}))
 -- Moving: instants only, then stop. Corruption counts only with five points of Improved Corruption.
-assert(addon:RegisterDefaultBlock({id='tbc.warlock.moving',revision=1,families={'tbc'},class='WARLOCK',steps={
+assert(addon:RegisterDefaultBlock({id='tbc.warlock.moving',revision=2,families={'tbc'},class='WARLOCK',steps={
  {id='moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
   block('moving-curse','tbc.warlock.curse','moving-'),
   spell('moving-corruption',172,all(talent(1,2,5),negate(own(172)))),
@@ -72,7 +72,7 @@ assert(addon:RegisterDefaultBlock({id='tbc.warlock.finishers',revision=1,familie
 }}))
 -- Filler: Incinerate for a Fire build with Immolate up, else Shadow Bolt; Life Tap when nothing
 -- else can be cast. Casters never melee.
-assert(addon:RegisterDefaultBlock({id='tbc.warlock.filler',revision=1,families={'tbc'},class='WARLOCK',steps={
+assert(addon:RegisterDefaultBlock({id='tbc.warlock.filler',revision=2,families={'tbc'},class='WARLOCK',steps={
  spell('incinerate',29722,all(fire,own(348))),
  spell('bolt',686),
  spell('tap',1454,health('GREATERTHAN',.4)),

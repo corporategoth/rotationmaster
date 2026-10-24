@@ -24,8 +24,8 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local boss={type='CLASSIFICATION',unit='target',value='worldboss'}
 local lust=any(buff(2825),buff(32182),buff(80353),buff(90355))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.combat',revision=4,
- blocks={['mop.rogue.boundaries']=2,['mop.rogue.combat-opener']=1,['mop.rogue.out-of-combat']=2,['mop.rogue.combat-aoe']=1,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1,['mop.rogue.combat-upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.combat',revision=5,
+ blocks={['mop.rogue.boundaries']=3,['mop.rogue.combat-opener']=2,['mop.rogue.out-of-combat']=3,['mop.rogue.combat-aoe']=2,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1,['mop.rogue.combat-upkeep']=1},
  nameKey='Default.MoP.Rogue.Combat.Name',descriptionKey='Default.MoP.Rogue.Combat.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE'},
  tags={'combat','dps','melee','leveling','endgame','wowhead','wowsims'},
@@ -46,7 +46,7 @@ assert(addon:RegisterDefaultRotation({
   spell('rogue-combat-finisher-slice',5171,buffRemain(5171,'LESSTHANOREQUALS',2)),
   spell('rogue-combat-rupture',1943,all(any(negate(mine(1943)),remain(1943,'LESSTHANOREQUALS',2)),negate(own(13877)),any(boss,lifetime('GREATERTHAN',26)))),
   spell('rogue-combat-eviscerate',2098),
-  {id='rogue-combat-pool',type='none',suppress_attack=false,conditions={}},
+  {id='rogue-combat-pool',type='stop',suppress_attack=false,conditions={}},
  }},
  spell('rogue-combat-dying',2098,all(points('GREATERTHANOREQUALS',2),lifetime('LESSTHAN',4))),
  spell('rogue-combat-marked-for-death',137619,points('LESSTHANOREQUALS',0)),

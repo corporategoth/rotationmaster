@@ -10,9 +10,9 @@ local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local noFF=all(negate({type='DEBUFF',unit='target',spell=770,anyrank=true}),negate({type='DEBUFF',unit='target',spell=16857,anyrank=true}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.druid.feral.warcrafttavern.casual',revision=4,
- blocks={['era.druid.boundaries']=3,['era.druid.upkeep']=1,['era.druid.feral-cooldowns']=2,['era.druid.stealth-opener']=1,
-  ['era.druid.cat-builders']=1,['era.druid.bear']=1,['era.druid.bear-pull']=2,['era.druid.feral-humanoid']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.druid.feral.warcrafttavern.casual',revision=5,
+ blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['era.druid.feral-cooldowns']=2,['era.druid.stealth-opener']=2,
+  ['era.druid.cat-builders']=1,['era.druid.bear']=2,['era.druid.bear-pull']=3,['era.druid.feral-humanoid']=2},
  nameKey='Default.Era.Druid.Feral.WarcraftTavernCasual.Name',descriptionKey='Default.Era.Druid.Feral.WarcraftTavernCasual.Description',
  applicability={families={'era'},actionContext='player',class='DRUID'},
  tags={'leveling','endgame','feral','melee','tank','single-target','warcraft-tavern'},
@@ -32,7 +32,7 @@ assert(addon:RegisterDefaultRotation({
      spell('era-feral-wtc-finisher-tigers-fury',5217,negate({type='BUFF',unit='player',spell=5217,anyrank=true})),
      spell('era-feral-wtc-finisher-bite',22568)}},
     ref('era-feral-wtc-builders','era.druid.cat-builders','era-feral-wtc-build-'),
-    {id='era-feral-wtc-wait',type='none',conditions={}}}},
+    {id='era-feral-wtc-wait',type='stop',conditions={}}}},
    {id='era-feral-wtc-bear',type='branch',conditions=any(form(5487),form(9634)),onFalse={},onTrue={ref('era-feral-wtc-bear-section','era.druid.bear','era-feral-wtc-bear-')}},
    ref('era-feral-wtc-humanoid','era.druid.feral-humanoid','era-feral-wtc-'),
   },

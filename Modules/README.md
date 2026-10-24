@@ -99,7 +99,7 @@ Put a class's blocks for an edition in that edition folder's `blocks.lua`, liste
 
 ```lua
 assert(addon:RegisterDefaultBlock({id='shared.preserve-cast',revision=1,families={'era','tbc'},class='ROGUE', -- class optional
- steps={{id='cast',type='none',suppress_attack=true,conditions={type='CASTING',unit='player'}}},
+ steps={{id='cast',type='stop',suppress_attack=true,conditions={type='CASTING',unit='player'}}},
  overrides={{families={'tbc'},steps={...}}}}))  -- optional whole-variant replacements by families and/or specs
 ```
 

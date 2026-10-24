@@ -191,10 +191,10 @@ end)
 -- What "bound" means -----------------------------------------------------------------
 test('binding: Stop, Branch and no-action steps have nothing to check; nothing is judged before a scan',function()
     local c=whole()
-    assert(c.a:GetStepBinding({id='s',type='none',conditions={}})==nil)
+    assert(c.a:GetStepBinding({id='s',type='stop',conditions={}})==nil)
     assert(c.a:GetStepBinding({id='b',type='branch',conditions={},onTrue={},onFalse={}})==nil)
     assert(c.a:GetStepBinding({id='e',type='spell',conditions={}})==nil)
-    local unbound=c.a:ListUnboundSteps({rotation={{id='s',type='none',conditions={}},spell('cl',CL),spell('off',CL,{disabled=true}),spell('lb',LB)},cooldowns={spell('cd',CL)}})
+    local unbound=c.a:ListUnboundSteps({rotation={{id='s',type='stop',conditions={}},spell('cl',CL),spell('off',CL,{disabled=true}),spell('lb',LB)},cooldowns={spell('cd',CL)}})
     assert(#unbound==2 and unbound[1].step.id=='cl' and unbound[2].step.id=='cd' and unbound[2].section=='cooldowns','unbound '..#unbound)
 end)
 

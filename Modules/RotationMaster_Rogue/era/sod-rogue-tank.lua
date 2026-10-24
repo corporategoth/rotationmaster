@@ -23,8 +23,8 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local tanked={type='ISSAME',unit='targettarget',otherunit='player'}
 local instant={8928,8927,8926,6950,6949,6947}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.tank',revision=4,
- blocks={['era.rogue.boundaries']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.tank',revision=5,
+ blocks={['era.rogue.boundaries']=3},
  nameKey='Default.SoD.Rogue.Tank.Name',descriptionKey='Default.SoD.Rogue.Tank.Description',
  applicability={families={'era'},actionContext='player',class='ROGUE',rulesets={'season:2'}},
  tags={'tank','melee','endgame','aoe','season-of-discovery','wowsims','icy-veins','zockify','warcraft-tavern'},
@@ -61,7 +61,7 @@ assert(addon:RegisterDefaultRotation({
  spell('rogue-tank-kill-shot',2098,all(points('GREATERTHANOREQUALS',2),lifetime('LESSTHAN',3))),
  {id='rogue-tank-finisher',type='branch',conditions=points('GREATERTHANOREQUALS',5),onFalse={},onTrue={
   spell('rogue-tank-eviscerate',2098,all(own(400012),own(5171))),
-  {id='rogue-tank-pool',type='none',suppress_attack=false,conditions={}},
+  {id='rogue-tank-pool',type='stop',suppress_attack=false,conditions={}},
  }},
  spell('rogue-tank-poisoned-knife',425012,energy('LESSTHANOREQUALS',30)),
  spell('rogue-tank-saber-slash',424785),

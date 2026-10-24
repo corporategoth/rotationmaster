@@ -18,8 +18,8 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function spell(id,action,conditions,ranked)return{id=id,type='spell',action=action,ranked=ranked or false,conditions=conditions or {}}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.druid.restoration',revision=4,
- blocks={['era.druid.boundaries']=3,['era.druid.upkeep']=1,['era.druid.heal-cooldowns']=1,['era.druid.resto-damage']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.druid.restoration',revision=5,
+ blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['era.druid.heal-cooldowns']=1,['era.druid.resto-damage']=2},
  nameKey='Default.SoD.Druid.Restoration.Name',descriptionKey='Default.SoD.Druid.Restoration.Description',
  applicability={families={'era'},actionContext='player',class='DRUID',rulesets={'season:2'}},
  tags={'season-of-discovery','leveling','endgame','restoration','healer','group','icy-veins','warcraft-tavern'},
@@ -36,7 +36,7 @@ assert(addon:RegisterDefaultRotation({
   },
   rotation={
    ref('sod-resto-boundaries','era.druid.boundaries','sod-resto-'),
-   {id='sod-resto-feral-form',type='none',conditions=any(form(768),form(5487),form(9634))},
+   {id='sod-resto-feral-form',type='stop',conditions=any(form(768),form(5487),form(9634))},
    {id='sod-resto-heal',type='branch',conditions=all({type='FRIENDLY',unit='target'},negate({type='DEAD',unit='target'})),onFalse={},onTrue={
     spell('sod-resto-instant-touch',5185,any(own(17116),{type='BUFF',unit='player',spell=414800,anyrank=true})),
     spell('sod-resto-wild-growth',408120,hurt(.9,2),true),
@@ -48,9 +48,9 @@ assert(addon:RegisterDefaultRotation({
     spell('sod-resto-nourish',408247,hp(.85),true),
     spell('sod-resto-touch-rank4',5188,hp(.85),true),
     spell('sod-resto-touch',5185,hp(.85)),
-    {id='sod-resto-heal-stop',type='none',suppress_attack=true,conditions={}}}},
+    {id='sod-resto-heal-stop',type='stop',suppress_attack=true,conditions={}}}},
    ref('sod-resto-damage','era.druid.resto-damage','sod-resto-enemy-'),
-   {id='sod-resto-stop',type='none',suppress_attack=true,conditions={}},
+   {id='sod-resto-stop',type='stop',suppress_attack=true,conditions={}},
   },
  },
 }))

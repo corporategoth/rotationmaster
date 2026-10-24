@@ -13,7 +13,7 @@ local function known(id)return{type='SPELL_KNOWN',spell=id}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function hp(op,v)return{type='POINT',unit='player',operator=op,value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local INQ,WINGS=84963,31884
 -- Holy Power at its maximum (3, or 5 from 85): a deficit below 1.
@@ -22,8 +22,8 @@ local free=any(buff(90174),buff(105809))
 local inquisition=any(buff(INQ),negate(known(INQ)))
 local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.retribution',revision=3,
- blocks={['mop.paladin.damage-boundaries']=1,['mop.paladin.upkeep']=1,['mop.paladin.seal-truth']=2,['mop.paladin.defensives']=1,['mop.paladin.ret-survival']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.retribution',revision=4,
+ blocks={['mop.paladin.damage-boundaries']=2,['mop.paladin.upkeep']=1,['mop.paladin.seal-truth']=2,['mop.paladin.defensives']=1,['mop.paladin.ret-survival']=1},
  nameKey='Default.MoP.Paladin.Retribution.Name',descriptionKey='Default.MoP.Paladin.Retribution.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN'},
  tags={'retribution','leveling','single-target','aoe','wowsims','hekili','wowhead','icy-veins'},

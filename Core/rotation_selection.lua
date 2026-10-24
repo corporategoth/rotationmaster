@@ -46,7 +46,7 @@ local issueText={
     ['invalid-field-value']=L['has an invalid setting (%s)'],
     ['empty-item-list']=L['has no items'],
     ['assisted-in-optional-list']=L["uses Blizzard's suggestion, which only works in the rotation list"],
-    ['unknown-action-type']=L['has an action type this version does not understand'],
+    ['unknown-action-type']=L['has an action type this version does not understand (%s)'],
     ['unexpected-assisted-action']=L['has a setting this version does not understand (%s)'],
     ['unexpected-stop-option']=L['has a setting this version does not understand (%s)'],
     ['invalid-priority']=L['has an invalid switch priority'],
@@ -80,7 +80,7 @@ end
 local function stepName(step)
     if type(step)~='table' then return nil end
     if type(step.name)=='string' and step.name:find('%S') then return step.name end
-    if step.type=='branch' then return L['Branch'] elseif step.type=='none' then return L['Stop']
+    if step.type=='branch' then return L['Branch'] elseif step.type=='stop' then return L['Stop']
     elseif step.type=='assisted' then return L["Blizzard's suggestion"] elseif step.type=='item' then return L['Item'] end
     if (step.type=='spell' or step.type=='pet' or step.type=='any') and type(step.action)=='number' then
         local info=addon.Platform and addon.Platform.GetSpellInfo and addon.Platform:GetSpellInfo(step.action)
@@ -125,6 +125,10 @@ function addon:DescribeRotationIssue(problem,body)
             local condition=body and valueAt(body,(problem.path or ''):gsub('%.type$',''))
             local definition=type(condition)=='table' and self.conditionDefinitions and self.conditionDefinitions[condition.type]
             field=type(definition)=='table' and type(definition.description)=='string' and definition.description or type(condition)=='table' and tostring(condition.type) or field
+        elseif problem.code=='unknown-action-type' then
+            -- Name the saved type ("none", the Stop step's former name, reads as unknown now).
+            local kind=body and valueAt(body,problem.path)
+            field=type(kind)=='string' and kind or field
         end
         what=template and string.format(template,field) or string.format(L['has a problem (%s)'],tostring(problem.code))
     end

@@ -5,8 +5,8 @@
 local _,addon=...
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.unholy',revision=3,
- blocks={['retail.deathknight.boundaries']=2,['retail.deathknight.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.unholy',revision=4,
+ blocks={['retail.deathknight.boundaries']=3,['retail.deathknight.utility']=2},
  nameKey='Default.Retail.DeathKnight.Unholy.Name',descriptionKey='Default.Retail.DeathKnight.Unholy.Description',
  applicability={families={'retail'},actionContext='player',class='DEATHKNIGHT'},
  tags={'unholy','melee','pet','assisted-combat'},

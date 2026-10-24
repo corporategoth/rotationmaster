@@ -17,8 +17,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local tanking={type='THREAT',unit='target',threat=3}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.protection',revision=4,
- blocks={['mop.paladin.damage-boundaries']=1,['mop.paladin.upkeep']=1,['mop.paladin.seal-insight']=2,['mop.paladin.prot-upkeep']=1,['mop.paladin.prot-open']=3,['mop.paladin.prot-aoe']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.protection',revision=5,
+ blocks={['mop.paladin.damage-boundaries']=2,['mop.paladin.upkeep']=1,['mop.paladin.seal-insight']=2,['mop.paladin.prot-upkeep']=1,['mop.paladin.prot-open']=4,['mop.paladin.prot-aoe']=2},
  nameKey='Default.MoP.Paladin.Protection.Name',descriptionKey='Default.MoP.Paladin.Protection.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN'},
  tags={'protection','tank','leveling','single-target','aoe','icy-veins','hekili'},

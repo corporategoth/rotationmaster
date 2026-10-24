@@ -11,8 +11,8 @@ local function rune(kind,n)return{type='RUNE',rune=kind,operator='EQUALS',value=
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.deathknight.frost',revision=3,
- blocks={['mop.deathknight.boundaries']=2,['mop.deathknight.upkeep']=1,['mop.deathknight.frost-upkeep']=2,['mop.deathknight.frost-open']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.deathknight.frost',revision=4,
+ blocks={['mop.deathknight.boundaries']=3,['mop.deathknight.upkeep']=1,['mop.deathknight.frost-upkeep']=2,['mop.deathknight.frost-open']=2,
   ['mop.deathknight.frost-tail']=1,['mop.deathknight.survival']=1,['mop.deathknight.spread']=1},
  nameKey='Default.MoP.DeathKnight.Frost.Name',descriptionKey='Default.MoP.DeathKnight.Frost.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DEATHKNIGHT'},

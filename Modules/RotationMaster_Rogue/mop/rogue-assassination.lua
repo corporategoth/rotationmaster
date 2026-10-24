@@ -34,8 +34,8 @@ local dying=all(points('GREATERTHANOREQUALS',2),lifetime('LESSTHAN',4))
 local four1,four2=spend('rogue-assassination-four',fourPoint)
 local dying1,dying2=spend('rogue-assassination-dying',dying)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.assassination',revision=4,
- blocks={['mop.rogue.boundaries']=2,['mop.rogue.assassination-opener']=2,['mop.rogue.out-of-combat']=2,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.assassination',revision=5,
+ blocks={['mop.rogue.boundaries']=3,['mop.rogue.assassination-opener']=3,['mop.rogue.out-of-combat']=3,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1},
  nameKey='Default.MoP.Rogue.Assassination.Name',descriptionKey='Default.MoP.Rogue.Assassination.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE'},
  tags={'assassination','dps','melee','leveling','endgame','wowsims','wowhead','icy-veins'},
@@ -61,7 +61,7 @@ assert(addon:RegisterDefaultRotation({
   {id='rogue-assassination-aoe-spend',type='branch',conditions=any(points('GREATERTHANOREQUALS',5),all(points('GREATERTHANOREQUALS',2),buffRemain(5171,'LESSTHAN',3))),onFalse={},onTrue={
    spell('rogue-assassination-aoe-envenom',32645),spell('rogue-assassination-aoe-eviscerate',2098)}},
   spell('rogue-assassination-fan',51723),
-  {id='rogue-assassination-aoe-stop',type='none',suppress_attack=false,conditions={}},
+  {id='rogue-assassination-aoe-stop',type='stop',suppress_attack=false,conditions={}},
  }},
  spell('rogue-assassination-slice',5171,any(all(points('GREATERTHANOREQUALS',1),negate(sliced)),
   all({type='LEVEL',unit='player',operator='LESSTHAN',value=60},points('GREATERTHANOREQUALS',2),buffRemain(5171,'LESSTHAN',2)))),

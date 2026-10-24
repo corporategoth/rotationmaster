@@ -13,8 +13,8 @@ local function hot(id)return{type='BUFF',unit='target',spell=id,anyrank=true,own
 local function hurt(v)return{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=v}end
 local function combat()return{type='COMBAT',unit='player'}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.druid.restoration',revision=3,
- blocks={['tbc.druid.boundaries']=3,['tbc.druid.feral-form-stop']=2,['tbc.druid.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.druid.restoration',revision=4,
+ blocks={['tbc.druid.boundaries']=4,['tbc.druid.feral-form-stop']=3,['tbc.druid.upkeep']=1},
  nameKey='Default.TBC.Druid.Restoration.Name',descriptionKey='Default.TBC.Druid.Restoration.Description',
  applicability={families={'tbc'},actionContext='player',class='DRUID'},
  tags={'leveling','endgame','restoration','healer','icy-veins','wowhead','warcraft-tavern'},
@@ -38,7 +38,7 @@ assert(addon:RegisterDefaultRotation({
     {id='resto-moonfire',type='spell',action=8921,ranked=false,conditions=negate({type='DEBUFF',unit='target',spell=8921,anyrank=true,owndebuff=true})},
     {id='resto-wrath',type='spell',action=5176,ranked=false,conditions=negate({type='MOVING'})},
    },onFalse={
-    {id='resto-enemy',type='none',suppress_attack=true,conditions={type='ENEMY',unit='target'}},
+    {id='resto-enemy',type='stop',suppress_attack=true,conditions={type='ENEMY',unit='target'}},
     {id='resto-swift-touch',type='spell',action=5185,ranked=false,conditions=own(17116)},
     {id='resto-swiftmend',type='spell',action=18562,ranked=false,conditions=all(hurt(0.4),any(hot(774),hot(8936)))},
     {id='resto-lifebloom',type='spell',action=33763,ranked=false,conditions=all(combat(),{type='FRIENDLY',unit='target'},
@@ -51,7 +51,7 @@ assert(addon:RegisterDefaultRotation({
      {id='resto-touch',type='spell',action=5185,ranked=false,conditions=hurt(0.5)},
      {id='resto-regrowth',type='spell',action=8936,ranked=false,conditions=hurt(0.7)},
     }},
-    {id='resto-heal-stop',type='none',suppress_attack=true,conditions={}},
+    {id='resto-heal-stop',type='stop',suppress_attack=true,conditions={}},
    }},
   },
  },

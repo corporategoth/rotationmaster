@@ -15,13 +15,13 @@ local function refresh(id)return any(negate(own(id)),{type='DEBUFF_REMAIN',unit=
 local function pct(kind,op,v)return{type=kind,unit='player',operator=op,value=v}end
 local function destruction(op)return{type='TALENT_TREE_POINTS',tree=3,operator=op,value=31}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or {}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or {}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='warlock-iv-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.warlock.dps.icyveins',revision=3,
- blocks={['tbc.warlock.boundaries']=2,['tbc.warlock.procs']=1,['tbc.warlock.moving']=1,['tbc.warlock.curse']=2,['tbc.warlock.aoe']=1,
-  ['tbc.warlock.finishers']=1,['tbc.warlock.filler']=1,['tbc.warlock.armor']=1,['tbc.warlock.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.warlock.dps.icyveins',revision=4,
+ blocks={['tbc.warlock.boundaries']=3,['tbc.warlock.procs']=1,['tbc.warlock.moving']=2,['tbc.warlock.curse']=2,['tbc.warlock.aoe']=1,
+  ['tbc.warlock.finishers']=1,['tbc.warlock.filler']=2,['tbc.warlock.armor']=1,['tbc.warlock.upkeep']=1},
  nameKey='Default.TBC.Warlock.DpsIcyVeins.Name',descriptionKey='Default.TBC.Warlock.DpsIcyVeins.Description',
  applicability={families={'tbc'},actionContext='player',class='WARLOCK'},
  tags={'affliction','demonology','destruction','icy-veins','leveling','raid','single-target','aoe'},

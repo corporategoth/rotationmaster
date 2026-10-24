@@ -11,8 +11,8 @@ local function hurt()return{type='HEALTHPCT',unit='player',operator='LESSTHAN',v
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.monk.unspecialized',revision=3,
- blocks={['mop.monk.boundaries']=2,['mop.monk.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.monk.unspecialized',revision=4,
+ blocks={['mop.monk.boundaries']=3,['mop.monk.upkeep']=1},
  nameKey='Default.MoP.Monk.Unspecialized.Name',descriptionKey='Default.MoP.Monk.Unspecialized.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK'},
  tags={'leveling','single-target'},

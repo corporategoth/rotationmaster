@@ -52,6 +52,9 @@ test('diagnostic: keeps at most five reports, and shows the newest on request',f
     assert(#saved==5,'reports not capped: '..#saved)
     c.shown=nil;c.a:HandleDebugCommand('glow show');assert(c.shown==table.concat(saved[5].lines,'\n'),'show did not open the newest report')
     c.a:HandleDebugCommand('nonsense');assert(c.printed[#c.printed]:find('Usage: /rm debug glow'),'usage not printed')
+    local reports=0;c.a.ShowLuaEditorInputReport=function() reports=reports+1 end
+    c.a:HandleDebugCommand(' editor');assert(reports==1,'/rm debug editor did not open the Lua input report')
+    assert(c.printed[#c.printed]:find('/rm debug editor',1,true),'usage does not name /rm debug editor')
 end)
 
 test('diagnostic: names the first read error when the scan indexes nothing',function()

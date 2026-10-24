@@ -512,7 +512,7 @@ function addon:validate_rotation(prefix, id, rotation, fix)
     local cooldown_template = addon.Functions.collections.deepcopy(rotation_template)
 
     local function augment_template_type(template, rot)
-        if rot.type=="none" then template.suppress_attack=false end
+        if rot.type=="stop" then template.suppress_attack=false end
         if rot.type=="spell" or rot.type=="pet" or rot.type=="any" or rot.type=="petspell" or rot.type=="anyspell" then
             template["action"] = 1234
         elseif rot["type"] == "item" then

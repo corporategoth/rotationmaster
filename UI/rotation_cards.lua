@@ -95,7 +95,7 @@ function addon:CreateRotationCard(parent)
         self.model=model;frame:ClearAllPoints();frame:SetPoint('TOPLEFT',parent,'TOPLEFT',model.x,-model.y);frame:SetSize(model.width,model.height)
         self:SetValidation(model.invalid)
         local step=model.step;local branch=step.type=='branch';local normal=not model.compact and not model.expanded
-        local action=branch and L['Click to add branch name'] or step.type=='none' and L['Stop'] or step.type=='assisted' and L["Blizzard's suggestion"] or
+        local action=branch and L['Click to add branch name'] or step.type=='stop' and L['Stop'] or step.type=='assisted' and L["Blizzard's suggestion"] or
             (step.type=='spell' or step.type=='pet' or step.type=='any') and addon:SpellLabel(step.action) or L['Item']
         self.defaultTitle=branch and model.compact and addon:DescribeCardCondition(step.conditions or {},self.spec) or action
         if not branch then local info=addon.Platform and addon.Platform:GetSpellInfo(step.action);if info and (step.type=='spell' or step.type=='pet' or step.type=='any') then self.defaultTitle=info.name end end
@@ -110,7 +110,7 @@ function addon:CreateRotationCard(parent)
         self.action:SetText(action);self.action:SetWidth(math.max(256,model.width-84));addon:AlignWorkbenchTextLeft(self.action,3)
         -- The not-on-your-bars row sits under the action and pushes the
         -- conditions down by the height the layout added for it.
-        local unboundRow=model.unbound~=nil and not branch and normal and step.type~='none'
+        local unboundRow=model.unbound~=nil and not branch and normal and step.type~='stop'
         local shift=unboundRow and (addon.RotationCardNoticeHeight or 30) or 0
         self.condition:ClearAllPoints();self.condition:SetPoint('TOPLEFT',26,branch and -28 or -46-shift)
         self.condition:SetText(addon:PlainWorkbenchName(model.pendingProblem and string.format(L['Incomplete input: %s'],model.pendingProblem) or addon:DescribeCardCondition(step.conditions or {},self.spec)))
@@ -163,7 +163,7 @@ function addon:CreateRotationCard(parent)
     end
     function card:PlaceUnbound(model,row,pillWidth,branch)
         local warning=self.unbound
-        if model.unbound==nil or branch or model.step.type=='none' then warning:Hide();return end
+        if model.unbound==nil or branch or model.step.type=='stop' then warning:Hide();return end
         warning.tooltip=unboundTooltip(model);warning:ClearAllPoints()
         if row then
             local left=model.section=='cooldowns' and 68 or 26

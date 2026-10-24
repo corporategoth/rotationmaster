@@ -12,8 +12,8 @@ local function points(op,n)return{type='POINT',unit='player',operator=op,value=n
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.unspecialized',revision=3,
- blocks={['mop.rogue.boundaries']=2,['mop.rogue.out-of-combat']=2,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.unspecialized',revision=4,
+ blocks={['mop.rogue.boundaries']=3,['mop.rogue.out-of-combat']=3,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1},
  nameKey='Default.MoP.Rogue.Unspecialized.Name',descriptionKey='Default.MoP.Rogue.Unspecialized.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE'},
  tags={'dps','melee','leveling','warcraft-tavern','icy-veins'},
@@ -27,7 +27,7 @@ assert(addon:RegisterDefaultRotation({
   spell('rogue-starter-cheap-shot',1833,negate({type='GROUP'})),
   spell('rogue-starter-ambush',8676),
   spell('rogue-starter-stealth-sinister',1752),
-  {id='rogue-starter-stealth-stop',type='none',suppress_attack=true,conditions={}},
+  {id='rogue-starter-stealth-stop',type='stop',suppress_attack=true,conditions={}},
  }},
  block('mop.rogue.out-of-combat','rogue-'),
  spell('rogue-starter-slice',5171,all(points('GREATERTHANOREQUALS',2),negate({type='BUFF',unit='player',spell=5171,ownbuff=true}))),

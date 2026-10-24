@@ -207,7 +207,7 @@ test('step: a rotation gated on the condition, and the condition under NOT, use 
     custom(a,'gated',{name='Gated',priority=0,cooldowns={},rotation={
         {id='shock',type='spell',action=8042,conditions={type='ASSISTED_SUGGESTION',spell=8042}},
         {id='bolt',type='spell',action=403,conditions={type='NOT',value={type='ASSISTED_SUGGESTION'}}},
-        {id='stop',type='none',conditions={}}}})
+        {id='stop',type='stop',conditions={}}}})
     select(c,a,'Gated');assert(a.currentSpell==8042,'gated step '..tostring(a.currentSpell))
     state.next=nil;c.tick();assert(a.currentSpell==403,'NOT with nothing suggested '..tostring(a.currentSpell))
     state.next=324;c.tick();assert(a.currentSpell==nil,'other suggestion should stop: '..tostring(a.currentSpell))

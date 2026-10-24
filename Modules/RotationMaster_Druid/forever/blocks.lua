@@ -13,9 +13,9 @@ local function buff(id)return{type='BUFF',unit='player',spell=id,anyrank=true}en
 local function dot(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 -- Casts and channels (Starfire, Hurricane, Tranquility, Healing Touch) and travel forms end advice.
-assert(addon:RegisterDefaultBlock({id='forever.druid.boundaries',revision=2,families={'forever'},class='DRUID',steps={
+assert(addon:RegisterDefaultBlock({id='forever.druid.boundaries',revision=3,families={'forever'},class='DRUID',steps={
  stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},aura(783),aura(1066))),
 }}))
 -- Out of combat: Mark of the Wild unless Mark or Gift is up; Thorns on yourself while solo
@@ -32,7 +32,7 @@ assert(addon:RegisterDefaultBlock({id='forever.druid.dots',revision=2,families={
  spell('insect-swarm',5570,negate(dot(5570))),
 }}))
 -- A healer's spare-time damage on a hostile target: the DoTs, then Wrath; nothing else.
-assert(addon:RegisterDefaultBlock({id='forever.druid.spare-damage',revision=1,families={'forever'},class='DRUID',steps={
+assert(addon:RegisterDefaultBlock({id='forever.druid.spare-damage',revision=2,families={'forever'},class='DRUID',steps={
  {id='dots',type='block',block='forever.druid.dots',prefix='spare-'},
  spell('wrath',5176),
  stop('done'),

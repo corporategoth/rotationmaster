@@ -17,8 +17,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local function far(n)return negate({type='DISTANCE',unit='target',value=n})end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.priest.shadow',revision=4,
- blocks={['mop.priest.upkeep']=1,['mop.priest.shadow-shell']=4,['mop.priest.shadow-cooldowns']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.priest.shadow',revision=5,
+ blocks={['mop.priest.upkeep']=1,['mop.priest.shadow-shell']=5,['mop.priest.shadow-cooldowns']=2},
  nameKey='Default.MoP.Priest.Shadow.Name',descriptionKey='Default.MoP.Priest.Shadow.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PRIEST'},
  tags={'shadow','dps','caster','leveling','endgame','wowsims','icy-veins','method','wowtbc'},
@@ -45,6 +45,6 @@ assert(addon:RegisterDefaultRotation({
  spell('priest-shadow-divine-star',110744,{type='DISTANCE',unit='target',value=24}),
  {id='priest-shadow-sear',type='spell',action=48045,ranked=false,disabled=true,conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3}},
  spell('priest-shadow-flay',15407),
- {id='priest-shadow-end',type='none',suppress_attack=true,conditions={}},
+ {id='priest-shadow-end',type='stop',suppress_attack=true,conditions={}},
  }},
 }))

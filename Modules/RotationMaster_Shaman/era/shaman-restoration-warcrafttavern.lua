@@ -11,8 +11,8 @@ local function target(op,v)return{type='HEALTHPCT',unit='target',operator=op,val
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.shaman.restoration.warcrafttavern',revision=3,
- blocks={['era.shaman.manual']=2,['era.shaman.cures']=1,['era.shaman.healer-damage']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.shaman.restoration.warcrafttavern',revision=4,
+ blocks={['era.shaman.manual']=3,['era.shaman.cures']=1,['era.shaman.healer-damage']=2},
  nameKey='Default.Era.Shaman.Restoration.WarcraftTavern.Name',descriptionKey='Default.Era.Shaman.Restoration.WarcraftTavern.Description',
  applicability={families={'era'},actionContext='player',class='SHAMAN'},
  tags={'healer','endgame','warcraft-tavern'},
@@ -30,7 +30,7 @@ assert(addon:RegisterDefaultRotation({
   block('era.shaman.cures','resto-wt-'),
   spell('resto-wt-chain-heal',1064,target('LESSTHAN',.9)),
   {id='resto-wt-tank-wave',type='spell',action=331,ranked=false,disabled=true,conditions=target('LESSTHAN',.9)},
-  {id='resto-wt-heal-stop',type='none',suppress_attack=true,conditions={}},
+  {id='resto-wt-heal-stop',type='stop',suppress_attack=true,conditions={}},
  },onFalse={block('era.shaman.healer-damage','resto-wt-')}},
  }},
 }))

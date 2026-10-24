@@ -12,8 +12,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.outlaw',revision=3,
- blocks={['retail.rogue.boundaries']=1,['retail.rogue.upkeep']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.outlaw',revision=4,
+ blocks={['retail.rogue.boundaries']=2,['retail.rogue.upkeep']=2},
  nameKey='Default.Retail.Rogue.Outlaw.Name',descriptionKey='Default.Retail.Rogue.Outlaw.Description',
  applicability={families={'retail'},actionContext='player',class='ROGUE'},
  tags={'outlaw','melee','assisted-combat','single-target','aoe','simulationcraft'},

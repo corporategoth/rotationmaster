@@ -21,8 +21,8 @@ local spread=any({type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',va
 local storm=any(all({type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2},holyPower('GREATERTHANOREQUALS',3)),own(326733))
 local capped=all(holyPower('GREATERTHANOREQUALS',5),negate({type='SPELL_AVAIL',spell=255937}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.retribution.icyveins',revision=4,
- blocks={['retail.paladin.boundaries']=1,['retail.paladin.upkeep']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.retribution.icyveins',revision=5,
+ blocks={['retail.paladin.boundaries']=2,['retail.paladin.upkeep']=2},
  nameKey='Default.Retail.Paladin.Retribution.IcyVeins.Name',descriptionKey='Default.Retail.Paladin.Retribution.IcyVeins.Description',
  applicability={families={'retail'},actionContext='player',class='PALADIN'},
  tags={'retribution','melee','reference','single-target','aoe','icy-veins','simulationcraft','wowhead'},

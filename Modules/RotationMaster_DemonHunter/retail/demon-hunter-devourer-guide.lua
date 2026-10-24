@@ -13,8 +13,8 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local soulburst=buff(1297433)
 local metaReady={type='BUFF_STACKS',unit='player',spell=1225789,ownbuff=true,operator='GREATERTHANOREQUALS',value=50}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.devourer.guide',revision=3,
- blocks={['retail.demonhunter.boundaries']=2,['retail.demonhunter.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.devourer.guide',revision=4,
+ blocks={['retail.demonhunter.boundaries']=3,['retail.demonhunter.utility']=2},
  nameKey='Default.Retail.DemonHunter.DevourerGuide.Name',descriptionKey='Default.Retail.DemonHunter.DevourerGuide.Description',
  applicability={families={'retail'},actionContext='player',class='DEMONHUNTER'},
  tags={'devourer','ranged','reference','icy-veins'},

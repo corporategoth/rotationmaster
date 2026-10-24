@@ -21,8 +21,8 @@ local debuff={type='DEBUFF',unit='target',spell=130320,owndebuff=true}
 local capped=negate(chi('GREATERTHANOREQUALS',-1))
 local fists=all(negate({type='MOVING'}),energy('LESSTHANOREQUALS',50))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.monk.windwalker.simc',revision=4,
- blocks={['mop.monk.boundaries']=2,['mop.monk.upkeep']=1,['mop.monk.windwalker-upkeep']=2,['mop.monk.windwalker-open']=2,['mop.monk.windwalker-tail']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.monk.windwalker.simc',revision=5,
+ blocks={['mop.monk.boundaries']=3,['mop.monk.upkeep']=1,['mop.monk.windwalker-upkeep']=2,['mop.monk.windwalker-open']=3,['mop.monk.windwalker-tail']=1},
  nameKey='Default.MoP.Monk.Windwalker.Simc.Name',descriptionKey='Default.MoP.Monk.Windwalker.Simc.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK'},
  tags={'windwalker','single-target','aoe','simulationcraft','hekili','maxdps'},
@@ -50,7 +50,7 @@ assert(addon:RegisterDefaultRotation({
     spell('wwsc-aoe-chi-burst',123986),
     spell('wwsc-aoe-rising-sun',RSK,capped),
     spell('wwsc-aoe-crane-kick',101546,negate({type='TALENT',layout='grid',value=16})),
-    {id='wwsc-aoe-pool',type='none',conditions=energy('LESSTHAN',60)}}},
+    {id='wwsc-aoe-pool',type='stop',conditions=energy('LESSTHAN',60)}}},
    spell('wwsc-fists-in-brew',113656,all(own(TEB),fists)),
    spell('wwsc-rising-sun-kick',RSK),
    spell('wwsc-fists-of-fury',113656,all(fists,negate(own(115288)),remain(125359,'GREATERTHAN',4),any(own(TEB),stacks('GREATERTHANOREQUALS',15),negate({type='SPELL_KNOWN',spell=TEB})))),

@@ -18,8 +18,8 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local solo=negate({type='GROUP'})
 local big=any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.shaman.restoration',revision=2,
- blocks={['era.shaman.manual']=2,['era.shaman.cures']=1,['era.shaman.healer-damage']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.shaman.restoration',revision=3,
+ blocks={['era.shaman.manual']=3,['era.shaman.cures']=1,['era.shaman.healer-damage']=2},
  nameKey='Default.Era.Shaman.Restoration.Name',descriptionKey='Default.Era.Shaman.Restoration.Description',
  applicability={families={'era'},actionContext='player',class='SHAMAN'},
  tags={'healer','leveling','endgame','icy-veins','wowhead'},
@@ -46,7 +46,7 @@ assert(addon:RegisterDefaultRotation({
    any(negate({type='BUFF',unit='target',spell=29203}),{type='BUFF_STACKS',unit='target',spell=29203,operator='LESSTHAN',value=3}))},
   spell('resto-chain-heal',1064,{type='PROXIMITY_HEALTHPCT_COUNT',unit='player',distance=40,healthoperator='LESSTHAN',health=.85,operator='GREATERTHANOREQUALS',value=3}),
   spell('resto-healing-wave',331,target('LESSTHAN',.9)),
-  {id='resto-heal-stop',type='none',suppress_attack=true,conditions={}},
+  {id='resto-heal-stop',type='stop',suppress_attack=true,conditions={}},
  },onFalse={block('era.shaman.healer-damage','resto-')}},
  }},
 }))

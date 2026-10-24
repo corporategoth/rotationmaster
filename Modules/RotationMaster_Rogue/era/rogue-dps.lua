@@ -19,8 +19,8 @@ local sliced={type='BUFF',unit='player',spell=5171,anyrank=true,ownbuff=true}
 local lasting=any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'},
  {type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.2})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.rogue.dps',revision=3,
- blocks={['era.rogue.boundaries']=2,['era.rogue.opener']=2,['era.rogue.upkeep']=2,['era.rogue.builders']=2,['era.rogue.expose-armor']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.rogue.dps',revision=4,
+ blocks={['era.rogue.boundaries']=3,['era.rogue.opener']=3,['era.rogue.upkeep']=2,['era.rogue.builders']=2,['era.rogue.expose-armor']=2},
  nameKey='Default.Era.Rogue.DPS.Name',descriptionKey='Default.Era.Rogue.DPS.Description',
  applicability={families={'era'},actionContext='player',class='ROGUE'},
  tags={'dps','melee','leveling','endgame','wowsims','icy-veins','wowhead'},
@@ -42,7 +42,7 @@ assert(addon:RegisterDefaultRotation({
  spell('rogue-kill-shot',2098,all(points(2),lifetime('LESSTHAN',4))),
  {id='rogue-finisher',type='branch',conditions=points(5),onFalse={},onTrue={
   spell('rogue-eviscerate',2098),
-  {id='rogue-pool',type='none',suppress_attack=false,conditions={}},
+  {id='rogue-pool',type='stop',suppress_attack=false,conditions={}},
  }},
  {id='rogue-kidney-shot',type='spell',action=408,ranked=false,disabled=true,conditions=all(negate({type='GROUP'}),points(3),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.4})},
  block('era.rogue.builders','rogue-'),

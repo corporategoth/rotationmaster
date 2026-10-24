@@ -103,7 +103,7 @@ test('explicit repair preserves supported Boolean labels and Stop suppression',f
     local f=F.new();f.load('Core/conditions.lua');f.load('Core/condition_catalog.lua');f.load('UI/condition_entrypoints.lua');f.load('validate.lua')
     f.addon.warn=function() end
     local body={name='Fixture',switch={type='AND',name='Opening checks',value={}},cooldowns={},rotation={
-        {id='00000000-0000-0000-0000-000000000001',type='none',suppress_attack=true,conditions={type='NOT',name='Combat boundary',value={}}}}}
+        {id='00000000-0000-0000-0000-000000000001',type='stop',suppress_attack=true,conditions={type='NOT',name='Combat boundary',value={}}}}}
     f.addon:validate_rotation('Fixture',f.env.DEFAULT,body,true)
     assert(body.switch.name=='Opening checks' and body.rotation[1].suppress_attack==true and body.rotation[1].conditions.name=='Combat boundary')
 end)
@@ -132,7 +132,7 @@ test('legacy repair preserves nested branch data and refuses destructive repair 
     local f=F.new();f.load('Data/plain.lua');f.load('Data/tags.lua');f.load('Data/rotation_tree.lua');f.load('Data/validation.lua');f.load('Core/conditions.lua');f.load('Core/condition_catalog.lua');f.load('UI/condition_entrypoints.lua');f.load('validate.lua')
     f.addon.warn=function() end
     local body={name='Branch fixture',switch={},cooldowns={},rotation={{id='branch',type='branch',mode='true',name='Combat',conditions={},
-        onTrue={{id='yes',type='spell',action=403,conditions={}}},onFalse={{id='no',type='none',conditions={},suppress_attack=true}}}}}
+        onTrue={{id='yes',type='spell',action=403,conditions={}}},onFalse={{id='no',type='stop',conditions={},suppress_attack=true}}}}}
     f.addon:validate_rotation('Fixture',f.env.DEFAULT,body,true)
     assert(body.rotation[1] and body.rotation[1].mode=='true' and body.rotation[1].onTrue[1].action==403 and body.rotation[1].onFalse[1].suppress_attack)
     body.rotation[1].future={coefficient=42};f.addon:validate_rotation('Fixture',f.env.DEFAULT,body,true)

@@ -347,11 +347,11 @@ local function validate(envelope, options, bodyOnly)
                     -- evaluation time, so the step names none. Rotation list only.
                     if step.action ~= nil then issue("unexpected-assisted-action", where..".action", "warning", "unsupported") end
                     if row.section ~= "rotation" then issue("assisted-in-optional-list", where..".type", "warning", "unsupported") end
-                elseif step.type ~= "none" then issue("unknown-action-type", where..".type", "warning", "unsupported") end
+                elseif step.type ~= "stop" then issue("unknown-action-type", where..".type", "warning", "unsupported") end
             end
             for _,flag in ipairs({"ranked","use_name","disabled"}) do optionalType(step[flag],"boolean",where.."."..flag) end
             optionalType(step.suppress_attack,"boolean",where..".suppress_attack")
-            if step.suppress_attack~=nil and step.type~="none" then issue("unexpected-stop-option",where..".suppress_attack","warning","unsupported") end
+            if step.suppress_attack~=nil and step.type~="stop" then issue("unexpected-stop-option",where..".suppress_attack","warning","unsupported") end
             for _,label in ipairs({"name","effect","setpoint","announce","announce_sound"}) do optionalType(step[label],"string",where.."."..label) end
             for _,number in ipairs({"magnification","xoffs","yoffs"}) do optionalType(step[number],"number",where.."."..number) end
             if step.effect and not (options.effects and options.effects[step.effect]) then issue("missing-effect",where..".effect","warning","unresolved") end

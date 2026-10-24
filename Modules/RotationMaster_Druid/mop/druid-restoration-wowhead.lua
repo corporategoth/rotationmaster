@@ -12,12 +12,12 @@ local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
 local function hot(id)return{type='BUFF',unit='target',spell=id,ownbuff=true}end
 local function hurt(v)return{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local still=negate({type='MOVING'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.druid.restoration.wowhead',revision=3,
- blocks={['mop.druid.boundaries']=3,['mop.druid.mark']=1,['mop.druid.healer-upkeep']=1,['mop.druid.healer-open']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.druid.restoration.wowhead',revision=4,
+ blocks={['mop.druid.boundaries']=4,['mop.druid.mark']=1,['mop.druid.healer-upkeep']=1,['mop.druid.healer-open']=3},
  nameKey='Default.MoP.Druid.Restoration.Wowhead.Name',descriptionKey='Default.MoP.Druid.Restoration.Wowhead.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID'},
  tags={'restoration','healer','tank-healing','wowhead'},

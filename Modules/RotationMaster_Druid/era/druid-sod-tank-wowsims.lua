@@ -14,8 +14,8 @@ local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name
 local function spell(id,action,conditions,ranked)return{id=id,type='spell',action=action,ranked=ranked or false,conditions=conditions or {}}end
 local rake={type='DEBUFF',unit='target',spell=1822,anyrank=true,owndebuff=true}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.druid.tank.wowsims',revision=4,
- blocks={['era.druid.boundaries']=3,['era.druid.upkeep']=1,['sod.druid.maul']=2,['sod.druid.tank-cooldowns']=2,['sod.druid.bear']=1,['sod.druid.tank-humanoid']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.druid.tank.wowsims',revision=5,
+ blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['sod.druid.maul']=2,['sod.druid.tank-cooldowns']=2,['sod.druid.bear']=2,['sod.druid.tank-humanoid']=2},
  nameKey='Default.SoD.Druid.Tank.Wowsims.Name',descriptionKey='Default.SoD.Druid.Tank.Wowsims.Description',
  applicability={families={'era'},actionContext='player',class='DRUID',rulesets={'season:2'}},
  tags={'season-of-discovery','endgame','feral','tank','melee','single-target','wowsims'},
@@ -27,14 +27,14 @@ assert(addon:RegisterDefaultRotation({
   rotation={
    ref('sod-tank-ws-boundaries','era.druid.boundaries','sod-tank-ws-'),
    {id='sod-tank-ws-cat',type='branch',conditions=form(768),onFalse={},onTrue={
-    {id='sod-tank-ws-cat-no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
+    {id='sod-tank-ws-cat-no-target',type='stop',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
     spell('sod-tank-ws-savage-roar',407988,all(negate(own(407988)),cp('GREATERTHANOREQUALS',2))),
     spell('sod-tank-ws-tigers-fury',417045,negate(rake),true),
     spell('sod-tank-ws-mangle',407993,all(known(407988),negate(own(407988)),cp('LESSTHAN',2)),true),
     spell('sod-tank-ws-rake',1822,negate(rake)),
     spell('sod-tank-ws-cat-dire-bear-form',9634),
     spell('sod-tank-ws-cat-bear-form',5487),
-    {id='sod-tank-ws-cat-wait',type='none',conditions={}}}},
+    {id='sod-tank-ws-cat-wait',type='stop',conditions={}}}},
    {id='sod-tank-ws-bear',type='branch',conditions=any(form(5487),form(9634)),onFalse={},onTrue={
     spell('sod-tank-ws-cat-form',768,all(known(407988),{type='ATTACKABLE',unit='target'},negate(rake))),
     ref('sod-tank-ws-bear-section','sod.druid.bear','sod-tank-ws-bear-')}},

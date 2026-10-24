@@ -12,10 +12,10 @@ local function own(id,unit)return{type='BUFF',unit=unit or'player',spell=id,anyr
 local function known(id)return{type='SPELL_KNOWN',spell=id}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function remain(id)return{type='BUFF_REMAIN',unit='player',spell=id,anyrank=true,ownbuff=true,operator='GREATERTHANOREQUALS',value=3}end
 local friendly={type='FRIENDLY',unit='target'}
-assert(addon:RegisterDefaultBlock({id='forever.paladin.boundaries',revision=2,families={'forever'},class='PALADIN',steps={
+assert(addon:RegisterDefaultBlock({id='forever.paladin.boundaries',revision=3,families={'forever'},class='PALADIN',steps={
  stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})),
 }}))
 -- No aura of yours: Retribution Aura once learned, else Devotion. No Blessing of yours on you:

@@ -13,12 +13,12 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function own(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
 local function due(id,n)return any(negate(own(id)),{type='DEBUFF_REMAIN',unit='target',spell=id,anyrank=true,owndebuff=true,operator='LESSTHAN',value=n})end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or {}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local curses={980,603,1490,17862,704,1714,702,18223}
 local others={type='OR',value={}};for i,id in ipairs(curses)do if id~=980 then others.value[#others.value+1]=own(id)end end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.shadow.wowsims',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.shadow.wowsims',revision=5,
  blocks={['era.warlock.armor']=1,['era.warlock.pets']=1,['era.warlock.safety']=1},
  nameKey='Default.SoD.Warlock.Shadow.Wowsims.Name',descriptionKey='Default.SoD.Warlock.Shadow.Wowsims.Description',
  applicability={families={'era'},actionContext='player',class='WARLOCK',rulesets={'season:2'}},

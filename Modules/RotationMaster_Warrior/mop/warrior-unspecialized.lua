@@ -8,8 +8,8 @@ local function negate(c)return{type='NOT',value=c}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.unspecialized',revision=4,
- blocks={['mop.warrior.boundaries']=3},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.unspecialized',revision=5,
+ blocks={['mop.warrior.boundaries']=4},
  nameKey='Default.MoP.Warrior.Unspecialized.Name',descriptionKey='Default.MoP.Warrior.Unspecialized.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARRIOR'},
  tags={'dps','melee','leveling'},

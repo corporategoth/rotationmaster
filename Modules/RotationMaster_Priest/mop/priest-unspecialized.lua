@@ -9,11 +9,11 @@ local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function health(unit,op,n)return{type='HEALTHPCT',unit=unit,operator=op,value=n}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or {}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.priest.unspecialized',revision=2,
- blocks={['mop.priest.upkeep']=1,['mop.priest.healer-boundaries']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.priest.unspecialized',revision=3,
+ blocks={['mop.priest.upkeep']=1,['mop.priest.healer-boundaries']=2},
  nameKey='Default.MoP.Priest.Unspecialized.Name',descriptionKey='Default.MoP.Priest.Unspecialized.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PRIEST'},
  tags={'dps','caster','leveling','icy-veins'},

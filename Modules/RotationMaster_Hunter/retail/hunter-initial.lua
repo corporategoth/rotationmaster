@@ -7,8 +7,8 @@
 local _,addon=...
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.initial',revision=2,
- blocks={['retail.hunter.boundaries']=2,['retail.hunter.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.initial',revision=3,
+ blocks={['retail.hunter.boundaries']=3,['retail.hunter.utility']=2},
  nameKey='Default.Retail.Hunter.Initial.Name',descriptionKey='Default.Retail.Hunter.Initial.Description',
  applicability={families={'retail'},actionContext='player',class='HUNTER'},
  tags={'leveling','assisted-combat'},

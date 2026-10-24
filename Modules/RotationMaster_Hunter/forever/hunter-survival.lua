@@ -14,12 +14,12 @@ local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions,attack)return{id=id,type='none',suppress_attack=not attack,conditions=conditions or{}}end
+local function stop(id,conditions,attack)return{id=id,type='stop',suppress_attack=not attack,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.survival',revision=5,
- blocks={['forever.hunter.boundaries']=3,['forever.hunter.survival-pull']=2,['forever.hunter.range-shots']=1,['forever.hunter.melee-aoe']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.survival',revision=6,
+ blocks={['forever.hunter.boundaries']=4,['forever.hunter.survival-pull']=3,['forever.hunter.range-shots']=1,['forever.hunter.melee-aoe']=1,
   ['forever.hunter.pet-care']=2,['forever.hunter.burst']=1},
  nameKey='Default.Forever.Hunter.Survival.Name',descriptionKey='Default.Forever.Hunter.Survival.Description',
  applicability={families={'forever'},actionContext='player',class='HUNTER'},

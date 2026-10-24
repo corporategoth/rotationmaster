@@ -37,7 +37,7 @@ test('unnotified nested roots are caught by final full proof while immutable exe
  assert(dispatch('resume')and not full(),'phase-specific raw mutation contract lost')
 end)
 test('legacy sequence captures condition metadata before custom CopyData callback',function()
- local original={};local step={id='before',type='none',conditions=original};local row={section='rotation',step=step,path={'rotation',1},ordinal=1}
+ local original={};local step={id='before',type='stop',conditions=original};local row={section='rotation',step=step,path={'rotation',1},ordinal=1}
  local a={RotationData={IndexRotationSteps=function()return{rows={row}}end}}
  a.RotationData.CopyData=function(path)step.id='after';step.conditions={};return path end
  assert(loadfile('Core/rotation_sequence.lua'))('test',a)

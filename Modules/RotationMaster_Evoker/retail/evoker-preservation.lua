@@ -7,11 +7,11 @@
 local _,addon=...
 local function negate(c)return{type='NOT',value=c}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.preservation',revision=3,
- blocks={['retail.evoker.heal-boundaries']=1,['retail.evoker.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.preservation',revision=4,
+ blocks={['retail.evoker.heal-boundaries']=2,['retail.evoker.utility']=2},
  nameKey='Default.Retail.Evoker.Preservation.Name',descriptionKey='Default.Retail.Evoker.Preservation.Description',
  applicability={families={'retail'},actionContext='player',class='EVOKER'},
  tags={'preservation','healer','reference','icy-veins'},

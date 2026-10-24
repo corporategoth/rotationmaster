@@ -14,8 +14,8 @@ local interrupt=any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INT
 -- Casting or channelling (Drain Soul, Malefic Grasp, Channel Demonfire run to the end) ends
 -- advice; no attackable target ends it too.
 assert(addon:RegisterDefaultBlock({
- id='retail.warlock.boundaries',revision=2,families={'retail'},class='WARLOCK',steps={
- {id='casting',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))},
+ id='retail.warlock.boundaries',revision=3,families={'retail'},class='WARLOCK',steps={
+ {id='casting',type='stop',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))},
 }}))
 -- Reminders every Warlock premade shares: your demon's interrupt (Command Demon becomes Spell
 -- Lock or Axe Toss) on an interruptible cast (it lights only where Midnight lets the target's cast be

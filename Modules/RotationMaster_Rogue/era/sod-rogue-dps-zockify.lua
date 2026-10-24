@@ -15,8 +15,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local unsliced=negate({type='BUFF',unit='player',spell=5171,anyrank=true,ownbuff=true})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.dps.zockify',revision=5,
- blocks={['era.rogue.boundaries']=2,['era.rogue.sod-opener']=3,['era.rogue.sod-upkeep']=3,['era.rogue.sod-builders']=3},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.dps.zockify',revision=6,
+ blocks={['era.rogue.boundaries']=3,['era.rogue.sod-opener']=4,['era.rogue.sod-upkeep']=3,['era.rogue.sod-builders']=3},
  nameKey='Default.SoD.Rogue.DPS.Zockify.Name',descriptionKey='Default.SoD.Rogue.DPS.Zockify.Description',
  applicability={families={'era'},actionContext='player',class='ROGUE',rulesets={'season:2'}},
  tags={'dps','melee','endgame','season-of-discovery','zockify'},
@@ -32,7 +32,7 @@ assert(addon:RegisterDefaultRotation({
  {id='rogue-finisher',type='branch',conditions=points('GREATERTHANOREQUALS',5),onFalse={},onTrue={
   spell('rogue-envenom',399963),
   spell('rogue-eviscerate',2098,negate(rune(399963))),
-  {id='rogue-pool',type='none',suppress_attack=false,conditions={}},
+  {id='rogue-pool',type='stop',suppress_attack=false,conditions={}},
  }},
  block('era.rogue.sod-builders','rogue-'),
  }},

@@ -18,15 +18,15 @@ local function hurt(n,below)return{type='PROXIMITY_HEALTHPCT_COUNT',unit='player
 local function enemies(op,n)return{type='THREAT_COUNT',threat=1,operator=op,value=n}end
 local function lives(n)return any(health('target','GREATERTHANOREQUALS',.35),{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHAN',value=n})end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or {}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local friendly={type='FRIENDLY',unit='target'}
 local group={type='GROUP'}
 local unshielded=negate({type='DEBUFF',unit='target',spell=6788})
 local tierSix=any(enemies('GREATERTHANOREQUALS',3),hurt(3,.85))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.priest.discipline',revision=3,
- blocks={['mop.priest.upkeep']=1,['mop.priest.healer-boundaries']=1,['mop.priest.healer-cooldowns']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.priest.discipline',revision=4,
+ blocks={['mop.priest.upkeep']=1,['mop.priest.healer-boundaries']=2,['mop.priest.healer-cooldowns']=1},
  nameKey='Default.MoP.Priest.Discipline.Name',descriptionKey='Default.MoP.Priest.Discipline.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PRIEST'},
  tags={'discipline','healer','group','leveling','endgame','icy-veins','warcraft-tavern','hekili'},

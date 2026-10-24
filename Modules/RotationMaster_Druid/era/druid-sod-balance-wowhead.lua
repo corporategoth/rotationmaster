@@ -10,11 +10,11 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function mine(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function spell(id,action,conditions,ranked)return{id=id,type='spell',action=action,ranked=ranked or false,conditions=conditions or {}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or {}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or {}}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.druid.balance.wowhead',revision=5,
- blocks={['era.druid.boundaries']=3,['era.druid.upkeep']=1,['era.druid.caster-cooldowns']=2,['sod.druid.maul']=2,['sod.druid.balance-cooldowns']=1,
-  ['sod.druid.forms']=2,['sod.druid.cat']=2,['era.druid.stealth-opener']=1,['era.druid.cat-builders']=1,['era.druid.powershift']=1,['sod.druid.bear']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.druid.balance.wowhead',revision=6,
+ blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['era.druid.caster-cooldowns']=2,['sod.druid.maul']=2,['sod.druid.balance-cooldowns']=1,
+  ['sod.druid.forms']=2,['sod.druid.cat']=2,['era.druid.stealth-opener']=2,['era.druid.cat-builders']=1,['era.druid.powershift']=2,['sod.druid.bear']=2},
  nameKey='Default.SoD.Druid.Balance.Wowhead.Name',descriptionKey='Default.SoD.Druid.Balance.Wowhead.Description',
  applicability={families={'era'},actionContext='player',class='DRUID',rulesets={'season:2'}},
  tags={'season-of-discovery','endgame','balance','caster','single-target','aoe','wowhead'},
@@ -41,7 +41,7 @@ assert(addon:RegisterDefaultRotation({
    spell('sod-balance-wh-extend',5176,all({type='RUNE_ENGRAVED',spell=414719},{type='RUNE_ENGRAVED',spell=414684},{type='DEBUFF_REMAIN',unit='target',spell=414684,anyrank=true,owndebuff=true,operator='LESSTHAN',value=5})),
    spell('sod-balance-wh-starfire',2912,{type='BUFF',unit='player',spell=408255,anyrank=true}),
    spell('sod-balance-wh-wrath',5176),
-   {id='sod-balance-wh-dry',type='none',conditions={}},
+   {id='sod-balance-wh-dry',type='stop',conditions={}},
   },
  },
 }))

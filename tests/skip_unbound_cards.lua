@@ -8,7 +8,7 @@ local test,finish=F.suite()
 local KEG,TIGER_PALM=121253,100780
 local function body() return {name='Mine',switch={},
     rotation={{id='keg',type='spell',action=KEG,conditions={}},{id='tp',type='spell',action=TIGER_PALM,conditions={}},
-        {id='blizzard',type='assisted',conditions={}},{id='stop',type='none',conditions={}},
+        {id='blizzard',type='assisted',conditions={}},{id='stop',type='stop',conditions={}},
         {id='branch',type='branch',conditions={},onTrue={{id='inner',type='spell',action=KEG,conditions={}}},onFalse={}}},
     cooldowns={{id='cd',type='spell',action=KEG,conditions={}},{id='cdok',type='spell',action=TIGER_PALM,conditions={}}}} end
 local function fixture()

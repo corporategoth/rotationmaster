@@ -14,15 +14,15 @@ local function own(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,o
 local function mine(id)return{type='BUFF',unit='player',spell=id,anyrank=true,ownbuff=true}end
 local function known(id)return{type='SPELL_KNOWN',spell=id}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local shadowform={type='BUFF',unit='player',spell=15473}
 local unshielded=negate({type='DEBUFF',unit='player',spell=6788})
 local tough=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},
  {type='CLASSIFICATION',unit='target',value='worldboss'},{type='LEVEL',unit='target',operator='GREATERTHANOREQUALS',value=2,relative=true})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.priest.dps.mobalytics',revision=4,
- blocks={['forever.priest.dps-boundaries']=1,['forever.priest.upkeep']=1,['forever.priest.dps-upkeep']=2,['forever.priest.wand']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.priest.dps.mobalytics',revision=5,
+ blocks={['forever.priest.dps-boundaries']=2,['forever.priest.upkeep']=1,['forever.priest.dps-upkeep']=2,['forever.priest.wand']=2},
  nameKey='Default.Forever.Priest.DpsMobalytics.Name',descriptionKey='Default.Forever.Priest.DpsMobalytics.Description',
  applicability={families={'forever'},actionContext='player',class='PRIEST'},
  tags={'shadow','leveling','dot','wand','mobalytics'},

@@ -11,13 +11,13 @@ local function negate(c)return{type='NOT',value=c}end
 local function pct(unit,op,v)return{type='HEALTHPCT',unit=unit,operator=op,value=v}end
 local function own(id)return{type='BUFF',unit='target',spell=id,anyrank=true,ownbuff=true}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or {}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or {}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='priest-heal-wh-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.priest.healer.wowhead',revision=4,
- blocks={['tbc.priest.boundaries']=3,['tbc.priest.dispels']=1,['tbc.priest.group-heal']=1,['tbc.priest.big-heal']=1,
-  ['tbc.priest.healer-damage']=1,['tbc.priest.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.priest.healer.wowhead',revision=5,
+ blocks={['tbc.priest.boundaries']=4,['tbc.priest.dispels']=1,['tbc.priest.group-heal']=1,['tbc.priest.big-heal']=1,
+  ['tbc.priest.healer-damage']=2,['tbc.priest.upkeep']=1},
  nameKey='Default.TBC.Priest.HealerWowhead.Name',descriptionKey='Default.TBC.Priest.HealerWowhead.Description',
  applicability={families={'tbc'},actionContext='player',class='PRIEST'},
  tags={'holy','discipline','healer','wowhead','dungeon','raid'},

@@ -13,15 +13,15 @@ local function buff(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}en
 local function combat()return{type='COMBAT',unit='player'}end
 local function engaged(n)return{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=n}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function refresh(id)return any(negate({type='DEBUFF',unit='target',spell=id,owndebuff=true}),{type='DEBUFF_REMAIN',unit='target',spell=id,owndebuff=true,operator='LESSTHAN',value=5.4})end
 local eclipse=any(buff(48517),buff(48518))
 local aligned=any(buff(194223),buff(102560))
 local moonkin=any(buff(24858),buff(102560))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.druid.balance.guide',revision=4,
- blocks={['retail.druid.boundaries']=2,['retail.druid.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.druid.balance.guide',revision=5,
+ blocks={['retail.druid.boundaries']=3,['retail.druid.utility']=2},
  nameKey='Default.Retail.Druid.BalanceGuide.Name',descriptionKey='Default.Retail.Druid.BalanceGuide.Description',
  applicability={families={'retail'},actionContext='player',class='DRUID'},
  tags={'balance','ranged','reference','icy-veins','simulationcraft','wowhead'},

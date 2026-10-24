@@ -17,7 +17,7 @@ local function health(op,v)return{type='HEALTHPCT',unit='player',operator=op,val
 local function rune(kind,op,n)return{type='RUNE',rune=kind,operator=op,value=n}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function off(id,action,conditions)local step=spell(id,action,conditions);step.disabled=true;return step end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,steps,revision)assert(addon:RegisterDefaultBlock({id=id,revision=revision or 1,families={'progression'},class='DEATHKNIGHT',steps=steps}))end
 local FEVER,PLAGUE=55095,55078
 local both=all(disease(FEVER),disease(PLAGUE))
@@ -31,7 +31,7 @@ local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASS
 -- Casts and channels (Army of the Dead) and a target that is not attackable end advice.
 block('mop.deathknight.boundaries',{
  stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))),
-},2)
+},3)
 -- Every specialization: Horn of Winter when no attack power shout is up (they do not stack), Mind
 -- Freeze on an interruptible cast, Army of the Dead before a group boss pull.
 block('mop.deathknight.upkeep',{
@@ -65,7 +65,7 @@ block('mop.deathknight.blood-upkeep',{
 block('mop.deathknight.blood-pull',{
  {id='pull',type='branch',conditions=all(negate(combat()),{type='BEYOND_MELEE',unit='target'}),onFalse={},onTrue={
   spell('pull-outbreak',77575),spell('pull-icy-touch',45477),spell('pull-grip',49576),stop('pull-stop')}},
-})
+},2)
 -- Both Frost premades (dual-wield and two-hand): presence and cooldowns.
 block('mop.deathknight.frost-upkeep',{
  spell('frost-presence',48266,noPresence),
@@ -91,7 +91,7 @@ block('mop.deathknight.frost-open',{
   spell('aoe-death-and-decay',43265,rune(U,'GREATERTHANOREQUALS',1)),
   spell('aoe-howling-blast',49184)}},
  spell('soul-reaper',130735,{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=.35}),
-})
+},2)
 -- Frost's shared tail: Plague Leech before diseases fall off (with Outbreak ready to reapply them
 -- once it is learned), Frost Strike at 40, Death Strike before Obliterate (58), Horn.
 block('mop.deathknight.frost-tail',{
@@ -128,4 +128,4 @@ block('mop.deathknight.unholy-open',{
   spell('aoe-death-and-decay',43265),
   spell('aoe-blood-boil',48721,any(rune(B,'GREATERTHANOREQUALS',1),rune(D,'GREATERTHANOREQUALS',1))),
   spell('aoe-icy-touch',45477,rune(F,'GREATERTHANOREQUALS',1))}},
-})
+},2)

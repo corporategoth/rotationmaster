@@ -10,9 +10,9 @@ local function negate(c)return{type='NOT',value=c}end
 local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v}end
 local function own(id)return{type='BUFF',unit='player',spell=id,anyrank=true,ownbuff=true}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.elemental.icyveins',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.elemental.icyveins',revision=3,
  blocks={['tbc.shaman.shield']=1,['tbc.shaman.mainhand-imbue']=1,['tbc.shaman.elemental-totems']=1,['tbc.shaman.bloodlust']=1,
-  ['tbc.shaman.elemental-opening']=1,['tbc.shaman.boundaries']=2,['tbc.shaman.interrupt']=1,['tbc.shaman.elemental-aoe']=1},
+  ['tbc.shaman.elemental-opening']=2,['tbc.shaman.boundaries']=3,['tbc.shaman.interrupt']=1,['tbc.shaman.elemental-aoe']=1},
  nameKey='Default.TBC.Shaman.Elemental.IcyVeins.Name',descriptionKey='Default.TBC.Shaman.Elemental.IcyVeins.Description',
  applicability={families={'tbc'},actionContext='player',class='SHAMAN'},
  tags={'leveling','endgame','elemental','caster','single-target','aoe','icy-veins','wowsims'},
@@ -32,7 +32,7 @@ assert(addon:RegisterDefaultRotation({
    {id='ele-icy-opening',type='block',block='tbc.shaman.elemental-opening',prefix='ele-icy-'},
    {id='ele-icy-moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
     {id='ele-icy-moving-flame-shock',type='spell',action=8050,ranked=false,conditions=negate({type='DEBUFF',unit='target',spell=8050,anyrank=true,owndebuff=true})},
-    {id='ele-icy-moving-stop',type='none',conditions={}},
+    {id='ele-icy-moving-stop',type='stop',conditions={}},
    }},
    {id='ele-icy-aoe',type='block',block='tbc.shaman.elemental-aoe',prefix='ele-icy-'},
    {id='ele-icy-mastery-chain',type='spell',action=421,ranked=false,conditions=own(16166)},

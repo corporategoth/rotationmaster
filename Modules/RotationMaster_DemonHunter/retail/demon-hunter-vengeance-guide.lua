@@ -16,8 +16,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function off(id,action,conditions)local step=spell(id,action,conditions);step.disabled=true;return step end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.vengeance.guide',revision=3,
- blocks={['retail.demonhunter.boundaries']=2,['retail.demonhunter.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.vengeance.guide',revision=4,
+ blocks={['retail.demonhunter.boundaries']=3,['retail.demonhunter.utility']=2},
  nameKey='Default.Retail.DemonHunter.VengeanceGuide.Name',descriptionKey='Default.Retail.DemonHunter.VengeanceGuide.Description',
  applicability={families={'retail'},actionContext='player',class='DEMONHUNTER'},
  tags={'vengeance','tank','reference','wowhead','icy-veins'},

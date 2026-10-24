@@ -105,7 +105,7 @@ end)
 test('actual transport roundtrips branch modes, arm ordering, guards and nested stable IDs',function()
     local data,deps=fixture();local codec=assert(data.NewCodec(deps));local _,envelope=make();local v=envelope()
     v.body.rotation={{id='branch',type='branch',mode='false',conditions={type='NOT',value={}},
-        onTrue={{id='yes',type='spell',action=403}},onFalse={{id='nested',type='branch',mode='true',conditions={},onTrue={{id='no',type='none',suppress_attack=true}},onFalse={}}}}}
+        onTrue={{id='yes',type='spell',action=403}},onFalse={{id='nested',type='branch',mode='true',conditions={},onTrue={{id='no',type='stop',suppress_attack=true}},onFalse={}}}}}
     for _,value in ipairs({v,v.body}) do
         local decoded=assert(codec:Decode(assert(codec:Encode(value)))).value
         local b=decoded.body or decoded;local branch=b.rotation[1]

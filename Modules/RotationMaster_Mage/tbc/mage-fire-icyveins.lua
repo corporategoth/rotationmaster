@@ -5,11 +5,11 @@
 local _,addon=...
 local function negate(c)return{type='NOT',value=c}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
-local function stop(id)return{id=id,type='none',suppress_attack=true,conditions={}}end
+local function stop(id)return{id=id,type='stop',suppress_attack=true,conditions={}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.mage.fire.icyveins',revision=3,
- blocks={['tbc.mage.boundaries']=2,['tbc.mage.wand-finish']=1,['tbc.mage.moving-fire-blast']=1,['tbc.mage.fire-aoe']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.mage.fire.icyveins',revision=4,
+ blocks={['tbc.mage.boundaries']=3,['tbc.mage.wand-finish']=2,['tbc.mage.moving-fire-blast']=2,['tbc.mage.fire-aoe']=1,
   ['tbc.mage.improved-scorch']=1,['tbc.mage.armor-molten']=1,['tbc.mage.upkeep']=1},
  nameKey='Default.TBC.Mage.FireIcyVeins.Name',descriptionKey='Default.TBC.Mage.FireIcyVeins.Description',
  applicability={families={'tbc'},actionContext='player',class='MAGE'},

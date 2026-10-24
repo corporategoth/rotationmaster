@@ -10,7 +10,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local friend=all({type='LEVEL',unit='target',operator='GREATERTHAN',value=0},{type='FRIENDLY',unit='target'},negate({type='DEAD',unit='target'}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.priest.discipline.wowhead',revision=3,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.priest.discipline.wowhead',revision=4,
  blocks={['retail.priest.upkeep']=2,['retail.priest.disc-cooldowns']=1},
  nameKey='Default.Retail.Priest.Discipline.Wowhead.Name',descriptionKey='Default.Retail.Priest.Discipline.Wowhead.Description',
  applicability={families={'retail'},actionContext='player',class='PRIEST'},
@@ -24,14 +24,14 @@ assert(addon:RegisterDefaultRotation({
    block('retail.priest.disc-cooldowns','discwh-'),
   },
   rotation={
-   {id='discwh-casting',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
+   {id='discwh-casting',type='stop',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
    {id='discwh-friendly',type='branch',conditions=friend,onFalse={},onTrue={
     spell('discwh-penance-heal',47540),
     spell('discwh-shield',17),
     spell('discwh-flash-heal',2061),
-    {id='discwh-friendly-stop',type='none',suppress_attack=true,conditions={}},
+    {id='discwh-friendly-stop',type='stop',suppress_attack=true,conditions={}},
    }},
-   {id='discwh-no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
+   {id='discwh-no-target',type='stop',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
    spell('discwh-shadow-word-pain',589,any(negate({type='DEBUFF',unit='target',spell=589,owndebuff=true}),{type='DEBUFF_REMAIN',unit='target',spell=589,owndebuff=true,operator='LESSTHAN',value=4.8})),
    spell('discwh-shadow-word-death',32379),
    spell('discwh-penance',47540),

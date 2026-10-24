@@ -17,8 +17,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local unqueued=all(negate(queued(78)),negate(queued(845)))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.warrior.protection.warcrafttavern',revision=4,
- blocks={['forever.warrior.boundaries']=2,['forever.warrior.upkeep']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.warrior.protection.warcrafttavern',revision=5,
+ blocks={['forever.warrior.boundaries']=3,['forever.warrior.upkeep']=2},
  nameKey='Default.Forever.Warrior.Protection.WarcraftTavern.Name',descriptionKey='Default.Forever.Warrior.Protection.WarcraftTavern.Description',
  applicability={families={'forever'},actionContext='player',class='WARRIOR'},
  tags={'tank','melee','leveling','endgame','warcraft-tavern'},

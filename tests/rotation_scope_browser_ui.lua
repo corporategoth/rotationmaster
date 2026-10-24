@@ -1,6 +1,6 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local make=dofile('tests/fixtures/rotation_data.lua')
-local function body(name) return {name=name,switch={},rotation={{id='stop',type='none',conditions={}}},cooldowns={}} end
+local function body(name) return {name=name,switch={},rotation={{id='stop',type='stop',conditions={}}},cooldowns={}} end
 local function ref(scope,id,owner,class) return {kind='custom',address={scope=scope,class=class or 'SHAMAN',owner=owner or (scope=='class' and 'SHAMAN' or 'A - Realm'),spec=0,id=id or 'shared'}} end
 local function fixture()
     local f=F.new();local a=f.addon;local _,create=dofile('tests/fixtures/native_ui.lua')(f.env)

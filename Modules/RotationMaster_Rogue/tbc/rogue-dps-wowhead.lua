@@ -11,8 +11,8 @@ local function points(n)return{type='POINT',unit='player',operator='GREATERTHANO
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.rogue.dps.wowhead',revision=5,
- blocks={['tbc.rogue.opening']=3,['tbc.rogue.upkeep']=2,['tbc.rogue.builders']=3},
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.rogue.dps.wowhead',revision=6,
+ blocks={['tbc.rogue.opening']=4,['tbc.rogue.upkeep']=2,['tbc.rogue.builders']=3},
  nameKey='Default.TBC.Rogue.DPS.Wowhead.Name',descriptionKey='Default.TBC.Rogue.DPS.Wowhead.Description',
  applicability={families={'tbc'},actionContext='player',class='ROGUE'},
  tags={'dps','melee','leveling','endgame','wowhead'},
@@ -28,7 +28,7 @@ assert(addon:RegisterDefaultRotation({
   {type='BUFF_REMAIN',unit='player',spell=5171,anyrank=true,ownbuff=true,operator='LESSTHAN',value=2}))),
  {id='rogue-finisher',type='branch',conditions=points(5),onFalse={},onTrue={
   spell('rogue-eviscerate',2098),
-  {id='rogue-pool',type='none',suppress_attack=false,conditions={}},
+  {id='rogue-pool',type='stop',suppress_attack=false,conditions={}},
  }},
  block('tbc.rogue.builders','rogue-'),
  }},

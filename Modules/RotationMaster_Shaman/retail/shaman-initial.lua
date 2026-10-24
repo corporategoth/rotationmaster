@@ -7,8 +7,8 @@
 local _,addon=...
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.shaman.initial',revision=2,
- blocks={['retail.shaman.boundaries']=1,['retail.shaman.upkeep']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.shaman.initial',revision=3,
+ blocks={['retail.shaman.boundaries']=2,['retail.shaman.upkeep']=2},
  nameKey='Default.Retail.Shaman.Initial.Name',descriptionKey='Default.Retail.Shaman.Initial.Description',
  applicability={families={'retail'},actionContext='player',class='SHAMAN'},
  tags={'leveling','assisted-combat'},

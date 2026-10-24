@@ -27,9 +27,9 @@ local function summon()return all(negate({type='PET'}),any(negate(combat()),buff
 local function bane()return all(negate(own(980)),negate(own(603)),negate(any(own(1324473),own(1225228))))end
 local destruction=known(1293817)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.warlock.dps.wowhead',revision=4,
- blocks={['forever.warlock.boundaries']=2,['forever.warlock.upkeep']=2,['forever.warlock.procs']=1,
-  ['forever.warlock.moving']=2,['forever.warlock.wand']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.warlock.dps.wowhead',revision=5,
+ blocks={['forever.warlock.boundaries']=3,['forever.warlock.upkeep']=2,['forever.warlock.procs']=1,
+  ['forever.warlock.moving']=3,['forever.warlock.wand']=2},
  nameKey='Default.Forever.Warlock.DPS.Wowhead.Name',descriptionKey='Default.Forever.Warlock.DPS.Wowhead.Description',
  applicability={families={'forever'},actionContext='player',class='WARLOCK'},
  tags={'dps','ranged','caster','leveling','wowhead'},
@@ -49,7 +49,7 @@ assert(addon:RegisterDefaultRotation({
   spell('warlock-wh-pull-corruption',172,negate(own(172))),
   spell('warlock-wh-pull-agony',980,all(bane(),any(negate(known(18708)),big()))),
   spell('warlock-wh-pull-immolate',348,all(destruction,negate(own(348)))),
-  {id='warlock-wh-pull-stop',type='none',suppress_attack=true,conditions={}},
+  {id='warlock-wh-pull-stop',type='stop',suppress_attack=true,conditions={}},
  }},
  block('forever.warlock.procs','warlock-wh-'),
  block('forever.warlock.moving','warlock-wh-'),

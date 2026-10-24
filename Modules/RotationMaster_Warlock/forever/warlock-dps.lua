@@ -28,9 +28,9 @@ local function pact()return all(known(19028),{type='LEVEL',unit='player',operato
 local function summon()return all(negate({type='PET'}),any(negate(combat()),buff(18708)),any(negate(sacrificed()),pact()))end
 local function ownCurse()return any(own(704),own(702),own(1714),own(18223))end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.warlock.dps',revision=4,
- blocks={['forever.warlock.boundaries']=2,['forever.warlock.upkeep']=2,['forever.warlock.procs']=1,
-  ['forever.warlock.moving']=2,['forever.warlock.aoe']=2,['forever.warlock.wand']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.warlock.dps',revision=5,
+ blocks={['forever.warlock.boundaries']=3,['forever.warlock.upkeep']=2,['forever.warlock.procs']=1,
+  ['forever.warlock.moving']=3,['forever.warlock.aoe']=2,['forever.warlock.wand']=2},
  nameKey='Default.Forever.Warlock.DPS.Name',descriptionKey='Default.Forever.Warlock.DPS.Description',
  applicability={families={'forever'},actionContext='player',class='WARLOCK'},
  tags={'dps','ranged','caster','leveling','endgame','aoe','icy-veins','wowhead','method'},
@@ -55,7 +55,7 @@ assert(addon:RegisterDefaultRotation({
   spell('warlock-pull-bolt',686,known(1293817)),
   spell('warlock-pull-immolate',348,negate(own(348))),
   spell('warlock-pull-agony',980,negate(own(980))),
-  {id='warlock-pull-stop',type='none',suppress_attack=true,conditions={}},
+  {id='warlock-pull-stop',type='stop',suppress_attack=true,conditions={}},
  }},
  block('forever.warlock.procs','warlock-'),
  block('forever.warlock.moving','warlock-'),

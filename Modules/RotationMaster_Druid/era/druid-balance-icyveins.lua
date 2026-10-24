@@ -5,10 +5,10 @@ local _,addon=...
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function moving()return{type='MOVING'}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.druid.balance.icyveins',revision=4,
- blocks={['era.druid.boundaries']=3,['era.druid.upkeep']=1,['era.druid.caster-cooldowns']=2,['era.druid.feral-cooldowns']=2,['era.druid.forms']=2,
-  ['era.druid.cat']=1,['era.druid.stealth-opener']=1,['era.druid.cat-builders']=1,['era.druid.powershift']=1,['era.druid.bear']=1,['era.druid.bear-pull']=2,
-  ['era.druid.caster-pull']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.era.druid.balance.icyveins',revision=5,
+ blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['era.druid.caster-cooldowns']=2,['era.druid.feral-cooldowns']=2,['era.druid.forms']=2,
+  ['era.druid.cat']=1,['era.druid.stealth-opener']=2,['era.druid.cat-builders']=1,['era.druid.powershift']=2,['era.druid.bear']=2,['era.druid.bear-pull']=3,
+  ['era.druid.caster-pull']=3},
  nameKey='Default.Era.Druid.Balance.IcyVeins.Name',descriptionKey='Default.Era.Druid.Balance.IcyVeins.Description',
  applicability={families={'era'},actionContext='player',class='DRUID'},
  tags={'endgame','raid','balance','caster','single-target','aoe','icy-veins'},
@@ -24,11 +24,11 @@ assert(addon:RegisterDefaultRotation({
    ref('era-balance-iv-pull','era.druid.caster-pull','era-balance-iv-pull-'),
    {id='era-balance-iv-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
     {id='era-balance-iv-hurricane',type='spell',action=16914,ranked=false,conditions={type='NOT',value=moving()}},
-    {id='era-balance-iv-aoe-stop',type='none',suppress_attack=true,conditions={}}}},
-   {id='era-balance-iv-moving',type='none',suppress_attack=true,conditions=moving()},
+    {id='era-balance-iv-aoe-stop',type='stop',suppress_attack=true,conditions={}}}},
+   {id='era-balance-iv-moving',type='stop',suppress_attack=true,conditions=moving()},
    {id='era-balance-iv-starfire',type='spell',action=2912,ranked=false,conditions={}},
    {id='era-balance-iv-wrath',type='spell',action=5176,ranked=false,conditions={}},
-   {id='era-balance-iv-dry',type='none',conditions={}},
+   {id='era-balance-iv-dry',type='stop',conditions={}},
   },
  },
 }))

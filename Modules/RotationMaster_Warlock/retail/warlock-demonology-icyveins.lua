@@ -16,8 +16,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local core=own(264173)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.demonology.icyveins',revision=4,
- blocks={['retail.warlock.boundaries']=2,['retail.warlock.upkeep']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.demonology.icyveins',revision=5,
+ blocks={['retail.warlock.boundaries']=3,['retail.warlock.upkeep']=2},
  nameKey='Default.Retail.Warlock.Demonology.IcyVeins.Name',descriptionKey='Default.Retail.Warlock.Demonology.IcyVeins.Description',
  applicability={families={'retail'},actionContext='player',class='WARLOCK'},
  tags={'demonology','ranged','reference','single-target','aoe','icy-veins','simulationcraft'},
@@ -36,7 +36,7 @@ assert(addon:RegisterDefaultRotation({
     spell('demoiv-pull-power-siphon',264130),
     spell('demoiv-pull-demonbolt',264178,core),
     spell('demoiv-pull-shadow-bolt',686),
-    {id='demoiv-pull-stop',type='none',suppress_attack=true,conditions={}},
+    {id='demoiv-pull-stop',type='stop',suppress_attack=true,conditions={}},
    }},
    spell('demoiv-power-siphon',264130,any(negate(core),{type='BUFF_STACKS',unit='player',spell=264173,ownbuff=true,operator='LESSTHANOREQUALS',value=1})),
    spell('demoiv-imp-lord',1276452),

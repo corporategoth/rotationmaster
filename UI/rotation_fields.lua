@@ -147,9 +147,9 @@ function addon:BuildRotationCardFields(owner,card,model,alive)
         return
     end
     local types={{value='spell',text=L['Spell']},{value='pet',text=L['Pet Spell']},{value='any',text=L['Any Spell']},{value='item',text=L['Item']}}
-    if model.section=='rotation' then types[#types+1]={value='assisted',text=L["Blizzard's suggestion"]};types[#types+1]={value='none',text=L['Stop']} end
+    if model.section=='rotation' then types[#types+1]={value='assisted',text=L["Blizzard's suggestion"]};types[#types+1]={value='stop',text=L['Stop']} end
     local typeControl=choice('type',nil,types,step.type,function(value) local ok,why=owner:FlushFieldEdits();if ok then patch({type=value},{'action','ranked','suppress_attack'}) else owner:Message(why) end end)
-    if step.type~='none' and step.type~='assisted' then
+    if step.type~='stop' and step.type~='assisted' then
         card.fieldSpellIcon=card.fieldSpellIcon or addon:CreateWorkbenchIconButton(frame,'preview')
         local icon=card.fieldSpellIcon;icon:ClearAllPoints();icon:SetPoint('TOPLEFT',-2,0);icon:SetSize(36,36);icon.icon:SetSize(36,36)
         local itemID=step.type=='item' and type(step.action)=='table' and (tonumber(step.action[1]) or addon:GetReferenceProvider('item').resolve(step.action[1]));local itemInfo=itemID and addon:GetReferenceProvider('item').info(itemID);local info=step.type~='item' and addon.Platform and addon.Platform:GetSpellInfo(step.action);icon.icon:SetTexture(itemInfo and itemInfo.icon or info and info.iconID or 'Interface\\Icons\\INV_Misc_QuestionMark');icon:Show()
@@ -174,7 +174,7 @@ function addon:BuildRotationCardFields(owner,card,model,alive)
         local exact=flag('ranked',L['Use this exact spell rank'],step.ranked,function(value) patch({ranked=value}) end)
         local height,inputWidth=addon:LayoutWorkbenchFieldOption(field.frame,exact,frame,44,spellY,fieldWidth-44)
         field:SetWidth(inputWidth);y=spellY+height+4
-    elseif step.type=='none' then
+    elseif step.type=='stop' then
         flag('suppress',L['Also suppress implicit Attack'],step.suppress_attack,function(value) patch({suppress_attack=value}) end)
     elseif step.type=='item' then
         local entries={{value='',text=L['Custom']}}

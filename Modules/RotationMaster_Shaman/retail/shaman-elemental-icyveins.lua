@@ -21,8 +21,8 @@ local motE=own(260734)
 local shocked={type='DEBUFF',unit='target',spell=188389,owndebuff=true}
 local refresh=any(negate(shocked),{type='DEBUFF_REMAIN',unit='target',spell=188389,owndebuff=true,operator='LESSTHAN',value=5.4})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.shaman.elemental.icyveins',revision=4,
- blocks={['retail.shaman.boundaries']=1,['retail.shaman.upkeep']=2,['retail.shaman.lightning-shield']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.shaman.elemental.icyveins',revision=5,
+ blocks={['retail.shaman.boundaries']=2,['retail.shaman.upkeep']=2,['retail.shaman.lightning-shield']=1},
  nameKey='Default.Retail.Shaman.Elemental.IcyVeins.Name',descriptionKey='Default.Retail.Shaman.Elemental.IcyVeins.Description',
  applicability={families={'retail'},actionContext='player',class='SHAMAN'},
  tags={'elemental','ranged','reference','single-target','aoe','icy-veins','simulationcraft'},
@@ -44,7 +44,7 @@ assert(addon:RegisterDefaultRotation({
    {id='eleiv-pull',type='branch',conditions=combat(),onTrue={},onFalse={
     spell('eleiv-pull-stormkeeper',191634),
     spell('eleiv-pull-lava-burst',51505),
-    {id='eleiv-pull-stop',type='none',suppress_attack=true,conditions={}},
+    {id='eleiv-pull-stop',type='stop',suppress_attack=true,conditions={}},
    }},
    {id='eleiv-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
     spell('eleiv-aoe-stormkeeper',191634),

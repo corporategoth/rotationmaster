@@ -17,7 +17,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local friend=all({type='LEVEL',unit='target',operator='GREATERTHAN',value=0},{type='FRIENDLY',unit='target'},negate({type='DEAD',unit='target'}))
 local grouped=all(combat(),{type='GROUP'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.priest.holy',revision=3,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.priest.holy',revision=4,
  blocks={['retail.priest.upkeep']=2},
  nameKey='Default.Retail.Priest.Holy.Name',descriptionKey='Default.Retail.Priest.Holy.Description',
  applicability={families={'retail'},actionContext='player',class='PRIEST'},
@@ -35,7 +35,7 @@ assert(addon:RegisterDefaultRotation({
    spell('holy-guardian-spirit',47788,all(combat(),friend)),
   },
   rotation={
-   {id='holy-casting',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
+   {id='holy-casting',type='stop',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
    {id='holy-friendly',type='branch',conditions=friend,onFalse={},onTrue={
     spell('holy-sanctify',34861),
     spell('holy-serenity',2050),
@@ -47,9 +47,9 @@ assert(addon:RegisterDefaultRotation({
     spell('holy-prayer-of-healing',596,{type='GROUP'}),
     spell('holy-nova-moving',132157,{type='MOVING'}),
     spell('holy-flash-heal',2061),
-    {id='holy-friendly-stop',type='none',suppress_attack=true,conditions={}},
+    {id='holy-friendly-stop',type='stop',suppress_attack=true,conditions={}},
    }},
-   {id='holy-no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
+   {id='holy-no-target',type='stop',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
    spell('holy-chastise',88625),
    spell('holy-holy-fire',14914),
    spell('holy-nova-enemy',132157,{type='MOVING'}),

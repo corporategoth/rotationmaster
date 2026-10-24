@@ -22,13 +22,13 @@ local big=any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLA
 local long=any({type='GROUP'},big,{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHAN',value=20})
 -- Manual casts and channels, and Ghost Wolf, end advice and Attack.
 assert(addon:RegisterDefaultBlock({
- id='era.shaman.manual',revision=2,families={'era'},class='SHAMAN',steps={
- {id='manual',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},buff(2645))},
+ id='era.shaman.manual',revision=3,families={'era'},class='SHAMAN',steps={
+ {id='manual',type='stop',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},buff(2645))},
 }}))
 -- Damage premades: the same, or no attackable target, ends advice (one Stop).
 assert(addon:RegisterDefaultBlock({
- id='era.shaman.manual-target',revision=1,families={'era'},class='SHAMAN',steps={
- {id='manual',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},buff(2645),negate({type='ATTACKABLE',unit='target'}))},
+ id='era.shaman.manual-target',revision=2,families={'era'},class='SHAMAN',steps={
+ {id='manual',type='stop',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},buff(2645),negate({type='ATTACKABLE',unit='target'}))},
 }}))
 -- Earth Shock interrupts an interruptible cast or channel (every source).
 assert(addon:RegisterDefaultBlock({
@@ -80,8 +80,8 @@ assert(addon:RegisterDefaultBlock({
 -- Chain Lightning on packs; Flame Shock when yours is missing; Lightning Bolt from range while
 -- standing; then melee.
 assert(addon:RegisterDefaultBlock({
- id='era.shaman.healer-damage',revision=1,families={'era'},class='SHAMAN',steps={
- {id='no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
+ id='era.shaman.healer-damage',revision=2,families={'era'},class='SHAMAN',steps={
+ {id='no-target',type='stop',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
  spell('interrupt',8042,any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})),
  spell('chain-lightning',421,enemies('GREATERTHANOREQUALS',2)),
  spell('flame-shock',8050,all(negate({type='DEBUFF',unit='target',spell=8050,anyrank=true,owndebuff=true}),any(big,health('target','GREATERTHAN',.5)))),

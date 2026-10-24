@@ -12,8 +12,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local interrupt=any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})
 -- Shadow: casting or channelling ends advice; no attackable target ends it too.
 assert(addon:RegisterDefaultBlock({
- id='retail.priest.boundaries',revision=2,families={'retail'},class='PRIEST',steps={
- {id='casting',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))},
+ id='retail.priest.boundaries',revision=3,families={'retail'},class='PRIEST',steps={
+ {id='casting',type='stop',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))},
 }}))
 -- Reminders every Priest premade shares: Power Word: Fortitude (anyone's) between pulls, Silence
 -- on an interruptible cast (Shadow; the target's cast is hidden in Midnight combat, so it lights only

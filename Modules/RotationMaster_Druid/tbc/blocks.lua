@@ -16,16 +16,16 @@ local function travelling()return any(form(783),form(1066),form(33943),form(4012
 local function druid(id,steps,revision)assert(addon:RegisterDefaultBlock({id=id,revision=revision or 1,families={'tbc'},class='DRUID',steps=steps}))end
 -- Casts and channels (Starfire, Hurricane, Tranquility) and travel forms halt advice and Attack.
 druid('tbc.druid.boundaries',{
- {id='casting',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},travelling())},
-},3)
+ {id='casting',type='stop',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},travelling())},
+},4)
 -- A caster spec in Cat or Bear form chose to be there; no caster advice.
 druid('tbc.druid.feral-form-stop',{
- {id='feral-form',type='none',conditions=feral()},
-},2)
+ {id='feral-form',type='stop',conditions=feral()},
+},3)
 -- Balance: the same, or no attackable target (one Stop).
 druid('tbc.druid.feral-form-target',{
- {id='feral-form',type='none',conditions=any(feral(),negate({type='ATTACKABLE',unit='target'}))},
-})
+ {id='feral-form',type='stop',conditions=any(feral(),negate({type='ATTACKABLE',unit='target'}))},
+},2)
 -- Out-of-combat self buffs every source keeps: Mark (unless Gift is up), Thorns while
 -- soloing, Omen of Clarity once talented.
 druid('tbc.druid.upkeep',{
@@ -47,28 +47,28 @@ druid('tbc.druid.cat-builders',{
 -- Cat entry both Feral sources share: stop without a target, a stealth opener, a
 -- Faerie Fire (Feral) pull or debuff when nobody else has Faerie Fire up.
 druid('tbc.druid.cat-opening',{
- {id='no-target',type='none',conditions=negate({type='ATTACKABLE',unit='target'})},
+ {id='no-target',type='stop',conditions=negate({type='ATTACKABLE',unit='target'})},
  {id='stealth',type='branch',conditions={type='STEALTHED'},onFalse={},onTrue={
   {id='pounce',type='spell',action=9005,ranked=false,conditions={}},
   {id='ravage',type='spell',action=6785,ranked=false,conditions={}},
   {id='shred',type='spell',action=5221,ranked=false,conditions={}},
   {id='claw',type='spell',action=1082,ranked=false,conditions={}},
-  {id='stealth-stop',type='none',suppress_attack=true,conditions={}},
+  {id='stealth-stop',type='stop',suppress_attack=true,conditions={}},
  }},
  {id='faerie-fire',type='spell',action=16857,ranked=false,conditions=all(negate({type='DEBUFF',unit='target',spell=770,anyrank=true}),negate({type='DEBUFF',unit='target',spell=16857,anyrank=true}),
   any({type='GROUP'},all(negate(combat()),{type='BEYOND_MELEE',unit='target'})))},
-})
+},2)
 -- Bear upkeep both Feral sources share: Faerie Fire (Feral), a Lacerate stack about to
 -- drop, Demoralizing Roar unless a warrior's Shout already covers it, Swipe for packs, Mangle.
 druid('tbc.druid.bear-core',{
- {id='no-target',type='none',conditions=negate({type='ATTACKABLE',unit='target'})},
+ {id='no-target',type='stop',conditions=negate({type='ATTACKABLE',unit='target'})},
  {id='faerie-fire',type='spell',action=16857,ranked=false,conditions=all(negate({type='DEBUFF',unit='target',spell=770,anyrank=true}),negate({type='DEBUFF',unit='target',spell=16857,anyrank=true}))},
  {id='lacerate-save',type='spell',action=33745,ranked=false,conditions=all({type='DEBUFF_STACKS',unit='target',spell=33745,owndebuff=true,operator='GREATERTHANOREQUALS',value=5},
   {type='DEBUFF_REMAIN',unit='target',spell=33745,owndebuff=true,operator='LESSTHANOREQUALS',value=1.5})},
  {id='demoralizing-roar',type='spell',action=99,ranked=false,conditions=all(negate({type='DEBUFF',unit='target',spell=99,anyrank=true}),negate({type='DEBUFF',unit='target',spell=1160,anyrank=true}))},
  {id='swipe-aoe',type='spell',action=779,ranked=false,conditions={type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=3}},
  {id='mangle',type='spell',action=33878,ranked=false,conditions={}},
-})
+},2)
 -- Feral cooldowns both sources share: Maul as the bear's rage dump (off the GCD, so it
 -- is highlighted beside the priority) and Tiger's Fury only at full energy before a pull.
 druid('tbc.druid.feral-cooldowns',{
@@ -77,10 +77,10 @@ druid('tbc.druid.feral-cooldowns',{
 },2)
 -- A Feral druid in caster form: shift (Cat once learned, else Bear), else caster filler.
 druid('tbc.druid.feral-humanoid',{
- {id='no-target',type='none',conditions=negate({type='ATTACKABLE',unit='target'})},
+ {id='no-target',type='stop',conditions=negate({type='ATTACKABLE',unit='target'})},
  {id='cat-form',type='spell',action=768,ranked=false,conditions={}},
  {id='dire-bear-form',type='spell',action=9634,ranked=false,conditions=negate({type='SPELL_KNOWN',spell=768})},
  {id='bear-form',type='spell',action=5487,ranked=false,conditions=negate({type='SPELL_KNOWN',spell=768})},
  {id='moonfire',type='spell',action=8921,ranked=false,conditions=negate({type='DEBUFF',unit='target',spell=8921,anyrank=true,owndebuff=true})},
  {id='wrath',type='spell',action=5176,ranked=false,conditions=negate({type='MOVING'})},
-})
+},2)

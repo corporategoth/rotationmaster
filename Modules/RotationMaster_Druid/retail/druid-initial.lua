@@ -7,8 +7,8 @@
 local _,addon=...
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.druid.initial',revision=2,
- blocks={['retail.druid.boundaries']=2,['retail.druid.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.druid.initial',revision=3,
+ blocks={['retail.druid.boundaries']=3,['retail.druid.utility']=2},
  nameKey='Default.Retail.Druid.Initial.Name',descriptionKey='Default.Retail.Druid.Initial.Description',
  applicability={families={'retail'},actionContext='player',class='DRUID'},
  tags={'leveling','assisted-combat'},

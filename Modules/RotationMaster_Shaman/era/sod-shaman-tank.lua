@@ -21,8 +21,8 @@ local flamed={type='DEBUFF',unit='target',spell=8050,anyrank=true,owndebuff=true
 local surge={type='BUFF',unit='player',spell=440285}
 local group=all(combat(),{type='GROUP'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.shaman.tank',revision=4,
- blocks={['era.shaman.manual']=2,['era.shaman.interrupt']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.shaman.tank',revision=5,
+ blocks={['era.shaman.manual']=3,['era.shaman.interrupt']=1},
  nameKey='Default.SoD.Shaman.Tank.Name',descriptionKey='Default.SoD.Shaman.Tank.Description',
  applicability={families={'era'},actionContext='player',class='SHAMAN',rulesets={'season:2'}},
  tags={'tank','melee','endgame','aoe','season-of-discovery','icy-veins','wowhead','wowsims','warcraft-tavern'},
@@ -48,9 +48,9 @@ assert(addon:RegisterDefaultRotation({
  block('era.shaman.manual','sod-tank-'),
  {id='sod-tank-pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('sod-tank-pull-flame-shock',8050,all({type='ATTACKABLE',unit='target'},negate({type='COMBAT',unit='target'}))),
-  {id='sod-tank-pull-stop',type='none',suppress_attack=false,conditions={}},
+  {id='sod-tank-pull-stop',type='stop',suppress_attack=false,conditions={}},
  }},
- {id='sod-tank-no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
+ {id='sod-tank-no-target',type='stop',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
  spell('sod-tank-taunt',8042,all(negate({type='ISSAME',unit='targettarget',otherunit='player'}),negate({type='BEYOND_MELEE',unit='target'}))),
  block('era.shaman.interrupt','sod-tank-'),
  {id='sod-tank-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2},onFalse={},onTrue={

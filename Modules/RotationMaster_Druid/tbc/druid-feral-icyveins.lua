@@ -11,9 +11,9 @@ local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
 local function rip()return{type='DEBUFF',unit='target',spell=1079,anyrank=true,owndebuff=true}end
 local function energy(op,v)return{type='POWER',unit='player',operator=op,value=v}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.druid.feral.icyveins',revision=3,
- blocks={['tbc.druid.boundaries']=3,['tbc.druid.upkeep']=1,['tbc.druid.feral-cooldowns']=2,['tbc.druid.cat-opening']=1,
-  ['tbc.druid.cat-builders']=1,['tbc.druid.bear-core']=1,['tbc.druid.feral-humanoid']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.druid.feral.icyveins',revision=4,
+ blocks={['tbc.druid.boundaries']=4,['tbc.druid.upkeep']=1,['tbc.druid.feral-cooldowns']=2,['tbc.druid.cat-opening']=2,
+  ['tbc.druid.cat-builders']=1,['tbc.druid.bear-core']=2,['tbc.druid.feral-humanoid']=2},
  nameKey='Default.TBC.Druid.Feral.IcyVeins.Name',descriptionKey='Default.TBC.Druid.Feral.IcyVeins.Description',
  applicability={families={'tbc'},actionContext='player',class='DRUID'},
  tags={'leveling','endgame','feral','melee','tank','single-target','aoe','icy-veins','warcraft-tavern','wowsims'},
@@ -39,13 +39,13 @@ assert(addon:RegisterDefaultRotation({
     }},
     {id='feral-icy-builders',type='block',block='tbc.druid.cat-builders',prefix='feral-icy-'},
     {id='feral-icy-powershift',type='spell',action=768,ranked=false,disabled=true,conditions=all({type='GROUP'},energy('LESSTHANOREQUALS',22),negate(own(16870)),{type='MANAPCT',unit='player',operator='GREATERTHANOREQUALS',value=0.1})},
-    {id='feral-icy-wait',type='none',conditions={}},
+    {id='feral-icy-wait',type='stop',conditions={}},
    }},
    {id='feral-icy-bear',type='branch',conditions=any({type='FORM',form=5487},{type='FORM',form=9634}),onFalse={},onTrue={
     {id='feral-icy-bear-core',type='block',block='tbc.druid.bear-core',prefix='feral-icy-bear-'},
     {id='feral-icy-lacerate',type='spell',action=33745,ranked=false,conditions=negate({type='DEBUFF_STACKS',unit='target',spell=33745,owndebuff=true,operator='GREATERTHANOREQUALS',value=5})},
     {id='feral-icy-swipe',type='spell',action=779,ranked=false,conditions={}},
-    {id='feral-icy-bear-wait',type='none',conditions={}},
+    {id='feral-icy-bear-wait',type='stop',conditions={}},
    }},
    {id='feral-icy-humanoid',type='block',block='tbc.druid.feral-humanoid',prefix='feral-icy-'},
   },

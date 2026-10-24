@@ -13,9 +13,9 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local interrupt=any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})
 -- Casting or channelling ends advice (Attack continues); no attackable target ends it too.
 assert(addon:RegisterDefaultBlock({
- id='retail.warrior.boundaries',revision=1,families={'retail'},class='WARRIOR',steps={
- {id='casting',type='none',suppress_attack=false,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
- {id='no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
+ id='retail.warrior.boundaries',revision=2,families={'retail'},class='WARRIOR',steps={
+ {id='casting',type='stop',suppress_attack=false,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
+ {id='no-target',type='stop',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
 }}))
 -- Reminders every Warrior premade shares: Battle Shout (anyone's) between pulls, Pummel on an
 -- interruptible cast (the target's cast is hidden in Midnight combat, so it lights only where it
@@ -27,9 +27,9 @@ assert(addon:RegisterDefaultBlock({
 }}))
 -- The guide lists open with Charge: out of combat, Charge, then stop.
 assert(addon:RegisterDefaultBlock({
- id='retail.warrior.charge',revision=2,families={'retail'},class='WARRIOR',steps={
+ id='retail.warrior.charge',revision=3,families={'retail'},class='WARRIOR',steps={
  {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('charge',100),
-  {id='pull-stop',type='none',suppress_attack=false,conditions={}},
+  {id='pull-stop',type='stop',suppress_attack=false,conditions={}},
  }},
 }}))

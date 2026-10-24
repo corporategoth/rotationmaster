@@ -177,9 +177,9 @@ test('corpus gate rejects untranslated unsourced malformed and incomplete nested
         function(p) p.sources[1].url='https:///' end,
         function(p) p.sources[1].url='https://localhost/source' end,
         function(p) p.sources[1].url='https://127.0.0.1/source' end,
-        function(p) p.body.rotation={{id='corpus-probe',type='none',conditions={type='UNKNOWN_BUILTIN_CONDITION'}}} end,
-        function(p) p.body.rotation={{id='corpus-probe',type='none',conditions={type='COMBAT'}}} end,
-        function(p) p.body.rotation={{id='branch',type='branch',conditions={},onTrue={{type='none'}},onFalse={}}} end,
+        function(p) p.body.rotation={{id='corpus-probe',type='stop',conditions={type='UNKNOWN_BUILTIN_CONDITION'}}} end,
+        function(p) p.body.rotation={{id='corpus-probe',type='stop',conditions={type='COMBAT'}}} end,
+        function(p) p.body.rotation={{id='branch',type='branch',conditions={},onTrue={{type='stop'}},onFalse={}}} end,
     }) do
         local candidate=assert(a.RotationData.CopyData(baseline));mutate(candidate)
         assert(not pcall(corpus.check,f,candidate,true),'invalid shipped manifest escaped the corpus gate')

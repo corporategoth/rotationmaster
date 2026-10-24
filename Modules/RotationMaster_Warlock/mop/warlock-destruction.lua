@@ -20,13 +20,13 @@ local function embers(op,n)return{type='POINT',unit='player',operator=op,value=n
 local function enemies(op,n)return{type='THREAT_COUNT',threat=1,operator=op,value=n}end
 local function talent(n)return{type='TALENT',layout='grid',value=n}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
-local function stop(id)return{id=id,type='none',suppress_attack=true,conditions={}}end
+local function stop(id)return{id=id,type='stop',suppress_attack=true,conditions={}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local soul=own(113858)
 local backdraft=own(117828)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.warlock.destruction',revision=4,
- blocks={['mop.warlock.boundaries']=3,['mop.warlock.upkeep']=1,['mop.warlock.pet-felhunter']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.warlock.destruction',revision=5,
+ blocks={['mop.warlock.boundaries']=4,['mop.warlock.upkeep']=1,['mop.warlock.pet-felhunter']=1},
  nameKey='Default.MoP.Warlock.Destruction.Name',descriptionKey='Default.MoP.Warlock.Destruction.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARLOCK'},
  tags={'destruction','dps','caster','ranged','leveling','endgame','warcraft-tavern','method','wowtbc','wowsims'},

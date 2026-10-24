@@ -7,8 +7,8 @@ local _,addon=...
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.protection.wowhead',revision=4,
- blocks={['retail.paladin.boundaries']=1,['retail.paladin.upkeep']=2,['retail.paladin.prot-defensives']=2,['retail.paladin.prot-cooldowns']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.protection.wowhead',revision=5,
+ blocks={['retail.paladin.boundaries']=2,['retail.paladin.upkeep']=2,['retail.paladin.prot-defensives']=2,['retail.paladin.prot-cooldowns']=1},
  nameKey='Default.Retail.Paladin.Protection.Wowhead.Name',descriptionKey='Default.Retail.Paladin.Protection.Wowhead.Description',
  applicability={families={'retail'},actionContext='player',class='PALADIN'},
  tags={'protection','tank','reference','single-target','aoe','wowhead'},

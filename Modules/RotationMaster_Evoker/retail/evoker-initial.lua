@@ -7,8 +7,8 @@
 local _,addon=...
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.initial',revision=2,
- blocks={['retail.evoker.boundaries']=2,['retail.evoker.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.initial',revision=3,
+ blocks={['retail.evoker.boundaries']=3,['retail.evoker.utility']=2},
  nameKey='Default.Retail.Evoker.Initial.Name',descriptionKey='Default.Retail.Evoker.Initial.Description',
  applicability={families={'retail'},actionContext='player',class='EVOKER'},
  tags={'leveling','assisted-combat'},

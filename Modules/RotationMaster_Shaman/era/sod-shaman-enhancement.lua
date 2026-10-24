@@ -27,8 +27,8 @@ local flamed={type='DEBUFF',unit='target',spell=8050,anyrank=true,owndebuff=true
 -- An off-hand weapon (by item type, so a shield never asks for an imbue) without its enchant.
 local dual=all({type='WEAPON_TYPE',slot='offhand',kind='weapon'},negate({type='WEAPON',offhand=true}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.shaman.enhancement',revision=4,
- blocks={['era.shaman.manual']=2,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.melee-totems']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.shaman.enhancement',revision=5,
+ blocks={['era.shaman.manual']=3,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.melee-totems']=1},
  nameKey='Default.SoD.Shaman.Enhancement.Name',descriptionKey='Default.SoD.Shaman.Enhancement.Description',
  applicability={families={'era'},actionContext='player',class='SHAMAN',rulesets={'season:2'}},
  tags={'dps','melee','leveling','endgame','aoe','season-of-discovery','wowsims','icy-veins','wowhead'},
@@ -55,9 +55,9 @@ assert(addon:RegisterDefaultRotation({
  {id='sod-enh-pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('sod-enh-pull-flame-shock',8050,all({type='ATTACKABLE',unit='target'},negate({type='COMBAT',unit='target'}))),
   spell('sod-enh-pull-bolt',403,all({type='ATTACKABLE',unit='target'},negate({type='COMBAT',unit='target'}),ranged)),
-  {id='sod-enh-pull-stop',type='none',suppress_attack=false,conditions={}},
+  {id='sod-enh-pull-stop',type='stop',suppress_attack=false,conditions={}},
  }},
- {id='sod-enh-no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
+ {id='sod-enh-no-target',type='stop',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
  block('era.shaman.interrupt','sod-enh-'),
  {id='sod-enh-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
   spell('sod-enh-aoe-magma',8190,negate({type='TOTEM',spell=1})),

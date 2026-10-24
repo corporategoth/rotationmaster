@@ -14,8 +14,8 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local ranged=all({type='BEYOND_MELEE',unit='target'},negate({type='MOVING'}))
 local threatening=all({type='GROUP'},{type='THREAT',unit='target',threat=2})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.shaman.enhancement.warcrafttavern',revision=4,
- blocks={['era.shaman.manual']=2,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.self-heal']=1,['era.shaman.melee-totems']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.shaman.enhancement.warcrafttavern',revision=5,
+ blocks={['era.shaman.manual']=3,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.self-heal']=1,['era.shaman.melee-totems']=1},
  nameKey='Default.Era.Shaman.Enhancement.WarcraftTavern.Name',descriptionKey='Default.Era.Shaman.Enhancement.WarcraftTavern.Description',
  applicability={families={'era'},actionContext='player',class='SHAMAN'},
  tags={'dps','melee','leveling','endgame','aoe','warcraft-tavern'},
@@ -33,9 +33,9 @@ assert(addon:RegisterDefaultRotation({
  block('era.shaman.manual','enh-wt-'),
  {id='enh-wt-pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('enh-wt-pull-bolt',403,all({type='ATTACKABLE',unit='target'},negate({type='COMBAT',unit='target'}),ranged)),
-  {id='enh-wt-pull-stop',type='none',suppress_attack=false,conditions={}},
+  {id='enh-wt-pull-stop',type='stop',suppress_attack=false,conditions={}},
  }},
- {id='enh-wt-no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
+ {id='enh-wt-no-target',type='stop',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
  block('era.shaman.interrupt','enh-wt-'),
  {id='enh-wt-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
   spell('enh-wt-aoe-magma',8190,negate({type='TOTEM',spell=1})),

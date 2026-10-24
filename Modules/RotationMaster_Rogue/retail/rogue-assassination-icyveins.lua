@@ -19,8 +19,8 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 local bled=all(dot(703),dot(1943))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.assassination.icyveins',revision=3,
- blocks={['retail.rogue.boundaries']=1,['retail.rogue.upkeep']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.assassination.icyveins',revision=4,
+ blocks={['retail.rogue.boundaries']=2,['retail.rogue.upkeep']=2},
  nameKey='Default.Retail.Rogue.Assassination.IcyVeins.Name',descriptionKey='Default.Retail.Rogue.Assassination.IcyVeins.Description',
  applicability={families={'retail'},actionContext='player',class='ROGUE'},
  tags={'assassination','melee','reference','single-target','aoe','icy-veins','simulationcraft'},
@@ -42,7 +42,7 @@ assert(addon:RegisterDefaultRotation({
    {id='assaiv-stealthed',type='branch',conditions={type='STEALTHED'},onFalse={},onTrue={
     spell('assaiv-stealthed-garrote',703),
     spell('assaiv-stealthed-ambush',8676),
-    {id='assaiv-stealthed-stop',type='none',suppress_attack=true,conditions={}},
+    {id='assaiv-stealthed-stop',type='stop',suppress_attack=true,conditions={}},
    }},
    spell('assaiv-garrote',703,all(refresh(703,5.4),points('GREATERTHANOREQUALS',-1))),
    spell('assaiv-rupture',1943,all(points('GREATERTHANOREQUALS',5),refresh(1943,6))),

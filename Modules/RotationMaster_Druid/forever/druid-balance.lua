@@ -12,11 +12,11 @@ local function dot(id,mine)return{type='DEBUFF',unit='target',spell=id,anyrank=t
 local function combat()return{type='COMBAT',unit='player'}end
 local function solo()return negate({type='GROUP'})end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions,attack)return{id=id,type='none',suppress_attack=not attack,conditions=conditions or{}}end
+local function stop(id,conditions,attack)return{id=id,type='stop',suppress_attack=not attack,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.druid.balance',revision=4,
- blocks={['forever.druid.boundaries']=2,['forever.druid.upkeep']=1,['forever.druid.dots']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.druid.balance',revision=5,
+ blocks={['forever.druid.boundaries']=3,['forever.druid.upkeep']=1,['forever.druid.dots']=2},
  nameKey='Default.Forever.Druid.Balance.Name',descriptionKey='Default.Forever.Druid.Balance.Description',
  applicability={families={'forever'},actionContext='player',class='DRUID'},
  tags={'balance','leveling','single-target','aoe','icy-veins'},

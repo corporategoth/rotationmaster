@@ -231,7 +231,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
                 local step=row.step;local name=self:FieldText(target,'name',step.name or '')
                 if name:find('%S') then title=name
                 elseif step.type=='spell' or step.type=='pet' or step.type=='any' then title=addon:SpellLabel(step.action)
-                elseif step.type=='none' then title=L['Stop']
+                elseif step.type=='stop' then title=L['Stop']
                 elseif step.type=='assisted' then title=L["Blizzard's suggestion"]
                 elseif step.type=='item' then title=L['Item']
                 else title=L['Edit Condition'] end

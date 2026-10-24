@@ -18,8 +18,8 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local flame={type='DEBUFF',unit='target',spell=8050,owndebuff=true}
 local spend=any(maelstrom(5),all(maelstrom(3),{type='SWING_TIME_REMAIN',operator='GREATERTHANOREQUALS',value=1.1}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.enhancement.icyveins',revision=3,
- blocks={['mop.shaman.manual-target']=1,['mop.shaman.lightning-shield']=1,['mop.shaman.group']=1,['mop.shaman.fire-totems']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.enhancement.icyveins',revision=4,
+ blocks={['mop.shaman.manual-target']=2,['mop.shaman.lightning-shield']=1,['mop.shaman.group']=1,['mop.shaman.fire-totems']=1,
   ['mop.shaman.enhancement-upkeep']=2},
  nameKey='Default.MoP.Shaman.Enhancement.IcyVeins.Name',descriptionKey='Default.MoP.Shaman.Enhancement.IcyVeins.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='SHAMAN'},
@@ -33,7 +33,7 @@ assert(addon:RegisterDefaultRotation({
  },
  rotation={
  block('mop.shaman.manual-target','shaman-enh-iv-'),
- {id='shaman-enh-iv-pull',type='none',suppress_attack=false,conditions=negate(combat())},
+ {id='shaman-enh-iv-pull',type='stop',suppress_attack=false,conditions=negate(combat())},
  {id='shaman-enh-iv-aoe',type='branch',conditions=enemies(2),onFalse={},onTrue={
   {id='shaman-enh-iv-big-pull',type='branch',conditions=enemies(4),onFalse={},onTrue={
    spell('shaman-enh-iv-fire-nova',1535,flame),

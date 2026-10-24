@@ -23,7 +23,7 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function enemies(n)return{type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=n}end
 local function engaged(n)return{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=n}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions,attack)return{id=id,type='none',suppress_attack=not attack,conditions=conditions or{}}end
+local function stop(id,conditions,attack)return{id=id,type='stop',suppress_attack=not attack,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local cat,bear=aura(768),any(aura(5487),aura(9634))
 local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
@@ -59,8 +59,8 @@ local casterSection={
  stop('feral-caster-stop'),
 }
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.druid.feral',revision=5,
- blocks={['forever.druid.boundaries']=2,['forever.druid.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.druid.feral',revision=6,
+ blocks={['forever.druid.boundaries']=3,['forever.druid.upkeep']=1},
  nameKey='Default.Forever.Druid.Feral.Name',descriptionKey='Default.Forever.Druid.Feral.Description',
  applicability={families={'forever'},actionContext='player',class='DRUID'},
  tags={'feral','cat','bear','tank','melee','leveling','icy-veins'},

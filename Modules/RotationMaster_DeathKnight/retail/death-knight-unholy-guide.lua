@@ -16,8 +16,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local ghouls=buff(1254252)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.unholy.guide',revision=3,
- blocks={['retail.deathknight.boundaries']=2,['retail.deathknight.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.unholy.guide',revision=4,
+ blocks={['retail.deathknight.boundaries']=3,['retail.deathknight.utility']=2},
  nameKey='Default.Retail.DeathKnight.UnholyGuide.Name',descriptionKey='Default.Retail.DeathKnight.UnholyGuide.Description',
  applicability={families={'retail'},actionContext='player',class='DEATHKNIGHT'},
  tags={'unholy','melee','pet','reference','icy-veins','wowhead'},

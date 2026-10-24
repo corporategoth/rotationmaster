@@ -180,7 +180,7 @@ local function canonical(v,noid)
     local out={};for _,k in ipairs(keys) do out[#out+1]=canonical(k)..'='..canonical(v[k],noid) end
     return '{'..table.concat(out,',')..'}'
 end
-local function isStop(step) return type(step)=='table' and step.type=='none' end
+local function isStop(step) return type(step)=='table' and step.type=='stop' end
 local function mergeable(a,b)
     return isStop(a) and isStop(b) and (a.suppress_attack==true)==(b.suppress_attack==true) and (a.disabled==true)==(b.disabled==true)
 end
@@ -219,8 +219,8 @@ end)
 -- A fixture of the two rules, so the checks above cannot pass vacuously.
 test('the efficiency check names consecutive Stops and same-arm Branches, and allows what cannot merge',function()
     local cast,chan={type='CASTING',unit='player'},{type='CHANNELING',unit='player'}
-    local list={{id='a',type='none',suppress_attack=true,conditions=cast},{id='b',type='none',suppress_attack=true,conditions=chan},
-        {id='c',type='none',suppress_attack=false,conditions=cast},
+    local list={{id='a',type='stop',suppress_attack=true,conditions=cast},{id='b',type='stop',suppress_attack=true,conditions=chan},
+        {id='c',type='stop',suppress_attack=false,conditions=cast},
         {id='x',type='branch',conditions=cast,onTrue={{id='x1',type='spell',action=1}},onFalse={}},
         {id='y',type='branch',conditions=chan,onTrue={{id='y1',type='spell',action=1}},onFalse={}}}
     local out=redundancies('fixture',list,{})
@@ -261,7 +261,7 @@ test('every shipped OR Stop walks exactly like consecutive Stops on its children
             if step.type=='branch' then visit(step.onTrue);visit(step.onFalse)
             elseif isStop(step) and type(step.conditions)=='table' and step.conditions.type=='OR' and not step.disabled then
                 local children=step.conditions.value;stops=stops+1
-                local split={};for i,child in ipairs(children) do split[i]={id=step.id..'-split-'..i,type='none',suppress_attack=step.suppress_attack,conditions=child} end
+                local split={};for i,child in ipairs(children) do split[i]={id=step.id..'-split-'..i,type='stop',suppress_attack=step.suppress_attack,conditions=child} end
                 local merged={step};local plan=compile(step.conditions);local plans={};for i,child in ipairs(children) do plans[i]=compile(child) end
                 local statuses={'match','no-match','unavailable'}
                 for code=0,3^#children-1 do

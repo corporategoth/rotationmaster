@@ -12,14 +12,14 @@ local function negate(c)return{type='NOT',value=c}end
 local function own(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
 local function known(...)local list={};for i,id in ipairs({...})do list[i]={type='SPELL_KNOWN',spell=id}end;return{type='OR',value=list}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local shadowform={type='BUFF',unit='player',spell=15473}
 local solo=negate({type='GROUP'})
 local unshielded=negate({type='DEBUFF',unit='player',spell=6788})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.priest.dps',revision=4,
- blocks={['forever.priest.dps-boundaries']=1,['forever.priest.upkeep']=1,['forever.priest.dps-upkeep']=2,['forever.priest.wand']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.priest.dps',revision=5,
+ blocks={['forever.priest.dps-boundaries']=2,['forever.priest.upkeep']=1,['forever.priest.dps-upkeep']=2,['forever.priest.wand']=2},
  nameKey='Default.Forever.Priest.Dps.Name',descriptionKey='Default.Forever.Priest.Dps.Description',
  applicability={families={'forever'},actionContext='player',class='PRIEST'},
  tags={'shadow','leveling','single-target','icy-veins','wowhead'},

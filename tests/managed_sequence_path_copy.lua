@@ -26,7 +26,7 @@ local function fixture()
 end
 local function action(id)return{id=id,type='spell',action=403,conditions={}}end
 local function tree()
- return{rotation={{id='branch',type='branch',conditions={},onTrue={action('inside')},onFalse={}},{id='stop',type='none',conditions={}}},cooldowns={}}
+ return{rotation={{id='branch',type='branch',conditions={},onTrue={action('inside')},onFalse={}},{id='stop',type='stop',conditions={}}},cooldowns={}}
 end
 local function calls(target,callback)
  local count=0;local old,mask,step=debug.gethook();local on=jit and jit.status();if jit then jit.off();jit.flush()end

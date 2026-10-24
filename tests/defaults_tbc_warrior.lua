@@ -29,7 +29,7 @@ test('four premades register valid at every level, the tank switch holds level 1
  for _,case in ipairs({{9,false},{10,true}})do s.level=case[1];a.longtermCache={};assert(M.switches(f,PW)==case[2]and M.switches(f,PI)==case[2],'tank switch at '..case[1])end
  for id,host in pairs({[DI]='icy%-veins%.com',[PI]='icy%-veins%.com'})do for _,src in ipairs(a:GetDefaultRotation(id).envelope.sources)do assert(src.url:find(host),id..' cites '..src.url)end end
  for _,src in ipairs(a:GetDefaultRotation(PW).envelope.sources)do assert(not src.url:find('icy%-veins'),PW..' cites Icy Veins')end
- for _,id in ipairs({DW,DI,PW,PI})do local v=a:GetDefaultRotation(id);assert(v.validation.valid and v.readOnly and v.revision==({[DW]=3,[DI]=4,[PW]=4,[PI]=5})[id] and v.enabled==(id==DW or id==PW))end
+ for _,id in ipairs({DW,DI,PW,PI})do local v=a:GetDefaultRotation(id);assert(v.validation.valid and v.readOnly and v.revision==({[DW]=4,[DI]=5,[PW]=5,[PI]=6})[id] and v.enabled==(id==DW or id==PW))end
 end)
 
 test('variants share their sibling switch; Defensive Stance selects the tank, anything else DPS, recommended first',function()

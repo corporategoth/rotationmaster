@@ -12,11 +12,11 @@ local function tree(n,points)return{type='AND',value={{type='LEVEL',unit='player
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.mage.fire.icyveins',revision=5,
- blocks={['forever.mage.boundaries']=2,['forever.mage.fire-moving']=1,['forever.mage.fire-aoe']=1,['forever.mage.wand']=2,['forever.mage.upkeep']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.mage.fire.icyveins',revision=6,
+ blocks={['forever.mage.boundaries']=3,['forever.mage.fire-moving']=2,['forever.mage.fire-aoe']=1,['forever.mage.wand']=3,['forever.mage.upkeep']=2},
  nameKey='Default.Forever.Mage.FireIcyVeins.Name',descriptionKey='Default.Forever.Mage.FireIcyVeins.Description',
  applicability={families={'forever'},actionContext='player',class='MAGE'},
  tags={'fire','leveling','single-target','aoe','icy-veins'},

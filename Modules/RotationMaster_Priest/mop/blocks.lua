@@ -17,7 +17,7 @@ local function enemies(op,n)return{type='THREAT_COUNT',threat=1,operator=op,valu
 local function classified(kind)return{type='CLASSIFICATION',unit='target',value=kind}end
 local function hurt(n,below)return{type='PROXIMITY_HEALTHPCT_COUNT',unit='player',distance=40,healthoperator='LESSTHAN',health=below,operator='GREATERTHANOREQUALS',value=n}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or {}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or {}}end
 -- The target lives long enough for a DoT: healthy, or forecast to live n seconds (health first: always readable).
 local function lives(n)return any(health('target','GREATERTHANOREQUALS',.35),{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHAN',value=n})end
 local worth=any(classified('worldboss'),classified('elite'),{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHAN',value=15})
@@ -30,7 +30,7 @@ assert(addon:RegisterDefaultBlock({
 }}))
 -- Healers and the unspecialized pack: any cast or channel of yours stops the list.
 assert(addon:RegisterDefaultBlock({
- id='mop.priest.healer-boundaries',revision=1,families={'progression'},class='PRIEST',steps={
+ id='mop.priest.healer-boundaries',revision=2,families={'progression'},class='PRIEST',steps={
  stop('manual',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})),
 }}))
 -- Healer cooldowns (Hekili thresholds, RM policy): Shadowfiend or Mindbender for mana, Power Infusion when three
@@ -45,7 +45,7 @@ assert(addon:RegisterDefaultBlock({
 -- Holy's damage arm (solo questing; MaxDps' Holy list): Holy Word: Chastise outside Serenity and Sanctuary,
 -- Solace or Holy Fire, Shadow Word: Pain solo on a target that lives, the tier-6 talent on three enemies, Smite.
 assert(addon:RegisterDefaultBlock({
- id='mop.priest.holy-damage',revision=1,families={'progression'},class='PRIEST',steps={
+ id='mop.priest.holy-damage',revision=2,families={'progression'},class='PRIEST',steps={
  stop('no-enemy',negate({type='ATTACKABLE',unit='target'})),
  spell('chastise',88625,all(negate(own(81208)),negate(own(81206)))),
  spell('solace',129250),
@@ -67,7 +67,7 @@ local flaying=any({type='CHANNELING_SPELL',unit='player',spell=15407},{type='CHA
 local clip=all(flaying,any({type='SPELL_AVAIL',spell=8092},all(execute,{type='SPELL_AVAIL',spell=32379}),
  {type='CHANNELING_PROGRESS',unit='player',operator='GREATERTHANOREQUALS',value=.67}))
 assert(addon:RegisterDefaultBlock({
- id='mop.priest.shadow-shell',revision=4,families={'progression'},class='PRIEST',steps={
+ id='mop.priest.shadow-shell',revision=5,families={'progression'},class='PRIEST',steps={
  stop('cast',any({type='CASTING',unit='player'},all({type='CHANNELING',unit='player'},negate(clip)),negate({type='ATTACKABLE',unit='target'}))),
  {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('pull-spike',73510),

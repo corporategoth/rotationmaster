@@ -1007,7 +1007,7 @@ L["Built In rotations turned back on (they had been switched off without your ch
 L["Disabled Built In rotations"] = true
 L["Open Rotations, select the Built In and turn it back on to make it selectable."] = true
 L["Fallback (%s)"] = true
-L["has an action type this version does not understand"] = true
+L["has an action type this version does not understand (%s)"] = true
 L["has an invalid setting (%s)"] = true
 L["has an invalid switch priority"] = true
 L["has a problem (%s)"] = true
@@ -1035,13 +1035,14 @@ L["/rm why                 - Explain why each rotation can or cannot be selected
 L["Rotation eligibility opened in a window you can copy from."] = true
 -- Glow diagnostic (/rm debug glow, Diagnostics/glow.lua)
 L["/rm debug glow [seconds] - Explain why a recommendation does or does not light a button."] = true
+L['/rm debug editor        - Copy native Lua input diagnostics.'] = true
 L['Glow diagnostic'] = true
 L['Glow diagnostic saved.'] = true
 L['Glow diagnostic saved. Watching for %d seconds.'] = true
 L['Glow watch finished. Run /rm debug glow show to view it.'] = true
 L['Glow stops at: %s'] = true
 L['No glow diagnostic is saved yet. Run /rm debug glow.'] = true
-L['Usage: /rm debug glow [seconds|show]'] = 'Usage: /rm debug glow [seconds||show]'
+L['Usage: /rm debug glow [seconds|show] or /rm debug editor'] = 'Usage: /rm debug glow [seconds||show] or /rm debug editor'
 L["rotations cannot be read (%s)"] = true
 L["Rotation %s cannot be selected."] = true
 L["Rotation settings"] = true
@@ -2341,11 +2342,6 @@ L['Show input diagnostics for this open Lua editor.'] = true
 L['Temporary native arrow test enabled. Click to restore the editor hook.'] = true
 L['Temporarily remove the editor arrow hook to test native navigation.'] = true
 L['Move'] = true
-L['/rm editorinfo          - Copy native Lua input diagnostics.'] = true
-L['/rm editorarrows        - Temporarily test native arrows in an open editor.'] = true
-L['Open or reopen a Lua editor before using /rm editorarrows.'] = true
-L['Temporary native arrow test enabled. Try up/down; run /rm editorarrows again to restore the editor hook.'] = true
-L['Temporary native arrow test disabled; the editor hook is restored.'] = true
 L['Edit fields opens a graphical schema draft. Add, name, reorder or remove fields, choose primitive or nested types, and edit nested fields. Apply stages the schema and its field order. Advanced exposes the equivalent raw schema, parsed as data without executing Lua.'] = true
 
 -- Callback documentation
