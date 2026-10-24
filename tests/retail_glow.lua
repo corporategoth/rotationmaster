@@ -11,6 +11,11 @@ local function whole(engine)
     local build=assert(loadfile('tests/fixtures/wholepoll_shaman.lua'))('trace',root,true,root,true)
     local c=build({buttons=true,target=true,poll=.15})
     c.a.db.profile.idle_poll=0;assert(c.a:SetEvaluationEngine(engine or 'standard'))
+    -- The fixture's AceEvent only counts SendMessage; give it message
+    -- delivery, as the client's AceEvent has, before the diagnostic registers.
+    local events=c.e.LibStub('AceEvent-3.0');local send,handlers=events.SendMessage,{}
+    events.RegisterMessage=function(_,message,fn) handlers[message]=handlers[message] or {};table.insert(handlers[message],fn) end
+    events.SendMessage=function(self,message,...) send(self,message,...);for _,fn in ipairs(handlers[message] or {}) do fn(message,...) end end
     c.load('Diagnostics/glow.lua')
     c.e.RotationMasterDB=c.e.RotationMasterDB or {}
     c.printed={};c.a.print=function(_,message,...) c.printed[#c.printed+1]=string.format(message,...) end
@@ -361,4 +366,33 @@ for _,engine in ipairs({'standard','lean'}) do
         local _,stop=c.a:RunGlowDiagnostic();assert(stop:find('^none'),stop)
     end)
 end
+
+test('diagnostic: each glow is attributed to the step that asked for it, and a clear is recorded',function()
+    -- The live report: step #1 could not be selected, so Blizzard's
+    -- suggestion drove the glow (Spinning Crane Kick, then nothing for Keg
+    -- Smash, which is on no bar).
+    local SCK,KEG=322729,121253
+    local c,state=retail('standard',{[1]=TIGER_PALM,[6]=SCK},{next=SCK})
+    custom(c.a,'assisted',{name='Assisted',priority=0,cooldowns={},rotation={{id='blizzard',type='assisted',conditions={}}}})
+    select(c,'Assisted')
+    assert(litNames(c)=='ActionButton6','lit: '..litNames(c))
+    state.next=KEG;for _=1,3 do c.tick() end
+    assert(litNames(c)=='' and c.a.currentSpell==nil)
+    local lines=c.a:RunGlowDiagnostic()
+    assert(find(lines,'recent t=.*step #1 %(assisted%) recommended 322729'),'glow not attributed to its step')
+    assert(find(lines,'recent t=.*recommendation cleared'),'clear not recorded')
+    assert(find(lines,'lastRequest spell=322729 .* clearedAt=[%d.]+'),'clear time missing')
+    assert(find(lines,'spell 121253 .* mapped=false'),'unmapped suggestion not shown')
+end)
+
+test('diagnostic: says why a step has no spell IDs',function()
+    local c=retail('standard',nil,{next=nil})
+    custom(c.a,'two',{name='Two',priority=0,cooldowns={},rotation={{id='tp',type='spell',action=TIGER_PALM,conditions={}},{id='blizzard',type='assisted',conditions={}}}})
+    select(c,'Two')
+    c.e.BOOKTYPE_SPELL='book'  -- a client whose spell book type is not the step's
+    local lines,stop=c.a:RunGlowDiagnostic()
+    assert(find(lines,'no spell IDs: spell step, action 100780: BOOKTYPE_SPELL=book BOOKTYPE_PET=nil; the step type matches no spell book type'),'spell explanation missing')
+    assert(find(lines,'no spell IDs: assisted: Blizzard suggests nothing right now'),'assisted explanation missing')
+    assert(stop:find('no spell IDs %(spell step'),stop)
+end)
 print(pass..' passed, '..fail..' failed');if fail>0 then os.exit(1)end

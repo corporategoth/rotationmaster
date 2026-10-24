@@ -1304,6 +1304,7 @@ function addon:GlowClear()
 				addon:HideGlow(button, 'next')
 			end
 			SpellsGlowing[spellId] = nil
+            LastGlow.clearedAt=type(GetTime)=='function' and GetTime() or nil
 			addon:verbose(spellId .. " is no longer glowing")
 		end
 	end

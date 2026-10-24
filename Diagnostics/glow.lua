@@ -124,6 +124,52 @@ local function spellRelations(id)
     return base,override,slots
 end
 
+-- Why GetSpellIds (main.lua) returned nothing for a step: the lookup it
+-- makes for that step type, and what that lookup said.
+local SPELL_STEP={spell=true,pet=true,any=true}
+local function explainNoSpellIds(self,step)
+    local kind,action=step.type,step.action
+    local platform=self.Platform
+    if kind=='assisted' then
+        if not (platform and platform.GetAssistedSuggestion) then return 'assisted: this client has no Assisted Combat reader' end
+        local suggestion,why=platform:GetAssistedSuggestion()
+        if suggestion==false then return 'assisted: Blizzard suggests nothing right now' end
+        if suggestion==nil then return 'assisted: no suggestion ('..show(why)..')' end
+        return 'assisted: suggestion '..show(suggestion)..' gave no candidates'
+    end
+    if action==nil then return 'the step has no action' end
+    if SPELL_STEP[kind] then
+        local spellType,petType=rawget(_G,'BOOKTYPE_SPELL'),rawget(_G,'BOOKTYPE_PET')
+        local matched=kind==(spellType or 'spell') or kind==(petType or 'pet') or kind=='any'
+        local text=string.format('%s step, action %s: BOOKTYPE_SPELL=%s BOOKTYPE_PET=%s',show(kind),show(action),show(spellType),show(petType))
+        if not matched then return text..'; the step type matches no spell book type' end
+        if rawget(_G,'WOW_PROJECT_ID')~=rawget(_G,'WOW_PROJECT_MAINLINE') and not step.ranked and self.SpellCatalog then
+            local ok,ids=pcall(self.SpellCatalog.GetAllSpellIds,self.SpellCatalog,action)
+            text=text..'; spell catalog ranks='..(ok and (type(ids)=='table' and #ids or show(ids)) or ('error '..tostring(ids)))
+        end
+        return text..'; GetSpellIds still returned nothing'
+    end
+    if kind=='item' then
+        local items=action
+        if type(items)=='string' then
+            local profile,global=self.db.profile.itemsets or {},self.db.global.itemsets or {}
+            local set=profile[items] or global[items]
+            if type(set)~='table' then return 'item set '..show(items)..' does not exist' end
+            items=set.items
+        end
+        if type(items)~='table' or #items==0 then return 'the item list is empty' end
+        local parts={}
+        for i,item in ipairs(items) do
+            if i>6 then parts[#parts+1]='...';break end
+            local use,useWhy=platform:GetItemUseSpell(item)
+            local id,idWhy=platform:GetItemID(item)
+            parts[#parts+1]=string.format('%s: use=%s%s id=%s%s',show(item),use and show(use.spellID) or 'nil',useWhy and ('('..useWhy..')') or '',show(id),idWhy and ('('..idWhy..')') or '')
+        end
+        return 'no item with a use spell and an item ID: '..table.concat(parts,'; ')
+    end
+    return 'step type '..show(kind)..' has no spell IDs'
+end
+
 local function rotationRows(self)
     local spec,id=self.currentSpec,self.currentRotation
     if id==nil or type(self.GetRotationForCleanup)~='function' then return nil,'no active rotation' end
@@ -171,8 +217,10 @@ local function walkStep(self,report,row,now,verbose)
     local ok,spellids,itemids=pcall(self.GetSpellIds,self,step)
     if not ok then if verbose then report.add('    GetSpellIds error: %s',spellids) end;return 'unmapped',nil,'spell IDs failed' end
     if type(spellids)~='table' or #spellids==0 then
-        if verbose then report.add('    no spell IDs (an assisted step with no suggestion, or an empty item set)') end
-        return 'unmapped',nil,'no spell IDs'
+        local okWhy,why=pcall(explainNoSpellIds,self,step)
+        why=okWhy and why or ('explanation failed: '..tostring(why))
+        if verbose then report.add('    no spell IDs: %s',why) end
+        return 'unmapped',nil,'no spell IDs ('..why..')'
     end
     local firstReason,anyMapped
     for index,id in ipairs(spellids) do
@@ -312,7 +360,11 @@ function addon:BuildGlowDiagnostic()
     section(report,'Glow')
     local glow=self.GetGlowDiagnostic and self:GetGlowDiagnostic() or {last={},glowing={}}
     local last=glow.last
-    add('currentSpell=%s lastRequest spell=%s item=%s hidden=%s result=%s buttonsLit=%s at=%s',self.currentSpell,last.spell,last.item,last.hidden,last.result,last.lit,last.at)
+    add('currentSpell=%s lastRequest spell=%s item=%s hidden=%s result=%s buttonsLit=%s at=%s clearedAt=%s',self.currentSpell,last.spell,last.item,last.hidden,last.result,last.lit,last.at,last.clearedAt)
+    for _,entry in ipairs(self:GetRecentRecommendations()) do
+        if entry.spell==nil then add('  recent t=%s rotation=%s: recommendation cleared',entry.at,entry.rotation)
+        else add('  recent t=%s rotation=%s: step #%s (%s) recommended %s',entry.at,entry.rotation,entry.index,entry.kind,entry.spell) end
+    end
     for _,entry in ipairs(glow.glowing) do
         add('  glowing spell=%s hidden=%s on %d button(s)',entry.spell,entry.hidden,#entry.buttons)
         for _,b in ipairs(entry.buttons) do
@@ -348,6 +400,34 @@ function addon:BuildGlowDiagnostic()
     add('expected=%s',expected)
     add('STOPS AT: %s',stop)
     return report.lines,stop
+end
+
+-- Every recommendation change the engine announces (ROTATIONMASTER_SPELL_UPDATE:
+-- rotation, step ordinal, step id, step type, spell; nil spell when the glow
+-- is cleared), newest last, so a report can say which step asked for a glow.
+-- Sent only when the recommendation changes; eight reused slots.
+local RECENT=8
+local recent,recentNext={},1
+for i=1,RECENT do recent[i]={} end
+local function noteUpdate(_,rotation,index,id,kind,spell)
+    local slot=recent[recentNext]
+    slot.at=type(GetTime)=='function' and GetTime() or nil
+    slot.rotation,slot.index,slot.id,slot.kind,slot.spell,slot.used=rotation,index,id,kind,spell,true
+    recentNext=recentNext%RECENT+1
+end
+do
+    local ok,events=pcall(LibStub,'AceEvent-3.0',true)
+    if ok and type(events)=='table' and type(events.RegisterMessage)=='function' then
+        pcall(events.RegisterMessage,recent,'ROTATIONMASTER_SPELL_UPDATE',noteUpdate)
+    end
+end
+function addon:GetRecentRecommendations()
+    local list={}
+    for n=0,RECENT-1 do
+        local slot=recent[(recentNext+n-1)%RECENT+1]
+        if slot.used then list[#list+1]=slot end
+    end
+    return list
 end
 
 local watcher
