@@ -44,8 +44,9 @@ local function matchesClass(view,context)
     return not scope or not scope.class or scope.class==context.class
 end
 local function eligible(view, context, candidates)
-    if not view.enabled then return false,"disabled" end
+    -- Validity first: a definition that cannot run here is not "disabled".
     if not view.validation.valid or not view.validation.supported or not view.validation.resolved then return false,"invalid-or-unsupported" end
+    if not view.enabled then return false,"disabled" end
     if not matchesClass(view,context) then return false,"class-mismatch" end
     if candidates then return true end
     local scope=view.applicability
@@ -375,6 +376,40 @@ function addon:RegisterDefaultRotation(envelope)
     return true
 end
 
+-- One-time repair, per profile and class: the Built In toggle used to show a
+-- pack that could not be validated as "Disabled" and wrote each click as the
+-- opposite of that, so packs the player never meant to switch off were saved
+-- as enabled=false. Those choices cannot be told apart from deliberate ones,
+-- so for packs that ship enabled they are removed once (the shipped default
+-- applies again), and one chat line names them. Packs that ship disabled, and
+-- every enabled=true, are left alone.
+local function repairBuiltinPreferences(self,profile,state)
+    if type(UnitClass)~="function" then return end
+    local ok,_,class=pcall(UnitClass,"player")
+    if not ok or not self.Platform:CanReadValue(class) or canaccessvalue and not canaccessvalue(class) or type(class)~="string" then return end
+    local repairs=profile.builtinPreferenceRepairs
+    if repairs~=nil and not plainTable(repairs) then return end
+    if repairs and repairs[class] then return end
+    local preferences=state.preferences
+    if preferences~=nil and not plainTable(preferences) then return end
+    local restored={}
+    for id,definition in pairs(definitions) do
+        local preference=preferences and preferences[id]
+        local scope=definition.applicability
+        if plainTable(preference) and preference.enabled==false and not (plainTable(definition.body) and definition.body.disabled==true)
+            and (not plainTable(scope) or scope.class==nil or scope.class==class) then
+            preference.enabled=nil
+            if next(preference)==nil then preferences[id]=nil end
+            restored[#restored+1]=L[definition.nameKey or id]
+        end
+    end
+    repairs=repairs or {};repairs[class]=true;profile.builtinPreferenceRepairs=repairs
+    if #restored>0 then
+        table.sort(restored)
+        if self.info then self:info(L["Built In rotations turned back on (they had been switched off without your choice): %s"],table.concat(restored,", ")) end
+    end
+end
+
 function addon:InitializeRotationLibrary()
     invalidateExecution()
     local profile=self.db.profile
@@ -386,6 +421,7 @@ function addon:InitializeRotationLibrary()
         if state[key]~=nil and not plainTable(state[key]) then invalidateExecution();active=nil;return false,"invalid-library-state" end
     end
     state.preferences,state.origins,state.comparisons,state.imports=state.preferences or {},state.origins or {},state.comparisons or {},state.imports or {}
+    if next(definitions)~=nil then repairBuiltinPreferences(self,profile,state) end
     -- Only preferences are shared with the persisted namespace. Clone construction
     -- uses a temporary catalog; the legacy editor retains the sole saved body.
     local catalog,why=data.NewCatalog({state={preferences=state.preferences},
@@ -639,6 +675,53 @@ function addon:ListDefaultRotations(spec)
     table.sort(rows,function(a,b) if a.name==b.name then return a.id<b.id end;return a.name<b.name end)
     return rows
 end
+-- Every Built In for this class and why it is or is not on: state is
+-- 'enabled', 'user-disabled' (the player switched it off), 'shipped-disabled'
+-- (an alternative that ships off) or 'invalid' (it cannot be validated here).
+-- applies/reason say whether it would be selectable for `spec` if it were on.
+-- Commands, menus and the editor only; never while polling.
+function addon:GetBuiltinStates(spec)
+    local ok,why=ensure(self);if not ok then return {},why end
+    local context=self:GetRotationContext(spec);context.spec=spec
+    local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
+    local custom=(self.db.profile.rotations or {})[spec] or {}
+    local rows={}
+    for id,view in pairs(active.views) do
+        if matchesClass(view,context) then
+            local preference=active.state.preferences[id]
+            local saved=nil
+            if plainTable(preference) and type(preference.enabled)=='boolean' then saved=preference.enabled end
+            local definition=definitions[id]
+            local shipped=plainTable(definition) and plainTable(definition.body) and definition.body.disabled==true
+            local state
+            if not view.validation.valid then state='invalid'
+            elseif saved==false then state='user-disabled'
+            elseif saved==true or not shipped then state='enabled'
+            else state='shipped-disabled' end
+            local applies,reason=eligible({enabled=true,validation=view.validation,applicability=view.applicability},context)
+            -- Whether its scope (edition, class, specialization, level...) fits,
+            -- whatever its validity: a pack that fits but cannot run says why.
+            local fits=applies or reason=='invalid-or-unsupported' and eligible({enabled=true,validation={valid=true,supported=true,resolved=true},applicability=view.applicability},context)
+            rows[#rows+1]={id=id,name=L[view.nameKey or id],state=state,shippedDisabled=shipped,userChoice=saved,
+                applies=applies,reason=reason,fits=fits==true,key=scoped and scoped:Key({kind='builtin',id=id}) or runtimeKey(id,custom),body=active.bodies[id]}
+        end
+    end
+    table.sort(rows,function(a,b) if a.name==b.name then return a.id<b.id end;return a.name<b.name end)
+    return rows
+end
+-- One Built In's switch: true (on), false (off) and the state name from
+-- GetBuiltinStates; nil when unknown. Live, never a cached copy.
+function addon:GetBuiltinSwitch(id)
+    if not ensure(self) then return nil end
+    local view=active.views[id];if not view then return nil end
+    local preference=active.state.preferences[id];local definition=definitions[id]
+    local shipped=plainTable(definition) and plainTable(definition.body) and definition.body.disabled==true
+    local saved=nil
+    if plainTable(preference) and type(preference.enabled)=='boolean' then saved=preference.enabled end
+    local on=view.switchedOn==true
+    local state=not view.validation.valid and 'invalid' or saved==false and 'user-disabled' or (saved==true or not shipped) and 'enabled' or 'shipped-disabled'
+    return on,state,shipped
+end
 function addon:GetDefaultRotation(id)
     if not ensure(self) then return nil end
     return active.catalog:Get({kind="builtin",id=id})
@@ -649,6 +732,16 @@ function addon:SetDefaultRotationEnabled(id,value)
     local selected=self.currentRotation and self:GetDefaultIdForRuntime(self.currentSpec,self.currentRotation)==id
     if not activeCurrent(self,change) then return false,'rotation-transition-superseded' end
     local saved,reason=active.catalog:SetEnabled({kind="builtin",id=id},value)
+    -- Only a choice that differs from the shipped default is kept; choosing
+    -- the default again removes it, so a later revision's default applies.
+    if saved then
+        local preference=active.state.preferences[id];local definition=definitions[id]
+        local shippedOn=not (plainTable(definition) and plainTable(definition.body) and definition.body.disabled==true)
+        if plainTable(preference) and preference.enabled==shippedOn then
+            preference.enabled=nil
+            if next(preference)==nil then active.state.preferences[id]=nil end
+        end
+    end
     if saved then invalidateExecution();active.views[id]=active.catalog:Get({kind="builtin",id=id});invalidateExecution();active.generation={}
         if invalidateChoiceContext then invalidateChoiceContext(self) end
     end

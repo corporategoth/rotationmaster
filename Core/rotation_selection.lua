@@ -203,6 +203,35 @@ function addon:ExplainRotationRefusal(spec,value)
     end
     return refusalText[code] or string.format(L['it is unavailable (%s)'],tostring(code)),code
 end
+-- A rotation's priority as automatic switching ranks it (nil when unknown).
+function addon:GetRotationEffectivePriority(spec,key)
+    if key==DEFAULT then return nil end
+    local pass=self.AcquireRotationRuntimePass and self:AcquireRotationRuntimePass(spec)
+    local body=pass and pass:Get(key)
+    if not body and self.GetRuntimeRotation and not pass then body=self:GetRuntimeRotation(spec,key) end
+    return type(body)=='table' and data.GetRotationPriority(body.priority) or nil
+end
+-- Built Ins that would be selectable for `spec` now (applicability, and a
+-- switch condition that is not known to fail) but are switched off: every one
+-- the player switched off, and, when no Built In for `spec` is on at all, the
+-- alternatives that ship off. Menus and commands only.
+function addon:GetDisabledApplicableBuiltins(spec)
+    if spec==nil or type(self.GetBuiltinStates)~='function' then return {} end
+    local rows=self:GetBuiltinStates(spec);local user,shipped,anyOn={},{},false
+    for _,row in ipairs(rows) do
+        if row.applies then
+            local matches=self.SwitchConditionMatchesNow and type(row.body)=='table' and type(row.body.switch)=='table'
+                and self:usefulCondition(row.body.switch) and self:SwitchConditionMatchesNow(row.body.switch)
+            if matches~=false then
+                if row.state=='enabled' then anyOn=true
+                elseif row.state=='user-disabled' then user[#user+1]=row
+                elseif row.state=='shipped-disabled' then shipped[#shipped+1]=row end
+            end
+        end
+    end
+    if not anyOn then for _,row in ipairs(shipped) do user[#user+1]=row end end
+    return user
+end
 -- /rm why: each rotation's eligibility for the current character, with the
 -- first blocking issue. Returns the lines.
 function addon:GetRotationEligibilityReport()
@@ -224,14 +253,41 @@ function addon:GetRotationEligibilityReport()
     verdict(string.format(L['Fallback (%s)'],DEFAULT),DEFAULT)
     local headers=self.ListRotationHeaders and self:ListRotationHeaders(spec)
     if type(headers)~='table' then return lines end
+    -- Built Ins that are off are named when they would otherwise apply here,
+    -- with who switched them off; the rest are only counted.
+    local states={}
+    for _,row in ipairs(self.GetBuiltinStates and self:GetBuiltinStates(spec) or {}) do states[row.id]=row end
     local disabled=0
     for _,row in ipairs(headers) do
         if row.fallback then
         elseif row.kind=='builtin' then
-            if not row.enabled then disabled=disabled+1 else verdict(string.format(L['%s (Built In)'],row.name),row.key) end
+            local state=states[row.canonicalId]
+            local name=string.format(L['%s (Built In)'],row.name)
+            if state and (state.state=='invalid' or state.fits and not state.applies and state.reason=='invalid-or-unsupported') then
+                local problem=row.problem and self:DescribeRotationIssue(row.problem)
+                lines[#lines+1]=string.format(L['%s: cannot be selected, %s.'],name,problem and (problem:gsub('%.$','')) or L['it has incomplete or unsupported data'])
+            elseif state and state.state=='user-disabled' and state.applies then
+                lines[#lines+1]=string.format(L['%s: disabled by you (turn it back on in Rotations, in its Built In view).'],name)
+            elseif state and state.state=='shipped-disabled' and state.applies then
+                lines[#lines+1]=string.format(L['%s: ships disabled, an alternative to the recommended one (turn it on in Rotations, in its Built In view).'],name)
+            elseif not row.enabled then disabled=disabled+1
+            else verdict(name,row.key) end
         else verdict(row.name,row.key) end
     end
-    if disabled>0 then lines[#lines+1]=string.format(L['%d Built In rotations are disabled.'],disabled) end
+    if disabled>0 then lines[#lines+1]=string.format(L['%d other Built In rotations are disabled (for another specialization, level or edition).'],disabled) end
+    -- The order automatic switching tries them in, and what it would choose now.
+    local order=self.autoswitchRotation
+    if type(order)=='table' then
+        local names={}
+        for _,key in ipairs(order) do
+            local name=self:GetRotationName(key)
+            if name then names[#names+1]=string.format('%s (%s)',name,tostring(self:GetRotationEffectivePriority(spec,key) or '?')) end
+        end
+        names[#names+1]=string.format(L['then the fallback (%s)'],DEFAULT)
+        lines[#lines+1]=string.format(L['Automatic switching tries: %s. Higher numbers are tried first; your own rotations are always tried before Built Ins.'],table.concat(names,', '))
+        local choice=self.PreviewAutoSwitch and self:PreviewAutoSwitch()
+        lines[#lines+1]=string.format(L['Automatic switching would choose: %s'],choice and (choice==DEFAULT and DEFAULT or self:GetRotationName(choice) or tostring(choice)) or L['None'])
+    end
     return lines
 end
 function addon:ShowRotationEligibilityReport()

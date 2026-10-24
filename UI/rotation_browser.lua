@@ -145,7 +145,11 @@ local function create(parent)
         if entry.readOnly then control.nameLabel:SetTextColor(.357,.753,.922) else control.nameLabel:SetTextColor(.9,.92,.94) end
         local status=entry.readOnly and L['Built In · read-only'] or entry.fallback and L['Fallback rotation'] or L['Custom rotation']
         if entry.scope then status=status..' · '..(entry.scope=='character' and L['This character'] or L['Class']) end
-        if entry.readOnly and not entry.enabled then status=status..' — '..L['Disabled'] elseif entry.readOnly and not entry.eligible then status=status..' — '..L['Not available'] end
+        -- Who switched a Built In off is said apart from whether it can run here.
+        if entry.readOnly and entry.builtinState=='user-disabled' then status=status..' — '..L['Disabled by you']
+        elseif entry.readOnly and entry.builtinState=='shipped-disabled' then status=status..' — '..L['Ships disabled']
+        elseif entry.readOnly and entry.builtinState==nil and not entry.enabled then status=status..' — '..L['Disabled']
+        elseif entry.readOnly and not entry.eligible and entry.validationState=='valid' then status=status..' — '..L['Not available'] end
         if not entry.fallback then status=status..' · '..(entry.priority and string.format(L['Priority %d'],entry.priority) or L['Invalid priority']) end
         if entry.validationState and entry.validationState~='valid' and entry.validationState~='pending' then status=status..' — '..L['Not available'] end
         control.statusLabel:SetText(status);control.statusLabel:SetTextColor(.67,.72,.77);addon:SetWorkbenchListSelection(control,key==self.selected)

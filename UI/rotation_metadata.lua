@@ -169,7 +169,7 @@ function addon:InstallRotationMetadata(pane)
         end)
         addon:SetUIScript(pane.priority,'OnEditFocusGained',readOnly and function(control) control:ClearFocus() end or nil)
         addon:SetUIScript(pane.priority,'OnMouseUp',function(_,button) if button=='RightButton' then bodyMouseUp(nil,button) end end)
-        addon:SetUIScript(pane.priority,'OnEnter',function() if valid() and GameTooltip then GameTooltip:SetOwner(pane.priority,'ANCHOR_RIGHT');GameTooltip:SetText(L['Higher priority wins within custom or Built In rotations. Custom rotations and a valid saved fallback take precedence over Built In rotations. Equal priorities use name, then identity. Blank means zero.'],1,1,1,1,true) end end)
+        addon:SetUIScript(pane.priority,'OnEnter',function() if valid() and GameTooltip then GameTooltip:SetOwner(pane.priority,'ANCHOR_RIGHT');GameTooltip:SetText(L['Higher numbers are tried first; your own rotations are always tried before Built Ins. The fallback is used only when no switch condition of another rotation matches. Equal priorities use name, then identity. Blank means zero.'],1,1,1,1,true) end end)
         addon:SetUIScript(pane.priority,'OnLeave',function() if GameTooltip and GameTooltip:IsOwned(pane.priority) then GameTooltip:Hide() end end)
         addon:SetUIScript(self.apply,'OnClick',function()
             if not valid() or readOnly then return end

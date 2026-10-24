@@ -64,10 +64,12 @@ function data.NewCatalog(options)
     local function enabled(kind, key, envelope)
         if kind == "builtin" then
             if withdrawn[key] then return false end
+            -- A saved choice wins; an entry without one (e.g. only a priority)
+            -- leaves the shipped default in force.
             local preference = state.preferences[key]
             if preference ~= nil then
-                if type(preference) ~= "table" or getmetatable(preference) ~= nil or type(preference.enabled) ~= "boolean" then return false end
-                return preference.enabled
+                if type(preference) ~= "table" or getmetatable(preference) ~= nil then return false end
+                if preference.enabled ~= nil then return preference.enabled == true end
             end
         end
         return type(envelope) == "table" and type(envelope.body) == "table" and envelope.body.disabled ~= true
@@ -86,6 +88,9 @@ function data.NewCatalog(options)
         end
         local view = {id=key, reference={kind=kind,id=key}, builtin=kind == "builtin", readOnly=kind == "builtin",
             enabled=validation.valid and not copyError and enabled(kind,key,cleanSource), validation=validation,
+            -- The on/off switch alone (saved choice, else shipped default), apart
+            -- from whether the definition is valid here: what a toggle shows.
+            switchedOn=not copyError and enabled(kind,key,cleanSource),
             withdrawn=withdrawn[key] ~= nil and kind == "builtin"}
         if view.withdrawn then view.withdrawalReason = withdrawn[key] end
         if type(cleanSource) == "table" then

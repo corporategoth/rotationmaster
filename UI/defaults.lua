@@ -71,7 +71,7 @@ function addon:CreateDefaultRotationOptions(frame,spec,id,onClone,onRefresh)
         end
         local status=label(frame,row.eligible and L['Available for this character']
             or string.format(L['Not available for this character: %s'],unsupported or reasons[row.eligibilityReason] or L['Unavailable']))
-        local enable=addon:CreateConditionCheckBox();enable:SetLabel(L['Enable Built In']);enable:SetValue(row.enabled)
+        local enable=addon:CreateConditionCheckBox();enable:SetLabel(L['Enable Built In']);enable:SetValue(row.switchedOn==true)
         enable:SetCallback('OnValueChanged',function(_,_,value)
             if not valid() then return end
             local ok,reason=addon:SetDefaultRotationEnabled(id,value)

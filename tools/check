@@ -432,6 +432,8 @@ def main():
             ['luajit', 'tests/action_contexts.lua'],
             ['lua5.1', 'tests/assisted_combat.lua'],
             ['luajit', 'tests/assisted_combat.lua'],
+            ['lua5.1', 'tests/builtin_selection.lua'],
+            ['luajit', 'tests/builtin_selection.lua'],
             ['lua5.1', 'tests/rotation_eligibility.lua'],
             ['luajit', 'tests/rotation_eligibility.lua'],
             ['lua5.1', 'tests/assisted_display.lua'],

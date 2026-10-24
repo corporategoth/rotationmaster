@@ -724,8 +724,9 @@ function addon:BindRotationProfile()
                 local eligible,eligibilityReason=libraryReader:Eligible(view,number,false)
                 local first=view.validation.diagnostics and view.validation.diagnostics[1]
                 local problem=first and {code=first.code,path=first.path,condition=first.condition,reason=first.reason}
-                builtinPresentation[id]={name=name,description=description,eligible=eligible,reason=eligibilityReason,problem=problem}
-                return {key=keyFor(reference),reference=reference,canonicalId=id,kind='builtin',name=name,description=description,enabled=view.enabled,eligible=eligible,eligibilityReason=eligibilityReason,priority=data.GetRotationPriority(body.priority),
+                local _,builtinState=owner:GetBuiltinSwitch(id)
+                builtinPresentation[id]={name=name,description=description,eligible=eligible,reason=eligibilityReason,problem=problem,state=builtinState}
+                return {key=keyFor(reference),reference=reference,canonicalId=id,kind='builtin',name=name,description=description,enabled=view.enabled,switchedOn=view.switchedOn==true,builtinState=builtinState,eligible=eligible,eligibilityReason=eligibilityReason,priority=data.GetRotationPriority(body.priority),
                     tags=data.GetRotationTags(view.envelope) or {},search=data.RotationSearchText(view.envelope,name,description),readOnly=true,pending=false,virtual=false,fallback=false,effectiveFallback=false,validationState=view.validation.valid and 'valid' or 'invalid',problem=problem}
             end)
             if not rows then return nil,why end;for _,row in ipairs(rows) do result[#result+1]=row end
