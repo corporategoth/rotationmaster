@@ -175,7 +175,7 @@ function addon:BuildRotationCardFields(owner,card,model,alive)
         local height,inputWidth=addon:LayoutWorkbenchFieldOption(field.frame,exact,frame,44,spellY,fieldWidth-44)
         field:SetWidth(inputWidth);y=spellY+height+4
     elseif step.type=='stop' then
-        flag('suppress',L['Also suppress implicit Attack'],step.suppress_attack,function(value) patch({suppress_attack=value}) end)
+        flag('suppress',L['Also suppress auto-attack (Attack or Shoot)'],step.suppress_attack,function(value) patch({suppress_attack=value}) end)
     elseif step.type=='item' then
         local entries={{value='',text=L['Custom']}}
         for _,source in ipairs({addon.db.profile.itemsets or {},addon.db.global.itemsets or {}}) do

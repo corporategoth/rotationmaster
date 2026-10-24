@@ -1293,8 +1293,8 @@ L["Compare the active totem's remaining seconds with this amount. An absent or e
 
 L["Stop"] = true
 L["Actions automatically require a learned spell or carried item, usable resources, cooldown readiness and valid range. Conditions can additionally test other actions."] = true
-L["Stop ends lower priority actions. Implicit Attack remains eligible unless you suppress it. An unavailable Stop condition also suppresses Attack. Optional reminders remain independent."] = true
-L["When no priority action is ready, Attack is the implicit final fallback for a living hostile target in melee combat, if autoattack is inactive. It uses the normal rotation highlight and never presses a button."] = true
+L["Stop ends lower priority actions. The implicit auto-attack (Attack or Shoot) remains eligible unless you suppress it. An unavailable Stop condition also suppresses it. Optional reminders remain independent."] = true
+L["When no priority action is ready, auto-attack (Attack or Shoot) is the implicit final fallback against a living hostile target in combat: Attack in melee range; beyond it, Auto Shot or wand Shoot while the target is in range and that button is on your action bars. Nothing is recommended while that auto-attack is already running. It uses the normal rotation highlight and never presses a button."] = true
 L["Implicit final fallback"] = true
 
 L["This reference belongs to another talent layout. Selecting a talent explicitly replaces it; viewing does not convert it."] = true
@@ -1302,9 +1302,9 @@ L["Historical talent slot %s (unavailable)"] = true
 L["This client uses a different talent system. This reference is preserved but cannot be evaluated."] = true
 L["Classic conditions compare points spent in a tree talent. Mists selections use six tiers with three choices. Historical references from another talent system remain unavailable and are never automatically converted."] = true
 
-L["Also suppress implicit Attack"] = true
-L["Implicit Attack is suppressed by this Stop."] = true
-L["Implicit Attack may still be recommended after this Stop."] = true
+L["Also suppress auto-attack (Attack or Shoot)"] = true
+L["Implicit auto-attack (Attack or Shoot) is suppressed by this Stop."] = true
+L["Implicit auto-attack (Attack or Shoot) may still be recommended after this Stop."] = true
 
 -- Native condition cards
 L["Group name"] = true
@@ -1462,7 +1462,7 @@ L["Adding a branch moves following steps into its True arm. False is on the left
 
 L["Ordinary dragging moves one card and its own subtree. Hold Ctrl when starting a drag to carry that card and every following sibling, including their branch subtrees. Drop into a branch arm gap to move there. Up / Down always moves one card. A group cannot be dropped into itself or a carried descendant."] = true
 
-L["An evaluated branch follows one arm, then rejoins later siblings. Stop ends the sequence. Independent cooldowns still apply; implicit Attack remains available unless the Stop suppresses it."] = true
+L["An evaluated branch follows one arm, then rejoins later siblings. Stop ends the sequence. Independent cooldowns still apply; implicit auto-attack (Attack or Shoot) remains available unless the Stop suppresses it."] = true
 
 L["Invalid or incomplete cards remain editable. Apply validates both branch arms without running custom condition code. Deleting a whole custom rotation requires confirmation and cannot be undone."] = true
 

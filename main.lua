@@ -1935,10 +1935,8 @@ local function evaluateLean(self)
     self.evaluationProfile:child("rotation"):start()
     local ended = leanWalk(plan, plan.steps)
     if ended == "unavailable" then plan.suppressAttack = true elseif ended ~= "stopped" then plan.suppressAttack = false end
-    if plan.recommended == 0 and not plan.suppressAttack and self.Platform:IsMeleeAttackNeeded("target") == true
-        and plan.actionReady("spell", 6603) then
-        scratchSpell[1] = 6603
-        local attack = addon:FindSpell(scratchSpell)
+    if plan.recommended == 0 and not plan.suppressAttack then
+        local attack = self:ResolveImplicitAttack(plan.actionReady)
         if attack then leanRecommend(plan, attack, implicitAttack, plan.fallbackOrdinal) end
     end
     self.evaluationProfile:child("rotation"):stop()
@@ -2122,8 +2120,8 @@ function addon:EvaluateNextActionInternal()
         end,conditionSession and dispatchLease and dispatchCurrent or nil)
         if executionFailed then self.evaluationProfile:stop();return end
         suppressAttack=sequence.suppressAttack
-        if preview==0 and not suppressAttack and self.Platform:IsMeleeAttackNeeded("target")==true and actionReady("spell",6603) then
-            local attack=addon:FindSpell({6603})
+        if preview==0 and not suppressAttack then
+            local attack=self:ResolveImplicitAttack(actionReady)
             if attack then recommend(attack,{id="RM-IMPLICIT:ATTACK",type="spell"},sequence.fallbackOrdinal or #(rot.rotation or {})+1) end
         end
         if preview==0 then

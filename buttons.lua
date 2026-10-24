@@ -1325,6 +1325,29 @@ function addon:IsBoundActionReady(spellId,now)
     end
     return false
 end
+-- The range indicator of the first action button holding a spell: true or
+-- false, or nil when no standard button holds it, the slot has no range
+-- requirement or the answer is unreadable. Read for the implicit Shoot or
+-- Auto Shot only (Core/action_policy.lua), whose button must be on the bars.
+function addon:GetBoundActionRange(spellId)
+    local buttons=Spells[spellId]
+    if not buttons then return nil end
+    local rangeFn=actionBarFunction('IsActionInRange',IsActionInRange)
+    if not rangeFn then return nil end
+    for _,button in ipairs(buttons) do
+        if not PetButtons[button] then
+            local ok,slot=pcall(GetActionSlot,button)
+            if ok and slot then
+                local rangeOk,inRange=pcall(rangeFn,slot)
+                if rangeOk and readable(inRange) then
+                    if inRange==true or inRange==1 then return true end
+                    if inRange==false or inRange==0 then return false end
+                end
+            end
+        end
+    end
+    return nil
+end
 function addon:GetPetActionButtonIndex(button) return PetButtons[button] end
 
 -- hidden: the spell is the recommendation but Blizzard's Assisted Highlight

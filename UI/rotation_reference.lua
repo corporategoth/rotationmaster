@@ -47,7 +47,7 @@ function addon:CreateRotationStepCard(parent,step,spec,position,kind,status)
         label(card,L["Recommends the spell Blizzard's Assisted Combat suggests"])
     elseif step.type=="stop" then
         label(card,L["Stop the sequence here"])
-        label(card,step.suppress_attack and L["Implicit Attack is suppressed by this Stop."] or L["Implicit Attack may still be recommended after this Stop."])
+        label(card,step.suppress_attack and L["Implicit auto-attack (Attack or Shoot) is suppressed by this Stop."] or L["Implicit auto-attack (Attack or Shoot) may still be recommended after this Stop."])
     elseif step.type=="item" then
         if step.name and step.name~="" then label(card,step.name) end
         if type(step.action)=="table" then
@@ -96,7 +96,7 @@ local function renderReference(self,parent,body,spec)
     local attack=self:CreateSpellLabel(parent,6603)
     local info=self.Platform and self.Platform:GetSpellInfo(6603)
     if info and info.iconID then attack:SetImage(info.iconID);attack:SetImageSize(24,24) end
-    label(parent,L["When no priority action is ready, Attack is the implicit final fallback for a living hostile target in melee combat, if autoattack is inactive. It uses the normal rotation highlight and never presses a button."])
+    label(parent,L["When no priority action is ready, auto-attack (Attack or Shoot) is the implicit final fallback against a living hostile target in combat: Attack in melee range; beyond it, Auto Shot or wand Shoot while the target is in range and that button is on your action bars. Nothing is recommended while that auto-attack is already running. It uses the normal rotation highlight and never presses a button."])
 end
 
 function addon:CreateRotationReference(parent,body,spec)

@@ -117,7 +117,7 @@ local function help_action_group(group, singular)
     group:AddChild(Indent(40, CreateText(color.GREEN .. L["Blizzard's suggestion"] .. color.RESET .. " - " ..
             L["Recommends whatever spell Blizzard's Assisted Combat suggests next, read each time the rotation is evaluated. It highlights that spell's button and shows in the preview like a spell step, and is held to the same requirements: known, usable, off cooldown and in range. When nothing is suggested, the suggested spell is not on your bars, or Assisted Combat is unavailable (anywhere but Retail, or a specialization without it), the step is skipped. Rotation list only."])))
     group:AddChild(Indent(40, CreateText(color.GREEN .. L["Stop"] .. color.RESET .. " - " ..
-            L["Stop ends lower priority actions. Implicit Attack remains eligible unless you suppress it. An unavailable Stop condition also suppresses Attack. Optional reminders remain independent."])))
+            L["Stop ends lower priority actions. The implicit auto-attack (Attack or Shoot) remains eligible unless you suppress it. An unavailable Stop condition also suppresses it. Optional reminders remain independent."])))
 
     if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
         group:AddChild(Gap())
@@ -271,7 +271,7 @@ function addon.layout_rotation_help(frame)
     group:AddChild(CreateText("Fields", "Interface\\AddOns\\" .. addon_name .. "\\Fonts\\Inconsolata-Bold.ttf", 16))
 
     group:AddChild(Gap())
-    group:AddChild(CreateText(L["When no priority action is ready, Attack is the implicit final fallback for a living hostile target in melee combat, if autoattack is inactive. It uses the normal rotation highlight and never presses a button."]))
+    group:AddChild(CreateText(L["When no priority action is ready, auto-attack (Attack or Shoot) is the implicit final fallback against a living hostile target in combat: Attack in melee range; beyond it, Auto Shot or wand Shoot while the target is in range and that button is on your action bars. Nothing is recommended while that auto-attack is already running. It uses the normal rotation highlight and never presses a button."]))
     group:AddChild(Gap())
     help_top_buttons(group, "rotation", "rotations")
 

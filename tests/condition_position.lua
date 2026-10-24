@@ -53,7 +53,7 @@ end)
 test('rotation Help remains native and its content survives a release and reopen',function()
     local f,a=fixture();f.load('Help/rotations.lua');assert(f.libraries['AceGUI-3.0']==nil)
     for _=1,2 do local root=a:CreateConditionGroup();root:SetWidth(600);a.layout_rotation_help(root)
-        local text=F.text(root);assert(text:find('order of priority',1,true) and text:find('Attack is the implicit final fallback',1,true))
+        local text=F.text(root);assert(text:find('order of priority',1,true) and text:find('auto-attack (Attack or Shoot) is the implicit final fallback',1,true))
         a:ReleaseConditionWidget(root)
     end
 end)

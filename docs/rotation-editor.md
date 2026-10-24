@@ -22,7 +22,7 @@ Add branch creates a conditional decision. Drag Add branch into a gap to put it 
 
 Dragging an ordered card into a different branch arm carries the rest of its source sequence with it, including every nested branch subtree. A destination inside any carried subtree is refused. Moving within the same sequence or using Up/Down reorders the selected card and its own nested subtree. Cooldowns remain independent.
 
-A branch finishes its selected arm and then rejoins any siblings following that branch. Stop ends the ordered sequence; implicit Attack may still apply unless the Stop explicitly suppresses it. Independent cooldowns continue to be evaluated.
+A branch finishes its selected arm and then rejoins any siblings following that branch. Stop ends the ordered sequence; the implicit auto-attack (Attack or Shoot) may still apply unless the Stop explicitly suppresses it. Attack is recommended in melee range; beyond it, Auto Shot or wand Shoot when the target is in its range and that button is on the action bars. Independent cooldowns continue to be evaluated.
 
 Undo reverses an insertion, captured tail or grouped move as one edit. Apply validates both arms, including currently unreachable cards, without running custom condition code. Incomplete or unavailable cards have red borders and remain editable when validation refuses Apply. A warning above the switch condition explains why the rotation cannot run; click it for diagnostics.
 
