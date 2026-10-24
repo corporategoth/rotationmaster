@@ -9,8 +9,8 @@ local function negate(c)return{type='NOT',value=c}end
 local function own(id)return{type='BUFF',unit='player',spell=id,anyrank=true,ownbuff=true}end
 local function anySeal()local out={};for i,id in ipairs({21084,20375,31892,348700,31801,348704,21082,20166,20165,20164})do out[i]=own(id)end;return{type='OR',value=out}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.protection.icyveins',revision=5,
- blocks={['tbc.paladin.tank-upkeep']=2,['tbc.paladin.melee-opening']=1,['tbc.paladin.boundaries']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.protection.icyveins',revision=6,
+ blocks={['tbc.paladin.tank-upkeep']=2,['tbc.paladin.melee-opening']=2,['tbc.paladin.boundaries']=2},
  nameKey='Default.TBC.Paladin.Protection.IcyVeins.Name',descriptionKey='Default.TBC.Paladin.Protection.IcyVeins.Description',
  applicability={families={'tbc'},actionContext='player',class='PALADIN'},
  tags={'leveling','endgame','protection','tank','single-target','aoe','icy-veins'},

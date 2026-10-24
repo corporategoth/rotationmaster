@@ -17,8 +17,8 @@ local aldrachi=known(442294)
 local glaive=any(buff(444686),buff(444764))
 local scarredMeta=all(negate(aldrachi),buff(162264))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.havoc.guide',revision=3,
- blocks={['retail.demonhunter.boundaries']=2,['retail.demonhunter.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.havoc.guide',revision=4,
+ blocks={['retail.demonhunter.boundaries']=3,['retail.demonhunter.utility']=2},
  nameKey='Default.Retail.DemonHunter.HavocGuide.Name',descriptionKey='Default.Retail.DemonHunter.HavocGuide.Description',
  applicability={families={'retail'},actionContext='player',class='DEMONHUNTER'},
  tags={'havoc','melee','reference','icy-veins','simulationcraft','wowhead'},

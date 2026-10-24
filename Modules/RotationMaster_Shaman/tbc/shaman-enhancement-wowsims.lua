@@ -8,9 +8,9 @@ local function negate(c)return{type='NOT',value=c}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function windfuryWithin(s)return{type='SPELL_HISTORY_TIME',spell=8512,operator='LESSTHAN',value=s}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.enhancement.wowsims',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.enhancement.wowsims',revision=6,
  blocks={['tbc.shaman.enhancement-upkeep']=2,['tbc.shaman.mainhand-imbue']=1,['tbc.shaman.shield']=1,['tbc.shaman.bloodlust']=1,
-  ['tbc.shaman.enhancement-opening']=2,['tbc.shaman.boundaries']=2,['tbc.shaman.interrupt']=1},
+  ['tbc.shaman.enhancement-opening']=3,['tbc.shaman.boundaries']=3,['tbc.shaman.interrupt']=1},
  nameKey='Default.TBC.Shaman.Enhancement.Wowsims.Name',descriptionKey='Default.TBC.Shaman.Enhancement.Wowsims.Description',
  applicability={families={'tbc'},actionContext='player',class='SHAMAN'},
  tags={'endgame','raid','enhancement','melee','single-target','aoe','wowhead','wowsims'},

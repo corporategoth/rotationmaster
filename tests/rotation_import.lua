@@ -83,7 +83,7 @@ test('nested imported branches reidentify both arms and keep their source corres
     for _,change in ipairs(diff.changes) do assert(change.kind~='added' and change.kind~='removed','nested import correspondence lost') end
 end)
 test('collision with an existing nested saved ID leaves no partially imported body or manifest',function()
-    local a,session=fixture();a.db.profile.rotations[0].existing={name='Existing tree',rotation={{id='b',type='branch',conditions={},onTrue={{id='nested-collision',type='none'}},onFalse={}}},cooldowns={}}
+    local a,session=fixture();a.db.profile.rotations[0].existing={name='Existing tree',rotation={{id='b',type='branch',conditions={},onTrue={{id='nested-collision',type='stop'}},onFalse={}}},cooldowns={}}
     local candidate=assert(session:Stage('modern'));local n=0
     a.uuid=function() n=n+1;return n==1 and 'new-import' or 'nested-collision' end
     local id,why=a:ApplyRotationImport(session,candidate.token,0,'Collision')

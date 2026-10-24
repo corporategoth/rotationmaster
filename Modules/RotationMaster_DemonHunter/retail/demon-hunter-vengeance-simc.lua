@@ -17,8 +17,8 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local demise={type='DEBUFF',unit='target',spell=212818,owndebuff=true}
 local charged={type='SPELL_CHARGES',spell=263642,operator='GREATERTHANOREQUALS',value=2}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.vengeance.simc',revision=3,
- blocks={['retail.demonhunter.boundaries']=2,['retail.demonhunter.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.vengeance.simc',revision=4,
+ blocks={['retail.demonhunter.boundaries']=3,['retail.demonhunter.utility']=2},
  nameKey='Default.Retail.DemonHunter.VengeanceSimc.Name',descriptionKey='Default.Retail.DemonHunter.VengeanceSimc.Description',
  applicability={families={'retail'},actionContext='player',class='DEMONHUNTER'},
  tags={'vengeance','tank','reference','simulationcraft'},

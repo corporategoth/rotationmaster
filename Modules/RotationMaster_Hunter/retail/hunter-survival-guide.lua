@@ -11,7 +11,7 @@ local function buff(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}en
 local function known(id)return{type='SPELL_KNOWN',spell=id}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local KILL,BOMB,TAKEDOWN,BOOM,RAPTOR,SWIPE,CHAKRAM=259489,259495,1250646,1261193,186270,1262293,1264949
 local tip=buff(260286)
@@ -19,8 +19,8 @@ local howl=any(buff(471878),buff(472324),buff(472325))
 -- Kill Command just before a ready Takedown, without Twin Fangs and with no Tip of the Spear.
 local beforeTakedown=all(negate(known(1272139)),negate(tip),{type='SPELL_AVAIL',spell=TAKEDOWN})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.survival.guide',revision=4,
- blocks={['retail.hunter.boundaries']=2,['retail.hunter.utility']=2,['retail.hunter.mark']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.survival.guide',revision=5,
+ blocks={['retail.hunter.boundaries']=3,['retail.hunter.utility']=2,['retail.hunter.mark']=1},
  nameKey='Default.Retail.Hunter.SurvivalGuide.Name',descriptionKey='Default.Retail.Hunter.SurvivalGuide.Description',
  applicability={families={'retail'},actionContext='player',class='HUNTER'},
  tags={'survival','melee','pet','reference','simulationcraft'},

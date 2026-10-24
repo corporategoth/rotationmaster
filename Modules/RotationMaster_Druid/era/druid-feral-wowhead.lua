@@ -6,9 +6,9 @@ local function any(...)return{type='OR',value={...}}end
 local function form(id)return{type='FORM',form=id}end
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.druid.feral.wowhead',revision=4,
- blocks={['era.druid.boundaries']=3,['era.druid.upkeep']=1,['era.druid.feral-cooldowns']=2,['era.druid.cat']=1,['era.druid.stealth-opener']=1,
-  ['era.druid.cat-builders']=1,['era.druid.powershift']=1,['era.druid.bear-pull']=2,['era.druid.feral-humanoid']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.druid.feral.wowhead',revision=5,
+ blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['era.druid.feral-cooldowns']=2,['era.druid.cat']=1,['era.druid.stealth-opener']=2,
+  ['era.druid.cat-builders']=1,['era.druid.powershift']=2,['era.druid.bear-pull']=3,['era.druid.feral-humanoid']=2},
  nameKey='Default.Era.Druid.Feral.Wowhead.Name',descriptionKey='Default.Era.Druid.Feral.Wowhead.Description',
  applicability={families={'era'},actionContext='player',class='DRUID'},
  tags={'endgame','raid','feral','melee','tank','single-target','wowhead'},
@@ -25,7 +25,7 @@ assert(addon:RegisterDefaultRotation({
     ref('era-feral-wh-bear-pull','era.druid.bear-pull','era-feral-wh-bear-pull-'),
     {id='era-feral-wh-swipe',type='spell',action=779,ranked=false,conditions={type='POWER',unit='player',operator='GREATERTHANOREQUALS',value=60}},
     {id='era-feral-wh-faerie-fire',type='spell',action=16857,ranked=false,conditions={}},
-    {id='era-feral-wh-bear-wait',type='none',conditions={}}}},
+    {id='era-feral-wh-bear-wait',type='stop',conditions={}}}},
    ref('era-feral-wh-humanoid','era.druid.feral-humanoid','era-feral-wh-'),
   },
  },

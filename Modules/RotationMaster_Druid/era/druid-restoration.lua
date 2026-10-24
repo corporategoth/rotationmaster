@@ -15,8 +15,8 @@ local function hp(v)return{type='HEALTHPCT',unit='target',operator='LESSTHAN',va
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function spell(id,action,conditions,ranked)return{id=id,type='spell',action=action,ranked=ranked or false,conditions=conditions or {}}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.druid.restoration',revision=3,
- blocks={['era.druid.boundaries']=3,['era.druid.upkeep']=1,['era.druid.heal-cooldowns']=1,['era.druid.resto-damage']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.druid.restoration',revision=4,
+ blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['era.druid.heal-cooldowns']=1,['era.druid.resto-damage']=2},
  nameKey='Default.Era.Druid.Restoration.Name',descriptionKey='Default.Era.Druid.Restoration.Description',
  applicability={families={'era'},actionContext='player',class='DRUID'},
  tags={'leveling','endgame','restoration','healer','group','icy-veins','wowhead'},
@@ -29,7 +29,7 @@ assert(addon:RegisterDefaultRotation({
   cooldowns={ref('era-resto-upkeep','era.druid.upkeep','era-resto-'),ref('era-resto-cooldowns','era.druid.heal-cooldowns','era-resto-')},
   rotation={
    ref('era-resto-boundaries','era.druid.boundaries','era-resto-'),
-   {id='era-resto-feral-form',type='none',conditions=any(form(768),form(5487),form(9634))},
+   {id='era-resto-feral-form',type='stop',conditions=any(form(768),form(5487),form(9634))},
    {id='era-resto-heal',type='branch',conditions=all({type='FRIENDLY',unit='target'},negate({type='DEAD',unit='target'})),onFalse={},onTrue={
     spell('era-resto-swiftness',5185,own(17116)),
     spell('era-resto-swiftmend',18562,all(hp(.4),any(hot(774),hot(8936)))),
@@ -40,9 +40,9 @@ assert(addon:RegisterDefaultRotation({
     spell('era-resto-big-touch',5185,any(hp(.45),own(16886))),
     spell('era-resto-touch-rank4',5188,hp(.85),true),
     spell('era-resto-touch',5185,hp(.85)),
-    {id='era-resto-heal-stop',type='none',suppress_attack=true,conditions={}}}},
+    {id='era-resto-heal-stop',type='stop',suppress_attack=true,conditions={}}}},
    ref('era-resto-damage','era.druid.resto-damage','era-resto-enemy-'),
-   {id='era-resto-stop',type='none',suppress_attack=true,conditions={}},
+   {id='era-resto-stop',type='stop',suppress_attack=true,conditions={}},
   },
  },
 }))

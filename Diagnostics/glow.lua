@@ -206,7 +206,7 @@ local function walkStep(self,report,row,now,verbose)
     if row.unreachable then if verbose then report.add('  %s unreachable',label) end;return 'disabled' end
     if step.type=='branch' then if verbose then report.add('  %s (branch: its steps follow)',label) end;return 'branch' end
     local status=conditionStatus(self,step)
-    if step.type=='none' then
+    if step.type=='stop' then
         if verbose then report.add('  %s stop step, conditions=%s',label,status) end
         if status:match('^match') or status:match('^unavailable') then return 'stop',nil,'a stop step matched' end
         return 'notmatched'
@@ -503,11 +503,13 @@ function addon:ShowGlowDiagnostic()
     if self.ShowConditionText then self:ShowConditionText(table.concat(entry.lines,'\n'),L['Glow diagnostic']) end
 end
 
+-- /rm debug editor copies the Lua editor input report (UI/lua_input_diagnostics.lua).
 function addon:HandleDebugCommand(args)
     local what,rest=(args or ''):match('^%s*(%S*)%s*(.-)%s*$')
     if what=='glow' then
         if rest=='show' then return self:ShowGlowDiagnostic() end
         return self:RunGlowDiagnostic(rest~='' and rest or nil)
     end
-    self:print(L['Usage: /rm debug glow [seconds|show]'])
+    if what=='editor' and self.ShowLuaEditorInputReport then return self:ShowLuaEditorInputReport() end
+    self:print(L['Usage: /rm debug glow [seconds|show] or /rm debug editor'])
 end

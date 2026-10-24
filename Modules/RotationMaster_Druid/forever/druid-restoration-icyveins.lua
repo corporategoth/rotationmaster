@@ -14,11 +14,11 @@ local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function hot(id)return{type='BUFF',unit='target',spell=id,anyrank=true,ownbuff=true}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.druid.restoration.icyveins',revision=4,
- blocks={['forever.druid.boundaries']=2,['forever.druid.upkeep']=1,['forever.druid.healer-upkeep']=2,['forever.druid.spare-damage']=1,['forever.druid.dots']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.druid.restoration.icyveins',revision=5,
+ blocks={['forever.druid.boundaries']=3,['forever.druid.upkeep']=1,['forever.druid.healer-upkeep']=2,['forever.druid.spare-damage']=2,['forever.druid.dots']=2},
  nameKey='Default.Forever.Druid.RestorationIcyVeins.Name',descriptionKey='Default.Forever.Druid.RestorationIcyVeins.Description',
  applicability={families={'forever'},actionContext='player',class='DRUID'},
  tags={'restoration','healer','group','icy-veins'},

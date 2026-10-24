@@ -73,9 +73,42 @@ function addon:ApplyRotationProfileMigration(public)
     if profile.rotationLibrary then profile.rotationLibrary=replacement end
     profile.version=3;migrations[public]=nil;return true
 end
+-- body.handle was renamed body.identifier. Move a saved one across (a body
+-- already holding an identifier keeps it), in every stored body of a profile:
+-- owned records and their source baselines, the preserved legacy map and the
+-- flat pre-scope map. Idempotent and cheap, so it runs on every refresh and
+-- also catches an old profile imported later.
+local function moveHandle(body)
+    if not plain(body) or body.handle==nil then return end
+    if body.identifier==nil then body.identifier=body.handle end
+    body.handle=nil
+end
+local function moveSidecar(sidecar)
+    if plain(sidecar) and plain(sidecar.lineage) then moveHandle(sidecar.lineage.baseline) end
+end
+local function eachRow(map,visit)
+    if not plain(map) then return end
+    for _,rows in pairs(map) do if plain(rows) then for _,value in pairs(rows) do visit(value) end end end
+end
+local function moveRecord(record)
+    if not plain(record) then return end
+    moveHandle(record.body);moveSidecar(record.origin);moveSidecar(record.imported)
+end
+function addon:MoveRotationHandlesToIdentifiers(profile)
+    if not plain(profile) then return end
+    local store=profile.rotationStore
+    if plain(store) then
+        if plain(store.classes) then for _,map in pairs(store.classes) do eachRow(map,moveRecord) end end
+        if plain(store.characters) then for _,bucket in pairs(store.characters) do if plain(bucket) then eachRow(bucket.specs,moveRecord) end end end
+        if plain(store.legacy) then eachRow(store.legacy.rotations,moveHandle);eachRow(store.legacy.origins,moveSidecar);eachRow(store.legacy.imports,moveSidecar) end
+    end
+    eachRow(profile.rotations,moveHandle)
+end
 -- Explicit startup entry point; the caller activates it only when every UI and
 -- runtime route is ready. Profiles migrate independently; char archives stay put.
 function addon:InitializeScopedRotationStorage()
+    for _,profile in pairs(self.db.sv and self.db.sv.profiles or {}) do self:MoveRotationHandlesToIdentifiers(profile) end
+    self:MoveRotationHandlesToIdentifiers(self.db.profile)
     local results={};local visited={}
     for name,profile in pairs(self.db.sv and self.db.sv.profiles or {}) do
         visited[profile]=true;local plan,why=self:PlanRotationProfileMigration(profile,profile.rotationFallbackID or DEFAULT)

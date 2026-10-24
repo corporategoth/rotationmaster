@@ -8,9 +8,9 @@ local function any(...)return{type='OR',value={...}}end
 local function form(id)return{type='FORM',form=id}end
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.druid.tank',revision=4,
- blocks={['era.druid.boundaries']=3,['era.druid.upkeep']=1,['sod.druid.maul']=2,['sod.druid.tank-cooldowns']=2,['sod.druid.bear']=1,['sod.druid.cat']=2,
-  ['era.druid.stealth-opener']=1,['era.druid.cat-builders']=1,['era.druid.powershift']=1,['sod.druid.tank-humanoid']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.druid.tank',revision=5,
+ blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['sod.druid.maul']=2,['sod.druid.tank-cooldowns']=2,['sod.druid.bear']=2,['sod.druid.cat']=2,
+  ['era.druid.stealth-opener']=2,['era.druid.cat-builders']=1,['era.druid.powershift']=2,['sod.druid.tank-humanoid']=2},
  nameKey='Default.SoD.Druid.Tank.Name',descriptionKey='Default.SoD.Druid.Tank.Description',
  applicability={families={'era'},actionContext='player',class='DRUID',rulesets={'season:2'}},
  tags={'season-of-discovery','leveling','endgame','feral','tank','melee','single-target','aoe','icy-veins','wowsims','warcraft-tavern'},

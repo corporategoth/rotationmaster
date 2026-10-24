@@ -26,8 +26,8 @@ local unqueued=all(negate(queued(78)),negate(queued(845)))
 local demoralized=any({type='DEBUFF',unit='target',spell=1160,anyrank=true},{type='DEBUFF',unit='target',spell=99,anyrank=true})
 local stacked=all({type='DEBUFF',unit='target',spell=7386,anyrank=true},{type='DEBUFF_STACKS',unit='target',spell=7386,anyrank=true,operator='GREATERTHANOREQUALS',value=5})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.warrior.protection',revision=3,
- blocks={['era.warrior.boundaries']=2,['era.warrior.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.warrior.protection',revision=4,
+ blocks={['era.warrior.boundaries']=3,['era.warrior.upkeep']=1},
  nameKey='Default.Era.Warrior.Protection.Name',descriptionKey='Default.Era.Warrior.Protection.Description',
  applicability={families={'era'},actionContext='player',class='WARRIOR'},
  tags={'tank','melee','leveling','endgame','aoe','icy-veins','maxdps'},

@@ -12,12 +12,12 @@ local function buff(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}en
 local function known(id)return{type='SPELL_KNOWN',spell=id}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local harmony=known(1262765)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.monk.brewmaster.guide',revision=4,
- blocks={['retail.monk.boundaries']=2,['retail.monk.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.monk.brewmaster.guide',revision=5,
+ blocks={['retail.monk.boundaries']=3,['retail.monk.utility']=2},
  nameKey='Default.Retail.Monk.BrewmasterGuide.Name',descriptionKey='Default.Retail.Monk.BrewmasterGuide.Description',
  applicability={families={'retail'},actionContext='player',class='MONK'},
  tags={'brewmaster','tank','reference','icy-veins','simulationcraft'},

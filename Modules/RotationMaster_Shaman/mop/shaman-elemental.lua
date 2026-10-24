@@ -27,8 +27,8 @@ local refresh=any(all(any(negate(flame),shock('LESSTHAN',3)),any(classified('wor
 local lava=any(shock('GREATERTHAN',2),own(77762),ascended)
 local fulminate=all({type='BUFF_STACKS',unit='player',spell=324,ownbuff=true,operator='GREATERTHANOREQUALS',value=6},shock('GREATERTHANOREQUALS',6))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.elemental',revision=4,
- blocks={['mop.shaman.manual-target']=1,['mop.shaman.lightning-shield']=1,['mop.shaman.group']=1,['mop.shaman.fire-totems']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.elemental',revision=5,
+ blocks={['mop.shaman.manual-target']=2,['mop.shaman.lightning-shield']=1,['mop.shaman.group']=1,['mop.shaman.fire-totems']=1},
  nameKey='Default.MoP.Shaman.Elemental.Name',descriptionKey='Default.MoP.Shaman.Elemental.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='SHAMAN'},
  tags={'elemental','dps','caster','ranged','leveling','endgame','wowhead','icy-veins','wowsims'},
@@ -54,7 +54,7 @@ assert(addon:RegisterDefaultRotation({
  {id='shaman-ele-pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('shaman-ele-pull-lava',51505,talent(16)),
   spell('shaman-ele-pull-bolt',403),
-  {id='shaman-ele-pull-stop',type='none',suppress_attack=false,conditions={}},
+  {id='shaman-ele-pull-stop',type='stop',suppress_attack=false,conditions={}},
  }},
  {id='shaman-ele-aoe',type='branch',conditions=enemies(4),onFalse={},onTrue={
   spell('shaman-ele-magma',8190,all(negate({type='BEYOND_MELEE',unit='target'}),negate({type='TOTEM_SPELL',spell=2894}),negate({type='TOTEM_SPELL',spell=8190}))),
@@ -62,7 +62,7 @@ assert(addon:RegisterDefaultRotation({
   spell('shaman-ele-aoe-surge',51505,own(77762)),
   spell('shaman-ele-lava-beam',114074,ascended),
   spell('shaman-ele-aoe-chain',421),
-  {id='shaman-ele-aoe-stop',type='none',suppress_attack=false,conditions={}},
+  {id='shaman-ele-aoe-stop',type='stop',suppress_attack=false,conditions={}},
  }},
  {id='shaman-ele-moving',type='branch',conditions=all({type='MOVING'},negate(own(79206))),onFalse={},onTrue={
   spell('shaman-ele-moving-unleash',73680,talent(16)),
@@ -70,7 +70,7 @@ assert(addon:RegisterDefaultRotation({
   spell('shaman-ele-moving-lava',51505,any(own(77762),ascended)),
   spell('shaman-ele-moving-earth-shock',8042,{type='BUFF_STACKS',unit='player',spell=324,ownbuff=true,operator='GREATERTHANOREQUALS',value=6}),
   spell('shaman-ele-moving-bolt',403),
-  {id='shaman-ele-moving-stop',type='none',suppress_attack=false,conditions={}},
+  {id='shaman-ele-moving-stop',type='stop',suppress_attack=false,conditions={}},
  }},
  spell('shaman-ele-unleash',73680,all(talent(16),negate(ascended))),
  spell('shaman-ele-flame-shock',8050,refresh),

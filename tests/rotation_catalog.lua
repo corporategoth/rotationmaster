@@ -233,7 +233,7 @@ end)
 test('nested source identity collision fails before saving a partially cloned catalog entry',function()
     local state={};local n=0
     local c,envelope=fixture(state,function() n=n+1;return n==1 and 'new-copy' or 'nested-source' end)
-    local source=envelope();source.body.rotation={{id='branch',type='branch',onTrue={{id='nested-source',type='none'}},onFalse={}}}
+    local source=envelope();source.body.rotation={{id='branch',type='branch',onTrue={{id='nested-source',type='stop'}},onFalse={}}}
     assert(c:RegisterBuiltin(source));local id,why=c:Clone(source.id,'Collision')
     assert(not id and why=='id-collision' and next(state.custom)==nil and next(state.lineage)==nil)
 end)

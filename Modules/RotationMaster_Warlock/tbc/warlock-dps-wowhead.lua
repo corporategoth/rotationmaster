@@ -16,9 +16,9 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local tough=any(class('elite'),class('rareelite'),class('worldboss'))
 local P='warlock-wh-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.warlock.dps.wowhead',revision=4,
- blocks={['tbc.warlock.boundaries']=2,['tbc.warlock.procs']=1,['tbc.warlock.moving']=1,['tbc.warlock.curse']=2,['tbc.warlock.aoe']=1,
-  ['tbc.warlock.finishers']=1,['tbc.warlock.filler']=1,['tbc.warlock.armor']=1,['tbc.warlock.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.warlock.dps.wowhead',revision=5,
+ blocks={['tbc.warlock.boundaries']=3,['tbc.warlock.procs']=1,['tbc.warlock.moving']=2,['tbc.warlock.curse']=2,['tbc.warlock.aoe']=1,
+  ['tbc.warlock.finishers']=1,['tbc.warlock.filler']=2,['tbc.warlock.armor']=1,['tbc.warlock.upkeep']=1},
  nameKey='Default.TBC.Warlock.DpsWowhead.Name',descriptionKey='Default.TBC.Warlock.DpsWowhead.Description',
  applicability={families={'tbc'},actionContext='player',class='WARLOCK'},
  tags={'affliction','demonology','destruction','wowhead','leveling','raid','single-target','aoe','drain-tank'},

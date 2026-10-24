@@ -11,9 +11,9 @@ local function buff(id,anyrank)return{type='BUFF',unit='player',spell=id,anyrank
 local function combat()return{type='COMBAT',unit='player'}end
 local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or {}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or {}}end
 -- Casts, channels (Missiles, Blizzard, Evocation) and a target that is not ours to pull end advice.
-assert(addon:RegisterDefaultBlock({id='tbc.mage.boundaries',revision=2,families={'tbc'},class='MAGE',steps={
+assert(addon:RegisterDefaultBlock({id='tbc.mage.boundaries',revision=3,families={'tbc'},class='MAGE',steps={
  stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate(all({type='ATTACKABLE',unit='target'},any(combat(),negate({type='COMBAT',unit='target'})))))),
 }}))
 -- Frostbolt is the filler once learned (level 4); Fireball only before that.
@@ -21,14 +21,14 @@ assert(addon:RegisterDefaultBlock({id='tbc.mage.frostbolt',revision=1,families={
  {id='frostbolt-known',type='branch',conditions=known(116),onTrue={spell('frostbolt',116)},onFalse={spell('fireball',133)}},
 }}))
 -- Out of spells: wand, never toggling an active wand off; casters never melee.
-assert(addon:RegisterDefaultBlock({id='tbc.mage.wand-finish',revision=1,families={'tbc'},class='MAGE',steps={
+assert(addon:RegisterDefaultBlock({id='tbc.mage.wand-finish',revision=2,families={'tbc'},class='MAGE',steps={
  {id='wand-known',type='branch',conditions=known(5019),onFalse={},onTrue={
   stop('wand-active',{type='SPELL_AUTOREPEAT',spell=5019,ranked=true}),
   spell('shoot',5019)}},
  stop('exhausted'),
 }}))
 -- Instants while moving (Fire and Arcane): Fire Blast, then Ice Lance.
-assert(addon:RegisterDefaultBlock({id='tbc.mage.moving-fire-blast',revision=1,families={'tbc'},class='MAGE',steps={
+assert(addon:RegisterDefaultBlock({id='tbc.mage.moving-fire-blast',revision=2,families={'tbc'},class='MAGE',steps={
  {id='moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={spell('fire-blast',2136),spell('ice-lance',30455),stop('moving-stop')}},
 }}))
 -- Fire AoE: Blast Wave and Dragon's Breath when ready, Flamestrike when its burn is not on the target.

@@ -21,8 +21,8 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.shaman.restoration',revision=4,
- blocks={['forever.shaman.manual']=2,['forever.shaman.upkeep']=2,['forever.shaman.group-totems']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.shaman.restoration',revision=5,
+ blocks={['forever.shaman.manual']=3,['forever.shaman.upkeep']=2,['forever.shaman.group-totems']=1,
   ['forever.shaman.caster-aoe']=1,['forever.shaman.stormstrike-hybrid']=1},
  nameKey='Default.Forever.Shaman.Restoration.Name',descriptionKey='Default.Forever.Shaman.Restoration.Description',
  applicability={families={'forever'},actionContext='player',class='SHAMAN'},
@@ -44,9 +44,9 @@ assert(addon:RegisterDefaultRotation({
   spell('shaman-resto-riptide',408521,negate({type='BUFF',unit='target',spell=408521,anyrank=true,ownbuff=true})),
   spell('shaman-resto-chain-heal',1064,{type='GROUP'}),
   spell('shaman-resto-wave',331),
-  {id='shaman-resto-heal-stop',type='none',suppress_attack=true,conditions={}},
+  {id='shaman-resto-heal-stop',type='stop',suppress_attack=true,conditions={}},
  },onFalse={
-  {id='shaman-resto-no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
+  {id='shaman-resto-no-target',type='stop',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
   block('forever.shaman.caster-aoe','shaman-resto-'),
   block('forever.shaman.stormstrike-hybrid','shaman-resto-'),
   spell('shaman-resto-flame-shock',8050,all(negate({type='DEBUFF',unit='target',spell=8050,anyrank=true,owndebuff=true}),

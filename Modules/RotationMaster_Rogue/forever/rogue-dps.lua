@@ -18,8 +18,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local big={type='OR',value={{type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'}}}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.rogue.dps',revision=3,
- blocks={['forever.rogue.boundaries']=2,['forever.rogue.stealth-fallback']=2,['forever.rogue.reactive']=1,['forever.rogue.expose-armor']=1,['forever.rogue.upkeep']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.rogue.dps',revision=4,
+ blocks={['forever.rogue.boundaries']=3,['forever.rogue.stealth-fallback']=3,['forever.rogue.reactive']=1,['forever.rogue.expose-armor']=1,['forever.rogue.upkeep']=2},
  nameKey='Default.Forever.Rogue.DPS.Name',descriptionKey='Default.Forever.Rogue.DPS.Description',
  applicability={families={'forever'},actionContext='player',class='ROGUE'},
  tags={'dps','melee','leveling','endgame','icy-veins','wowhead','warcraft-tavern'},
@@ -49,14 +49,14 @@ assert(addon:RegisterDefaultRotation({
  {id='rogue-finisher',type='branch',conditions=points('GREATERTHANOREQUALS',5),onFalse={},onTrue={
   spell('rogue-rupture',1943,all(known(16511),negate(known(1310707)),negate(owned(1943)),any(big,{type='GROUP'}))),
   spell('rogue-eviscerate',2098),
-  {id='rogue-pool',type='none',suppress_attack=false,conditions={}},
+  {id='rogue-pool',type='stop',suppress_attack=false,conditions={}},
  }},
  spell('rogue-hemorrhage-debuff',16511,all(known(1943),negate(owned(16511)))),
  spell('rogue-ghostly-strike',14278),
  {id='rogue-assassination',type='branch',conditions=known(1310707),onFalse={},onTrue={
   spell('rogue-mutilate',1310707,points('LESSTHANOREQUALS',3)),
   spell('rogue-fifth-point',1752,points('GREATERTHANOREQUALS',4)),
-  {id='rogue-mutilate-pool',type='none',suppress_attack=false,conditions={}},
+  {id='rogue-mutilate-pool',type='stop',suppress_attack=false,conditions={}},
  }},
  spell('rogue-hemorrhage',16511),
  spell('rogue-backstab',53,negate({type='THREAT',unit='target',threat=3})),

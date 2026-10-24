@@ -17,7 +17,7 @@ local function enemies(op,n)return{type='THREAT_COUNT',threat=1,operator=op,valu
 local function cooldown(id,op,v)return{type='SPELL_COOLDOWN',spell=id,operator=op,value=v}end
 local function classified(kind)return{type='CLASSIFICATION',unit='target',value=kind}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local WRATH=19574
 local wrath=petbuff(WRATH)
@@ -30,9 +30,9 @@ local frenzy=any({type='BUFF_STACKS',unit='pet',spell=19615,operator='GREATERTHA
 local focusFire=all(negate(wrath),frenzy)
 local thrill=buff(34720)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.beastmastery',revision=4,
- blocks={['mop.hunter.boundaries']=2,['mop.hunter.mark']=1,['mop.hunter.pet']=1,['mop.hunter.aspect']=1,['mop.hunter.utility']=1,
-  ['mop.hunter.talents']=1,['mop.hunter.talent-shots']=1,['mop.hunter.serpent']=1,['mop.hunter.filler']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.beastmastery',revision=5,
+ blocks={['mop.hunter.boundaries']=3,['mop.hunter.mark']=1,['mop.hunter.pet']=1,['mop.hunter.aspect']=1,['mop.hunter.utility']=1,
+  ['mop.hunter.talents']=1,['mop.hunter.talent-shots']=1,['mop.hunter.serpent']=1,['mop.hunter.filler']=2},
  nameKey='Default.MoP.Hunter.BeastMastery.Name',descriptionKey='Default.MoP.Hunter.BeastMastery.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='HUNTER'},
  tags={'beast-mastery','leveling','single-target','aoe','wowhead','wowsims'},

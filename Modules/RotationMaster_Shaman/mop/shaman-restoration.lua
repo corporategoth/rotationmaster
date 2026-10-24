@@ -22,8 +22,8 @@ local someone=any(hurt(.95),around(.9,1))
 local heavy=around(.6,3)
 local rain=all({type='SPELL_AVAIL',spell=73920},around(.9,3))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.restoration',revision=3,
- blocks={['mop.shaman.manual']=2,['mop.shaman.group']=1,['mop.shaman.restoration-upkeep']=1,['mop.shaman.restoration-damage']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.restoration',revision=4,
+ blocks={['mop.shaman.manual']=3,['mop.shaman.group']=1,['mop.shaman.restoration-upkeep']=1,['mop.shaman.restoration-damage']=1},
  nameKey='Default.MoP.Shaman.Restoration.Name',descriptionKey='Default.MoP.Shaman.Restoration.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='SHAMAN'},
  tags={'restoration','healer','caster','leveling','endgame','icy-veins','wowhead'},
@@ -47,9 +47,9 @@ assert(addon:RegisterDefaultRotation({
  block('mop.shaman.manual','shaman-resto-'),
  {id='shaman-resto-hostile',type='branch',conditions={type='ATTACKABLE',unit='target'},onFalse={},onTrue={
   block('mop.shaman.restoration-damage','shaman-resto-dps-'),
-  {id='shaman-resto-dps-stop',type='none',suppress_attack=false,conditions={}},
+  {id='shaman-resto-dps-stop',type='stop',suppress_attack=false,conditions={}},
  }},
- {id='shaman-resto-enemy',type='none',suppress_attack=true,conditions={type='ENEMY',unit='target'}},
+ {id='shaman-resto-enemy',type='stop',suppress_attack=true,conditions={type='ENEMY',unit='target'}},
  spell('shaman-resto-swift-wave',77472,own(16188)),
  spell('shaman-resto-surge',8004,hurt(.35)),
  spell('shaman-resto-purify',77130,any({type='DISPELLABLE',unit='target',debufftype='Magic'},{type='DISPELLABLE',unit='target',debufftype='Curse'})),
@@ -60,6 +60,6 @@ assert(addon:RegisterDefaultRotation({
  spell('shaman-resto-greater-wave',77472,hurt(.6)),
  spell('shaman-resto-wave',331,hurt(.9)),
  spell('shaman-resto-early-surge',8004,all(negate({type='SPELL_KNOWN',spell=331}),hurt(.7))),
- {id='shaman-resto-heal-stop',type='none',suppress_attack=true,conditions={}},
+ {id='shaman-resto-heal-stop',type='stop',suppress_attack=true,conditions={}},
  }},
 }))

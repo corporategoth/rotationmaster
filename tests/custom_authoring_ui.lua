@@ -345,7 +345,7 @@ test('arrow probe release and reacquisition cannot restore stale handlers',funct
     local newLease=function() end;edit:SetScript('OnArrowPressed',newLease);code:Acquire(function() end,function() return true end)
     assert(not code.nativeArrowProbe and edit:GetScript('OnArrowPressed')==newLease,'acquisition restored stale arrow handler')
     assert(code:ToggleNativeArrowProbe()==true);code:ResetInputTrace();assert(not code.nativeArrowProbe and edit:GetScript('OnArrowPressed')==newLease,'trace reset retained a temporary probe')
-    local messages={};a.print=function(_,text) messages[#messages+1]=text end;a:ShowLuaEditorArrowProbe();assert(code.nativeArrowProbe and messages[#messages]:find('enabled',1,true));a:ShowLuaEditorArrowProbe();assert(not code.nativeArrowProbe and messages[#messages]:find('disabled',1,true));code:Release();a:ShowLuaEditorArrowProbe();assert(messages[#messages]:find('reopen',1,true),'closed command does not explain how to capture active input')
+    assert(a.ShowLuaEditorArrowProbe==nil,'the /rm editorarrows probe command is retired');code:Release()
 end)
 test('editor diagnostic commands remain source free without temporary buttons in either provider',function()
     for _,provider in ipairs({'plain','LuaWorkbench'}) do

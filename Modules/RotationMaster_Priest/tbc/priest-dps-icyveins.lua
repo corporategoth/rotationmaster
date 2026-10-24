@@ -10,14 +10,14 @@ local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function known(id)return{type='SPELL_KNOWN',spell=id}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or {}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or {}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function healthy()return{type='HEALTHPCT',unit='player',operator='GREATERTHAN',value=.5}end
 local P='priest-iv-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.priest.dps.icyveins',revision=4,
- blocks={['tbc.priest.dps-boundaries']=1,['tbc.priest.shadowform']=1,['tbc.priest.moving']=1,
-  ['tbc.priest.dots']=1,['tbc.priest.filler']=1,['tbc.priest.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.priest.dps.icyveins',revision=5,
+ blocks={['tbc.priest.dps-boundaries']=2,['tbc.priest.shadowform']=1,['tbc.priest.moving']=2,
+  ['tbc.priest.dots']=1,['tbc.priest.filler']=2,['tbc.priest.upkeep']=1},
  nameKey='Default.TBC.Priest.DpsIcyVeins.Name',descriptionKey='Default.TBC.Priest.DpsIcyVeins.Description',
  applicability={families={'tbc'},actionContext='player',class='PRIEST'},
  tags={'shadow','damage','icy-veins','leveling','raid','single-target'},

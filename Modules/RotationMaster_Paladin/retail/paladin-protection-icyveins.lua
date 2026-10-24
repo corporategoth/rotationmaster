@@ -12,8 +12,8 @@ local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.protection.icyveins',revision=5,
- blocks={['retail.paladin.boundaries']=1,['retail.paladin.upkeep']=2,['retail.paladin.prot-defensives']=2,['retail.paladin.prot-cooldowns']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.protection.icyveins',revision=6,
+ blocks={['retail.paladin.boundaries']=2,['retail.paladin.upkeep']=2,['retail.paladin.prot-defensives']=2,['retail.paladin.prot-cooldowns']=1},
  nameKey='Default.Retail.Paladin.Protection.IcyVeins.Name',descriptionKey='Default.Retail.Paladin.Protection.IcyVeins.Description',
  applicability={families={'retail'},actionContext='player',class='PALADIN'},
  tags={'protection','tank','reference','single-target','aoe','icy-veins','simulationcraft'},
@@ -31,7 +31,7 @@ assert(addon:RegisterDefaultRotation({
    block('retail.paladin.boundaries','protiv-'),
    {id='protiv-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell('protiv-pull-consecration',26573),
-    {id='protiv-pull-stop',type='none',suppress_attack=false,conditions={}},
+    {id='protiv-pull-stop',type='stop',suppress_attack=false,conditions={}},
    }},
    spell('protiv-divine-toll',375576),
    spell('protiv-hammer-of-light',427453),

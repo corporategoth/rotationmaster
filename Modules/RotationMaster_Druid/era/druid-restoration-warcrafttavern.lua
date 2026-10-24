@@ -13,8 +13,8 @@ local function hp(v)return{type='HEALTHPCT',unit='target',operator='LESSTHAN',va
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function spell(id,action,conditions,ranked)return{id=id,type='spell',action=action,ranked=ranked or false,conditions=conditions or {}}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.druid.restoration.warcrafttavern',revision=4,
- blocks={['era.druid.boundaries']=3,['era.druid.upkeep']=1,['era.druid.heal-cooldowns']=1,['era.druid.resto-damage']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.druid.restoration.warcrafttavern',revision=5,
+ blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['era.druid.heal-cooldowns']=1,['era.druid.resto-damage']=2},
  nameKey='Default.Era.Druid.Restoration.WarcraftTavern.Name',descriptionKey='Default.Era.Druid.Restoration.WarcraftTavern.Description',
  applicability={families={'era'},actionContext='player',class='DRUID'},
  tags={'endgame','restoration','healer','group','warcraft-tavern'},
@@ -25,7 +25,7 @@ assert(addon:RegisterDefaultRotation({
   cooldowns={ref('era-resto-wt-upkeep','era.druid.upkeep','era-resto-wt-'),ref('era-resto-wt-cooldowns','era.druid.heal-cooldowns','era-resto-wt-')},
   rotation={
    ref('era-resto-wt-boundaries','era.druid.boundaries','era-resto-wt-'),
-   {id='era-resto-wt-feral-form',type='none',conditions=any(form(768),form(5487),form(9634))},
+   {id='era-resto-wt-feral-form',type='stop',conditions=any(form(768),form(5487),form(9634))},
    {id='era-resto-wt-heal',type='branch',conditions=all({type='FRIENDLY',unit='target'},negate({type='DEAD',unit='target'})),onFalse={},onTrue={
     spell('era-resto-wt-swiftness',5185,own(17116)),
     spell('era-resto-wt-swiftmend',18562,all(hp(.4),any(hot(774),hot(8936)))),
@@ -35,9 +35,9 @@ assert(addon:RegisterDefaultRotation({
     spell('era-resto-wt-natures-grace-touch',5185,all(own(16886),hp(.9))),
     spell('era-resto-wt-touch-rank3',5187,hp(.9),true),
     spell('era-resto-wt-touch',5185,hp(.9)),
-    {id='era-resto-wt-heal-stop',type='none',suppress_attack=true,conditions={}}}},
+    {id='era-resto-wt-heal-stop',type='stop',suppress_attack=true,conditions={}}}},
    ref('era-resto-wt-damage','era.druid.resto-damage','era-resto-wt-enemy-'),
-   {id='era-resto-wt-stop',type='none',suppress_attack=true,conditions={}},
+   {id='era-resto-wt-stop',type='stop',suppress_attack=true,conditions={}},
   },
  },
 }))

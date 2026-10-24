@@ -15,8 +15,8 @@ local function swing(op,v)return{type='SWING_TIME_REMAIN',offhand=false,operator
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution.twist',revision=4,
- blocks={['sod.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=2,['sod.paladin.seal']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution.twist',revision=5,
+ blocks={['sod.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=3,['sod.paladin.seal']=2},
  nameKey='Default.SoD.Paladin.Retribution.Twist.Name',descriptionKey='Default.SoD.Paladin.Retribution.Twist.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},
  tags={'endgame','raid','retribution','melee','single-target','seal-twisting','season-of-discovery','wowhead','wowsims'},
@@ -29,11 +29,11 @@ assert(addon:RegisterDefaultRotation({
    block('stwist-seal','sod.paladin.seal','stwist-'),
    {id='stwist-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell('stwist-pull-exorcism',415068),
-    {id='stwist-pull-stop',type='none',conditions={}},
+    {id='stwist-pull-stop',type='stop',conditions={}},
    }},
    spell('stwist-to-command',20375,all(own(407798),negate(own(20375)),swing('LESSTHANOREQUALS',0.4))),
    spell('stwist-to-martyrdom',407798,all(own(20375),negate(own(407798)),swing('LESSTHANOREQUALS',0.4))),
-   {id='stwist-danger',type='none',conditions=swing('LESSTHANOREQUALS',1.9)},
+   {id='stwist-danger',type='stop',conditions=swing('LESSTHANOREQUALS',1.9)},
    spell('stwist-judgement',20271,all(own(407798),own(20375))),
    spell('stwist-divine-storm',407778,{type='BUFF_STACKS',unit='player',spell=1226461,operator='GREATERTHANOREQUALS',value=3}),
    spell('stwist-crusader-strike',407676),

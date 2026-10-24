@@ -20,8 +20,8 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 local rolled=any(own(193356),own(199600),own(193358),own(193357),own(199603),own(193359))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.outlaw.icyveins',revision=3,
- blocks={['retail.rogue.boundaries']=1,['retail.rogue.upkeep']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.outlaw.icyveins',revision=4,
+ blocks={['retail.rogue.boundaries']=2,['retail.rogue.upkeep']=2},
  nameKey='Default.Retail.Rogue.Outlaw.IcyVeins.Name',descriptionKey='Default.Retail.Rogue.Outlaw.IcyVeins.Description',
  applicability={families={'retail'},actionContext='player',class='ROGUE'},
  tags={'outlaw','melee','reference','single-target','aoe','icy-veins','simulationcraft','wowhead'},
@@ -44,7 +44,7 @@ assert(addon:RegisterDefaultRotation({
    block('retail.rogue.boundaries','outlawiv-'),
    {id='outlawiv-stealthed',type='branch',conditions={type='STEALTHED'},onFalse={},onTrue={
     spell('outlawiv-stealthed-ambush',8676),
-    {id='outlawiv-stealthed-stop',type='none',suppress_attack=true,conditions={}},
+    {id='outlawiv-stealthed-stop',type='stop',suppress_attack=true,conditions={}},
    }},
    {id='outlawiv-finish',type='branch',conditions=points('LESSTHANOREQUALS',-1),onFalse={
     spell('outlawiv-audacity',8676,own(386270)),

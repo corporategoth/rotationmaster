@@ -17,7 +17,7 @@ local function own(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,o
 local function shards(op,v)return{type='CARRYING',item={6265},operator=op,value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function item(id,items,conditions)return{id=id,type='item',action=items,conditions=conditions}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or {}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or {}}end
 local function fire()return any(known(1293817),known(412758))end
 local firestones,spellstones={13701,13700,13699,1254},{13603,13602,5522}
 -- Demonic Sacrifice buffs (renamed in Forever); keep them only with Demonic Pact, whose proxy is
@@ -26,7 +26,7 @@ local function sacrificed()return any(buff(18789),buff(18790),buff(18791),buff(1
 local function pact()return all(known(19028),{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=40})end
 -- Manual casts and channels (Drain Life, Drain Soul, Wrack, Hellfire, Rain of Fire, Health
 -- Funnel) run to the end; no advice against a target that is not yours to pull.
-assert(addon:RegisterDefaultBlock({id='forever.warlock.boundaries',revision=2,families={'forever'},class='WARLOCK',steps={
+assert(addon:RegisterDefaultBlock({id='forever.warlock.boundaries',revision=3,families={'forever'},class='WARLOCK',steps={
  stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate(all({type='ATTACKABLE',unit='target'},any(combat(),negate({type='COMBAT',unit='target'})))))),
 }}))
 -- Independent reminders every source shares: armor, Soul Link, the Demonology sacrifice with
@@ -52,7 +52,7 @@ assert(addon:RegisterDefaultBlock({id='forever.warlock.procs',revision=1,familie
 }}))
 -- Moving: instants only, then stop. Corruption is left out because RM cannot see whether
 -- Improved Corruption has made it instant.
-assert(addon:RegisterDefaultBlock({id='forever.warlock.moving',revision=2,families={'forever'},class='WARLOCK',steps={
+assert(addon:RegisterDefaultBlock({id='forever.warlock.moving',revision=3,families={'forever'},class='WARLOCK',steps={
  {id='moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
   spell('moving-agony',980,all(negate(own(980)),negate(own(603)),negate(own(1324473)))),
   spell('moving-siphon',18265,negate(own(18265))),
@@ -73,7 +73,7 @@ assert(addon:RegisterDefaultBlock({id='forever.warlock.aoe',revision=2,families=
  }},
 }}))
 -- Solo wand filler: keep an active wand going rather than suggesting a spell over it.
-assert(addon:RegisterDefaultBlock({id='forever.warlock.wand',revision=1,families={'forever'},class='WARLOCK',steps={
+assert(addon:RegisterDefaultBlock({id='forever.warlock.wand',revision=2,families={'forever'},class='WARLOCK',steps={
  stop('wanding',{type='SPELL_AUTOREPEAT',spell=5019}),
  spell('wand',5019),
 }}))

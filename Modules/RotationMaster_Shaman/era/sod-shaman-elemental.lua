@@ -22,8 +22,8 @@ local charged={type='BUFF_STACKS',unit='player',spell=324,anyrank=true,operator=
 local surge=buff(440285)
 local refresh=any(negate(flamed),flame('LESSTHAN',3))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.shaman.elemental',revision=2,
- blocks={['era.shaman.manual-target']=1,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.caster-totems']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.shaman.elemental',revision=3,
+ blocks={['era.shaman.manual-target']=2,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.caster-totems']=1},
  nameKey='Default.SoD.Shaman.Elemental.Name',descriptionKey='Default.SoD.Shaman.Elemental.Description',
  applicability={families={'era'},actionContext='player',class='SHAMAN',rulesets={'season:2'}},
  tags={'dps','ranged','caster','leveling','endgame','aoe','season-of-discovery','wowsims','wowhead','icy-veins'},
@@ -50,7 +50,7 @@ assert(addon:RegisterDefaultRotation({
   spell('sod-ele-moving-earth-shock',8042,charged),
   spell('sod-ele-moving-lava-burst',408490,surge),
   spell('sod-ele-moving-chain-lightning',421,surge),
-  {id='sod-ele-moving-stop',type='none',suppress_attack=false,conditions={}},
+  {id='sod-ele-moving-stop',type='stop',suppress_attack=false,conditions={}},
  }},
  {id='sod-ele-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
   spell('sod-ele-aoe-flame-shock',8050,negate(flamed)),

@@ -17,8 +17,8 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local FEVER,PLAGUE=55095,55078
 local shield={type='BUFF',unit='player',spell=77535,ownbuff=true}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.deathknight.blood.wowsims',revision=3,
- blocks={['mop.deathknight.boundaries']=2,['mop.deathknight.upkeep']=1,['mop.deathknight.blood-upkeep']=2,['mop.deathknight.blood-pull']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.deathknight.blood.wowsims',revision=4,
+ blocks={['mop.deathknight.boundaries']=3,['mop.deathknight.upkeep']=1,['mop.deathknight.blood-upkeep']=2,['mop.deathknight.blood-pull']=2},
  nameKey='Default.MoP.DeathKnight.Blood.Wowsims.Name',descriptionKey='Default.MoP.DeathKnight.Blood.Wowsims.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DEATHKNIGHT'},
  tags={'blood','tank','single-target','wowsims'},

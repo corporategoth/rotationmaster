@@ -1180,7 +1180,7 @@ local function assistedBinding(self)
 end
 local BINDABLE={spell=true,pet=true,any=true,item=true}
 function addon:GetStepBinding(step)
-    if type(step)~='table' or FetchCount==0 or step.type=='branch' or step.type=='none' then return nil end
+    if type(step)~='table' or FetchCount==0 or step.type=='branch' or step.type=='stop' then return nil end
     if step.type=='assisted' then return assistedBinding(self) end
     if step.action==nil or not BINDABLE[step.type] then return nil end
     local ok,spellIds,itemIds=pcall(self.GetSpellIds,self,step)

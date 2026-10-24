@@ -8,8 +8,8 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.augmentation.assisted',revision=4,
- blocks={['retail.evoker.boundaries']=2,['retail.evoker.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.augmentation.assisted',revision=5,
+ blocks={['retail.evoker.boundaries']=3,['retail.evoker.utility']=2},
  nameKey='Default.Retail.Evoker.AugmentationAssisted.Name',descriptionKey='Default.Retail.Evoker.AugmentationAssisted.Description',
  applicability={families={'retail'},actionContext='player',class='EVOKER'},
  tags={'augmentation','ranged','support','assisted-combat'},

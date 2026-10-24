@@ -15,9 +15,9 @@ local interrupt=any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INT
 local rest=negate(combat())
 -- Elemental and Enhancement: casting or channelling ends advice; no attackable target too.
 assert(addon:RegisterDefaultBlock({
- id='retail.shaman.boundaries',revision=1,families={'retail'},class='SHAMAN',steps={
- {id='casting',type='none',suppress_attack=false,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
- {id='no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
+ id='retail.shaman.boundaries',revision=2,families={'retail'},class='SHAMAN',steps={
+ {id='casting',type='stop',suppress_attack=false,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
+ {id='no-target',type='stop',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
 }}))
 -- Reminders every Shaman premade shares: Skyfury (anyone's) between pulls, Wind Shear on an
 -- interruptible cast (it lights only where Midnight lets the target's cast be read), Astral Shift

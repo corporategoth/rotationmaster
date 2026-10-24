@@ -17,8 +17,8 @@ local transformed={type='BUFF',unit='pet',spell=1233448}
 local ghouls=buff(1254252)
 local function scythe(id)return spell(id,85948,all(buff(458123),any(negate(debuff(1241077)),{type='DEBUFF_REMAIN',unit='target',spell=1241077,owndebuff=true,operator='LESSTHAN',value=5})))end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.unholy.simc',revision=3,
- blocks={['retail.deathknight.boundaries']=2,['retail.deathknight.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.unholy.simc',revision=4,
+ blocks={['retail.deathknight.boundaries']=3,['retail.deathknight.utility']=2},
  nameKey='Default.Retail.DeathKnight.UnholySimc.Name',descriptionKey='Default.Retail.DeathKnight.UnholySimc.Description',
  applicability={families={'retail'},actionContext='player',class='DEATHKNIGHT'},
  tags={'unholy','melee','pet','reference','simulationcraft'},

@@ -16,10 +16,10 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local raid={type='INSTANCE',value='raid'}
 local summon=all(negate({type='PET'}),negate({type='COMBAT',unit='player'}))
-local blocks={['era.warlock.boundaries']=2,['era.warlock.procs']=1,['era.warlock.group-finish']=1,['era.warlock.dying']=1,['era.warlock.curse']=2,
- ['era.warlock.moving']=1,['era.warlock.aoe']=1,['era.warlock.filler']=1,['era.warlock.armor']=1,['era.warlock.safety']=1}
+local blocks={['era.warlock.boundaries']=3,['era.warlock.procs']=1,['era.warlock.group-finish']=1,['era.warlock.dying']=2,['era.warlock.curse']=2,
+ ['era.warlock.moving']=2,['era.warlock.aoe']=1,['era.warlock.filler']=2,['era.warlock.armor']=1,['era.warlock.safety']=1}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.warlock.dps.warcrafttavern',revision=4,blocks=blocks,
+ format='RotationMaster',schemaVersion=1,id='rm.era.warlock.dps.warcrafttavern',revision=5,blocks=blocks,
  nameKey='Default.Era.Warlock.DPS.WarcraftTavern.Name',descriptionKey='Default.Era.Warlock.DPS.WarcraftTavern.Description',
  applicability={families={'era'},actionContext='player',class='WARLOCK'},
  tags={'dps','ranged','caster','leveling','endgame','warcraft-tavern'},
@@ -45,7 +45,7 @@ assert(addon:RegisterDefaultRotation({
   spell('lock-wt-dark-pact',18220,all(mana('LESSTHAN',.8),{type='MANAPCT',unit='pet',operator='GREATERTHAN',value=.5})),
   spell('lock-wt-life-tap',1454,all(mana('LESSTHAN',.9),{type='HEALTHPCT',unit='player',operator='GREATERTHAN',value=.9})),
   spell('lock-wt-drain-life',689,known(7651)),
-  {id='lock-wt-wanding',type='none',suppress_attack=true,conditions={type='SPELL_AUTOREPEAT',spell=5019,ranked=true}},
+  {id='lock-wt-wanding',type='stop',suppress_attack=true,conditions={type='SPELL_AUTOREPEAT',spell=5019,ranked=true}},
   spell('lock-wt-wand',5019),
  }},
  block('era.warlock.filler','lock-wt-'),

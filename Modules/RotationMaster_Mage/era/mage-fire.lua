@@ -12,16 +12,16 @@ local function near(n)return{type='DISTANCE_COUNT',enemy=true,distance=10,operat
 local function class(kind)return{type='CLASSIFICATION',unit='target',value=kind}end
 local function lives(op,seconds)return{type='TT_HEALTH',unit='target',health=0,operator=op,value=seconds}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
-local function stop(id)return{id=id,type='none',suppress_attack=true,conditions={}}end
+local function stop(id)return{id=id,type='stop',suppress_attack=true,conditions={}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='mage-fire-'
 local scorch={type='TALENT',layout='tree',tree=2,talent=10,operator='GREATERTHANOREQUALS',value=1}
 local stacked={type='DEBUFF_STACKS',unit='target',spell=22959,operator='GREATERTHANOREQUALS',value=5}
 local elite=any(class('elite'),class('rareelite'),class('worldboss'))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.mage.fire',revision=3,
- blocks={['era.mage.boundaries']=2,['era.mage.moving']=1,['era.mage.nova']=1,['era.mage.execute']=1,
-  ['era.mage.wand-finish']=1,['era.mage.armor']=1,['era.mage.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.mage.fire',revision=4,
+ blocks={['era.mage.boundaries']=3,['era.mage.moving']=2,['era.mage.nova']=1,['era.mage.execute']=2,
+  ['era.mage.wand-finish']=2,['era.mage.armor']=1,['era.mage.upkeep']=1},
  nameKey='Default.Era.Mage.Fire.Name',descriptionKey='Default.Era.Mage.Fire.Description',
  applicability={families={'era'},actionContext='player',class='MAGE'},
  tags={'fire','leveling','raid','single-target','aoe'},

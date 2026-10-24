@@ -15,8 +15,8 @@ local function undead()return any({type='CREATURE',unit='target',value='UNDEAD'}
 local function crushing()return any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='LEVEL',unit='target',operator='GREATERTHANOREQUALS',value=3,relative=true})end
 local function anySeal()local out={};for i,id in ipairs({21084,20375,31892,348700,31801,348704,21082,20166,20165,20164})do out[i]=own(id)end;return{type='OR',value=out}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.protection.wowhead',revision=4,
- blocks={['tbc.paladin.tank-upkeep']=2,['tbc.paladin.melee-opening']=1,['tbc.paladin.boundaries']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.protection.wowhead',revision=5,
+ blocks={['tbc.paladin.tank-upkeep']=2,['tbc.paladin.melee-opening']=2,['tbc.paladin.boundaries']=2},
  nameKey='Default.TBC.Paladin.Protection.Wowhead.Name',descriptionKey='Default.TBC.Paladin.Protection.Wowhead.Description',
  applicability={families={'tbc'},actionContext='player',class='PALADIN'},
  tags={'leveling','endgame','protection','tank','single-target','aoe','wowhead','wowsims'},
@@ -38,7 +38,7 @@ assert(addon:RegisterDefaultRotation({
     {id='prot-wh-pull-holy-shield',type='spell',action=20925,ranked=false,conditions=negate(own(20925))},
     {id='prot-wh-pull-avengers-shield',type='spell',action=31935,ranked=false,conditions={}},
     {id='prot-wh-pull-judgement',type='spell',action=20271,ranked=false,conditions={}},
-    {id='prot-wh-pull-stop',type='none',conditions={}},
+    {id='prot-wh-pull-stop',type='stop',conditions={}},
    }},
    {id='prot-wh-crushing',type='branch',conditions=crushing(),onFalse={},onTrue={
     {id='prot-wh-crush-holy-shield',type='spell',action=20925,ranked=false,conditions=negate(own(20925))},

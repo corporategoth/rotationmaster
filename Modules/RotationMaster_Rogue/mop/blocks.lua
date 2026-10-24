@@ -24,16 +24,16 @@ local sliced=own(5171)
 local enemies=function(op,n)return{type='THREAT_COUNT',threat=1,operator=op,value=n}end
 -- Manual casts and channels (a poison takes three seconds) and no attackable target end advice and Attack.
 assert(addon:RegisterDefaultBlock({
- id='mop.rogue.boundaries',revision=2,families={'progression'},class='ROGUE',steps={
- {id='manual',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))},
+ id='mop.rogue.boundaries',revision=3,families={'progression'},class='ROGUE',steps={
+ {id='manual',type='stop',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))},
 }}))
 -- Out of combat with a target and not stealthed (the opener Branch comes first): Stealth, then stop; Attack still
 -- shows when Stealth is not ready, so a body pull works.
 assert(addon:RegisterDefaultBlock({
- id='mop.rogue.out-of-combat',revision=2,families={'progression'},class='ROGUE',steps={
+ id='mop.rogue.out-of-combat',revision=3,families={'progression'},class='ROGUE',steps={
  {id='ooc',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('ooc-stealth',1784),
-  {id='ooc-stop',type='none',suppress_attack=false,conditions={}},
+  {id='ooc-stop',type='stop',suppress_attack=false,conditions={}},
  }},
 }}))
 -- Solo levelling (Icy Veins): Recuperate at three points when hurt, Kidney Shot when low and the mob is on you.
@@ -64,23 +64,23 @@ assert(addon:RegisterDefaultBlock({
 -- Assassination stealth opener: Cheap Shot on a solo pull, Dispatch on Blindside with a dagger, Mutilate (raid and
 -- after Vanish).
 assert(addon:RegisterDefaultBlock({
- id='mop.rogue.assassination-opener',revision=2,families={'progression'},class='ROGUE',steps={
+ id='mop.rogue.assassination-opener',revision=3,families={'progression'},class='ROGUE',steps={
  {id='stealth',type='branch',conditions={type='STEALTHED'},onFalse={},onTrue={
   spell('stealth-cheap-shot',1833,all(negate({type='GROUP'}),negate(combat()))),
   spell('stealth-dispatch',111240,all({type='WEAPON_TYPE',slot='mainhand',subclass=15},own(121153))),
   spell('stealth-mutilate',1329),
-  {id='stealth-stop',type='none',suppress_attack=true,conditions={}},
+  {id='stealth-stop',type='stop',suppress_attack=true,conditions={}},
  }},
 }}))
 -- Combat stealth opener: Cheap Shot on a solo pull, Ambush (opener and after Vanish), Revealing Strike when Ambush
 -- cannot land.
 assert(addon:RegisterDefaultBlock({
- id='mop.rogue.combat-opener',revision=1,families={'progression'},class='ROGUE',steps={
+ id='mop.rogue.combat-opener',revision=2,families={'progression'},class='ROGUE',steps={
  {id='stealth',type='branch',conditions={type='STEALTHED'},onFalse={},onTrue={
   spell('stealth-cheap-shot',1833,all(negate({type='GROUP'}),negate(combat()))),
   spell('stealth-ambush',8676),
   spell('stealth-revealing-strike',84617),
-  {id='stealth-stop',type='none',suppress_attack=true,conditions={}},
+  {id='stealth-stop',type='stop',suppress_attack=true,conditions={}},
  }},
 }}))
 -- Combat reminders: Blade Flurry on at two or more engaged enemies and off below; Adrenaline Rush under 35 energy;
@@ -99,12 +99,12 @@ assert(addon:RegisterDefaultBlock({
 -- Combat at eight or more engaged enemies (Wowhead, Icy Veins): Slice and Dice, Crimson Tempest when the pack will
 -- live 12 s, Fan of Knives; the single-target list is not reached.
 assert(addon:RegisterDefaultBlock({
- id='mop.rogue.combat-aoe',revision=1,families={'progression'},class='ROGUE',steps={
+ id='mop.rogue.combat-aoe',revision=2,families={'progression'},class='ROGUE',steps={
  {id='aoe',type='branch',conditions=all(enemies('GREATERTHANOREQUALS',8),known(51723)),onFalse={},onTrue={
   spell('aoe-slice',5171,all(points('GREATERTHANOREQUALS',1),any(negate(sliced),{type='BUFF_REMAIN',unit='player',spell=5171,ownbuff=true,operator='LESSTHAN',value=2}))),
   spell('aoe-crimson-tempest',121411,all(points('GREATERTHANOREQUALS',5),lifetime('GREATERTHAN',12))),
   spell('aoe-fan',51723),
-  {id='aoe-stop',type='none',suppress_attack=false,conditions={}},
+  {id='aoe-stop',type='stop',suppress_attack=false,conditions={}},
  }},
 }}))
 -- Subtlety builders: Marked for Death at no points, Hemorrhage to keep its bleed, Backstab with a dagger when the

@@ -20,8 +20,8 @@ local function priority(p,builder,spender)return{
 local aoe=priority('fwh-aoe-',207230,194913)
 aoe[#aoe+1]=spell('fwh-aoe-obliterate',49020);aoe[#aoe+1]=spell('fwh-aoe-frost-strike',49143)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.frost.wowhead',revision=3,
- blocks={['retail.deathknight.boundaries']=2,['retail.deathknight.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.frost.wowhead',revision=4,
+ blocks={['retail.deathknight.boundaries']=3,['retail.deathknight.utility']=2},
  nameKey='Default.Retail.DeathKnight.FrostWowhead.Name',descriptionKey='Default.Retail.DeathKnight.FrostWowhead.Description',
  applicability={families={'retail'},actionContext='player',class='DEATHKNIGHT'},
  tags={'frost','melee','reference','wowhead'},

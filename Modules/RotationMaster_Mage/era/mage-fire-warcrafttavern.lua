@@ -10,13 +10,13 @@ local function negate(c)return{type='NOT',value=c}end
 local function near(n)return{type='DISTANCE_COUNT',enemy=true,distance=10,operator='GREATERTHANOREQUALS',value=n}end
 local function class(kind)return{type='CLASSIFICATION',unit='target',value=kind}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
-local function stop(id)return{id=id,type='none',suppress_attack=true,conditions={}}end
+local function stop(id)return{id=id,type='stop',suppress_attack=true,conditions={}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='mage-fire-wct-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.mage.fire.warcrafttavern',revision=4,
- blocks={['era.mage.boundaries']=2,['era.mage.moving']=1,['era.mage.nova']=1,['era.mage.execute']=1,
-  ['era.mage.wand-finish']=1,['era.mage.armor']=1,['era.mage.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.mage.fire.warcrafttavern',revision=5,
+ blocks={['era.mage.boundaries']=3,['era.mage.moving']=2,['era.mage.nova']=1,['era.mage.execute']=2,
+  ['era.mage.wand-finish']=2,['era.mage.armor']=1,['era.mage.upkeep']=1},
  nameKey='Default.Era.Mage.Fire.WarcraftTavern.Name',descriptionKey='Default.Era.Mage.Fire.WarcraftTavern.Description',
  applicability={families={'era'},actionContext='player',class='MAGE'},
  tags={'fire','raid','single-target','aoe','warcraft-tavern'},

@@ -16,15 +16,15 @@ local function close(yards,n)return{type='DISTANCE_COUNT',enemy=true,distance=ya
 local function enemies(n)return{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=n}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function off(id,action,conditions)local step=spell(id,action,conditions);step.disabled=true;return step end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local ALTER,FLOES=108978,108839
 -- Hold a proc for Alter Time only when it is learned, less than 10 s away and the proc has 3 s left.
 local function spend(proc)return any(negate(known(ALTER)),{type='SPELL_COOLDOWN',spell=ALTER,operator='GREATERTHANOREQUALS',value=10},
  {type='BUFF_REMAIN',unit='player',spell=proc,operator='LESSTHAN',value=3})end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.mage.frost',revision=4,
- blocks={['mop.mage.boundaries']=2,['mop.mage.upkeep']=1,['mop.mage.armor-frost']=1,['mop.mage.bombs']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.mage.frost',revision=5,
+ blocks={['mop.mage.boundaries']=3,['mop.mage.upkeep']=1,['mop.mage.armor-frost']=1,['mop.mage.bombs']=1},
  nameKey='Default.MoP.Mage.Frost.Name',descriptionKey='Default.MoP.Mage.Frost.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE'},
  tags={'frost','leveling','single-target','aoe','wowsims','method'},

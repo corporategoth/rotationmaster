@@ -22,7 +22,7 @@ local function shards(op,v)return{type='CARRYING',item={6265},operator=op,value=
 local function lifetime(op,n)return{type='TT_HEALTH',unit='target',health=0,operator=op,value=n}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function item(id,items,conditions)return{id=id,type='item',action=items,conditions=conditions}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or {}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or {}}end
 local function block(id,name,prefix)return{id=id,type='block',block=name,prefix=prefix}end
 local big=any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'})
 local raid={type='INSTANCE',value='raid'}
@@ -33,7 +33,7 @@ local sacrificed={type='OR',value={buff(18789),buff(18790),buff(18791),buff(1879
 local healthstones={19013,19012,9421,19011,19010,5510,19009,19008,5509,19007,19006,5511,19005,19004,5512}
 -- Manual casts and channels (Drain Life, Drain Soul, Hellfire, Rain of Fire, Health Funnel) run to
 -- the end; no attackable target, or one someone else is fighting while you are not, ends advice.
-assert(addon:RegisterDefaultBlock({id='era.warlock.boundaries',revision=2,families={'era'},class='WARLOCK',steps={
+assert(addon:RegisterDefaultBlock({id='era.warlock.boundaries',revision=3,families={'era'},class='WARLOCK',steps={
  stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate(all({type='ATTACKABLE',unit='target'},any(combat(),negate({type='COMBAT',unit='target'}),group()))))),
 }}))
 -- Nightfall's Shadow Trance makes the next Shadow Bolt instant; it expires, so it comes first.
@@ -47,7 +47,7 @@ assert(addon:RegisterDefaultBlock({id='era.warlock.group-finish',revision=1,fami
 }}))
 -- A dying solo target gets no new DoTs: Drain Soul for a shard (or Improved Drain Soul mana),
 -- else Shadowburn or Conflagrate, else the wand, then stop.
-assert(addon:RegisterDefaultBlock({id='era.warlock.dying',revision=1,families={'era'},class='WARLOCK',steps={
+assert(addon:RegisterDefaultBlock({id='era.warlock.dying',revision=2,families={'era'},class='WARLOCK',steps={
  {id='dying',type='branch',conditions=all(negate(group()),negate(big),{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=.15}),onFalse={},onTrue={
   spell('drain-soul',1120,any(shards('LESSTHAN',3),talent(1,4,1))),
   spell('shadowburn',17877),
@@ -72,7 +72,7 @@ assert(addon:RegisterDefaultBlock({id='era.warlock.curse',revision=2,families={'
  }},
 }}))
 -- Moving: instants only, then stop. Corruption counts only with Improved Corruption 5/5.
-assert(addon:RegisterDefaultBlock({id='era.warlock.moving',revision=1,families={'era'},class='WARLOCK',steps={
+assert(addon:RegisterDefaultBlock({id='era.warlock.moving',revision=2,families={'era'},class='WARLOCK',steps={
  {id='moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
   spell('moving-corruption',172,all(talent(1,2,5),negate(own(172)))),
   block('moving-curse','era.warlock.curse','moving-'),
@@ -93,7 +93,7 @@ assert(addon:RegisterDefaultBlock({id='era.warlock.aoe',revision=1,families={'er
  }},
 }}))
 -- Solo sustain: Dark Pact from a full pet, Life Tap when healthy, Drain Life when hurt, the wand.
-assert(addon:RegisterDefaultBlock({id='era.warlock.sustain',revision=2,families={'era'},class='WARLOCK',steps={
+assert(addon:RegisterDefaultBlock({id='era.warlock.sustain',revision=3,families={'era'},class='WARLOCK',steps={
  {id='solo',type='branch',conditions=group(),onTrue={},onFalse={
   spell('dark-pact',18220,all(mana('LESSTHAN',.6),{type='MANAPCT',unit='pet',operator='GREATERTHAN',value=.4})),
   spell('life-tap',1454,all(mana('LESSTHAN',.6),health('GREATERTHAN',.75))),
@@ -103,7 +103,7 @@ assert(addon:RegisterDefaultBlock({id='era.warlock.sustain',revision=2,families=
  }},
 }}))
 -- Filler: Shadow Bolt; Life Tap when nothing else can be cast. Casters never melee.
-assert(addon:RegisterDefaultBlock({id='era.warlock.filler',revision=1,families={'era'},class='WARLOCK',steps={
+assert(addon:RegisterDefaultBlock({id='era.warlock.filler',revision=2,families={'era'},class='WARLOCK',steps={
  spell('bolt',686),
  spell('tap',1454,health('GREATERTHAN',.4)),
  stop('exhausted'),

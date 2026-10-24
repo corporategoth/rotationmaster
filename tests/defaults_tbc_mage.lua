@@ -18,7 +18,7 @@ test('all four premades register valid, localized, sourced and composed',functio
  for _,id in ipairs(ALL)do local row=M.row(a,id)
   assert(row.readOnly and row.validation.valid and row.validation.resolved,id)
   assert(f.translations[row.nameKey]and f.translations[row.descriptionKey],id..' untranslated')
-  assert(#row.envelope.sources>=1 and row.envelope.revision==(id==FIREWH and 4 or 3),id)
+  assert(#row.envelope.sources>=1 and row.envelope.revision==(id==FIREWH and 5 or 4),id)
   assert(row.enabled==(id~=FIREWH),id..' shipped enablement')
   assert(a:GetDefaultRotationComposition(id),id..' is not composed from the shared Mage blocks')
   assert(row.applicability.class=='MAGE'and row.applicability.maxLevel==nil and row.applicability.minLevel==nil and row.applicability.families[1]=='tbc')

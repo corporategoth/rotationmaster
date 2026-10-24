@@ -25,8 +25,8 @@ local poisoned=any(stacks(458820,4),stacks(1214170,4),stacks(2818,4))
 -- Passive runes: Carnage (bleeds pay), Cut to the Chase (finishers refresh Slice and Dice).
 local carnage,chase=rune(432276),rune(432271)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.dps',revision=4,
- blocks={['era.rogue.boundaries']=2,['era.rogue.sod-opener']=3,['era.rogue.sod-upkeep']=3,['era.rogue.sod-builders']=3,['era.rogue.expose-armor']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.dps',revision=5,
+ blocks={['era.rogue.boundaries']=3,['era.rogue.sod-opener']=4,['era.rogue.sod-upkeep']=3,['era.rogue.sod-builders']=3,['era.rogue.expose-armor']=2},
  nameKey='Default.SoD.Rogue.DPS.Name',descriptionKey='Default.SoD.Rogue.DPS.Description',
  applicability={families={'era'},actionContext='player',class='ROGUE',rulesets={'season:2'}},
  tags={'dps','melee','leveling','endgame','aoe','season-of-discovery','wowsims','icy-veins','zockify'},
@@ -59,7 +59,7 @@ assert(addon:RegisterDefaultRotation({
  {id='rogue-finisher',type='branch',conditions=points('GREATERTHANOREQUALS',5),onFalse={},onTrue={
   spell('rogue-envenom',399963),
   spell('rogue-eviscerate',2098,negate(rune(399963))),
-  {id='rogue-pool',type='none',suppress_attack=false,conditions={}},
+  {id='rogue-pool',type='stop',suppress_attack=false,conditions={}},
  }},
  block('era.rogue.sod-builders','rogue-'),
  }},

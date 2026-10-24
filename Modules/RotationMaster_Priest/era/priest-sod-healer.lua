@@ -12,13 +12,13 @@ local function negate(c)return{type='NOT',value=c}end
 local function pct(unit,op,v)return{type='HEALTHPCT',unit=unit,operator=op,value=v}end
 local function hurt(health)return{type='PROXIMITY_HEALTHPCT_COUNT',unit='player',healthoperator='LESSTHAN',health=health,operator='GREATERTHANOREQUALS',value=3,distance=30,samegroup=true}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or {}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or {}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='priest-sod-heal-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.priest.healer',revision=3,
- blocks={['era.priest.boundaries']=2,['era.priest.enemy-target']=1,['era.priest.dispels']=1,['era.priest.big-heal']=1,['era.priest.renew']=1,
-  ['era.priest.friend-fortitude']=1,['era.priest.upkeep']=1,['era.priest.divine-spirit']=1,['sod.priest.healer-damage']=1,['sod.priest.healer-upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.priest.healer',revision=4,
+ blocks={['era.priest.boundaries']=3,['era.priest.enemy-target']=2,['era.priest.dispels']=1,['era.priest.big-heal']=1,['era.priest.renew']=1,
+  ['era.priest.friend-fortitude']=1,['era.priest.upkeep']=1,['era.priest.divine-spirit']=1,['sod.priest.healer-damage']=2,['sod.priest.healer-upkeep']=1},
  nameKey='Default.SoD.Priest.Healer.Name',descriptionKey='Default.SoD.Priest.Healer.Description',
  applicability={families={'era'},actionContext='player',class='PRIEST',rulesets={'season:2'}},
  tags={'holy','discipline','healer','dungeon','raid','season-of-discovery','icy-veins'},

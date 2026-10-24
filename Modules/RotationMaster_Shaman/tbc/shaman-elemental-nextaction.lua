@@ -9,8 +9,8 @@ local function negate(c)return{type='NOT',value=c}end
 local function own(id)return{type='BUFF',unit='player',spell=id,anyrank=true,ownbuff=true}end
 local function flame()return{type='DEBUFF',unit='target',spell=8050,anyrank=true,owndebuff=true}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.elemental.nextaction',revision=3,
- blocks={['tbc.shaman.mainhand-imbue']=1,['tbc.shaman.bloodlust']=1,['tbc.shaman.elemental-opening']=1,['tbc.shaman.boundaries']=2,['tbc.shaman.interrupt']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.elemental.nextaction',revision=4,
+ blocks={['tbc.shaman.mainhand-imbue']=1,['tbc.shaman.bloodlust']=1,['tbc.shaman.elemental-opening']=2,['tbc.shaman.boundaries']=3,['tbc.shaman.interrupt']=1},
  nameKey='Default.TBC.Shaman.Elemental.NextAction.Name',descriptionKey='Default.TBC.Shaman.Elemental.NextAction.Description',
  applicability={families={'tbc'},actionContext='player',class='SHAMAN'},
  tags={'leveling','endgame','elemental','caster','single-target','dot','nextaction'},
@@ -25,7 +25,7 @@ assert(addon:RegisterDefaultRotation({
   rotation={
    {id='ele-na-opening',type='block',block='tbc.shaman.elemental-opening',prefix='ele-na-'},
    {id='ele-na-flame-shock',type='spell',action=8050,ranked=false,conditions=any(negate(flame()),{type='DEBUFF_REMAIN',unit='target',spell=8050,anyrank=true,owndebuff=true,operator='LESSTHAN',value=2})},
-   {id='ele-na-moving',type='none',conditions={type='MOVING'}},
+   {id='ele-na-moving',type='stop',conditions={type='MOVING'}},
    {id='ele-na-chain',type='spell',action=421,ranked=false,conditions=all({type='MANAPCT',unit='player',operator='GREATERTHANOREQUALS',value=0.3},{type='DISTANCE_COUNT',enemy=true,distance=20,operator='GREATERTHANOREQUALS',value=2})},
    {id='ele-na-bolt',type='spell',action=403,ranked=false,conditions={}},
   },

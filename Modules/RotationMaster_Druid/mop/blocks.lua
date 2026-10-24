@@ -21,8 +21,8 @@ local function health(op,v)return{type='HEALTHPCT',unit='player',operator=op,val
 local function talent(n)return{type='TALENT',layout='grid',value=n}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function off(id,action,conditions)local step=spell(id,action,conditions);step.disabled=true;return step end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
-local function swing(id,conditions)return{id=id,type='none',conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
+local function swing(id,conditions)return{id=id,type='stop',conditions=conditions or{}}end
 local function block(id,steps,revision)assert(addon:RegisterDefaultBlock({id=id,revision=revision or 1,families={'progression'},class='DRUID',steps=steps}))end
 local CAT,BEAR=768,5487
 local travelling=any(form(783),form(1066),form(33943),form(40120))
@@ -36,15 +36,15 @@ local lives=any(elite,{type='HEALTHPCT',unit='target',operator='GREATERTHANOREQU
 -- Casts and channels (Astral Communion, Hurricane, Tranquility) and travel forms end advice.
 block('mop.druid.boundaries',{
  stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},travelling)),
-},3)
+},4)
 -- Feral, Guardian and the catch-all: the boundaries above, or no attackable target, end advice (one Stop).
 block('mop.druid.melee-boundaries',{
  stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},travelling,negate({type='ATTACKABLE',unit='target'}))),
-})
+},2)
 -- Damage and tank premades: nothing to do without an attackable target.
 block('mop.druid.target',{
  stop('target',negate({type='ATTACKABLE',unit='target'})),
-})
+},2)
 -- Every specialization: Mark of the Wild between pulls when no equivalent stat buff is up.
 block('mop.druid.mark',{
  spell('mark',1126,all(negate(combat()),negate(buff(1126)),negate(buff(20217)),negate(buff(115921)),negate(buff(90363)))),
@@ -93,14 +93,14 @@ block('mop.druid.feral-open',{
   all(talent(17),any(cp('GREATERTHANOREQUALS',4),{type='BUFF_REMAIN',unit='player',spell=69369,ownbuff=true,operator='LESSTHANOREQUALS',value=2}),
    any(negate(own(106951)),cp('EQUALS',5))),
   health('LESSTHAN',.5)))),
-},3)
+},4)
 -- Both Feral premades: four or more enemies on you, Thrash then Swipe.
 block('mop.druid.feral-aoe',{
  {id='aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=4},onFalse={},onTrue={
   spell('aoe-thrash',106832,any(negate(bleed(106830)),remain(106830,'LESSTHAN',3))),
   spell('aoe-swipe',106785),
   swing('aoe-stop')}},
-})
+},2)
 -- Both Restoration premades: group cooldowns, the focus tank's Lifebloom and Ironbark, mana and
 -- dispels. Tranquility and Genesis are raid assignments and ship off.
 block('mop.druid.healer-upkeep',{
@@ -131,4 +131,4 @@ block('mop.druid.healer-open',{
   spell('hostile-wrath',5176),
   stop('hostile-stop')}},
  stop('enemy',{type='ENEMY',unit='target'}),
-},2)
+},3)

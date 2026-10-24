@@ -161,10 +161,14 @@ test('legacy metadata remains usable', function()
     assert(addon.pretty_name == 'Rotation Master')
 end)
 
-test('editor arrow command dispatches the temporary diagnostic and help describes its open editor scope',function()
-    local env,a,load=fixture(true,true);local lib=env.LibStub;env.LibStub=function(name,...) if name=='AceConsole-3.0' then return {GetArgs=function(_,text) return text,1 end} end;return lib(name,...) end
-    load('main.lua');a.warn=function() end;local calls=0;a.ShowLuaEditorArrowProbe=function() calls=calls+1 end;a:HandleCommand('editorarrows');assert(calls==1,'editor arrow probe command was not dispatched')
-    local lines={};a.print=function(_,text) lines[#lines+1]=text end;a:HandleCommand('help');assert(table.concat(lines,'\n'):find('/rm editorarrows',1,true),'temporary arrow probe missing from help')
+test('the Lua editor report is /rm debug editor and the arrow probe command is gone',function()
+    local env,a,load=fixture(true,true);local lib=env.LibStub;env.LibStub=function(name,...) if name=='AceConsole-3.0' then return {GetArgs=function(_,text) local word,after=text:match('^(%S*)()');return word,after end} end;return lib(name,...) end
+    load('main.lua');a.warn=function() end;local debug,arrows,reports={},0,0
+    a.HandleDebugCommand=function(_,rest) debug[#debug+1]=rest end;a.ShowLuaEditorArrowProbe=function() arrows=arrows+1 end;a.ShowLuaEditorInputReport=function() reports=reports+1 end
+    a:HandleCommand('debug editor');assert(#debug==1 and debug[1]:match('^%s*(%S+)')=='editor','/rm debug editor was not handed to the debug command')
+    a:HandleCommand('editorarrows');a:HandleCommand('editorinfo');assert(arrows==0 and reports==0 and #debug==1,'a removed editor command still dispatches')
+    local lines={};a.print=function(_,text) lines[#lines+1]=text end;a:HandleCommand('help');local help=table.concat(lines,'\n')
+    assert(help:find('/rm debug editor',1,true) and not help:find('/rm editorarrows',1,true) and not help:find('/rm editorinfo',1,true),'help lists the wrong editor commands')
 end)
 test('main registration does not request the legacy preview widget library',function()
     for _,modern in ipairs({false,true}) do
@@ -968,7 +972,7 @@ test('real recommendations choose branch arms, skip forced guards and stop safel
     state.gate='unknown';a:EvaluateNextActionInternal();assert(state.main==nil and state.optional[324],'unknown guard selected False/tail/Attack or blocked optional upkeep')
     b.rotation[1].mode='true';a:EvaluateNextActionInternal();assert(state.main==8042,'forced mode evaluated unavailable guard')
     state.cooldowns[8042]=6;a:EvaluateNextActionInternal();assert(state.main==324,'unready chosen arm failed to rejoin parent sequence')
-    b.rotation[1].onTrue={{id='stop',type='none',conditions={}}}
+    b.rotation[1].onTrue={{id='stop',type='stop',conditions={}}}
     a:EvaluateNextActionInternal();assert(state.main==6603,'nested Stop fell through or suppressed permitted implicit Attack')
     b.rotation[1].onTrue[1].suppress_attack=true;a:EvaluateNextActionInternal();assert(state.main==nil and state.optional[324])
 end)
@@ -996,7 +1000,7 @@ end)
 
 test('conditional Stop ends priorities and optionally suppresses Attack while preserving previews and independent upkeep',function()
     local env,a,s,body=recommendationFixture()
-    local stop={id='stop',type='none',conditions={type='TEST_GATE'}}
+    local stop={id='stop',type='stop',conditions={type='TEST_GATE'}}
     body.rotation={stop,{id='bolt',type='spell',action=403,ranked=true,conditions={}}}
     body.cooldowns={{id='shield',type='spell',action=324,ranked=true,conditions={}}}
     s.gate=true;a:EvaluateNextActionInternal();assert(s.main==6603 and s.optional[324],'Stop suppressed the default Attack fallback')

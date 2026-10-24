@@ -15,14 +15,14 @@ local function remain(id)return{type='BUFF_REMAIN',unit='player',spell=id,anyran
 local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function off(id,action,conditions)local step=spell(id,action,conditions);step.disabled=true;return step end
-local function stop(id,conditions,attack)return{id=id,type='none',suppress_attack=not attack,conditions=conditions or{}}end
+local function stop(id,conditions,attack)return{id=id,type='stop',suppress_attack=not attack,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local evil=any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',unit='target',value='DEMON'})
 local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
 local crusaded={type='DEBUFF',unit='target',spell=21183,anyrank=true}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.paladin.retribution',revision=4,
- blocks={['forever.paladin.boundaries']=2,['forever.paladin.aura-blessing']=1,['forever.paladin.main-seal']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.paladin.retribution',revision=5,
+ blocks={['forever.paladin.boundaries']=3,['forever.paladin.aura-blessing']=1,['forever.paladin.main-seal']=1},
  nameKey='Default.Forever.Paladin.Retribution.Name',descriptionKey='Default.Forever.Paladin.Retribution.Description',
  applicability={families={'forever'},actionContext='player',class='PALADIN'},
  tags={'retribution','melee','leveling','single-target','aoe','wowhead','icy-veins'},

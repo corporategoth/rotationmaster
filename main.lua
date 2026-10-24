@@ -485,11 +485,10 @@ function addon:HandleCommand(str)
         addon:print(L["                          Manual choices are remembered for this character, specialization and action context."])
         addon:print(L["/rm why                 - Explain why each rotation can or cannot be selected."])
         addon:print(L["/rm debug glow [seconds] - Explain why a recommendation does or does not light a button."])
+        addon:print(L['/rm debug editor        - Copy native Lua input diagnostics.'])
         addon:print(L["/rm check               - Check the database integrity."])
         addon:print(L["/rm repair              - Fix any DB errors found in the data with internal validation."])
         addon:print(L["/rm errors              - View and copy Rotation Master errors."])
-        addon:print(L['/rm editorinfo          - Copy native Lua input diagnostics.'])
-        addon:print(L['/rm editorarrows        - Temporarily test native arrows in an open editor.'])
         addon:print(L['/rm perf cpu|runtime|memory [seconds|stop|report] - Capture performance observations.'])
         addon:print(L['/rm perf probe - Check native profiler access.'])
         addon:print(L['/rm perf engine [lean|standard] - Show or choose the rotation evaluation engine.'])
@@ -503,17 +502,11 @@ function addon:HandleCommand(str)
     elseif cmd == "why" then
         self:ShowRotationEligibilityReport()
 
-    elseif cmd == "list" and self.ShowRotationHandleReport then
-        self:ShowRotationHandleReport()
+    elseif cmd == "list" and self.ShowRotationIdentifierReport then
+        self:ShowRotationIdentifierReport()
 
     elseif cmd == "debug" and self.HandleDebugCommand then
         self:HandleDebugCommand(string.sub(str,npos))
-
-    elseif cmd == 'editorinfo' then
-        self:ShowLuaEditorInputReport()
-
-    elseif cmd == 'editorarrows' then
-        self:ShowLuaEditorArrowProbe()
 
     elseif cmd == 'perf' then
         self:HandlePerformanceCommand(string.sub(str,npos))
@@ -553,20 +546,20 @@ function addon:HandleCommand(str)
         else
             local rows=runtimeRows(self,self.currentSpec)
             if not activeChangeCurrent(self,change) then return end
-            -- A handle first (case-insensitive, among selectable rotations),
+            -- An identifier first (case-insensitive, among selectable rotations),
             -- then the exact name, as before.
-            if self.ResolveRotationHandle then
-                local key,_,_,ambiguous=self:ResolveRotationHandle(self.currentSpec,name,rows)
+            if self.ResolveRotationIdentifier then
+                local key,_,_,ambiguous=self:ResolveRotationIdentifier(self.currentSpec,name,rows)
                 if not activeChangeCurrent(self,change) then return end
                 if key then
                     if not chooseManualRotation(self,key,change,true) and activeChangeCurrent(self,change) then self:WarnRotationRefusal(key) end
                     return
                 end
-                if ambiguous then self:warn(L['More than one rotation uses the handle %s. Give one of them another handle in Rotations.'],name);return end
-                -- A handle of a rotation that cannot be selected now says why.
-                local named,entry=self:ResolveRotationHandle(self.currentSpec,name,nil)
+                if ambiguous then self:warn(L['More than one rotation uses the identifier %s. Give one of them another identifier in Rotations.'],name);return end
+                -- An identifier of a rotation that cannot be selected now says why.
+                local named,entry=self:ResolveRotationIdentifier(self.currentSpec,name,nil)
                 if not activeChangeCurrent(self,change) then return end
-                if named and entry then self:warn(L["Rotation %s cannot be selected."],string.format('%s [%s]',entry.name,entry.handle));self:WarnRotationRefusal(named);return end
+                if named and entry then self:warn(L["Rotation %s cannot be selected."],string.format('%s [%s]',entry.name,entry.identifier));self:WarnRotationRefusal(named);return end
             end
             local matches={}
             for id,rot in pairs(rows) do if rot.name==name then matches[#matches+1]=id end end
@@ -585,9 +578,9 @@ function addon:HandleCommand(str)
                 end
             end
             self:warn(L["Could not find rotation named " .. color.WHITE .. "%s" .. color.WARN .. " for your current specialization."],name)
-            if self.ResolveRotationHandle then
-                local selectable=self:ListSelectableHandles(self.currentSpec,rows)
-                if selectable and #selectable>0 then self:print(L['Handles you can use now: %s (or auto). /rm list shows every rotation.'],table.concat(selectable,', ')) end
+            if self.ResolveRotationIdentifier then
+                local selectable=self:ListSelectableIdentifiers(self.currentSpec,rows)
+                if selectable and #selectable>0 then self:print(L['Identifiers you can use now: %s (or auto). /rm list shows every rotation.'],table.concat(selectable,', ')) end
             end
         end
     elseif cmd == "check" then
@@ -826,8 +819,8 @@ function minimapInitialize()
     do
         for id, rot in pairs(runtimeRows(addon,addon.currentSpec)) do
             if id ~= DEFAULT then
-                local handle=addon.GetRotationHandle and addon:GetRotationHandle(addon.currentSpec,id)
-                local label=handle and string.format('%s [%s]',tostring(rot.name),handle) or rot.name
+                local identifier=addon.GetRotationIdentifier and addon:GetRotationIdentifier(addon.currentSpec,id)
+                local label=identifier and string.format('%s [%s]',tostring(rot.name),identifier) or rot.name
                 info.text, info.arg1, info.checked = label, id, (addon.manualRotation == true and addon.currentRotation == id)
                 -- Built Ins are told apart by colour; the tooltip says so.
                 info.tooltipTitle,info.tooltipText,info.tooltipOnButton=nil,nil,nil
@@ -1074,7 +1067,7 @@ function addon:rotationValidConditions(rot,spec)
                 if (step.mode==nil or step.mode=="evaluate") and not self:validateCondition(step.conditions,spec) then return false end
             else
                 if step.type==nil or not self:validateCondition(step.conditions,spec) then return false end
-                if step.type~="none" and step.action==nil and not (step.type=="assisted" and row.section=="rotation") then return false end
+                if step.type~="stop" and step.action==nil and not (step.type=="assisted" and row.section=="rotation") then return false end
                 if step.type=="item" then
                     if type(step.action)=="string" then
                         local itemset=itemsets[step.action] or global_itemsets[step.action]
@@ -1158,7 +1151,7 @@ function addon:SwitchRotation()
             if not activeBroker(addon,change,DataBroker,name) then return end
             if not current() then return end
             local label=name
-            -- The name is already known; only the handle is added (no second pass).
+            -- The name is already known; only the identifier is added (no second pass).
             if self.FormatRotationLabel then local labelled,value=activeValue(self,change,'FormatRotationLabel',name,newRotation,selectedSpec);if not labelled then return end;label=value or name end
             if not current() then return end
             if not activeCall(self,change,'info',L["Active rotation automatically switched to " .. color.WHITE .. "%s" .. color.INFO],label) then return end
@@ -1760,7 +1753,7 @@ local function leanWalk(plan, list)
             local ended = leanWalk(plan, status == "match" and entry.onTrue or entry.onFalse)
             if ended then return ended end
         elseif not step.disabled then
-            if step.type == "none" then
+            if step.type == "stop" then
                 local status = evaluateConditionPlan(entry.conditions, plan.cache, plan.now, step.id)
                 if status ~= "no-match" then
                     plan.suppressAttack = status == "unavailable" or step.suppress_attack == true

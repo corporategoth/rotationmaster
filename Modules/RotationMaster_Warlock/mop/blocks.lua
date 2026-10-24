@@ -21,7 +21,7 @@ local function enemies(op,n)return{type='THREAT_COUNT',threat=1,operator=op,valu
 local function health(op,n)return{type='HEALTHPCT',unit='player',operator=op,value=n}end
 local function classified(kind)return{type='CLASSIFICATION',unit='target',value=kind}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or {}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or {}}end
 local function soul()return any(own(113860),own(113861),own(113858))end
 local function lust()return any(buff(2825),buff(32182),buff(80353),buff(90355))end
 -- No pet, out of combat (a summon is a 6 s cast), and not sacrificed to Grimoire of Sacrifice.
@@ -30,7 +30,7 @@ local petless=all(negate(combat()),negate({type='PET'}),negate(buff(108503)))
 -- the next action stays visible; the channel is read by spell), run to the end; no target to attack, no
 -- advice.
 assert(addon:RegisterDefaultBlock({
- id='mop.warlock.boundaries',revision=3,families={'progression'},class='WARLOCK',steps={
+ id='mop.warlock.boundaries',revision=4,families={'progression'},class='WARLOCK',steps={
  stop('cast',any({type='CASTING',unit='player'},all({type='CHANNELING',unit='player'},negate({type='CHANNELING_SPELL',unit='player',spell=103103}),negate({type='CHANNELING_SPELL',unit='player',spell=1120})),negate({type='ATTACKABLE',unit='target'}))),
 }}))
 -- Reminders every specialization shares: Dark Intent, Curse of the Elements in a group when nobody has it
@@ -76,7 +76,7 @@ assert(addon:RegisterDefaultBlock({
 -- of Corruption at six, plain Seed before Soulburn: Seed; then Agony, Corruption and Unstable Affliction
 -- refreshed late; inside Dark Soul: Misery every DoT is refreshed early in its Pandemic window.
 assert(addon:RegisterDefaultBlock({
- id='mop.warlock.affliction-dots',revision=2,families={'progression'},class='WARLOCK',steps={
+ id='mop.warlock.affliction-dots',revision=3,families={'progression'},class='WARLOCK',steps={
  {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('pull-haunt',48181,negate(dot(48181))),
   spell('pull-unstable-affliction',30108,negate(dot(30108))),
@@ -135,7 +135,7 @@ assert(addon:RegisterDefaultBlock({
 }}))
 -- Demonology pull (both variants): pre-cast Soul Fire, or Shadow Bolt before 13, then stop.
 assert(addon:RegisterDefaultBlock({
- id='mop.warlock.demonology-pull',revision=2,families={'progression'},class='WARLOCK',steps={
+ id='mop.warlock.demonology-pull',revision=3,families={'progression'},class='WARLOCK',steps={
  {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('pull-soul-fire',6353),
   spell('pull-shadow-bolt',686),
@@ -147,7 +147,7 @@ assert(addon:RegisterDefaultBlock({
 -- ending Corruption; Soul Fire on Molten Core or below 25%; Immolation Aura on three, Void Ray on seven
 -- engaged enemies; Touch of Chaos; then stop (the caster list does not apply in demon form).
 assert(addon:RegisterDefaultBlock({
- id='mop.warlock.demonology-demon',revision=1,families={'progression'},class='WARLOCK',steps={
+ id='mop.warlock.demonology-demon',revision=2,families={'progression'},class='WARLOCK',steps={
  spell('demon-leave',103958,all(negate(own(113861)),shards('LESSTHANOREQUALS',300))),
  spell('demon-doom',603,any(negate(dot(603)),all(remain(603,'LESSTHAN',30),{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHAN',value=30}))),
  spell('demon-touch-corruption',103964,{type='DEBUFF_REMAIN',unit='target',spell=172,anyrank=true,owndebuff=true,operator='LESSTHAN',value=4}),
@@ -164,7 +164,7 @@ assert(addon:RegisterDefaultBlock({
 -- second Hand of Gul'dan, then Metamorphosis at once so the second stack lands empowered); Hand of Gul'dan
 -- at two charges or with the second charge 2.5 s away.
 assert(addon:RegisterDefaultBlock({
- id='mop.warlock.demonology-caster',revision=1,families={'progression'},class='WARLOCK',steps={
+ id='mop.warlock.demonology-caster',revision=2,families={'progression'},class='WARLOCK',steps={
  {id='moving',type='branch',conditions=all({type='MOVING'},negate(talent(17))),onFalse={},onTrue={
   spell('moving-corruption',172,negate(corruption())),
   spell('moving-fel-flame',77799),

@@ -18,8 +18,8 @@ local shield={type='WEAPON_TYPE',slot='offhand',kind='shield'}
 local tanked={type='ISSAME',unit='targettarget',otherunit='player'}
 local unqueued=all(negate(queued(78)),negate(queued(845)))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.warrior.protection.icyveins',revision=4,
- blocks={['era.warrior.boundaries']=2,['era.warrior.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.warrior.protection.icyveins',revision=5,
+ blocks={['era.warrior.boundaries']=3,['era.warrior.upkeep']=1},
  nameKey='Default.Era.Warrior.Protection.IcyVeins.Name',descriptionKey='Default.Era.Warrior.Protection.IcyVeins.Description',
  applicability={families={'era'},actionContext='player',class='WARRIOR'},
  tags={'tank','melee','endgame','aoe','icy-veins'},

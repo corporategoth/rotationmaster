@@ -17,8 +17,8 @@ local function boss()return all({type='GROUP'},{type='CLASSIFICATION',unit='targ
 local function shaman(id,steps,revision)assert(addon:RegisterDefaultBlock({id=id,revision=revision or 1,families={'tbc'},class='SHAMAN',steps=steps}))end
 -- Casts, channels and Ghost Wolf halt advice and implicit Attack.
 shaman('tbc.shaman.boundaries',{
- {id='casting',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},own(2645))},
-},2)
+ {id='casting',type='stop',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},own(2645))},
+},3)
 -- Every source interrupts with Earth Shock.
 shaman('tbc.shaman.interrupt',{
  {id='interrupt',type='spell',action=8042,ranked=false,conditions=any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})},
@@ -57,19 +57,19 @@ shaman('tbc.shaman.enhancement-opening',{
  {id='boundaries',type='block',block='tbc.shaman.boundaries'},
  {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   {id='pull-bolt',type='spell',action=403,ranked=false,conditions=all({type='ATTACKABLE',unit='target'},negate({type='COMBAT',unit='target'}),{type='BEYOND_MELEE',unit='target'},negate({type='MOVING'}))},
-  {id='pull-stop',type='none',conditions={}},
+  {id='pull-stop',type='stop',conditions={}},
  }},
- {id='no-target',type='none',conditions=negate({type='ATTACKABLE',unit='target'})},
+ {id='no-target',type='stop',conditions=negate({type='ATTACKABLE',unit='target'})},
  {id='kick',type='block',block='tbc.shaman.interrupt'},
  {id='aoe-fire-nova',type='spell',action=1535,ranked=false,conditions=all(enemies(3,8),negate({type='TOTEM_SPELL',spell=1535}))},
  {id='aoe-magma',type='spell',action=8190,ranked=false,conditions=all(enemies(3,8),negate({type='TOTEM_SPELL',spell=1535}),negate({type='TOTEM_SPELL',spell=8190}))},
-},2)
+},3)
 -- Elemental opening every Elemental source shares.
 shaman('tbc.shaman.elemental-opening',{
  {id='boundaries',type='block',block='tbc.shaman.boundaries'},
- {id='no-target',type='none',conditions=negate({type='ATTACKABLE',unit='target'})},
+ {id='no-target',type='stop',conditions=negate({type='ATTACKABLE',unit='target'})},
  {id='kick',type='block',block='tbc.shaman.interrupt'},
-})
+},2)
 -- Icy Veins and Wowhead AoE: Fire Nova and Magma only when close, Chain Lightning.
 shaman('tbc.shaman.elemental-aoe',{
  {id='fire-nova',type='spell',action=1535,ranked=false,conditions=all(enemies(3,8),negate({type='TOTEM_SPELL',spell=1535}))},

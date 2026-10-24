@@ -7,8 +7,8 @@
 local _,addon=...
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.mage.initial',revision=2,
- blocks={['retail.mage.boundaries']=2,['retail.mage.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.mage.initial',revision=3,
+ blocks={['retail.mage.boundaries']=3,['retail.mage.utility']=2},
  nameKey='Default.Retail.Mage.Initial.Name',descriptionKey='Default.Retail.Mage.Initial.Description',
  applicability={families={'retail'},actionContext='player',class='MAGE'},
  tags={'leveling','assisted-combat'},

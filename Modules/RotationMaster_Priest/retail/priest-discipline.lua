@@ -14,7 +14,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local friend=all({type='LEVEL',unit='target',operator='GREATERTHAN',value=0},{type='FRIENDLY',unit='target'},negate({type='DEAD',unit='target'}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.priest.discipline',revision=3,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.priest.discipline',revision=4,
  blocks={['retail.priest.upkeep']=2,['retail.priest.disc-cooldowns']=1},
  nameKey='Default.Retail.Priest.Discipline.Name',descriptionKey='Default.Retail.Priest.Discipline.Description',
  applicability={families={'retail'},actionContext='player',class='PRIEST'},
@@ -28,15 +28,15 @@ assert(addon:RegisterDefaultRotation({
    block('retail.priest.disc-cooldowns','disc-'),
   },
   rotation={
-   {id='disc-casting',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
+   {id='disc-casting',type='stop',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
    {id='disc-friendly',type='branch',conditions=friend,onFalse={},onTrue={
     spell('disc-void-shield',1253593),
     spell('disc-shield',17),
     spell('disc-penance-heal',47540),
     spell('disc-flash-heal',2061),
-    {id='disc-friendly-stop',type='none',suppress_attack=true,conditions={}},
+    {id='disc-friendly-stop',type='stop',suppress_attack=true,conditions={}},
    }},
-   {id='disc-no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
+   {id='disc-no-target',type='stop',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
    spell('disc-shadow-word-pain',589,any(negate({type='SPELL_HISTORY_TIME',spell=589,operator='LESSTHAN',value=12}),negate({type='DEBUFF',unit='target',spell=589,owndebuff=true}))),
    spell('disc-mind-blast',8092),
    spell('disc-penance',47540),

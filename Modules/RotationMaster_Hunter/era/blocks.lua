@@ -14,7 +14,7 @@ local function mana(op,n)return{type='MANAPCT',unit='player',operator=op,value=n
 local function classified(kind)return{type='CLASSIFICATION',unit='target',value=kind}end
 local function instance(kind)return{type='INSTANCE',value=kind}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
-local function stop(id,attack)return{id=id,type='none',suppress_attack=not attack,conditions={}}end
+local function stop(id,attack)return{id=id,type='stop',suppress_attack=not attack,conditions={}}end
 local function afterAuto(window)return{type='SPELL_HISTORY_TIME',spell=75,ranked=true,operator='LESSTHANOREQUALS',value=window}end
 local standing=negate({type='MOVING'})
 local unmarked=negate({type='DEBUFF',unit='target',spell=1130,anyrank=true})
@@ -24,11 +24,11 @@ local lives=any({type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.3}
 local attacked={type='ISSAME',unit='targettarget',otherunit='player'}
 local loneWolf={type='RUNE_ENGRAVED',spell=415370}
 -- Casts and channels (Aimed Shot, Steady Shot, Volley, Mend Pet) and a missing target end advice.
-assert(addon:RegisterDefaultBlock({id='era.hunter.boundaries',revision=2,families={'era'},class='HUNTER',steps={
- {id='manual',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))},
+assert(addon:RegisterDefaultBlock({id='era.hunter.boundaries',revision=3,families={'era'},class='HUNTER',steps={
+ {id='manual',type='stop',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))},
 }}))
 -- Vanilla dead zone: inside melee range only the melee buttons work.
-assert(addon:RegisterDefaultBlock({id='era.hunter.dead-zone',revision=2,families={'era'},class='HUNTER',steps={
+assert(addon:RegisterDefaultBlock({id='era.hunter.dead-zone',revision=3,families={'era'},class='HUNTER',steps={
  {id='melee',type='branch',conditions={type='BEYOND_MELEE',unit='target'},onTrue={},onFalse={
   spell('raptor-strike',2973,negate({type='SPELL_ACTIVE',spell=2973,ranked=false})),
   spell('mongoose-bite',1495),
@@ -37,7 +37,7 @@ assert(addon:RegisterDefaultBlock({id='era.hunter.dead-zone',revision=2,families
  }},
 }}))
 -- Vanilla pull, Auto Shot, Hunter's Mark, moving and the multi-target branch.
-assert(addon:RegisterDefaultBlock({id='era.hunter.opening',revision=2,families={'era'},class='HUNTER',steps={
+assert(addon:RegisterDefaultBlock({id='era.hunter.opening',revision=3,families={'era'},class='HUNTER',steps={
  {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('pull-mark',1130,unmarked),
   spell('pull-aimed-shot',19434,standing),
@@ -60,7 +60,7 @@ assert(addon:RegisterDefaultBlock({id='era.hunter.opening',revision=2,families={
  }},
 }}))
 -- Solo leveling economy: the pet tanks, your own sting, extra shots only on spare mana.
-assert(addon:RegisterDefaultBlock({id='era.hunter.solo',revision=1,families={'era'},class='HUNTER',steps={
+assert(addon:RegisterDefaultBlock({id='era.hunter.solo',revision=2,families={'era'},class='HUNTER',steps={
  spell('concussive-shot',5116,all(negate({type='PET'}),attacked,negate({type='DEBUFF',unit='target',spell=5116,anyrank=true}))),
  spell('serpent-sting',1978,all(stingless,lives)),
  spell('aimed-shot',19434,all(mana('GREATERTHAN',.5),afterAuto(.5))),

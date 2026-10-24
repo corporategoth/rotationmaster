@@ -17,7 +17,7 @@ local function health(unit,op,n)return{type='HEALTHPCT',unit=unit,operator=op,va
 local function low(n)return health('target','LESSTHAN',n)end
 local function hurt(n,below)return{type='PROXIMITY_HEALTHPCT_COUNT',unit='player',distance=40,healthoperator='LESSTHAN',health=below,operator='GREATERTHANOREQUALS',value=n}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or {}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local friendly={type='FRIENDLY',unit='target'}
 local group={type='GROUP'}
@@ -25,8 +25,8 @@ local unshielded=negate({type='DEBUFF',unit='target',spell=6788})
 local nochakra=all(negate(own(81208)),negate(own(81206)),negate(own(81209)))
 local aoe=hurt(3,.85)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.priest.holy',revision=3,
- blocks={['mop.priest.upkeep']=1,['mop.priest.healer-boundaries']=1,['mop.priest.healer-cooldowns']=1,['mop.priest.holy-damage']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.priest.holy',revision=4,
+ blocks={['mop.priest.upkeep']=1,['mop.priest.healer-boundaries']=2,['mop.priest.healer-cooldowns']=1,['mop.priest.holy-damage']=2},
  nameKey='Default.MoP.Priest.Holy.Name',descriptionKey='Default.MoP.Priest.Holy.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PRIEST'},
  tags={'holy','healer','group','leveling','endgame','warcraft-tavern','icy-veins','hekili'},

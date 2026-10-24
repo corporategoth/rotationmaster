@@ -16,8 +16,8 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local stationary=negate({type='MOVING'})
 local ranged={type='BEYOND_MELEE',unit='target'}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.shaman.enhancement.wowhead',revision=4,
- blocks={['forever.shaman.manual-target']=1,['forever.shaman.upkeep']=2,['forever.shaman.imbue']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.shaman.enhancement.wowhead',revision=5,
+ blocks={['forever.shaman.manual-target']=2,['forever.shaman.upkeep']=2,['forever.shaman.imbue']=1},
  nameKey='Default.Forever.Shaman.Enhancement.Wowhead.Name',descriptionKey='Default.Forever.Shaman.Enhancement.Wowhead.Description',
  applicability={families={'forever'},actionContext='player',class='SHAMAN'},
  tags={'dps','melee','leveling','aoe','wowhead','mobalytics'},
@@ -31,7 +31,7 @@ assert(addon:RegisterDefaultRotation({
  {id='shaman-wh-pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('shaman-wh-pull-bolt',403,all(ranged,stationary)),
   spell('shaman-wh-pull-shock',8042),
-  {id='shaman-wh-pull-stop',type='none',suppress_attack=false,conditions={}},
+  {id='shaman-wh-pull-stop',type='stop',suppress_attack=false,conditions={}},
  }},
  spell('shaman-wh-fire-nova',408341,all({type='TOTEM',spell=1},any({type='GROUP'},enemies(3)))),
  spell('shaman-wh-stormstrike',17364,negate({type='BUFF',unit='player',spell=1238931})),

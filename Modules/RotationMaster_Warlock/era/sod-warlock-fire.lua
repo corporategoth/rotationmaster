@@ -26,8 +26,8 @@ local cursed={type='OR',value={}};for i,id in ipairs(curses)do cursed.value[i]=o
 local incinerated=all(buff(412758),{type='BUFF_REMAIN',unit='player',spell=412758,operator='GREATERTHANOREQUALS',value=1.8})
 local summon=all(negate({type='PET'}),negate(combat()))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.fire',revision=4,
- blocks={['era.warlock.boundaries']=2,['era.warlock.armor']=1,['era.warlock.safety']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.fire',revision=5,
+ blocks={['era.warlock.boundaries']=3,['era.warlock.armor']=1,['era.warlock.safety']=1},
  nameKey='Default.SoD.Warlock.Fire.Name',descriptionKey='Default.SoD.Warlock.Fire.Description',
  applicability={families={'era'},actionContext='player',class='WARLOCK',rulesets={'season:2'}},
  tags={'dps','ranged','caster','leveling','endgame','aoe','season-of-discovery','wowsims','wowhead'},
@@ -48,7 +48,7 @@ assert(addon:RegisterDefaultRotation({
   spell('sod-fire-moving-agony',980,negate(cursed)),
   spell('sod-fire-moving-lake-of-fire',460692),
   spell('sod-fire-moving-tap',1454,all(mana('LESSTHAN',.9),{type='HEALTHPCT',unit='player',operator='GREATERTHAN',value=.5})),
-  {id='sod-fire-moving-stop',type='none',suppress_attack=true,conditions={}},
+  {id='sod-fire-moving-stop',type='stop',suppress_attack=true,conditions={}},
  }},
  {id='sod-fire-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
   spell('sod-fire-aoe-incinerate',412758,negate(buff(412758))),

@@ -13,8 +13,8 @@ local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.holy.wowhead',revision=5,
- blocks={['sod.paladin.holy-upkeep']=2,['era.paladin.boundaries']=1,['era.paladin.cleanse']=1,['sod.paladin.holy-hostile']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.holy.wowhead',revision=6,
+ blocks={['sod.paladin.holy-upkeep']=2,['era.paladin.boundaries']=2,['era.paladin.cleanse']=1,['sod.paladin.holy-hostile']=3},
  nameKey='Default.SoD.Paladin.Holy.Wowhead.Name',descriptionKey='Default.SoD.Paladin.Holy.Wowhead.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},
  tags={'endgame','holy','healer','dungeon','raid','season-of-discovery','wowhead'},
@@ -29,7 +29,7 @@ assert(addon:RegisterDefaultRotation({
     block('sholywh-cleanse','era.paladin.cleanse','sholywh-'),
     spell('sholywh-shock',20473,any(all({type='MOVING'},hurt(0.95)),hurt(0.9))),
     spell('sholywh-flash',19750,hurt(0.95)),
-    {id='sholywh-friend-stop',type='none',suppress_attack=true,conditions={}},
+    {id='sholywh-friend-stop',type='stop',suppress_attack=true,conditions={}},
    }},
    block('sholywh-hostile','sod.paladin.holy-hostile','sholywh-'),
   },

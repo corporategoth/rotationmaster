@@ -147,7 +147,7 @@ test('ancestor replacements and removed numeric parents conflict with descendant
         local edited=store:Get(id).envelope;edited.body.rotation[1].action[1]=789;assert(store:Save(id,edited))
         local newer=copy(original);newer.revision=2
         if mode=='replace' then newer.body.rotation[1].action='healing-potions'
-        else newer.body.rotation[1].action=nil;newer.body.rotation[1].type='none' end
+        else newer.body.rotation[1].action=nil;newer.body.rotation[1].type='stop' end
         assert(store:RegisterBuiltin(newer))
         local result=data.CompareClone(store:Get(id),store:Get(original.id))
         assert(result.valid and result.complete and #result.conflicts==1,mode..' missed conflict')

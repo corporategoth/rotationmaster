@@ -19,8 +19,8 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local FEVER,PLAGUE=55095,55078
 local both=all(disease(FEVER),disease(PLAGUE))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.deathknight.blood',revision=3,
- blocks={['mop.deathknight.boundaries']=2,['mop.deathknight.upkeep']=1,['mop.deathknight.blood-upkeep']=2,['mop.deathknight.blood-pull']=1,['mop.deathknight.spread']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.deathknight.blood',revision=4,
+ blocks={['mop.deathknight.boundaries']=3,['mop.deathknight.upkeep']=1,['mop.deathknight.blood-upkeep']=2,['mop.deathknight.blood-pull']=2,['mop.deathknight.spread']=1},
  nameKey='Default.MoP.DeathKnight.Blood.Name',descriptionKey='Default.MoP.DeathKnight.Blood.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DEATHKNIGHT'},
  tags={'blood','tank','leveling','single-target','aoe','icy-veins','wowsims'},

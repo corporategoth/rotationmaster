@@ -17,9 +17,9 @@ local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 local interrupt=any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})
 -- Casting or channelling ends advice (Attack continues); no attackable target ends it too.
 assert(addon:RegisterDefaultBlock({
- id='retail.paladin.boundaries',revision=1,families={'retail'},class='PALADIN',steps={
- {id='casting',type='none',suppress_attack=false,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
- {id='no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
+ id='retail.paladin.boundaries',revision=2,families={'retail'},class='PALADIN',steps={
+ {id='casting',type='stop',suppress_attack=false,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
+ {id='no-target',type='stop',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
 }}))
 -- Reminders every Paladin premade shares: an aura between pulls when none is up, Rebuke on an
 -- interruptible cast.

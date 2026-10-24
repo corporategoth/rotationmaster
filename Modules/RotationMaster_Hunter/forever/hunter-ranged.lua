@@ -11,7 +11,7 @@ local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function enemies(n)return{type='DISTANCE_COUNT',enemy=true,distance=10,operator='GREATERTHANOREQUALS',value=n}end
 local function engaged(n)return{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=n}end
@@ -19,8 +19,8 @@ local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASS
 local arcaneTurn=all({type='SPELL_HISTORY_TIME',spell=1293241,operator='LESSTHAN',value=7},
  negate({type='SPELL_HISTORY_TIME',spell=3044,operator='LESSTHAN',value=17}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.ranged',revision=4,
- blocks={['forever.hunter.boundaries']=3,['forever.hunter.deadzone']=2,['forever.hunter.pull']=2,['forever.hunter.moving']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.ranged',revision=5,
+ blocks={['forever.hunter.boundaries']=4,['forever.hunter.deadzone']=3,['forever.hunter.pull']=3,['forever.hunter.moving']=2,
   ['forever.hunter.aspects-ranged']=1,['forever.hunter.pet-care']=2,['forever.hunter.burst']=1},
  nameKey='Default.Forever.Hunter.Ranged.Name',descriptionKey='Default.Forever.Hunter.Ranged.Description',
  applicability={families={'forever'},actionContext='player',class='HUNTER'},
@@ -47,7 +47,7 @@ assert(addon:RegisterDefaultRotation({
    block('ranged-deadzone','forever.hunter.deadzone','ranged-'),
    block('ranged-pull','forever.hunter.pull','ranged-'),
    -- Optional (off): solo, hold shots until the pet has the mob's attention.
-   {id='ranged-pet-threat',type='none',suppress_attack=true,disabled=true,conditions=all({type='PET'},negate({type='GROUP'}),
+   {id='ranged-pet-threat',type='stop',suppress_attack=true,disabled=true,conditions=all({type='PET'},negate({type='GROUP'}),
     negate({type='ISSAME',unit='targettarget',otherunit='pet'}),{type='TIME_IN_COMBAT',operator='LESSTHAN',value=2})},
    block('ranged-moving','forever.hunter.moving','ranged-'),
    spell('ranged-auto-shot',75,negate({type='SPELL_AUTOREPEAT',spell=75,ranked=true})),

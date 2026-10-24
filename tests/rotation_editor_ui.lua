@@ -1,6 +1,6 @@
 local F=dofile('tests/fixtures/addon.lua')
 local test,finish=F.suite()
-local function body() return {name='Mine',switch={},rotation={{id='branch',type='branch',conditions={},onTrue={{id='yes',type='none',conditions={}}},onFalse={{id='no',type='none',conditions={}}}}},cooldowns={{id='optional',type='spell',action=324,conditions={}}}} end
+local function body() return {name='Mine',switch={},rotation={{id='branch',type='branch',conditions={},onTrue={{id='yes',type='stop',conditions={}}},onFalse={{id='no',type='stop',conditions={}}}}},cooldowns={{id='optional',type='spell',action=324,conditions={}}}} end
 local function fixture()
     local f=F.new();local a=f.addon;local frames,create=dofile('tests/fixtures/native_ui.lua')(f.env);f.nativeFrames=frames
     dofile('tests/fixtures/spell_editbox.lua')(f,create)
@@ -156,8 +156,8 @@ test('section controls sit with cooldown and rotation headings and switch text s
 end)
 test('Ctrl drag into an arm moves the following sequence as one undoable edit',function()
     local f,parent=fixture();local value=f.addon:GetEditableRotation(0,'mine')
-    value.rotation[2]={id='second',type='none',conditions={}}
-    value.rotation[3]={id='third',type='none',conditions={}}
+    value.rotation[2]={id='second',type='stop',conditions={}}
+    value.rotation[3]={id='third',type='stop',conditions={}}
     local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'));f.env.IsControlKeyDown=function() return true end;pane.canvas:BeginDrag('second');f.env.IsControlKeyDown=function() return false end
     local destination
     for _,target in ipairs(pane.canvas.scene.dropTargets) do if target.destination.parentId=='branch' and target.destination.path[3]=='onTrue' and target.destination.index==2 then destination=target end end
@@ -276,7 +276,7 @@ test('manual move callback failures are captured and forwarded once like other n
     local f,parent=fixture();local forwarded=0
     f.env.geterrorhandler=function() return function() forwarded=forwarded+1 end end
     f.env.debugstack=function() return 'Interface/AddOns/rotationmaster/UI/rotation_canvas.lua:1: move' end
-    f.addon:GetEditableRotation(0,'mine').rotation[1].onTrue[2]={id='second',type='none',conditions={}}
+    f.addon:GetEditableRotation(0,'mine').rotation[1].onTrue[2]={id='second',type='stop',conditions={}}
     f.load('Diagnostics/errors.lua');local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'))
     pane.Command=function() error('manual-move-failed',0) end
     local control=card(pane,'yes').controls.down
@@ -597,7 +597,7 @@ test('condition editor context identifies the kind and the rotation owning the s
 end)
 test('rotation move controls track sibling boundaries across moves undo and reflow',function()
     local f,parent=fixture();local source=f.addon:GetEditableRotation(0,'mine')
-    source.rotation[2]={id='tail',type='none',conditions={}}
+    source.rotation[2]={id='tail',type='stop',conditions={}}
     local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'))
     assert(not card(pane,'branch').controls.up:IsEnabled() and card(pane,'branch').controls.down:IsEnabled())
     assert(card(pane,'tail').controls.up:IsEnabled() and not card(pane,'tail').controls.down:IsEnabled())
@@ -787,7 +787,7 @@ test('General preferred rotation view initializes new editors and changed prefer
 end)
 test('normal lists scroll independently while diagram restores its camera across views and resize',function()
     local f,parent=fixture();local value=f.addon:GetEditableRotation(0,'mine')
-    for i=1,40 do value.rotation[#value.rotation+1]={id='long'..i,type='none',conditions={}};value.cooldowns[#value.cooldowns+1]={id='cd'..i,type='spell',action=324,conditions={}} end
+    for i=1,40 do value.rotation[#value.rotation+1]={id='long'..i,type='stop',conditions={}};value.cooldowns[#value.cooldowns+1]={id='cd'..i,type='spell',action=324,conditions={}} end
     local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'));local c=pane.canvas
     c.horizontal:SetValue(c.paddingX+80);c.frame.workbenchBar:SetValue(c.paddingY+120)
     pane.viewMode:Click();assert(c.frame.workbenchBar:IsShown() and not pane.zoomBar:IsShown())
@@ -812,8 +812,8 @@ test('retired card wheel and middle callbacks cannot navigate a reopened workspa
 end)
 test('ordinary drag moves a leading card into a following branch without carrying its destination',function()
     local f,parent=fixture();local value=f.addon:GetEditableRotation(0,'mine')
-    table.insert(value.rotation,1,{id='first',type='none',conditions={}})
-    value.rotation[3]={id='last',type='none',conditions={}}
+    table.insert(value.rotation,1,{id='first',type='stop',conditions={}})
+    value.rotation[3]={id='last',type='stop',conditions={}}
     local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'));local c=pane.canvas;local target
     for _,gap in ipairs(c.scene.dropTargets) do if gap.destination.parentId=='branch' and gap.destination.path[3]=='onTrue' and gap.destination.index==1 then target=gap end end
     c:BeginDrag('first');assert(c:CanDrop(target),'single drag accidentally carries destination branch');assert(c:Drop(target))
@@ -822,7 +822,7 @@ test('ordinary drag moves a leading card into a following branch without carryin
     f.env.IsControlKeyDown=function() return true end;c:BeginDrag('first');assert(not c:CanDrop(target),'Ctrl tail permits a cycle');c:CancelDrag()
 end)
 test('Ctrl rotation drag preview has a separate multiple-card count and stack',function()
-    local f,parent=fixture();local value=f.addon:GetEditableRotation(0,'mine');value.rotation[2]={id='last',type='none',conditions={}}
+    local f,parent=fixture();local value=f.addon:GetEditableRotation(0,'mine');value.rotation[2]={id='last',type='stop',conditions={}}
     local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'));f.env.IsControlKeyDown=function() return true end
     pane.canvas:BeginDrag('branch');local ghost=pane.canvas.ghost
     assert(ghost.count and ghost.count:IsShown() and ghost.count:GetText():find('4',1,true),'multiple card count missing')
@@ -890,7 +890,7 @@ test('View Changes compares saved and raw draft values without applying or creat
     pane:Release();d.frame.scripts.OnUpdate();assert(not d.frame:IsShown())
 end)
 test('large list reaches its last row using a bounded reusable native card pool',function()
-    local f,parent=fixture();local many={};for i=1,1000 do many[i]={id='large'..i,type='none',conditions={}} end
+    local f,parent=fixture();local many={};for i=1,1000 do many[i]={id='large'..i,type='stop',conditions={}} end
     f.addon.db.profile.rotations[0].mine={name='Large',rotation=many,cooldowns={}}
     local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'));pane.view.layout='list';pane:Render()
     local c=pane.canvas
@@ -907,7 +907,7 @@ test('large list reaches its last row using a bounded reusable native card pool'
     c.frame.workbenchBar:SetValue(0);assert(visibleCard(pane,'large1'))
 end)
 test('large scene scrolling preserves pending names and details without rebinding focused controls',function()
-    local f,parent=fixture();local many={};for i=1,350 do many[i]={id='entry'..i,type='none',conditions={}} end
+    local f,parent=fixture();local many={};for i=1,350 do many[i]={id='entry'..i,type='stop',conditions={}} end
     f.addon.db.profile.rotations[0].mine={name='Large',rotation=many,cooldowns={}}
     local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'));pane.view.layout='list';pane:Render()
     pane.view.cardStates.entry350='expanded';pane:Render()
@@ -927,7 +927,7 @@ test('large scene scrolling preserves pending names and details without rebindin
     assert(pane:HasUnsavedChanges(),'recycling discarded pending text')
 end)
 test('first materialization of an offscreen details card updates its measured geometry',function()
-    local f,parent=fixture();local many={};for i=1,350 do many[i]={id='entry'..i,type='none',conditions={}} end
+    local f,parent=fixture();local many={};for i=1,350 do many[i]={id='entry'..i,type='stop',conditions={}} end
     f.addon.db.profile.rotations[0].mine={name='Large',rotation=many,cooldowns={}}
     local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'));pane.view.layout='list'
     pane.view.cardStates.entry300='expanded';pane:Render();local c=pane.canvas
@@ -937,7 +937,7 @@ test('first materialization of an offscreen details card updates its measured ge
     for _,m in ipairs(c.scene.cards) do if m.id=='entry300' then assert(m.height<120,'newly visible details retained estimated height') end end
 end)
 test('large diagram visibility follows zoom and pan coordinates without recycling a drag source',function()
-    local f,parent=fixture();local many={};for i=1,350 do many[i]={id='entry'..i,type='none',conditions={}} end
+    local f,parent=fixture();local many={};for i=1,350 do many[i]={id='entry'..i,type='stop',conditions={}} end
     f.addon.db.profile.rotations[0].mine={name='Large',rotation=many,cooldowns={}}
     local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'));local c=pane.canvas
     local model=c.scene.cards[350]
@@ -950,7 +950,7 @@ test('large diagram visibility follows zoom and pan coordinates without recyclin
     c:CancelDrag();assert(not visibleCard(pane,'entry350') and visibleCard(pane,'entry1'))
 end)
 test('failed viewport construction releases its reentry guard so a later refresh can recover',function()
-    local f,parent=fixture();local many={};for i=1,350 do many[i]={id='entry'..i,type='none',conditions={}} end
+    local f,parent=fixture();local many={};for i=1,350 do many[i]={id='entry'..i,type='stop',conditions={}} end
     f.addon.db.profile.rotations[0].mine={name='Large',rotation=many,cooldowns={}}
     local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'));local c=pane.canvas
     pane.view.cardStates.entry350='expanded';pane:Render()
@@ -961,7 +961,7 @@ test('failed viewport construction releases its reentry guard so a later refresh
     assert(recovered and recovered.fieldControls,'partially bound card was retained after a failed construction')
 end)
 test('active diagram panning populates newly exposed cards before the gesture ends',function()
-    local f,parent=fixture();local many={};for i=1,350 do many[i]={id='entry'..i,type='none',conditions={}} end
+    local f,parent=fixture();local many={};for i=1,350 do many[i]={id='entry'..i,type='stop',conditions={}} end
     f.addon.db.profile.rotations[0].mine={name='Large',rotation=many,cooldowns={}}
     local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'));local c=pane.canvas
     local x,y=200,200;f.env.GetCursorPosition=function() return x,y end

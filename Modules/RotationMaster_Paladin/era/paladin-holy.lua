@@ -14,8 +14,8 @@ local function exact(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function noSeal()local out={};for i,id in ipairs({20154,21084,20375,21082,20166,20165,20164})do out[i]=own(id)end;return negate({type='OR',value=out})end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.paladin.holy',revision=3,
- blocks={['era.paladin.holy-upkeep']=2,['era.paladin.boundaries']=1,['era.paladin.cleanse']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.paladin.holy',revision=4,
+ blocks={['era.paladin.holy-upkeep']=2,['era.paladin.boundaries']=2,['era.paladin.cleanse']=1},
  nameKey='Default.Era.Paladin.Holy.Name',descriptionKey='Default.Era.Paladin.Holy.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN'},
  tags={'leveling','endgame','holy','healer','dungeon','raid','icy-veins','wowhead'},
@@ -32,14 +32,14 @@ assert(addon:RegisterDefaultRotation({
     exact('holy-light-rank6',3472,hurt(0.65)),
     spell('holy-flash-max',19750,hurt(0.85)),
     exact('holy-flash-rank4',19941,hurt(0.95)),
-    {id='holy-friend-stop',type='none',suppress_attack=true,conditions={}},
+    {id='holy-friend-stop',type='stop',suppress_attack=true,conditions={}},
    }},
    {id='holy-hostile',type='branch',conditions=all({type='ATTACKABLE',unit='target'},negate({type='BEYOND_MELEE',unit='target'})),onFalse={},onTrue={
     spell('holy-seal-wisdom',20166,noSeal()),
     spell('holy-judgement',20271,negate({type='GROUP',raid=true})),
-    {id='holy-hostile-stop',type='none',conditions={}},
+    {id='holy-hostile-stop',type='stop',conditions={}},
    }},
-   {id='holy-idle-stop',type='none',suppress_attack=true,conditions={}},
+   {id='holy-idle-stop',type='stop',suppress_attack=true,conditions={}},
   },
  },
 }))

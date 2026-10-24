@@ -14,7 +14,7 @@ local function known(id)return{type='SPELL_KNOWN',spell=id}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function engaged(n)return{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=n}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local AIMED,RAPID,TRUESHOT,EXPLOSIVE,VOLLEY,KILLSHOT,MULTI,ARCANE,STEADY,BLACK,WAILING,CHAKRAM=19434,257044,288613,212431,260243,53351,257620,185358,56641,466930,392060,1264949
 local precise=buff(260242)
@@ -23,8 +23,8 @@ local trick=buff(257622)
 local aimedCap={type='SPELL_CHARGES',spell=AIMED,operator='GREATERTHANOREQUALS',value=2}
 local hydra=all(precise,engaged(2),known(470945))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.marksmanship.guide',revision=4,
- blocks={['retail.hunter.boundaries']=2,['retail.hunter.utility']=2,['retail.hunter.mark']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.marksmanship.guide',revision=5,
+ blocks={['retail.hunter.boundaries']=3,['retail.hunter.utility']=2,['retail.hunter.mark']=1},
  nameKey='Default.Retail.Hunter.MarksmanshipGuide.Name',descriptionKey='Default.Retail.Hunter.MarksmanshipGuide.Description',
  applicability={families={'retail'},actionContext='player',class='HUNTER'},
  tags={'marksmanship','ranged','reference','simulationcraft','icy-veins'},

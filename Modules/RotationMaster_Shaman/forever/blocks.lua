@@ -16,13 +16,13 @@ local function enemies(n)return{type='THREAT_COUNT',threat=1,operator='GREATERTH
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 -- Manual casts and channels, and Ghost Wolf (any of its three IDs), end advice and Attack.
 assert(addon:RegisterDefaultBlock({
- id='forever.shaman.manual',revision=2,families={'forever'},class='SHAMAN',steps={
- {id='manual',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},buff(2645),buff(415233),buff(1238640))},
+ id='forever.shaman.manual',revision=3,families={'forever'},class='SHAMAN',steps={
+ {id='manual',type='stop',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},buff(2645),buff(415233),buff(1238640))},
 }}))
 -- Damage premades: the same, or no attackable target, ends advice (one Stop).
 assert(addon:RegisterDefaultBlock({
- id='forever.shaman.manual-target',revision=1,families={'forever'},class='SHAMAN',steps={
- {id='manual',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},buff(2645),buff(415233),buff(1238640),negate({type='ATTACKABLE',unit='target'}))},
+ id='forever.shaman.manual-target',revision=2,families={'forever'},class='SHAMAN',steps={
+ {id='manual',type='stop',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},buff(2645),buff(415233),buff(1238640),negate({type='ATTACKABLE',unit='target'}))},
 }}))
 -- Every Shaman: a shield (Water Shield once talented, else Lightning Shield; mana is secret on
 -- Forever, so it is refreshed in combat too) and the Earth Shock interrupt.

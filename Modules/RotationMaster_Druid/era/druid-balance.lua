@@ -6,10 +6,10 @@
 local _,addon=...
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.druid.balance',revision=3,
- blocks={['era.druid.boundaries']=3,['era.druid.upkeep']=1,['era.druid.caster-cooldowns']=2,['era.druid.feral-cooldowns']=2,['era.druid.forms']=2,
-  ['era.druid.cat']=1,['era.druid.stealth-opener']=1,['era.druid.cat-builders']=1,['era.druid.powershift']=1,['era.druid.bear']=1,['era.druid.bear-pull']=2,
-  ['era.druid.caster']=1,['era.druid.caster-pull']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.era.druid.balance',revision=4,
+ blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['era.druid.caster-cooldowns']=2,['era.druid.feral-cooldowns']=2,['era.druid.forms']=2,
+  ['era.druid.cat']=1,['era.druid.stealth-opener']=2,['era.druid.cat-builders']=1,['era.druid.powershift']=2,['era.druid.bear']=2,['era.druid.bear-pull']=3,
+  ['era.druid.caster']=2,['era.druid.caster-pull']=3},
  nameKey='Default.Era.Druid.Balance.Name',descriptionKey='Default.Era.Druid.Balance.Description',
  applicability={families={'era'},actionContext='player',class='DRUID'},
  tags={'leveling','endgame','balance','caster','single-target','aoe','wowhead','warcraft-tavern','wowsims'},

@@ -63,9 +63,9 @@ test('cycles and nonportable payloads are refused before traversal',function()
     v=body({leaf('x')});v.rotation[1].conditions={evaluate=function() error('ran') end};rejected(v,'non-portable-type')
 end)
 test('card and branch-depth bounds accept the edge and reject the next node',function()
-    local steps={};for i=1,2000 do steps[i]={id='s'..i,type='none'} end
+    local steps={};for i=1,2000 do steps[i]={id='s'..i,type='stop'} end
     assert(#assert(data.IndexRotationSteps(body(steps))).rows==2000)
-    steps[2001]={id='extra',type='none'};rejected(body(steps),'rotation-node-limit')
+    steps[2001]={id='extra',type='stop'};rejected(body(steps),'rotation-node-limit')
     local node=leaf('leaf');for i=1,16 do node=branch('b'..i,'evaluate',{node}) end
     assert(data.IndexRotationSteps(body({node})))
     node=branch('too-deep',nil,{node});rejected(body({node}),'rotation-depth-limit')

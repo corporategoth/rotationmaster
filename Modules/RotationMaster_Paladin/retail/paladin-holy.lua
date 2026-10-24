@@ -19,7 +19,7 @@ local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.holy',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.holy',revision=5,
  blocks={['retail.paladin.upkeep']=2},
  nameKey='Default.Retail.Paladin.Holy.Name',descriptionKey='Default.Retail.Paladin.Holy.Description',
  applicability={families={'retail'},actionContext='player',class='PALADIN'},
@@ -39,7 +39,7 @@ assert(addon:RegisterDefaultRotation({
    spell('holy-divine-protection',498,combat()),
   },
   rotation={
-   {id='holy-casting',type='none',suppress_attack=false,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
+   {id='holy-casting',type='stop',suppress_attack=false,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
    {id='holy-friendly',type='branch',conditions=all({type='LEVEL',unit='target',operator='GREATERTHAN',value=0},{type='FRIENDLY',unit='target'},negate({type='DEAD',unit='target'})),onFalse={},onTrue={
     spell('holy-eternal-flame-capped',156322,holyPower(5)),
     spell('holy-word-of-glory-capped',85673,holyPower(5)),
@@ -49,9 +49,9 @@ assert(addon:RegisterDefaultRotation({
     spell('holy-word-of-glory',85673,holyPower(3)),
     spell('holy-light',82326),
     spell('holy-flash-of-light',19750),
-    {id='holy-friendly-stop',type='none',suppress_attack=true,conditions={}},
+    {id='holy-friendly-stop',type='stop',suppress_attack=true,conditions={}},
    }},
-   {id='holy-no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
+   {id='holy-no-target',type='stop',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
    spell('holy-shield-of-the-righteous-capped',415091,holyPower(5)),
    spell('holy-shock-enemy',20473),
    spell('holy-shield-of-the-righteous',415091,holyPower(3)),

@@ -12,8 +12,8 @@ local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
 local function dot(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
 local function combat()return{type='COMBAT',unit='player'}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.druid.balance',revision=4,
- blocks={['tbc.druid.feral-form-target']=1,['tbc.druid.boundaries']=3,['tbc.druid.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.druid.balance',revision=5,
+ blocks={['tbc.druid.feral-form-target']=2,['tbc.druid.boundaries']=4,['tbc.druid.upkeep']=1},
  nameKey='Default.TBC.Druid.Balance.Name',descriptionKey='Default.TBC.Druid.Balance.Description',
  applicability={families={'tbc'},actionContext='player',class='DRUID'},
  tags={'leveling','endgame','balance','caster','single-target','aoe','icy-veins','wowhead','warcraft-tavern','wowsims'},
@@ -35,12 +35,12 @@ assert(addon:RegisterDefaultRotation({
    {id='balance-moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
     {id='balance-moving-swarm',type='spell',action=5570,ranked=false,conditions=negate(dot(5570))},
     {id='balance-moving-moonfire',type='spell',action=8921,ranked=false,conditions=negate(dot(8921))},
-    {id='balance-moving-stop',type='none',conditions={}},
+    {id='balance-moving-stop',type='stop',conditions={}},
    }},
    {id='balance-pull',type='branch',conditions=combat(),onTrue={},onFalse={
     {id='balance-pull-starfire',type='spell',action=2912,ranked=false,conditions={}},
     {id='balance-pull-wrath',type='spell',action=5176,ranked=false,conditions={}},
-    {id='balance-pull-stop',type='none',conditions={}},
+    {id='balance-pull-stop',type='stop',conditions={}},
    }},
    {id='balance-faerie-fire',type='spell',action=770,ranked=false,conditions=all({type='GROUP'},negate({type='DEBUFF',unit='target',spell=770,anyrank=true}),negate({type='DEBUFF',unit='target',spell=16857,anyrank=true}))},
    {id='balance-hurricane',type='spell',action=16914,ranked=false,conditions={type='DISTANCE_COUNT',enemy=true,distance=20,operator='GREATERTHANOREQUALS',value=3}},

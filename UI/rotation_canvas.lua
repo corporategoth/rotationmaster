@@ -251,7 +251,7 @@ function addon:CreateRotationCanvas(parent,owner)
         self:CancelDrag();if not owner.active or owner.workspace.readOnly then return end
         self.drag={id=id,insert=insert,tail=id~=nil and IsControlKeyDown and IsControlKeyDown() or false,generation=self.generation,valid={}}
         local step=insert or addon.RotationData.IndexRotationSteps(owner.workspace:Snapshot()).byId[id].step
-        local title=step.name or (step.type=='branch' and L['Add branch'] or step.type=='none' and L['Stop'] or step.type=='assisted' and L["Blizzard's suggestion"] or addon:SpellLabel(step.action))
+        local title=step.name or (step.type=='branch' and L['Add branch'] or step.type=='stop' and L['Stop'] or step.type=='assisted' and L["Blizzard's suggestion"] or addon:SpellLabel(step.action))
         if self.drag.tail then title=L['Move this and following entries']..': '..title end
         local count=1;local selected={}
         -- Dragging a selected card carries the whole selection.

@@ -23,7 +23,7 @@ assert(addon:RegisterDefaultRotation({
         rotation={
             {id="shaman-starter-pull",type="spell",action=403,ranked=false,
                 conditions=all(peaceful(),attackable(),notCondition({type="COMBAT",unit="target"}))},
-            {id="shaman-starter-combat-boundary",type="none",conditions=peaceful()},
+            {id="shaman-starter-combat-boundary",type="stop",conditions=peaceful()},
             {id="shaman-starter-shock",type="spell",action=8042,ranked=false,
                 conditions=attackable()},
             {id="shaman-starter-ranged-bolt",type="spell",action=403,ranked=false,

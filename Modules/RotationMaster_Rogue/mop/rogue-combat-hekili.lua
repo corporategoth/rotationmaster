@@ -25,8 +25,8 @@ local boss={type='CLASSIFICATION',unit='target',value='worldboss'}
 local deep=own(84747)
 local charges=function(op,n)return any(stacks(115189,op,n),negate(own(115189)))end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.combat.hekili',revision=4,
- blocks={['mop.rogue.boundaries']=2,['mop.rogue.combat-opener']=1,['mop.rogue.out-of-combat']=2,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1,['mop.rogue.combat-upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.combat.hekili',revision=5,
+ blocks={['mop.rogue.boundaries']=3,['mop.rogue.combat-opener']=2,['mop.rogue.out-of-combat']=3,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1,['mop.rogue.combat-upkeep']=1},
  nameKey='Default.MoP.Rogue.Combat.Hekili.Name',descriptionKey='Default.MoP.Rogue.Combat.Hekili.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE'},
  tags={'combat','dps','melee','endgame','hekili'},
@@ -45,14 +45,14 @@ assert(addon:RegisterDefaultRotation({
   spell('rogue-combat-hk-marked-for-death',137619,points('LESSTHANOREQUALS',0)),
   spell('rogue-combat-hk-revealing-refresh',84617,any(negate(mine(84617)),remain(84617,'LESSTHANOREQUALS',3))),
   spell('rogue-combat-hk-revealing-strike',84617),
-  {id='rogue-combat-hk-build-pool',type='none',suppress_attack=false,conditions={}},
+  {id='rogue-combat-hk-build-pool',type='stop',suppress_attack=false,conditions={}},
  }},
  {id='rogue-combat-hk-finish',type='branch',conditions=any(deep,stacks(115189,'GREATERTHANOREQUALS',4),all(known(121471),{type='SPELL_COOLDOWN',spell=121471,operator='LESSTHAN',value=11})),onFalse={},onTrue={
   spell('rogue-combat-hk-finisher-slice',5171,buffRemain(5171,'LESSTHANOREQUALS',2)),
   spell('rogue-combat-hk-rupture',1943,all(enemies('LESSTHANOREQUALS',2),any(negate(mine(1943)),remain(1943,'LESSTHANOREQUALS',2)),negate(own(13877)),any(boss,lifetime('GREATERTHANOREQUALS',26)))),
   spell('rogue-combat-hk-crimson-tempest',121411,enemies('GREATERTHANOREQUALS',7)),
   spell('rogue-combat-hk-eviscerate',2098),
-  {id='rogue-combat-hk-pool',type='none',suppress_attack=false,conditions={}},
+  {id='rogue-combat-hk-pool',type='stop',suppress_attack=false,conditions={}},
  }},
  spell('rogue-combat-hk-revealing-filler',84617,any(energy('GREATERTHAN',60),negate(deep),buffRemain(84747,'LESSTHAN',2))),
  spell('rogue-combat-hk-shuriken-toss',114014,{type='BEYOND_MELEE',unit='target'}),

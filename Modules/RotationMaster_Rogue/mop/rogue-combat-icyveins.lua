@@ -17,8 +17,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local boss={type='CLASSIFICATION',unit='target',value='worldboss'}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.combat.icyveins',revision=4,
- blocks={['mop.rogue.boundaries']=2,['mop.rogue.combat-opener']=1,['mop.rogue.out-of-combat']=2,['mop.rogue.combat-aoe']=1,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1,['mop.rogue.combat-upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.combat.icyveins',revision=5,
+ blocks={['mop.rogue.boundaries']=3,['mop.rogue.combat-opener']=2,['mop.rogue.out-of-combat']=3,['mop.rogue.combat-aoe']=2,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1,['mop.rogue.combat-upkeep']=1},
  nameKey='Default.MoP.Rogue.Combat.IcyVeins.Name',descriptionKey='Default.MoP.Rogue.Combat.IcyVeins.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE'},
  tags={'combat','dps','melee','leveling','endgame','icy-veins','warcraft-tavern','method','wowtbc'},
@@ -40,7 +40,7 @@ assert(addon:RegisterDefaultRotation({
   spell('rogue-combat-iv-finisher-slice',5171,buffRemain(5171,'LESSTHANOREQUALS',2)),
   spell('rogue-combat-iv-rupture',1943,all(any(negate(mine(1943)),remain(1943,'LESSTHANOREQUALS',2)),negate(own(13877)),any(boss,lifetime('GREATERTHAN',26)))),
   spell('rogue-combat-iv-eviscerate',2098),
-  {id='rogue-combat-iv-pool',type='none',suppress_attack=false,conditions={}},
+  {id='rogue-combat-iv-pool',type='stop',suppress_attack=false,conditions={}},
  }},
  spell('rogue-combat-iv-dying',2098,all(points('GREATERTHANOREQUALS',2),lifetime('LESSTHAN',4))),
  spell('rogue-combat-iv-sinister',1752),

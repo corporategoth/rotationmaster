@@ -15,7 +15,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local friend=all({type='LEVEL',unit='target',operator='GREATERTHAN',value=0},{type='FRIENDLY',unit='target'},negate({type='DEAD',unit='target'}))
 local grouped=all(combat(),{type='GROUP'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.shaman.restoration',revision=3,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.shaman.restoration',revision=4,
  blocks={['retail.shaman.upkeep']=2},
  nameKey='Default.Retail.Shaman.Restoration.Name',descriptionKey='Default.Retail.Shaman.Restoration.Description',
  applicability={families={'retail'},actionContext='player',class='SHAMAN'},
@@ -33,7 +33,7 @@ assert(addon:RegisterDefaultRotation({
    spell('resto-spirit-link',98008,grouped),
   },
   rotation={
-   {id='resto-casting',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
+   {id='resto-casting',type='stop',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
    {id='resto-friendly',type='branch',conditions=friend,onFalse={},onTrue={
     spell('resto-healing-stream',5394),
     spell('resto-unleash-life',73685),
@@ -42,9 +42,9 @@ assert(addon:RegisterDefaultRotation({
     spell('resto-riptide',61295),
     spell('resto-chain-heal',1064,{type='GROUP'}),
     spell('resto-healing-wave',77472),
-    {id='resto-friendly-stop',type='none',suppress_attack=true,conditions={}},
+    {id='resto-friendly-stop',type='stop',suppress_attack=true,conditions={}},
    }},
-   {id='resto-no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
+   {id='resto-no-target',type='stop',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
    spell('resto-flame-shock',470411,negate({type='DEBUFF',unit='target',spell=188389,owndebuff=true})),
    spell('resto-lava-burst',51505),
    spell('resto-lightning-bolt',188196),

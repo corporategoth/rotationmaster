@@ -7,8 +7,8 @@
 local _,addon=...
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.subtlety',revision=3,
- blocks={['retail.rogue.boundaries']=1,['retail.rogue.upkeep']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.subtlety',revision=4,
+ blocks={['retail.rogue.boundaries']=2,['retail.rogue.upkeep']=2},
  nameKey='Default.Retail.Rogue.Subtlety.Name',descriptionKey='Default.Retail.Rogue.Subtlety.Description',
  applicability={families={'retail'},actionContext='player',class='ROGUE'},
  tags={'subtlety','melee','assisted-combat','single-target','aoe','simulationcraft'},

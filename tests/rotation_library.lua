@@ -319,7 +319,7 @@ test('ordinary nested duplicates reidentify both arms and preserve comparison co
     b.onTrue[1].action=8042;assert(a:GetEditableRotation(0,'user').rotation[1].onTrue[1].action==403)
 end)
 test('a nested identity collision in a saved rotation prevents duplicate allocation atomically',function()
-    local a=fixture();a.db.profile.rotations[0].other={name='Other',rotation={{id='branch',type='branch',onTrue={{id='nested-collision',type='none'}},onFalse={}}}}
+    local a=fixture();a.db.profile.rotations[0].other={name='Other',rotation={{id='branch',type='branch',onTrue={{id='nested-collision',type='stop'}},onFalse={}}}}
     local calls=0;a.uuid=function() calls=calls+1;return calls==1 and 'new-copy' or 'nested-collision' end
     a.db.profile.rotations[0].user={name='Original',rotation={{id='original',type='spell',action=403}}}
     local id,why=a:DuplicateCustomRotation(0,'user','Copy')

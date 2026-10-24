@@ -17,8 +17,8 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local undead=any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',unit='target',value='DEMON'})
 local holyPower={type='BUFF_STACKS',unit='player',spell=1226461,operator='GREATERTHANOREQUALS',value=3}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution',revision=4,
- blocks={['sod.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=2,['sod.paladin.seal']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution',revision=5,
+ blocks={['sod.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=3,['sod.paladin.seal']=2},
  nameKey='Default.SoD.Paladin.Retribution.Name',descriptionKey='Default.SoD.Paladin.Retribution.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},
  tags={'leveling','endgame','retribution','melee','single-target','season-of-discovery','wowhead','wowsims','icy-veins'},
@@ -33,7 +33,7 @@ assert(addon:RegisterDefaultRotation({
    {id='sret-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell('sret-pull-exorcism',415068),
     spell('sret-pull-judgement',20271,negate(known(415068))),
-    {id='sret-pull-stop',type='none',conditions={}},
+    {id='sret-pull-stop',type='stop',conditions={}},
    }},
    spell('sret-divine-storm-power',407778,holyPower),
    {id='sret-slow',type='branch',conditions={type='SWING_TIME',offhand=false,operator='GREATERTHANOREQUALS',value=3.3},onTrue={

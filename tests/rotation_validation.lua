@@ -74,6 +74,15 @@ test('unknown fields and references remain present and do not silently acquire e
     result=data.ValidateEnvelope(v,options)
     assert(result.valid and not result.supported and has(result,'unknown-action-type'))
 end)
+test('the retired Stop type name none is an unknown action type and keeps no Stop option',function()
+    local v=envelope();local step=v.body.rotation[1]
+    step.type='none';step.action=nil
+    local result=data.ValidateEnvelope(v,options)
+    assert(result.valid and not result.supported and has(result,'unknown-action-type','$.body.rotation[1].type'))
+    step.suppress_attack=true;result=data.ValidateEnvelope(v,options)
+    assert(has(result,'unexpected-stop-option','$.body.rotation[1].suppress_attack'),'a Stop option was accepted on the retired type')
+    step.type='stop';step.suppress_attack=nil;assert(data.ValidateEnvelope(v,options).supported)
+end)
 test('invalid scope, empty required labels, bad revisions and nonportable values are rejected',function()
     for _,modify in ipairs({
         function(v) v.revision=0 end,
@@ -156,7 +165,7 @@ test('legacy bodies validate independently without inventing edition or source m
 end)
 test('Stop fallback suppression is an optional portable boolean belonging only to Stop steps',function()
     local v=envelope();local step=v.body.rotation[1]
-    step.type='none';step.action=nil;step.suppress_attack=true
+    step.type='stop';step.action=nil;step.suppress_attack=true
     local result=data.ValidateEnvelope(v,options)
     assert(result.valid and result.supported and result.resolved)
     step.suppress_attack=false;assert(data.ValidateEnvelope(v,options).supported)
@@ -176,7 +185,7 @@ test('Boolean group labels validate without reserving custom leaf name fields',f
 end)
 test('branches validate both dense arms recursively with globally unique IDs and strict control fields',function()
     local v=envelope();v.body.rotation={{id='b',type='branch',mode='true',name='Combat',conditions={},
-        onTrue={{id='yes',type='spell',action=403}},onFalse={{id='no',type='none'}}}}
+        onTrue={{id='yes',type='spell',action=403}},onFalse={{id='no',type='stop'}}}}
     local result=data.ValidateEnvelope(v,options);assert(result.valid and result.supported and result.resolved)
     v.body.rotation[1].onFalse[1].id='yes';result=data.ValidateEnvelope(v,options)
     assert(not result.valid and has(result,'duplicate-step-id','$.body.rotation[1].onFalse[1].id'))
@@ -193,7 +202,7 @@ test('unknown branch metadata remains preserved and unsupported while invalid mo
     local result=data.ValidateEnvelope(v,options)
     assert(result.valid and not result.supported and v.body.rotation[1].future.coefficient==42)
     v.body.rotation[1].future=nil;v.body.rotation[1].mode=false;assert(not data.ValidateEnvelope(v,options).valid)
-    v.body.rotation[1].mode='evaluate';v.body.rotation[1].onFalse={[2]={id='x',type='none'}}
+    v.body.rotation[1].mode='evaluate';v.body.rotation[1].onFalse={[2]={id='x',type='stop'}}
     assert(not data.ValidateEnvelope(v,options).valid)
 end)
 test('rotation descriptions and supplied metadata validate without executing code and reject malformed values',function()

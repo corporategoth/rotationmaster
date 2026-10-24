@@ -23,7 +23,7 @@ test('four sourced, localized, valid premades replace the caster-only previews',
   local r=H.row(a,id);local e=r.envelope
   assert(r.validation.valid and r.validation.supported and r.validation.resolved,id)
   assert(f.translations[r.nameKey]and f.translations[r.descriptionKey],id..' localization')
-  assert(#e.sources>0 and e.revision==((id==BAL or id==FWH)and 4 or 3)and r.enabled==(id~=FWH)and e.applicability.class=='DRUID'and e.applicability.maxLevel==nil and e.applicability.families[1]=='tbc')
+  assert(#e.sources>0 and e.revision==((id==BAL or id==FWH)and 5 or 4)and r.enabled==(id~=FWH)and e.applicability.class=='DRUID'and e.applicability.maxLevel==nil and e.applicability.families[1]=='tbc')
   assert(a:GetDefaultRotationComposition(id),id..' uses the shared Druid blocks')
  end
  for _,old in ipairs({'rm.tbc.druid.caster.starter','rm.tbc.druid.caster.starter.20-29','rm.tbc.druid.caster.starter.30-39','rm.tbc.druid.caster.starter.40-49'})do assert(not a:GetDefaultRotation(old),old)end

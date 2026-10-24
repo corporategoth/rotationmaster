@@ -13,8 +13,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.priest.shadow',revision=3,
- blocks={['retail.priest.boundaries']=2,['retail.priest.upkeep']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.priest.shadow',revision=4,
+ blocks={['retail.priest.boundaries']=3,['retail.priest.upkeep']=2},
  nameKey='Default.Retail.Priest.Shadow.Name',descriptionKey='Default.Retail.Priest.Shadow.Description',
  applicability={families={'retail'},actionContext='player',class='PRIEST'},
  tags={'shadow','ranged','assisted-combat','single-target','aoe','simulationcraft'},

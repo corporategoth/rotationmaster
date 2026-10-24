@@ -77,7 +77,7 @@ for _,case in ipairs(cases)do
    a:RegisterCondition('BASELINE_NOEXEC',{description='Data-only test predicate',fields={},customCode=true,
     evaluate=function()executions=executions+1;error('import executed source')end,
     print=function()executions=executions+1;error('reference executed source')end})
-   local body={name='Portable reference',rotation={{id='incoming-step',type='none',conditions={type='BASELINE_NOEXEC'}}},cooldowns={}}
+   local body={name='Portable reference',rotation={{id='incoming-step',type='stop',conditions={type='BASELINE_NOEXEC'}}},cooldowns={}}
    local text=assert(codec:Encode(body));local decoded=assert(codec:Decode(text));assert(decoded.kind=='legacy' and decoded.original==text)
    local session=a.RotationData.NewImportSession(codec,a:GetImportValidationOptions())
    local candidate=assert(session:Stage(text));assert(candidate.original==text and candidate.validation.resolved)

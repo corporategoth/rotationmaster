@@ -32,8 +32,8 @@ local function spare(n)return any(negate(strike()),cooling(12294,n),cooling(2388
 local function giant()return any({type='CREATURE',unit='target',value='GIANT'},{type='CREATURE',unit='target',value='DRAGONKIN'})end
 local unqueued=all(negate(queued(78)),negate(queued(845)))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.warrior.dps',revision=4,
- blocks={['forever.warrior.boundaries']=2,['forever.warrior.upkeep']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.warrior.dps',revision=5,
+ blocks={['forever.warrior.boundaries']=3,['forever.warrior.upkeep']=2},
  nameKey='Default.Forever.Warrior.DPS.Name',descriptionKey='Default.Forever.Warrior.DPS.Description',
  applicability={families={'forever'},actionContext='player',class='WARRIOR'},
  tags={'dps','melee','leveling','endgame','aoe','icy-veins','method'},

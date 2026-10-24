@@ -168,7 +168,7 @@ test('/rm why says when nothing but the fallback is tried, and marks a rotation 
     custom(f,268,'By hand',{switch={}});a:UpdateAutoSwitch()
     report=table.concat(a:GetRotationEligibilityReport(),'\n')
     assert(report:find('By hand [by-hand]: ready, manual only: no switch condition',1,true),report)
-    assert(table.concat(a:GetRotationHandleReport(),'\n'):find('by-hand — By hand (yours) — ready, manual only (no switch condition)',1,true))
+    assert(table.concat(a:GetRotationIdentifierReport(),'\n'):find('by-hand — By hand (yours) — ready, manual only (no switch condition)',1,true))
 end)
 
 test('Classic (TBC): overrides and list order work on a client with one specialization key',function()

@@ -17,7 +17,7 @@ local function known(id)return{type='SPELL_KNOWN',spell=id}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function health(op,v)return{type='HEALTHPCT',unit='player',operator=op,value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,steps,revision)assert(addon:RegisterDefaultBlock({id=id,revision=revision or 1,families={'progression'},class='PALADIN',steps=steps}))end
 local function sealed(id)return{type='FORM',form=id}end
 local enemies=function(n)return{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=n}end
@@ -25,10 +25,10 @@ local enemies=function(n)return{type='THREAT_COUNT',threat=1,operator='GREATERTH
 -- target that is not attackable (one Stop).
 block('mop.paladin.boundaries',{
  stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})),
-},2)
+},3)
 block('mop.paladin.damage-boundaries',{
  stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))),
-})
+},2)
 -- Every premade: Rebuke an interruptible cast (off the global cooldown); Blessing of Kings out of
 -- combat when neither Kings nor Might is up, Blessing of Might when another paladin's Kings is.
 block('mop.paladin.upkeep',{
@@ -72,7 +72,7 @@ block('mop.paladin.prot-open',{
  {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('pull-avengers-shield',31935),spell('pull-judgment',20271,{type='BEYOND_MELEE',unit='target'}),stop('pull-stop')}},
  spell('wings-judgment',20271,all({type='TALENT',layout='grid',value=14},buff(31884))),
-},3)
+},4)
 -- Both Protection premades: three or more enemies on you (Icy Veins' AoE order), then stop.
 block('mop.paladin.prot-aoe',{
  {id='aoe',type='branch',conditions=enemies(3),onFalse={},onTrue={
@@ -86,4 +86,4 @@ block('mop.paladin.prot-aoe',{
   spell('aoe-holy-prism',114165),
   spell('aoe-hammer-wrath',24275),
   stop('aoe-stop')}},
-})
+},2)

@@ -13,10 +13,10 @@ local function ttd(v)return{type='TT_HEALTH',unit='target',health=0,operator='GR
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function spell(id,action,conditions,ranked)return{id=id,type='spell',action=action,ranked=ranked or false,conditions=conditions or {}}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.druid.balance',revision=4,
- blocks={['era.druid.boundaries']=3,['era.druid.upkeep']=1,['era.druid.caster-cooldowns']=2,['sod.druid.maul']=2,['sod.druid.balance-cooldowns']=1,
-  ['sod.druid.forms']=2,['sod.druid.cat']=2,['era.druid.stealth-opener']=1,['era.druid.cat-builders']=1,['era.druid.powershift']=1,['sod.druid.bear']=1,
-  ['sod.druid.caster-pull']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.druid.balance',revision=5,
+ blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['era.druid.caster-cooldowns']=2,['sod.druid.maul']=2,['sod.druid.balance-cooldowns']=1,
+  ['sod.druid.forms']=2,['sod.druid.cat']=2,['era.druid.stealth-opener']=2,['era.druid.cat-builders']=1,['era.druid.powershift']=2,['sod.druid.bear']=2,
+  ['sod.druid.caster-pull']=3},
  nameKey='Default.SoD.Druid.Balance.Name',descriptionKey='Default.SoD.Druid.Balance.Description',
  applicability={families={'era'},actionContext='player',class='DRUID',rulesets={'season:2'}},
  tags={'season-of-discovery','leveling','endgame','balance','caster','single-target','aoe','wowsims','wowhead'},
@@ -39,12 +39,12 @@ assert(addon:RegisterDefaultRotation({
     spell('sod-balance-hurricane',16914,negate(moving()))}},
    {id='sod-balance-moving',type='branch',conditions=moving(),onFalse={},onTrue={
     spell('sod-balance-moving-insect-swarm',5570,negate(mine(5570))),spell('sod-balance-moving-sunfire',414684,negate(mine(414684)),true),
-    spell('sod-balance-moving-moonfire',8921,negate(mine(8921))),{id='sod-balance-moving-stop',type='none',suppress_attack=true,conditions={}}}},
+    spell('sod-balance-moving-moonfire',8921,negate(mine(8921))),{id='sod-balance-moving-stop',type='stop',suppress_attack=true,conditions={}}}},
    spell('sod-balance-sunfire',414684,all(negate(mine(414684)),ttd(8)),true),
    spell('sod-balance-moonfire',8921,all(negate(mine(8921)),ttd(8))),
    spell('sod-balance-starfire',2912,any({type='BUFF',unit='player',spell=417157,ownbuff=true},{type='BUFF',unit='player',spell=408255,anyrank=true})),
    spell('sod-balance-wrath',5176),
-   {id='sod-balance-dry',type='none',conditions={}},
+   {id='sod-balance-dry',type='stop',conditions={}},
   },
  },
 }))

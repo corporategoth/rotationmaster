@@ -17,8 +17,8 @@ local capped={type='POWER',unit='player',operator='GREATERTHANOREQUALS',value=79
 local lasting=any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'},
  {type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.2})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.rogue.dps.wowsims',revision=4,
- blocks={['era.rogue.boundaries']=2,['era.rogue.opener']=2,['era.rogue.upkeep']=2,['era.rogue.builders']=2,['era.rogue.expose-armor']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.rogue.dps.wowsims',revision=5,
+ blocks={['era.rogue.boundaries']=3,['era.rogue.opener']=3,['era.rogue.upkeep']=2,['era.rogue.builders']=2,['era.rogue.expose-armor']=2},
  nameKey='Default.Era.Rogue.DPS.Wowsims.Name',descriptionKey='Default.Era.Rogue.DPS.Wowsims.Description',
  applicability={families={'era'},actionContext='player',class='ROGUE'},
  tags={'dps','melee','endgame','wowsims'},
@@ -35,7 +35,7 @@ assert(addon:RegisterDefaultRotation({
  spell('rogue-slice-refresh',5171,all(points(5),{type='BUFF_REMAIN',unit='player',spell=5171,anyrank=true,ownbuff=true,operator='LESSTHAN',value=3})),
  {id='rogue-finisher',type='branch',conditions=points(5),onFalse={},onTrue={
   spell('rogue-eviscerate',2098,any(sliced,capped,lifetime('LESSTHAN',6))),
-  {id='rogue-pool',type='none',suppress_attack=false,conditions={}},
+  {id='rogue-pool',type='stop',suppress_attack=false,conditions={}},
  }},
  block('era.rogue.builders','rogue-'),
  spell('rogue-sinister',1752,any({type='SWING_TIME_REMAIN',offhand=false,operator='GREATERTHANOREQUALS',value=2},capped,lifetime('LESSTHAN',6))),

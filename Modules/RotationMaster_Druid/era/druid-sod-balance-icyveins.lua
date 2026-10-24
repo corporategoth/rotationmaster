@@ -8,10 +8,10 @@ local function mine(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function spell(id,action,conditions,ranked)return{id=id,type='spell',action=action,ranked=ranked or false,conditions=conditions or {}}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.druid.balance.icyveins',revision=5,
- blocks={['era.druid.boundaries']=3,['era.druid.upkeep']=1,['era.druid.caster-cooldowns']=2,['sod.druid.maul']=2,['sod.druid.balance-cooldowns']=1,
-  ['sod.druid.forms']=2,['sod.druid.cat']=2,['era.druid.stealth-opener']=1,['era.druid.cat-builders']=1,['era.druid.powershift']=1,['sod.druid.bear']=1,
-  ['sod.druid.caster-pull']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.druid.balance.icyveins',revision=6,
+ blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['era.druid.caster-cooldowns']=2,['sod.druid.maul']=2,['sod.druid.balance-cooldowns']=1,
+  ['sod.druid.forms']=2,['sod.druid.cat']=2,['era.druid.stealth-opener']=2,['era.druid.cat-builders']=1,['era.druid.powershift']=2,['sod.druid.bear']=2,
+  ['sod.druid.caster-pull']=3},
  nameKey='Default.SoD.Druid.Balance.IcyVeins.Name',descriptionKey='Default.SoD.Druid.Balance.IcyVeins.Description',
  applicability={families={'era'},actionContext='player',class='DRUID',rulesets={'season:2'}},
  tags={'season-of-discovery','endgame','balance','caster','single-target','aoe','icy-veins'},
@@ -28,13 +28,13 @@ assert(addon:RegisterDefaultRotation({
    ref('sod-balance-iv-pull','sod.druid.caster-pull','sod-balance-iv-pull-'),
    spell('sod-balance-iv-starsurge',417157,{},true),
    {id='sod-balance-iv-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=4},onFalse={},onTrue={
-    spell('sod-balance-iv-hurricane',16914,negate(moving())),{id='sod-balance-iv-aoe-stop',type='none',suppress_attack=true,conditions={}}}},
+    spell('sod-balance-iv-hurricane',16914,negate(moving())),{id='sod-balance-iv-aoe-stop',type='stop',suppress_attack=true,conditions={}}}},
    spell('sod-balance-iv-starfire',2912,{type='AND',value={{type='BUFF',unit='player',spell=417157,ownbuff=true},negate(moving())}}),
    spell('sod-balance-iv-moonfire',8921,negate(mine(8921))),
    spell('sod-balance-iv-sunfire',414684,negate(mine(414684)),true),
    spell('sod-balance-iv-insect-swarm',5570,negate(mine(5570))),
    spell('sod-balance-iv-wrath',5176,negate(moving())),
-   {id='sod-balance-iv-dry',type='none',conditions={}},
+   {id='sod-balance-iv-dry',type='stop',conditions={}},
   },
  },
 }))

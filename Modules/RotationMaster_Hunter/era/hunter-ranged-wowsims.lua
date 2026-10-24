@@ -14,8 +14,8 @@ local function cooling(id)return any(negate(known(id)),{type='SPELL_COOLDOWN',sp
 local stingless=all(negate({type='DEBUFF',unit='target',spell=1978,anyrank=true,owndebuff=true}),
  negate({type='DEBUFF',unit='target',spell=3043,anyrank=true,owndebuff=true}),negate({type='DEBUFF',unit='target',spell=3034,anyrank=true,owndebuff=true}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.hunter.ranged.wowsims',revision=3,
- blocks={['era.hunter.boundaries']=2,['era.hunter.dead-zone']=2,['era.hunter.opening']=2,['era.hunter.solo']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.era.hunter.ranged.wowsims',revision=4,
+ blocks={['era.hunter.boundaries']=3,['era.hunter.dead-zone']=3,['era.hunter.opening']=3,['era.hunter.solo']=2,
   ['era.hunter.hawk']=1,['era.hunter.upkeep']=1,['era.hunter.cooldowns']=1},
  nameKey='Default.Era.Hunter.Ranged.Wowsims.Name',descriptionKey='Default.Era.Hunter.Ranged.Wowsims.Description',
  applicability={families={'era'},actionContext='player',class='HUNTER'},
@@ -34,7 +34,7 @@ assert(addon:RegisterDefaultRotation({
    spell('hunter-aimed-shot',19434,afterAuto(.5)),
    spell('hunter-multi-shot',2643,afterAuto(1)),
    spell('hunter-serpent-sting',1978,all(any(stingless,{type='DEBUFF_REMAIN',unit='target',spell=1978,owndebuff=true,operator='LESSTHAN',value=5}),cooling(19434),cooling(2643))),
-   {id='hunter-wait-auto',type='none',suppress_attack=true,conditions={}},
+   {id='hunter-wait-auto',type='stop',suppress_attack=true,conditions={}},
   }},
  }},
 }))

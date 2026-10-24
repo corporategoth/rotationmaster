@@ -14,8 +14,8 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local undead=any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',unit='target',value='DEMON'})
 local function sealed()local out={};for i,id in ipairs({20154,21084,20375,21082,20166,20165,20164})do out[i]=own(id)end;return{type='OR',value=out}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.paladin.protection',revision=3,
- blocks={['era.paladin.tank-upkeep']=2,['era.paladin.melee-opening']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.era.paladin.protection',revision=4,
+ blocks={['era.paladin.tank-upkeep']=2,['era.paladin.melee-opening']=3},
  nameKey='Default.Era.Paladin.Protection.Name',descriptionKey='Default.Era.Paladin.Protection.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN'},
  tags={'leveling','endgame','protection','tank','single-target','aoe','wowhead','icy-veins'},
@@ -33,7 +33,7 @@ assert(addon:RegisterDefaultRotation({
    {id='prot-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell('prot-pull-holy-shield',20925,negate(own(20925))),
     spell('prot-pull-judgement',20271),
-    {id='prot-pull-stop',type='none',conditions={}},
+    {id='prot-pull-stop',type='stop',conditions={}},
    }},
    spell('prot-holy-shield',20925,negate(own(20925))),
    {id='prot-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2},onTrue={

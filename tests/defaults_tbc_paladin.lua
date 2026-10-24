@@ -21,7 +21,7 @@ test('seven sourced, localized, valid premades replace the manual seal/aura prev
   local r=H.row(a,id);local e=r.envelope
   assert(r.validation.valid and r.validation.supported and r.validation.resolved,id)
   assert(f.translations[r.nameKey]and f.translations[r.descriptionKey],id..' localization')
-  assert(#e.sources>0 and e.revision==({[RET]=4,[RIV]=5,[TWIST]=4,[PROT]=4,[PIV]=5,[HOLY]=3,[HWH]=4})[id]and e.applicability.class=='PALADIN'and e.applicability.maxLevel==nil and e.applicability.families[1]=='tbc')
+  assert(#e.sources>0 and e.revision==({[RET]=5,[RIV]=6,[TWIST]=5,[PROT]=5,[PIV]=6,[HOLY]=4,[HWH]=5})[id]and e.applicability.class=='PALADIN'and e.applicability.maxLevel==nil and e.applicability.families[1]=='tbc')
   assert(a:GetDefaultRotationComposition(id),id..' uses the shared Paladin blocks')
   assert(r.enabled==(id==RET or id==PROT or id==HOLY),id..' default enable state')
  end

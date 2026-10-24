@@ -143,7 +143,7 @@ test('public shared worker retains dynamic function environments without getfenv
  for _,mode in ipairs({'index','type','rows','nested'})do
   local results={}
   for _,old in ipairs({true,false})do
-   local a,e=unit(old);local b={rotation={{id='stop',type='none',conditions={}}}}
+   local a,e=unit(old);local b={rotation={{id='stop',type='stop',conditions={}}}}
    local fn=a.EvaluateRotationSequence;local events={};local second={};for k,v in pairs(e)do second[k]=v end
    second.type=function(v)events[#events+1]='second-type';return type(v)end
    second.ipairs=function(v)events[#events+1]='second-ipairs';return ipairs(v)end

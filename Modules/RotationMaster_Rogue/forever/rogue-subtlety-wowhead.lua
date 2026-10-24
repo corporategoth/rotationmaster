@@ -20,8 +20,8 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local function garroted()return{type='DEBUFF',unit='target',spell=703,anyrank=true,owndebuff=true}end
 local function sliced()return{type='BUFF',unit='player',spell=5171,anyrank=true,ownbuff=true}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.rogue.subtlety.wowhead',revision=4,
- blocks={['forever.rogue.boundaries']=2,['forever.rogue.stealth-fallback']=2,['forever.rogue.expose-armor']=1,['forever.rogue.upkeep']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.rogue.subtlety.wowhead',revision=5,
+ blocks={['forever.rogue.boundaries']=3,['forever.rogue.stealth-fallback']=3,['forever.rogue.expose-armor']=1,['forever.rogue.upkeep']=2},
  nameKey='Default.Forever.Rogue.Subtlety.Wowhead.Name',descriptionKey='Default.Forever.Rogue.Subtlety.Wowhead.Description',
  applicability={families={'forever'},actionContext='player',class='ROGUE'},
  tags={'dps','melee','leveling','endgame','subtlety','wowhead'},
@@ -46,7 +46,7 @@ assert(addon:RegisterDefaultRotation({
  {id='rogue-wowhead-finisher',type='branch',conditions=points('GREATERTHANOREQUALS',5),onFalse={},onTrue={
   spell('rogue-wowhead-rupture',1943,negate({type='DEBUFF',unit='target',spell=1943,anyrank=true,owndebuff=true})),
   spell('rogue-wowhead-eviscerate',2098),
-  {id='rogue-wowhead-pool',type='none',suppress_attack=false,conditions={}},
+  {id='rogue-wowhead-pool',type='stop',suppress_attack=false,conditions={}},
  }},
  spell('rogue-wowhead-hemorrhage',16511),
  spell('rogue-wowhead-sinister',1752,negate({type='SPELL_KNOWN',spell=16511})),

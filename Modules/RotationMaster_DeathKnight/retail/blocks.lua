@@ -7,9 +7,9 @@ local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 -- Your casts, channels and empowers (Consumption) end advice.
-assert(addon:RegisterDefaultBlock({id='retail.deathknight.boundaries',revision=2,families={'retail'},class='DEATHKNIGHT',steps={
+assert(addon:RegisterDefaultBlock({id='retail.deathknight.boundaries',revision=3,families={'retail'},class='DEATHKNIGHT',steps={
  stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})),
 }}))
 -- What Blizzard's Assisted Combat never suggests, for every spec: Mind Freeze on an interruptible

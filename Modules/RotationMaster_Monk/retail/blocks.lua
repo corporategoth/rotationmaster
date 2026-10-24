@@ -7,14 +7,14 @@ local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 -- Your casts and channels (Fists of Fury, Celestial Conduit, Spinning Crane Kick, Crackling Jade
 -- Lightning, Soothing Mist) end advice.
-assert(addon:RegisterDefaultBlock({id='retail.monk.boundaries',revision=2,families={'retail'},class='MONK',steps={
+assert(addon:RegisterDefaultBlock({id='retail.monk.boundaries',revision=3,families={'retail'},class='MONK',steps={
  stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})),
 }}))
 -- The healer: the same, or no attackable target, ends advice (one Stop).
-assert(addon:RegisterDefaultBlock({id='retail.monk.heal-boundaries',revision=1,families={'retail'},class='MONK',steps={
+assert(addon:RegisterDefaultBlock({id='retail.monk.heal-boundaries',revision=2,families={'retail'},class='MONK',steps={
  stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},{type='NOT',value={type='ATTACKABLE',unit='target'}})),
 }}))
 -- What Blizzard's Assisted Combat never suggests, for every spec: Spear Hand Strike on an

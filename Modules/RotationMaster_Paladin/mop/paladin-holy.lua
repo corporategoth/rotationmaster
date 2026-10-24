@@ -14,13 +14,13 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function target(op,v)return{type='HEALTHPCT',unit='target',operator=op,value=v}end
 local function hurt(v,n)return{type='PROXIMITY_HEALTHPCT_COUNT',unit='player',distance=30,healthoperator='LESSTHAN',health=v,operator='GREATERTHANOREQUALS',value=n or 3}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local focus={type='FRIENDLY',unit='focus'}
 local function onFocus(...)local list={};for i,id in ipairs({...})do list[i]={type='BUFF',unit='focus',spell=id,ownbuff=true}end;return{type='OR',value=list}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.holy',revision=3,
- blocks={['mop.paladin.boundaries']=2,['mop.paladin.upkeep']=1,['mop.paladin.seal-insight']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.holy',revision=4,
+ blocks={['mop.paladin.boundaries']=3,['mop.paladin.upkeep']=1,['mop.paladin.seal-insight']=2},
  nameKey='Default.MoP.Paladin.Holy.Name',descriptionKey='Default.MoP.Paladin.Holy.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN'},
  tags={'holy','healer','leveling','icy-veins','warcraft-tavern'},

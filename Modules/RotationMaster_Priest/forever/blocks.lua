@@ -9,15 +9,15 @@ local function negate(c)return{type='NOT',value=c}end
 local function buff(id)return{type='BUFF',unit='player',spell=id,anyrank=true}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local shadowform={type='BUFF',unit='player',spell=15473}
 -- Casts end advice. Channels too, except Mind Flay in Shadowform with Mind Blast ready (the only
 -- Shadowform channel): Mind Blast should not wait for the Flay to finish (Mobalytics).
-assert(addon:RegisterDefaultBlock({id='forever.priest.boundaries',revision=2,families={'forever'},class='PRIEST',steps={
+assert(addon:RegisterDefaultBlock({id='forever.priest.boundaries',revision=3,families={'forever'},class='PRIEST',steps={
  stop('cast',any({type='CASTING',unit='player'},all({type='CHANNELING',unit='player'},negate(all(shadowform,{type='SPELL_AVAIL',spell=8092}))))),
 }}))
 -- Damage premades: the boundaries above, or no attackable target, end advice (one Stop).
-assert(addon:RegisterDefaultBlock({id='forever.priest.dps-boundaries',revision=1,families={'forever'},class='PRIEST',steps={
+assert(addon:RegisterDefaultBlock({id='forever.priest.dps-boundaries',revision=2,families={'forever'},class='PRIEST',steps={
  stop('cast',any({type='CASTING',unit='player'},all({type='CHANNELING',unit='player'},negate(all(shadowform,{type='SPELL_AVAIL',spell=8092}))),negate({type='ATTACKABLE',unit='target'}))),
 }}))
 -- Out-of-combat buffs on yourself: Inner Fire, Fortitude and Divine Spirit (unless the Prayer
@@ -41,7 +41,7 @@ assert(addon:RegisterDefaultBlock({id='forever.priest.dps-upkeep',revision=2,fam
  spell('elunes-light',1259799,combat()),
 }}))
 -- Wand: never toggle a running wand off (Shoot is a toggle).
-assert(addon:RegisterDefaultBlock({id='forever.priest.wand',revision=1,families={'forever'},class='PRIEST',steps={
+assert(addon:RegisterDefaultBlock({id='forever.priest.wand',revision=2,families={'forever'},class='PRIEST',steps={
  stop('wand-active',{type='SPELL_AUTOREPEAT',spell=5019,ranked=true}),
  spell('shoot',5019),
 }}))

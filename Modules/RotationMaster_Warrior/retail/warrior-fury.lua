@@ -10,8 +10,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.fury',revision=3,
- blocks={['retail.warrior.boundaries']=1,['retail.warrior.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.fury',revision=4,
+ blocks={['retail.warrior.boundaries']=2,['retail.warrior.upkeep']=1},
  nameKey='Default.Retail.Warrior.Fury.Name',descriptionKey='Default.Retail.Warrior.Fury.Description',
  applicability={families={'retail'},actionContext='player',class='WARRIOR'},
  tags={'fury','melee','assisted-combat','single-target','aoe','simulationcraft'},

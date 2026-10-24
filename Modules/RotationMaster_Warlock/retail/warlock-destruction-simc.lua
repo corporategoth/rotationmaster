@@ -17,8 +17,8 @@ local function shards(op,v)return{type='POINT',unit='player',operator=op,value=v
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.destruction.simc',revision=4,
- blocks={['retail.warlock.boundaries']=2,['retail.warlock.upkeep']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.destruction.simc',revision=5,
+ blocks={['retail.warlock.boundaries']=3,['retail.warlock.upkeep']=2},
  nameKey='Default.Retail.Warlock.Destruction.Simc.Name',descriptionKey='Default.Retail.Warlock.Destruction.Simc.Description',
  applicability={families={'retail'},actionContext='player',class='WARLOCK'},
  tags={'destruction','ranged','reference','single-target','aoe','simulationcraft'},
@@ -35,7 +35,7 @@ assert(addon:RegisterDefaultRotation({
    {id='destrosc-pull',type='branch',conditions=combat(),onTrue={},onFalse={
     spell('destrosc-pull-soul-fire',6353),
     spell('destrosc-pull-incinerate',29722),
-    {id='destrosc-pull-stop',type='none',suppress_attack=true,conditions={}},
+    {id='destrosc-pull-stop',type='stop',suppress_attack=true,conditions={}},
    }},
    {id='destrosc-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
     spell('destrosc-aoe-rain-of-fire',5740,shards('GREATERTHANOREQUALS',3)),

@@ -18,7 +18,7 @@ local function pct(kind,unit,op,v)return{type=kind,unit=unit,operator=op,value=v
 local function lives(seconds)return any(pct('HEALTHPCT','target','GREATERTHANOREQUALS',.5),{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=seconds})end
 local function hurt(health,count)return{type='PROXIMITY_HEALTHPCT_COUNT',unit='player',healthoperator='LESSTHAN',health=health,operator='GREATERTHANOREQUALS',value=count,distance=30,samegroup=true}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or {}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or {}}end
 local function block(id,steps,revision)assert(addon:RegisterDefaultBlock({id=id,revision=revision or 1,families={'era'},class='PRIEST',steps=steps}))end
 local solo=negate({type='GROUP'})
 local raid={type='INSTANCE',value='raid'}
@@ -27,16 +27,16 @@ local shadowform=known(15473)
 -- Vanilla and Season of Discovery.
 block('era.priest.boundaries',{
  stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})),
-},2)
+},3)
 -- Damage needs a living hostile target that is not someone else's fight.
 local enemyGone=negate(all({type='ATTACKABLE',unit='target'},any(combat(),negate({type='COMBAT',unit='target'}))))
 block('era.priest.enemy-target',{
  stop('target',enemyGone),
-})
+},2)
 -- Damage premades: a cast or channel, or no such target, ends advice (one Stop).
 block('era.priest.dps-boundaries',{
  stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},enemyGone)),
-})
+},2)
 block('era.priest.shadowform',{
  spell('shadowform',15473,negate({type='BUFF',unit='player',spell=15473})),
 })
@@ -45,13 +45,13 @@ block('era.priest.shadowform',{
 block('era.priest.wand-finish',{
  {id='wand-finish',type='branch',conditions=all(solo,any(pct('HEALTHPCT','target','LESSTHAN',.3),pct('MANAPCT','player','LESSTHAN',.25))),onFalse={},onTrue={
   stop('wand-finish-active',{type='SPELL_AUTOREPEAT',spell=5019,ranked=true}),spell('wand-finish-shoot',5019)}},
-})
+},2)
 -- Out of everything else: the wand, never toggled off; priests never melee.
 block('era.priest.wand-fallback',{
  stop('wand-active',{type='SPELL_AUTOREPEAT',spell=5019,ranked=true}),
  spell('shoot',5019),
  stop('exhausted'),
-})
+},2)
 -- Independent reminders for every Priest premade. Fortitude goes on your current target, so it
 -- only lights out of combat.
 block('era.priest.upkeep',{
@@ -107,14 +107,14 @@ block('era.priest.pull',{
   spell('pull-blast',8092),
   spell('pull-smite',585),
   stop('pull-stop')}},
-},2)
+},3)
 -- Moving: instants only. Devouring Plague stays out of raids (debuff slots).
 block('era.priest.moving',{
  {id='moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
   spell('moving-pain',589,negate(own(589))),
   spell('moving-plague',2944,all(negate(own(2944)),negate(raid))),
   stop('moving-stop')}},
-})
+},2)
 -- Shadow Word: Pain once per target that will live through it.
 block('era.priest.pain',{
  spell('pain',589,all(negate(own(589)),lives(10))),
@@ -129,7 +129,7 @@ block('era.priest.filler',{
   spell('holy-nova',15237,{type='DISTANCE_COUNT',enemy=true,distance=10,operator='GREATERTHANOREQUALS',value=3}),
   spell('smite',585),
   stop('smite-stop')}},
-})
+},2)
 
 -- Season of Discovery only.
 block('sod.priest.upkeep',{
@@ -149,7 +149,7 @@ block('sod.priest.pull',{
   spell('pull-holy-fire',14914,negate(shadowform)),
   spell('pull-smite',585),
   stop('pull-stop')}},
-},2)
+},3)
 -- Four or more engaged enemies: Void Zone, then Mind Sear; single-target play follows.
 block('sod.priest.aoe',{
  {id='aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=4},onFalse={},onTrue={
@@ -162,7 +162,7 @@ block('sod.priest.moving',{
   spell('moving-pain',589,negate(own(589))),
   spell('moving-death',401955,pct('HEALTHPCT','player','GREATERTHANOREQUALS',.5)),
   stop('moving-stop')}},
-})
+},2)
 -- DoTs: applied when missing; refreshed under 1.5 s only without the Pain and Suffering rune (passive,
 -- 413251), whose Mind Blast, Mind Flay and Mind Spike keep them rolling.
 local painAndSuffering=rune(413251)
@@ -194,7 +194,7 @@ block('sod.priest.healer-damage',{
  spell('enemy-holy-fire',14914,negate(own(14914))),
  spell('enemy-smite',585),
  stop('enemy-stop'),
-})
+},2)
 -- Healer cooldowns: Shadowfiend, Pain Suppression, Power Word: Barrier, Spirit of the Redeemer.
 block('sod.priest.healer-upkeep',{
  spell('shadowfiend-heal',401977,all(combat(),pct('MANAPCT','player','LESSTHAN',.6))),

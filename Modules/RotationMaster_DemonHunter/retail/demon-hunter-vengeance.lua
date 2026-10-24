@@ -7,8 +7,8 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.vengeance',revision=3,
- blocks={['retail.demonhunter.boundaries']=2,['retail.demonhunter.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.vengeance',revision=4,
+ blocks={['retail.demonhunter.boundaries']=3,['retail.demonhunter.utility']=2},
  nameKey='Default.Retail.DemonHunter.Vengeance.Name',descriptionKey='Default.Retail.DemonHunter.Vengeance.Description',
  applicability={families={'retail'},actionContext='player',class='DEMONHUNTER'},
  tags={'vengeance','tank','assisted-combat'},

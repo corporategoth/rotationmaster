@@ -14,8 +14,8 @@ local function hot(id)return{type='BUFF',unit='target',spell=id,ownbuff=true}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.druid.restoration',revision=3,
- blocks={['retail.druid.boundaries']=2,['retail.druid.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.druid.restoration',revision=4,
+ blocks={['retail.druid.boundaries']=3,['retail.druid.utility']=2},
  nameKey='Default.Retail.Druid.Restoration.Name',descriptionKey='Default.Retail.Druid.Restoration.Description',
  applicability={families={'retail'},actionContext='player',class='DRUID'},
  tags={'restoration','healer','assisted-combat','icy-veins'},

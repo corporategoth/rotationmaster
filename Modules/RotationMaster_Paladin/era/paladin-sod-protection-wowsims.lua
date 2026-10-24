@@ -12,8 +12,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function remain(id)return{type='BUFF_REMAIN',unit='player',spell=id,anyrank=true,ownbuff=true,operator='LESSTHANOREQUALS',value=1.5}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.protection.wowsims',revision=5,
- blocks={['sod.paladin.tank-upkeep']=2,['era.paladin.melee-opening']=2,['sod.paladin.seal']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.protection.wowsims',revision=6,
+ blocks={['sod.paladin.tank-upkeep']=2,['era.paladin.melee-opening']=3,['sod.paladin.seal']=2},
  nameKey='Default.SoD.Paladin.Protection.Wowsims.Name',descriptionKey='Default.SoD.Paladin.Protection.Wowsims.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},
  tags={'endgame','protection','tank','single-target','season-of-discovery','wowsims'},
@@ -29,7 +29,7 @@ assert(addon:RegisterDefaultRotation({
    {id='sprotws-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell('sprotws-pull-holy-shield',20925,negate(own(20925))),
     spell('sprotws-pull-avengers-shield',407669),
-    {id='sprotws-pull-stop',type='none',conditions={}},
+    {id='sprotws-pull-stop',type='stop',conditions={}},
    }},
    spell('sprotws-holy-shield',20925,negate(own(20925))),
    spell('sprotws-avengers-shield',407669),

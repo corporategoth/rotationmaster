@@ -6,8 +6,8 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.frost',revision=3,
- blocks={['retail.deathknight.boundaries']=2,['retail.deathknight.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.frost',revision=4,
+ blocks={['retail.deathknight.boundaries']=3,['retail.deathknight.utility']=2},
  nameKey='Default.Retail.DeathKnight.Frost.Name',descriptionKey='Default.Retail.DeathKnight.Frost.Description',
  applicability={families={'retail'},actionContext='player',class='DEATHKNIGHT'},
  tags={'frost','melee','assisted-combat'},

@@ -14,7 +14,7 @@ local function known(id)return{type='SPELL_KNOWN',spell=id}end
 local function focus(op,v)return{type='POWER',unit='player',operator=op,value=v}end
 local function enemies(op,n)return{type='THREAT_COUNT',threat=1,operator=op,value=n}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local moving={type='MOVING'}
 local fire=buff(82926)
@@ -22,8 +22,8 @@ local fire=buff(82926)
 local focusLow=all({type='SELF_LEVEL',operator='GREATERTHANOREQUALS',value=63},any(negate(buff(53220)),{type='BUFF_REMAIN',unit='player',spell=53220,operator='LESSTHAN',value=5}))
 local lust=any(buff(2825),buff(32182),buff(80353),buff(90355))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.marksmanship',revision=4,
- blocks={['mop.hunter.boundaries']=2,['mop.hunter.mark']=1,['mop.hunter.pet']=1,['mop.hunter.aspect']=1,['mop.hunter.utility']=1,['mop.hunter.burst']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.marksmanship',revision=5,
+ blocks={['mop.hunter.boundaries']=3,['mop.hunter.mark']=1,['mop.hunter.pet']=1,['mop.hunter.aspect']=1,['mop.hunter.utility']=1,['mop.hunter.burst']=1,
   ['mop.hunter.talents']=1,['mop.hunter.talent-shots']=1,['mop.hunter.serpent']=1},
  nameKey='Default.MoP.Hunter.Marksmanship.Name',descriptionKey='Default.MoP.Hunter.Marksmanship.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='HUNTER'},

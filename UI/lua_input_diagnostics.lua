@@ -172,12 +172,3 @@ end
 function addon:ShowLuaEditorInputReport()
     self:ShowConditionText(self:LuaEditorInputReport(),L['Lua input diagnostics'])
 end
-
-function addon:ShowLuaEditorArrowProbe()
-    local control=self.luaInputEditor
-    local enabled
-    if control and control.ToggleNativeArrowProbe then enabled=control:ToggleNativeArrowProbe() end
-    if enabled==nil then self:print(L['Open or reopen a Lua editor before using /rm editorarrows.'])
-    elseif enabled then self:print(L['Temporary native arrow test enabled. Try up/down; run /rm editorarrows again to restore the editor hook.'])
-    else self:print(L['Temporary native arrow test disabled; the editor hook is restored.']) end
-end

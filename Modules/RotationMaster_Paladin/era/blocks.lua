@@ -26,12 +26,12 @@ local function noBlessing()return negate(list({19740,19742,20217,1038,20911,1997
 local function sealed()return list({20154,21084,20375,21082,20166,20165,20164,407798},own)end
 local function paladin(id,steps,revision)assert(addon:RegisterDefaultBlock({id=id,revision=revision or 1,families={'era'},class='PALADIN',steps=steps}))end
 paladin('era.paladin.boundaries',{
- {id='casting',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
-})
+ {id='casting',type='stop',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
+},2)
 -- Melee premades: a cast or channel, or no attackable target, ends advice (one Stop).
 paladin('era.paladin.melee-opening',{
- {id='casting',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))},
-},2)
+ {id='casting',type='stop',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))},
+},3)
 -- Solo safety (Icy Veins Hardcore overview): bubble below 20% health unless Forbearance
 -- blocks it, Divine Protection before Divine Shield is learned, Lay on Hands below 10%.
 paladin('era.paladin.safety',{
@@ -154,6 +154,6 @@ paladin('sod.paladin.holy-hostile',{
  {id='hostile',type='branch',conditions=all({type='ATTACKABLE',unit='target'},negate({type='BEYOND_MELEE',unit='target'})),onFalse={},onTrue={
   {id='seal',type='branch',conditions=sealed(),onTrue={},onFalse={spell('seal-martyrdom',407798),spell('seal-wisdom',20166)}},
  }},
- {id='hostile-stop',type='none',conditions={type='ATTACKABLE',unit='target'}},
- {id='idle-stop',type='none',suppress_attack=true,conditions={}},
-},2)
+ {id='hostile-stop',type='stop',conditions={type='ATTACKABLE',unit='target'}},
+ {id='idle-stop',type='stop',suppress_attack=true,conditions={}},
+},3)

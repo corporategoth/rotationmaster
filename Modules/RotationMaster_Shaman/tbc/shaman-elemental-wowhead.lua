@@ -8,9 +8,9 @@ local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function own(id)return{type='BUFF',unit='player',spell=id,anyrank=true,ownbuff=true}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.elemental.wowhead',revision=3,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.elemental.wowhead',revision=4,
  blocks={['tbc.shaman.shield']=1,['tbc.shaman.mainhand-imbue']=1,['tbc.shaman.elemental-totems']=1,['tbc.shaman.bloodlust']=1,
-  ['tbc.shaman.elemental-opening']=1,['tbc.shaman.boundaries']=2,['tbc.shaman.interrupt']=1,['tbc.shaman.elemental-aoe']=1},
+  ['tbc.shaman.elemental-opening']=2,['tbc.shaman.boundaries']=3,['tbc.shaman.interrupt']=1,['tbc.shaman.elemental-aoe']=1},
  nameKey='Default.TBC.Shaman.Elemental.Wowhead.Name',descriptionKey='Default.TBC.Shaman.Elemental.Wowhead.Description',
  applicability={families={'tbc'},actionContext='player',class='SHAMAN'},
  tags={'leveling','endgame','elemental','caster','single-target','aoe','wowhead'},
@@ -29,7 +29,7 @@ assert(addon:RegisterDefaultRotation({
    {id='ele-wh-opening',type='block',block='tbc.shaman.elemental-opening',prefix='ele-wh-'},
    {id='ele-wh-moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
     {id='ele-wh-moving-flame-shock',type='spell',action=8050,ranked=false,conditions=negate({type='DEBUFF',unit='target',spell=8050,anyrank=true,owndebuff=true})},
-    {id='ele-wh-moving-stop',type='none',conditions={}},
+    {id='ele-wh-moving-stop',type='stop',conditions={}},
    }},
    {id='ele-wh-finish',type='spell',action=8042,ranked=false,conditions={type='TT_HEALTH',unit='target',health=0,operator='LESSTHAN',value=2.5}},
    {id='ele-wh-aoe',type='block',block='tbc.shaman.elemental-aoe',prefix='ele-wh-'},

@@ -17,8 +17,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local friendly={type='FRIENDLY',unit='target'}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.shaman.restoration',revision=2,
- blocks={['era.shaman.manual']=2,['era.shaman.shield']=1,['era.shaman.cures']=1,['era.shaman.healer-damage']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.shaman.restoration',revision=3,
+ blocks={['era.shaman.manual']=3,['era.shaman.shield']=1,['era.shaman.cures']=1,['era.shaman.healer-damage']=2},
  nameKey='Default.SoD.Shaman.Restoration.Name',descriptionKey='Default.SoD.Shaman.Restoration.Description',
  applicability={families={'era'},actionContext='player',class='SHAMAN',rulesets={'season:2'}},
  tags={'healer','leveling','endgame','season-of-discovery','icy-veins','wowhead'},
@@ -44,7 +44,7 @@ assert(addon:RegisterDefaultRotation({
   spell('sod-resto-chain-heal',1064,any({type='BUFF',unit='player',spell=440285},{type='BUFF',unit='player',spell=468526},hurt(2))),
   spell('sod-resto-riptide',408521,target('LESSTHAN',.95)),
   spell('sod-resto-healing-wave',331,target('LESSTHAN',.9)),
-  {id='sod-resto-heal-stop',type='none',suppress_attack=true,conditions={}},
+  {id='sod-resto-heal-stop',type='stop',suppress_attack=true,conditions={}},
  },onFalse={block('era.shaman.healer-damage','sod-resto-')}},
  }},
 }))

@@ -5,8 +5,8 @@
 local _,addon=...
 local function hurt(v)return{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=v}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.holy.wowhead',revision=4,
- blocks={['tbc.paladin.holy-upkeep']=2,['tbc.paladin.boundaries']=1,['tbc.paladin.holy-hostile']=1,['tbc.paladin.holy-emergency']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.holy.wowhead',revision=5,
+ blocks={['tbc.paladin.holy-upkeep']=2,['tbc.paladin.boundaries']=2,['tbc.paladin.holy-hostile']=2,['tbc.paladin.holy-emergency']=2},
  nameKey='Default.TBC.Paladin.Holy.Wowhead.Name',descriptionKey='Default.TBC.Paladin.Holy.Wowhead.Description',
  applicability={families={'tbc'},actionContext='player',class='PALADIN'},
  tags={'endgame','raid','holy','healer','tank-healing','wowhead'},
@@ -21,7 +21,7 @@ assert(addon:RegisterDefaultRotation({
     {id='holy-wh-emergency',type='block',block='tbc.paladin.holy-emergency',prefix='holy-wh-'},
     {id='holy-wh-light',type='spell',action=635,ranked=false,conditions=hurt(0.9)},
     {id='holy-wh-flash',type='spell',action=19750,ranked=false,conditions=hurt(0.97)},
-    {id='holy-wh-stop',type='none',suppress_attack=true,conditions={}},
+    {id='holy-wh-stop',type='stop',suppress_attack=true,conditions={}},
    }},
   },
  },

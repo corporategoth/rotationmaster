@@ -64,7 +64,7 @@ function addon:InstallRotationNavigation(pane)
         addon:SetUIScript(prompt.discard,'OnClick',function()
             if not valid() then return end
             local ok,why=pane.workspace:Discard();if not ok then pane:Message(why);return end
-            pane.nameDirty=false;pane.descriptionDirty=false;pane.metadataDirty=false;pane.tagsDirty=false;pane.priorityDirty=false;pane.handleDirty=false;pane.handleProblem=nil;pane.handleEdited=false;pane.scopeDirty=false;pane.scopeDraft=nil;pane:ClearPendingFields();prompt.frame:Hide();callback()
+            pane.nameDirty=false;pane.descriptionDirty=false;pane.metadataDirty=false;pane.tagsDirty=false;pane.priorityDirty=false;pane.identifierDirty=false;pane.identifierProblem=nil;pane.identifierEdited=false;pane.scopeDirty=false;pane.scopeDraft=nil;pane:ClearPendingFields();prompt.frame:Hide();callback()
         end)
         addon:SetUIScript(prompt.cancel,'OnClick',function() if valid() then prompt.frame:Hide() end end)
         prompt.message:SetText(L['Apply this draft, discard its changes, or keep editing.'])

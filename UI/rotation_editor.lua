@@ -32,11 +32,11 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     function pane:Message(message) self.status:SetText(message or '') end
     function pane:UpdateHistory()
         local state=self.workspace.session:HistoryState()
-        local pending=not self.workspace.readOnly and (self.nameDirty or self.descriptionDirty or self.metadataDirty or self.tagsDirty or self.priorityDirty or self.handleDirty or self.scopeDirty or self:HasPendingFields())
+        local pending=not self.workspace.readOnly and (self.nameDirty or self.descriptionDirty or self.metadataDirty or self.tagsDirty or self.priorityDirty or self.identifierDirty or self.scopeDirty or self:HasPendingFields())
         if state.canUndo or pending then self.undo:Enable() else self.undo:Disable() end
         if state.canRedo and not pending then self.redo:Enable() else self.redo:Disable() end
-        -- Apply waits for a valid, unused handle; the message says why.
-        if not self.workspace.readOnly and not self.handleProblem and (self.workspace.pending or self:HasUnsavedChanges()) then self.apply:Enable() else self.apply:Disable() end
+        -- Apply waits for a valid, unused identifier; the message says why.
+        if not self.workspace.readOnly and not self.identifierProblem and (self.workspace.pending or self:HasUnsavedChanges()) then self.apply:Enable() else self.apply:Disable() end
     end
     function pane:BuildScene()
         local snapshot=self.workspace:Snapshot()
@@ -167,32 +167,32 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         self:RenderPriority(snapshot)
     end
     -- The priority box and, for a Built In, which of its settings are yours.
-    function pane:RenderHandle(snapshot)
+    function pane:RenderIdentifier(snapshot)
         local locked=self.workspace.readOnly or workspace.fallback
         if locked then
-            local handle=workspace.fallback and 'default' or addon.GetBuiltinHandle and addon:GetBuiltinHandle(self.workspace.builtin) or ''
-            self.handle:SetText(handle);self.handle:SetTextColor(.75,.75,.75);self.handle:SetAlpha(.75)
-            self.handle.tooltip=workspace.fallback and L['The fallback is always /rm set default.'] or L['A Built In handle is fixed. Use it with /rm set.']
+            local identifier=workspace.fallback and 'default' or addon.GetBuiltinIdentifier and addon:GetBuiltinIdentifier(self.workspace.builtin) or ''
+            self.identifier:SetText(identifier);self.identifier:SetTextColor(.75,.75,.75);self.identifier:SetAlpha(.75)
+            self.identifier.tooltip=workspace.fallback and L['The fallback is always /rm set default.'] or L["A Built In's identifier is fixed. Use it with /rm set."]
             return
         end
-        self.handle:SetAlpha(1)
-        if not self.handleDirty then
-            local text=snapshot.handle
-            if not text and addon.GetRotationHandle and not self.workspace.pending then text=addon:GetRotationHandle(spec,self.workspace.id) end
-            if not text and addon.NewRotationHandle then text=addon:NewRotationHandle(spec,snapshot.name or self.name:GetText(),self.workspace.id);self.handleDirty=self.workspace.pending==true end
-            self.handle:SetText(text or '');self.handle:SetTextColor(1,1,1);self.handleProblem=nil
+        self.identifier:SetAlpha(1)
+        if not self.identifierDirty then
+            local text=snapshot.identifier
+            if not text and addon.GetRotationIdentifier and not self.workspace.pending then text=addon:GetRotationIdentifier(spec,self.workspace.id) end
+            if not text and addon.NewRotationIdentifier then text=addon:NewRotationIdentifier(spec,snapshot.name or self.name:GetText(),self.workspace.id);self.identifierDirty=self.workspace.pending==true end
+            self.identifier:SetText(text or '');self.identifier:SetTextColor(1,1,1);self.identifierProblem=nil
         end
-        self.handle.tooltip=snapshot.handle and L['Use it with /rm set. Letters, digits, _ or -, starting with a letter; not case sensitive.'] or L['Made from the name until you change it. Use it with /rm set.']
+        self.identifier.tooltip=snapshot.identifier and L['Use it with /rm set. Letters, digits, _ or -, starting with a letter; not case sensitive.'] or L['Made from the name until you change it. Use it with /rm set.']
     end
-    function pane:CheckHandle()
-        if self.workspace.readOnly or workspace.fallback or not addon.CheckRotationHandle then self.handleProblem=nil;return true end
-        local problem=addon:CheckRotationHandle(spec,self.workspace.id,self.handle:GetText())
-        self.handleProblem=problem
-        if problem then self.handle:SetTextColor(1,.35,.35);self:Message(problem) else self.handle:SetTextColor(1,1,1) end
+    function pane:CheckIdentifier()
+        if self.workspace.readOnly or workspace.fallback or not addon.CheckRotationIdentifier then self.identifierProblem=nil;return true end
+        local problem=addon:CheckRotationIdentifier(spec,self.workspace.id,self.identifier:GetText())
+        self.identifierProblem=problem
+        if problem then self.identifier:SetTextColor(1,.35,.35);self:Message(problem) else self.identifier:SetTextColor(1,1,1) end
         return problem==nil
     end
     function pane:RenderPriority(snapshot)
-        self:RenderHandle(snapshot)
+        self:RenderIdentifier(snapshot)
         local amber={1,.72,.25};local white={1,1,1}
         if self.workspace.readOnly then
             local overrides=builtinOverrides(self.workspace) or {}
@@ -231,7 +231,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
                 local step=row.step;local name=self:FieldText(target,'name',step.name or '')
                 if name:find('%S') then title=name
                 elseif step.type=='spell' or step.type=='pet' or step.type=='any' then title=addon:SpellLabel(step.action)
-                elseif step.type=='none' then title=L['Stop']
+                elseif step.type=='stop' then title=L['Stop']
                 elseif step.type=='assisted' then title=L["Blizzard's suggestion"]
                 elseif step.type=='item' then title=L['Item']
                 else title=L['Edit Condition'] end
@@ -302,9 +302,9 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     -- Built In both are your settings for this profile, saved at once and
     -- shown in amber when they differ from the pack's; the pack itself is
     -- never copied.
-    -- The handle (/rm set <handle>) leads the line: Handle, Priority, Enabled.
-    pane.handleLabel=text(pane.frame);pane.handleLabel:SetText(L['Handle']);pane.handleLabel:SetJustifyH('RIGHT')
-    pane.handle=addon:CreateWorkbenchEditBox(pane.frame);pane.handle:SetSize(124,20);pane.handle:SetMaxLetters(32)
+    -- The identifier (/rm set <id>) leads the line: ID, Priority, Enabled.
+    pane.identifierLabel=text(pane.frame);pane.identifierLabel:SetText(L['ID']);pane.identifierLabel:SetJustifyH('RIGHT')
+    pane.identifier=addon:CreateWorkbenchEditBox(pane.frame);pane.identifier:SetSize(124,20);pane.identifier:SetMaxLetters(32)
     pane.priorityLabel=text(pane.frame);pane.priorityLabel:SetText(L['Priority']);pane.priorityLabel:SetJustifyH('RIGHT')
     pane.priority=addon:CreateWorkbenchEditBox(pane.frame);pane.priority:SetSize(56,20);pane.priority:SetMaxLetters(7)
     pane.priorityDown=addon:CreateWorkbenchIconButton(pane.frame,'minus',L['Decrease priority']);pane.priorityDown:SetSize(18,18)
@@ -481,8 +481,8 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     function pane:FlushName()
         if self.deleted or workspace.readOnly then return true end
         if self.nameDirty and not workspace.fallback then local ok,problem=workspace:Command('SetBodyField','name',self.name:GetText());if not ok then self:Message(problem);return nil,problem end;self.nameDirty=false end
-        if self.handleDirty and not self:CheckHandle() then return nil,'invalid-handle' end
-        if self.descriptionDirty or self.metadataDirty or self.tagsDirty or self.priorityDirty or self.handleDirty then
+        if self.identifierDirty and not self:CheckIdentifier() then return nil,'invalid-identifier' end
+        if self.descriptionDirty or self.metadataDirty or self.tagsDirty or self.priorityDirty or self.identifierDirty then
             local snapshot=workspace:Snapshot();local tags=snapshot.tags;local priority=snapshot.priority
             if self.priorityDirty then
                 local text=self.priority:GetText();local parsed=data.GetRotationPriority(text:match('^%s*$') and nil or tonumber(text))
@@ -495,14 +495,14 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
             end
             local metadata=self.metadataDirty and self.metadataDraft or snapshot.metadata;if snapshot.metadata==nil and type(metadata)=='table' and next(metadata)==nil then metadata=nil end
             local details={description=self.descriptionDirty and self.description:GetText() or snapshot.description,metadata=metadata,tags=tags,priority=priority}
-            if self.handleDirty then details.handle=addon.RotationData.NormalizeRotationHandle(self.handle:GetText()) end
+            if self.identifierDirty then details.identifier=addon.RotationData.NormalizeRotationIdentifier(self.identifier:GetText()) end
             local ok,problem=workspace:Command('SetDetails',details);if not ok then self:Message(problem);return nil,problem end
-            self.descriptionDirty=false;self.metadataDirty=false;self.tagsDirty=false;self.priorityDirty=false;self.handleDirty=false;self.handleEdited=false;self:Message('')
+            self.descriptionDirty=false;self.metadataDirty=false;self.tagsDirty=false;self.priorityDirty=false;self.identifierDirty=false;self.identifierEdited=false;self:Message('')
         end
         if self.scopeDirty then local ok,problem=workspace:Command('SetOwnership',self.scopeDraft);if not ok then self:Message(problem);return nil,problem end;self.scopeDirty=false end
         return true
     end
-    function pane:HasUnsavedChanges() return not self.deleted and not self.workspace.readOnly and (self.workspace:IsDirty() or self.nameDirty==true or self.descriptionDirty==true or self.metadataDirty==true or self.tagsDirty==true or self.priorityDirty==true or self.handleDirty==true or self.scopeDirty==true or self:HasPendingFields()) end
+    function pane:HasUnsavedChanges() return not self.deleted and not self.workspace.readOnly and (self.workspace:IsDirty() or self.nameDirty==true or self.descriptionDirty==true or self.metadataDirty==true or self.tagsDirty==true or self.priorityDirty==true or self.identifierDirty==true or self.scopeDirty==true or self:HasPendingFields()) end
     function pane:LayoutGeometry()
         if not self.ready then return end
         local width,height=self.frame:GetWidth(),self.frame:GetHeight();local x,y=8,34
@@ -533,9 +533,9 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         self.priority:ClearAllPoints();self.priority:SetPoint('RIGHT',self.priorityUp,'LEFT',-2,0)
         self.priorityDown:ClearAllPoints();self.priorityDown:SetPoint('RIGHT',self.priority,'LEFT',-2,0)
         self.priorityLabel:ClearAllPoints();self.priorityLabel:SetPoint('RIGHT',self.priorityDown,'LEFT',-4,0)
-        self.handle:ClearAllPoints();self.handle:SetPoint('RIGHT',showPriority and self.priorityLabel or self.enable,'LEFT',-10,0)
-        self.handleLabel:ClearAllPoints();self.handleLabel:SetPoint('RIGHT',self.handle,'LEFT',-4,0)
-        self.overrideReset:ClearAllPoints();self.overrideReset:SetPoint('RIGHT',self.handleLabel,'LEFT',-8,0)
+        self.identifier:ClearAllPoints();self.identifier:SetPoint('RIGHT',showPriority and self.priorityLabel or self.enable,'LEFT',-10,0)
+        self.identifierLabel:ClearAllPoints();self.identifierLabel:SetPoint('RIGHT',self.identifier,'LEFT',-4,0)
+        self.overrideReset:ClearAllPoints();self.overrideReset:SetPoint('RIGHT',self.identifierLabel,'LEFT',-8,0)
         if showReset then self.overrideReset:Show() else self.overrideReset:Hide() end
         local available=self.validation and self.validation.valid and self.validation.supported and self.validation.resolved and not self:HasInvalidPendingFields()
         self.validationButton:ClearAllPoints();self.validationButton:SetPoint('TOPLEFT',8,-y-26);self.validationButton:SetWidth(math.max(100,width-16))
@@ -573,7 +573,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         workspace.uiView=workspace.uiView or {collapsed={},expanded={},detailsHeights={}};self.view=workspace.uiView
         local preferred=addon.db.profile.rotation_view=='list' and 'list' or 'diagram'
         if self.view.defaultLayout~=preferred then self.view.layout=preferred;self.view.defaultLayout=preferred end
-        self.nameDirty=false;self.descriptionDirty=false;self.metadataDirty=false;self.tagsDirty=false;self.priorityDirty=false;self.handleDirty=false;self.handleProblem=nil;self.handleEdited=false;self.scopeDirty=false;self.scopeDraft=nil;self.metadataDraft=nil;self.deleted=false;self.active=true;self.generation=(self.generation or 0)+1
+        self.nameDirty=false;self.descriptionDirty=false;self.metadataDirty=false;self.tagsDirty=false;self.priorityDirty=false;self.identifierDirty=false;self.identifierProblem=nil;self.identifierEdited=false;self.scopeDirty=false;self.scopeDraft=nil;self.metadataDraft=nil;self.deleted=false;self.active=true;self.generation=(self.generation or 0)+1
         local token=self.generation
         local function alive() return self.active and self.generation==token end
         if addon.WatchButtonIndex then addon:WatchButtonIndex(self,function() if alive() then self:RefreshBindings() end end) end
@@ -629,15 +629,15 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
             GameTooltip:SetOwner(self.priority,'ANCHOR_RIGHT');GameTooltip:SetText(text,1,1,1,1,true)
         end)
         addon:SetUIScript(self.priority,'OnLeave',function() if GameTooltip and GameTooltip:IsOwned(self.priority) then GameTooltip:Hide() end end)
-        local handleLocked=workspace.readOnly or workspace.fallback
-        addon:SetUIScript(self.handle,'OnEditFocusGained',handleLocked and function(control) control:ClearFocus() end or nil)
-        addon:SetUIScript(self.handle,'OnTextChanged',function(_,user)
-            if not alive() or not user or handleLocked then return end
-            self.handleDirty=true;self.handleEdited=true;self:CheckHandle();self:UpdateHistory()
+        local identifierLocked=workspace.readOnly or workspace.fallback
+        addon:SetUIScript(self.identifier,'OnEditFocusGained',identifierLocked and function(control) control:ClearFocus() end or nil)
+        addon:SetUIScript(self.identifier,'OnTextChanged',function(_,user)
+            if not alive() or not user or identifierLocked then return end
+            self.identifierDirty=true;self.identifierEdited=true;self:CheckIdentifier();self:UpdateHistory()
         end)
-        addon:SetUIScript(self.handle,'OnEnterPressed',function(control) control:ClearFocus() end)
-        addon:SetUIScript(self.handle,'OnEnter',function() if alive() and GameTooltip and self.handle.tooltip then GameTooltip:SetOwner(self.handle,'ANCHOR_RIGHT');GameTooltip:SetText(self.handleProblem or self.handle.tooltip,1,1,1,1,true) end end)
-        addon:SetUIScript(self.handle,'OnLeave',function() if GameTooltip and GameTooltip:IsOwned(self.handle) then GameTooltip:Hide() end end)
+        addon:SetUIScript(self.identifier,'OnEnterPressed',function(control) control:ClearFocus() end)
+        addon:SetUIScript(self.identifier,'OnEnter',function() if alive() and GameTooltip and self.identifier.tooltip then GameTooltip:SetOwner(self.identifier,'ANCHOR_RIGHT');GameTooltip:SetText(self.identifierProblem or self.identifier.tooltip,1,1,1,1,true) end end)
+        addon:SetUIScript(self.identifier,'OnLeave',function() if GameTooltip and GameTooltip:IsOwned(self.identifier) then GameTooltip:Hide() end end)
         addon:SetUIScript(self.validationButton,'OnClick',function()
             if not alive() or not addon.ShowConditionText then return end
             local lines={L['This rotation cannot run until its incomplete or unavailable data is resolved.']}
@@ -656,9 +656,9 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         addon:SetUIScript(self.name,'OnTextChanged',function(_,userInput)
             if not alive() or not userInput or workspace.readOnly or workspace.fallback then return end
             self.nameDirty=true
-            -- A new rotation's handle follows its name until you edit the handle.
-            if workspace.pending and not self.handleEdited and addon.NewRotationHandle then
-                self.handle:SetText(addon:NewRotationHandle(spec,self.name:GetText(),workspace.id));self.handleDirty=true;self:CheckHandle()
+            -- A new rotation's identifier follows its name until you edit the identifier.
+            if workspace.pending and not self.identifierEdited and addon.NewRotationIdentifier then
+                self.identifier:SetText(addon:NewRotationIdentifier(spec,self.name:GetText(),workspace.id));self.identifierDirty=true;self:CheckIdentifier()
             end
             self:UpdateHistory()
         end)
@@ -667,7 +667,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         addon:SetUIScript(self.apply,'OnClick',function() if alive() then self:Apply() end end)
         addon:SetUIScript(self.discard,'OnClick',function()
             if not alive() then return end
-            local ok,reason=workspace:Discard();if ok then self.metadataWindow:Close(true); self.nameDirty=false;self.descriptionDirty=false;self.metadataDirty=false;self.tagsDirty=false;self.priorityDirty=false;self.handleDirty=false;self.handleProblem=nil;self.handleEdited=false;self.scopeDirty=false;self.scopeDraft=nil;self:ClearPendingFields();self:Render() else self:Message(reason) end
+            local ok,reason=workspace:Discard();if ok then self.metadataWindow:Close(true); self.nameDirty=false;self.descriptionDirty=false;self.metadataDirty=false;self.tagsDirty=false;self.priorityDirty=false;self.identifierDirty=false;self.identifierProblem=nil;self.identifierEdited=false;self.scopeDirty=false;self.scopeDraft=nil;self:ClearPendingFields();self:Render() else self:Message(reason) end
         end)
         if workspace.readOnly then self.apply:Disable();self.discard:Disable() else self.apply:Enable();self.discard:Enable() end
         for _,control in ipairs({self.compare,self.clone}) do if workspace.pending then control:Disable() else control:Enable() end end

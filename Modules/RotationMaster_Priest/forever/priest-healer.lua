@@ -16,7 +16,7 @@ local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function known(...)local list={};for i,id in ipairs({...})do list[i]={type='SPELL_KNOWN',spell=id}end;return{type='OR',value=list}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function dot(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
 local renewed={type='BUFF',unit='target',spell=139,anyrank=true,ownbuff=true}
@@ -24,8 +24,8 @@ local unshielded=negate({type='DEBUFF',unit='target',spell=6788})
 local friendly={type='FRIENDLY',unit='target'}
 local function dispel(kind)return{type='DISPELLABLE',unit='target',debufftype=kind}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.priest.healer',revision=5,
- blocks={['forever.priest.boundaries']=2,['forever.priest.upkeep']=1,['forever.priest.wand']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.priest.healer',revision=6,
+ blocks={['forever.priest.boundaries']=3,['forever.priest.upkeep']=1,['forever.priest.wand']=2},
  nameKey='Default.Forever.Priest.Healer.Name',descriptionKey='Default.Forever.Priest.Healer.Description',
  applicability={families={'forever'},actionContext='player',class='PRIEST'},
  tags={'discipline','holy','healer','group','icy-veins','wowhead'},

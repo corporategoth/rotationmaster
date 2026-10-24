@@ -19,7 +19,7 @@ local function hurt(count,below,distance)return{type='PROXIMITY_HEALTHPCT_COUNT'
 local function talent(i)return{type='TALENT',layout='grid',value=i}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function off(id,action,conditions)local step=spell(id,action,conditions);step.disabled=true;return step end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local SOOTHING,SURGING,RENEWING,EXPEL=115175,116694,115151,115072
 local vital={type='BUFF_STACKS',unit='player',spell=118674,ownbuff=true,operator='GREATERTHANOREQUALS',value=5}
@@ -27,7 +27,7 @@ local memory=own(139597)
 local capped=negate(chi('GREATERTHANOREQUALS',-1))
 local friendly={type='FRIENDLY',unit='target'}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.monk.mistweaver',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.monk.mistweaver',revision=5,
  blocks={['mop.monk.upkeep']=1},
  nameKey='Default.MoP.Monk.Mistweaver.Name',descriptionKey='Default.MoP.Monk.Mistweaver.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK'},
@@ -78,7 +78,7 @@ assert(addon:RegisterDefaultRotation({
     {id='mist-pull',type='branch',conditions=combat(),onTrue={},onFalse={
      spell('mist-pull-renewing',RENEWING),
      spell('mist-pull-lightning',117952,{type='BEYOND_MELEE',unit='target'}),
-     {id='mist-pull-stop',type='none',conditions={}}}},
+     {id='mist-pull-stop',type='stop',conditions={}}}},
     spell('mist-touch-of-death',115080),
     spell('mist-power-palm',100787,all(memory,any(negate(own(125359)),remain(125359,'LESSTHANOREQUALS',2)))),
     spell('mist-zeal-kick',100784,all(memory,any(negate(own(127722)),remain(127722,'LESSTHAN',2)))),

@@ -10,7 +10,7 @@ local function negate(c)return{type='NOT',value=c}end
 local function buff(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local heating,combustion=buff(48107),buff(190319)
 -- A Fire hard cast in progress (Fireball, Frostfire Bolt, Pyroblast, Flamestrike), read by spell, so a
@@ -28,8 +28,8 @@ local function priority(p,spender)return{
  spell(p..'moving-scorch',2948,{type='MOVING'}),
  spell(p..'fire-blast',108853,heating)}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.mage.fire.guide',revision=5,
- blocks={['retail.mage.boundaries']=2,['retail.mage.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.mage.fire.guide',revision=6,
+ blocks={['retail.mage.boundaries']=3,['retail.mage.utility']=2},
  nameKey='Default.Retail.Mage.FireGuide.Name',descriptionKey='Default.Retail.Mage.FireGuide.Description',
  applicability={families={'retail'},actionContext='player',class='MAGE'},
  tags={'fire','caster','reference','icy-veins','wowhead','simulationcraft'},

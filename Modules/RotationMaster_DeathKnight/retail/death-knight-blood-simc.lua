@@ -9,15 +9,15 @@ local function negate(c)return{type='NOT',value=c}end
 local function buff(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local exterminate=any(buff(441416),buff(447954))
 local runeWeapon=buff(81256)
 local lowBones=any(negate(buff(195181)),{type='BUFF_REMAIN',unit='player',spell=195181,ownbuff=true,operator='LESSTHAN',value=3},
  {type='BUFF_STACKS',unit='player',spell=195181,ownbuff=true,operator='LESSTHAN',value=6})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.blood.simc',revision=4,
- blocks={['retail.deathknight.boundaries']=2,['retail.deathknight.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.blood.simc',revision=5,
+ blocks={['retail.deathknight.boundaries']=3,['retail.deathknight.utility']=2},
  nameKey='Default.Retail.DeathKnight.BloodSimc.Name',descriptionKey='Default.Retail.DeathKnight.BloodSimc.Description',
  applicability={families={'retail'},actionContext='player',class='DEATHKNIGHT'},
  tags={'blood','tank','reference','simulationcraft'},

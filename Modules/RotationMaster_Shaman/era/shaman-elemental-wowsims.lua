@@ -10,8 +10,8 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.shaman.elemental.wowsims',revision=3,
- blocks={['era.shaman.manual-target']=1,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.self-heal']=1,['era.shaman.caster-totems']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.shaman.elemental.wowsims',revision=4,
+ blocks={['era.shaman.manual-target']=2,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.self-heal']=1,['era.shaman.caster-totems']=1},
  nameKey='Default.Era.Shaman.Elemental.Wowsims.Name',descriptionKey='Default.Era.Shaman.Elemental.Wowsims.Description',
  applicability={families={'era'},actionContext='player',class='SHAMAN'},
  tags={'dps','ranged','caster','endgame','wowsims'},

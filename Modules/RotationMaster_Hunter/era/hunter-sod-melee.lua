@@ -19,7 +19,7 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function mana(op,n)return{type='MANAPCT',unit='player',operator=op,value=n}end
 local function classified(kind)return{type='CLASSIFICATION',unit='target',value=kind}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
-local function stop(id,attack)return{id=id,type='none',suppress_attack=not attack,conditions={}}end
+local function stop(id,attack)return{id=id,type='stop',suppress_attack=not attack,conditions={}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local standing=negate({type='MOVING'})
 local unmarked=negate({type='DEBUFF',unit='target',spell=1130,anyrank=true})
@@ -32,8 +32,8 @@ local noAspect=all(negate(buff(415423)),negate(buff(13163)),negate(buff(5118)),n
 local viperLow=all(mana('LESSTHAN',.5),any(buff(415423),all(known(415423),mana('LESSTHAN',.05))))
 local rapid=buff(3045)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.hunter.melee',revision=4,
- blocks={['era.hunter.boundaries']=2,['sod.hunter.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.hunter.melee',revision=5,
+ blocks={['era.hunter.boundaries']=3,['sod.hunter.upkeep']=1},
  nameKey='Default.SoD.Hunter.Melee.Name',descriptionKey='Default.SoD.Hunter.Melee.Description',
  applicability={families={'era'},actionContext='player',class='HUNTER',rulesets={'season:2'}},
  tags={'dps','melee','survival','leveling','endgame','season-of-discovery','wowhead','wowsims'},

@@ -15,8 +15,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local function far(n)return negate({type='DISTANCE',unit='target',value=n})end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.priest.shadow.warcrafttavern',revision=4,
- blocks={['mop.priest.upkeep']=1,['mop.priest.shadow-shell']=4,['mop.priest.shadow-cooldowns']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.priest.shadow.warcrafttavern',revision=5,
+ blocks={['mop.priest.upkeep']=1,['mop.priest.shadow-shell']=5,['mop.priest.shadow-cooldowns']=2},
  nameKey='Default.MoP.Priest.Shadow.WarcraftTavern.Name',descriptionKey='Default.MoP.Priest.Shadow.WarcraftTavern.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PRIEST'},
  tags={'shadow','dps','caster','leveling','endgame','warcraft-tavern'},
@@ -35,6 +35,6 @@ assert(addon:RegisterDefaultRotation({
  spell('priest-tavern-cascade',121135,far(10)),
  spell('priest-tavern-divine-star',110744,{type='DISTANCE',unit='target',value=24}),
  spell('priest-tavern-flay',15407),
- {id='priest-tavern-end',type='none',suppress_attack=true,conditions={}},
+ {id='priest-tavern-end',type='stop',suppress_attack=true,conditions={}},
  }},
 }))

@@ -12,12 +12,12 @@ local function known(id)return{type='SPELL_KNOWN',spell=id}end
 local function ready(id)return{type='SPELL_AVAIL',spell=id}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local ebon={type='BUFF',unit='player',spell=395296,ownbuff=true}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.augmentation',revision=4,
- blocks={['retail.evoker.boundaries']=2,['retail.evoker.utility']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.augmentation',revision=5,
+ blocks={['retail.evoker.boundaries']=3,['retail.evoker.utility']=2},
  nameKey='Default.Retail.Evoker.Augmentation.Name',descriptionKey='Default.Retail.Evoker.Augmentation.Description',
  applicability={families={'retail'},actionContext='player',class='EVOKER'},
  tags={'augmentation','ranged','support','icy-veins','simulationcraft'},

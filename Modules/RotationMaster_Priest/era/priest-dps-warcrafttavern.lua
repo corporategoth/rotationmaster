@@ -9,13 +9,13 @@ local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function own(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
-local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or {}}end
+local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or {}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='priest-wct-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.priest.dps.warcrafttavern',revision=4,
- blocks={['era.priest.dps-boundaries']=1,['era.priest.shadowform']=1,['era.priest.moving']=1,
-  ['era.priest.filler']=1,['era.priest.wand-fallback']=1,['era.priest.upkeep']=1,['era.priest.dps-upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.priest.dps.warcrafttavern',revision=5,
+ blocks={['era.priest.dps-boundaries']=2,['era.priest.shadowform']=1,['era.priest.moving']=2,
+  ['era.priest.filler']=2,['era.priest.wand-fallback']=2,['era.priest.upkeep']=1,['era.priest.dps-upkeep']=1},
  nameKey='Default.Era.Priest.Dps.WarcraftTavern.Name',descriptionKey='Default.Era.Priest.Dps.WarcraftTavern.Description',
  applicability={families={'era'},actionContext='player',class='PRIEST'},
  tags={'shadow','damage','leveling','single-target','warcraft-tavern'},

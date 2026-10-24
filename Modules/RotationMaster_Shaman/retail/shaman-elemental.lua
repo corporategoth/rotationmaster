@@ -12,8 +12,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.shaman.elemental',revision=3,
- blocks={['retail.shaman.boundaries']=1,['retail.shaman.upkeep']=2,['retail.shaman.lightning-shield']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.shaman.elemental',revision=4,
+ blocks={['retail.shaman.boundaries']=2,['retail.shaman.upkeep']=2,['retail.shaman.lightning-shield']=1},
  nameKey='Default.Retail.Shaman.Elemental.Name',descriptionKey='Default.Retail.Shaman.Elemental.Description',
  applicability={families={'retail'},actionContext='player',class='SHAMAN'},
  tags={'elemental','ranged','assisted-combat','single-target','aoe','simulationcraft'},

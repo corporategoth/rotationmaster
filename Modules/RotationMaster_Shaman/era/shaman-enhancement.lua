@@ -23,8 +23,8 @@ local big=any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLA
 local ranged=all({type='BEYOND_MELEE',unit='target'},negate({type='MOVING'}))
 local near={type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=2}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.shaman.enhancement',revision=3,
- blocks={['era.shaman.manual']=2,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.self-heal']=1,['era.shaman.melee-totems']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.shaman.enhancement',revision=4,
+ blocks={['era.shaman.manual']=3,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.self-heal']=1,['era.shaman.melee-totems']=1},
  nameKey='Default.Era.Shaman.Enhancement.Name',descriptionKey='Default.Era.Shaman.Enhancement.Description',
  applicability={families={'era'},actionContext='player',class='SHAMAN'},
  tags={'dps','melee','leveling','endgame','aoe','icy-veins','wowhead','wowsims'},
@@ -52,14 +52,14 @@ assert(addon:RegisterDefaultRotation({
  block('era.shaman.manual','enh-'),
  {id='enh-pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('enh-pull-bolt',403,all({type='ATTACKABLE',unit='target'},negate({type='COMBAT',unit='target'}),ranged)),
-  {id='enh-pull-stop',type='none',suppress_attack=false,conditions={}},
+  {id='enh-pull-stop',type='stop',suppress_attack=false,conditions={}},
  }},
- {id='enh-no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
+ {id='enh-no-target',type='stop',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
  block('era.shaman.interrupt','enh-'),
  {id='enh-raid',type='branch',conditions={type='INSTANCE',value='raid'},onFalse={},onTrue={
   spell('enh-raid-stormstrike',17364),
   spell('enh-raid-frost-shock',8056),
-  {id='enh-raid-stop',type='none',suppress_attack=false,conditions={}},
+  {id='enh-raid-stop',type='stop',suppress_attack=false,conditions={}},
  }},
  {id='enh-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
   spell('enh-aoe-fire-nova',1535,negate({type='TOTEM_SPELL',spell=1535})),

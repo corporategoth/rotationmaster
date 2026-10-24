@@ -35,19 +35,19 @@ local dualWield={type='WEAPON_TYPE',slot='offhand',kind='weapon'}
 local dagger={type='WEAPON_TYPE',slot='mainhand',subclass=15}
 -- Boundaries: manual casts/channels (bandages) and no attackable target end advice and Attack.
 assert(addon:RegisterDefaultBlock({
- id='era.rogue.boundaries',revision=2,families={'era'},class='ROGUE',steps={
- {id='manual',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))},
+ id='era.rogue.boundaries',revision=3,families={'era'},class='ROGUE',steps={
+ {id='manual',type='stop',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))},
 }}))
 -- Vanilla stealth opener: Premeditation, Ambush from behind with a dagger, Cheap Shot solo, Garrote outside
 -- raids, else Sinister Strike; then stop so Attack does not break Stealth.
 assert(addon:RegisterDefaultBlock({
- id='era.rogue.opener',revision=2,families={'era'},class='ROGUE',steps={
+ id='era.rogue.opener',revision=3,families={'era'},class='ROGUE',steps={
  spell('premeditation',14183,points('LESSTHANOREQUALS',3)),
  spell('ambush',8676,all(dagger,behind)),
  spell('cheap-shot',1833,negate({type='GROUP'})),
  spell('garrote',703,negate(raid)),
  spell('stealth-sinister',1752),
- {id='stealth-stop',type='none',suppress_attack=true,conditions={}},
+ {id='stealth-stop',type='stop',suppress_attack=true,conditions={}},
 }}))
 -- Vanilla reminders: poisons per weapon, Kick, Thistle Tea, Blade Flurry and Adrenaline Rush with
 -- Slice and Dice up on elites or packs, Cold Blood for a five-point finisher, Evasion when hurt.
@@ -80,13 +80,13 @@ assert(addon:RegisterDefaultBlock({
 -- or boss nobody Sunders (and, in SoD, nobody keeps Sebacious Poison on), Expose Armor at five
 -- points when yours is missing or ending; five points and fifteen seconds or less left: pool.
 assert(addon:RegisterDefaultBlock({
- id='era.rogue.expose-armor',revision=1,families={'era'},class='ROGUE',steps={
+ id='era.rogue.expose-armor',revision=2,families={'era'},class='ROGUE',steps={
  {id='expose-duty',type='branch',conditions=all({type='GROUP'},any(classified('worldboss'),classified('elite')),
   {type='TALENT',layout='tree',tree=1,talent=8,operator='GREATERTHANOREQUALS',value=2},
   negate({type='DEBUFF',unit='target',spell=7386,anyrank=true}),negate({type='DEBUFF',unit='target',spell=439462})),onFalse={},onTrue={
   spell('expose-armor',8647,all(points('GREATERTHANOREQUALS',5),any(negate({type='DEBUFF',unit='target',spell=8647,anyrank=true,owndebuff=true}),
    {type='DEBUFF_REMAIN',unit='target',spell=8647,anyrank=true,owndebuff=true,operator='LESSTHAN',value=3}))),
-  {id='expose-pool',type='none',suppress_attack=false,conditions=all(points('GREATERTHANOREQUALS',5),
+  {id='expose-pool',type='stop',suppress_attack=false,conditions=all(points('GREATERTHANOREQUALS',5),
    {type='DEBUFF_REMAIN',unit='target',spell=8647,anyrank=true,owndebuff=true,operator='LESSTHANOREQUALS',value=15})},
  }},
 }}))
@@ -110,7 +110,7 @@ assert(addon:RegisterDefaultBlock({
 -- Season of Discovery stealth opener: Shadowstrike, Garrote in a group (Carnage, Master of
 -- Subtlety), Ambush for a Backstab build, Cheap Shot solo; then stop without breaking Stealth.
 assert(addon:RegisterDefaultBlock({
- id='era.rogue.sod-opener',revision=3,families={'era'},class='ROGUE',steps={
+ id='era.rogue.sod-opener',revision=4,families={'era'},class='ROGUE',steps={
  spell('shadowstrike',399985),
  spell('group-garrote',703,{type='GROUP'}),
  spell('ambush',8676,all(dagger,negate(rune(399956)),negate(rune(424785)))),
@@ -118,7 +118,7 @@ assert(addon:RegisterDefaultBlock({
  spell('stealth-sinister',1752,all(negate(rune(399956)),negate(rune(424785)))),
  spell('stealth-mutilate',399956),
  spell('stealth-saber-slash',424785),
- {id='stealth-stop',type='none',suppress_attack=true,conditions={}},
+ {id='stealth-stop',type='stop',suppress_attack=true,conditions={}},
 }}))
 -- Season of Discovery builders by the engraved glove rune: Mutilate (two points, so not past
 -- three), Saber Slash, Backstab when not faced or with the Cutthroat rune (passive, 462708: no

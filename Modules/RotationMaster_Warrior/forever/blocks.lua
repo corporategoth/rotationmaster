@@ -13,12 +13,12 @@ local interrupt=any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INT
 -- A Slam cast in progress is kept (Attack continues); no attackable target ends advice; out of
 -- combat the only advice is Charge, then stop.
 assert(addon:RegisterDefaultBlock({
- id='forever.warrior.boundaries',revision=2,families={'forever'},class='WARRIOR',steps={
- {id='casting',type='none',suppress_attack=false,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
- {id='no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
+ id='forever.warrior.boundaries',revision=3,families={'forever'},class='WARRIOR',steps={
+ {id='casting',type='stop',suppress_attack=false,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
+ {id='no-target',type='stop',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
  {id='pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
   spell('charge',100),
-  {id='pull-stop',type='none',suppress_attack=false,conditions={}},
+  {id='pull-stop',type='stop',suppress_attack=false,conditions={}},
  }},
 }}))
 -- Reminders every Warrior premade shares: Battle Shout (anyone's), Bloodrage whenever it is ready,

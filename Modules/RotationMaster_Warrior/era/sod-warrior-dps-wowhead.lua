@@ -19,8 +19,8 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local unqueued=all(negate(queued(78)),negate(queued(845)))
 local berserker={type='FORM',form=2458}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.warrior.dps.wowhead',revision=4,
- blocks={['era.warrior.boundaries']=2,['era.warrior.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.warrior.dps.wowhead',revision=5,
+ blocks={['era.warrior.boundaries']=3,['era.warrior.upkeep']=1},
  nameKey='Default.SoD.Warrior.DPS.Wowhead.Name',descriptionKey='Default.SoD.Warrior.DPS.Wowhead.Description',
  applicability={families={'era'},actionContext='player',class='WARRIOR',rulesets={'season:2'}},
  tags={'dps','melee','endgame','season-of-discovery','wowhead'},
