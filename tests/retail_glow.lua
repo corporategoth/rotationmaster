@@ -97,11 +97,15 @@ end)
 --   * HasAction, IsUsableAction, GetActionCooldown, IsActionInRange... live in
 --     C_ActionBar; the globals come only from Blizzard_DeprecatedActionBar when
 --     the loadDeprecationFallbacks CVar is set (not set here). GetActionInfo
---     stays a global.
+--     stays a global;
+--   * BOOKTYPE_SPELL and BOOKTYPE_PET do not exist at all since 11.0
+--     (Blizzard_Deprecated/11_0_0_SpellBookAPITransitionGuide.lua), even with
+--     the fallbacks loaded.
 local BLACKOUT_KICK,TIGER_PALM,ROLL=100784,100780,109132
 local function retailBars(c,layout)
     local e,a=c.e,c.a
     e.HasAction,e.IsUsableAction,e.GetActionCooldown,e.IsActionInRange=nil,nil,nil,nil
+    e.BOOKTYPE_SPELL,e.BOOKTYPE_PET=nil,nil
     e.C_ActionBar={
         HasAction=function(slot) assert(type(slot)=='number' and slot>0,'invalid slot');return layout[slot]~=nil end,
         FindSpellActionButtons=function(spell) local slots={};for slot,id in pairs(layout) do if id==spell then slots[#slots+1]=slot end end;table.sort(slots);return slots end,
@@ -341,4 +345,20 @@ test('restricted retail: vehicle, override and possession bars are detected thro
     bars.vehicle=true;assert(a:ReadActionContext()=='vehicle','vehicle missed')
     e.C_ActionBar=nil;e.HasOverrideActionBar=function() return true end;assert(a:ReadActionContext()=='override','legacy global no longer read')
 end)
+
+for _,engine in ipairs({'standard','lean'}) do
+    test('retail 12 ('..engine..'): the user\'s rotation, a plain spell step above the suggestion, lights the spell (no BOOKTYPE_SPELL)',function()
+        -- Live report: Brewmaster, Tiger Palm on ActionButton1, rotation
+        -- {spell 100780, assisted}; the suggestion (Keg Smash) is on no bar.
+        local c=retail(engine,{[1]=TIGER_PALM,[2]=BLACKOUT_KICK},{next=121253})
+        assert(c.e.BOOKTYPE_SPELL==nil)
+        custom(c.a,'user',{name='User',priority=0,cooldowns={},rotation={{id='tp',type='spell',action=TIGER_PALM,conditions={}},{id='blizzard',type='assisted',conditions={}}}})
+        select(c,'User')
+        local ids=c.a:GetSpellIds({type='spell',action=TIGER_PALM})
+        assert(ids[1]==TIGER_PALM,'a spell step resolved no spell IDs')
+        assert(c.a.currentSpell==TIGER_PALM,'recommended '..tostring(c.a.currentSpell))
+        assert(litNames(c)=='ActionButton1','lit: '..litNames(c))
+        local _,stop=c.a:RunGlowDiagnostic();assert(stop:find('^none'),stop)
+    end)
+end
 print(pass..' passed, '..fail..' failed');if fail>0 then os.exit(1)end

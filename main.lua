@@ -2210,7 +2210,7 @@ end
 
 function addon:GetSpellIds(rot)
     if rot.action then
-        if rot.type == BOOKTYPE_SPELL or rot.type == BOOKTYPE_PET or rot.type == "any" then
+        if rot.type == (BOOKTYPE_SPELL or "spell") or rot.type == (BOOKTYPE_PET or "pet") or rot.type == "any" then
             if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
                 if rot.ranked then
                     return { rot.action }
@@ -3122,7 +3122,7 @@ local function spellcast(self, event, unit, castguid, spellid)
         local announcements=profile.announces
         for index, value in ipairs(announcements) do
         -- END ANNOUNCEMENT CONDITION OWNER
-            if value.type~='macro' and (value.outputs~=nil or value.value or value.announce == "audible" or value.announce == "gesture") and (not value.disabled) and (value.type == BOOKTYPE_PET and unit == "pet" or unit == "player") and type(value.event) == "string" and
+            if value.type~='macro' and (value.outputs~=nil or value.value or value.announce == "audible" or value.announce == "gesture") and (not value.disabled) and (value.type == (BOOKTYPE_PET or "pet") and unit == "pet" or unit == "player") and type(value.event) == "string" and
                 (event == "UNIT_SPELLCAST_" .. value.event or event == "UNIT_SPELLCAST_CHANNEL_" .. value.event) then
                 local skip = false
                 if self.announced[value.id] then
@@ -3170,7 +3170,7 @@ local function spellcast(self, event, unit, castguid, spellid)
                                     local link,itemLink
                                     if text:find('{{target}}',1,true) and not seriesRecipient then return nil end
                                     if text:find('{{spell}}',1,true) then
-                                        if ent.type~=BOOKTYPE_SPELL and ent.type~=BOOKTYPE_PET then return nil end
+                                        if ent.type~=(BOOKTYPE_SPELL or "spell") and ent.type~=(BOOKTYPE_PET or "pet") then return nil end
                                         link=spellLink(sid)
                                         if type(link)~='string' or not live() then return nil end
                                     end
@@ -3190,7 +3190,7 @@ local function spellcast(self, event, unit, castguid, spellid)
                             -- END ANNOUNCEMENT CONDITION MATCH
                             local text = ent.value or ""
                             if ent.announce~='audible' and ent.announce~='gesture' then
-                            if ent.type == BOOKTYPE_SPELL or ent.type == BOOKTYPE_PET then
+                            if ent.type == (BOOKTYPE_SPELL or "spell") or ent.type == (BOOKTYPE_PET or "pet") then
                                 local link = spellLink(sid)
                                 text = text:gsub("{{spell}}", link)
                             elseif ent.type == "item" then

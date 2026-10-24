@@ -163,7 +163,7 @@ function addon:BuildRotationCardFields(owner,card,model,alive)
         local field=addon:CreateSpellEditBox(step.type=='any' and 'Spell_EditBox' or 'Spec_EditBox',step.action);widgets[#widgets+1]=field;controls.spell=field
         typeControl:ClearAllPoints();typeControl:SetPoint('TOPLEFT',44,0);typeControl:SetWidth(fieldWidth-44)
         field.frame:SetParent(frame);field.frame:ClearAllPoints();field.frame:SetPoint('TOPLEFT',44,-y);field:SetWidth(fieldWidth-44);field:SetLabel('')
-        field:SetUserData('spec',step.type=='pet' and BOOKTYPE_PET or owner.workspace.spec);field:SetUserData('norank',not step.ranked)
+        field:SetUserData('spec',step.type=='pet' and (BOOKTYPE_PET or "pet") or owner.workspace.spec);field:SetUserData('norank',not step.ranked)
         field:SetText(step.action and addon.SpellCatalog:SpellName(step.action,not step.ranked) or '')
         field:SetCallback('OnEnterPressed',function(_,_,value)
             if not active() then return end

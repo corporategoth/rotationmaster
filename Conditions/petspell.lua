@@ -49,9 +49,9 @@ addon:RegisterCondition("PETSPELL_AVAIL", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local spell_group = addon:Widget_SpellWidget(BOOKTYPE_PET, "Spec_EditBox", value,
-                                    function(v) return addon.getSpecSpellID(BOOKTYPE_PET, v) end,
-                                    function(v) return addon.isSpellOnSpec(BOOKTYPE_PET, v) end,
+        local spell_group = addon:Widget_SpellWidget((BOOKTYPE_PET or "pet"), "Spec_EditBox", value,
+                                    function(v) return addon.getSpecSpellID((BOOKTYPE_PET or "pet"), v) end,
+                                    function(v) return addon.isSpellOnSpec((BOOKTYPE_PET or "pet"), v) end,
                                     function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
     end,
@@ -94,9 +94,9 @@ addon:RegisterCondition("PETSPELL_RANGE", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local spell_group = addon:Widget_SpellWidget(BOOKTYPE_PET, "Spec_EditBox", value,
-            function(v) return addon.getSpecSpellID(BOOKTYPE_PET, v) end,
-            function(v) return addon.isSpellOnSpec(BOOKTYPE_PET, v) end,
+        local spell_group = addon:Widget_SpellWidget((BOOKTYPE_PET or "pet"), "Spec_EditBox", value,
+            function(v) return addon.getSpecSpellID((BOOKTYPE_PET or "pet"), v) end,
+            function(v) return addon.isSpellOnSpec((BOOKTYPE_PET or "pet"), v) end,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
     end,
@@ -141,9 +141,9 @@ addon:RegisterCondition("PETSPELL_COOLDOWN", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local spell_group = addon:Widget_SpellWidget(BOOKTYPE_PET, "Spec_EditBox", value,
-                                    function(v) return addon.getSpecSpellID(BOOKTYPE_PET, v) end,
-                                    function(v) return addon.isSpellOnSpec(BOOKTYPE_PET, v) end,
+        local spell_group = addon:Widget_SpellWidget((BOOKTYPE_PET or "pet"), "Spec_EditBox", value,
+                                    function(v) return addon.getSpecSpellID((BOOKTYPE_PET or "pet"), v) end,
+                                    function(v) return addon.isSpellOnSpec((BOOKTYPE_PET or "pet"), v) end,
                                     function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
 
@@ -197,9 +197,9 @@ addon:RegisterCondition("PETSPELL_REMAIN", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local spell_group = addon:Widget_SpellWidget(BOOKTYPE_PET, "Spec_EditBox", value,
-            function(v) return addon.getSpecSpellID(BOOKTYPE_PET, v) end,
-            function(v) return addon.isSpellOnSpec(BOOKTYPE_PET, v) end,
+        local spell_group = addon:Widget_SpellWidget((BOOKTYPE_PET or "pet"), "Spec_EditBox", value,
+            function(v) return addon.getSpecSpellID((BOOKTYPE_PET or "pet"), v) end,
+            function(v) return addon.isSpellOnSpec((BOOKTYPE_PET or "pet"), v) end,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
 
@@ -248,9 +248,9 @@ addon:RegisterCondition("PETSPELL_CHARGES", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local spell_group = addon:Widget_SpellWidget(BOOKTYPE_PET, "Spec_EditBox", value,
-            function(v) return addon.getSpecSpellID(BOOKTYPE_PET, v) end,
-            function(v) return addon.isSpellOnSpec(BOOKTYPE_PET, v) end,
+        local spell_group = addon:Widget_SpellWidget((BOOKTYPE_PET or "pet"), "Spec_EditBox", value,
+            function(v) return addon.getSpecSpellID((BOOKTYPE_PET or "pet"), v) end,
+            function(v) return addon.isSpellOnSpec((BOOKTYPE_PET or "pet"), v) end,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
 
@@ -309,9 +309,9 @@ addon:RegisterCondition("PETSPELL_HISTORY", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local spell_group = addon:Widget_SpellWidget(BOOKTYPE_PET, "Spec_EditBox", value,
-            function(v) return addon.getSpecSpellID(BOOKTYPE_PET, v) end,
-            function(v) return addon.isSpellOnSpec(BOOKTYPE_PET, v) end,
+        local spell_group = addon:Widget_SpellWidget((BOOKTYPE_PET or "pet"), "Spec_EditBox", value,
+            function(v) return addon.getSpecSpellID((BOOKTYPE_PET or "pet"), v) end,
+            function(v) return addon.isSpellOnSpec((BOOKTYPE_PET or "pet"), v) end,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
 
@@ -383,9 +383,9 @@ addon:RegisterCondition("PETSPELL_HISTORY_TIME", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local spell_group = addon:Widget_SpellWidget(BOOKTYPE_PET, "Spec_EditBox", value,
-            function(v) return addon.getSpecSpellID(BOOKTYPE_PET, v) end,
-            function(v) return addon.isSpellOnSpec(BOOKTYPE_PET, v) end,
+        local spell_group = addon:Widget_SpellWidget((BOOKTYPE_PET or "pet"), "Spec_EditBox", value,
+            function(v) return addon.getSpecSpellID((BOOKTYPE_PET or "pet"), v) end,
+            function(v) return addon.isSpellOnSpec((BOOKTYPE_PET or "pet"), v) end,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
 
@@ -433,9 +433,9 @@ addon:RegisterCondition("PETSPELL_ACTIVE", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local spell_group = addon:Widget_SpellWidget(BOOKTYPE_PET, "Spec_EditBox", value,
-            function(v) return addon.getSpecSpellID(BOOKTYPE_PET, v) end,
-            function(v) return addon.isSpellOnSpec(BOOKTYPE_PET, v) end,
+        local spell_group = addon:Widget_SpellWidget((BOOKTYPE_PET or "pet"), "Spec_EditBox", value,
+            function(v) return addon.getSpecSpellID((BOOKTYPE_PET or "pet"), v) end,
+            function(v) return addon.isSpellOnSpec((BOOKTYPE_PET or "pet"), v) end,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
     end,
