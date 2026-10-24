@@ -1,9 +1,10 @@
 -- Retail (Midnight 12.x) Devourer Demon Hunter after Icy Veins' Annihilator list (optimal reference).
 -- Outside Void Metamorphosis: Consume on Soulburst, Reap, Soul Immolation, Voidblade and The Hunt
--- once Void Metamorphosis is ready, Void Metamorphosis, Hungering Slash, Void Ray at 100 Fury,
+-- once Void Metamorphosis is ready, Void Metamorphosis, Hungering Slash, Void Ray once affordable,
 -- Consume. Inside: Devour on Soulburst, Void Ray (Void-Scarred melee actives next), Collapsing
 -- Star, Cull, Devour, Soul Immolation. RM cannot count Soul Fragments, so Reap and Cull go on
--- cooldown and charges. Disabled: Fury and buffs are secret in Midnight combat.
+-- cooldown and charges; Fury is secret on Retail, so Void Ray waits only for its cost. Disabled: buffs
+-- are secret in Midnight combat.
 local _,addon=...
 local function negate(c)return{type='NOT',value=c}end
 local function buff(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
@@ -12,8 +13,8 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local soulburst=buff(1297433)
 local metaReady={type='BUFF_STACKS',unit='player',spell=1225789,ownbuff=true,operator='GREATERTHANOREQUALS',value=50}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.devourer.guide',revision=1,
- blocks={['retail.demonhunter.boundaries']=1,['retail.demonhunter.utility']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.devourer.guide',revision=2,
+ blocks={['retail.demonhunter.boundaries']=1,['retail.demonhunter.utility']=2},
  nameKey='Default.Retail.DemonHunter.DevourerGuide.Name',descriptionKey='Default.Retail.DemonHunter.DevourerGuide.Description',
  applicability={families={'retail'},actionContext='player',class='DEMONHUNTER',specs={1480},minLevel=8,maxLevel=90},
  tags={'devourer','ranged','reference','icy-veins'},
@@ -43,7 +44,7 @@ assert(addon:RegisterDefaultRotation({
      spell('dguide-the-hunt',1246167,metaReady),
      spell('dguide-void-metamorphosis',1217605),
      spell('dguide-hungering-slash',1239123),
-     spell('dguide-void-ray',473728,{type='POWER',unit='player',operator='GREATERTHANOREQUALS',value=100}),
+     spell('dguide-void-ray',473728),
      spell('dguide-consume',473662)}},
   },
  },

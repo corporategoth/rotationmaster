@@ -8,13 +8,12 @@ local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function combat()return{type='COMBAT',unit='player'}end
-local function health(v)return all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=v})end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local interrupt=any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.druid.guardian',revision=1,
- blocks={['retail.druid.boundaries']=1,['retail.druid.utility']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.druid.guardian',revision=2,
+ blocks={['retail.druid.boundaries']=1,['retail.druid.utility']=2},
  nameKey='Default.Retail.Druid.Guardian.Name',descriptionKey='Default.Retail.Druid.Guardian.Description',
  applicability={families={'retail'},actionContext='player',class='DRUID',specs={104},minLevel=10,maxLevel=90},
  tags={'guardian','tank','assisted-combat'},
@@ -31,8 +30,8 @@ assert(addon:RegisterDefaultRotation({
    spell('guardian-incarnation',102558,combat()),
    spell('guardian-convoke',391528,combat()),
    spell('guardian-ironfur',192081,combat()),
-   spell('guardian-frenzied-regeneration',22842,health(.5)),
-   spell('guardian-survival-instincts',61336,health(.35)),
+   spell('guardian-frenzied-regeneration',22842,combat()),
+   spell('guardian-survival-instincts',61336,combat()),
    spell('guardian-bear-form',5487,all(negate(combat()),negate({type='BUFF',unit='player',spell=5487}),negate({type='BUFF',unit='player',spell=102558}))),
   },
   rotation={

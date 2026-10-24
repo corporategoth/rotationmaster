@@ -1,7 +1,8 @@
 -- Retail (Midnight 12.x) Windwalker Monk after Icy Veins (Conduit of the Celestials; Shado-Pan and
 -- SimulationCraft differ trivially), optimal reference. Every step keeps Combo Strikes: never the
 -- spell you cast last. Disabled: Heart of the Jade Serpent, Zenith, Blackout Kick!, Dance of Chi-Ji,
--- energy and cooldown times are secret in Midnight combat; only Chi and your own casts stay readable.
+-- and cooldown times are secret in Midnight combat; only Chi and your own casts stay readable. Energy
+-- is secret on Retail, so the Tiger Palm before the energy cap is left out.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
@@ -20,8 +21,8 @@ local heart=any(buff(443421),buff(443616))
 local zenith=buff(1249625)
 local bok={type='BUFF_STACKS',unit='player',spell=116768,ownbuff=true,operator='GREATERTHANOREQUALS',value=2}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.monk.windwalker.guide',revision=1,
- blocks={['retail.monk.boundaries']=1,['retail.monk.utility']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.monk.windwalker.guide',revision=2,
+ blocks={['retail.monk.boundaries']=1,['retail.monk.utility']=2},
  nameKey='Default.Retail.Monk.WindwalkerGuide.Name',descriptionKey='Default.Retail.Monk.WindwalkerGuide.Description',
  applicability={families={'retail'},actionContext='player',class='MONK',specs={269},minLevel=10,maxLevel=90},
  tags={'windwalker','melee','reference','icy-veins','simulationcraft'},
@@ -40,7 +41,6 @@ assert(addon:RegisterDefaultRotation({
    strike('wguide-zenith-stomp',1272696,any(chi('LESSTHAN',2),{type='BUFF_REMAIN',unit='player',spell=1249625,ownbuff=true,operator='LESSTHAN',value=2})),
    strike('wguide-conduit-no-heart',443028,negate(heart)),
    strike('wguide-heart-fists',113656,all(buff(443421),{type='BUFF_REMAIN',unit='player',spell=443421,ownbuff=true,operator='LESSTHAN',value=1})),
-   strike('wguide-cap-tiger-palm',100780,all(chi('LESSTHAN',4),negate(bok),{type='POWER',unit='player',operator='LESSTHAN',value=-20},negate(zenith))),
    strike('wguide-conduit',443028),
    strike('wguide-invoke-xuen',123904),
    strike('wguide-fists-of-fury',113656),

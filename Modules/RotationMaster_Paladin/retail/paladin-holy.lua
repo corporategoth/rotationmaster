@@ -19,8 +19,8 @@ local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.holy',revision=2,
- blocks={['retail.paladin.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.holy',revision=3,
+ blocks={['retail.paladin.upkeep']=2},
  nameKey='Default.Retail.Paladin.Holy.Name',descriptionKey='Default.Retail.Paladin.Holy.Description',
  applicability={families={'retail'},actionContext='player',class='PALADIN',specs={65},minLevel=10,maxLevel=90},
  tags={'holy','healer','reference','icy-veins','wowhead'},
@@ -36,7 +36,7 @@ assert(addon:RegisterDefaultRotation({
    spell('holy-holy-bulwark',432459,combat()),
    spell('holy-sacred-weapon',432472,combat()),
    spell('holy-beacon-of-virtue',200025,all(combat(),{type='FRIENDLY',unit='target'})),
-   spell('holy-divine-protection',498,all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.5})),
+   spell('holy-divine-protection',498,combat()),
   },
   rotation={
    {id='holy-casting',type='none',suppress_attack=false,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},

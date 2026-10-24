@@ -7,8 +7,8 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.devourer',revision=1,
- blocks={['retail.demonhunter.boundaries']=1,['retail.demonhunter.utility']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.devourer',revision=2,
+ blocks={['retail.demonhunter.boundaries']=1,['retail.demonhunter.utility']=2},
  nameKey='Default.Retail.DemonHunter.Devourer.Name',descriptionKey='Default.Retail.DemonHunter.Devourer.Description',
  applicability={families={'retail'},actionContext='player',class='DEMONHUNTER',specs={1480},minLevel=8,maxLevel=90},
  tags={'devourer','ranged','assisted-combat'},

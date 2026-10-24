@@ -1,7 +1,8 @@
 -- Retail (Midnight 12.x) Havoc Demon Hunter after Icy Veins, SimulationCraft and Wowhead (optimal
 -- reference): Aldrachi Reaver's Glaive and Rending Strike, Fel-Scarred Metamorphosis spending,
 -- Essence Break windows, Eye Beam, Blade Dance, Immolation Aura, Chaos Strike, Felblade, Throw
--- Glaive. Disabled: Fury, procs, Metamorphosis and Essence Break are secret in Midnight combat.
+-- Glaive (Fury is secret on Retail, so Felblade does not wait for room). Disabled: procs,
+-- Metamorphosis and Essence Break are secret in Midnight combat.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
@@ -16,8 +17,8 @@ local aldrachi=known(442294)
 local glaive=any(buff(444686),buff(444764))
 local scarredMeta=all(negate(aldrachi),buff(162264))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.havoc.guide',revision=1,
- blocks={['retail.demonhunter.boundaries']=1,['retail.demonhunter.utility']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.havoc.guide',revision=2,
+ blocks={['retail.demonhunter.boundaries']=1,['retail.demonhunter.utility']=2},
  nameKey='Default.Retail.DemonHunter.HavocGuide.Name',descriptionKey='Default.Retail.DemonHunter.HavocGuide.Description',
  applicability={families={'retail'},actionContext='player',class='DEMONHUNTER',specs={577},minLevel=8,maxLevel=90},
  tags={'havoc','melee','reference','icy-veins','simulationcraft','wowhead'},
@@ -48,7 +49,7 @@ assert(addon:RegisterDefaultRotation({
    spell('hguide-blade-dance',188499),
    spell('hguide-immolation-cleave',258920,engaged(2)),
    spell('hguide-chaos-strike',162794),
-   spell('hguide-felblade',232893,{type='POWER',unit='player',operator='LESSTHANOREQUALS',value=100}),
+   spell('hguide-felblade',232893),
    spell('hguide-immolation-aura',258920),
    spell('hguide-throw-glaive',185123),
    spell('hguide-fel-rush',195072),

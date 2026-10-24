@@ -82,12 +82,11 @@ assert(addon:RegisterDefaultBlock({id='forever.hunter.aspects-ranged',revision=1
  {id='aspect-cheetah',type='spell',action=5118,ranked=false,disabled=true,conditions=all(negate(combat()),
   negate(own(13165)),negate(own(13163)),negate(own(5118)),negate(own(13159)),negate(own(13161)))},
 }}))
--- Pet care: call a missing pet, revive a dead one, Mend Pet (a 5 s channel) below 40%.
--- Feeding is manual (RM cannot read happiness); Lone Wolf players disable these.
-assert(addon:RegisterDefaultBlock({id='forever.hunter.pet-care',revision=1,families={'forever'},class='HUNTER',steps={
+-- Pet care: call a missing pet, revive a dead one. Feeding is manual (RM cannot read happiness),
+-- and so is Mend Pet (health is secret on Forever); Lone Wolf players disable these.
+assert(addon:RegisterDefaultBlock({id='forever.hunter.pet-care',revision=2,families={'forever'},class='HUNTER',steps={
  spell('call-pet',883,negate({type='PET'})),
  spell('revive-pet',982,{type='DEAD',unit='pet'}),
- spell('mend-pet',136,all({type='PET'},negate({type='DEAD',unit='pet'}),{type='HEALTHPCT',unit='pet',operator='LESSTHAN',value=.4})),
 }}))
 -- Major cooldowns only where they matter: an elite, rare elite or boss, or a group instance.
 assert(addon:RegisterDefaultBlock({id='forever.hunter.burst',revision=1,families={'forever'},class='HUNTER',steps={

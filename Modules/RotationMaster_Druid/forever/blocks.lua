@@ -14,7 +14,6 @@ local function dot(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,o
 local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
-local healthy={type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.2}
 -- Casts and channels (Starfire, Hurricane, Tranquility, Healing Touch) and travel forms end advice.
 assert(addon:RegisterDefaultBlock({id='forever.druid.boundaries',revision=1,families={'forever'},class='DRUID',steps={
  stop('cast',{type='CASTING',unit='player'}),
@@ -27,11 +26,12 @@ assert(addon:RegisterDefaultBlock({id='forever.druid.upkeep',revision=1,families
  spell('mark',1126,all(negate(combat()),negate(buff(1126)),negate(buff(21849)))),
  spell('thorns',467,all(negate(combat()),negate({type='GROUP'}),negate(buff(467)))),
 }}))
--- Your own Moonfire, then your own Insect Swarm (Balance talent), never on a target nearly dead.
--- DoTs do not snapshot on Forever, so a running one is never refreshed early.
-assert(addon:RegisterDefaultBlock({id='forever.druid.dots',revision=1,families={'forever'},class='DRUID',steps={
- spell('moonfire',8921,all(negate(dot(8921)),healthy)),
- spell('insect-swarm',5570,all(negate(dot(5570)),healthy)),
+-- Your own Moonfire, then your own Insect Swarm (Balance talent). DoTs do not snapshot on Forever,
+-- so a running one is never refreshed early. Health is secret on Forever, so a nearly dead target
+-- still gets them.
+assert(addon:RegisterDefaultBlock({id='forever.druid.dots',revision=2,families={'forever'},class='DRUID',steps={
+ spell('moonfire',8921,negate(dot(8921))),
+ spell('insect-swarm',5570,negate(dot(5570))),
 }}))
 -- A healer's spare-time damage on a hostile target: the DoTs, then Wrath; nothing else.
 assert(addon:RegisterDefaultBlock({id='forever.druid.spare-damage',revision=1,families={'forever'},class='DRUID',steps={
@@ -39,13 +39,13 @@ assert(addon:RegisterDefaultBlock({id='forever.druid.spare-damage',revision=1,fa
  spell('wrath',5176),
  stop('done'),
 }}))
--- Healer reminders: Innervate, Nature's Swiftness on a dying target, Tranquility when the party
--- is hurt, curse and poison removal on the friendly target.
+-- Healer reminders: Nature's Swiftness in combat on a friendly target, curse and poison removal on
+-- the friendly target. Health is secret on Forever, so whether the target is dying, and Tranquility,
+-- are the player's call.
 local friendly={type='FRIENDLY',unit='target'}
 local function dispel(kind)return all(friendly,{type='DISPELLABLE',unit='target',debufftype=kind})end
-assert(addon:RegisterDefaultBlock({id='forever.druid.healer-upkeep',revision=1,families={'forever'},class='DRUID',steps={
- spell('swiftness',17116,all(combat(),friendly,{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=.3})),
- spell('tranquility',740,all(combat(),{type='PROXIMITY_HEALTHPCT_COUNT',unit='player',distance=20,healthoperator='LESSTHAN',health=.6,operator='GREATERTHANOREQUALS',value=3})),
+assert(addon:RegisterDefaultBlock({id='forever.druid.healer-upkeep',revision=2,families={'forever'},class='DRUID',steps={
+ spell('swiftness',17116,all(combat(),friendly)),
  spell('remove-curse',2782,dispel('Curse')),
  spell('abolish-poison',2893,dispel('Poison')),
  spell('cure-poison',8946,all(negate({type='SPELL_KNOWN',spell=2893}),dispel('Poison'))),

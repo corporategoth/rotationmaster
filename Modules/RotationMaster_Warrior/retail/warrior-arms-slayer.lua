@@ -19,7 +19,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 local smashSoon={type='SPELL_COOLDOWN',spell=167105,operator='LESSTHAN',value=1.5}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.arms.slayer',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.arms.slayer',revision=3,
  blocks={['retail.warrior.boundaries']=1,['retail.warrior.upkeep']=1,['retail.warrior.charge']=2},
  nameKey='Default.Retail.Warrior.Arms.Slayer.Name',descriptionKey='Default.Retail.Warrior.Arms.Slayer.Description',
  applicability={families={'retail'},actionContext='player',class='WARRIOR',specs={71},minLevel=10,maxLevel=90},
@@ -33,7 +33,7 @@ assert(addon:RegisterDefaultRotation({
   cooldowns={
    block('retail.warrior.upkeep','armssl-'),
    spell('armssl-avatar',107574,all(fight,{type='SPELL_AVAIL',spell=167105})),
-   spell('armssl-die-by-the-sword',118038,all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.4})),
+   spell('armssl-die-by-the-sword',118038,combat()),
   },
   rotation={
    block('retail.warrior.boundaries','armssl-'),

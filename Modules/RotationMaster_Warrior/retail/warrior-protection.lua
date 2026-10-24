@@ -4,7 +4,7 @@
 -- Stops. Assisted Combat never casts Shield Block or Ignore Pain, so both are reminders whenever
 -- they are usable and your target is attacking you (rage is hidden, so Ignore Pain prompts often).
 -- Other reminders (SimulationCraft's assisted_combat/warrior_protection.simc): Avatar,
--- Demoralizing Shout, Champion's Spear, Shield Wall and Last Stand when low, Taunt on a grouped
+-- Demoralizing Shout, Champion's Spear, Shield Wall and Last Stand when ready, Taunt on a grouped
 -- target attacking someone else, Battle Shout, Pummel.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
@@ -13,7 +13,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.protection',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.protection',revision=2,
  blocks={['retail.warrior.boundaries']=1,['retail.warrior.upkeep']=1},
  nameKey='Default.Retail.Warrior.Protection.Name',descriptionKey='Default.Retail.Warrior.Protection.Description',
  applicability={families={'retail'},actionContext='player',class='WARRIOR',specs={73},minLevel=10,maxLevel=90},
@@ -26,14 +26,14 @@ assert(addon:RegisterDefaultRotation({
  body={priority=10,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
    block('retail.warrior.upkeep','prot-'),
-   spell('prot-shield-block',2565,all(fight,{type='ISSAME',unit='targettarget',otherunit='player'})),
-   spell('prot-ignore-pain',190456,all(fight,{type='ISSAME',unit='targettarget',otherunit='player'})),
+   spell('prot-shield-block',2565,all(fight,{type='THREAT',unit='target',threat=3})),
+   spell('prot-ignore-pain',190456,all(fight,{type='THREAT',unit='target',threat=3})),
    spell('prot-avatar',107574,fight),
    spell('prot-demoralizing-shout',1160,fight),
    spell('prot-champions-spear',376079,fight),
-   spell('prot-shield-wall',871,all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.35})),
-   spell('prot-last-stand',12975,all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.25})),
-   spell('prot-taunt',355,all(fight,{type='GROUP'},{type='COMBAT',unit='target'},{type='NOT',value={type='ISSAME',unit='targettarget',otherunit='player'}})),
+   spell('prot-shield-wall',871,combat()),
+   spell('prot-last-stand',12975,combat()),
+   spell('prot-taunt',355,all(fight,{type='GROUP'},{type='COMBAT',unit='target'},{type='NOT',value={type='THREAT',unit='target',threat=3}})),
   },
   rotation={
    block('retail.warrior.boundaries','prot-'),

@@ -1,6 +1,6 @@
 -- WoW Forever Protection Paladin after Icy Veins, levels 10–60: a player-chosen alternative to
--- rm.forever.paladin.protection (same switch, lower priority). Consecration first whenever mana
--- allows, on one target too; Judgement is held for taunts (no on-cooldown reminder), with Swift
+-- rm.forever.paladin.protection (same switch, lower priority, off by default). Consecration first
+-- whenever it is affordable, on one target too; Judgement is held for taunts (no on-cooldown reminder), with Swift
 -- Judgement to reset it; then Holy Strike and Exorcism on Undead and Demons.
 local _,addon=...
 -- Talent trees in the Forever talent window's order (assumed classic: 1 Holy, 2 Protection, 3 Retribution; verify in game).
@@ -15,8 +15,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id,conditions,attack)return{id=id,type='none',suppress_attack=not attack,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.paladin.protection.icyveins',revision=2,
- blocks={['forever.paladin.boundaries']=1,['forever.paladin.aura-blessing']=1,['forever.paladin.taunt']=1,['forever.paladin.tank-upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.paladin.protection.icyveins',revision=3,
+ blocks={['forever.paladin.boundaries']=1,['forever.paladin.aura-blessing']=1,['forever.paladin.taunt']=2,['forever.paladin.tank-upkeep']=2},
  nameKey='Default.Forever.Paladin.ProtectionIcyVeins.Name',descriptionKey='Default.Forever.Paladin.ProtectionIcyVeins.Description',
  applicability={families={'forever'},actionContext='player',class='PALADIN',minLevel=10,maxLevel=60},
  tags={'protection','tank','group','leveling','aoe','icy-veins'},
@@ -28,7 +28,7 @@ assert(addon:RegisterDefaultRotation({
 -- 11 Protection points as the main tree first (readable, so a deep Protection paladin never waits
  -- on an aura read), then Righteous Fury, then Protection as the main tree at any depth, last so a
  -- tie (unavailable) cannot hide Righteous Fury.
- body={priority=35,switch=any(tree(2,11),own(25780),tree(2,1)),
+ body={priority=35,disabled=true,switch=any(tree(2,11),own(25780),tree(2,1)),
   cooldowns={
    block('ivprot-tank-upkeep','forever.paladin.tank-upkeep','ivprot-'),
    block('ivprot-aura-blessing','forever.paladin.aura-blessing','ivprot-'),
@@ -36,7 +36,7 @@ assert(addon:RegisterDefaultRotation({
   rotation={
    block('ivprot-boundaries','forever.paladin.boundaries','ivprot-'),
    stop('ivprot-target',negate({type='ATTACKABLE',unit='target'}),true),
-   spell('ivprot-consecration',26573,{type='MANAPCT',unit='player',operator='GREATERTHAN',value=.3}),
+   spell('ivprot-consecration',26573),
    block('ivprot-taunt','forever.paladin.taunt','ivprot-'),
    spell('ivprot-holy-strike',679),
    spell('ivprot-exorcism',879,any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',unit='target',value='DEMON'})),

@@ -11,6 +11,7 @@
 
 bind.lua
 retail/blocks.lua
+retail/shaman-initial.lua
 retail/shaman-elemental.lua
 retail/shaman-elemental-icyveins.lua
 retail/shaman-enhancement.lua

@@ -11,6 +11,7 @@
 
 bind.lua
 retail/blocks.lua
+retail/evoker-initial.lua
 retail/evoker-devastation.lua
 retail/evoker-devastation-guide.lua
 retail/evoker-augmentation.lua

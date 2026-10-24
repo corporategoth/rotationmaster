@@ -3,8 +3,9 @@
 -- high Salvo or with Arcane Soul at any charge count, Prismatic Bolt, Arcane Orb below three
 -- charges, Arcane Pulse on packs, Arcane Blast, and Arcane Barrage when Blast cannot be cast.
 -- Spellslinger (Splintering Sorcery known) uses its own order: Barrage at 20 Salvo, with two or
--- more enemies only at four charges (SimulationCraft's aoe_count). Disabled: Salvo, Clearcasting
--- and mana are secret in Midnight combat; only the Arcane Charge tests stay readable.
+-- more enemies only at four charges (SimulationCraft's aoe_count). Mana is secret on Retail, so the
+-- low-mana Evocation is left to you. Disabled: Salvo and Clearcasting are secret in Midnight combat;
+-- only the Arcane Charge tests stay readable.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
@@ -20,8 +21,8 @@ local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local clearcasting,soul,surge=buff(263725),buff(451038),buff(365362)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.mage.arcane.guide',revision=3,
- blocks={['retail.mage.boundaries']=1,['retail.mage.utility']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.mage.arcane.guide',revision=4,
+ blocks={['retail.mage.boundaries']=1,['retail.mage.utility']=2},
  nameKey='Default.Retail.Mage.ArcaneGuide.Name',descriptionKey='Default.Retail.Mage.ArcaneGuide.Description',
  applicability={families={'retail'},actionContext='player',class='MAGE',specs={62},minLevel=10,maxLevel=90},
  tags={'arcane','caster','reference','icy-veins','simulationcraft'},
@@ -32,10 +33,9 @@ assert(addon:RegisterDefaultRotation({
  body={priority=10,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
    block('aguide-utility','retail.mage.utility','aguide-'),
-   spell('aguide-barrier',235450,all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.5})),
+   spell('aguide-barrier',235450,combat()),
    spell('aguide-arcane-surge',365350,combat()),
    spell('aguide-touch-of-the-magi',321507,all(combat(),any(last(44425),last(1295924)),any(surge,{type='SPELL_COOLDOWN',spell=365350,operator='GREATERTHAN',value=30}))),
-   spell('aguide-evocation',12051,all(combat(),{type='MANAPCT',unit='player',operator='LESSTHAN',value=.1},negate(surge),negate({type='DEBUFF',unit='target',spell=210824,owndebuff=true}))),
    spell('aguide-presence-of-mind',205025,all(combat(),charges('EQUALS',0),last(44425))),
   },
   rotation={

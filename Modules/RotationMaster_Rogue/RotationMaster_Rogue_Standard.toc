@@ -11,6 +11,7 @@
 
 bind.lua
 retail/blocks.lua
+retail/rogue-initial.lua
 retail/rogue-assassination.lua
 retail/rogue-assassination-icyveins.lua
 retail/rogue-outlaw.lua

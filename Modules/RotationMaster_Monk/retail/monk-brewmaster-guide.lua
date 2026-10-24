@@ -16,8 +16,8 @@ local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local harmony=known(1262765)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.monk.brewmaster.guide',revision=2,
- blocks={['retail.monk.boundaries']=1,['retail.monk.utility']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.monk.brewmaster.guide',revision=3,
+ blocks={['retail.monk.boundaries']=1,['retail.monk.utility']=2},
  nameKey='Default.Retail.Monk.BrewmasterGuide.Name',descriptionKey='Default.Retail.Monk.BrewmasterGuide.Description',
  applicability={families={'retail'},actionContext='player',class='MONK',specs={268},minLevel=10,maxLevel=90},
  tags={'brewmaster','tank','reference','icy-veins','simulationcraft'},

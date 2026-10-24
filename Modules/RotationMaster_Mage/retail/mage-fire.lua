@@ -1,15 +1,15 @@
 -- Retail (Midnight 12.x) Fire Mage, Blizzard Assisted (recommended): the rotation is Blizzard's
 -- Assisted Combat suggestion, the one rotation input an addon can still read in combat. Around it,
--- highlights for what Assisted Combat leaves to you: Combustion, Blazing Barrier below half health,
--- Arcane Intellect, Counterspell, Ice Block and racial cooldowns.
+-- highlights for what Assisted Combat leaves to you: Combustion, Blazing Barrier whenever it is ready
+-- in combat, Arcane Intellect, Counterspell and racial cooldowns.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.mage.fire',revision=1,
- blocks={['retail.mage.boundaries']=1,['retail.mage.utility']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.mage.fire',revision=2,
+ blocks={['retail.mage.boundaries']=1,['retail.mage.utility']=2},
  nameKey='Default.Retail.Mage.Fire.Name',descriptionKey='Default.Retail.Mage.Fire.Description',
  applicability={families={'retail'},actionContext='player',class='MAGE',specs={63},minLevel=10,maxLevel=90},
  tags={'fire','caster','assisted-combat'},
@@ -22,7 +22,7 @@ assert(addon:RegisterDefaultRotation({
   cooldowns={
    block('fire-utility','retail.mage.utility','fire-'),
    spell('fire-combustion',190319,combat()),
-   spell('fire-barrier',235313,all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.5})),
+   spell('fire-barrier',235313,combat()),
   },
   rotation={
    block('fire-boundaries','retail.mage.boundaries','fire-'),

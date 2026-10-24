@@ -6,12 +6,11 @@
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function combat()return{type='COMBAT',unit='player'}end
-local function health(op,v)return{type='HEALTHPCT',unit='player',operator=op,value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.retribution',revision=1,
- blocks={['retail.paladin.boundaries']=1,['retail.paladin.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.retribution',revision=2,
+ blocks={['retail.paladin.boundaries']=1,['retail.paladin.upkeep']=2},
  nameKey='Default.Retail.Paladin.Retribution.Name',descriptionKey='Default.Retail.Paladin.Retribution.Description',
  applicability={families={'retail'},actionContext='player',class='PALADIN',specs={70},minLevel=10,maxLevel=90},
  tags={'retribution','melee','assisted-combat','single-target','aoe','simulationcraft'},
@@ -23,7 +22,7 @@ assert(addon:RegisterDefaultRotation({
  body={priority=10,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
    block('retail.paladin.upkeep','ret-'),
-   spell('ret-divine-protection',403876,all(combat(),health('LESSTHAN',.5))),
+   spell('ret-divine-protection',403876,combat()),
   },
   rotation={
    block('retail.paladin.boundaries','ret-'),

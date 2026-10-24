@@ -18,9 +18,9 @@ local function stop(id,conditions,attack)return{id=id,type='none',suppress_attac
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.survival',revision=3,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.survival',revision=4,
  blocks={['forever.hunter.boundaries']=1,['forever.hunter.survival-pull']=2,['forever.hunter.range-shots']=1,['forever.hunter.melee-aoe']=1,
-  ['forever.hunter.pet-care']=1,['forever.hunter.burst']=1},
+  ['forever.hunter.pet-care']=2,['forever.hunter.burst']=1},
  nameKey='Default.Forever.Hunter.Survival.Name',descriptionKey='Default.Forever.Hunter.Survival.Description',
  applicability={families={'forever'},actionContext='player',class='HUNTER',minLevel=10,maxLevel=60},
  tags={'survival','melee','leveling','wowhead'},
@@ -36,7 +36,7 @@ assert(addon:RegisterDefaultRotation({
    spell('sv-aspect-beast',13161,all(combat(),negate({type='BUFF',unit='player',spell=13161,anyrank=true,ownbuff=true}))),
    spell('sv-mark',1130,all(combat(),{type='ATTACKABLE',unit='target'},negate({type='DEBUFF',unit='target',spell=1130,anyrank=true}))),
    block('sv-burst','forever.hunter.burst','sv-'),
-   spell('sv-deterrence',19263,all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.4},{type='ISSAME',unit='targettarget',otherunit='player'})),
+   spell('sv-deterrence',19263,all(combat(),{type='THREAT',unit='target',threat=3})),
    block('sv-pet-care','forever.hunter.pet-care','sv-'),
   },
   rotation={
@@ -50,7 +50,7 @@ assert(addon:RegisterDefaultRotation({
    spell('sv-strider-kick',1317257),
    spell('sv-raptor-strike',2973,negate({type='SPELL_ACTIVE',spell=2973})),
    spell('sv-counterattack',19306),
-   {id='sv-immolation-trap',type='spell',action=13795,ranked=false,disabled=true,conditions=any(elite,{type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.5})},
+   {id='sv-immolation-trap',type='spell',action=13795,ranked=false,disabled=true,conditions=elite},
    stop('sv-done',nil,true),
   },
  },

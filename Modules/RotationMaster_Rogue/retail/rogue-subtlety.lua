@@ -3,12 +3,12 @@
 -- readable, so the rotation is that suggestion (it handles the stealth opener, Shadow Blades,
 -- Shadow Dance and Secret Technique) after the cast and no-target Stops. Reminders for what it
 -- leaves out (SimulationCraft's assisted_combat/rogue_subtlety.simc): poisons and Stealth between
--- pulls, Kick, Crimson Vial.
+-- pulls, Kick.
 local _,addon=...
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.subtlety',revision=1,
- blocks={['retail.rogue.boundaries']=1,['retail.rogue.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.subtlety',revision=2,
+ blocks={['retail.rogue.boundaries']=1,['retail.rogue.upkeep']=2},
  nameKey='Default.Retail.Rogue.Subtlety.Name',descriptionKey='Default.Retail.Rogue.Subtlety.Description',
  applicability={families={'retail'},actionContext='player',class='ROGUE',specs={261},minLevel=10,maxLevel=90},
  tags={'subtlety','melee','assisted-combat','single-target','aoe','simulationcraft'},

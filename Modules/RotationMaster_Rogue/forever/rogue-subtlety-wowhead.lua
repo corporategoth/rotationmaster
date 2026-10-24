@@ -1,7 +1,7 @@
 -- WoW Forever Subtlety Rogue, Wowhead's Garrote build (player-chosen variant).
 -- Applies with Subtlety as the main tree at Hemorrhage's tier (21 points), Dirty Deeds talented
--- (trait node 105745) and Premeditation known, and ranks below the other
--- Rogue premades, so it runs only when the player picks it. Differs from the default:
+-- (trait node 105745) and Premeditation known, ranks below the other Rogue premades and ships off
+-- by default, so it runs only when the player picks it. Differs from the default:
 -- Premeditation then Garrote on every opener, Vanish (then Preparation) spent in the
 -- rotation to re-open with Garrote once the last one has run out, Rupture as the standing
 -- five-point finisher, Hemorrhage as the only builder and no Ghostly Strike. Vanish is also
@@ -20,8 +20,8 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local function garroted()return{type='DEBUFF',unit='target',spell=703,anyrank=true,owndebuff=true}end
 local function sliced()return{type='BUFF',unit='player',spell=5171,anyrank=true,ownbuff=true}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.rogue.subtlety.wowhead',revision=2,
- blocks={['forever.rogue.boundaries']=1,['forever.rogue.stealth-fallback']=1,['forever.rogue.expose-armor']=1,['forever.rogue.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.rogue.subtlety.wowhead',revision=3,
+ blocks={['forever.rogue.boundaries']=1,['forever.rogue.stealth-fallback']=2,['forever.rogue.expose-armor']=1,['forever.rogue.upkeep']=2},
  nameKey='Default.Forever.Rogue.Subtlety.Wowhead.Name',descriptionKey='Default.Forever.Rogue.Subtlety.Wowhead.Description',
  applicability={families={'forever'},actionContext='player',class='ROGUE',minLevel=25,maxLevel=60},
  tags={'dps','melee','leveling','endgame','subtlety','wowhead'},
@@ -29,7 +29,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://github.com/simulationcraft/simc/blob/4dd64b4a212e946cdbf22219f7d7c42f2fe0e23d/engine/dbc/generated/trait_data.inc',title='SimulationCraft Forever trait data (1.60.1.70425): talent node IDs',reviewedAt='2026-10-23',revision='4dd64b4'},
  {url='https://www.wowhead.com/forever/guide/classes/rogue/subtlety/level-30-dps-overview',title='Wowhead: Forever level 30 Subtlety Rogue',reviewedAt='2026-10-23',revision='2026-10-06'},
  {url='https://www.wowhead.com/forever/guide/classes/rogue/subtlety/dps-abilities',title='Wowhead: Forever Subtlety Rogue abilities',reviewedAt='2026-10-23',revision='2026-10-08'}},
- body={priority=4,switch={type='AND',value={tree(3,21),{type='TALENT',layout='traits',node=105745,operator='GREATERTHANOREQUALS',value=1},{type='SPELL_KNOWN',spell=14183}}},
+ body={priority=4,disabled=true,switch={type='AND',value={tree(3,21),{type='TALENT',layout='traits',node=105745,operator='GREATERTHANOREQUALS',value=1},{type='SPELL_KNOWN',spell=14183}}},
  cooldowns={block('forever.rogue.upkeep','rogue-wowhead-'),
   spell('rogue-wowhead-vanish',1856,all({type='COMBAT',unit='player'},{type='SPELL_KNOWN',spell=703},negate(garroted()))),
   spell('rogue-wowhead-preparation',14185,all({type='COMBAT',unit='player'},negate(garroted()),{type='SPELL_COOLDOWN',spell=1856,operator='GREATERTHAN',value=30}))},

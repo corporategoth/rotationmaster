@@ -1,5 +1,6 @@
 -- WoW Forever Balance Druid after Warcraft Tavern's Multi-DoT leveling build, levels 1–60: a
--- player-chosen alternative to rm.forever.druid.balance (same switch, lower priority). DoT the
+-- player-chosen alternative to rm.forever.druid.balance (same switch, lower priority, off by
+-- default). DoT the
 -- target, root it once both DoTs run while another enemy is on you, then Wrath; no Starfire
 -- (the build skips Eclipse). Tabbing to the next enemy stays with the player.
 local _,addon=...
@@ -10,7 +11,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id,conditions,attack)return{id=id,type='none',suppress_attack=not attack,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.druid.balance.tavern',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.druid.balance.tavern',revision=3,
  blocks={['forever.druid.boundaries']=1,['forever.druid.upkeep']=1},
  nameKey='Default.Forever.Druid.BalanceTavern.Name',descriptionKey='Default.Forever.Druid.BalanceTavern.Description',
  applicability={families={'forever'},actionContext='player',class='DRUID',minLevel=1,maxLevel=60},
@@ -20,7 +21,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.warcrafttavern.com/forever/guides/druid-leveling/',title='Warcraft Tavern: Forever Druid leveling',reviewedAt='2026-10-23'},
   {url='https://github.com/simulationcraft/simc/blob/forever/SpellDataDump/druid.txt',title='SimulationCraft Forever spell data (1.60.1.70425)',reviewedAt='2026-10-23',revision='4dd64b4a21',notes='Spell IDs and ranks only.'},
  },
- body={priority=5,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=5,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
   cooldowns={block('dot-upkeep','forever.druid.upkeep','dot-')},
   rotation={
    block('dot-boundaries','forever.druid.boundaries','dot-'),
@@ -31,7 +32,6 @@ assert(addon:RegisterDefaultRotation({
    spell('dot-roots',339,all(dot(8921,true),dot(5570,true),negate(dot(339)),
     {type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2})),
    spell('dot-wrath',5176),
-   stop('dot-done',{type='MANAPCT',unit='player',operator='GREATERTHANOREQUALS',value=.12}),
   },
  },
 }))

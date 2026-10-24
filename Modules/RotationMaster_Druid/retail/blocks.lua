@@ -14,11 +14,11 @@ assert(addon:RegisterDefaultBlock({id='retail.druid.boundaries',revision=1,famil
  stop('channel',{type='CHANNELING',unit='player'}),
 }}))
 -- What Blizzard's Assisted Combat never suggests, for every spec: Mark of the Wild out of combat,
--- Barkskin below 35% health, and the racial cooldowns in combat. Your health is secret in Midnight
--- combat, so Barkskin lights only where it can be read.
-assert(addon:RegisterDefaultBlock({id='retail.druid.utility',revision=1,families={'retail'},class='DRUID',steps={
+-- and Barkskin and the racial cooldowns whenever they are ready in combat. Health is secret on
+-- Retail, so the defensive is a cooldown reminder, not a health trigger.
+assert(addon:RegisterDefaultBlock({id='retail.druid.utility',revision=2,families={'retail'},class='DRUID',steps={
  spell('mark-of-the-wild',1126,all(negate(combat()),negate({type='BUFF',unit='player',spell=1126}))),
- spell('barkskin',22812,all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.35})),
+ spell('barkskin',22812,combat()),
  spell('berserking',26297,combat()),
  spell('ancestral-call',274738,combat()),
 }}))

@@ -1,17 +1,16 @@
 -- WoW Forever damage Priest, levels 1–60, and the Priest catch-all (lowest priority): Shadow, and
 -- every Priest's solo play (Smite, Holy and Discipline levelers too). Icy Veins' and Wowhead's
 -- order with Mobalytics' level-40 Shadowform play: Shield and Mind Blast (Holy Fire for Holy and
--- Discipline) to pull, own Shadow Word: Pain and Devouring Plague, Mind Blast while it is worth it,
--- Shadow Word: Death to execute, then the wand while leveling solo, Mind Flay in Shadowform or a
--- group. Discipline adds Holy Fire into Penance. A solo emergency branch shields and heals.
+-- Discipline) to pull, Mind Blast, own Shadow Word: Pain and Devouring Plague, then the wand while
+-- leveling solo, Mind Flay in Shadowform or a group. Discipline adds Holy Fire into Penance. Health
+-- and mana are secret on Forever, so the execute window, the solo emergency heals and the mana
+-- rules for Mind Blast, Plague, Holy Nova and solo Mind Flay are left out.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function own(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
 local function known(...)local list={};for i,id in ipairs({...})do list[i]={type='SPELL_KNOWN',spell=id}end;return{type='OR',value=list}end
-local function health(unit,op,v)return{type='HEALTHPCT',unit=unit,operator=op,value=v}end
-local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
@@ -19,8 +18,8 @@ local shadowform={type='BUFF',unit='player',spell=15473}
 local solo=negate({type='GROUP'})
 local unshielded=negate({type='DEBUFF',unit='player',spell=6788})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.priest.dps',revision=2,
- blocks={['forever.priest.boundaries']=1,['forever.priest.upkeep']=1,['forever.priest.dps-upkeep']=1,['forever.priest.wand']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.priest.dps',revision=3,
+ blocks={['forever.priest.boundaries']=1,['forever.priest.upkeep']=1,['forever.priest.dps-upkeep']=2,['forever.priest.wand']=1},
  nameKey='Default.Forever.Priest.Dps.Name',descriptionKey='Default.Forever.Priest.Dps.Description',
  applicability={families={'forever'},actionContext='player',class='PRIEST',minLevel=1,maxLevel=60},
  tags={'shadow','leveling','single-target','icy-veins','wowhead'},
@@ -43,12 +42,6 @@ assert(addon:RegisterDefaultRotation({
    block('dps-boundaries','forever.priest.boundaries','dps-'),
    stop('dps-target',negate({type='ATTACKABLE',unit='target'})),
    spell('dps-shadowform',15473,negate(shadowform)),
-   {id='dps-emergency',type='branch',conditions=all(solo,health('player','LESSTHAN',.35)),onFalse={},onTrue={
-    spell('dps-emergency-shield',17,unshielded),
-    spell('dps-desperate-prayer',13908),
-    {id='dps-emergency-heal',type='branch',conditions=shadowform,onTrue={},onFalse={
-     spell('dps-flash-heal',2061),spell('dps-heal',2054),spell('dps-lesser-heal',2050)}},
-    stop('dps-emergency-stop')}},
    {id='dps-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell('dps-pull-shield',17,all(solo,unshielded)),
     spell('dps-pull-holy-fire',14914,negate(known(15473))),
@@ -58,22 +51,16 @@ assert(addon:RegisterDefaultRotation({
    {id='dps-moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
     spell('dps-moving-pain',589,negate(own(589))),
     spell('dps-moving-plague',2944,negate(own(2944))),
-    spell('dps-moving-death',1309595,health('target','LESSTHAN',.2)),
     stop('dps-moving-stop')}},
-   {id='dps-execute',type='branch',conditions=health('target','LESSTHAN',.2),onFalse={},onTrue={
-    spell('dps-death',1309595,health('player','GREATERTHAN',.3)),
-    {id='dps-finish',type='branch',conditions=all(solo,negate(shadowform)),onFalse={},onTrue={
-     block('dps-finish-wand','forever.priest.wand','dps-finish-'),stop('dps-finish-stop')}}}},
    spell('dps-holy-fire',14914,all(known(402174,1240720,1240721,1316995),negate(own(14914)))),
    spell('dps-penance',402174,any(own(14914),negate(known(14914)))),
-   spell('dps-mind-blast',8092,any(shadowform,{type='GROUP'},health('target','GREATERTHAN',.5))),
+   spell('dps-mind-blast',8092),
    spell('dps-pain',589,negate(own(589))),
-   spell('dps-plague',2944,all(negate(own(2944)),health('target','GREATERTHAN',.4),any(shadowform,mana('GREATERTHANOREQUALS',.4)))),
+   spell('dps-plague',2944,negate(own(2944))),
    {id='dps-shadow',type='branch',conditions=shadowform,onFalse={},onTrue={spell('dps-shadow-flay',15407),stop('dps-shadow-stop')}},
    {id='dps-solo',type='branch',conditions={type='GROUP'},onTrue={},onFalse={
     spell('dps-holy-nova',15237,all({type='DISTANCE_COUNT',enemy=true,distance=10,operator='GREATERTHANOREQUALS',value=3},
-     any({type='BUFF',unit='player',spell=1284536},mana('GREATERTHAN',.6)))),
-    spell('dps-solo-flay',15407,mana('GREATERTHAN',.6)),
+     {type='BUFF',unit='player',spell=1284536})),
     block('dps-solo-wand','forever.priest.wand','dps-solo-'),
     spell('dps-solo-smite',585),
     stop('dps-solo-stop')}},

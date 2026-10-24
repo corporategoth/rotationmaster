@@ -147,6 +147,8 @@ test('TOC includes every reviewed starter pack exactly once',function()
         'rm.mop.shaman.elemental','rm.mop.shaman.enhancement','rm.mop.shaman.enhancement.wowsims','rm.mop.shaman.enhancement.icyveins','rm.mop.shaman.restoration','rm.mop.shaman.restoration.hekili','rm.mop.shaman.unspecialized',
         'rm.mop.warlock.affliction','rm.mop.warlock.affliction.warcrafttavern','rm.mop.warlock.demonology','rm.mop.warlock.demonology.guide','rm.mop.warlock.destruction','rm.mop.warlock.unspecialized',
         'rm.mop.warrior.arms','rm.mop.warrior.arms.icyveins','rm.mop.warrior.fury','rm.mop.warrior.fury.icyveins','rm.mop.warrior.protection','rm.mop.warrior.unspecialized'})do wanted[id]=true end
+    -- Retail: one Blizzard Assisted premade per class for the initial specialization (levels 1-9).
+    for _,class in ipairs({'deathknight','demonhunter','druid','evoker','hunter','mage','monk','paladin','priest','rogue','shaman','warlock','warrior'})do wanted['rm.retail.'..class..'.initial']=true end
     for _,pack in ipairs(packs)do assert(wanted[pack.id],pack.id..' is unexpected or duplicated');wanted[pack.id]=nil end
     assert(not next(wanted),'reviewed starter pack missing from TOC')
 end)

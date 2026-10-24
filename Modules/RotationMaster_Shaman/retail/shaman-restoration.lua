@@ -15,8 +15,8 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local friend=all({type='LEVEL',unit='target',operator='GREATERTHAN',value=0},{type='FRIENDLY',unit='target'},negate({type='DEAD',unit='target'}))
 local grouped=all(combat(),{type='GROUP'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.shaman.restoration',revision=1,
- blocks={['retail.shaman.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.shaman.restoration',revision=2,
+ blocks={['retail.shaman.upkeep']=2},
  nameKey='Default.Retail.Shaman.Restoration.Name',descriptionKey='Default.Retail.Shaman.Restoration.Description',
  applicability={families={'retail'},actionContext='player',class='SHAMAN',specs={264},minLevel=10,maxLevel=90},
  tags={'restoration','healer','reference','icy-veins'},

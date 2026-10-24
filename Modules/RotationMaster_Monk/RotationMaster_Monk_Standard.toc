@@ -11,6 +11,7 @@
 
 bind.lua
 retail/blocks.lua
+retail/monk-initial.lua
 retail/monk-brewmaster.lua
 retail/monk-brewmaster-guide.lua
 retail/monk-windwalker.lua

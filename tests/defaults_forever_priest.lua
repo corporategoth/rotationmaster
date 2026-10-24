@@ -17,7 +17,9 @@ test('the Priest premades load, validate and declare Forever only',function()
  for _,id in ipairs({DPS,DOT,HEAL})do
   local row=assert(rows[id],id);local scope=row.applicability
   assert(row.readOnly and row.builtin and scope.families[1]=='forever'and #scope.families==1 and scope.class=='PRIEST'and scope.maxLevel==60,id)
-  assert(row.eligible,id..' not eligible on the probe Forever context')
+  local variant=id==DOT
+  assert(row.eligible==not variant,id..(variant and ' variant is not off by default' or ' not eligible on the probe Forever context'))
+  assert((row.envelope.body.disabled==true)==variant,id..' disabled flag')
  end
 end)
 test('switch by talent tree (1 Discipline, 2 Holy, 3 Shadow): damage by default; a grouped Discipline or Holy Priest without Shadowform heals',function()
@@ -31,7 +33,7 @@ test('switch by talent tree (1 Discipline, 2 Holy, 3 Shadow): damage by default;
  assert(M.switch(a,DOT)=='match','the Mobalytics variant shares the catch-all switch')
  s.known={};s.group=false;s.setTrees({0,0,0});assert(M.selected(a)==DPS,'a Priest with nothing learned still gets a premade')
 end)
-test('damage: boundaries, Shadowform, the pull and the solo emergency',function()
+test('damage: boundaries, Shadowform, the pull; no solo emergency branch (health is secret)',function()
  local a,s=priest();s.learn(unpack(shadowKit))
  s.cast=true;M.expect(a,s,DPS,nil,'stopped','casting');s.cast=false
  s.channel=true;M.expect(a,s,DPS,nil,'stopped','channelling');s.buff('player',15473);M.expect(a,s,DPS,8092,nil,'clip Mind Flay for Mind Blast in Shadowform')
@@ -39,25 +41,18 @@ test('damage: boundaries, Shadowform, the pull and the solo emergency',function(
  M.expect(a,s,DPS,15473,nil,'Shadowform when learned and off');s.buff('player',15473)
  s.combat=false;M.expect(a,s,DPS,17,nil,'solo pull: Shield');s.debuff('player',6788);M.expect(a,s,DPS,8092,nil,'then Mind Blast')
  s.known[15473]=nil;s.learn(14914);s.clearAuras();s.debuff('player',6788);M.expect(a,s,DPS,14914,nil,'no Shadowform talent: Holy Fire pull');s.combat=true
- s.clearAuras();s.health.player=30;M.expect(a,s,DPS,17,nil,'emergency: Shield');s.debuff('player',6788);M.expect(a,s,DPS,2061,nil,'emergency: Flash Heal')
- s.learn(15473);s.buff('player',15473);local r=M.expect(a,s,DPS,nil,'stopped','no heals in Shadowform');assert(r.suppressAttack)
- s.group=true;M.expect(a,s,DPS,8092,nil,'no solo emergency branch in a group')
+ s.clearAuras();s.health.player=30;M.expect(a,s,DPS,8092,nil,'health is secret: no emergency Shield or heal, the priority runs')
 end)
-test('damage: DoTs, Mind Blast gate, execute, solo wand and Shadowform filler',function()
+test('damage: DoTs, Mind Blast, solo wand and Shadowform filler',function()
  local a,s=priest(30);s.learn(585,589,8092,2944,15407,5019,1309595)
- M.expect(a,s,DPS,8092,nil,'Mind Blast on a healthy target');s.cooling(8092,6)
+ M.expect(a,s,DPS,8092,nil,'Mind Blast');s.cooling(8092,6)
  M.expect(a,s,DPS,589,nil,'own Pain');s.debuff('target',589)
  M.expect(a,s,DPS,2944,nil,'own Plague');s.debuff('target',2944)
- M.expect(a,s,DPS,15407,nil,'solo with mana: Mind Flay');s.mana.player=50
- M.expect(a,s,DPS,5019,nil,'solo low on mana: wand');s.repeatActive=true;local r=M.expect(a,s,DPS,nil,'stopped','wand running');s.repeatActive=false
- s.health.target=40;s.cooldown={};M.expect(a,s,DPS,5019,nil,'no Mind Blast on a weakened mob solo')
- s.health.target=15;M.expect(a,s,DPS,1309595,nil,'execute: Shadow Word: Death');s.cooling(1309595,10);M.expect(a,s,DPS,5019,nil,'then wand to finish')
- s.health.target=100;s.clearAuras();s.mana.player=30;s.debuff('target',589);M.expect(a,s,DPS,8092,nil,'Mind Blast');s.cooling(8092,6)
- M.expect(a,s,DPS,5019,nil,'no Plague when mana is tight before Shadowform')
- s.learn(15473);s.buff('player',15473);M.expect(a,s,DPS,2944,nil,'Shadowform makes Plague affordable');s.debuff('target',2944)
- M.expect(a,s,DPS,15407,nil,'Shadowform filler: Mind Flay');s.health.target=15;s.cooldown={};M.expect(a,s,DPS,1309595,nil,'Death in Shadowform')
- s.cooling(1309595,10);s.cooling(8092,6);M.expect(a,s,DPS,15407,nil,'no wand finish in Shadowform')
- s.health.target=100;s.moving=true;s.clearAuras();s.buff('player',15473);M.expect(a,s,DPS,589,nil,'moving: Pain')
+ M.expect(a,s,DPS,5019,nil,'solo: the wand after the DoTs (mana is secret, so no solo Mind Flay)');s.repeatActive=true;local r=M.expect(a,s,DPS,nil,'stopped','wand running');s.repeatActive=false
+ s.health.target=15;s.cooldown={};M.expect(a,s,DPS,8092,nil,'target health is secret: no execute, Mind Blast at any health');s.cooling(8092,6)
+ s.health.target=100;s.clearAuras();s.mana.player=30;s.debuff('target',589);M.expect(a,s,DPS,2944,nil,'Plague at any mana');s.debuff('target',2944)
+ s.learn(15473);s.buff('player',15473);M.expect(a,s,DPS,15407,nil,'Shadowform filler: Mind Flay')
+ s.moving=true;s.clearAuras();s.buff('player',15473);M.expect(a,s,DPS,589,nil,'moving: Pain')
 end)
 test('damage: Discipline Holy Fire into Penance, Holy Nova on packs, group filler',function()
  local a,s=priest(30);s.learn(585,589,8092,14914,402174,15237,15407);s.debuff('target',589);s.cooling(8092,6)
@@ -82,30 +77,21 @@ test('Mobalytics variant: Blast and Holy Fire only on tough mobs, DoTs then wand
  s.combat=true;s.learn(15473,15407);s.buff('player',15473);s.debuff('target',589);s.debuff('target',2944);M.expect(a,s,DOT,8092,nil,'Shadowform: Mind Blast')
  s.cooling(8092,6);M.expect(a,s,DOT,15407,nil,'Shadowform: Mind Flay')
 end)
-test('healer: pre-pull, emergency, dispels, group heals, single-target order',function()
+test('healer: pre-pull, dispels, single-target order on your target (health is secret)',function()
  local a,s=priest(50);s.learn(17,401859,139,402174,2061,527,552,596,15237,401937,2054,2060)
  s.members(100,100,100,100);s.hostile=false;s.friendly=true
  s.combat=false;M.expect(a,s,HEAL,17,nil,'pre-pull Shield');s.debuff('target',6788,{sourceUnit='player'});M.expect(a,s,HEAL,401859,nil,'Prayer of Mending')
  s.cooling(401859,8);M.expect(a,s,HEAL,139,nil,'Renew');s.combat=true;s.clearAuras();s.cooldown={}
- s.health.target=30;M.expect(a,s,HEAL,17,nil,'emergency Shield');s.debuff('target',6788);M.expect(a,s,HEAL,402174,nil,'emergency Penance')
- s.cooling(402174,8);M.expect(a,s,HEAL,2061,nil,'emergency Flash Heal');s.cooldown={};s.clearAuras();s.health.target=90
+ s.health.target=30;M.expect(a,s,HEAL,401859,nil,'no emergency branch: Prayer of Mending in combat');s.cooling(401859,8)
  s.debuff('target',1,{dispelName='Magic'});M.expect(a,s,HEAL,527,nil,'Dispel Magic');s.clearAuras()
- M.expect(a,s,HEAL,401859,nil,'Prayer of Mending in combat');s.cooling(401859,8)
- s.members(60,50,65,100);M.expect(a,s,HEAL,596,nil,'three hurt: Prayer of Healing');s.cooling(596,2)
- s.buff('player',1284536);M.expect(a,s,HEAL,15237,nil,'Holy Purpose: Holy Nova');s.clearAuras();s.cooldown={};s.cooling(401859,8);s.members(100,100,100,100)
- s.health.player=70;s.health.target=60;M.expect(a,s,HEAL,401937,nil,'both hurt: Binding Heal');s.health.player=100
- M.expect(a,s,HEAL,402174,nil,'Penance below 70%');s.cooling(402174,8)
+ s.members(60,50,65,100);s.buff('player',1284536);M.expect(a,s,HEAL,15237,nil,'Holy Purpose: Holy Nova (no Prayer of Healing: health is secret)');s.clearAuras()
+ M.expect(a,s,HEAL,402174,nil,'Penance');s.cooling(402174,8)
  M.expect(a,s,HEAL,139,nil,'Renew when missing');s.buff('target',139)
- M.expect(a,s,HEAL,2054,nil,'Heal below 70%');s.health.target=40;M.expect(a,s,HEAL,2060,nil,'Greater Heal below 50%')
- s.health.target=97;local r=M.expect(a,s,HEAL,nil,'stopped','nothing to heal');assert(r.suppressAttack)
+ M.expect(a,s,HEAL,2054,nil,'Heal as the filler (no Binding, Greater or Flash Heal)')
+ s.usable[2054]=false;local r=M.expect(a,s,HEAL,nil,'stopped','nothing castable');assert(r.suppressAttack);s.usable[2054]=nil
  s.friendly=false;s.hostile=true;s.learn(589,585);M.expect(a,s,HEAL,589,nil,'enemy: Pain')
 end)
-test('on the real restricted Forever client the Priest premades are listed but incomplete, never auto-selected',function()
- local f,s=M.new('priest',{policy='restricted'});local a=f.addon;local support=dofile('tests/fixtures/client_support.lua');support.install(f);s.learn(585)
- local rows=M.rows(a)
- for _,id in ipairs({DPS,DOT,HEAL})do
-  assert(rows[id]and rows[id].readOnly,id..' not listed');support.incomplete(rows[id],id)
- end
- assert(next(a:GetRuntimeRotations(0))==nil and M.selected(a)==nil,'a restricted client auto-selected a packaged rotation')
+test('on the real restricted Forever client every Priest premade is complete and the right one auto-selects',function()
+ M.checkRestricted('priest',{DPS,DOT,HEAL},function(s)s.learn(585)end,DPS)
 end)
 finish()

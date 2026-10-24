@@ -75,7 +75,10 @@ test('Destruction Icy Veins reference: Shadowburn, Chaos Bolt at 4, Channel Demo
  s.points=4;s.cooling(6353,30);M.expect(a,s,267,DESTROIV,116858,nil,'Chaos Bolt at 4');s.points=2
  s.cooling(152108,20);s.usable[434506]=false;M.expect(a,s,267,DESTROIV,196447,nil,'Channel Demonfire')
 end)
-test('on the real restricted Retail client the Warlock premades are listed but never auto-selected',function()
+test('on the real restricted Retail client every Warlock premade is complete and the recommended premade auto-selects',function()
  M.checkRestricted('warlock',SPECS,{1259790,105174,116858})
+end)
+test('before a specialization (initial spec 1454) a level-4 Warlock gets the Blizzard Assisted premade, complete',function()
+ M.initial('warlock',1454,'rm.retail.warlock.initial',{686})
 end)
 finish()

@@ -18,8 +18,8 @@ local fingers=any({type='BUFF',unit='player',spell=400669},{type='BUFF',unit='pl
 local frozen=any({type='DEBUFF',unit='target',spell=122,anyrank=true},{type='DEBUFF',unit='target',spell=12494})
 local barrage=any({type='BUFF',unit='player',spell=400589},{type='BUFF',unit='player',spell=1326083})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.mage.frost',revision=2,
- blocks={['forever.mage.lance-batch']=1,['forever.mage.boundaries']=1,['forever.mage.frostbolt']=1,['forever.mage.wand']=1,['forever.mage.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.mage.frost',revision=3,
+ blocks={['forever.mage.lance-batch']=1,['forever.mage.boundaries']=1,['forever.mage.frostbolt']=1,['forever.mage.wand']=2,['forever.mage.upkeep']=2},
  nameKey='Default.Forever.Mage.Frost.Name',descriptionKey='Default.Forever.Mage.Frost.Description',
  applicability={families={'forever'},actionContext='player',class='MAGE',minLevel=1,maxLevel=60},
  tags={'frost','leveling','single-target','aoe','icy-veins'},
@@ -35,7 +35,6 @@ assert(addon:RegisterDefaultRotation({
   cooldowns={
    block('frost-upkeep','forever.mage.upkeep','frost-'),
    spell('frost-cold-snap',12472,all(combat(),{type='SPELL_COOLDOWN',spell=122,operator='GREATERTHAN',value=2},{type='DISTANCE',unit='target',value=8})),
-   spell('frost-ice-block',11958,all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.2})),
   },
   rotation={
    block('frost-lance-batch','forever.mage.lance-batch','frost-'),
@@ -55,7 +54,6 @@ assert(addon:RegisterDefaultRotation({
     {id='frost-aoe-five',type='branch',conditions=engaged(5),onFalse={},onTrue={
      {id='frost-aoe-close',type='branch',conditions={type='BEYOND_MELEE',unit='target'},
       onTrue={spell('frost-aoe-blizzard',10)},onFalse={spell('frost-aoe-explosion',1449)}}}}}},
-   spell('frost-finish-fire-blast',2136,all({type='HEALTHPCT',unit='target',operator='LESSTHAN',value=.15},negate(frozen))),
    block('frost-filler','forever.mage.frostbolt','frost-'),
    block('frost-wand','forever.mage.wand','frost-'),
   },

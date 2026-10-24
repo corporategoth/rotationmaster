@@ -1,5 +1,6 @@
 -- WoW Forever Survival Hunter, two-hander in-and-out weave (Wowhead's alternative), levels 10–60:
--- a player-chosen alternative to rm.forever.hunter.survival (same switch, lower priority; RM cannot
+-- a player-chosen alternative to rm.forever.hunter.survival (same switch, lower priority, off by
+-- default; RM cannot
 -- tell a two-hander). In melee: Mongoose Bite and Raptor Strike; with Raptor Strike far from ready,
 -- Strider Kick and step out. Out of melee: shoot until Raptor Strike is nearly ready, then go back
 -- in. RM follows the range you choose; it cannot tell you to move.
@@ -17,9 +18,9 @@ local function stop(id,conditions,attack)return{id=id,type='none',suppress_attac
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function raptor(op,v)return{type='SPELL_COOLDOWN',spell=2973,operator=op,value=v}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.survival.weave',revision=3,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.survival.weave',revision=4,
  blocks={['forever.hunter.boundaries']=1,['forever.hunter.survival-pull']=2,['forever.hunter.range-shots']=1,['forever.hunter.melee-aoe']=1,
-  ['forever.hunter.pet-care']=1,['forever.hunter.burst']=1},
+  ['forever.hunter.pet-care']=2,['forever.hunter.burst']=1},
  nameKey='Default.Forever.Hunter.SurvivalWeave.Name',descriptionKey='Default.Forever.Hunter.SurvivalWeave.Description',
  applicability={families={'forever'},actionContext='player',class='HUNTER',minLevel=10,maxLevel=60},
  tags={'survival','melee','two-hander','weave','wowhead'},
@@ -27,7 +28,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.wowhead.com/forever/guide/classes/hunter/survival/level-30-dps-overview',title='Wowhead: Forever level 30 Survival Hunter (two-hand weave)',reviewedAt='2026-10-23',revision='2026-10-11'},
   {url='https://github.com/simulationcraft/simc/blob/forever/SpellDataDump/hunter.txt',title='SimulationCraft Forever spell data (1.60.1.70425)',reviewedAt='2026-10-23',revision='4dd64b4a21',notes='Spell IDs, ranks and cooldowns only.'},
  },
- body={priority=15,switch=tree(3,21),
+ body={priority=15,disabled=true,switch=tree(3,21),
   cooldowns={
    spell('weave-aspect-beast',13161,all(combat(),negate({type='BUFF',unit='player',spell=13161,anyrank=true,ownbuff=true}))),
    spell('weave-mark',1130,all(combat(),{type='ATTACKABLE',unit='target'},negate({type='DEBUFF',unit='target',spell=1130,anyrank=true}))),

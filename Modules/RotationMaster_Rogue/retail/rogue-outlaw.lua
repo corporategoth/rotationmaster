@@ -3,7 +3,7 @@
 -- readable, so the rotation is that suggestion (it handles the stealth opener, Roll the Bones,
 -- Blade Flurry and Adrenaline Rush) after the cast and no-target Stops. Reminders for what it
 -- leaves out (SimulationCraft's assisted_combat/rogue_outlaw.simc): poisons and Stealth between
--- pulls, Kick, Crimson Vial, and Vanish whenever you are out of stealth in combat.
+-- pulls, Kick, and Vanish whenever you are out of stealth in combat.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
@@ -12,8 +12,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.outlaw',revision=1,
- blocks={['retail.rogue.boundaries']=1,['retail.rogue.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.outlaw',revision=2,
+ blocks={['retail.rogue.boundaries']=1,['retail.rogue.upkeep']=2},
  nameKey='Default.Retail.Rogue.Outlaw.Name',descriptionKey='Default.Retail.Rogue.Outlaw.Description',
  applicability={families={'retail'},actionContext='player',class='ROGUE',specs={260},minLevel=10,maxLevel=90},
  tags={'outlaw','melee','assisted-combat','single-target','aoe','simulationcraft'},

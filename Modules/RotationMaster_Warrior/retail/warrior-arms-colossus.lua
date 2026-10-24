@@ -18,7 +18,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 local engaged={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.arms.colossus',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.arms.colossus',revision=3,
  blocks={['retail.warrior.boundaries']=1,['retail.warrior.upkeep']=1,['retail.warrior.charge']=2},
  nameKey='Default.Retail.Warrior.Arms.Colossus.Name',descriptionKey='Default.Retail.Warrior.Arms.Colossus.Description',
  applicability={families={'retail'},actionContext='player',class='WARRIOR',specs={71},minLevel=10,maxLevel=90},
@@ -31,7 +31,7 @@ assert(addon:RegisterDefaultRotation({
   cooldowns={
    block('retail.warrior.upkeep','armsco-'),
    spell('armsco-avatar',107574,fight),
-   spell('armsco-die-by-the-sword',118038,all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.4})),
+   spell('armsco-die-by-the-sword',118038,combat()),
   },
   rotation={
    block('retail.warrior.boundaries','armsco-'),

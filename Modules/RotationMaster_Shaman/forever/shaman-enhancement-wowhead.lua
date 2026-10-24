@@ -1,5 +1,6 @@
 -- WoW Forever Enhancement Shaman, mana-efficient (Wowhead, with Mobalytics' dungeon list):
--- a player-chosen variant. Same switch as the recommended Enhancement premade, lower priority.
+-- a player-chosen variant, off by default. Same switch as the recommended Enhancement premade,
+-- lower priority.
 -- Auto-attack carries the damage. Stormstrike only to fish for Improved Stormstrike's mana
 -- regeneration (while that buff is down), no rotational Earth Shock (shocks pull and
 -- interrupt), no Maelstrom step, and Searing Totem with Fire Nova on cooldown in groups and on
@@ -15,14 +16,14 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local stationary=negate({type='MOVING'})
 local ranged={type='BEYOND_MELEE',unit='target'}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.shaman.enhancement.wowhead',revision=2,
- blocks={['forever.shaman.manual']=1,['forever.shaman.upkeep']=1,['forever.shaman.imbue']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.shaman.enhancement.wowhead',revision=3,
+ blocks={['forever.shaman.manual']=1,['forever.shaman.upkeep']=2,['forever.shaman.imbue']=1},
  nameKey='Default.Forever.Shaman.Enhancement.Wowhead.Name',descriptionKey='Default.Forever.Shaman.Enhancement.Wowhead.Description',
  applicability={families={'forever'},actionContext='player',class='SHAMAN',minLevel=1,maxLevel=60},
  tags={'dps','melee','leveling','aoe','wowhead','mobalytics'},
  sources={{url='https://www.wowhead.com/forever/guide/classes/shaman/enhancement/level-30-dps-overview',title='Wowhead: Forever level 30 Enhancement Shaman',reviewedAt='2026-10-23',revision='2026-10-17'},
  {url='https://mobalytics.gg/wow-forever/classes/shaman-leveling-guide',title='Mobalytics: Forever Shaman leveling 1–30 (dungeon list)',reviewedAt='2026-10-23',revision='2026-10-21'}},
- body={priority=5,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=5,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
  cooldowns={block('forever.shaman.upkeep','shaman-wh-'),block('forever.shaman.imbue','shaman-wh-'),
   spell('shaman-wh-searing-totem',3599,all(combat(),negate({type='TOTEM',spell=1}),any({type='GROUP'},enemies(3))))},
  rotation={

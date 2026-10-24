@@ -1,8 +1,10 @@
 -- WoW Forever healing Priest (Discipline and Holy) in a group, levels 10–60: selected without
 -- Shadowform when Discipline or Holy is the main talent tree. Heals your current friendly target (RM suggests the spell; you pick the target):
--- shield, Prayer of Mending and Renew before the pull; Shield, Penance and Flash Heal in an
--- emergency; dispels; Prayer of Healing (and Holy Nova on Holy Purpose) when the party is hurt;
--- Binding Heal, Penance, Renew, Greater Heal, Heal. Spare time on an enemy: DoTs, Smite, wand.
+-- shield, Prayer of Mending and Renew before the pull; dispels; Prayer of Mending, Holy Nova on Holy
+-- Purpose, Penance, Renew when missing, Heal (Lesser Heal before it). Spare time on an enemy: DoTs,
+-- Smite, wand. Health and mana are secret on Forever, so the target you pick is the only signal of
+-- who needs healing; emergency heals, Prayer of Healing, Binding Heal, Greater and Flash Heal,
+-- Desperate Prayer and Dark Sacrifice are the player's call.
 local _,addon=...
 -- Talent trees in the Forever talent window's order (assumed classic: 1 Discipline, 2 Holy, 3 Shadow; verify in game).
 -- Level 10 first (no talent config below it), then the points (an empty tree is a clean no-match),
@@ -13,7 +15,6 @@ local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function known(...)local list={};for i,id in ipairs({...})do list[i]={type='SPELL_KNOWN',spell=id}end;return{type='OR',value=list}end
-local function health(unit,op,v)return{type='HEALTHPCT',unit=unit,operator=op,value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
@@ -21,10 +22,9 @@ local function dot(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,o
 local renewed={type='BUFF',unit='target',spell=139,anyrank=true,ownbuff=true}
 local unshielded=negate({type='DEBUFF',unit='target',spell=6788})
 local friendly={type='FRIENDLY',unit='target'}
-local function hurt(n)return{type='PROXIMITY_HEALTHPCT_COUNT',unit='player',distance=40,healthoperator='LESSTHAN',health=.7,operator='GREATERTHANOREQUALS',value=n}end
 local function dispel(kind)return{type='DISPELLABLE',unit='target',debufftype=kind}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.priest.healer',revision=3,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.priest.healer',revision=4,
  blocks={['forever.priest.boundaries']=1,['forever.priest.upkeep']=1,['forever.priest.wand']=1},
  nameKey='Default.Forever.Priest.Healer.Name',descriptionKey='Default.Forever.Priest.Healer.Description',
  applicability={families={'forever'},actionContext='player',class='PRIEST',minLevel=10,maxLevel=60},
@@ -42,10 +42,8 @@ assert(addon:RegisterDefaultRotation({
   cooldowns={
    block('heal-upkeep','forever.priest.upkeep','heal-'),
    spell('heal-power-infusion',10060,all({type='COMBAT',unit='player'},friendly,negate({type='ISSAME',unit='target',otherunit='player'}))),
-   spell('heal-inner-focus',14751,all({type='COMBAT',unit='player'},{type='MANAPCT',unit='player',operator='LESSTHAN',value=.7})),
-   spell('heal-desperate-prayer',13908,health('player','LESSTHAN',.3)),
-   spell('heal-divine-grace',1277370,all(friendly,health('target','LESSTHAN',.5),{type='DEBUFF',unit='target',spell=6788})),
-   spell('heal-dark-sacrifice',1277324,all({type='MANAPCT',unit='player',operator='LESSTHAN',value=.4},health('player','GREATERTHAN',.7))),
+   spell('heal-inner-focus',14751,{type='COMBAT',unit='player'}),
+   spell('heal-divine-grace',1277370,all(friendly,{type='DEBUFF',unit='target',spell=6788})),
    spell('heal-contingency-plan',1277462,all({type='COMBAT',unit='player'},friendly)),
   },
   rotation={
@@ -63,23 +61,15 @@ assert(addon:RegisterDefaultRotation({
     spell('heal-prepull-mending',401859),
     spell('heal-prepull-renew',139,negate(renewed)),
     stop('heal-prepull-stop')}},
-   {id='heal-emergency',type='branch',conditions=health('target','LESSTHAN',.35),onFalse={},onTrue={
-    spell('heal-emergency-shield',17,unshielded),
-    spell('heal-emergency-penance',402174),
-    spell('heal-emergency-flash',2061)}},
    spell('heal-dispel-magic',527,dispel('Magic')),
    spell('heal-abolish-disease',552,dispel('Disease')),
    spell('heal-cure-disease',528,all(negate(known(552)),dispel('Disease'))),
    spell('heal-mending',401859),
-   spell('heal-prayer',596,hurt(3)),
-   spell('heal-holy-nova',15237,all({type='BUFF',unit='player',spell=1284536},hurt(3))),
-   spell('heal-binding',401937,all(health('player','LESSTHAN',.8),health('target','LESSTHAN',.8),negate({type='ISSAME',unit='target',otherunit='player'}))),
-   spell('heal-penance',402174,health('target','LESSTHAN',.7)),
-   spell('heal-renew',139,all(negate(renewed),health('target','LESSTHAN',.95))),
-   spell('heal-greater',2060,health('target','LESSTHAN',.5)),
-   spell('heal-heal',2054,health('target','LESSTHAN',.7)),
-   spell('heal-lesser',2050,all(negate(known(2054)),health('target','LESSTHAN',.7))),
-   spell('heal-flash',2061,health('target','LESSTHAN',.5)),
+   spell('heal-holy-nova',15237,{type='BUFF',unit='player',spell=1284536}),
+   spell('heal-penance',402174),
+   spell('heal-renew',139,negate(renewed)),
+   spell('heal-heal',2054),
+   spell('heal-lesser',2050,negate(known(2054))),
    stop('heal-done'),
   },
  },

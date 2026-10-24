@@ -39,10 +39,10 @@ test('Shadow Icy Veins reference: pre-pull Touch, DoT upkeep, Madness, procs, Mi
  M.expect(a,s,258,SHADOWIV,8092,nil,'Mind Blast');s.cooling(8092,5)
  M.expect(a,s,258,SHADOWIV,391403,nil,'Mind Flay: Insanity during Madness');s.usable[391403]=false
  M.expect(a,s,258,SHADOWIV,1242173,nil,'Void Volley');s.usable[1242173]=false
- s.energy=70;M.expect(a,s,258,SHADOWIV,335467,nil,'Insanity 30 from full: Madness');s.energy=20
+ s.energy=70;M.expect(a,s,258,SHADOWIV,15407,nil,'Insanity is secret: no Madness before the cap');s.energy=20
  s.moving=true;M.expect(a,s,258,SHADOWIV,32379,nil,'moving: Shadow Word: Death');s.moving=false
  M.expect(a,s,258,SHADOWIV,15407,nil,'Mind Flay')
- s.health.target=15;M.expect(a,s,258,SHADOWIV,32379,nil,'Death below 20%');s.health.target=100
+ s.health.target=15;M.expect(a,s,258,SHADOWIV,15407,nil,'target health is secret: no Shadow Word: Death execute');s.health.target=100
  s.clearAuras();s.debuff('target',589,{expirationTime=110,duration=16});s.debuff('target',34914,{expirationTime=104,duration=21});M.expect(a,s,258,SHADOWIV,34914,nil,'Vampiric Touch in its last 30%')
  s.channel=true;s.cooldown={};s.channelSpell=263165;M.expect(a,s,258,SHADOWIV,nil,'stopped','Void Torrent runs out, Mind Blast or not')
  s.channelSpell=15407;M.expect(a,s,258,SHADOWIV,34914,nil,'Mind Flay with Mind Blast ready: clip')
@@ -91,7 +91,10 @@ test('Holy: Holy Words, Mending, procs on a friend; Chastise and Smite on an ene
  s.group=true;lit=M.upkeep(a,s,257,HOLY);assert(lit[200183]and lit[64843],'grouped cooldowns')
  s.hostile=false;s.friendly=true;s.health.target=20;lit=M.upkeep(a,s,257,HOLY);assert(lit[47788],'Guardian Spirit on a dying friend')
 end)
-test('on the real restricted Retail client the Priest premades are listed but never auto-selected',function()
+test('on the real restricted Retail client every Priest premade is complete and the recommended premade auto-selects',function()
  M.checkRestricted('priest',SPECS,{34914,47540,2050})
+end)
+test('before a specialization (initial spec 1452) a level-4 Priest gets the Blizzard Assisted premade, complete',function()
+ M.initial('priest',1452,'rm.retail.priest.initial',{585})
 end)
 finish()

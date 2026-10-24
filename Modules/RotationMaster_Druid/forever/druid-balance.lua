@@ -15,8 +15,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id,conditions,attack)return{id=id,type='none',suppress_attack=not attack,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.druid.balance',revision=2,
- blocks={['forever.druid.boundaries']=1,['forever.druid.upkeep']=1,['forever.druid.dots']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.druid.balance',revision=3,
+ blocks={['forever.druid.boundaries']=1,['forever.druid.upkeep']=1,['forever.druid.dots']=2},
  nameKey='Default.Forever.Druid.Balance.Name',descriptionKey='Default.Forever.Druid.Balance.Description',
  applicability={families={'forever'},actionContext='player',class='DRUID',minLevel=1,maxLevel=60},
  tags={'balance','leveling','single-target','aoe','icy-veins'},
@@ -32,14 +32,13 @@ assert(addon:RegisterDefaultRotation({
    block('bal-upkeep','forever.druid.upkeep','bal-'),
    spell('bal-moonkin',24858,negate(aura(24858))),
    spell('bal-prepull-rejuvenation',774,all(solo(),negate(combat()),{type='ATTACKABLE',unit='target'},negate(own(774)))),
-   spell('bal-natures-grasp',16689,all(combat(),solo(),{type='ISSAME',unit='targettarget',otherunit='player'},negate(own(16689)))),
+   spell('bal-natures-grasp',16689,all(combat(),solo(),{type='THREAT',unit='target',threat=3},negate(own(16689)))),
    {id='bal-barkskin',type='spell',action=22812,ranked=false,disabled=true,conditions=all({type='CHANNELING',unit='player'},{type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=3})},
-   spell('bal-innervate',29166,all(combat(),solo(),{type='MANAPCT',unit='player',operator='LESSTHAN',value=.3})),
+   spell('bal-innervate',29166,all(combat(),solo())),
   },
   rotation={
    block('bal-boundaries','forever.druid.boundaries','bal-'),
    stop('bal-target',negate({type='ATTACKABLE',unit='target'}),true),
-   spell('bal-regrowth',8936,all(solo(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.5},negate(own(8936)))),
    {id='bal-pull',type='branch',conditions=combat(),onTrue={},onFalse={spell('bal-pull-wrath',5176),stop('bal-pull-stop')}},
    {id='bal-moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
     spell('bal-moving-moonfire',8921,negate(dot(8921,true))),
@@ -52,8 +51,8 @@ assert(addon:RegisterDefaultRotation({
    spell('bal-eclipse-starfire',2912,aura(408255)),
    spell('bal-clearcasting-starfire',2912,aura(16870)),
    spell('bal-wrath',5176),
-   -- Out of mana: let the DoTs run and melee (implicit Attack); otherwise no melee advice.
-   stop('bal-done',{type='MANAPCT',unit='player',operator='GREATERTHANOREQUALS',value=.12}),
+   -- Wrath unaffordable (mana is secret on Forever; an unaffordable spell is not ready): let the
+   -- DoTs run and melee (implicit Attack).
   },
  },
 }))

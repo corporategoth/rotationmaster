@@ -4,8 +4,8 @@
 -- target: Sanctify, Serenity, Prayer of Mending, Prayer of Healing on Surge of Light, Benediction,
 -- Prayer of Healing on Lightweaver, Flash Heal on Surge of Light, Prayer of Healing in a group,
 -- Holy Nova while moving, Flash Heal. Enemy: Chastise, Holy Fire, Holy Nova while moving, Smite.
--- Reminders: Apotheosis, Divine Hymn and Halo in grouped combat, Guardian Spirit on a dying
--- friendly target, Fortitude, Desperate Prayer.
+-- Reminders: Apotheosis, Divine Hymn and Halo in grouped combat, Guardian Spirit on a friendly target
+-- (health is secret on Retail, so whether it is dying is your call), Fortitude.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
@@ -17,8 +17,8 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local friend=all({type='LEVEL',unit='target',operator='GREATERTHAN',value=0},{type='FRIENDLY',unit='target'},negate({type='DEAD',unit='target'}))
 local grouped=all(combat(),{type='GROUP'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.priest.holy',revision=1,
- blocks={['retail.priest.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.priest.holy',revision=2,
+ blocks={['retail.priest.upkeep']=2},
  nameKey='Default.Retail.Priest.Holy.Name',descriptionKey='Default.Retail.Priest.Holy.Description',
  applicability={families={'retail'},actionContext='player',class='PRIEST',specs={257},minLevel=10,maxLevel=90},
  tags={'holy','healer','reference','icy-veins'},
@@ -32,7 +32,7 @@ assert(addon:RegisterDefaultRotation({
    spell('holy-apotheosis',200183,grouped),
    spell('holy-divine-hymn',64843,grouped),
    spell('holy-halo',120644,combat()),
-   spell('holy-guardian-spirit',47788,all(combat(),friend,{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=.25})),
+   spell('holy-guardian-spirit',47788,all(combat(),friend)),
   },
   rotation={
    {id='holy-casting',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},

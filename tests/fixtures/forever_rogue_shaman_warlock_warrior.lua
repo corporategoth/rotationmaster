@@ -103,7 +103,7 @@ function M.fixture(class,options)
  e.C_Container={GetContainerNumSlots=function(bag)return bag==0 and 16 or 0 end,GetContainerItemInfo=function(bag,slot)if bag==0 then return stacks()[slot]end end}
  -- Enemies with nameplates: each entry is that enemy's native threat status for you (false = not on its table).
  e.UnitThreatSituation=function(_,unit)
-  if unit=='target'then return s.threat end
+  if unit=='target'then if s.threat~=nil then return s.threat end;if not s.exists then return nil end;return s.targettarget=='player'and 3 or 0 end
   local n=tonumber(unit:match('^nameplate(%d+)$') or '');local v=n and s.enemies[n];if v==false then return nil end;return v end
  e.IsSpellKnown=function(id)return s.known[id]==true end
  -- Forever talents (C_ClassTalents/C_Traits, as the Camelot talent frame reads them): the three classic

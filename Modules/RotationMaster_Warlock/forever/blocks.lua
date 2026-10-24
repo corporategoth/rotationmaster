@@ -14,7 +14,6 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function known(id)return{type='SPELL_KNOWN',spell=id}end
 local function buff(id)return{type='BUFF',unit='player',spell=id,anyrank=true}end
 local function own(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
-local function health(op,v)return{type='HEALTHPCT',unit='player',operator=op,value=v}end
 local function shards(op,v)return{type='CARRYING',item={6265},operator=op,value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function item(id,items,conditions)return{id=id,type='item',action=items,conditions=conditions}end
@@ -32,15 +31,15 @@ assert(addon:RegisterDefaultBlock({id='forever.warlock.boundaries',revision=1,fa
  stop('channel',{type='CHANNELING',unit='player'}),
  stop('target',negate(all({type='ATTACKABLE',unit='target'},any(combat(),negate({type='COMBAT',unit='target'}))))),
 }}))
--- Independent reminders every source shares: armor, Soul Link, pet health, the Demonology
--- sacrifice with Pact, and the weapon stone (Firestone for a Fire build, else Spellstone).
-assert(addon:RegisterDefaultBlock({id='forever.warlock.upkeep',revision=1,families={'forever'},class='WARLOCK',steps={
+-- Independent reminders every source shares: armor, Soul Link, the Demonology sacrifice with
+-- Pact, and the weapon stone (Firestone for a Fire build, else Spellstone). Health is secret on
+-- Forever, so Health Funnel is the player's call.
+assert(addon:RegisterDefaultBlock({id='forever.warlock.upkeep',revision=2,families={'forever'},class='WARLOCK',steps={
  spell('demon-armor',706,negate(any(buff(706),buff(687)))),
  spell('demon-skin',687,all(negate(known(706)),negate(any(buff(706),buff(687))))),
  spell('fel-domination',18708,all(combat(),negate({type='PET'}),any(negate(sacrificed()),pact()))),
  spell('demonic-sacrifice',18788,all({type='PET'},pact(),negate(sacrificed()))),
  spell('soul-link',19028,all({type='PET'},negate(buff(25228)))),
- spell('health-funnel',755,all({type='PET'},{type='HEALTHPCT',unit='pet',operator='LESSTHAN',value=.35},health('GREATERTHAN',.5))),
  item('firestone',firestones,all(negate({type='WEAPON'}),fire())),
  item('spellstone',spellstones,all(negate({type='WEAPON'}),negate(fire()))),
  spell('create-firestone',6366,all(negate(combat()),fire(),{type='CARRYING',item=firestones,operator='LESSTHAN',value=1})),
@@ -53,35 +52,23 @@ assert(addon:RegisterDefaultBlock({id='forever.warlock.procs',revision=1,familie
  spell('decimation',6353,buff(440873)),
  spell('demonic-brand',5676,all(any(known(1293695),known(18708)),negate(own(1293696)))),
 }}))
--- A target about to die gets no new DoTs: Drain Soul for shards, Shadowburn as the killing blow,
--- Conflagrate on Immolate, else the wand when solo; then stop.
-assert(addon:RegisterDefaultBlock({id='forever.warlock.execute',revision=1,families={'forever'},class='WARLOCK',steps={
- {id='execute',type='branch',conditions={type='HEALTHPCT',unit='target',operator='LESSTHAN',value=.2},onFalse={},onTrue={
-  spell('execute-drain-soul',1120,shards('LESSTHAN',3)),
-  spell('execute-shadowburn',17877),
-  spell('execute-conflagrate',1293817,own(348)),
-  stop('execute-wanding',{type='SPELL_AUTOREPEAT',spell=5019}),
-  spell('execute-wand',5019,negate({type='GROUP'})),
-  stop('execute-stop'),
- }},
-}}))
 -- Moving: instants only, then stop. Corruption is left out because RM cannot see whether
 -- Improved Corruption has made it instant.
-assert(addon:RegisterDefaultBlock({id='forever.warlock.moving',revision=1,families={'forever'},class='WARLOCK',steps={
+assert(addon:RegisterDefaultBlock({id='forever.warlock.moving',revision=2,families={'forever'},class='WARLOCK',steps={
  {id='moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
   spell('moving-agony',980,all(negate(own(980)),negate(own(603)),negate(own(1324473)))),
   spell('moving-siphon',18265,negate(own(18265))),
   spell('moving-conflagrate',1293817,own(348)),
   spell('moving-shadowburn',17877,shards('GREATERTHANOREQUALS',2)),
-  spell('moving-tap',1454,all({type='MANAPCT',unit='player',operator='LESSTHAN',value=.9},health('GREATERTHAN',.5))),
   stop('moving-stop'),
  }},
 }}))
--- Three or more engaged enemies: Hellfire in a group with health to spare, Rain of Fire, and
+-- Three or more engaged enemies: Hellfire in a group (health is secret on Forever, so watch your
+-- own), Rain of Fire, and
 -- Corruption and Agony on the current target; the single-target priority then continues.
-assert(addon:RegisterDefaultBlock({id='forever.warlock.aoe',revision=1,families={'forever'},class='WARLOCK',steps={
+assert(addon:RegisterDefaultBlock({id='forever.warlock.aoe',revision=2,families={'forever'},class='WARLOCK',steps={
  {id='aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
-  spell('hellfire',1949,all({type='GROUP'},health('GREATERTHAN',.5))),
+  spell('hellfire',1949,{type='GROUP'}),
   spell('rain-of-fire',5740),
   spell('aoe-corruption',172,negate(own(172))),
   spell('aoe-agony',980,all(negate(own(980)),negate(own(603)),negate(own(1324473)))),

@@ -1,8 +1,9 @@
 -- WoW Forever Restoration Druid in a group, levels 10–60, after Warcraft Tavern: heals your current
 -- friendly target (RM suggests the spell; you choose the target). Swiftmend first when a HoT is
--- on a hurt target (it no longer consumes the HoT), Wild Growth when the party is hurt, Regrowth,
--- Rejuvenation, Healing Touch. On a hostile target: DoTs and Wrath. Solo Restoration levels with
--- the Balance premade. The Icy Veins HoT-first variant is rm.forever.druid.restoration.icyveins.
+-- on the target (it no longer consumes the HoT), Wild Growth, Regrowth and Rejuvenation when they
+-- are missing, Healing Touch. Health and mana are secret on Forever, so the target you pick is the
+-- only signal of who needs healing. On a hostile target: DoTs and Wrath. Solo Restoration levels
+-- with the Balance premade. The Icy Veins HoT-first variant is rm.forever.druid.restoration.icyveins.
 local _,addon=...
 -- Talent trees in the Forever talent window's order (assumed classic: 1 Balance, 2 Feral Combat, 3 Restoration; verify in game).
 -- Level 10 first (no talent config below it), then the points (an empty tree is a clean no-match),
@@ -13,13 +14,12 @@ local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function hot(id)return{type='BUFF',unit='target',spell=id,anyrank=true,ownbuff=true}end
-local function health(op,v)return{type='HEALTHPCT',unit='target',operator=op,value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.druid.restoration',revision=2,
- blocks={['forever.druid.boundaries']=1,['forever.druid.upkeep']=1,['forever.druid.healer-upkeep']=1,['forever.druid.spare-damage']=1,['forever.druid.dots']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.druid.restoration',revision=3,
+ blocks={['forever.druid.boundaries']=1,['forever.druid.upkeep']=1,['forever.druid.healer-upkeep']=2,['forever.druid.spare-damage']=1,['forever.druid.dots']=2},
  nameKey='Default.Forever.Druid.Restoration.Name',descriptionKey='Default.Forever.Druid.Restoration.Description',
  applicability={families={'forever'},actionContext='player',class='DRUID',minLevel=10,maxLevel=60},
  tags={'restoration','healer','group','warcraft-tavern'},
@@ -35,18 +35,18 @@ assert(addon:RegisterDefaultRotation({
   cooldowns={
    block('resto-upkeep','forever.druid.upkeep','resto-'),
    block('resto-healer-upkeep','forever.druid.healer-upkeep','resto-'),
-   spell('resto-innervate',29166,all({type='COMBAT',unit='player'},{type='MANAPCT',unit='player',operator='LESSTHAN',value=.3})),
+   spell('resto-innervate',29166,{type='COMBAT',unit='player'}),
   },
   rotation={
    block('resto-boundaries','forever.druid.boundaries','resto-'),
    {id='resto-hostile',type='branch',conditions={type='ATTACKABLE',unit='target'},onFalse={},onTrue={
     block('resto-damage','forever.druid.spare-damage','resto-hostile-')}},
    stop('resto-target',negate(all({type='FRIENDLY',unit='target'},negate({type='DEAD',unit='target'})))),
-   spell('resto-swiftmend',18562,all(any(hot(774),hot(8936)),health('LESSTHAN',.7))),
-   spell('resto-wild-growth',408120,{type='PROXIMITY_HEALTHPCT_COUNT',unit='player',distance=40,healthoperator='LESSTHAN',health=.9,operator='GREATERTHANOREQUALS',value=3}),
-   spell('resto-regrowth',8936,all(health('LESSTHAN',.6),negate(hot(8936)))),
-   spell('resto-rejuvenation',774,all(negate(hot(774)),any({type='ISSAME',unit='target',otherunit='focus'},health('LESSTHAN',.95)))),
-   spell('resto-healing-touch',5185,health('LESSTHAN',.5)),
+   spell('resto-swiftmend',18562,any(hot(774),hot(8936))),
+   spell('resto-wild-growth',408120),
+   spell('resto-regrowth',8936,negate(hot(8936))),
+   spell('resto-rejuvenation',774,negate(hot(774))),
+   spell('resto-healing-touch',5185),
    stop('resto-done'),
   },
  },

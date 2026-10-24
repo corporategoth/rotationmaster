@@ -11,6 +11,7 @@
 
 bind.lua
 retail/blocks.lua
+retail/demon-hunter-initial.lua
 retail/demon-hunter-havoc.lua
 retail/demon-hunter-havoc-guide.lua
 retail/demon-hunter-vengeance.lua

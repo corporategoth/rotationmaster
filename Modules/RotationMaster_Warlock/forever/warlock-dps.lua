@@ -2,10 +2,11 @@
 -- One pack: every tree runs pet + Bane + Curse + DoTs + filler, and the tree steps are gated
 -- by talent-taught spells (Demonic Brand/Fel Domination, Decimation, Conflagrate, Incinerate,
 -- Wrack). Pull with Immolate and Agony (Destruction precasts Shadow Bolt); procs; Demonic Brand;
--- execute below 20%; instants while moving; packs; Bane of Doom on bosses else Agony; Curse of
--- the Elements in groups and on elites; Immolate, Corruption (not for Destruction in groups),
--- Siphon Life on targets that live; Conflagrate and Shadowburn; solo sustain and a
--- health-gated Wrack / Drain Life / wand filler; Incinerate or Shadow Bolt.
+-- instants while moving; packs; Bane of Doom on bosses else Agony; Curse of the Elements in
+-- groups and on elites; Immolate, Corruption (not for Destruction in groups), Siphon Life;
+-- Conflagrate and Shadowburn; a solo Wrack / Drain Life (with a drain talent) / wand filler;
+-- Incinerate or Shadow Bolt. Health and mana are secret on Forever, so the execute window, Life
+-- Tap and health-driven Drain Life are left to the player.
 -- Shared parts: Defaults/blocks/forever-warlock.lua. Left manual: sending the pet in, which
 -- demon to keep (Succubus, else Voidwalker, else Imp is only the default reminder), Curse of
 -- Recklessness/Tongues/Weakness, Fear, Healthstones, multi-dotting other targets and putting
@@ -18,8 +19,6 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function known(id)return{type='SPELL_KNOWN',spell=id}end
 local function buff(id)return{type='BUFF',unit='player',spell=id,anyrank=true}end
 local function own(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
-local function health(op,v)return{type='HEALTHPCT',unit='player',operator=op,value=v}end
-local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local function big()return any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'})end
@@ -29,9 +28,9 @@ local function pact()return all(known(19028),{type='LEVEL',unit='player',operato
 local function summon()return all(negate({type='PET'}),any(negate(combat()),buff(18708)),any(negate(sacrificed()),pact()))end
 local function ownCurse()return any(own(704),own(702),own(1714),own(18223))end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.warlock.dps',revision=2,
- blocks={['forever.warlock.boundaries']=1,['forever.warlock.upkeep']=1,['forever.warlock.procs']=1,['forever.warlock.execute']=1,
-  ['forever.warlock.moving']=1,['forever.warlock.aoe']=1,['forever.warlock.wand']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.warlock.dps',revision=3,
+ blocks={['forever.warlock.boundaries']=1,['forever.warlock.upkeep']=2,['forever.warlock.procs']=1,
+  ['forever.warlock.moving']=2,['forever.warlock.aoe']=2,['forever.warlock.wand']=1},
  nameKey='Default.Forever.Warlock.DPS.Name',descriptionKey='Default.Forever.Warlock.DPS.Description',
  applicability={families={'forever'},actionContext='player',class='WARLOCK',minLevel=1,maxLevel=60},
  tags={'dps','ranged','caster','leveling','endgame','aoe','icy-veins','wowhead','method'},
@@ -59,7 +58,6 @@ assert(addon:RegisterDefaultRotation({
   {id='warlock-pull-stop',type='none',suppress_attack=true,conditions={}},
  }},
  block('forever.warlock.procs','warlock-'),
- block('forever.warlock.execute','warlock-'),
  block('forever.warlock.moving','warlock-'),
  block('forever.warlock.aoe','warlock-'),
  spell('warlock-doom',603,all(big(),negate(havoc()))),
@@ -67,18 +65,15 @@ assert(addon:RegisterDefaultRotation({
  spell('warlock-elements',440892,all(any({type='GROUP'},big()),negate({type='DEBUFF',unit='target',spell=440892,anyrank=true}),negate(ownCurse()))),
  spell('warlock-immolate',348,negate(own(348))),
  spell('warlock-corruption',172,all(negate(own(172)),negate(all(known(1293817),{type='GROUP'})))),
- spell('warlock-siphon-life',18265,all(negate(own(18265)),any(big(),{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=20}))),
+ spell('warlock-siphon-life',18265,negate(own(18265))),
  spell('warlock-conflagrate',1293817,all(own(348),any(known(412758),{type='DEBUFF_REMAIN',unit='target',spell=348,anyrank=true,owndebuff=true,operator='LESSTHANOREQUALS',value=3}))),
  spell('warlock-shadowburn',17877,all(known(412758),{type='CARRYING',item={6265},operator='GREATERTHANOREQUALS',value=2})),
  {id='warlock-solo',type='branch',conditions={type='GROUP'},onTrue={},onFalse={
-  spell('warlock-solo-tap',1454,all(mana('LESSTHAN',.35),health('GREATERTHAN',.65))),
-  spell('warlock-solo-drain',689,health('LESSTHAN',.7)),
   spell('warlock-solo-wrack',1316697),
-  spell('warlock-solo-drain-filler',689,all(health('LESSTHAN',.9),any(known(18708),known(19028),known(18223),known(18265),known(1316697)))),
+  spell('warlock-solo-drain-filler',689,any(known(18708),known(19028),known(18223),known(18265),known(1316697))),
   block('forever.warlock.wand','warlock-solo-'),
  }},
  spell('warlock-incinerate',412758),
  spell('warlock-bolt',686),
- spell('warlock-tap',1454,health('GREATERTHAN',.4)),
  }},
 }))

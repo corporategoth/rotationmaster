@@ -9,7 +9,6 @@ local function negate(c)return{type='NOT',value=c}end
 local function buff(id)return{type='BUFF',unit='player',spell=id,anyrank=true}end
 local function known(id)return{type='SPELL_KNOWN',spell=id}end
 local function combat()return{type='COMBAT',unit='player'}end
-local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
 local fingers=any({type='BUFF',unit='player',spell=400669},{type='BUFF',unit='player',spell=400670})
@@ -29,9 +28,10 @@ assert(addon:RegisterDefaultBlock({id='forever.mage.frostbolt',revision=1,famili
  spell('frostbolt',116),
  spell('fireball',133,negate(known(116))),
 }}))
--- Solo and nearly out of mana: wand, never toggling an active wand off. Casters never melee.
-assert(addon:RegisterDefaultBlock({id='forever.mage.wand',revision=1,families={'forever'},class='MAGE',steps={
- {id='wand',type='branch',conditions=all(mana('LESSTHAN',.15),negate({type='GROUP'})),onFalse={},onTrue={
+-- Solo with no spell castable before it (mana is secret on Forever; an unaffordable spell is not
+-- ready): wand, never toggling an active wand off. Casters never melee.
+assert(addon:RegisterDefaultBlock({id='forever.mage.wand',revision=2,families={'forever'},class='MAGE',steps={
+ {id='wand',type='branch',conditions={type='GROUP'},onTrue={},onFalse={
   stop('wand-active',{type='SPELL_AUTOREPEAT',spell=5019,ranked=true}),
   spell('shoot',5019)}},
  stop('exhausted'),
@@ -50,16 +50,16 @@ assert(addon:RegisterDefaultBlock({id='forever.mage.fire-aoe',revision=1,familie
   spell('aoe-arcane-explosion',1449)}},
 }}))
 -- Independent reminders for every Mage premade. Armor: none of Frost, Ice or Mage Armor up, then
--- Ice (Frost before 30) solo and Mage Armor in a group; an armor already up is your choice.
+-- Ice (Frost before 30) solo and Mage Armor in a group; an armor already up is your choice. Mana is
+-- secret on Forever, so Evocation is the player's call.
 local bare=all(negate(buff(168)),negate(buff(7302)),negate(buff(6117)))
 local group={type='GROUP'}
-assert(addon:RegisterDefaultBlock({id='forever.mage.upkeep',revision=1,families={'forever'},class='MAGE',steps={
+assert(addon:RegisterDefaultBlock({id='forever.mage.upkeep',revision=2,families={'forever'},class='MAGE',steps={
  spell('intellect',1459,all(negate(combat()),negate(buff(1459)),negate(buff(23028)))),
  spell('mage-armor',6117,all(bare,group)),
  spell('ice-armor',7302,all(bare,any(negate(group),negate(known(6117))))),
  spell('frost-armor',168,all(bare,negate(known(7302)),any(negate(group),negate(known(6117))))),
  spell('ice-barrier',11426,negate(buff(11426))),
- spell('evocation',12051,all(combat(),mana('LESSTHAN',.15))),
  spell('counterspell',2139,{type='CAST_INTERRUPTABLE',unit='target'}),
  spell('remove-curse',475,{type='DISPELLABLE',unit='player',debufftype='Curse'}),
  spell('frost-nova',122,all(combat(),{type='DISTANCE',unit='target',value=8},negate({type='CLASSIFICATION',unit='target',value='worldboss'}))),

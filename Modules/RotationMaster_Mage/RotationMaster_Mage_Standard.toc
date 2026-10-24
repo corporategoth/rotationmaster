@@ -11,6 +11,7 @@
 
 bind.lua
 retail/blocks.lua
+retail/mage-initial.lua
 retail/mage-arcane.lua
 retail/mage-arcane-guide.lua
 retail/mage-fire.lua

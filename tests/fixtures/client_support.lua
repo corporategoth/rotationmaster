@@ -1,6 +1,7 @@
 -- Restricted clients run complete rotations like any other; a Built In that
 -- uses a condition the restricted policy keeps secret is incomplete, so it is
--- listed but never eligible. Premade fixtures model the client's policy but
+-- listed but never eligible. Every shipped Retail and Forever premade uses
+-- only conditions its client can read (S.complete). Premade fixtures model the client's policy but
 -- not every native, so tests install the real support declarations and judge
 -- a row by its policy diagnostics (a fixture-only missing native is noise).
 local S={}
@@ -48,5 +49,17 @@ function S.incomplete(row,label)
         if d.code=='unsupported-condition' and secret[d.reason] then return d end
     end
     error(label..' is incomplete without a restricted-policy condition')
+end
+-- A shipped premade on its real client: no unsupported condition at all, and
+-- eligible unless it ships disabled.
+function S.complete(row,label)
+    label=label or tostring(row and row.id)
+    assert(row,label..' not listed')
+    for _,d in ipairs(row.validation and row.validation.diagnostics or {}) do
+        assert(d.code~='unsupported-condition',label..' uses '..tostring(d.condition)..' ('..tostring(d.reason)..')')
+    end
+    if row.eligibilityReason=='disabled' then assert(not row.eligible,label);return 'disabled' end
+    assert(row.eligible,label..' not eligible: '..tostring(row.eligibilityReason))
+    return 'eligible'
 end
 return S

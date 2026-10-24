@@ -107,11 +107,15 @@ local function talentLayout(value)
     local wanted=(value.layout=='grid' or value.layout=='traits') and value.layout or 'tree'
     if current~=wanted then return 'talent-layout-mismatch' end
 end
+-- Classic talent trees: the tree layout, and Forever, whose three classic
+-- trees are trait node groups (Platform/talents.lua GetTraitTreeGroups).
+-- Retail's trait tree has no such groups.
 local function treeLayout()
     local platform=addon.Platform
     if not platform or type(platform.GetTalentLayout)~='function' then return nil end
     local current,reason=platform:GetTalentLayout()
     if current==nil then return reason or 'unsupported-talent-layout' end
+    if current=='traits' and platform:GetClientFamily()=='forever' then return nil end
     if current~='tree' then return 'talent-layout-mismatch' end
 end
 local function pointEdition()
@@ -170,6 +174,7 @@ local TOTEM={{'GetTotemInfo'}}
 local TOTEM_SPELL={{'GetNumTotemSlots'},{'GetTotemInfo'}}
 local RUNE={POLICY,{'GetRuneType'},{'GetRuneCooldown'}}
 local ITEM_LOOKUP={{'C_Item.GetItemCount','GetItemCount'}}
+local TREES={'GetNumTalentTabs','C_Traits.GetGroupDisplayInfoByTreeID'}
 
 local requirements={
     SELF_LEVEL={FAMILY,UNIT,{'UnitLevel'}},
@@ -244,7 +249,7 @@ local requirements={
     ASSISTED_SUGGESTION={{'C_AssistedCombat.GetNextCastSpell'}},
     ASSISTED_ROTATION_SPELL={{'C_AssistedCombat.GetRotationSpells'}},
     ASSISTED_AVAILABLE={{'C_AssistedCombat.IsAvailable'}},
-    TALENT={talentLayout},TALENT_TREE_POINTS={treeLayout,{'GetNumTalentTabs'}},PRIMARY_TALENT_TREE={treeLayout,{'GetNumTalentTabs'}},
+    TALENT={talentLayout},TALENT_TREE_POINTS={treeLayout,TREES},PRIMARY_TALENT_TREE={treeLayout,TREES},
     DISTANCE={FAMILY,UNIT},
     DISTANCE_COUNT={POLICY,UNIT,{'UnitIsEnemy'},{'UnitGUID'},{'C_CVar.GetCVar','GetCVar'}},
     RUNE_ENGRAVED={{'C_Engraving.IsEngravingEnabled'}},

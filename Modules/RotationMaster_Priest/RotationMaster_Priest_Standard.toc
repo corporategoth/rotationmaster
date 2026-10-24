@@ -11,6 +11,7 @@
 
 bind.lua
 retail/blocks.lua
+retail/priest-initial.lua
 retail/priest-shadow.lua
 retail/priest-shadow-icyveins.lua
 retail/priest-discipline.lua

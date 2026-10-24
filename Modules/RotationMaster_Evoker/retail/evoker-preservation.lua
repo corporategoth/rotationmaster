@@ -10,8 +10,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.preservation',revision=1,
- blocks={['retail.evoker.boundaries']=1,['retail.evoker.utility']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.preservation',revision=2,
+ blocks={['retail.evoker.boundaries']=1,['retail.evoker.utility']=2},
  nameKey='Default.Retail.Evoker.Preservation.Name',descriptionKey='Default.Retail.Evoker.Preservation.Description',
  applicability={families={'retail'},actionContext='player',class='EVOKER',specs={1468},minLevel=10,maxLevel=90},
  tags={'preservation','healer','reference','icy-veins'},

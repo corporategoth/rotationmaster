@@ -18,8 +18,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local big={type='OR',value={{type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'}}}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.rogue.dps',revision=1,
- blocks={['forever.rogue.boundaries']=1,['forever.rogue.stealth-fallback']=1,['forever.rogue.reactive']=1,['forever.rogue.expose-armor']=1,['forever.rogue.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.rogue.dps',revision=2,
+ blocks={['forever.rogue.boundaries']=1,['forever.rogue.stealth-fallback']=2,['forever.rogue.reactive']=1,['forever.rogue.expose-armor']=1,['forever.rogue.upkeep']=2},
  nameKey='Default.Forever.Rogue.DPS.Name',descriptionKey='Default.Forever.Rogue.DPS.Description',
  applicability={families={'forever'},actionContext='player',class='ROGUE',minLevel=1,maxLevel=60},
  tags={'dps','melee','leveling','endgame','icy-veins','wowhead','warcraft-tavern'},
@@ -59,7 +59,7 @@ assert(addon:RegisterDefaultRotation({
   {id='rogue-mutilate-pool',type='none',suppress_attack=false,conditions={}},
  }},
  spell('rogue-hemorrhage',16511),
- spell('rogue-backstab',53,negate({type='ISSAME',unit='targettarget',otherunit='player'})),
+ spell('rogue-backstab',53,negate({type='THREAT',unit='target',threat=3})),
  spell('rogue-sinister',1752),
  }},
 }))

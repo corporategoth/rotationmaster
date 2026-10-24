@@ -2,8 +2,9 @@
 -- reference): Explosive Shot, Volley and Trueshot on cooldown, Precise Shots spent before the next
 -- Aimed Shot, Aimed Shot in Trueshot or before it caps. Dark Ranger: Black Arrow on Precise Shots and
 -- Wailing Arrow; Sentinel: Moonlight Chakram before its window ends. Three or more enemies with Trick
--- Shots: Multi-Shot to apply it, then Rapid Fire and Aimed Shot while it lasts. Disabled: procs,
--- charges and Focus are secret in Midnight combat.
+-- Shots: Multi-Shot to apply it, then Rapid Fire and Aimed Shot while it lasts (Focus is secret on
+-- Retail, so the 70-Focus Multi-Shot dump is left out). Disabled: procs and charges are secret in
+-- Midnight combat.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
@@ -22,8 +23,8 @@ local trick=buff(257622)
 local aimedCap={type='SPELL_CHARGES',spell=AIMED,operator='GREATERTHANOREQUALS',value=2}
 local hydra=all(precise,engaged(2),known(470945))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.marksmanship.guide',revision=2,
- blocks={['retail.hunter.boundaries']=1,['retail.hunter.utility']=1,['retail.hunter.mark']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.marksmanship.guide',revision=3,
+ blocks={['retail.hunter.boundaries']=1,['retail.hunter.utility']=2,['retail.hunter.mark']=1},
  nameKey='Default.Retail.Hunter.MarksmanshipGuide.Name',descriptionKey='Default.Retail.Hunter.MarksmanshipGuide.Description',
  applicability={families={'retail'},actionContext='player',class='HUNTER',specs={254},minLevel=10,maxLevel=90},
  tags={'marksmanship','ranged','reference','simulationcraft','icy-veins'},
@@ -44,7 +45,6 @@ assert(addon:RegisterDefaultRotation({
     spell('mmguide-aoe-trick',MULTI,negate(trick)),
     spell('mmguide-aoe-trueshot',TRUESHOT),
     spell('mmguide-aoe-rapid',RAPID,trick),spell('mmguide-aoe-aimed',AIMED,trick),
-    spell('mmguide-aoe-multi',MULTI,{type='POWER',unit='player',operator='GREATERTHANOREQUALS',value=70}),
     spell('mmguide-aoe-steady',STEADY),stop('mmguide-aoe-stop')}},
    {id='mmguide-dark-ranger',type='branch',conditions=known(BLACK),
     onTrue={

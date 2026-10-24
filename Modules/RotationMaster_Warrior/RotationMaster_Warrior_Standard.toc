@@ -11,6 +11,7 @@
 
 bind.lua
 retail/blocks.lua
+retail/warrior-initial.lua
 retail/warrior-arms.lua
 retail/warrior-arms-slayer.lua
 retail/warrior-arms-colossus.lua

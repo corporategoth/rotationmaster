@@ -13,8 +13,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.destruction',revision=1,
- blocks={['retail.warlock.boundaries']=1,['retail.warlock.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.destruction',revision=2,
+ blocks={['retail.warlock.boundaries']=1,['retail.warlock.upkeep']=2},
  nameKey='Default.Retail.Warlock.Destruction.Name',descriptionKey='Default.Retail.Warlock.Destruction.Description',
  applicability={families={'retail'},actionContext='player',class='WARLOCK',specs={267},minLevel=10,maxLevel=90},
  tags={'destruction','ranged','assisted-combat','single-target','aoe','simulationcraft'},

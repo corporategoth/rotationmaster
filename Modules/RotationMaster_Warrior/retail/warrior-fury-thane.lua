@@ -1,7 +1,8 @@
 -- Retail (Midnight) Fury Warrior, Mountain Thane (SimulationCraft's thane list, Icy Veins): the
--- optimal reference, disabled by default because rage, Enrage, Recklessness, Avatar and Thunder
--- Blast stacks are hidden in Midnight combat. Charge to open. Whirlwind for its buff on two or
--- more engaged enemies; Rampage when Enrage is ending or at 100 rage; Bloodbath in Recklessness;
+-- optimal reference, disabled by default because Enrage, Recklessness, Avatar and Thunder Blast
+-- stacks are hidden in Midnight combat (rage is secret on Retail, so there is no 100-rage Rampage).
+-- Charge to open. Whirlwind for its buff on two or more engaged enemies; Rampage when Enrage is
+-- missing or ending; Bloodbath in Recklessness;
 -- Thunder Blast at two stacks; Crushing Blow; Bloodbath; Rampage in Recklessness; Thunder Blast
 -- in Avatar; Raging Blow; Thunder Blast; Rampage; Bloodthirst; Execute; Odyn's Fury; Thunder Clap;
 -- Whirlwind. Reminders: Recklessness, Avatar, Enraged Regeneration.
@@ -15,7 +16,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.fury.thane',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.fury.thane',revision=3,
  blocks={['retail.warrior.boundaries']=1,['retail.warrior.upkeep']=1,['retail.warrior.charge']=2},
  nameKey='Default.Retail.Warrior.Fury.Thane.Name',descriptionKey='Default.Retail.Warrior.Fury.Thane.Description',
  applicability={families={'retail'},actionContext='player',class='WARRIOR',specs={72},minLevel=10,maxLevel=90},
@@ -29,13 +30,13 @@ assert(addon:RegisterDefaultRotation({
    block('retail.warrior.upkeep','furyth-'),
    spell('furyth-recklessness',1719,fight),
    spell('furyth-avatar',107574,fight),
-   spell('furyth-enraged-regeneration',184364,all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.4})),
+   spell('furyth-enraged-regeneration',184364,combat()),
   },
   rotation={
    block('retail.warrior.boundaries','furyth-'),
    block('retail.warrior.charge','furyth-'),
    spell('furyth-whirlwind-buff',190411,all({type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2},negate(own(85739)))),
-   spell('furyth-rampage-enrage',184367,any(negate(own(184362)),{type='BUFF_REMAIN',unit='player',spell=184362,ownbuff=true,operator='LESSTHAN',value=1.5},{type='POWER',unit='player',operator='GREATERTHANOREQUALS',value=100})),
+   spell('furyth-rampage-enrage',184367,any(negate(own(184362)),{type='BUFF_REMAIN',unit='player',spell=184362,ownbuff=true,operator='LESSTHAN',value=1.5})),
    spell('furyth-reckless-bloodbath',335096,own(1719)),
    spell('furyth-thunder-blast-stacked',435222,{type='BUFF_STACKS',unit='player',spell=435615,ownbuff=true,operator='GREATERTHANOREQUALS',value=2}),
    spell('furyth-crushing-blow',335097),

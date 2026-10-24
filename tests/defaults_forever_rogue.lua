@@ -24,18 +24,20 @@ test('the recommended premade auto-selects at every level; Subtlety variants nee
  M.node(f,s,105745,2);assert(M.switches(f,WH)and M.selected(f,s)==DPS,'Dirty Deeds (trait node) with Premeditation: the Garrote build; the default still wins')
  s.known[14183]=false;assert(not M.switches(f,WH),'the Garrote build also needs Premeditation');s.known[14183]=true
  M.trees(f,s,{31,0,20});assert(not M.switches(f,TAV),'20 Subtlety points under another main tree');M.trees(f,s,{0,0,21})
- local a=f.addon;assert(a:SetDefaultRotationEnabled(DPS,false));assert(M.selected(f,s)==TAV);assert(a:SetDefaultRotationEnabled(TAV,false));assert(M.selected(f,s)==WH)
+ local a=f.addon;assert(M.body(a,TAV).disabled==true and M.body(a,WH).disabled==true and not M.body(a,DPS).disabled,'player-chosen variants ship off by default')
+ assert(a:SetDefaultRotationEnabled(TAV,true));assert(M.selected(f,s)==DPS,'an enabled variant still ranks below the recommended premade')
+ assert(a:SetDefaultRotationEnabled(DPS,false));assert(M.selected(f,s)==TAV);assert(a:SetDefaultRotationEnabled(WH,true));assert(a:SetDefaultRotationEnabled(TAV,false));assert(M.selected(f,s)==WH)
  s.level=24;assert(M.selected(f,s)==nil,'below 25 only the recommended premade applies')
  for _,src in ipairs(a:GetDefaultRotation(TAV).envelope.sources)do assert(not src.url:find('wowhead'),src.url)end
  -- The variant's priority sources are Wowhead's; SimulationCraft only supplies the talent node IDs.
  for _,src in ipairs(a:GetDefaultRotation(WH).envelope.sources)do assert(src.url:find('wowhead')or src.url:find('simulationcraft/simc/blob/[%x]+/engine/dbc/generated/trait_data'),src.url)end
 end)
 
-test('on the real restricted Forever client the premades are listed but incomplete, never auto-selected',function()
- local f,s=M.fixture('ROGUE',{restricted=true});local support=dofile('tests/fixtures/client_support.lua');support.install(f);M.know(s,6603,1752,2098,16511,14183)
+test('on the real restricted Forever client every premade is complete and the recommended one runs',function()
+ local f,s=M.fixture('ROGUE',{restricted=true});local support=dofile('tests/fixtures/client_support.lua');support.install(f,{stubNatives=true});M.know(s,6603,1752,2098,16511,14183)
  local rows=f.addon:ListDefaultRotations(0);assert(#rows==3)
- for _,row in ipairs(rows)do assert(row.readOnly and row.builtin,row.id);support.incomplete(row)end
- local poll,selected=M.publisher(f,s);poll();assert(selected()==nil,'a restricted client never runs a packaged rotation')
+ for _,row in ipairs(rows)do assert(row.readOnly and row.builtin,row.id);support.complete(row)end
+ assert(M.selected(f,s)==DPS,'the recommended premade does not auto-select on the restricted client')
 end)
 
 test('casts, channels and a missing target stop with Attack suppressed',function()
@@ -115,7 +117,7 @@ test('reminders: poisons per weapon, Kick, Cold Blood by spec, Evasion solo, Fei
  s.points=4;assert(not M.upkeep(f,s,DPS)['rogue-cold-blood']);s.points=5;assert(M.upkeep(f,s,DPS)['rogue-cold-blood']==14177,'Eviscerate at five')
  M.know(s,1310703);assert(not M.upkeep(f,s,DPS)['rogue-cold-blood']);s.points=2;assert(M.upkeep(f,s,DPS)['rogue-cold-blood'],'Venom known: empower a Mutilate')
  s.health=40;assert(M.upkeep(f,s,DPS)['rogue-evasion']==5277);s.group=true;assert(not M.upkeep(f,s,DPS)['rogue-evasion'])
- assert(not M.upkeep(f,s,DPS)['rogue-feint']);s.threat=1;assert(M.upkeep(f,s,DPS)['rogue-feint']==1966)
+ s.threat=0;assert(not M.upkeep(f,s,DPS)['rogue-feint']);s.threat=1;assert(M.upkeep(f,s,DPS)['rogue-feint']==1966)
  s.power=20;assert(M.upkeep(f,s,DPS)['rogue-thistle-tea']);s.buffs={{id=13750}};assert(not M.upkeep(f,s,DPS)['rogue-thistle-tea'])
  assert(not M.upkeep(f,s,DPS)['rogue-preparation']);s.cooldown[1856]={startTime=90,duration=300,isEnabled=true,modRate=1}
  assert(not M.upkeep(f,s,DPS)['rogue-preparation'],'Evasion is still ready');s.cooldown[5277]={startTime=90,duration=300,isEnabled=true,modRate=1}
