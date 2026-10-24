@@ -939,6 +939,7 @@ L["Automatic switching tries: %s. Higher numbers are tried first; your own rotat
 L["Automatic switching would choose: %s"] = true
 L["%d Built In disabled: %s"] = true
 L["Disabled by you"] = true
+L["Every rotation has a handle, shown beside its priority: type /rm set <handle> to choose it (any case), /rm set auto to go back to automatic switching, and /rm list to see every handle. A Built In's handle is fixed; yours is made from its name until you change it."] = true
 L["you switched it off (turn it back on in Rotations)"] = true
 L["it ships disabled, an alternative to the recommended one (turn it on in Rotations)"] = true
 L["Handle: %s (/rm set %s)"] = true

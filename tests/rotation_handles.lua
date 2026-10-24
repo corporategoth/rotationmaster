@@ -104,15 +104,21 @@ end)
 test('copies and imports carry their own handle; exports carry the handle',function()
     local f=T.new{level=10,specIndex=1};local a=f.addon;local data=a.RotationData
     local copyKey=assert(a:CloneDefaultRotation(268,'rm.retail.monk.brewmaster','My Brew'))
-    assert(a:GetEditableRotation(268,copyKey).handle=='my-brew','copy handle '..tostring(a:GetEditableRotation(268,copyKey).handle))
-    local exported=assert(a:GetRotationExportData(268,copyKey));assert((exported.body or exported).handle=='my-brew','export lost the handle')
-    -- Importing it again: the handle is taken here, so the import gets a free one.
-    local session=data.NewImportSession({Decode=function(_,v) return {kind=exported.format=='RotationMaster' and 'envelope' or 'legacy',original=v,value=data.CopyData(exported)} end},a:GetImportValidationOptions())
-    local candidate=assert(session:Stage('copied'))
-    local imported=assert(a:ApplyRotationImport(session,candidate.token,268,'My Brew again'))
-    local importedKey=type(imported)=='table' and a:GetScopedRotationCoordinator():Key(imported) or imported
-    local handle=a:GetEditableRotation(268,importedKey).handle
-    assert(handle and handle~='my-brew' and handle:find('^my%-brew'),'imported handle '..tostring(handle))
+    assert(a:GetEditableRotation(268,copyKey).handle==nil and a:GetRotationHandle(268,a:GetScopedRotationCoordinator():Key(a:ResolveRotationReference(268,copyKey)))=='my-brew','copy handle')
+    -- A rotation with a stored handle exports it.
+    local key=custom(f,268,'Burst',{handle='burst'})
+    local exported=assert(a:GetRotationExportData(268,key));assert((exported.body or exported).handle=='burst','export lost the handle')
+    local function import(name)
+        local session=data.NewImportSession({Decode=function(_,v) return {kind=exported.format=='RotationMaster' and 'envelope' or 'legacy',original=v,value=data.CopyData(exported)} end},a:GetImportValidationOptions())
+        local candidate=assert(session:Stage('copied'))
+        local imported=assert(a:ApplyRotationImport(session,candidate.token,268,name))
+        return a:GetEditableRotation(268,imported)
+    end
+    -- Importing it here: burst is taken, so the import's handle comes from its name.
+    local body=import('Burst again');assert(body.handle==nil,'a taken imported handle was kept: '..tostring(body.handle))
+    -- In another profile it is free and kept.
+    a.db:SetProfile('Other')
+    body=import('Burst');assert(body.handle=='burst','a free imported handle was dropped: '..tostring(body.handle))
 end)
 
 finish()

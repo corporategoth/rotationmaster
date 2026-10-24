@@ -597,11 +597,11 @@ function addon:BindRotationProfile()
                 legacyValid=replacement.valid
             end
         end
-        -- An imported handle is kept when it is free here; otherwise (or when
-        -- it has none) the rotation gets one made from its name.
-        if owner.CheckRotationHandle and owner.NewRotationHandle then
+        -- An imported handle is kept when it is free here; a taken one is
+        -- dropped, so the handle is made from the rotation's name instead.
+        if body.handle~=nil and owner.CheckRotationHandle then
             local except=reference and keyFor(reference) or nil
-            if body.handle==nil or owner:CheckRotationHandle(number,except,body.handle) then body.handle=owner:NewRotationHandle(number,body.handle or name,except) end
+            if owner:CheckRotationHandle(number,except,body.handle) then body.handle=nil end
         end
         local allocate,allocationReason=self:Allocator();if not allocate then return nil,allocationReason end
         local id=reference and reference.address.id or allocate();if not id then return nil,'id-collision' end
@@ -660,8 +660,9 @@ function addon:BindRotationProfile()
         if scope~='class' and scope~='character' then return nil,'invalid-owner-scope' end
         if scope=='character' and not c.character then return nil,'missing-owner-context' end
         local target={kind='custom',address={scope=scope,class=c.class,owner=scope=='class' and c.class or c.character,spec=number,id=id}}
-        -- A copy gets its own handle, never its source's.
-        if type(copiedRecord.body)=='table' and owner.NewRotationHandle then copiedRecord.body.handle=owner:NewRotationHandle(number,name) end
+        -- A copy never keeps its source's handle; until you set one, its
+        -- handle is made from its new name (ListRotationHandles).
+        if type(copiedRecord.body)=='table' then copiedRecord.body.handle=nil end
         local saved,commitReason=self:Commit(target,nil,copiedRecord,scope);if not saved then return nil,commitReason end
         return id,nil,saved
     end
