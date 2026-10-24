@@ -456,9 +456,12 @@ local function observeActionContext(read)
     local vehicle=read(UnitHasVehicleUI,"player")
     if vehicle==nil then vehicle=read(UnitInVehicle,"player") end
     if C_PetBattles and read(C_PetBattles.IsInBattle) then return "petbattle" end
-    if vehicle or read(HasVehicleActionBar) then return "vehicle" end
-    if read(HasOverrideActionBar) then return "override" end
-    if read(IsPossessBarVisible) then return "possession" end
+    -- Retail 12.0 keeps these bar queries in C_ActionBar; the globals exist
+    -- there only behind the loadDeprecationFallbacks CVar.
+    local bars=type(C_ActionBar)=="table" and C_ActionBar or nil
+    if vehicle or read(bars and bars.HasVehicleActionBar or HasVehicleActionBar) then return "vehicle" end
+    if read(bars and bars.HasOverrideActionBar or HasOverrideActionBar) then return "override" end
+    if read(bars and bars.IsPossessBarVisible or IsPossessBarVisible) then return "possession" end
     return "player"
 end
 -- Fresh observation for the event-driven cache in main.lua; never polled.
