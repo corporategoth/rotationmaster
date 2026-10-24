@@ -84,6 +84,7 @@ test('switch overlap: identical, subsumed and live overlaps within a tier, ties 
     assert(a:CompareSwitchRegions(region({type='SPECIALIZATION',spec=268}),region({type='AND',value={{type='SPECIALIZATION',spec=270},level(10)}}))==nil)
     assert(a:CompareSwitchRegions(region({type='LEVEL',unit='player',operator='LESSTHAN',value=10}),region(level(10)))==nil,'disjoint level ranges overlap')
     assert(a:CompareSwitchRegions(region({type='COMBAT',unit='player'}),region({type='MOVING'}))==nil,'unrelated conditions claimed to overlap')
+    assert(a:CompareSwitchRegions(region(level(1),{rulesets={'seasonal'}}),region(level(1),{rulesets={'hardcore'}}))==nil,'different rulesets overlap')
     -- Built Ins: only Brewmaster is on for 268, so nothing overlaps; turning the guide on overlaps identically.
     a:UpdateAutoSwitch();assert(next(a:GetSwitchOverlaps(268))==nil)
     assert(a:SetDefaultRotationEnabled('rm.retail.monk.brewmaster.guide',true));a:UpdateAutoSwitch()

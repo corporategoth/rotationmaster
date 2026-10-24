@@ -416,7 +416,7 @@ local function chooseManualRotation(self,id,change,remember)
         if not activeObjectCall(self,change,AceEvent,'SendMessage','ROTATIONMASTER_ROTATION',id,name) then return nil end
     else self.manualRotation=true end
     if remember then
-        local named,name=activeValue(self,change,'GetRotationName',id)
+        local named,name=activeValue(self,change,self.GetRotationLabel and 'GetRotationLabel' or 'GetRotationName',id)
         if not named or not activeCall(self,change,'info',L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO],name) then return nil end
         local checked,valid=activeValue(self,change,'rotationValidConditions',body,self.currentSpec)
         if not checked then return nil end
@@ -503,6 +503,9 @@ function addon:HandleCommand(str)
     elseif cmd == "why" then
         self:ShowRotationEligibilityReport()
 
+    elseif cmd == "list" and self.ShowRotationHandleReport then
+        self:ShowRotationHandleReport()
+
     elseif cmd == "debug" and self.HandleDebugCommand then
         self:HandleDebugCommand(string.sub(str,npos))
 
@@ -548,8 +551,25 @@ function addon:HandleCommand(str)
                 self:WarnRotationRefusal(DEFAULT)
             end
         else
+            local rows=runtimeRows(self,self.currentSpec)
+            if not activeChangeCurrent(self,change) then return end
+            -- A handle first (case-insensitive, among selectable rotations),
+            -- then the exact name, as before.
+            if self.ResolveRotationHandle then
+                local key,_,_,ambiguous=self:ResolveRotationHandle(self.currentSpec,name,rows)
+                if not activeChangeCurrent(self,change) then return end
+                if key then
+                    if not chooseManualRotation(self,key,change,true) and activeChangeCurrent(self,change) then self:WarnRotationRefusal(key) end
+                    return
+                end
+                if ambiguous then self:warn(L['More than one rotation uses the handle %s. Give one of them another handle in Rotations.'],name);return end
+                -- A handle of a rotation that cannot be selected now says why.
+                local named,entry=self:ResolveRotationHandle(self.currentSpec,name,nil)
+                if not activeChangeCurrent(self,change) then return end
+                if named and entry then self:warn(L["Rotation %s cannot be selected."],string.format('%s [%s]',entry.name,entry.handle));self:WarnRotationRefusal(named);return end
+            end
             local matches={}
-            for id,rot in pairs(runtimeRows(self,self.currentSpec)) do if rot.name==name then matches[#matches+1]=id end end
+            for id,rot in pairs(rows) do if rot.name==name then matches[#matches+1]=id end end
             if not activeChangeCurrent(self,change) then return end
             if #matches>1 then self:warn(L['More than one rotation is named %s. Select its Class or This character entry in the rotation browser.'],name);return end
             if #matches==1 then
@@ -565,6 +585,10 @@ function addon:HandleCommand(str)
                 end
             end
             self:warn(L["Could not find rotation named " .. color.WHITE .. "%s" .. color.WARN .. " for your current specialization."],name)
+            if self.ResolveRotationHandle then
+                local selectable=self:ListSelectableHandles(self.currentSpec,rows)
+                if selectable and #selectable>0 then self:print(L['Handles you can use now: %s (or auto). /rm list shows every rotation.'],table.concat(selectable,', ')) end
+            end
         end
     elseif cmd == "check" then
         addon:print(L["Validating database integrity"])
@@ -802,11 +826,13 @@ function minimapInitialize()
     do
         for id, rot in pairs(runtimeRows(addon,addon.currentSpec)) do
             if id ~= DEFAULT then
-                info.text, info.arg1, info.checked = rot.name, id, (addon.manualRotation == true and addon.currentRotation == id)
+                local handle=addon.GetRotationHandle and addon:GetRotationHandle(addon.currentSpec,id)
+                local label=handle and string.format('%s [%s]',tostring(rot.name),handle) or rot.name
+                info.text, info.arg1, info.checked = label, id, (addon.manualRotation == true and addon.currentRotation == id)
                 -- Built Ins are told apart by colour; the tooltip says so.
                 info.tooltipTitle,info.tooltipText,info.tooltipOnButton=nil,nil,nil
                 if addon:IsDefaultRuntimeRotation(addon.currentSpec,id) then
-                    info.text="|cff5bc0eb"..tostring(rot.name).."|r"
+                    info.text="|cff5bc0eb"..tostring(label).."|r"
                     info.tooltipTitle,info.tooltipText,info.tooltipOnButton=rot.name,L["Built In · read-only"],true
                 end
                 UIDropDownMenu_AddButton(info)
@@ -847,7 +873,7 @@ function DataBroker.OnTooltipShow(GameTooltip)
     GameTooltip:AddLine(" ")
     if addon.currentRotation ~= nil then
         GameTooltip:AddLine(L["Current Rotation"], 0.55, 0.78, 0.33, 1)
-        GameTooltip:AddLine(addon:GetRotationName(addon.currentRotation), 1, 1, 1)
+        GameTooltip:AddLine(addon.GetRotationLabel and addon:GetRotationLabel(addon.currentRotation) or addon:GetRotationName(addon.currentRotation), 1, 1, 1)
     else
         GameTooltip:AddLine(L["Battle rotation disabled"], 1, 0, 0, 1)
     end
@@ -1129,7 +1155,10 @@ function addon:SwitchRotation()
             if not activeCall(self,change,'EnableRotationTimer') or not current() then return end
             if not activeBroker(addon,change,DataBroker,name) then return end
             if not current() then return end
-            if not activeCall(self,change,'info',L["Active rotation automatically switched to " .. color.WHITE .. "%s" .. color.INFO],name) then return end
+            local label=name
+            if self.GetRotationLabel then local labelled,value=activeValue(self,change,'GetRotationLabel',newRotation,selectedSpec);if not labelled then return end;label=value or name end
+            if not current() then return end
+            if not activeCall(self,change,'info',L["Active rotation automatically switched to " .. color.WHITE .. "%s" .. color.INFO],label) then return end
             if not current() then return end
             if not activeObjectCall(self,change,AceEvent,'SendMessage',"ROTATIONMASTER_ROTATION",self.currentRotation,name) then return end
         end

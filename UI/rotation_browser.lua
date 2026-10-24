@@ -175,6 +175,8 @@ local function create(parent)
         if blockedText then lines[#lines+1]=blockedText end
         if disabledText then lines[#lines+1]=disabledText end
         if overlapText then lines[#lines+1]=overlapText end
+        local handle=self.handles and self.handles[key]
+        if handle then lines[#lines+1]=string.format(L['Handle: %s (/rm set %s)'],handle,handle) end
         if not entry.fallback then lines[#lines+1]=L['Higher numbers are tried first; your own rotations are always tried before Built Ins.'] end
         control.tooltip=#lines>0 and table.concat(lines,'\n\n') or nil
         local function requestValid() return browser.active and browser.serial==serial and browser.profile==profile and profile==addon.db.profile and browser.spec==spec and browser.navigationRevision==navigation and browser.rowsByKey[key]~=nil end
@@ -255,6 +257,8 @@ local function create(parent)
             return tostring(a.key)<tostring(b.key)
         end)
         self.overlaps=self.spec==addon.currentSpec and addon.GetSwitchOverlaps and addon:GetSwitchOverlaps(self.spec) or {}
+        self.handles={}
+        if addon.ListRotationHandles then for _,entry in ipairs(addon:ListRotationHandles(self.spec,all)) do self.handles[entry.key]=entry.handle end end
         local tags,seen={},{};self.tagRevision=(self.tagRevision or 0)+1
         for _,entry in ipairs(all) do
             for _,tag in ipairs(entry.tags or {}) do local canonical=tag:lower();if not seen[canonical] then tags[#tags+1]=tag;seen[canonical]=true end end

@@ -759,6 +759,35 @@ function addon:SetDefaultRotationEnabled(id,value)
     end
     return saved,reason
 end
+-- A Built In's handle: its pack's explicit body.handle, else its id without
+-- the rm.<edition>.<class>. prefix, dots as dashes (rm.retail.monk.brewmaster
+-- .guide -> brewmaster-guide). Unique among the packs registered here; a
+-- clash takes the edition, then a number, as a suffix.
+local handleCache,handleVersion
+local function builtinHandles()
+    if handleVersion==definitionVersion and handleCache then return handleCache end
+    local ids={};for id in pairs(definitions) do ids[#ids+1]=id end;table.sort(ids)
+    local byId,used={},{}
+    for _,id in ipairs(ids) do
+        local definition=definitions[id]
+        local scope=plainTable(definition.applicability) and definition.applicability or {}
+        local group=(type(scope.families)=='table' and table.concat(scope.families,'+') or '')..':'..tostring(scope.class)
+        used[group]=used[group] or {}
+        local explicit=plainTable(definition.body) and data.NormalizeRotationHandle(definition.body.handle)
+        local rest=id:match('^rm%.[^.]+%.[^.]+%.(.+)$') or id
+        local handle=explicit or data.NormalizeRotationHandle((rest:gsub('%.','-'))) or data.SlugRotationHandle(rest)
+        if used[group][handle] then
+            local edition=type(scope.families)=='table' and scope.families[1] or 'pack'
+            local candidate=data.SlugRotationHandle(handle..'-'..edition);local n=2
+            while used[group][candidate] do candidate=data.SlugRotationHandle(handle..'-'..n);n=n+1 end
+            handle=candidate
+        end
+        used[group][handle]=true;byId[id]=handle
+    end
+    handleCache,handleVersion=byId,definitionVersion
+    return byId
+end
+function addon:GetBuiltinHandle(id) return builtinHandles()[id] end
 -- Per-profile Built In overrides live in rotationLibrary.preferences[id]
 -- ({enabled=, priority=}); the rotation itself is never copied. A value equal
 -- to the shipped one is not stored.

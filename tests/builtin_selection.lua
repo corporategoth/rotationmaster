@@ -45,10 +45,10 @@ test('Retail initial spec: the eligible Built In beats the saved fallback, is in
     select(f);assert(current(f)=='rm.retail.monk.initial','auto-switch chose '..tostring(current(f)))
     local rows=menu(f);local text=menuText(rows)
     assert(text:find('Automatic Switching',1,true) and text:find('\nDefault\n',1,true),text)
-    assert(text:find('|cff5bc0ebMonk: No specialization (Retail, Blizzard Assisted)|r',1,true),text)
+    assert(text:find('|cff5bc0ebMonk: No specialization (Retail, Blizzard Assisted) [initial]|r',1,true),text)
     assert(not text:find('read%-only'),'the menu still carries the read-only suffix: '..text)
     local report=why(f)
-    assert(report:find('Monk: No specialization (Retail, Blizzard Assisted) (Built In): ready',1,true),report)
+    assert(report:find('Monk: No specialization (Retail, Blizzard Assisted) (Built In) [initial]: ready',1,true),report)
     assert(report:find('Automatic switching would choose: Monk: No specialization',1,true),report)
     assert(report:find('Higher numbers are tried first',1,true),report)
     -- Choosing it by hand works from the menu entry itself.
@@ -104,15 +104,15 @@ test('a pack that cannot be validated is "not available", never "disabled", and 
         if row.canonicalId=='rm.retail.monk.brewmaster' then assert(row.builtinState=='invalid' and row.switchedOn==true) end
     end
     local report=why(f)
-    assert(report:find('Monk: Brewmaster (Retail, Blizzard Assisted with brews) (Built In): cannot be selected',1,true),report)
-    assert(not report:find('Brewmaster (Retail, Blizzard Assisted with brews) (Built In): disabled',1,true),report)
+    assert(report:find('Monk: Brewmaster (Retail, Blizzard Assisted with brews) (Built In) [brewmaster]: cannot be selected',1,true),report)
+    assert(not report:find('Brewmaster (Retail, Blizzard Assisted with brews) (Built In) [brewmaster]: disabled',1,true),report)
 end)
 
 test('/rm why and the menu name a Built In the player switched off; a one-time repair turns shipped-enabled ones back on',function()
     local f=T.new{level=10,specIndex=1};local a=f.addon
     assert(a:SetDefaultRotationEnabled('rm.retail.monk.brewmaster',false))
     local report=why(f)
-    assert(report:find('Monk: Brewmaster (Retail, Blizzard Assisted with brews) (Built In): disabled by you',1,true),report)
+    assert(report:find('Monk: Brewmaster (Retail, Blizzard Assisted with brews) (Built In) [brewmaster]: disabled by you',1,true),report)
     local text=menuText(menu(f))
     -- No Brewmaster pack is on, so the alternative that ships off is named too.
     assert(text:find('2 Built In disabled: Monk: Brewmaster (Retail, Blizzard Assisted with brews), Monk: Brewmaster reference (Retail, Icy Veins)',1,true),text)
@@ -150,7 +150,7 @@ test('Classic (TBC): an enabled Built In whose switch matches is chosen before t
     local f=T.new{project=5,expansion=1,class='SHAMAN',level=5};noLoadErrors(f);local a=f.addon
     fallback(f,0);select(f)
     assert(current(f)=='rm.tbc.shaman.enhancement.icyveins','auto-switch chose '..tostring(current(f)))
-    assert(menuText(menu(f)):find('|cff5bc0ebShaman: Enhancement (Icy Veins)|r',1,true))
+    assert(menuText(menu(f)):find('|cff5bc0ebShaman: Enhancement (Icy Veins) [enhancement-icyveins]|r',1,true))
     assert(why(f):find('Automatic switching would choose: Shaman: Enhancement (Icy Veins)',1,true))
     assert(a:SetDefaultRotationEnabled('rm.tbc.shaman.enhancement.icyveins',false));select(f)
     assert(current(f)=='rm.tbc.shaman.enhancement.wowsims','next pack by priority not chosen: '..tostring(current(f)))
