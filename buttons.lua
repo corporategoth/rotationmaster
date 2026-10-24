@@ -81,6 +81,8 @@ local FramePool = {}
 -- last recommendation glow request and what became of it. Written only when
 -- the bars are scanned or the recommended spell changes, never per poll.
 local FetchCount,LastFetchAt=0,nil
+-- The client data policy the current index was built under (Fetch).
+local fetchedPolicy
 local LastGlow = {}
 
 local HighlightOverlay = {
@@ -546,7 +548,7 @@ function addon:UpdateButtonGlow()
 
 	if self.db.global.disableButtonGlow then
 		if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
-			ActionBarActionEventsFrame:UnregisterEvent('SPELL_ACTIVATION_OVERLAY_GLOW_SHOW')
+			if ActionBarActionEventsFrame then ActionBarActionEventsFrame:UnregisterEvent('SPELL_ACTIVATION_OVERLAY_GLOW_SHOW') end
 			if LAB then
 				LAB.eventFrame:UnregisterEvent('SPELL_ACTIVATION_OVERLAY_GLOW_SHOW')
             end
@@ -557,7 +559,7 @@ function addon:UpdateButtonGlow()
 		end
 	else
 		if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
-			ActionBarActionEventsFrame:RegisterEvent('SPELL_ACTIVATION_OVERLAY_GLOW_SHOW')
+			if ActionBarActionEventsFrame then ActionBarActionEventsFrame:RegisterEvent('SPELL_ACTIVATION_OVERLAY_GLOW_SHOW') end
 			if LAB then
 				LAB.eventFrame:RegisterEvent('SPELL_ACTIVATION_OVERLAY_GLOW_SHOW')
             end
@@ -637,6 +639,21 @@ local function GetActionSlot(button)
     if ValidActionSlot(button.action) then return button.action end
 end
 
+-- Retail 12.0 moved the action-slot queries into C_ActionBar. The old
+-- globals (HasAction, IsUsableAction, GetActionCooldown, IsActionInRange...)
+-- are defined only by Blizzard_DeprecatedActionBar, and only while the
+-- loadDeprecationFallbacks CVar is set; GetActionInfo stays a global.
+-- Sources: Gethe/wow-ui-source live b9be9379 (12.0.5),
+-- Blizzard_DeprecatedActionBar/Deprecated_ActionBar.lua and
+-- Blizzard_APIDocumentationGenerated/ActionBarFrameDocumentation.lua.
+-- The namespace is preferred wherever it exists; older clients keep the global.
+local function actionBarFunction(name, legacy)
+    local namespace=C_ActionBar
+    local fn=type(namespace)=='table' and namespace[name] or nil
+    if type(fn)=='function' then return fn end
+    if type(legacy)=='function' then return legacy end
+end
+
 local function ReadStandardAction(button)
     local kind=button:GetAttribute('type')
     if not addon.Platform:CanReadValue(kind) then return end
@@ -645,7 +662,7 @@ local function ReadStandardAction(button)
     if kind=='action' then
         local slot=GetActionSlot(button)
         if not slot then return end
-        local present=HasAction(slot)
+        local present=actionBarFunction('HasAction',HasAction)(slot)
         if not addon.Platform:CanReadValue(present) or not present then return end
         kind,action=GetActionInfo(slot)
     end
@@ -666,6 +683,33 @@ local function ResolveStandardAction(kind,action)
     end
 end
 
+-- A spell on the bar is also found under its base spell and its current
+-- override (C_Spell.GetBaseSpell/GetOverrideSpell, Retail and Forever): a
+-- talent can replace a spell on the button, so the slot may report either ID
+-- while a step names the other, and Blizzard's suggestion may be either.
+-- Only Spells gains the aliases; the button keeps its one identity.
+local function AddAlias(alias, button)
+    if alias==nil or not addon.Platform:CanReadValue(alias) then return end
+    if type(alias)~="number" or alias<=0 or alias>=math.huge or alias%1~=0 or ButtonSpells[button]==alias then return end
+    local buttons=Spells[alias]
+    if buttons==nil then buttons={};Spells[alias]=buttons end
+    for i=1,#buttons do if buttons[i]==button then return end end
+    tinsert(buttons,button)
+end
+local function SpellRelation(name, spell)
+    local namespace=C_Spell
+    local fn=type(namespace)=='table' and namespace[name] or nil
+    if type(fn)~='function' then return nil end
+    local ok,value=pcall(fn,spell)
+    if ok then return value end
+end
+local function AddSpellAliases(button, spell, action)
+    if ButtonSpells[button]~=spell or fetchedPolicy~='restricted' then return end
+    if type(action)=='number' then AddAlias(action,button) end
+    AddAlias(SpellRelation('GetBaseSpell',spell),button)
+    AddAlias(SpellRelation('GetOverrideSpell',spell),button)
+end
+
 local function AddStandardButton(button)
     if not button or ButtonSpells[button] then return end
     local ok,kind,action=pcall(ReadStandardAction,button)
@@ -675,6 +719,7 @@ local function AddStandardButton(button)
     if kind=='macro' then MacroButtons[button]=true end
     local spell,item=ResolveStandardAction(kind,action)
     AddButton(spell,button,item)
+    if kind=='spell' and spell then AddSpellAliases(button,spell,action) end
 end
 
 -- Pet action slots expose a spell only through GetPetActionInfo. Modern
@@ -704,7 +749,6 @@ end
 -- Macro conditionals and cast sequences can change their exposed action
 -- without moving a slot or editing the macro. Observe known macro buttons on
 -- the existing recommendation cadence; never parse or execute macro bodies.
-local fetchedPolicy
 function addon:RefreshMacroButtons()
     -- Macro observation (Platform/macros.lua) is probe-only. Under the
     -- restricted policy macro buttons resolve to nothing; a scan made under
@@ -932,7 +976,8 @@ local function FetchLibActionButton()
 end
 
 local function FetchBlizzard()
-	local BlizzardBars = {'Action', 'MultiBarBottomLeft', 'MultiBarBottomRight', 'MultiBarRight', 'MultiBarLeft'}
+	-- MultiBar5-7 are Retail's action bars 6-8 (Dragonflight and later).
+	local BlizzardBars = {'Action', 'MultiBarBottomLeft', 'MultiBarBottomRight', 'MultiBarRight', 'MultiBarLeft', 'MultiBar5', 'MultiBar6', 'MultiBar7'}
 	for _, barName in pairs(BlizzardBars) do
 		for i = 1, 12 do
 			local button = _G[barName .. 'Button' .. i]
@@ -1109,15 +1154,44 @@ local function petActionReady(index,now)
     end
     return cooldownReady(start,duration,now)==true
 end
-local function actionSlotReady(slot,now)
-    if type(IsUsableAction)~='function' or type(GetActionCooldown)~='function' then return false end
-    local ok,usable,noMana=pcall(IsUsableAction,slot)
-    if not ok or not readable(usable,noMana) or not usable or noMana then return false end
+-- C_ActionBar.GetActionCooldown (Retail 12.0) returns a SpellCooldownInfo
+-- whose times may be secret while cooldowns are restricted; isEnabled and
+-- isActive never are. With the times hidden, an inactive cooldown is ready
+-- and an active one only while it is the running global cooldown.
+local function actionCooldownReady(slot,now)
+    local namespace=C_ActionBar
+    local modern=type(namespace)=='table' and namespace.GetActionCooldown or nil
+    if type(modern)=='function' then
+        local ok,info=pcall(modern,slot)
+        if not ok or type(info)~='table' then return false end
+        local enabled,active=info.isEnabled,info.isActive
+        if readable(enabled) and (enabled==false or enabled==0) then return false end
+        local start,duration=info.startTime,info.duration
+        if readable(start,duration) and type(start)=='number' and type(duration)=='number' then
+            return readable(enabled) and cooldownReady(start,duration,now)==true
+        end
+        if not readable(enabled,active) or type(active)~='boolean' then return false end
+        if not active then return true end
+        if not readable(info.isOnGCD) or info.isOnGCD~=true then return false end
+        if type(addon.Platform.GetGlobalCooldown)~='function' then return false end
+        local gcd,_,gcdEnabled,gcdActive=addon.Platform:GetGlobalCooldown()
+        if type(gcd)=='table' then return gcd.isEnabled==true and gcd.duration>0 and gcd.startTime+gcd.duration>now end
+        return gcdEnabled==true and gcdActive==true
+    end
+    if type(GetActionCooldown)~='function' then return false end
     local cdOk,start,duration,enabled=pcall(GetActionCooldown,slot)
     if not cdOk or not readable(start,duration,enabled) or enabled==0 or enabled==false then return false end
-    if cooldownReady(start,duration,now)~=true then return false end
-    if type(IsActionInRange)=='function' then
-        local rangeOk,inRange=pcall(IsActionInRange,slot)
+    return cooldownReady(start,duration,now)==true
+end
+local function actionSlotReady(slot,now)
+    local usableFn=actionBarFunction('IsUsableAction',IsUsableAction)
+    if not usableFn then return false end
+    local ok,usable,noMana=pcall(usableFn,slot)
+    if not ok or not readable(usable,noMana) or not usable or noMana then return false end
+    if not actionCooldownReady(slot,now) then return false end
+    local rangeFn=actionBarFunction('IsActionInRange',IsActionInRange)
+    if rangeFn then
+        local rangeOk,inRange=pcall(rangeFn,slot)
         if rangeOk and readable(inRange) and (inRange==false or inRange==0) then return false end
     end
     return true
@@ -1264,9 +1338,12 @@ end
 
 function addon:HighlightSlots(slots)
 	addon:EndHighlightSlot()
+	-- A button listed under its base or override spell too is lit once.
+	local seen = {}
 	for _, buttons in pairs(Spells) do
 		for _, button in pairs(buttons) do
-			local type = button:GetAttribute('type')
+			local type = not seen[button] and button:GetAttribute('type')
+			seen[button] = true
 			if type == 'action' then
 				local bslot = GetActionSlot(button)
 

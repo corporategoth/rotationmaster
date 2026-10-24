@@ -85,4 +85,260 @@ test('diagnostic: costs nothing until run (no frames, timers or saved data at lo
     assert(c.e.RotationMasterDB.diagnostics==nil,'diagnostic wrote saved data before it was run')
 end)
 
+
+-- Retail 12.x action bars --------------------------------------------------------
+-- Modelled from Blizzard's UI source (Gethe/wow-ui-source live b9be9379, 12.0.5):
+--   * Blizzard_ActionBar/Shared/ActionBar.lua names the buttons ActionButton1-12
+--     and <bar>Button1-12 (MultiBarBottomLeft ... MultiBar5-7), CheckButtons
+--     parented to a per-button container;
+--   * ActionBarActionButtonMixin:OnLoad sets the "type" attribute to "action"
+--     and no "action" attribute; the slot is self.action (CalculateAction from
+--     the bar's actionpage), returned by GetPagedID;
+--   * HasAction, IsUsableAction, GetActionCooldown, IsActionInRange... live in
+--     C_ActionBar; the globals come only from Blizzard_DeprecatedActionBar when
+--     the loadDeprecationFallbacks CVar is set (not set here). GetActionInfo
+--     stays a global.
+local BLACKOUT_KICK,TIGER_PALM,ROLL=100784,100780,109132
+local function retailBars(c,layout)
+    local e,a=c.e,c.a
+    e.HasAction,e.IsUsableAction,e.GetActionCooldown,e.IsActionInRange=nil,nil,nil,nil
+    e.C_ActionBar={
+        HasAction=function(slot) assert(type(slot)=='number' and slot>0,'invalid slot');return layout[slot]~=nil end,
+        FindSpellActionButtons=function(spell) local slots={};for slot,id in pairs(layout) do if id==spell then slots[#slots+1]=slot end end;table.sort(slots);return slots end,
+    }
+    e.GetActionInfo=function(slot) local id=layout[slot];if id then return 'spell',id end end
+    local frames={}
+    local function bar(prefix,page)
+        for i=1,12 do
+            local name=prefix..'Button'..i
+            local container=e.CreateFrame('Frame',prefix..'ButtonContainer'..i,e.UIParent)
+            local button=e.CreateFrame('CheckButton',name,container);button:SetSize(45,45)
+            local attributes={type='action',['useparent-actionpage']=true}
+            button.GetAttribute=function(_,key) return attributes[key] end
+            button.GetName=function() return name end
+            button.action=i+(page-1)*12
+            button.GetPagedID=function(self) return self.action end
+            e[name]=button;frames[name]=button
+        end
+    end
+    bar('Action',1);bar('MultiBarBottomLeft',6);bar('MultiBar5',13)
+    a:Fetch()
+    return frames
+end
+local function lit(button)
+    local overlay=type(button.rmOverlays)=='table' and button.rmOverlays.next
+    return overlay and overlay:IsShown()==true or false
+end
+local function custom(a,id,body)
+    local reference={kind='custom',address={scope='class',class='SHAMAN',owner='SHAMAN',spec=0,id=id}}
+    assert(a:CommitRotationDraft(reference,nil,{body=body},'class'))
+end
+local function select(c,name) c.a:HandleCommand('set '..name);if c.a.AssistedHighlight then c.a.AssistedHighlight:OnEvent('ROTATIONMASTER_ROTATION') end;for _=1,4 do c.tick() end end
+-- The whole engine on the Retail bars, with Blizzard's suggestion modelled.
+local function retail(engine,layout,state)
+    local c=whole(engine)
+    state=state or {}
+    state.cvars=state.cvars or {assistedCombatHighlight='0'}
+    local e,a=c.e,c.a
+    e.C_AssistedCombat={IsAvailable=function() return true,'' end,GetNextCastSpell=function() return state.next end,
+        GetRotationSpells=function() return {BLACKOUT_KICK,TIGER_PALM} end,GetActionSpell=function() return nil end}
+    e.AssistedCombatManager={}
+    e.C_CVar={GetCVar=function(name) return state.cvars[name] end,SetCVar=function(name,value) state.cvars[name]=tostring(value)
+        if a.AssistedHighlight then a.AssistedHighlight:OnEvent('CVAR_UPDATE',name,tostring(value)) end end}
+    e.InCombatLockdown=function() return false end
+    c.load('Platform/assisted_combat.lua');c.load('Conditions/assisted.lua');c.load('Core/assisted_highlight.lua')
+    a.db.char=a.db.char or {}
+    a.AssistedHighlight:OnEvent('PLAYER_ENTERING_WORLD')
+    c.frames=retailBars(c,layout or {[1]=BLACKOUT_KICK,[2]=TIGER_PALM})
+    return c,state
+end
+local function litNames(c)
+    local names={}
+    for name,button in pairs(c.frames) do if lit(button) then names[#names+1]=name end end
+    table.sort(names);return table.concat(names,',')
+end
+
+for _,engine in ipairs({'standard','lean'}) do
+    test('retail 12 bars ('..engine..'): the top spell step lights ActionButton1 with no deprecated globals',function()
+        local c=retail(engine)
+        custom(c.a,'top',{name='Top',priority=0,cooldowns={},rotation={{id='bok',type='any',action=BLACKOUT_KICK,conditions={}},{id='blizzard',type='assisted',conditions={}}}})
+        select(c,'Top')
+        assert(c.a:FindSpell({BLACKOUT_KICK})==BLACKOUT_KICK,'Blackout Kick on ActionButton1 was not indexed')
+        assert(c.a.currentSpell==BLACKOUT_KICK,'recommended '..tostring(c.a.currentSpell))
+        assert(litNames(c)=='ActionButton1','lit: '..litNames(c))
+        assert(c.a:GetEvaluationEngine()==engine)
+    end)
+    test('retail 12 bars ('..engine..'): Blizzard\'s suggestion lights its button in rm and both, never in blizzard mode',function()
+        for _,mode in ipairs({'rm','both','blizzard'}) do
+            local c,state=retail(engine,nil,{next=TIGER_PALM})
+            c.a.db.profile.assisted_highlight=mode
+            custom(c.a,'assisted',{name='Assisted',priority=0,cooldowns={},rotation={{id='blizzard',type='assisted',conditions={}}}})
+            select(c,'Assisted')
+            assert(c.a.currentSpell==TIGER_PALM,mode..': recommended '..tostring(c.a.currentSpell))
+            local want=mode=='blizzard' and '' or 'ActionButton2'
+            assert(litNames(c)==want,mode..': lit '..litNames(c)..' (want '..want..')')
+            assert((state.cvars.assistedCombatHighlight=='1')==(mode~='rm'),mode..': CVar '..state.cvars.assistedCombatHighlight)
+        end
+    end)
+end
+
+test('retail 12 bars: a suggested override lights the button holding its base spell',function()
+    local OVERRIDE=1249999
+    local c=retail('standard',nil,{next=OVERRIDE})
+    c.e.C_Spell.GetBaseSpell=function(id) return id==OVERRIDE and TIGER_PALM or id end
+    c.e.C_Spell.GetOverrideSpell=function(id) return id==TIGER_PALM and OVERRIDE or id end
+    custom(c.a,'assisted',{name='Assisted',priority=0,cooldowns={},rotation={{id='blizzard',type='assisted',conditions={}}}})
+    select(c,'Assisted')
+    assert(litNames(c)=='ActionButton2','lit: '..litNames(c))
+end)
+
+test('retail 12 bars: action bars 6-8 (MultiBar5-7) are scanned',function()
+    local c=retail('standard',{[145]=ROLL})
+    custom(c.a,'roll',{name='Roll',priority=0,cooldowns={},rotation={{id='roll',type='spell',action=ROLL,conditions={}}}})
+    select(c,'Roll')
+    assert(litNames(c)=='MultiBar5Button1','lit: '..litNames(c))
+end)
+
+test('retail 12 bars: the diagnostic finds the button, the step and a lit frame',function()
+    local c=retail('standard')
+    custom(c.a,'top',{name='Top',priority=0,cooldowns={},rotation={{id='bok',type='any',action=BLACKOUT_KICK,conditions={}}}})
+    select(c,'Top')
+    local lines,stop=c.a:RunGlowDiagnostic()
+    assert(find(lines,'HasAction=missing C_ActionBar.HasAction=present'),'API presence not reported')
+    assert(find(lines,'^ActionButton1%-12: 12 frames, type=action 12, holding an action 2, indexed 2, read errors 0'),'scan summary')
+    assert(find(lines,'^  ActionButton1 type=action slot=1 .*spell=100784 indexed=100784'),'ActionButton1 row')
+    assert(find(lines,'blizzardSlots=%[1%]'),'Blizzard slot cross-check missing')
+    assert(stop:find('^none'),stop)
+end)
+
+-- The restricted Retail client ----------------------------------------------------
+-- tests/fixtures/retail_premade_model_a.lua with the real restricted policy
+-- (Midnight secrets, C_Spell/C_SpellBook readiness), plus buttons.lua.
+local function restricted()
+    local M=dofile('tests/fixtures/retail_premade_model_a.lua')
+    local f,s=M.new('monk','MONK',268,{policy='restricted'})
+    local a,e=f.addon,f.env
+    assert(a.Platform:GetClientInfo().combatDataPolicy=='restricted')
+    dofile('tests/fixtures/native_ui.lua')(e)
+    local create=e.CreateFrame
+    e.CreateFrame=function(...)
+        local frame=create(...);local texture=frame.CreateTexture
+        frame.CreateTexture=function(...) local t=texture(...);t.SetBlendMode=t.SetBlendMode or function() end;t.SetRotation=t.SetRotation or function() end;return t end
+        return frame
+    end
+    e.tinsert,e.tremove=table.insert,table.remove
+    f.libraries['LibCustomGlow-1.0']={PixelGlow_Stop=function() end,AutoCastGlow_Stop=function() end,ButtonGlow_Stop=function() end}
+    e.C_AddOns={IsAddOnLoaded=function() return false end}
+    -- LibStub is a callable table in the client (LibStub:GetLibrary).
+    local call=e.LibStub
+    e.LibStub=setmetatable({GetLibrary=function(_,name,silent) if silent then local ok,lib=pcall(call,name);return ok and lib or nil end;return call(name) end},
+        {__call=function(_,name,silent) return call(name,silent) end})
+    f.load('Platform/macros.lua');f.load('Core/presentation.lua');f.load('Functions/collections.lua');f.load('buttons.lua')
+    a.uuid=a.uuid or function() return 'overlay' end
+    a.ScheduleRepeatingTimer=function() return {} end;a.CancelTimer=function() end
+    a.db.global.effects={ping={type='texture',texture='Interface\\Cooldown\\ping4'}}
+    a.db.profile.effect='ping';a.db.profile.magnification=1.4;a.db.profile.setpoint='CENTER';a.db.profile.color={r=1,g=1,b=1,a=1}
+    local c={a=a,e=e,s=s,f=f,load=f.load,tick=function() end}
+    return c
+end
+
+test('restricted retail: Blizzard bars are indexed through C_ActionBar alone',function()
+    local c=restricted()
+    local frames=retailBars(c,{[1]=BLACKOUT_KICK,[2]=TIGER_PALM})
+    assert(c.a:FindSpell({BLACKOUT_KICK})==BLACKOUT_KICK and c.a:FindSpell({TIGER_PALM})==TIGER_PALM,'not indexed')
+    c.a:GlowNextSpell(TIGER_PALM)
+    assert(lit(frames.ActionButton2) and not lit(frames.ActionButton1),'wrong frame lit')
+    local overlay=frames.ActionButton2.rmOverlays.next
+    assert(overlay:GetParent()==frames.ActionButton2 and overlay:GetFrameLevel()==frames.ActionButton2:GetFrameLevel()+1,'overlay not above its button')
+    c.a:GlowNextSpell(TIGER_PALM,nil,true)
+    assert(not lit(frames.ActionButton2) and c.a:IsGlowing(TIGER_PALM,nil,true),'a hidden glow still lit the button')
+end)
+
+test('restricted retail: a talent override on the button maps from its base spell, and the reverse',function()
+    local c=restricted()
+    local OVERRIDE=1249999
+    c.s.base={[OVERRIDE]=TIGER_PALM};c.s.override={[TIGER_PALM]=OVERRIDE}
+    -- The slot reports the override; a step names the base spell.
+    local frames=retailBars(c,{[2]=OVERRIDE})
+    assert(c.a:FindSpell({TIGER_PALM})==TIGER_PALM,'base spell did not map to the overridden button')
+    c.a:GlowNextSpell(TIGER_PALM);assert(lit(frames.ActionButton2),'base spell glow missed the button')
+    c.a:GlowClear()
+    -- The slot reports the base; the override (e.g. Blizzard's suggestion) maps too.
+    frames=retailBars(c,{[2]=TIGER_PALM})
+    assert(c.a:FindSpell({OVERRIDE})==OVERRIDE,'override did not map to the base button')
+    c.a:GlowNextSpell(OVERRIDE);assert(lit(frames.ActionButton2),'override glow missed the button')
+    -- Slot highlighting lights the aliased button once.
+    local count=0;local glow=c.a.Glow
+    c.a.Glow=function(self,button,id,...) if id=='highlight' then count=count+1 end;return glow(self,button,id,...) end
+    c.a:HighlightSlots({2});assert(count==1,'slot highlighted '..count..' times')
+end)
+
+test('restricted retail: readiness from never-secret flags in combat; cooldown, power and range still decide',function()
+    local c=restricted();local s,a=c.s,c.a
+    s.learn(BLACKOUT_KICK,TIGER_PALM);s.ranged(BLACKOUT_KICK,TIGER_PALM)
+    local function ready(kind,id) return a:NewActionReadiness(100)(kind,id) end
+    assert(ready('spell',BLACKOUT_KICK) and ready('any',BLACKOUT_KICK) and ready('assisted',TIGER_PALM),'ready out of combat')
+    s.secrets(true)
+    assert(ready('spell',BLACKOUT_KICK) and ready('any',BLACKOUT_KICK),'secret cooldown times made a ready spell unready')
+    s.cooling(BLACKOUT_KICK,5);assert(not ready('spell',BLACKOUT_KICK),'a spell on its own cooldown read ready');s.cooling(BLACKOUT_KICK,nil)
+    s.power[BLACKOUT_KICK]=true;assert(not ready('spell',BLACKOUT_KICK),'a spell without power read ready');s.power[BLACKOUT_KICK]=nil
+    s.range[BLACKOUT_KICK]=false;assert(not ready('spell',BLACKOUT_KICK),'out of range read ready')
+end)
+
+test('restricted retail: vehicle and override buttons are judged through C_ActionBar',function()
+    local c=restricted();local a,e=c.a,c.e
+    local frames=retailBars(c,{[133]=77777})
+    local VEHICLE=e.CreateFrame('CheckButton','OverrideActionBarButton1',e.UIParent)
+    VEHICLE.GetAttribute=function(_,key) if key=='type' then return 'action' end end;VEHICLE.action=133;VEHICLE.GetPagedID=function(self) return self.action end
+    e.OverrideActionBarButton1=VEHICLE;a:Fetch()
+    local info={startTime=c.s.SECRET or 0,duration=0,isEnabled=true,isActive=false}
+    e.C_ActionBar.IsUsableAction=function(slot) assert(slot==133);return true,false end
+    e.C_ActionBar.GetActionCooldown=function(slot) assert(slot==133);return info end
+    e.C_ActionBar.IsActionInRange=function() return nil end
+    local SECRET=dofile('tests/fixtures/retail_premade_model_a.lua').SECRET
+    e.issecretvalue=function(v) return rawequal(v,SECRET) end
+    info.startTime,info.duration=SECRET,SECRET
+    assert(a:IsBoundActionReady(77777,100)==true,'an inactive cooldown with secret times read unready')
+    info.isActive=true;info.isOnGCD=false
+    assert(a:IsBoundActionReady(77777,100)==false,'an active own cooldown read ready')
+    info.isActive=false;e.C_ActionBar.IsUsableAction=function() return false,false end
+    assert(a:IsBoundActionReady(77777,100)==false,'an unusable action read ready')
+    assert(frames)
+end)
+
+test('Bartender4 and ElvUI (LibActionButton) buttons are indexed on Retail 12',function()
+    local c=restricted();local a,e=c.a,c.e
+    local labButtons={}
+    for i=1,2 do
+        local button=e.CreateFrame('CheckButton','BT4Button'..i,e.UIParent)
+        local slot,name=i,'BT4Button'..i
+        button.GetName=function() return name end
+        button.GetAttribute=function(_,key) if key=='type' then return 'action' elseif key=='action' then return slot end end
+        labButtons[button]=true
+    end
+    local lab={GetAllButtons=function() return labButtons end}
+    local stub=e.LibStub;local libs={['LibActionButton-1.0']=lab}
+    e.LibStub=setmetatable({GetLibrary=function(_,name,silent) return libs[name] or (not silent and stub(name) or nil) end},{__call=function(_,name,silent) if libs[name] then return libs[name] end;return stub(name,silent) end})
+    retailBars(c,{[1]=BLACKOUT_KICK,[2]=TIGER_PALM})
+    local names=a:GetSpellButtonNames(TIGER_PALM)
+    local found=false;for _,name in ipairs(names) do if name=='BT4Button2' then found=true end end
+    assert(found,'LibActionButton button not indexed: '..table.concat(names,','))
+    libs['LibActionButton-1.0']=nil;libs['LibActionButton-1.0-ElvUI']=lab;a:Fetch()
+    found=false;for _,name in ipairs(a:GetSpellButtonNames(BLACKOUT_KICK)) do if name=='BT4Button1' then found=true end end
+    assert(found,'ElvUI LibActionButton button not indexed')
+end)
+
+test('restricted retail: vehicle, override and possession bars are detected through C_ActionBar',function()
+    local c=restricted();local a,e=c.a,c.e
+    e.HasVehicleActionBar,e.HasOverrideActionBar,e.IsPossessBarVisible=nil,nil,nil
+    e.UnitHasVehicleUI=function() return false end
+    local bars={}
+    e.C_ActionBar={HasVehicleActionBar=function() return bars.vehicle==true end,HasOverrideActionBar=function() return bars.override==true end,
+        IsPossessBarVisible=function() return bars.possess==true end}
+    assert(a:ReadActionContext()=='player')
+    bars.possess=true;assert(a:ReadActionContext()=='possession','possession missed')
+    bars.override=true;assert(a:ReadActionContext()=='override','override missed')
+    bars.vehicle=true;assert(a:ReadActionContext()=='vehicle','vehicle missed')
+    e.C_ActionBar=nil;e.HasOverrideActionBar=function() return true end;assert(a:ReadActionContext()=='override','legacy global no longer read')
+end)
 print(pass..' passed, '..fail..' failed');if fail>0 then os.exit(1)end
