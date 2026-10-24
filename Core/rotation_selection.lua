@@ -210,6 +210,14 @@ function addon:ExplainRotationRefusal(spec,value)
     end
     return refusalText[code] or string.format(L['it is unavailable (%s)'],tostring(code)),code
 end
+-- True when `key` can be selected but has no usable switch condition, so
+-- automatic switching never picks it (you choose it by hand).
+function addon:IsManualOnlyRotation(spec,key)
+    local pass=self.AcquireRotationRuntimePass and self:AcquireRotationRuntimePass(spec)
+    local body=pass and pass:Get(key)
+    if type(body)~='table' then return false end
+    return type(body.switch)~='table' or not self:usefulCondition(body.switch)
+end
 -- A rotation's priority as automatic switching ranks it (nil when unknown).
 function addon:GetRotationEffectivePriority(spec,key)
     if key==DEFAULT then return nil end
@@ -255,6 +263,7 @@ function addon:GetRotationEligibilityReport()
     end
     local function verdict(name,value)
         local why=self:ExplainRotationRefusal(spec,value)
+        if not why and value~=DEFAULT and self:IsManualOnlyRotation(spec,value) then lines[#lines+1]=string.format(L['%s: ready, manual only: no switch condition (choose it with /rm set or the minimap menu).'],name);return end
         lines[#lines+1]=why and string.format(L['%s: cannot be selected, %s.'],name,why) or string.format(L['%s: ready'],name)
     end
     verdict(string.format(L['Fallback (%s)'],DEFAULT),DEFAULT)
@@ -293,8 +302,12 @@ function addon:GetRotationEligibilityReport()
             local name=self:GetRotationName(key)
             if name then names[#names+1]=string.format('%s (%s)',name,tostring(self:GetRotationEffectivePriority(spec,key) or '?')) end
         end
-        names[#names+1]=string.format(L['then the fallback (%s)'],DEFAULT)
-        lines[#lines+1]=string.format(L['Automatic switching tries: %s. Higher numbers are tried first; your own rotations are always tried before Built Ins.'],table.concat(names,', '))
+        if #names==0 then
+            lines[#lines+1]=string.format(L['Automatic switching tries nothing else, then the fallback (%s): no enabled rotation here has a switch condition it can use.'],DEFAULT)
+        else
+            names[#names+1]=string.format(L['then the fallback (%s)'],DEFAULT)
+            lines[#lines+1]=string.format(L['Automatic switching tries: %s. Higher numbers are tried first; your own rotations are always tried before Built Ins.'],table.concat(names,', '))
+        end
         local choice=self.PreviewAutoSwitch and self:PreviewAutoSwitch()
         lines[#lines+1]=string.format(L['Automatic switching would choose: %s'],choice and (choice==DEFAULT and DEFAULT or self:GetRotationName(choice) or tostring(choice)) or L['None'])
     end
@@ -453,18 +466,32 @@ function addon:DescribeSwitchOverlap(list)
     if #others>0 then lines[#lines+1]=string.format(L['Can match together with %s: only priority decides which is chosen.'],table.concat(others,', ')) end
     return table.concat(lines,'\n'),#ties>0
 end
--- The load-time scope of a definition (edition, class, specializations,
--- levels, expansion, rules) as one line; nil when it has none.
+-- The load-time scope of a definition, as one line; nil when it has none.
+-- Specializations are never listed (you can respec) and only a minimum level
+-- is (you only level up); rulesets read as names.
+local SEASONS={[1]='Season of Mastery',[2]='Season of Discovery',[3]='Hardcore',[11]='Anniversary',[12]='Anniversary Hardcore'}
+local SEASON_NAMES={seasonofmastery=1,seasonofdiscovery=2,hardcore=3,fresh=11,freshhardcore=12}
+local function rulesetName(token)
+    if token=='hardcore' then return L['Hardcore'] elseif token=='self-found' then return L['Self-Found'] elseif token=='standard' then return L['Standard realms'] end
+    local season=type(token)=='string' and token:match('^season:(.+)$')
+    if season then
+        local id=tonumber(season) or SEASON_NAMES[season]
+        if id and SEASONS[id] then return L[SEASONS[id]] end
+        return string.format(L['Season %s'],season)
+    end
+    local mode=type(token)=='string' and token:match('^mode:(%d+)$')
+    if mode then return string.format(L['Game mode %s'],mode) end
+    return tostring(token)
+end
 function addon:DescribeApplicability(scope)
     if type(scope)~='table' then return nil end
     local parts={}
     local editions={tbc=L['TBC'],era=L['Classic Era'],progression=L['Classic Progression'],retail=L['Retail'],forever=L['Forever']}
     if type(scope.families)=='table' then local names={};for _,family in ipairs(scope.families) do names[#names+1]=editions[family] or family end;parts[#parts+1]=table.concat(names,', ') end
     if type(scope.class)=='string' then parts[#parts+1]=(LOCALIZED_CLASS_NAMES_MALE and LOCALIZED_CLASS_NAMES_MALE[scope.class]) or scope.class:sub(1,1)..scope.class:sub(2):lower() end
-    if type(scope.specs)=='table' then local names={};for _,spec in ipairs(scope.specs) do names[#names+1]=self:DescribeRotationSpec(spec) end;parts[#parts+1]=table.concat(names,', ') end
-    if scope.minLevel or scope.maxLevel then parts[#parts+1]=string.format(L['levels %s–%s'],tostring(scope.minLevel or 1),tostring(scope.maxLevel or '?')) end
+    if type(scope.minLevel)=='number' and scope.minLevel>1 then parts[#parts+1]=string.format(L['level %d+'],scope.minLevel) end
     if scope.minExpansion or scope.maxExpansion then parts[#parts+1]=string.format(L['expansions %s–%s'],tostring(scope.minExpansion or '?'),tostring(scope.maxExpansion or '?')) end
-    if type(scope.rulesets)=='table' then parts[#parts+1]=table.concat(scope.rulesets,', ') end
+    if type(scope.rulesets)=='table' then local names={};for _,token in ipairs(scope.rulesets) do names[#names+1]=rulesetName(token) end;parts[#parts+1]=table.concat(names,', ') end
     if #parts==0 then return nil end
     return string.format(L['Loads only for: %s. The switch condition decides the rest.'],table.concat(parts,' · '))
 end
@@ -546,12 +573,15 @@ function addon:ListSelectableHandles(spec,selectable)
     table.sort(list);return list
 end
 -- "Name [handle]" for chat and menus.
+function addon:FormatRotationLabel(name,key,spec)
+    if type(name)~='string' then return name end
+    local handle=key~=DEFAULT and self:GetRotationHandle(spec or self.currentSpec,key) or nil
+    return handle and string.format('%s [%s]',name,handle) or name
+end
 function addon:GetRotationLabel(key,spec)
-    spec=spec or self.currentSpec
     local name=key==DEFAULT and DEFAULT or self:GetRotationName(key)
     if not name then return nil end
-    local handle=key~=DEFAULT and self:GetRotationHandle(spec,key) or nil
-    return handle and string.format('%s [%s]',name,handle) or name
+    return self:FormatRotationLabel(name,key,spec)
 end
 -- /rm list: handle, name and status of every rotation for the live spec.
 function addon:GetRotationHandleReport()
@@ -571,6 +601,7 @@ function addon:GetRotationHandleReport()
         if not status then
             local why=self:ExplainRotationRefusal(spec,entry.fallback and DEFAULT or entry.key)
             status=why and string.format(L['cannot be selected: %s'],why) or (self.currentRotation==(entry.fallback and DEFAULT or entry.key) and L['active'] or L['ready'])
+            if not why and not entry.fallback and self:IsManualOnlyRotation(spec,entry.key) then status=status..', '..L['manual only (no switch condition)'] end
         end
         local kind=entry.fallback and L['fallback'] or entry.kind=='builtin' and L['Built In'] or L['yours']
         lines[#lines+1]=string.format('%s — %s (%s) — %s',entry.handle,entry.name,kind,status)

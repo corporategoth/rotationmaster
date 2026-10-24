@@ -1156,7 +1156,8 @@ function addon:SwitchRotation()
             if not activeBroker(addon,change,DataBroker,name) then return end
             if not current() then return end
             local label=name
-            if self.GetRotationLabel then local labelled,value=activeValue(self,change,'GetRotationLabel',newRotation,selectedSpec);if not labelled then return end;label=value or name end
+            -- The name is already known; only the handle is added (no second pass).
+            if self.FormatRotationLabel then local labelled,value=activeValue(self,change,'FormatRotationLabel',name,newRotation,selectedSpec);if not labelled then return end;label=value or name end
             if not current() then return end
             if not activeCall(self,change,'info',L["Active rotation automatically switched to " .. color.WHITE .. "%s" .. color.INFO],label) then return end
             if not current() then return end

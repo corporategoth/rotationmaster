@@ -62,14 +62,20 @@ test('the editor: one line with Priority left of Enabled; a Built In is read-onl
     assert(pane.priority:GetText()=='20' and pane.priorityLabel:GetText()=='Priority' and not pane.overrideReset:IsShown())
     pane.priorityUp:Click()
     assert(prefs(a)['rm.retail.monk.brewmaster'].priority==21,'priority step did not save an override')
-    assert(pane.priority:GetText()=='21' and pane.priorityLabel:GetText()=='Your priority' and pane.overrideReset:IsShown())
-    local r,g=unpack(pane.priority.textColor);assert(r==1 and g<.9,'override not shown in amber')
+    assert(pane.priority:GetText()=='21' and pane.priorityLabel:GetText()=='Priority' and pane.overrideReset:IsShown())
+    local r,g=unpack(pane.priority.textColor);assert(r==1 and g<.9,'override value not shown in amber')
+    assert(pane.priorityLabel.textColor[2]==1,'the label changed colour')
     pane.priority:SetText('7');pane.priority.scripts.OnTextChanged(pane.priority,true);pane.priority.scripts.OnEnterPressed(pane.priority)
     assert(prefs(a)['rm.retail.monk.brewmaster'].priority==7)
     pane.enable.action();assert(prefs(a)['rm.retail.monk.brewmaster'].enabled==false and pane.enable.text=='Disabled')
+    local pr,pg=unpack(pane.enable:GetFontString().textColor);assert(pr==1 and pg<.9,'Enabled override not shown in the pill text')
     pane.overrideReset:Click();assert(prefs(a)['rm.retail.monk.brewmaster']==nil and pane.priority:GetText()=='20' and not pane.overrideReset:IsShown())
     -- Where it loads, under the switch.
     assert(pane.switchNote:IsShown() and pane.switchNote:GetText():find('Loads only for: Retail · Monk',1,true),tostring(pane.switchNote:GetText()))
+    -- Load-time scope only: no specializations, a minimum level only, rulesets by name.
+    local text=a:DescribeApplicability({families={'era'},class='DRUID',specs={102},minLevel=10,maxLevel=60,rulesets={'season:2','hardcore','self-found'}})
+    assert(text=='Loads only for: Classic Era · Druid · level 10+ · Season of Discovery, Hardcore, Self-Found. The switch condition decides the rest.',text)
+    assert(a:DescribeApplicability({families={'retail'},class='MONK',minLevel=1})=='Loads only for: Retail · Monk. The switch condition decides the rest.')
     -- A rotation saved for another specialization says it is not selectable now.
     local other=assert(a:CreateRotationEditor(f.env.CreateFrame('Frame'),269,key(a,'rm.retail.monk.windwalker')))
     assert(other.switchNote:GetText():find('You are playing Brewmaster; this rotation is saved for Windwalker',1,true),tostring(other.switchNote:GetText()))
@@ -133,6 +139,18 @@ test('the rotation list: switching order, priorities shown, disabled rows grey, 
     local brew=controls[key(a,'rm.retail.monk.brewmaster')];assert(brew.noticeBar:IsShown() and brew.tooltip:find('Brewmaster reference',1,true))
     ww.enableButton:Click();assert(prefs(a)['rm.retail.monk.windwalker']==nil,'one click did not turn it back on')
     browser:Release()
+end)
+
+test('/rm why says when nothing but the fallback is tried, and marks a rotation without a switch as manual only',function()
+    local f=T.new{level=10,specIndex=1};local a=f.addon
+    assert(a:SetDefaultRotationEnabled('rm.retail.monk.brewmaster',false));a:UpdateAutoSwitch()
+    local report=table.concat(a:GetRotationEligibilityReport(),'\n')
+    assert(report:find('Automatic switching tries nothing else, then the fallback (Default): no enabled rotation here has a switch condition it can use.',1,true),report)
+    assert(not report:find('tries: then',1,true),report)
+    custom(f,268,'By hand',{switch={}});a:UpdateAutoSwitch()
+    report=table.concat(a:GetRotationEligibilityReport(),'\n')
+    assert(report:find('By hand [by-hand]: ready, manual only: no switch condition',1,true),report)
+    assert(table.concat(a:GetRotationHandleReport(),'\n'):find('by-hand — By hand (yours) — ready, manual only (no switch condition)',1,true))
 end)
 
 test('Classic (TBC): overrides and list order work on a client with one specialization key',function()

@@ -159,16 +159,19 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         if self.workspace.readOnly then
             local overrides=builtinOverrides(self.workspace) or {}
             if not self.priority:HasFocus() then self.priority:SetText(tostring(overrides.effectivePriority or 0)) end
+            -- An override colours the value (the priority number, the pill's
+            -- text); labels and borders stay as they are.
             local color=overrides.priority~=nil and amber or white
-            self.priority:SetTextColor(color[1],color[2],color[3]);self.priorityLabel:SetTextColor(color[1],color[2],color[3])
-            self.priorityLabel:SetText(overrides.priority~=nil and L['Your priority'] or L['Priority'])
-            if overrides.enabled~=nil then self.enable:SetAccent(amber[1],amber[2],amber[3],.85) else self.enable:SetAccent(.35,.65,.4,.7) end
+            self.priority:SetTextColor(color[1],color[2],color[3])
+            self.priorityLabel:SetText(L['Priority']);self.priorityLabel:SetTextColor(1,1,1)
+            color=overrides.enabled~=nil and amber or white
+            self.enable:GetFontString():SetTextColor(color[1],color[2],color[3])
             self.enable.tooltip=overrides.enabled~=nil and string.format(L['Your setting for this profile. The Built In ships %s.'],overrides.shippedEnabled and L['enabled'] or L['disabled']) or L['As the Built In ships. Click to change it for this profile.']
             self.priority.tooltip=overrides.priority~=nil and string.format(L['Your priority for this profile; the Built In ships with %d.'],overrides.shippedPriority or 0) or nil
             self.name:SetAlpha(.75);self.description:SetAlpha(.75)
         else
             if not self.priorityDirty then self.priority:SetText(tostring(snapshot.priority~=nil and snapshot.priority or 0));self.priority:SetTextColor(1,1,1) end
-            self.priorityLabel:SetText(L['Priority']);self.priorityLabel:SetTextColor(1,1,1);self.enable:SetAccent(.35,.65,.4,.7);self.enable.tooltip=nil;self.priority.tooltip=nil
+            self.priorityLabel:SetText(L['Priority']);self.priorityLabel:SetTextColor(1,1,1);self.enable:GetFontString():SetTextColor(1,1,1);self.enable.tooltip=nil;self.priority.tooltip=nil
             self.name:SetAlpha(1);self.description:SetAlpha(1)
         end
     end
