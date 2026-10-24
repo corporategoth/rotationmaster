@@ -253,6 +253,17 @@ function addon.layout_rotation_help(frame)
         "into account available resources, cooldown and range). A maximum of one rotation highlight may be active at any time."))
 
     group:AddChild(Gap())
+    group:AddChild(CreateText(L["Choosing a rotation"], "Interface\\AddOns\\" .. addon_name .. "\\Fonts\\Inconsolata-Bold.ttf", 16))
+    group:AddChild(Gap())
+    group:AddChild(CreateText(L["Automatic switching tries your own rotations first, then Built Ins, each in priority order: higher numbers are tried first, equal priorities by name. It picks the first whose switch condition matches. The fallback (Default) is used only when none matches. The rotation list is sorted in this same order and shows each priority."]))
+    group:AddChild(Gap())
+    group:AddChild(CreateText(L["Priority sits beside Enabled at the top of the editor. A Built In cannot be edited, but its Enabled setting and priority are yours to change for this profile: they are saved at once, shown in amber when they differ from how it ships, and Reset to default puts it back. Copy a Built In to your rotations to edit anything else."]))
+    group:AddChild(Gap())
+    group:AddChild(CreateText(L["A Built In loads only for the edition and class it was written for (shown under the switch). Its specialization and level are part of its switch condition, so the switch decides the rest."]))
+    group:AddChild(Gap())
+    group:AddChild(CreateText(L["In the list, a red border means the rotation cannot be selected (the tooltip names why), grey means it is switched off, and an amber bar means its switch condition can match at the same time as another rotation of the same kind, so only priority decides between them; a wider bar means they also have the same priority and the name decides. /rm why lists the order and what automatic switching would choose now."]))
+
+    group:AddChild(Gap())
     group:AddChild(CreateText("Fields", "Interface\\AddOns\\" .. addon_name .. "\\Fonts\\Inconsolata-Bold.ttf", 16))
 
     group:AddChild(Gap())

@@ -156,8 +156,45 @@ local function create(parent)
         -- Red when anything in it (a card, a branch child, a cooldown, the
         -- switch) stops it being selected; the tooltip names the first issue.
         local blocked=entry.problem~=nil or entry.validationState~=nil and entry.validationState~='valid' and entry.validationState~='pending'
-        addon:SetWorkbenchProblem(control,blocked and string.format(L['This rotation cannot be selected. %s.'],entry.problem and addon.DescribeRotationIssue and addon:DescribeRotationIssue(entry.problem) or L['It has incomplete or unsupported data']) or nil)
+        local blockedText=blocked and string.format(L['This rotation cannot be selected. %s.'],entry.problem and addon.DescribeRotationIssue and addon:DescribeRotationIssue(entry.problem) or L['It has incomplete or unsupported data']) or nil
+        addon:SetWorkbenchProblem(control,blockedText)
+        -- Grey when it is switched off (by you, or as it ships); amber when
+        -- its switch can match together with another of its tier, so only
+        -- priority decides (stronger on a tie). The tooltip says which apply.
+        local disabledText
+        if entry.readOnly and entry.builtinState=='user-disabled' then disabledText=L['Disabled by you: automatic switching skips it. Select it and click Disabled to turn it back on.']
+        elseif entry.readOnly and entry.builtinState=='shipped-disabled' then disabledText=L['Ships disabled (an alternative to the recommended Built In): automatic switching skips it until you turn it on.']
+        elseif not entry.readOnly and entry.enabled==false then disabledText=L['Disabled: automatic switching skips it.'] end
+        local alpha=disabledText and .5 or 1
+        control.nameLabel:SetAlpha(alpha);control.statusLabel:SetAlpha(alpha)
+        if disabledText then control.nameLabel:SetTextColor(.6,.6,.6) end
+        local overlapText,tie=nil,false
+        if not entry.fallback and self.overlaps and addon.DescribeSwitchOverlap then overlapText,tie=addon:DescribeSwitchOverlap(self.overlaps[key]) end
+        if addon.SetWorkbenchNotice then addon:SetWorkbenchNotice(control,overlapText and true or false,tie) end
+        local lines={}
+        if blockedText then lines[#lines+1]=blockedText end
+        if disabledText then lines[#lines+1]=disabledText end
+        if overlapText then lines[#lines+1]=overlapText end
+        if not entry.fallback then lines[#lines+1]=L['Higher numbers are tried first; your own rotations are always tried before Built Ins.'] end
+        control.tooltip=#lines>0 and table.concat(lines,'\n\n') or nil
         local function requestValid() return browser.active and browser.serial==serial and browser.profile==profile and profile==addon.db.profile and browser.spec==spec and browser.navigationRevision==navigation and browser.rowsByKey[key]~=nil end
+        -- A Built In you switched off turns back on from the list in one click.
+        if entry.readOnly and entry.builtinState=='user-disabled' then
+            if not control.enableButton then
+                control.enableButton=addon:CreateWorkbenchButton(control,L['Turn on'],64);control.enableButton:SetHeight(18)
+                control.enableButton:SetPoint('RIGHT',control,'RIGHT',-6,0)
+            end
+            local button=control.enableButton;button.tooltip=L['Turn this Built In back on for this profile.']
+            addon:SetUIScript(button,'OnClick',function()
+                if not requestValid() or control.browserLease~=lease then return end
+                local ok=addon:SetDefaultRotationEnabled(entry.canonicalId,true)
+                if ok then
+                    if addon.currentSpec~=nil and addon.db.profile.enable then addon:UpdateAutoSwitch();addon:SwitchRotation() end
+                    browser:RefreshRows()
+                end
+            end)
+            button:Show()
+        elseif control.enableButton then addon:SetUIScript(control.enableButton,'OnClick',nil);control.enableButton:Hide() end
         addon:SetUIScript(control,'OnClick',function() if requestValid() and browser.resultRevision==revision and control.browserLease==lease then browser:SelectRotation(spec,key,false,requestValid) end end);control:Show()
     end
     function browser:RefreshViewport()
@@ -205,11 +242,19 @@ local function create(parent)
         end
         if self.pendingId and byKey[self.pendingId] and not byKey[self.pendingId].pending then self.pendingId=nil end
         self.allByKey=byKey
+        -- The order automatic switching tries them in: your own rotations,
+        -- then Built Ins, each by priority (higher first), then name; the
+        -- fallback, the last resort, comes last.
         table.sort(all,function(a,b)
-            if a.fallback~=b.fallback then return a.fallback==true end
+            if a.fallback~=b.fallback then return b.fallback==true end
+            local ab,bb=a.kind=='builtin',b.kind=='builtin'
+            if ab~=bb then return bb end
+            local ap,bp=a.priority or -math.huge,b.priority or -math.huge
+            if ap~=bp then return ap>bp end
             if a.name~=b.name then return a.name<b.name end
             return tostring(a.key)<tostring(b.key)
         end)
+        self.overlaps=self.spec==addon.currentSpec and addon.GetSwitchOverlaps and addon:GetSwitchOverlaps(self.spec) or {}
         local tags,seen={},{};self.tagRevision=(self.tagRevision or 0)+1
         for _,entry in ipairs(all) do
             for _,tag in ipairs(entry.tags or {}) do local canonical=tag:lower();if not seen[canonical] then tags[#tags+1]=tag;seen[canonical]=true end end

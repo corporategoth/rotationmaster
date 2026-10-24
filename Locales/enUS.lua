@@ -939,6 +939,31 @@ L["Automatic switching tries: %s. Higher numbers are tried first; your own rotat
 L["Automatic switching would choose: %s"] = true
 L["%d Built In disabled: %s"] = true
 L["Disabled by you"] = true
+L["Choosing a rotation"] = true
+L["Automatic switching tries your own rotations first, then Built Ins, each in priority order: higher numbers are tried first, equal priorities by name. It picks the first whose switch condition matches. The fallback (Default) is used only when none matches. The rotation list is sorted in this same order and shows each priority."] = true
+L["Priority sits beside Enabled at the top of the editor. A Built In cannot be edited, but its Enabled setting and priority are yours to change for this profile: they are saved at once, shown in amber when they differ from how it ships, and Reset to default puts it back. Copy a Built In to your rotations to edit anything else."] = true
+L["A Built In loads only for the edition and class it was written for (shown under the switch). Its specialization and level are part of its switch condition, so the switch decides the rest."] = true
+L["In the list, a red border means the rotation cannot be selected (the tooltip names why), grey means it is switched off, and an amber bar means its switch condition can match at the same time as another rotation of the same kind, so only priority decides between them; a wider bar means they also have the same priority and the name decides. /rm why lists the order and what automatic switching would choose now."] = true
+L["You are playing %s; this rotation is saved for %s, so it is not selectable now."] = true
+L["Priority"] = true
+L["Your priority"] = true
+L["Reset to default"] = true
+L["Use the Built In as it ships: its own Enabled setting and priority."] = true
+L["Built In: read-only. Click to copy it to your rotations and edit the copy. Enabled and Priority are your own settings for this profile."] = true
+L["Your setting for this profile. The Built In ships %s."] = true
+L["As the Built In ships. Click to change it for this profile."] = true
+L["Your priority for this profile; the Built In ships with %d."] = true
+L["Turn on"] = true
+L["Turn this Built In back on for this profile."] = true
+L["Disabled by you: automatic switching skips it. Select it and click Disabled to turn it back on."] = true
+L["Ships disabled (an alternative to the recommended Built In): automatic switching skips it until you turn it on."] = true
+L["Disabled: automatic switching skips it."] = true
+L["Higher numbers are tried first; your own rotations are always tried before Built Ins."] = true
+L["Same priority as %s: their switch conditions can match together, and the tie is decided by name."] = true
+L["Can match together with %s: only priority decides which is chosen."] = true
+L["levels %s–%s"] = true
+L["expansions %s–%s"] = true
+L["Loads only for: %s. The switch condition decides the rest."] = true
 L["Ships disabled"] = true
 L["Built In rotations turned back on (they had been switched off without your choice): %s"] = true
 L["Disabled Built In rotations"] = true
@@ -2184,7 +2209,7 @@ L["Click to remove this tag. Right-click to choose its color."] = true
 
 L["Apply updates the draft. Apply the rotation to save it."] = true
 
-L["Edit the description, tags, switch priority, author, realm, email, website and version. Source citations remain separate from your attribution. Apply updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values."] = true
+L["Edit the description, tags, author, realm, email, website and version. Source citations remain separate from your attribution. Apply updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values."] = true
 
 L["Fields"] = true
 L['Search...'] = true

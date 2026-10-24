@@ -236,6 +236,15 @@ function addon:SetWorkbenchProblem(control,text)
     for _,edge in ipairs(control.problemEdges or {}) do if text then edge:Show() else edge:Hide() end end
     if text then control.tooltip=text else control.tooltip=control.problemBaseTooltip;control.problemBaseTooltip=nil end
 end
+-- An amber bar down a row's left edge: a notice, not a blocking problem.
+-- strong (a tie) makes it wider and brighter.
+function addon:SetWorkbenchNotice(control,shown,strong)
+    if not shown and not control.noticeBar then return end
+    if not control.noticeBar then control.noticeBar=control:CreateTexture(nil,'OVERLAY');control.noticeBar:SetPoint('TOPLEFT');control.noticeBar:SetPoint('BOTTOMLEFT') end
+    control.noticeBar:SetWidth(strong and 5 or 3);control.noticeBar:SetColorTexture(1,.72,.25,strong and 1 or .7)
+    control.noticeStrong=shown and strong or nil
+    if shown then control.noticeBar:Show() else control.noticeBar:Hide() end
+end
 function addon:CreateWorkbenchListRow(parent,width,height)
     local row=self:CreateWorkbenchButton(parent,'',width)
     row:SetHeight(height or 32)

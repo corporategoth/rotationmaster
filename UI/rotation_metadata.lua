@@ -43,9 +43,8 @@ function addon:InstallRotationMetadata(pane)
     function dialog:PaintScope()
         self.scope:SetText(pane:EffectiveScope()=='character' and L['This character'] or L['Class'])
     end
-    dialog.labels.priority=label(child,L['Switch priority'],170);dialog.labels.priority:SetWidth(96);dialog.labels.priority:SetHeight(24);dialog.labels.priority:SetJustifyV('MIDDLE')
-    pane.priority=addon:CreateWorkbenchEditBox(child);dialog.fields.priority=pane.priority;pane.priority:SetSize(352,24);pane.priority:SetPoint('TOPLEFT',116,-170);pane.priority:SetMaxLetters(7);pane.priority:SetWidth(80)
-    dialog.priorityDown=addon:CreateWorkbenchIconButton(child,'minus',L['Decrease priority']);dialog.priorityUp=addon:CreateWorkbenchIconButton(child,'plus',L['Increase priority'])
+    -- Switch priority is not metadata: it sits beside the Enabled pill in the
+    -- rotation editor's header (UI/rotation_editor.lua), with the switch.
     for index,entry in ipairs(definitions) do
         local key=entry[1];local y=200+(index-1)*30;dialog.labels[key]=label(child,L[entry[2]],y);dialog.labels[key]:SetWidth(96);dialog.labels[key]:SetHeight(24);dialog.labels[key]:SetJustifyV('MIDDLE')
         local input=addon:CreateWorkbenchEditBox(child);dialog.fields[key]=input;input:SetSize(352,24);input:SetPoint('TOPLEFT',116,-y);input:SetMaxLetters(512)
@@ -57,19 +56,18 @@ function addon:InstallRotationMetadata(pane)
     dialog.cancel=addon:CreateWorkbenchButton(frame,L['Cancel'],112);dialog.cancel:SetPoint('BOTTOMRIGHT',-16,28)
     dialog.close=addon:CreateWorkbenchIconButton(frame,'close',L['Close']);dialog.close:SetPoint('TOPRIGHT',-5,-5)
     dialog.help=addon:CreateWorkbenchHelpButton(frame,L['Help']);dialog.help:SetPoint('TOPRIGHT',-31,-5);dialog.help:SetSize(20,20);dialog.help.icon:SetSize(16,16)
-    addon:SetUIScript(dialog.help,'OnClick',function() if dialog:Valid() and addon.ShowWorkbenchHelp then addon:ShowWorkbenchHelp(L['Rotation metadata'],{{title=L['Description and attribution'],text=L['Edit the description, tags, switch priority, author, realm, email, website and version. Source citations remain separate from your attribution. Apply updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values.']},{title=L['Applies to'],text=L['Class rotations are shared by characters of the same class in this settings profile. This character limits the rotation to your current character. Applying a scope change moves the complete saved rotation; an existing destination is never overwritten.']}},pane:RotationDisplayName()) end end)
+    addon:SetUIScript(dialog.help,'OnClick',function() if dialog:Valid() and addon.ShowWorkbenchHelp then addon:ShowWorkbenchHelp(L['Rotation metadata'],{{title=L['Description and attribution'],text=L['Edit the description, tags, author, realm, email, website and version. Source citations remain separate from your attribution. Apply updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values.']},{title=L['Applies to'],text=L['Class rotations are shared by characters of the same class in this settings profile. This character limits the rotation to your current character. Applying a scope change moves the complete saved rotation; an existing destination is never overwritten.']}},pane:RotationDisplayName()) end end)
     pane.tags.tooltip=L['Separate tags with commas. Use quotes for tags containing commas. Any personal label is allowed.']
     addon:SetUIScript(frame,'OnMouseUp',function(control,button) if button=='RightButton' then bodyMouseUp(control,button) end end)
     addon:SetUIScript(scroll,'OnMouseUp',function(control,button) if button=='RightButton' then bodyMouseUp(control,button) end end);scroll:EnableMouse(true)
     function dialog:Layout(sourceText)
         self.sourceText=sourceText
         local tagsY=self:HasOwnership() and 170 or 140
-        local priorityY=tagsY+(self.tagPicker.height or 24)+6;local metadataY=priorityY+30;local sourceY=metadataY+#definitions*30+6
+        local metadataY=tagsY+(self.tagPicker.height or 24)+6;local sourceY=metadataY+#definitions*30+6
         local function place(control,x,y) control:ClearAllPoints();control:SetPoint('TOPLEFT',x,-y) end
         if self:HasOwnership() then self.labels.scope:Show();self.scope:Show();self.fields.scope=self.scope
         else self.labels.scope:Hide();self.scope:Hide();self.fields.scope=nil end
         place(self.labels.tags,8,tagsY);place(pane.tags,116,tagsY);place(self.tagPicker.frame,116,tagsY)
-        place(self.labels.priority,8,priorityY);place(self.priorityDown,116,priorityY+2);place(pane.priority,140,priorityY);place(self.priorityUp,224,priorityY+2)
         for i,entry in ipairs(definitions) do place(self.labels[entry[1]],8,metadataY+(i-1)*30);place(self.fields[entry[1]],116,metadataY+(i-1)*30) end
         place(self.sourceHeading,8,sourceY);place(self.source,8,sourceY+20)
         local contentHeight=sourceY
@@ -87,11 +85,9 @@ function addon:InstallRotationMetadata(pane)
         if not pane.descriptionDirty then pane.description:SetText(snapshot.description or (pane.workspace.readOnly and pane.workspace.description or '')) end
         if not pane.tagsDirty then pane.tags:SetText(data.FormatRotationTags(pane:EffectiveTags(snapshot)) or '');pane.tags:SetTextColor(1,1,1) end
         self.tagPicker:SetTags(data.ParseRotationTags(pane.tags:GetText()) or {})
-        if not pane.priorityDirty then pane.priority:SetText(tostring(snapshot.priority~=nil and snapshot.priority or 0));pane.priority:SetTextColor(1,1,1) end
         if not pane.scopeDirty then pane.scopeDraft=pane.workspace.scope end;self:PaintScope()
-        if self.opened and not pane.descriptionDirty and not pane.metadataDirty and not pane.tagsDirty and not pane.priorityDirty and not pane.scopeDirty then
+        if self.opened and not pane.descriptionDirty and not pane.metadataDirty and not pane.tagsDirty and not pane.scopeDirty then
             self.startMetadata=data.CopyData(metadata);self.startMetadataDirty=false;self.startDescription=pane.description:GetText();self.startDescriptionDirty=false;self.startTags=pane.tags:GetText();self.startTagsDirty=false
-            self.startPriority=pane.priority:GetText();self.startPriorityDirty=false
             self.startScope=pane.scopeDraft;self.startScopeDirty=false
         end
         for _,entry in ipairs(definitions) do self.fields[entry[1]]:SetText(type(metadata[entry[1]])=='string' and metadata[entry[1]] or '') end
@@ -100,7 +96,7 @@ function addon:InstallRotationMetadata(pane)
         if not pane.active or self.workspace~=pane.workspace or self.generation~=pane.generation then return end
         pane.metadataDraft=data.CopyData(self.startMetadata);pane.metadataDirty=self.startMetadataDirty
         pane.description:SetText(self.startDescription);pane.descriptionDirty=self.startDescriptionDirty;pane.tags:SetText(self.startTags or '');pane.tagsDirty=self.startTagsDirty;pane:UpdateHistory()
-        pane.priority:SetText(self.startPriority or '0');pane.priorityDirty=self.startPriorityDirty;pane.priority:SetTextColor(1,1,1);self.tagPicker:SetTags(data.ParseRotationTags(pane.tags:GetText()) or {});pane:Message('');pane:UpdateHistory()
+        self.tagPicker:SetTags(data.ParseRotationTags(pane.tags:GetText()) or {});pane:Message('');pane:UpdateHistory()
         pane.scopeDraft=self.startScope;pane.scopeDirty=self.startScopeDirty;self:PaintScope();pane:UpdateHistory()
     end
     function dialog:Close(keep)
@@ -111,10 +107,9 @@ function addon:InstallRotationMetadata(pane)
         if self:Valid() then addon:RegisterWindowForEscape(self);frame:Raise();return end
         self.openToken=(self.openToken or 0)+1
         self.workspace=pane.workspace;self.generation=pane.generation
-        if not pane.metadataDirty and not pane.tagsDirty and not pane.priorityDirty and not pane.scopeDirty then self:Sync() end
+        if not pane.metadataDirty and not pane.tagsDirty and not pane.scopeDirty then self:Sync() end
         self.startMetadata=data.CopyData(pane.metadataDraft);self.startMetadataDirty=pane.metadataDirty
         self.startDescription=pane.description:GetText();self.startDescriptionDirty=pane.descriptionDirty;self.startTags=pane.tags:GetText();self.startTagsDirty=pane.tagsDirty
-        self.startPriority=pane.priority:GetText();self.startPriorityDirty=pane.priorityDirty;pane.lastPriorityText=self.startPriority
         self.startScope=pane.scopeDraft;self.startScopeDirty=pane.scopeDirty;self:PaintScope()
         local readOnly=pane.workspace.readOnly
         local lines={}
@@ -133,13 +128,6 @@ function addon:InstallRotationMetadata(pane)
         self.chrome:SetContext(pane:RotationDisplayName(),L['Metadata'],pane:RotationDisplayName());self:Layout(table.concat(lines,'\n\n'));scroll.workbenchBar:SetValue(0);descriptionScroll.workbenchBar:SetValue(0)
         for _,input in pairs(self.fields) do input:EnableMouse(not readOnly) end
         self.tagPicker.options.readOnly=readOnly;self.tagPicker.input:EnableMouse(not readOnly);self.tagPicker:SetTags(data.ParseRotationTags(pane.tags:GetText()) or {})
-        local function stepPriority(delta)
-            if not self:Valid() or readOnly then return end
-            local text=pane.priority:GetText();local number=tonumber(text);if text~='' and number==nil then return end;local value=data.GetRotationPriority(text=='' and nil or number);if value==nil then return end
-            pane.priority:SetText(tostring(math.max(-100000,math.min(100000,value+delta))));pane.priorityDirty=true;pane:UpdateHistory()
-        end
-        addon:SetUIScript(self.priorityDown,'OnClick',function() stepPriority(-1) end);addon:SetUIScript(self.priorityUp,'OnClick',function() stepPriority(1) end)
-        if readOnly then self.priorityDown:Disable();self.priorityUp:Disable() else self.priorityDown:Enable();self.priorityUp:Enable() end
         if readOnly then self.apply:Disable() else self.apply:Enable() end
         local token=self.openToken;local owner=self.workspace
         local function valid() return self:Valid() and token==self.openToken and owner==self.workspace end
@@ -164,13 +152,6 @@ function addon:InstallRotationMetadata(pane)
         addon:SetUIScript(pane.tags,'OnLeave',function() if GameTooltip and GameTooltip:IsOwned(pane.tags) then GameTooltip:Hide() end end)
         addon:SetUIScript(pane.tags,'OnEditFocusGained',readOnly and function(control) control:ClearFocus() end or nil)
         addon:SetUIScript(pane.tags,'OnMouseUp',function(_,button) if button=='RightButton' then bodyMouseUp(nil,button) end end)
-        addon:SetUIScript(pane.priority,'OnTextChanged',function(_,user)
-            if valid() and not readOnly and user then local text=pane.priority:GetText();if text~='' and text~='-' and not text:match('^%-?%d+$') then pane.priority:SetText(pane.lastPriorityText or self.startPriority or '0');return end;pane.lastPriorityText=text;pane.priorityDirty=true;pane.priority:SetTextColor(1,1,1);pane:UpdateHistory() end
-        end)
-        addon:SetUIScript(pane.priority,'OnEditFocusGained',readOnly and function(control) control:ClearFocus() end or nil)
-        addon:SetUIScript(pane.priority,'OnMouseUp',function(_,button) if button=='RightButton' then bodyMouseUp(nil,button) end end)
-        addon:SetUIScript(pane.priority,'OnEnter',function() if valid() and GameTooltip then GameTooltip:SetOwner(pane.priority,'ANCHOR_RIGHT');GameTooltip:SetText(L['Higher numbers are tried first; your own rotations are always tried before Built Ins. The fallback is used only when no switch condition of another rotation matches. Equal priorities use name, then identity. Blank means zero.'],1,1,1,1,true) end end)
-        addon:SetUIScript(pane.priority,'OnLeave',function() if GameTooltip and GameTooltip:IsOwned(pane.priority) then GameTooltip:Hide() end end)
         addon:SetUIScript(self.apply,'OnClick',function()
             if not valid() or readOnly then return end
             if pane:FlushName() then self:Close(true);pane:Render() end

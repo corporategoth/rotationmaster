@@ -438,6 +438,10 @@ function addon:InitializeRotationLibrary()
         -- preference decides, and eligible() already applies it. Left on the
         -- runtime copy it would keep an enabled pack out of auto-switching.
         bodies[id].disabled=nil
+        -- The player's priority for this pack (profile, keyed by id, so it
+        -- survives revisions) replaces the shipped one on the runtime copy.
+        local override=plainTable(state.preferences[id]) and data.GetRotationPriority(state.preferences[id].priority)
+        if override and state.preferences[id].priority~=nil then bodies[id].priority=override end
     end
     invalidateExecution()
     active={profile=profile,state=state,catalog=catalog,views=views,bodies=bodies,cloneScopes={},version=definitionVersion,referenceStamp=referenceStamp,generation={}}
@@ -754,6 +758,55 @@ function addon:SetDefaultRotationEnabled(id,value)
         elseif retireActive(self,change) and activeCurrent(self,change) then self.manualRotation=false end
     end
     return saved,reason
+end
+-- Per-profile Built In overrides live in rotationLibrary.preferences[id]
+-- ({enabled=, priority=}); the rotation itself is never copied. A value equal
+-- to the shipped one is not stored.
+local function shippedPriority(id)
+    local definition=definitions[id]
+    return plainTable(definition) and plainTable(definition.body) and data.GetRotationPriority(definition.body.priority) or 0
+end
+function addon:GetBuiltinOverrides(id)
+    if not ensure(self) then return nil end
+    if not active.views[id] then return nil end
+    local preference=active.state.preferences[id];local definition=definitions[id]
+    local shippedOn=not (plainTable(definition) and plainTable(definition.body) and definition.body.disabled==true)
+    local result={shippedEnabled=shippedOn,shippedPriority=shippedPriority(id)}
+    if plainTable(preference) then
+        if type(preference.enabled)=='boolean' then result.enabled=preference.enabled end
+        if preference.priority~=nil then result.priority=data.GetRotationPriority(preference.priority) end
+    end
+    result.effectiveEnabled=result.enabled==nil and shippedOn or result.enabled==true
+    result.effectivePriority=result.priority or result.shippedPriority
+    result.overridden=result.enabled~=nil or result.priority~=nil
+    return result
+end
+function addon:SetBuiltinPriority(id,value)
+    local ok,why=ensure(self);if not ok then return false,why end
+    if not active.views[id] then return false,'unknown-rotation' end
+    if value~=nil and not data.GetRotationPriority(value) then return false,'invalid-priority' end
+    local preferences=active.state.preferences
+    local preference=preferences[id]
+    if preference~=nil and not plainTable(preference) then return false,'invalid-preference' end
+    if value~=nil and value~=shippedPriority(id) then
+        if not preference then preference={};preferences[id]=preference end
+        preference.priority=value
+    elseif preference then
+        preference.priority=nil
+        if next(preference)==nil then preferences[id]=nil end
+    end
+    invalidateExecution()
+    active.bodies[id].priority=value~=nil and value or shippedPriority(id)
+    active.generation={}
+    if invalidateChoiceContext then invalidateChoiceContext(self) end
+    return true
+end
+-- Back to the shipped switch and priority: the preference entry is removed.
+function addon:ResetBuiltinOverrides(id)
+    local current=self:GetBuiltinOverrides(id);if not current then return false,'unknown-rotation' end
+    local ok,why=self:SetBuiltinPriority(id,nil);if not ok then return false,why end
+    if current.enabled~=nil then return self:SetDefaultRotationEnabled(id,current.shippedEnabled) end
+    return true
 end
 function addon:GetEditableRotation(spec,id)
     local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator();if scoped then return scoped:GetEditableRotation(spec,id) end
