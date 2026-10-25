@@ -81,10 +81,13 @@ test('your rotations: an identifier made from the name until set, validated, uni
     assert(a:CheckRotationIdentifier(268,aoe,'auto'):find('reserved',1,true))
     assert(a:CheckRotationIdentifier(268,aoe,'BrewMaster'):find('Blizzard Assisted with brews already uses the identifier brewmaster',1,true))
     assert(a:CheckRotationIdentifier(268,aoe,'aoe-cleave')==nil and a:CheckRotationIdentifier(268,aoe,'Mine')==nil)
-    -- The editor: Identifier, Priority, Enabled on one line; an invalid or taken identifier blocks Apply and says why.
+    -- The editor: Identifier, then Priority, then Enabled; an invalid or taken identifier blocks Apply and says why.
     local parent=f.env.CreateFrame('Frame');parent:SetSize(1000,700)
     local pane=assert(a:CreateRotationEditor(parent,268,aoe))
-    local _,toPriority=pane.identifier:GetPoint(1);assert(toPriority==pane.priorityLabel,'identifier is not left of priority')
+    do
+        local resolve=dofile('tests/fixtures/layout_audit.lua').resolver(pane.frame);local id,priority=resolve(pane.identifier),resolve(pane.priorityLabel)
+        assert(id.right<=priority.left,'identifier is not left of priority')
+    end
     assert(pane.identifierLabel:GetText()=='ID','the editor labels the identifier ID')
     assert(pane.identifier:GetText()=='aoe-cleave')
     pane.identifier:SetText('brewmaster');pane.identifier.scripts.OnTextChanged(pane.identifier,true)

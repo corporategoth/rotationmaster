@@ -320,13 +320,13 @@ test('the Rotations list: a specialization dropdown above the search box, the cu
     browser=a:CreateRotationBrowser(host,{spec=268});assert(browser.specValue==268);browser:Release()
 end)
 
-test('the editor header: a specialization picker on the ID/Priority/Enabled line, several or Any, read-only on a Built In',function()
+test('the editor header: a specialization picker first on the name line, several or Any, read-only on a Built In',function()
     local f=T.new{level=10,specIndex=1};local a=f.addon
     local parent=f.env.CreateFrame('Frame');parent:SetSize(900,700)
     local pane=assert(a:CreateRotationEditor(parent,268,key(a,'rm.retail.monk.brewmaster')));pane:Layout()
     assert(pane.specButton:IsShown() and not pane.specButton:IsEnabled() and pane.specButton:GetText()=='Brewmaster','Built In picker')
-    local _,anchor=pane.specButton:GetPoint(1);assert(anchor==pane.identifierLabel,'the picker is not on the header line')
-    local _,_,_,_,y=pane.specButton:GetPoint(1);local _,_,_,_,idY=pane.identifier:GetPoint(1);assert(y==idY,'the picker is on another row')
+    local _,_,_,x,y=pane.specButton:GetPoint(1);local _,_,_,nameX,nameY=pane.name:GetPoint(1)
+    assert(x==8 and y>nameY-8 and nameX>x+pane.specButton:GetWidth(),'the picker is not first on the name line')
     local mineKey=custom(f,268,'Mine',{specs={268},switch=COMBAT})
     pane=assert(a:CreateRotationEditor(parent,268,mineKey));pane:Layout()
     assert(pane.specButton:IsEnabled() and pane.specButton:GetText()=='Brewmaster')
@@ -356,7 +356,7 @@ test('the Default\'s editor shows its specialization read-only: a specialization
         assert(pane.specButton:GetText()==entry.name,'the Default of '..entry.name..' says '..tostring(pane.specButton:GetText()))
         pane.specButton:Click();assert(not pane.specMenu.frame or not pane.specMenu.frame:IsShown(),'a read-only picker opened a menu')
         assert(pane.workspace:Snapshot().specs==nil and not pane.workspace:IsDirty(),'the Default changed')
-        local _,anchor=pane.specButton:GetPoint(1);assert(anchor==pane.identifierLabel)
+        local _,_,_,x=pane.specButton:GetPoint(1);assert(x==8,'the Default picker is not first on the name line')
         pane:Release()
     end
     local initial;for _,entry in ipairs(entries) do if entry.initial then initial=entry end end
@@ -368,50 +368,8 @@ test('the Default\'s editor shows its specialization read-only: a specialization
     assert(ea:GetRotationSpecKind()=='slot' and pane.specButton:IsShown() and not pane.specButton:IsEnabled() and pane.specButton:GetText()=='All specializations',tostring(pane.specButton:GetText()))
 end)
 
--- The header stays on one line at the narrowest editor width, in English,
--- German and Russian, with the picker on the Default, a Built In and your own.
-test('the editor header keeps the picker, ID, Priority and Enabled on one line at the minimum width (enUS, deDE, ruRU)',function()
-    local audit=dofile('tests/fixtures/layout_audit.lua')
-    local function chars(text) local n=0;for _ in (text or ''):gmatch('[^\128-\191]') do n=n+1 end return n end
-    for _,language in ipairs({'enUS','deDE','ruRU'}) do
-        local f=T.new{level=10,specIndex=1};local a=f.addon
-        if language~='enUS' then f.env.GetLocale=function() return language end;f.load('Locales/'..language..'.lua') end
-        local mine=custom(f,268,'Mine',{specs={268},switch=COMBAT})
-        for _,case in ipairs({{'Default',f.env.DEFAULT},{'Built In',key(a,'rm.retail.monk.brewmaster')},{'own',mine}}) do
-            local parent=f.env.CreateFrame('Frame');parent:SetSize(800-24-210-18,420)
-            local pane=assert(a:CreateRotationEditor(parent,268,case[2]))
-            for _,label in ipairs({pane.identifierLabel,pane.priorityLabel,pane.nameLabel,pane.descriptionLabel}) do function label:GetStringWidth() return chars(self.text)*7 end end
-            pane:Layout()
-            local resolve=audit.resolver(pane.frame);local label=language..' '..case[1]
-            local controls={{'picker',pane.specButton},{'identifier label',pane.identifierLabel},{'identifier',pane.identifier},{'enable',pane.enable},{'delete',pane.delete},{'info',pane.info}}
-            if case[1]~='Default' then controls[#controls+1]={'priority',pane.priority};controls[#controls+1]={'priority label',pane.priorityLabel} end
-            local rects={}
-            for _,c in ipairs(controls) do
-                if c[2]:IsShown() then
-                    local r=assert(resolve(c[2]),label..': '..c[1]..' has no position');rects[#rects+1]={c[1],r}
-                    assert(r.right>=r.left and r.left>=-.5 and r.right<=pane.frame.width+.5,string.format('%s: %s leaves the pane [%.1f..%.1f]',label,c[1],r.left,r.right))
-                end
-            end
-            for i=1,#rects do for j=i+1,#rects do
-                local x,y=rects[i][2],rects[j][2]
-                assert(not (x.left<y.right-.5 and y.left<x.right-.5 and x.bottom<y.top-.5 and y.bottom<x.top-.5),label..': '..rects[i][1]..' overlaps '..rects[j][1])
-            end end
-            assert(pane.specButton:IsShown(),label..': no picker')
-            local picker,identifier=resolve(pane.specButton),resolve(pane.identifier)
-            assert(math.abs((picker.top+picker.bottom)-(identifier.top+identifier.bottom))<1,label..': the picker is on another row than the ID')
-            assert((case[1]=='own')==pane.specButton:IsEnabled(),label..': the picker is '..(pane.specButton:IsEnabled() and 'editable' or 'read-only'))
-            -- The tools row (Undo, Redo...) leaves the controls above alone.
-            for _,tool in ipairs(pane.tools) do
-                if tool:IsShown() then
-                    local t=resolve(tool);for _,c in ipairs(rects) do local r=c[2]
-                        assert(not (t.left<r.right-.5 and r.left<t.right-.5 and t.bottom<r.top-.5 and r.bottom<t.top-.5),label..': a tool overlaps the '..c[1])
-                    end
-                end
-            end
-            pane:Release()
-        end
-    end
-end)
+-- The header's geometry (both rows, three locales, two widths) is proved in
+-- tests/rotation_header_layout.lua.
 -- A list row's line is only the kind, the specialization and the priority; the
 -- rest (read-only, switched off, not available) is color and tooltip.
 test('a list row says kind, specialization and priority on one line at the narrowest window (enUS, deDE, ruRU), and nothing else',function()

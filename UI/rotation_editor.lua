@@ -12,6 +12,10 @@ local function builtinSwitch(workspace)
     if type(addon.GetBuiltinSwitch)=='function' then return (addon:GetBuiltinSwitch(workspace.builtin)) end
     local source=workspace.source;return type(source)=='table' and (source.switchedOn==nil and source.enabled or source.switchedOn) or nil
 end
+-- The editor header: the specialization picker's fixed width (it holds "All
+-- specializations" and the longest Retail names), the gap between controls and
+-- the slot at the start of row 2 (the Read-Only pill, or Undo and Redo).
+local SPEC_WIDTH,HEADER_GAP,KIND_WIDTH=172,8,78
 local function builtinOverrides(workspace)
     return workspace.readOnly and type(addon.GetBuiltinOverrides)=='function' and addon:GetBuiltinOverrides(workspace.builtin) or nil
 end
@@ -20,9 +24,11 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     local workspace,why=self:GetRotationEditWorkspace(spec,id);if not workspace then return nil,why end
     local pane={frame=self:TrackWorkbenchSize(CreateFrame('Frame',nil,parent)),workspace=workspace,view={collapsed={},expanded={},detailsHeights={}},active=false,tools={}}
     pane.frame:SetPoint('TOPLEFT',parent,'TOPLEFT',0,0)
+    -- The field has no label of its own: it is the wide one beside the
+    -- specialization picker. An empty field and its tooltip say "Name".
     pane.name=self:CreateWorkbenchEditBox(pane.frame);pane.name:SetPoint('TOPLEFT',8,-4);pane.name:SetSize(320,24);pane.name:SetMaxLetters(256)
+    pane.name.tooltip=L['Name'];self:AttachWorkbenchSearchHint(pane.name,L['Name'])
     pane.origin=text(pane.frame);pane.origin:SetText('');pane.origin:Hide()
-    pane.nameLabel=text(pane.frame);pane.nameLabel:SetText(L['Name']);pane.nameLabel:SetPoint('TOPLEFT',8,-10)
     pane.descriptionLabel=text(pane.frame);pane.descriptionLabel:SetText(L['Description']);pane.descriptionLabel:SetPoint('TOPLEFT',8,-38)
     pane.description=CreateFrame('EditBox',nil,pane.frame);pane.description:SetFontObject('GameFontHighlightSmall');pane.description:SetAutoFocus(false);pane.description:SetMultiLine(true);pane.description:SetMaxLetters(4096);pane.description:SetPoint('TOPLEFT',86,-30);pane.description:SetSize(300,36)
     pane.info=addon:CreateWorkbenchLabeledIconButton(pane.frame,'info',L['Metadata'],92)
@@ -204,7 +210,9 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         local text=workspace.fallback and self:FallbackSpecText() or addon:DescribeRotationSpecs(specs)
         self.specButton:SetText(text);addon:AlignWorkbenchTextLeft(self.specButton,26)
         local tip=L['The specializations this rotation is for. It is listed, and can be chosen, only while you play one of them; Any means every specialization.']
-        if self.workspace.readOnly or workspace.fallback then self.specButton:Disable();self.specButton:SetAlpha(.75);tip=text..'\n\n'..tip
+        -- The picker has a fixed width, so a long choice is read in full here.
+        tip=text..'\n\n'..tip
+        if self.workspace.readOnly or workspace.fallback then self.specButton:Disable();self.specButton:SetAlpha(.75)
         else self.specButton:Enable();self.specButton:SetAlpha(1) end
         self.specButton.tooltip=tip
     end
@@ -285,6 +293,13 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     end
     pane.undo=tool(L['Undo'],24,function() if not pane:FlushName() then return end;local flushed,reason=pane:FlushFieldEdits();if not flushed then pane:Message(reason);return end;local ok,problem=workspace.session:Undo();if ok then pane:Render() else pane:Message(problem) end end,'undo')
     pane.redo=tool(L['Redo'],24,function() local ok,problem=workspace.session:Redo();if ok then pane:Render() else pane:Message(problem) end end,'redo')
+    -- Undo and Redo share the Read-Only pill's place at the start of the
+    -- second row (a Built In has nothing to undo): two icon buttons that
+    -- together are as wide as the pill, so nothing moves between the two.
+    for _,control in ipairs({pane.undo,pane.redo}) do
+        control:SetText('');control:SetSize((KIND_WIDTH-4)/2,20)
+        control.icon:ClearAllPoints();control.icon:SetPoint('CENTER',0,0)
+    end
     pane.switchButton=addon:CreateWorkbenchButton(pane.frame,'',300);pane.switch=pane.switchButton
     pane.switchText=pane.switchButton:GetFontString();pane.switchText:ClearAllPoints();pane.switchText:SetPoint('TOPLEFT',6,-4);pane.switchText:SetWordWrap(true);pane.switchText:SetJustifyH('LEFT')
     pane.switchLabel=addon:CreateWorkbenchButton(pane.frame,L['Switch condition'],180);addon:StyleWorkbenchHeader(pane.switchLabel:GetFontString());pane.switchLabel.art:SetAlpha(.1);addon:AlignWorkbenchTextLeft(pane.switchLabel,0)
@@ -326,23 +341,25 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     -- Built In both are your settings for this profile, saved at once and
     -- shown in amber when they differ from the pack's; the pack itself is
     -- never copied.
-    -- The identifier (/rm set <id>) leads the line: ID, Priority, Enabled.
+    -- The second line: the kind (Read-Only, or Undo and Redo), the identifier
+    -- (/rm set <id>), Priority, Enabled, Delete; see LayoutGeometry.
     pane.identifierLabel=text(pane.frame);pane.identifierLabel:SetText(L['ID']);pane.identifierLabel:SetJustifyH('RIGHT')
-    pane.identifier=addon:CreateWorkbenchEditBox(pane.frame);pane.identifier:SetSize(124,20);pane.identifier:SetMaxLetters(32)
+    pane.identifier=addon:CreateWorkbenchEditBox(pane.frame);pane.identifier:SetSize(108,20);pane.identifier:SetMaxLetters(32)
     pane.priorityLabel=text(pane.frame);pane.priorityLabel:SetText(L['Priority']);pane.priorityLabel:SetJustifyH('RIGHT')
     pane.priority=addon:CreateWorkbenchEditBox(pane.frame);pane.priority:SetSize(56,20);pane.priority:SetMaxLetters(7)
     pane.priorityDown=addon:CreateWorkbenchIconButton(pane.frame,'minus',L['Decrease priority']);pane.priorityDown:SetSize(18,18)
     pane.priorityUp=addon:CreateWorkbenchIconButton(pane.frame,'plus',L['Increase priority']);pane.priorityUp:SetSize(18,18)
-    -- The rotation's specializations (body.specs), on the same line: where it
-    -- is listed and can be chosen. Several, or Any; read-only on a Built In.
-    pane.specButton=addon:CreateWorkbenchLabeledIconButton(pane.frame,'chevron-down','',150);pane.specButton:SetHeight(20)
+    -- The rotation's specializations (body.specs), first on the name line:
+    -- where it is listed and can be chosen. Several, or Any; read-only on a
+    -- Built In and on the Default.
+    pane.specButton=addon:CreateWorkbenchLabeledIconButton(pane.frame,'chevron-down','',SPEC_WIDTH);pane.specButton:SetHeight(20)
     pane.specMenu=addon:CreateWorkbenchSelector()
     pane.overrideReset=addon:CreateWorkbenchButton(pane.frame,L['Reset to default'],116);pane.overrideReset:SetHeight(20)
     pane.overrideReset.tooltip=L['Use the Built In as it ships: its own Enabled setting and priority.']
     -- A Built In shows a blue Read-Only pill where Undo and Redo sit (it has
     -- nothing to undo). It is a label, not a button; its tooltip says where
     -- the pack loads. Duplicate makes an editable copy.
-    pane.readOnlyPill=addon:CreateWorkbenchPill(pane.frame,L['Read-Only'],78);pane.readOnlyPill:SetSelected(true)
+    pane.readOnlyPill=addon:CreateWorkbenchPill(pane.frame,L['Read-Only'],KIND_WIDTH);pane.readOnlyPill:SetSelected(true)
     pane.readOnlyPill:SetAccent(.357,.753,.922,.9);pane.readOnlyPill:GetFontString():SetTextColor(.357,.753,.922);pane.readOnlyPill:Hide()
     pane.switchBaseTooltip=pane.switch.tooltip
     -- What else bears on selection, kept off the page (vertical space is
@@ -585,46 +602,80 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     function pane:HasUnsavedChanges() return not self.deleted and not self.workspace.readOnly and (self.workspace:IsDirty() or self.nameDirty==true or self.descriptionDirty==true or self.metadataDirty==true or self.tagsDirty==true or self.priorityDirty==true or self.identifierDirty==true or self.scopeDirty==true or self:HasPendingFields()) end
     function pane:LayoutGeometry()
         if not self.ready then return end
-        local width,height=self.frame:GetWidth(),self.frame:GetHeight();local x,y=8,34
+        local width,height=self.frame:GetWidth(),self.frame:GetHeight()
         local reserve=addon:GetWorkbenchHelpReserve(self.frame)
-        self.name:ClearAllPoints();self.name:SetPoint('TOPLEFT',86,-4);self.name:SetWidth(math.max(100,width-94-self.info:GetWidth()-8-reserve))
-        self.info:ClearAllPoints();self.info:SetPoint('TOPRIGHT',self.frame,'TOPRIGHT',-8-reserve,-4)
+        local frame=self.frame
         local overrides=builtinOverrides(self.workspace)
         local showPriority=not workspace.fallback
         local showReset=overrides~=nil and overrides.overridden
         local showSpecs=self:ShowsSpecs()
-        local headerReserve=112+(showPriority and 132 or 0)+(showReset and 122 or 0)+(showSpecs and 158 or 0)+180
-        -- A Built In has nothing to undo: the Read-Only pill takes that place.
         local readOnly=self.workspace.readOnly
-        if readOnly then
-            self.readOnlyPill:ClearAllPoints();self.readOnlyPill:SetPoint('TOPLEFT',self.frame,'TOPLEFT',x,-y-3);self.readOnlyPill:Show();x=x+self.readOnlyPill:GetWidth()+4
-        else self.readOnlyPill:Hide() end
-        for _,control in ipairs(self.tools) do
-            if readOnly and (control==self.undo or control==self.redo) then control:Hide()
-            else
-                control:Show()
-                if x+control:GetWidth()>width-headerReserve then x=8;y=y+24 end
-                control:ClearAllPoints();control:SetPoint('TOPLEFT',self.frame,'TOPLEFT',x,-y);x=x+control:GetWidth()+4
-            end
+        -- Row 1: the specialization picker where a label used to be, the name
+        -- taking whatever is left, then Metadata (and the help icon's corner).
+        local x=8
+        self.info:ClearAllPoints();self.info:SetPoint('TOPRIGHT',frame,'TOPRIGHT',-8-reserve,-4)
+        if showSpecs then
+            self.specButton:SetWidth(SPEC_WIDTH);self.specButton:ClearAllPoints();self.specButton:SetPoint('TOPLEFT',frame,'TOPLEFT',8,-6);self.specButton:Show()
+            x=8+SPEC_WIDTH+HEADER_GAP
+        else self.specButton:Hide() end
+        self.name:ClearAllPoints();self.name:SetPoint('TOPLEFT',frame,'TOPLEFT',x,-4)
+        self.name:SetWidth(math.max(60,width-x-HEADER_GAP-self.info:GetWidth()-8-reserve))
+        -- Row 2 is three groups, kept whole: the kind slot (the Read-Only pill on
+        -- a Built In; Undo and Redo, in the same space, on your own), then ID with Priority, then
+        -- Enabled with Delete (and Reset to default). They run left to right
+        -- in that order; a group that does not fit moves down to the next
+        -- line, so nothing ever sits on another control. Enabled and Delete
+        -- keep to the right edge of their line.
+        local function place(control,left,top)
+            control:ClearAllPoints();control:SetPoint('TOPLEFT',frame,'TOPLEFT',left,-(top+(20-control:GetHeight())/2))
         end
-        self.delete:ClearAllPoints();self.delete:SetPoint('TOPRIGHT',self.frame,'TOPRIGHT',-8,-34)
-        self.enable:ClearAllPoints();self.enable:SetPoint('TOPRIGHT',self.frame,'TOPRIGHT',-36,-35)
+        local function placeLabel(label,left,top)
+            label:ClearAllPoints();label:SetPoint('LEFT',frame,'TOPLEFT',left,-(top+10))
+        end
+        local function sized(label) local w=math.max(1,math.ceil(label:GetStringWidth() or 0));label:SetWidth(w);label:SetHeight(12);return w end
+        local kind,kindWidth={},0
+        if readOnly then
+            self.readOnlyPill:Show();kind[1]=self.readOnlyPill
+        else
+            self.readOnlyPill:Hide()
+            for _,control in ipairs(self.tools) do control:Show();kind[#kind+1]=control end
+        end
+        for _,control in ipairs(self.tools) do if readOnly then control:Hide() end end
+        kindWidth=KIND_WIDTH -- one slot, whichever of the two shows
+        local idLabelWidth=sized(self.identifierLabel);local priorityLabelWidth=sized(self.priorityLabel)
+        local idWidth=idLabelWidth+4+self.identifier:GetWidth()
+        local priorityWidth=priorityLabelWidth+4+18+2+self.priority:GetWidth()+2+18
+        local middleWidth=idWidth+(showPriority and HEADER_GAP+2+priorityWidth or 0)
+        local endWidth=self.enable:GetWidth()+4+self.delete:GetWidth()+(showReset and self.overrideReset:GetWidth()+4 or 0)
         for _,control in ipairs({self.priorityLabel,self.priority,self.priorityDown,self.priorityUp}) do if showPriority then control:Show() else control:Hide() end end
-        self.priorityUp:ClearAllPoints();self.priorityUp:SetPoint('RIGHT',self.enable,'LEFT',-8,0)
-        self.priority:ClearAllPoints();self.priority:SetPoint('RIGHT',self.priorityUp,'LEFT',-2,0)
-        self.priorityDown:ClearAllPoints();self.priorityDown:SetPoint('RIGHT',self.priority,'LEFT',-2,0)
-        self.priorityLabel:ClearAllPoints();self.priorityLabel:SetPoint('RIGHT',self.priorityDown,'LEFT',-4,0)
-        self.identifier:ClearAllPoints();self.identifier:SetPoint('RIGHT',showPriority and self.priorityLabel or self.enable,'LEFT',-10,0)
-        self.identifierLabel:ClearAllPoints();self.identifierLabel:SetPoint('RIGHT',self.identifier,'LEFT',-4,0)
-        -- The picker takes what the line leaves it (up to its natural width), so
-        -- at the narrowest window it narrows instead of leaving the pane.
-        local used=36+self.enable:GetWidth()+10+self.identifier:GetWidth()+4+self.identifierLabel:GetStringWidth()+8
-        if showPriority then used=used+8+18+2+self.priority:GetWidth()+2+18+4+self.priorityLabel:GetStringWidth() end
-        self.specButton:SetWidth(math.max(90,math.min(150,width-8-used-8)))
-        self.specButton:ClearAllPoints();self.specButton:SetPoint('RIGHT',self.identifierLabel,'LEFT',-8,0)
-        if showSpecs then self.specButton:Show() else self.specButton:Hide() end
-        self.overrideReset:ClearAllPoints();self.overrideReset:SetPoint('RIGHT',showSpecs and self.specButton or self.identifierLabel,'LEFT',-8,0)
         if showReset then self.overrideReset:Show() else self.overrideReset:Hide() end
+        self.enable:Show();self.delete:Show();self.identifier:Show();self.identifierLabel:Show()
+        local right,y=width-8,34
+        local cursor=8
+        if #kind>0 then
+            local at=cursor
+            for _,control in ipairs(kind) do place(control,at,y);at=at+control:GetWidth()+4 end
+            cursor=8+kindWidth
+        end
+        -- ID and Priority stay together.
+        if cursor>8 and cursor+HEADER_GAP+middleWidth>right then y=y+24;cursor=8 end
+        local at=cursor>8 and cursor+HEADER_GAP or 8
+        placeLabel(self.identifierLabel,at,y);at=at+idLabelWidth+4
+        place(self.identifier,at,y);at=at+self.identifier:GetWidth()
+        if showPriority then
+            at=at+HEADER_GAP+2
+            placeLabel(self.priorityLabel,at,y);at=at+priorityLabelWidth+4
+            place(self.priorityDown,at,y);at=at+18+2
+            place(self.priority,at,y);at=at+self.priority:GetWidth()+2
+            place(self.priorityUp,at,y);at=at+18
+        end
+        cursor=at
+        -- Enabled and Delete stay together, at the right edge.
+        if cursor+HEADER_GAP+endWidth>right then y=y+24 end
+        at=right-endWidth
+        if showReset then place(self.overrideReset,at,y);at=at+self.overrideReset:GetWidth()+4 end
+        place(self.enable,at,y);at=at+self.enable:GetWidth()+4
+        place(self.delete,at,y)
         local available=self.validation and self.validation.valid and self.validation.supported and self.validation.resolved and not self:HasInvalidPendingFields()
         self.validationButton:ClearAllPoints();self.validationButton:SetPoint('TOPLEFT',8,-y-26);self.validationButton:SetWidth(math.max(100,width-16))
         self:RefreshSectionMarkers()
