@@ -52,7 +52,7 @@ function addon:ShowFunctionBundleTransfer(p,id,source,options)
         d=self:CreateWorkbenchTransferShell(880,720);p.functionBundleTransfer=d
         d.includeDependencies=self:CreateWorkbenchCheckBox(d.frame,L['Include custom function dependencies'],420);d.includeDependencies:SetPoint('TOPLEFT',12,-34)
         d.scroll:ClearAllPoints();d.scroll:SetPoint('TOPLEFT',12,-66);d.scroll:SetSize(852,152)
-        d.input:SetMaxLetters(1048576);d.input:SetSize(828,152)
+        d.input:SetMaxLetters(self:ExportTextLimit(1048576));d.input:SetSize(828,152);self:UseExportFont(d)
         d.review=self:CreateWorkbenchButton(d.frame,L['Review import'],116);d.review:SetPoint('TOPLEFT',12,-226)
         d.copy:ClearAllPoints();d.copy:SetPoint('LEFT',d.review,'RIGHT',8,0);d.clear:ClearAllPoints();d.clear:SetPoint('LEFT',d.copy,'RIGHT',6,0)
         d.status=d.frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');d.status:SetPoint('TOPLEFT',12,-258);d.status:SetSize(852,44);d.status:SetJustifyH('LEFT');d.status:SetWordWrap(true)
@@ -73,7 +73,7 @@ function addon:ShowFunctionBundleTransfer(p,id,source,options)
         self.plan=nil;self.bundle=nil;self.choices={};self.lastRows={};self.lastRequirements={}
         local bundle,why=addon:BuildFunctionBundle(kind,id,source,self.include)
         local text,errorText;if bundle then text,errorText=codec:Encode(bundle) end
-        self.input:SetText(text or '');self:Invalidate();if not text and source then status(problemText(why or errorText)) end
+        self.input:SetText(addon:FormatExportText(text));self:Invalidate();if not text and source then status(problemText(why or errorText)) end
         self.form:Draw();self.scroll:UpdateWorkbenchScroll()
     end
     function d:Review()
@@ -137,7 +137,7 @@ function addon:ShowFunctionBundleTransfer(p,id,source,options)
     end)
     p.cleanups[#p.cleanups+1]=function() if d.serial==serial then d.frame:Hide() end end
     addon:SetUIScript(d.frame,'OnUpdate',function(...) if d.chromeUpdate then d.chromeUpdate(...) end;if d.frame:IsShown() and not valid() then d.frame:Hide() end end)
-    d.frame:SetFrameLevel(p.frame:GetFrameLevel()+250);d.frame:Show();d:Export();if options.text then d.input:SetText(options.text);d:Review() end;addon:RegisterWindowForEscape(d)
+    d.frame:SetFrameLevel(p.frame:GetFrameLevel()+250);d.frame:Show();d:Export();if options.text then d.input:SetText(addon:FormatExportText(options.text));d:Review() end;addon:RegisterWindowForEscape(d)
     local briefs=self:TransferHelpBriefs();briefs.review=L['Help.Transfers.bundle_review'];briefs.includeDependencies=L['Help.Transfers.bundle_dependencies']
     local sourceEvidence=self:CopySettingsData(source)
     self:BindTransferHelp(d,{heading=L['Function dependency bundle'],owner=source and source.name or id,brief=L['Help.Transfers.bundle_brief'],sections={{title=L['Import/Export'],text=L['Help.Transfers.bundle']},{title=L['Review source'],text=L['Help.Transfers.source_review']}},briefs=briefs,valid=function() return d.exportSource==source and addon:SettingsDataEqual(source,sourceEvidence) end},valid)

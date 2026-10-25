@@ -181,7 +181,7 @@ function data.NewCodec(dependencies)
     function codec:Decode(text)
         if type(text)~="string" then return nil,"expected-import-string" end
         if #text>maxInput then return nil,"import-size-limit" end
-        local payload=text:gsub("[ \t\r\n]","")
+        local payload=addon:NormalizeImportText(text)
         local transport=payload:match("^RM%d+:")
         if transport and transport~="RM1:" then return nil,"unsupported-transport-version" end
         local stream,errorCode=base64(transport and payload:sub(#transport+1) or payload)

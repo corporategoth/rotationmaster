@@ -67,7 +67,7 @@ test('General loglevel edits switch only after Apply and Discard preserves live 
  -- General logging never consumes the unrelated transfer codec. Keep this
  -- native-form fixture portable on Lua5.1 installations without external bit.
  local setup=assert(source:match('^(.-)\ntest%('))
- local first,last=assert(setup:find('    local codecData[^\n]*\n'));setup=setup:sub(1,first-1)..[=[    for _,path in ipairs({'Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/codec.lua','Data/validation.lua','Data/diff.lua','Data/import_session.lua'})do f.load(path)end
+ local first,last=assert(setup:find('    local codecData[^\n]*\n'));setup=setup:sub(1,first-1)..[=[    for _,path in ipairs({'Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/export_text.lua','Data/codec.lua','Data/validation.lua','Data/diff.lua','Data/import_session.lua'})do f.load(path)end
 ]=]..setup:sub(last+1)
  local make=assert(loadstring(setup..'\nreturn fixture'))()
  local f,parent=make();local a=f.addon;a.db.profile.loglevel=2;f.load('profiler.lua');local init=assert(a:ConsumeLegacyEvaluationProfilerPolicy());init(a)
