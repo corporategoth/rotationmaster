@@ -108,7 +108,7 @@ test('switch overlap: identical, subsumed and live overlaps between any rotation
     assert(list and #list==1 and list[1].key==key(a,'rm.retail.monk.brewmaster.guide') and list[1].kind=='identical' and not list[1].tie)
     assert(a:SetBuiltinPriority('rm.retail.monk.brewmaster.guide',20));a:UpdateAutoSwitch()
     list=a:GetSwitchOverlaps(268)[key(a,'rm.retail.monk.brewmaster')];assert(list[1].tie,'equal priorities not marked as a tie')
-    local text,tie=a:DescribeSwitchOverlap(list);assert(tie and text:find('Same priority as Monk: Brewmaster reference',1,true),text)
+    local text,tie=a:DescribeSwitchOverlap(list);assert(tie and text:find('Same priority as Reference',1,true),text)
     -- Your own rotations: overlap among themselves, never with a Built In (yours always come first).
     local low=custom(f,268,'Low',{priority=1,switch=level(1)});local high=custom(f,268,'High',{priority=5,switch=level(5)})
     custom(f,268,'Combat only',{priority=9,switch={type='COMBAT',unit='player'}})
@@ -157,7 +157,7 @@ test('the rotation list: switching order, priorities shown, disabled rows grey, 
     assert(controls[high].statusLabel:GetText():find('Priority 9',1,true) and controls[high].tooltip:find('Higher numbers are tried first',1,true))
     -- Alpha low and Zulu high both match from level 1: amber, naming each other.
     assert(controls[low].noticeBar and controls[low].noticeBar:IsShown() and controls[low].tooltip:find('Zulu high',1,true))
-    local brew=controls[key(a,'rm.retail.monk.brewmaster')];assert(brew.noticeBar:IsShown() and brew.tooltip:find('Brewmaster reference',1,true))
+    local brew=controls[key(a,'rm.retail.monk.brewmaster')];assert(brew.noticeBar:IsShown() and brew.tooltip:find('Reference (Icy Veins)',1,true))
     ww.enableButton:Click();assert(prefs(a)['rm.retail.monk.windwalker']==nil,'one click did not turn it back on')
     browser:Release()
 end)

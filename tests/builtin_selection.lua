@@ -45,14 +45,14 @@ test('Retail initial spec: the eligible Built In beats the saved fallback, is in
     select(f);assert(current(f)=='rm.retail.monk.initial','auto-switch chose '..tostring(current(f)))
     local rows=menu(f);local text=menuText(rows)
     assert(text:find('Automatic Switching',1,true) and text:find('\nDefault\n',1,true),text)
-    assert(text:find('|cff5bc0ebMonk: No specialization (Retail, Blizzard Assisted) [initial]|r',1,true),text)
+    assert(text:find('|cff5bc0ebBlizzard Assisted [initial]|r',1,true),text)
     assert(not text:find('read%-only'),'the menu still carries the read-only suffix: '..text)
     local report=why(f)
-    assert(report:find('Monk: No specialization (Retail, Blizzard Assisted) (Built In) [initial]: ready',1,true),report)
-    assert(report:find('Automatic switching would choose: Monk: No specialization',1,true),report)
+    assert(report:find('Blizzard Assisted (Built In) [initial]: ready',1,true),report)
+    assert(report:find('Automatic switching would choose: Blizzard Assisted',1,true),report)
     assert(report:find('Higher numbers are tried first',1,true),report)
     -- Choosing it by hand works from the menu entry itself.
-    for _,r in ipairs(rows) do if r.text and r.text:find('No specialization',1,true) then r.func(nil,r.arg1) end end
+    for _,r in ipairs(rows) do if r.text and r.text:find('[initial]',1,true) then r.func(nil,r.arg1) end end
     assert(a.manualRotation and current(f)=='rm.retail.monk.initial')
 end)
 
@@ -63,7 +63,7 @@ test('Retail level-up and respec: Brewmaster Built In is chosen over the Brewmas
     f.state.specIndex=1;f.fire('PLAYER_SPECIALIZATION_CHANGED','player');f.fire('ACTIVE_TALENT_GROUP_CHANGED');f.runPending()
     assert(a.currentSpec==268,'spec '..tostring(a.currentSpec))
     select(f);assert(current(f)=='rm.retail.monk.brewmaster','auto-switch chose '..tostring(current(f)))
-    assert(menuText(menu(f)):find('Monk: Brewmaster (Retail, Blizzard Assisted with brews)',1,true))
+    assert(menuText(menu(f)):find('Blizzard Assisted with brews',1,true))
     -- Switched off, the fallback is the last resort again.
     assert(a:SetDefaultRotationEnabled('rm.retail.monk.brewmaster',false));select(f);assert(current(f)=='Default')
 end)
@@ -104,7 +104,7 @@ test('a pack that cannot be validated is "not available", never "disabled", and 
         if row.canonicalId=='rm.retail.monk.brewmaster' then assert(row.builtinState=='invalid' and row.switchedOn==true) end
     end
     local report=why(f)
-    assert(report:find('Monk: Brewmaster (Retail, Blizzard Assisted with brews) (Built In) [brewmaster]: cannot be selected',1,true),report)
+    assert(report:find('Blizzard Assisted with brews (Built In) [brewmaster]: cannot be selected',1,true),report)
     assert(not report:find('Brewmaster (Retail, Blizzard Assisted with brews) (Built In) [brewmaster]: disabled',1,true),report)
 end)
 
@@ -112,12 +112,12 @@ test('/rm why and the menu name a Built In the player switched off; a one-time r
     local f=T.new{level=10,specIndex=1};local a=f.addon
     assert(a:SetDefaultRotationEnabled('rm.retail.monk.brewmaster',false))
     local report=why(f)
-    assert(report:find('Monk: Brewmaster (Retail, Blizzard Assisted with brews) (Built In) [brewmaster]: disabled by you',1,true),report)
+    assert(report:find('Blizzard Assisted with brews (Built In) [brewmaster]: disabled by you',1,true),report)
     local text=menuText(menu(f))
     -- No Brewmaster pack is on, so the alternative that ships off is named too.
-    assert(text:find('2 Built In disabled: Monk: Brewmaster (Retail, Blizzard Assisted with brews), Monk: Brewmaster reference (Retail, Icy Veins)',1,true),text)
+    assert(text:find('2 Built In disabled: Blizzard Assisted with brews, Reference (Icy Veins)',1,true),text)
     assert(a:SetDefaultRotationEnabled('rm.retail.monk.brewmaster.guide',true))
-    text=menuText(menu(f));assert(text:find('1 Built In disabled: Monk: Brewmaster (Retail, Blizzard Assisted with brews)|r',1,true),text)
+    text=menuText(menu(f));assert(text:find('1 Built In disabled: Blizzard Assisted with brews|r',1,true),text)
     assert(a:SetDefaultRotationEnabled('rm.retail.monk.brewmaster.guide',false))
     -- A profile saved before the repair: a shipped-enabled pack off, a shipped-off pack off
     -- and on, and another class's pack off (unknown here, left alone).
@@ -133,7 +133,7 @@ test('/rm why and the menu name a Built In the player switched off; a one-time r
     assert(prefs['rm.retail.mage.frost'].enabled==false,"another class's choice changed")
     assert(b.db.profile.builtinPreferenceRepairs.MONK==true)
     local chat=table.concat(g.state.chat,'\n')
-    assert(chat:find('Built In rotations turned back on',1,true) and chat:find('Monk: Brewmaster (Retail, Blizzard Assisted with brews)',1,true),chat)
+    assert(chat:find('Built In rotations turned back on',1,true) and chat:find('Blizzard Assisted with brews',1,true),chat)
     select(g);assert(current(g)=='rm.retail.monk.brewmaster')
     -- It runs once: a choice made afterwards survives the next login, and nothing is said.
     assert(b:SetDefaultRotationEnabled('rm.retail.monk.brewmaster',false))
@@ -150,8 +150,8 @@ test('Classic (TBC): an enabled Built In whose switch matches is chosen before t
     local f=T.new{project=5,expansion=1,class='SHAMAN',level=5};noLoadErrors(f);local a=f.addon
     fallback(f,0);select(f)
     assert(current(f)=='rm.tbc.shaman.enhancement.icyveins','auto-switch chose '..tostring(current(f)))
-    assert(menuText(menu(f)):find('|cff5bc0ebShaman: Enhancement (Icy Veins) [enhancement-icyveins]|r',1,true))
-    assert(why(f):find('Automatic switching would choose: Shaman: Enhancement (Icy Veins)',1,true))
+    assert(menuText(menu(f)):find('|cff5bc0ebEnhancement (Icy Veins) [enhancement-icyveins]|r',1,true))
+    assert(why(f):find('Automatic switching would choose: Enhancement (Icy Veins)',1,true))
     -- The same-switch alternative ships disabled: with the recommended one off, the fallback runs
     -- until the player enables the alternative.
     assert(a:SetDefaultRotationEnabled('rm.tbc.shaman.enhancement.icyveins',false));select(f)
