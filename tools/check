@@ -169,6 +169,8 @@ def main():
             ['luajit', 'tests/announcement_condition_flags_ui.lua'],
             ['lua5.1', 'tests/summary_templates.lua'],
             ['luajit', 'tests/summary_templates.lua'],
+            ['lua5.1', 'tests/condition_wording.lua'],
+            ['luajit', 'tests/condition_wording.lua'],
             ['lua5.1', 'tests/declaration_schema.lua'],
             ['lua5.1', 'tests/catalog.lua'],
             ['lua5.1', 'tests/diagnostics.lua'],
