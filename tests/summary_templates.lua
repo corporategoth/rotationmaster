@@ -254,7 +254,12 @@ test('actual extracted eight Built In clones and historical source bundles prese
             if negative and not tag:find('PCT',1,true) then if tag:find('_COUNT',1,true) then node.health=-.5;node.mana=-.5 else node.value=-.5 end end
             for kind=0,2 do
                 local expected=a:printCondition(wrapNode(node,kind),0)
-                for _,prefix in ipairs({'COPY_TEMPLATE_','SAVED_TEMPLATE_'}) do local cloned=a:CopySettingsData(node);cloned.type=prefix..tag;assert(a:printCondition(wrapNode(cloned,kind),0)==expected,tag..' summary differs') end
+                local cloned=a:CopySettingsData(node);cloned.type='COPY_TEMPLATE_'..tag;assert(a:printCondition(wrapNode(cloned,kind),0)==expected,tag..' summary differs')
+                -- A saved pre-template bundle keeps its own (older) wording; it must still
+                -- render, and a double NOT must read like the positive leaf.
+                local saved=a:CopySettingsData(node);saved.type='SAVED_TEMPLATE_'..tag;local text=a:printCondition(wrapNode(saved,kind),0)
+                assert(type(text)=='string' and text~='' and not text:find(fallback,1,true),tag..' saved bundle summary failed')
+                if kind==2 then assert(text==a:printCondition(saved,0),tag..' saved bundle double NOT differs') end
             end
         end end
         local pending=sample(tag);pending.type='COPY_TEMPLATE_'..tag;pending.distance=nil
@@ -297,7 +302,7 @@ test('existing presentation source hashes and every nonprint spatial byte remain
     text=text:gsub('%-%- BEGIN GENERATED RM SOURCE BINDINGS.*',''):gsub('%-%- BEGIN SPATIAL STATS CALLBACK NAMESPACE.-%-%- END SPATIAL STATS CALLBACK NAMESPACE\n\n','')
     local count;text,count=text:gsub('    print = function%(_, value%)\n.-    end,\n    widget','    -- PRINT BODY EXCLUDED\n    widget')
     text=dofile('tests/fixtures/artwork.lua')(text,'spatial',8)
-    assert(count==8 and a:FunctionSourceHash({code=text})=='3ce4f7bb','nonprint spatial source changed')
+    assert(count==8 and a:FunctionSourceHash({code=text})=='9feb71f7','nonprint spatial source changed')
 end)
 test('translated actual spatial templates reorder slots without expanding data or observing native state',function()
     local f,a=sourceFixture()

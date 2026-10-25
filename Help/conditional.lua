@@ -26,7 +26,7 @@ end
 function addon.layout_condition_not_help(frame)
     local group = frame
 
-    group:AddChild(CreateText("This condition will negate it's sub-condition.  Meaning that if the sub-condition " ..
+    group:AddChild(CreateText("This condition will negate its sub-condition.  Meaning that if the sub-condition " ..
             "evaluates successfully, then this condition will NOT evaluate successfully, and vice versa."))
 end
 
@@ -79,17 +79,17 @@ function addon.layout_condition_itemwidget_help(frame)
             "found will be used in this condition."))
     group:AddChild(CreateText("You can choose from either a pre-defined Item Set, by picking it by name from the " ..
             "drop down menu.  You can edit these using the " .. color.BLUE .. L["Item Sets"] .. color.RESET ..
-            "configuration menu.  Any item set in " .. color.CYAN .. "cyan" .. color.RESET .. " is a global " ..
+            " configuration menu.  Any item set in " .. color.CYAN .. "cyan" .. color.RESET .. " is a global " ..
             "item set available to all your characters, otherwise they are available to this character only.  " ..
-            "If you do not want to setup a reusable item set, you can select " .. color.GREEN .. L["Custom"] ..
+            "If you do not want to set up a reusable item set, you can select " .. color.GREEN .. L["Custom"] ..
             color.RESET .. " to specify an ad-hoc item set."))
 
     group:AddChild(Indent(40, CreatePictureText(
             "Interface\\FriendsFrame\\UI-FriendsList-Large-Up", 24, 24,
             color.BLIZ_YELLOW .. EDIT .. color.RESET .. " - " ..
             "Edit the contents of the item set.  If you have selected a " ..
-            "pre-defind item set, you will be editing that item set, which may effect other usages of that " ..
-            "item set (including on your other characters if it is a global item set.  An item set must have " ..
+            "pre-defined item set, you will be editing that item set, which may affect other usages of that " ..
+            "item set (including on your other characters if it is a global item set).  An item set must have " ..
             "at least one item in it for this condition to be considered valid.")))
 end
 

@@ -133,6 +133,32 @@ function platform:IsItemEquipped(item)
     if type(value)~='boolean' then return nil,'invalid-api-result' end
     return value
 end
+-- Whether a wand is equipped, for the implicit wand Shoot: the ranged slot
+-- (18) through Cataclysm, the main hand (16) since Mists moved wands there.
+-- A wand is item class Weapon (2), subclass Wand (19) on every client. An
+-- item's class never changes, so each equipped item ID is classified once.
+local wandItems={}
+local WAND_SLOTS={18,16}
+function platform:IsWandEquipped()
+    if type(GetInventoryItemID)~='function' then return nil,'missing-api' end
+    local unknown
+    for i=1,#WAND_SLOTS do
+        local ok,item=pcall(GetInventoryItemID,'player',WAND_SLOTS[i])
+        if not ok then return nil,'api-error' end
+        if not self:CanReadValue(item) then return nil,'restricted-value' end
+        if item~=nil then
+            local wand=wandItems[item]
+            if wand==nil then
+                local info=self:GetItemInfoInstant(item)
+                if info then wand=info.classID==2 and info.subClassID==19;wandItems[item]=wand end
+            end
+            if wand then return true end
+            if wand==nil then unknown=true end
+        end
+    end
+    if unknown then return nil,'item-data-unavailable' end
+    return false
+end
 function platform:IsItemLevelAllowed(item)
     local metadata,reason=self:GetItemMetadata(item);if not metadata then return nil,reason end
     local level,why=query(UnitLevel,'player');if why then return nil,why end

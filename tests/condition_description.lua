@@ -68,7 +68,7 @@ test('translated predicate alternatives and compound aura comparisons retain the
     local node={type='BUFF_REMAIN',unit='target',spell=324,operator='LESSTHAN',value=5}
     local positive=f.addon:printCondition(node,0);local negative=f.addon:printCondition({type='NOT',value=node},0)
     assert(positive:find('is less than 5',1,true),positive)
-    assert(negative:find('do not have',1,true) and negative:find('is less than 5',1,true) and not negative:find('is not less',1,true),negative)
+    assert(negative:find('your target does not have',1,true) and negative:find('is less than 5',1,true) and not negative:find('is not less',1,true),negative)
 end)
 test('negated proximity counts reverse the outer count and preserve the member qualifier',function()
     local f=F.new();for _,file in ipairs({'Data/plain.lua','Data/tags.lua','Core/conditions.lua','Conditions/spatial_stats.lua'}) do f.load(file) end

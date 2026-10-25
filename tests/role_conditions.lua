@@ -86,7 +86,7 @@ end)
 -- behind loadDeprecationFallbacks (the client default): that is the world it ran in.
 test('archived raw source retains complete bindings global inspect slot6 and nil role mismatch without rewriting',function()
  for _,shape in ipairs(variants) do local _,a,s=fixture(shape[1],shape[2],nil,{fallbacks=true});local source=assert(a:GetBuiltinConditionSource('ROLE'));source.evaluate=oldBodies[shape[3]];source.bindings=a:CopySettingsData(oldBindings[shape[3]]);local before=a:CopySettingsData(source)
-  assert(a:FunctionSourceHash(source)==(shape[3]=='inspect' and '0e207da1' or '825b57b5'),'archived ROLE export changed');local d=assert(a:CompileCustomCondition('RAW_ROLE',source));a:RegisterCondition('RAW_ROLE',d)
+  assert(a:FunctionSourceHash(source)==(shape[3]=='inspect' and '8a0b902d' or '7c9026e7'),'archived ROLE export changed');local d=assert(a:CompileCustomCondition('RAW_ROLE',source));a:RegisterCondition('RAW_ROLE',d)
   if shape[3]=='inspect' then assert(d.evaluate(node(),{})==false and s.calls[2][1]=='legacy','historical inspect slot6/global behavior changed') else s.talent=nil;assert(d.evaluate(node(),{})==false) end
   assert(a:evaluateConditionResult({type='NOT',value=node(nil,'RAW_ROLE')}).status=='match' and a:SettingsDataEqual(source,before))
  end
@@ -94,7 +94,7 @@ end)
 test('strict inverse restores entire087a686 module both exports and four exact private source identities',function()
  local text=dofile('tests/fixtures/restore_mobinfo2_repairs.lua')(dofile('tests/fixtures/restore_glyph_presentation_repairs.lua')((restoreCreature(read('Conditions/character.lua')))));local _,a=fixture();assert(a:FunctionSourceHash(inverse(text))=='4df013ba','unexpected change outside two ROLE evaluates')
  for _,shape in ipairs(variants) do local _,owner=fixture(shape[1],shape[2]);local source=assert(owner:GetBuiltinConditionSource('ROLE'));source.evaluate=inverse(source.evaluate,shape[3],true);source.bindings=owner:CopySettingsData(oldBindings[shape[3]])
-  assert(owner:FunctionSourceHash(source)==(shape[3]=='inspect' and '0e207da1' or '825b57b5'),'non-evaluate ROLE export changed')
+  assert(owner:FunctionSourceHash(source)==(shape[3]=='inspect' and '8a0b902d' or '7c9026e7'),'non-evaluate ROLE export changed')
  end
  for name,hash in pairs({color='3f9fe631',character_class='f9f4e4b5',helpers='2e9a81e7',unit_class_num='33645816'}) do local id='builtin:Conditions/character.lua:'..name;assert(a:FunctionSourceHash(assert(a.builtinFunctions[id]).source)==hash and a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/character.lua'](name)) end
  assert(not pcall(inverse,text..text));assert(not pcall(inverse,newBodies.inspect..' ','inspect',true))

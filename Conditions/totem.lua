@@ -148,7 +148,7 @@ addon:RegisterCondition("TOTEM_REMAIN", {
         return record.active and seconds>0 and Functions.values.compare(value.operator,addon.Functions.values.round(seconds,3),value.value)
     end,
     print = function(_, value)
-        return string.format(L["you {{!have|do not have}} a %s totem active with %s"],
+        return string.format(L["you {{!have|do not have}} a %s totem active where %s"],
             Functions.presentation.nullable(addon.totems[value.spell], L["<element>"]),
                 Functions.presentation.compareString(value.operator, L["the remaining time"], string.format(L["%s seconds"], Functions.presentation.nullable(value.value))))
     end,
@@ -190,7 +190,7 @@ addon:RegisterCondition("TOTEM_SPELL_REMAIN", {
     evaluate = function(value, cache, start) return findSpecific(value,cache,start,true) end,
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
-        return string.format(L["%s {{!is|is not}} active with %s"], Functions.presentation.nullable(link, L["<totem>"]),
+        return string.format(L["%s {{!is|is not}} active where %s"], Functions.presentation.nullable(link, L["<totem>"]),
             Functions.presentation.compareString(value.operator, L["the remaining time"], string.format(L["%s seconds"], Functions.presentation.nullable(value.value))))
     end,
     widget = function(parent, spec, value)

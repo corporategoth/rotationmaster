@@ -93,7 +93,7 @@ test('native statistic helpers captures and all source bytes outside eight print
     code=code:gsub('%-%- BEGIN GENERATED RM SOURCE BINDINGS.*','')
     code=code:gsub('%-%- BEGIN SPATIAL STATS CALLBACK NAMESPACE.-%-%- END SPATIAL STATS CALLBACK NAMESPACE\n\n','')
     local count;code,count=code:gsub('    print = function%(_, value%)\n.-    end,\n    widget','    -- PRINT BODY EXCLUDED\n    widget')
-    assert(count==8 and a:FunctionSourceHash({code=code})=='3ce4f7bb','source changed outside eight print callbacks')
+    assert(count==8 and a:FunctionSourceHash({code=code})=='9feb71f7','source changed outside eight print callbacks')
     assert(a.builtinSourceModules['Conditions/spatial_stats.lua']('observation')~=nil)
 end)
 test('registered editable and legacy-shaped spatial callbacks preserve validators summaries raw errors and engine results across inventory branches',function()

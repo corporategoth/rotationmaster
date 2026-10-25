@@ -24,13 +24,16 @@ for _,tag in ipairs(tags)do test(tag..' keeps raw saved-name fallback opaque in 
   assert((source.bindings['AuraSummary.predicate']~=nil)==(mode(tag)~='present'));assert(a:SettingsDataEqual(source,before))
  end
 end)end
-local keys={present='{unit} {{!have|do not have}} {aura}',other='{unit} {{!has|does not have}} {aura}',remaining='{unit} {{!have|do not have}} {aura} where {remaining} {comparison} {duration}',stacks='{unit} {stacks} {comparison} {quantity}'}
+local keys={present='{unit} {{!have|do not have}} {aura}',other='{unit} {{!has|does not have}} {aura}',remaining='{unit} {{!have|do not have}} {aura} where {remaining} {comparison} {duration}',remainingOther='{unit} {{!has|does not have}} {aura} where {remaining} {comparison} {duration}',stacks='the number of stacks of {aura} on {unit} {comparison} {quantity}'}
+-- Wording these tags changed on purpose: the target REMAIN verb agrees ("has") and STACKS
+-- reads "the number of stacks of X on Y"; their archived copies keep the old wording.
+local reworded={BUFF_REMAIN=true,DEBUFF_REMAIN=true,BUFF_STACKS=true,DEBUFF_STACKS=true}
 test('whole translations reorder opaque names and secondary operators while keeping the actual primary NOT',function()
  for _,tag in ipairs(tags)do local f,a=setup();mount(a,'COPY',a:GetBuiltinConditionSource(tag));local which=mode(tag)
   local L=f.libraries['AceLocale-3.0']:GetLocale('rotationmaster');L['your own %s']='OWN[%s]';L['stacks of %s']='STACKS[%s]';L['the remaining time']='remaining-label';L['%s seconds']='%s sec'
   f.translations[keys.present]='{aura} -> {unit}: {{!present|absent}}';f.translations[keys.other]='{aura} -> {unit}: {{!present|absent}}'
-  f.translations[keys.remaining]='{comparison} {duration} {remaining} :: {aura} -> {unit}: {{!present|absent}}'
-  f.translations[keys.stacks]='{quantity} :: {stacks} -> {unit}: {comparison}'
+  f.translations[keys.remaining]='{comparison} {duration} {remaining} :: {aura} -> {unit}: {{!present|absent}}';f.translations[keys.remainingOther]=f.translations[keys.remaining]
+  f.translations[keys.stacks]='{quantity} :: STACKS[{aura}] -> {unit}: {comparison}'
   for _,id in ipairs({tag,'COPY'})do local v=node(id,literal);local p,n=text(a,v);assert(p:find('OWN['..literal..']',1,true)and n:find('OWN['..literal..']',1,true))
    if which=='stacks'then assert(n:find('is not less than',1,true)and n:find('STACKS[OWN[',1,true))else assert(n:find(': absent',1,true));if which=='remaining'then assert(n:find('is less than 4 sec remaining-label',1,true))end end
   end
@@ -65,9 +68,9 @@ test('ordinary current wording and localized fragments preserve complete archive
  for _,modern in ipairs({false,true})do for _,tag in ipairs(tags)do local f,a,s=setup(modern);mount(a,'ARCHIVED',archived(a,tag));s.metadata=true
   f.translations['your own %s']='OWN[%s]';f.translations['stacks of %s']='STACK[%s]';f.translations['the remaining time']='remaining-label';f.translations['%s seconds']='%s sec'
   for _,unit in ipairs({'player','target','focus'})do for _,own in ipairs({false,true})do for _,rank in ipairs({false,true})do for _,spell in ipairs({10,'Shield'})do
-   local v=node(tag,spell);v.unit=unit;v.ownbuff=own;v.owndebuff=own;v.anyrank=rank;local raw=a:CopySettingsData(v);raw.type='ARCHIVED';local p,n=text(a,v);local pp,nn=text(a,raw);assert(p==pp and n==nn,tag..' changed ordinary/local fragment wording')
+   local v=node(tag,spell);v.unit=unit;v.ownbuff=own;v.owndebuff=own;v.anyrank=rank;local raw=a:CopySettingsData(v);raw.type='ARCHIVED';local p,n=text(a,v);local pp,nn=text(a,raw);assert(reworded[tag] or (p==pp and n==nn),tag..' changed ordinary/local fragment wording')
   end end end end
-  local v=node(tag);local raw=node('ARCHIVED');local p,n=text(a,v);local pp,nn=text(a,raw);assert(p==pp and n==nn)
+  local v=node(tag);local raw=node('ARCHIVED');local p,n=text(a,v);local pp,nn=text(a,raw);assert(reworded[tag] or (p==pp and n==nn))
  end end
 end)
 test('raw archived complete sources preserve original marker parsing and stored source identity',function()
@@ -81,7 +84,7 @@ test('old and current summaries make equal metadata queries preserve live nullab
  for _,tag in ipairs(tags)do local _,a,s=setup();mount(a,'ARCHIVED',archived(a,tag));s.metadata=true;local v=node(tag,10);local raw=a:CopySettingsData(v);raw.type='ARCHIVED'
   a.operators.LESSTHAN='POS';a.negatedOperators.LESSTHAN='NEG';local nullable=a.nullable
   a.nullable=function(value,default)if value=='POS'then return'ALIAS_POS'end;return nullable(value,default)end
-  s.spellReads=0;local p,n=text(a,v);local count=s.spellReads;s.spellReads=0;local pp,nn=text(a,raw);assert(p==pp and n==nn and s.spellReads==count and s.calls==0)
+  s.spellReads=0;local p,n=text(a,v);local count=s.spellReads;s.spellReads=0;local pp,nn=text(a,raw);assert((reworded[tag] or (p==pp and n==nn)) and s.spellReads==count and s.calls==0)
   if mode(tag)~='present'then assert(p:find('ALIAS_POS',1,true))end
  end
 end)

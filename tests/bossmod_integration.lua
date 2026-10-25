@@ -245,6 +245,19 @@ test('boss-mod conditions are unavailable without a provider and match the cache
     end
 end)
 
+test('the timer note checks the encounter reader before calling it',function()
+    local _,a=addonFixture({})
+    local timerNote=assert(a.builtinSourceModules['Conditions/bossmod.lua']('timerNote'),'timerNote getter missing')
+    -- A timer list with no encounter reader (a partial adapter) is unavailable, not an error.
+    a.ListBossModTimers=function() return {} end;a.GetBossModEncounter=nil
+    local ok,text=pcall(timerNote);assert(ok,'timerNote raised: '..tostring(text))
+    assert(text=='Boss mod data unavailable: adapter-unavailable',text)
+    a.GetBossModEncounter=function() return nil,nil,nil,'bossmod-disabled' end
+    assert(timerNote()=='Boss mod data unavailable: bossmod-disabled')
+    a.GetBossModEncounter=function() return false end
+    assert(timerNote()=='No boss-mod timers are running.')
+end)
+
 test('existing profiles are seeded once; removals stay saved',function()
     local f,a=addonFixture({})
     local db={profile={switch_conditions={'AND'},condition_groups={{id='b3d7df2c-f257-4a2d-961e-66e49336d109',conditions={'COMBAT'}},{id='other',conditions={}}}}}

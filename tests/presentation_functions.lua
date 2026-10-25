@@ -68,10 +68,10 @@ test('compiled presentation helpers and real Distance Count summary retain actua
     assert(copy.print(0,value)==a.conditionDefinitions.DISTANCE_COUNT.print(0,value))
     assert(not f.env.Functions and not f.env.functions)
 end)
-test('all spatial summaries use canonical presentation calls without changing their baseline wording',function()
+test('all spatial summaries use canonical presentation calls with their corrected wording',function()
     local _,a=fixture();local expected={
-        PROXIMITY='you have number of Raid or Party members within 10 yards is greater than 2',
-        DISTANCE='player are closer than 2 yards',
+        PROXIMITY='the number of Raid or Party members within 10 yards of you is greater than 2',
+        DISTANCE='you are closer than 2 yards',
         DISTANCE_COUNT='Number of enemies within 10 yards is greater than 2',
         ZONE='in Zone A',
     }

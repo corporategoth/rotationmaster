@@ -24,7 +24,7 @@ local function fixture(project)
  if mode=='generated-current'then assert(current.evaluate==authored,'generated DISTANCE catalog does not equal actual authored evaluator')else current.evaluate=authored end
  a:RegisterCondition('CURRENT_COPY',assert(a:CompileCustomCondition('CURRENT_COPY',current)))
  local archive=a:CopySettingsData(catalog);local marker=assert(archive.evaluate:find(rangeMarker,1,true));archive.evaluate=oldPrefix..archive.evaluate:sub(marker)
- assert(a:FunctionSourceHash(archive)=='eaf1c088','complete historical DISTANCE export changed')
+ assert(a:FunctionSourceHash(archive)=='397d9b2b','complete historical DISTANCE export changed')
  a:RegisterCondition('RAW_ARCHIVE',assert(a:CompileCustomCondition('RAW_ARCHIVE',archive)))
  return f,a,s,catalog,current,archive
 end

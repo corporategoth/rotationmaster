@@ -124,8 +124,9 @@ addon:RegisterCondition("CHANNELING_REMAIN", {
         return Functions.values.compare(value.operator,record.remainingSeconds,value.value)
     end,
     print = function(_, value)
-        return Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"]) .. " " ..
-            Functions.presentation.compareString(value.operator, L["time remaining on spell channel"], string.format(L["%s seconds"], Functions.presentation.nullable(value.value)))
+        return Functions.presentation.compareString(value.operator,
+            string.format(L["the time remaining on %s channel"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])),
+            string.format(L["%s seconds"], Functions.presentation.nullable(value.value)))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -143,7 +144,7 @@ addon:RegisterCondition("CHANNELING_REMAIN", {
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
-        addon.layout_condition_operatorwidget_help(frame, L["Cast Time Remaining"], L["Seconds"],
+        addon.layout_condition_operatorwidget_help(frame, L["Channel Time Remaining"], L["Seconds"],
             "The number of seconds remaining in the current spell being channeled by " .. color.BLIZ_YELLOW ..
             L["Unit"] .. color.RESET .. ".  If the " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " is " ..
             "not currently channeling, this condition will not be successful (regardless of the " ..
@@ -216,7 +217,7 @@ addon:RegisterCondition("CHANNEL_INTERRUPTABLE", {
         return record.interruptible
     end,
     print = function(_, value)
-        return string.format(L["%s's channeled spell {{!is|is not}} interruptable"], Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))
+        return string.format(L["%s channeled spell {{!is|is not}} interruptible"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")

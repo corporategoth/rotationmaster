@@ -170,7 +170,7 @@ addon.delayed_condition["ExtendedCharacterStats"]["ECS_STAT"] = {
                 "The character statistic you are interested in."))
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Character Stat"], L["Character Stat"],
-                "The current value of the selected stat for " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ".")
+                "Your current value of the selected stat, as Extended Character Stats reports it.")
     end
 }
 
@@ -226,7 +226,7 @@ addon.delayed_condition["ExtendedCharacterStats"]["ECS_STAT_PCT"] = {
                 "The character statistic you are interested in."))
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Extended Character Stat Percentage"], L["Character Stat"],
-                "The current value of the selected stat for " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ".")
+                "Your current value of the selected stat, as a percentage, as Extended Character Stats reports it.")
     end
 }
 

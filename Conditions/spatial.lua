@@ -192,14 +192,13 @@ addon:RegisterCondition("PROXIMITY", {
         return Functions.values.compare(value.operator, count, value.value)
     end,
     print = function(_, value)
-        return string.format(Functions.presentation.playerize(value.unit, L["%s {{!have|do not have}} %s"], L["%s {{!has|does not have}} %s"]),
-                Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
-                Functions.presentation.compareString(value.operator,
-                        string.format(L["number of %s members%s within %s yards"],
-                                (value.samegroup and PARTY or L["Raid or Party"]),
-                                (value.includepets and " (" .. L["including pets"] .. ")" or ""),
-                                Functions.presentation.nullable(value.distance, L["<distance>"])),
-                        Functions.presentation.nullable(value.value)))
+        return Functions.presentation.compareString(value.operator,
+                string.format(L["the number of %s members%s within %s yards of %s"],
+                        (value.samegroup and PARTY or L["Raid or Party"]),
+                        (value.includepets and " (" .. L["including pets"] .. ")" or ""),
+                        Functions.presentation.nullable(value.distance, L["<distance>"]),
+                        Functions.presentation.nullable(addon.units[value.unit], L["<unit>"])),
+                Functions.presentation.nullable(value.value))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -221,13 +220,13 @@ addon:RegisterCondition("PROXIMITY", {
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Allies Within Range"], L["Count"],
                 "The number of allies whose proximity is measured in relation to " .. color.BLIZ_YELLOW .. L["Unit"] ..
-                        ".  This will only measure the proximity of allies you are in a party or raid with.")
+                        color.RESET .. ".  This will only measure the proximity of allies you are in a party or raid with.")
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " - " ..
                 "The distance (in yards) allies are measured against."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Same Group"] .. color.RESET .. " - " ..
-                "Only count addon.units in the same raid group."))
+                "Only count units in the same raid group."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Include Pets"] .. color.RESET .. " - " ..
                 "Include pets in the count."))
@@ -264,7 +263,7 @@ addon:RegisterCondition("DISTANCE", {
     end,
     print = function(_, value)
         return string.format(Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} %s"], L["%s {{!is|is not}} %s"]),
-                Functions.presentation.nullable(value.unit, L["<unit>"]),
+                Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
                 string.format(L["closer than %s yards"], Functions.presentation.nullable(value.value)))
     end,
     widget = function(parent, spec, value)
@@ -378,7 +377,7 @@ addon:RegisterCondition("DISTANCE_COUNT", {
     print = function(_, value)
         return Functions.presentation.compareString(value.operator,
                         string.format(L["Number of %s within %s yards"],
-                            (value.enemy and L["enemies"] or "allies"),
+                            (value.enemy and L["enemies"] or L["allies"]),
                             Functions.presentation.nullable(value.distance, L["<distance>"])),
                         Functions.presentation.nullable(value.value))
     end,

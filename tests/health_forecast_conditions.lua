@@ -114,6 +114,6 @@ test('only exact2 evaluator bodies change with full baseline inverse and every h
  for _,tag in ipairs(tags) do assert(inverse(newBodies[tag],tag,true)==oldBodies[tag]);assert(not pcall(inverse,oldBodies[tag],tag,true));assert(not pcall(inverse,newBodies[tag]..' ',tag,true)) end
  assert(a:FunctionSourceHash(read('Functions/trends.lua'))=='f7f8df96','published legacy trends file changed')
  for name,hash in pairs({color='89107d36',helpers='c19dbbac'}) do assert(a:FunctionSourceHash(a.builtinFunctions['builtin:Conditions/stats.lua:'..name].source)==hash) end
- for name,hash in pairs({calculate='26e53807',calculateOld='a7c35d84'}) do local id='builtin:Functions/trends.lua:'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and a:ResolveFunctionBinding(id)==a.Functions.trends[name]) end
+ for name,hash in pairs({calculate='26e53807',calculateOld='666360c5'}) do local id='builtin:Functions/trends.lua:'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and a:ResolveFunctionBinding(id)==a.Functions.trends[name]) end
 end)
 finish()

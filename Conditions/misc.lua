@@ -97,7 +97,7 @@ addon:RegisterCondition("ZONEPVP", {
         return value.value == record.pvpType
     end,
     print = function(_, value)
-        return string.format(L["zone {{!is|is not}} a %s zone"], Functions.presentation.nullable(addon.zonepvp[value.value], L["no PVP"]))
+        return string.format(L["the zone's PVP status {{!is|is not}} %s"], Functions.presentation.nullable(addon.zonepvp[value.value], L["no PVP"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -137,13 +137,13 @@ addon:RegisterCondition("ZONEPVP", {
                 "This area is controlled by your faction.  You will not enter PVP in this region, however " ..
                 "opposing factions will be automatically flagged for PVP upon entering.")))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Contested"] .. color.RESET .. " - " ..
-                "This area is contested, You will not automatically be flagged for PVP (on a PvE server), " ..
+                "This area is contested.  You will not automatically be flagged for PVP (on a PvE server), " ..
                 "however you may attack the opposing faction, flagging for PVP.")))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Controlled by opposing faction"] .. color.RESET .. " - " ..
                 "This area is controlled by the opposing faction.  You will be automatically flagged for " ..
                 "PVP, however opposing faction players may not be (if on a PvE server) unless they choose to.")))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Sanctuary (no PVP)"] .. color.RESET .. " - " ..
-                "This is a sactuary city.  No PVP is possible.")))
+                "This is a sanctuary city.  No PVP is possible.")))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Combat (auto-flagged)"] .. color.RESET .. " - " ..
                 "This is a combat zone (eg. a battleground), all players will be automatically flagged as PVP.")))
     end
@@ -165,7 +165,7 @@ addon:RegisterCondition("INSTANCE", {
         return value.value == record.instanceType
     end,
     print = function(_, value)
-        return string.format(L["you {{!are|are not}} in a %s instance"],
+        return string.format(L["your instance type {{!is|is not}} %s"],
                 Functions.presentation.nullable(addon.instances[value.value], L["Other (scenario)"]))
     end,
     widget = function(parent, spec, value)
@@ -200,13 +200,13 @@ addon:RegisterCondition("INSTANCE", {
                 "You are not in an instance (this does not necessarily mean you are outdoors, just not in any " ..
                 "kind of instance.)")))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Battleground"] .. color.RESET .. " - " ..
-                "You are in a battleground (an ad-hoc instance where the opponant is the opposing faction.)")))
+                "You are in a battleground (an ad-hoc instance where the opponent is the opposing faction.)")))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Arena"] .. color.RESET .. " - " ..
                 "A close quarters fight with the opposing faction, where death is a loss.")))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Dungeon"] .. color.RESET .. " - " ..
-                "A five-person dungeon, where your opponants are all NPCs.")))
+                "A five-person dungeon, where your opponents are all NPCs.")))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Raid"] .. color.RESET .. " - " ..
-                "An instance that accommodates more than five people, where your opponants are all NPCs.")))
+                "An instance that accommodates more than five people, where your opponents are all NPCs.")))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Scenario"] .. color.RESET .. " - " ..
                 "A single-person instance, similar to a dungeon but completed solo.")))
     end
@@ -223,7 +223,7 @@ addon:RegisterCondition("OUTDOORS", {
         return Functions.cache.getCached(cache, addon.Platform.GetPlayerFlagObservation, addon.Platform, "outdoors")
     end,
     print = function()
-        return L["you {{!are|are not}} in a outdoors"]
+        return L["you {{!are|are not}} outdoors"]
     end,
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Matches when the game reports that you are outdoors. Being outdoors is different from being outside an instance."] ))

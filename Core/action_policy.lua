@@ -24,7 +24,10 @@ local function buildReadiness(platform)
             end
             return items[itemID]
         end
-        if kind~="spell" and kind~="pet" and kind~="any" then
+        -- "ranged" is the implicit Shoot or Auto Shot: a player spell whose
+        -- range is read from its action button first (addon:ResolveImplicitAttack).
+        local ranged=kind=="ranged"
+        if kind~="spell" and kind~="pet" and kind~="any" and not ranged then
             -- An assisted step resolves to Blizzard's suggested player spell
             -- and is held to exactly the readiness of a spell step.
             if kind~="assisted" then return false end
@@ -34,10 +37,10 @@ local function buildReadiness(platform)
         if not results then results,stamps={},{};spells[kind],spellStamps[kind]=results,stamps end
         if stamps[id]~=stamp then
             local known=kind~="pet" and platform:IsSpellKnown(id,false)==true
-            if not known and kind~="spell" then known=platform:IsSpellKnown(id,true)==true end
+            if not known and kind~="spell" and not ranged then known=platform:IsSpellKnown(id,true)==true end
             -- Vehicle, override and possession abilities are in neither
             -- spellbook; while such a bar is up, the bound button decides.
-            if not known and addon.GetActionContext and addon:GetActionContext()~="player" and addon.IsBoundActionReady then
+            if not known and not ranged and addon.GetActionContext and addon:GetActionContext()~="player" and addon.IsBoundActionReady then
                 results[id]=addon:IsBoundActionReady(id,now)==true;stamps[id]=stamp
                 return results[id]
             end
@@ -52,8 +55,13 @@ local function buildReadiness(platform)
                     local beyond=platform:IsBeyondMeleeRange("target")
                     result=beyond~=nil and beyond==false
                 else
-                    local observed=range(id,"target",kind)
-                    result=type(observed)=="table" and (observed.applicable==false or observed.inRange==true)
+                    local bar
+                    if ranged and addon.GetBoundActionRange then bar=addon:GetBoundActionRange(id) end
+                    if bar~=nil then result=bar==true
+                    else
+                        local observed=range(id,"target",ranged and "spell" or kind)
+                        result=type(observed)=="table" and (observed.applicable==false or observed.inRange==true)
+                    end
                 end
             end
             results[id]=result;stamps[id]=stamp
@@ -82,4 +90,49 @@ function addon:ResetActionReadiness(now)
     end
     shared.reset(now)
     return shared.ready
+end
+
+-- The implicit auto-attack (Attack or Shoot), for a poll whose rotation
+-- recommends nothing and whose Stop (if any) did not suppress it. Both
+-- engines call it only then, so its range reads cost nothing on other polls.
+-- ready is the poll's readiness memo. Returns the spell to highlight, or nil.
+--   In melee range: Attack (6603), on the same checks as before.
+--   Beyond melee range: Auto Shot (75), else wand Shoot (5019) while a wand
+--   is equipped, if it is on the action bars, ready and the target is in its
+--   range, and no ranged auto-attack is already repeating.
+--   Melee range unknown (unreadable, uncertain or unsupported): nothing.
+-- IsMeleeAttackNeeded gates the client policy and the target (combat,
+-- attackable, alive, no vehicle), so restricted clients never get here.
+local RANGED_ATTACKS={75,5019}
+local scratch={}
+local function bound(self,id)
+    scratch[1]=id
+    local found=self:FindSpell(scratch)
+    scratch[1]=nil
+    return found
+end
+function addon:ResolveImplicitAttack(ready)
+    local platform=self.Platform
+    local need,_,why=platform:IsMeleeAttackNeeded("target")
+    if need==true then
+        if ready("spell",6603) then return bound(self,6603) end
+        return nil
+    end
+    if need~=false or (why~="beyond-melee" and why~="attack-active") then return nil end
+    local beyond=why=="beyond-melee" or nil
+    for i=1,#RANGED_ATTACKS do
+        local id=RANGED_ATTACKS[i]
+        local spell=bound(self,id)
+        if spell then
+            -- Attack is already on: the range was not read yet. Read it only
+            -- for a character with a ranged auto-attack on the bars.
+            if beyond==nil then beyond=platform:IsBeyondMeleeRange("target")==true end
+            if not beyond then return nil end
+            if id~=5019 or platform:IsWandEquipped()==true then
+                if platform:IsAutoRepeatActive(id)~=false then return nil end
+                if ready("ranged",id) then return spell end
+            end
+        end
+    end
+    return nil
 end

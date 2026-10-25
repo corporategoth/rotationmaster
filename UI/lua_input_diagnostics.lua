@@ -53,28 +53,7 @@ end
 -- available without adding temporary test controls to the editor chrome.
 function addon:InstallLuaInputDiagnostics(control)
     self.luaInputEditor=control
-    function control:ResetNativeArrowProbe()
-        local probe=self.nativeArrowProbe;self.nativeArrowProbe=nil
-        if probe and probe.edit==self.edit and probe.edit:GetScript('OnArrowPressed')==nil then probe.edit:SetScript('OnArrowPressed',probe.handler) end
-    end
-    function control:ToggleNativeArrowProbe()
-        if self.released or type(self.valid)~='function' then return nil end
-        local ok,valid=pcall(self.valid);if not ok or not valid then return nil end
-        if self.nativeArrowProbe then self:ResetNativeArrowProbe();return false end
-        self.nativeArrowProbe={edit=self.edit,handler=self.edit:GetScript('OnArrowPressed')}
-        self.edit:SetScript('OnArrowPressed',nil);return true
-    end
-    -- End the old lease before completion/provider release or acquisition
-    -- replaces handlers. Never restore the old probe over a newer hook.
-    if not control.arrowProbeLifecycle then
-        control.arrowProbeLifecycle=true
-        for _,name in ipairs({'Release','Acquire'}) do
-            local original=control[name]
-            if original then control[name]=function(self,...) self:ResetNativeArrowProbe();return original(self,...) end end
-        end
-    end
     function control:ResetInputTrace()
-        self:ResetNativeArrowProbe()
         self.inputTrace={};self.inputCounts={};self.inputPoll=nil;self.layoutCounts=nil;self.lineNumberCounts=nil
     end
     function control:ObserveInput(event,...)
@@ -128,7 +107,7 @@ function addon:LuaEditorInputReport()
         lines[#lines+1]='layout origins='..table.concat(origins,' ')
         if layout.ownerWidth then lines[#lines+1]='last owner-size='..tostring(layout.ownerWidth)..'x'..tostring(layout.ownerHeight) end
     end
-    lines[#lines+1]='arrowHook='..tostring(type(edit:GetScript('OnArrowPressed'))=='function')..' probe='..tostring(control.nativeArrowProbe~=nil)
+    lines[#lines+1]='arrowHook='..tostring(type(edit:GetScript('OnArrowPressed'))=='function')
     lines[#lines+1]='lineNumbers visible='..tostring(control.lineNumbersVisible)..' setting='..tostring(control.lineNumberSetting)
     local input=control.lineNumberInput;local queue=control.lineNumberQueue
     local engine=control.engine or control.completionEngine;local console=engine and engine.Query and engine.Query.Console

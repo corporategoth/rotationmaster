@@ -117,6 +117,9 @@ end
 
 -- This is only a suggestion to start ordinary weapon attacks. It cannot
 -- operate a button or infer unavailable combat/target data.
+-- A false answer for an attackable target in combat says why in its third
+-- value, for the ranged auto-attack (Core/action_policy.lua): "attack-active"
+-- (Attack is already on; range was not read) or "beyond-melee".
 function platform:IsMeleeAttackNeeded(unit)
     if not self:CanReadValue(unit) or type(unit)~="string" or unit=="" then return nil,"invalid-unit" end
     if readClientPolicy(self)~="probe" then return nil,"unsupported-policy" end
@@ -148,10 +151,11 @@ function platform:IsMeleeAttackNeeded(unit)
     local active
     active,reason=self:IsCurrentSpell(6603)
     if active==nil then return nil,reason end
-    if active then return false end
+    if active then return false,nil,"attack-active" end
     local beyond,why=self:IsBeyondMeleeRange(unit)
     if beyond==nil then return nil,why end
-    return not beyond
+    if beyond then return false,nil,"beyond-melee" end
+    return true
 end
 
 -- BEGIN GENERATED RM SOURCE BINDINGS

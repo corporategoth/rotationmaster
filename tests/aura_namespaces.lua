@@ -1,7 +1,7 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local tags={'BUFF','BUFF_REMAIN','BUFF_STACKS','STEALABLE','DEBUFF','DEBUFF_REMAIN','DEBUFF_STACKS','DISPELLABLE'}
 local modes={BUFF={'HELPFUL','present'},BUFF_REMAIN={'HELPFUL','remaining'},BUFF_STACKS={'HELPFUL','stacks'},STEALABLE={'HELPFUL','stealable'},DEBUFF={'HARMFUL','present'},DEBUFF_REMAIN={'HARMFUL','remaining'},DEBUFF_STACKS={'HARMFUL','stacks'},DISPELLABLE={'HARMFUL','dispel'}}
-local expected={BUFF={valid={isin=1},print={nullable=1,playerize=1}},BUFF_REMAIN={valid={isin=2},print={nullable=2,playerize=1,compareString=1}},BUFF_STACKS={valid={isin=2},print={nullable=2,compareString=1}},STEALABLE={valid={isin=1},print={nullable=1}},DEBUFF={valid={isin=1},print={nullable=1,playerize=1}},DEBUFF_REMAIN={valid={isin=2},print={nullable=2,playerize=1,compareString=1}},DEBUFF_STACKS={valid={isin=2},print={nullable=2,compareString=1}},DISPELLABLE={valid={isin=2},print={nullable=2,playerize=1}}}
+local expected={BUFF={valid={isin=1},print={nullable=1,playerize=1}},BUFF_REMAIN={valid={isin=2},print={nullable=2,playerize=1,compareString=1}},BUFF_STACKS={valid={isin=2},print={nullable=2,compareString=1}},STEALABLE={valid={isin=1},print={nullable=1,playerize=1}},DEBUFF={valid={isin=1},print={nullable=1,playerize=1}},DEBUFF_REMAIN={valid={isin=2},print={nullable=2,playerize=1,compareString=1}},DEBUFF_STACKS={valid={isin=2},print={nullable=2,compareString=1}},DISPELLABLE={valid={isin=2},print={nullable=2,playerize=2}}}
 local groups={isin='values',nullable='presentation',compareString='presentation',playerize='presentation'}
 local function module(tag) return (tag:find('BUFF',1,true)==1 or tag=='STEALABLE') and 'Conditions/buffs.lua' or 'Conditions/debuffs.lua' end
 local function fixture(modern)
@@ -36,7 +36,7 @@ local function clones(a)
 end
 local function count(text,pattern) local _,n=text:gsub(pattern,'');return n end
 
-test('eight aura declarations select exactly thirty-five owned pure helper calls',function()
+test('eight aura declarations select exactly thirty-seven owned pure helper calls',function()
     local f,a=fixture(true);local total=0
     for _,file in ipairs({'Conditions/buffs.lua','Conditions/debuffs.lua'}) do
         local declared=assert(a.builtinCallbackBindings and a.builtinCallbackBindings[file],'canonical aura leaves missing')
@@ -51,7 +51,7 @@ test('eight aura declarations select exactly thirty-five owned pure helper calls
         assert(source.evaluate=='\n        return addon:EvaluateAuraCondition(value, cache, start, "'..modes[tag][1]..'", "'..modes[tag][2]..'")\n    ','aura evaluation body changed')
         if tag~='STEALABLE' and tag~='DISPELLABLE' then assert(source.fields.anyrank=='boolean' and source.widget:find('Widget_AuraRankWidget',1,true) and source.widget:find('"Spell_EditBox"',1,true)) end
     end
-    assert(total==35 and not f.env.Functions)
+    assert(total==37 and not f.env.Functions)
     local stealable=a:GetBuiltinConditionSource('STEALABLE');assert(count(stealable.widget,'Functions%.collections%.deepcopy%(')==1,'collection helper is not canonical');assert(stealable.bindings['Functions.collections.deepcopy']=='builtin:Functions/collections.lua:deepcopy');local dispel=a:GetBuiltinConditionSource('DISPELLABLE');assert(count(dispel.widget,'Functions%.collections%.keys%(')==1 and dispel.bindings['Functions.collections.keys']=='builtin:Functions/collections.lua:keys')
 end)
 test('original color and Help captured identities and public helper APIs remain stable',function()
@@ -67,12 +67,12 @@ test('baseline aura summaries preserve positive negative rank caster and existin
     local baseline={
         BUFF={'you have your own Shield (any rank)','you do not have your own Shield (any rank)'},
         BUFF_REMAIN={'you have your own Shield (any rank) where the remaining time is less than 4 seconds','you do not have your own Shield (any rank) where the remaining time is less than 4 seconds'},
-        BUFF_STACKS={'your stacks of your own Shield (any rank) is less than 4','your stacks of your own Shield (any rank) is not less than 4'},
-        STEALABLE={'you has a stealable buff','you does not have a stealable buff'},
+        BUFF_STACKS={'the number of stacks of your own Shield (any rank) on you is less than 4','the number of stacks of your own Shield (any rank) on you is not less than 4'},
+        STEALABLE={'you have a stealable buff','you do not have a stealable buff'},
         DEBUFF={'you have your own Curse (any rank)','you do not have your own Curse (any rank)'},
         DEBUFF_REMAIN={'you have your own Curse (any rank) where the remaining time is less than 4 seconds','you do not have your own Curse (any rank) where the remaining time is less than 4 seconds'},
-        DEBUFF_STACKS={'your stacks of your own Curse (any rank) is less than 4','your stacks of your own Curse (any rank) is not less than 4'},
-        DISPELLABLE={'you have a your own Magic debuff that is dispellable','you do not have a your own Magic debuff that is dispellable'},
+        DEBUFF_STACKS={'the number of stacks of your own Curse (any rank) on you is less than 4','the number of stacks of your own Curse (any rank) on you is not less than 4'},
+        DISPELLABLE={'you have a debuff you applied of type Magic that is dispellable','you do not have a debuff you applied of type Magic that is dispellable'},
     }
     for _,tag in ipairs(tags) do local node=value(tag);assert(a.conditionDefinitions[tag].print(0,node)==baseline[tag][1] and copies[tag].print(0,node,true)==baseline[tag][2],tag..' baseline wording changed') end
 end)

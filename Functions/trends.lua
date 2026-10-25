@@ -42,7 +42,9 @@ function trends.calculateOld(health)
         last_offs = offs
     end
 
-    if seconds then
+    -- seconds is a number, so test it: with no change recorded (or no weight)
+    -- total/count is 0/0, and the trend is zero, not NaN.
+    if seconds > 0 and count ~= 0 then
         return total / count, seconds
     end
     return 0
