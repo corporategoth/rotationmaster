@@ -96,12 +96,12 @@ test('forecast canonical and native errors propagate without invented availabili
 end)
 test('actual trend services retain their exact formulas bodies tuples and three live legacy round calls',function()
  local f,a,s=fixture();local current,old=a.Functions.trends.calculate,a.Functions.trends.calculateOld
- assert(a:FunctionSourceHash(sourceOf(current))=='49b34bf5' and a:FunctionSourceHash(sourceOf(old))=='20904b92','trend helper bodies changed')
+ assert(a:FunctionSourceHash(sourceOf(current))=='49b34bf5' and a:FunctionSourceHash(sourceOf(old))=='ced8840f','trend helper bodies changed')
  assert(current==a.calculate_trend and old==a.calculate_trend_old,'direct legacy aliases changed')
  local round=a.round;local rounds=0;a.Functions.values.round=function() error('canonical round replaced legacy authority') end
  a.round=function(...) assert(select('#',...)==1);rounds=rounds+1;return round(...) end
  local r=pack(current(s.history));assert(r.n==2 and math.abs(r[1]+223/34)<1e-10 and r[2]==3 and rounds==5,'current formula/round arity changed')
- r=pack(old({{time=100,value=80,max=100}}));assert(r.n==2 and rounds==6,'legacy algorithm round authority changed')
+ r=pack(old({{time=100,value=80,max=100}}));assert(r.n==1 and r[1]==0 and rounds==6,'legacy algorithm round authority changed')
  poison(a);local v=node('TT_HEALTH',50,4);v.operator='LESSTHAN';assert(a.conditionDefinitions.TT_HEALTH.evaluate(v,{})==true,'actual canonical trend formula no longer feeds forecast')
  a.round=function() error('LIVE_LEGACY_ROUND') end;for _,fn in ipairs({current,old}) do local ok,why=pcall(fn,fn==current and s.history or {{time=100,value=80,max=100}});assert(not ok and tostring(why):find('LIVE_LEGACY_ROUND',1,true)) end
 end)
@@ -110,7 +110,7 @@ test('strict inverse restores only both full evaluators and all private trend an
  assert(a:FunctionSourceHash(inverse(restoreForecast(text)))=='3174a034','stats changed beyond two trend consumer expressions from d8bdba6')
  assert(not pcall(function() return inverse(restoreForecast(text..text)) end),'inverse accepted duplicate evaluator blocks')
  for _,tag in ipairs(tags) do assert(inverse(newBodies[tag],tag,true)==oldBodies[tag]);assert(not pcall(inverse,oldBodies[tag],tag,true));assert(not pcall(inverse,newBodies[tag]..' ',tag,true));assert(not pcall(inverse,newBodies[tag],'OTHER',true)) end
- for id,hash in pairs({['builtin:Conditions/stats.lua:color']='89107d36',['builtin:Conditions/stats.lua:helpers']='c19dbbac',['builtin:Functions/trends.lua:calculate']='26e53807',['builtin:Functions/trends.lua:calculateOld']='a7c35d84'}) do
+ for id,hash in pairs({['builtin:Conditions/stats.lua:color']='89107d36',['builtin:Conditions/stats.lua:helpers']='c19dbbac',['builtin:Functions/trends.lua:calculate']='26e53807',['builtin:Functions/trends.lua:calculateOld']='666360c5'}) do
   assert(a:FunctionSourceHash(assert(a.builtinFunctions[id]).source)==hash,'published/private source identity changed: '..id)
  end
  for _,name in ipairs({'calculate','calculateOld'}) do assert(a.builtinSourceModules['Functions/trends.lua'](name)==a:ResolveFunctionBinding('builtin:Functions/trends.lua:'..name)) end

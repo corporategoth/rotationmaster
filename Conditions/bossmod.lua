@@ -57,6 +57,8 @@ local function timerNote()
     if type(addon.ListBossModTimers) ~= "function" then return string.format(L["Boss mod data unavailable: %s"], "adapter-unavailable") end
     local rows = addon:ListBossModTimers(6)
     if #rows == 0 then
+        -- The timer list alone does not prove the encounter reader exists.
+        if type(addon.GetBossModEncounter) ~= "function" then return string.format(L["Boss mod data unavailable: %s"], "adapter-unavailable") end
         local active, _, _, detail = addon:GetBossModEncounter()
         if active == nil then return string.format(L["Boss mod data unavailable: %s"], tostring(detail or "unknown")) end
         return L["No boss-mod timers are running."]

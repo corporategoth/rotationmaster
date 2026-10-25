@@ -36,13 +36,15 @@ test('current trend preserves early tuple arity weighted streams and lazy truthy
     r=pack(a.calculate_trend(h,10));assert(same(r[1],-223/34),'explicit window changed');r=pack(a.calculate_trend({},0,true,true));assert(r.n==2 and r[1]==0 and r[2]==0)
     assert(a:SettingsDataEqual(before,h),'trend mutated history input')
 end)
-test('legacy health trend preserves old weighting NaN empty path and return counts',function()
+test('legacy health trend preserves old weighting and return counts; no change is zero, not NaN',function()
     local f,a=fixture();f.env.GetTime=function() return 100 end;a.db.profile.damage_history=10
     for _,empty in ipairs({{},{false}}) do local r=pack(a.calculate_trend_old(empty[1]));assert(r.n==1 and r[1]==0) end
-    local r=pack(a.calculate_trend_old({}));assert(r.n==2 and r[1]~=r[1] and r[2]==0,'legacy empty path was normalized')
+    local r=pack(a.calculate_trend_old({}));assert(r.n==1 and r[1]==0,'an empty history returned NaN or a bucket count')
     local h={{time=100,value=80,max=100},{time=99,value=90,max=100},{time=98,value=95,max=100}};local before=a:CopySettingsData(h)
     r=pack(a.calculate_trend_old(h));assert(r.n==2 and same(r[1],-130/17) and r[2]==2);assert(a:SettingsDataEqual(before,h))
-    r=pack(a.calculate_trend_old({{time=100,value=100,max=100}}));assert(r.n==2 and r[1]~=r[1] and r[2]==0,'legacy full-health stop changed')
+    r=pack(a.calculate_trend_old({{time=100,value=100,max=100}}));assert(r.n==1 and r[1]==0,'legacy full-health stop returned NaN')
+    r=pack(a.calculate_trend_old({{time=100,value=80,max=100},{time=99,value=80,max=100}}));assert(r.n==2 and r[1]==0 and r[2]==1,'an unchanged reading is not a zero trend')
+    r=pack(a.calculate_trend_old({{time=100,value=80,max=100}}));assert(r.n==1 and r[1]==0,'a single reading returned NaN')
 end)
 test('trend time rounding and malformed-input errors remain live compatibility services',function()
     local f,a=fixture();local calls=0;f.env.GetTime=function(...) assert(select('#',...)==0);calls=calls+1;return 100 end;a.db.profile.damage_history=10
@@ -57,12 +59,12 @@ test('trend time rounding and malformed-input errors remain live compatibility s
 end)
 test('moved bodies are exact and inverse restores every unrelated utils byte',function()
     local _,a=fixture();local trends=assert(a.Functions.trends,'canonical trend namespace missing');local current,legacy=body(trends.calculate),body(trends.calculateOld)
-    assert(a:FunctionSourceHash(current)=='49b34bf5' and a:FunctionSourceHash(legacy)=='20904b92','trend body bytes changed')
+    assert(a:FunctionSourceHash(current)=='49b34bf5' and a:FunctionSourceHash(legacy)=='ced8840f','trend body bytes changed')
     local file=assert(io.open('utils.lua'));local text=file:read('*a');file:close()
     for _,case in ipairs({{'addon.calculate_trend_old=addon.Functions.trends.calculateOld','function addon.calculate_trend_old(health)'..legacy..'end'},{'addon.calculate_trend=addon.Functions.trends.calculate','function addon.calculate_trend(history, window, noheals, nodmg)'..current..'end'}}) do
         local first,last=text:find(case[1],1,true);assert(first and not text:find(case[1],last+1,true),'unexpected trend alias count');text=text:sub(1,first-1)..case[2]..text:sub(last+1)
     end
-    assert(a:FunctionSourceHash(text)=='b223b87e','utils changed outside the two ownership replacements')
+    assert(a:FunctionSourceHash(text)=='e66df73b','utils changed outside the two ownership replacements')
 end)
 test('raw saved function source keeps its dynamic legacy aliases and tuple arity',function()
     local _,a=fixture()
@@ -82,7 +84,7 @@ if arg[1]~='--runtime-only' then
             assert(#record.source.args==case[3] and next(record.source.bindings)==nil and record.source.code==body(a[case[2]]),'public source signature/body/captures changed')
             assert(not a.builtinFunctions['builtin:utils.lua:'..case[2]] and a.builtinSourceModules['utils.lua'](case[2])==nil,'invented historical trend source ID')
             assert(a:InstallCustomFunction('COPY_TREND_'..case[1],a:CopySettingsData(record.source)));local copy=a:ResolveFunctionBinding('COPY_TREND_'..case[1]);local r=pack(copy(nil));assert(r.n==1 and r[1]==0)
-            if case[1]=='calculate' then r=pack(copy(history()));assert(r.n==2 and same(r[1],-223/34) and r[2]==3) else r=pack(copy({}));assert(r.n==2 and r[1]~=r[1] and r[2]==0) end
+            if case[1]=='calculate' then r=pack(copy(history()));assert(r.n==2 and same(r[1],-223/34) and r[2]==3) else r=pack(copy({}));assert(r.n==1 and r[1]==0) end
             a.round=function() error('CLONE_LIVE_ROUND') end;local ok,why=pcall(copy,case[1]=='calculate' and history() or {{time=100,value=80,max=100}});assert(not ok and tostring(why):find('CLONE_LIVE_ROUND',1,true))
         end
     end)
