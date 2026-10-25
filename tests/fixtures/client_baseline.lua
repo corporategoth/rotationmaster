@@ -59,7 +59,7 @@ return function(case)
  local outerSaved=_G.RotationMasterDB
  local factory=assert(loadstring(factorySource,'@client-baseline-startup'))
  local e,a,scripts,load,firstProject,initialProject=factory(case,support)
- for _,path in ipairs({'UI/rotation_reference.lua','UI/defaults.lua','Data/codec.lua','Data/import_session.lua','Core/imports.lua'}) do load(path) end
+ for _,path in ipairs({'UI/rotation_reference.lua','UI/defaults.lua','Data/export_text.lua','Data/codec.lua','Data/import_session.lua','Core/imports.lua'}) do load(path) end
  local function optionalAbsent()
   for _,name in ipairs({'WeakAuras','Details','MobInfo2','ExtendedCharacterStats','LuaWorkbench','TitanPanel'}) do
    if e[name]~=nil then return false end

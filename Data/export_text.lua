@@ -1,0 +1,54 @@
+local _, addon = ...
+
+-- Presentation of an encoded export string. The encoded data is never changed:
+-- formatting inserts newlines only, and normalizing removes whitespace only.
+-- docs/quality/export-text-format.md is the specification; the website follows
+-- the same rule, so change both together.
+--
+--   Export: the whole string, marker included ("RM1:" + Base64), is cut into
+--           lines of exactly 76 characters joined by "\n". The last line holds
+--           the remainder (1-76 characters). No trailing newline.
+--   Import: every whitespace and invisible formatting character is removed
+--           before decoding. The encoding's alphabet (A-Z a-z 0-9 + / = and the
+--           ":" of the marker) contains none, so nothing significant is lost.
+local EXPORT_WIDTH = 76
+
+-- Multi-byte UTF-8 sequences that chat clients, browsers and word processors
+-- add or substitute when text is copied. Single-byte whitespace is one class.
+local sequences = {
+    "\194[\133\160\173]",          -- U+0085 NEL, U+00A0 no-break space, U+00AD soft hyphen
+    "\225\154\128",                -- U+1680 Ogham space mark
+    "\225\160\142",                -- U+180E Mongolian vowel separator
+    "\226\128[\128-\143]",         -- U+2000-U+200F spaces, zero-width space/joiners, LRM/RLM
+    "\226\128[\168-\175]",         -- U+2028-U+202F line/paragraph separators, bidi controls, narrow no-break space
+    "\226\129[\159-\164\166-\169]", -- U+205F medium space, U+2060-U+2064 joiners, U+2066-U+2069 bidi isolates
+    "\227\128\128",                -- U+3000 ideographic space
+    "\239\187\191",                -- U+FEFF zero-width no-break space / byte order mark
+}
+
+function addon:NormalizeImportText(text)
+    if type(text) ~= "string" then return "" end
+    -- Text that is already nothing but the alphabet (an unwrapped export) costs
+    -- one scan and no copy of a string that can be megabytes.
+    if not text:find("[^A-Za-z0-9%+/=:]") then return text end
+    text = text:gsub("[ \t\n\v\f\r]+", "")
+    if text:find("[\194\225\226\227\239]") then
+        for _, pattern in ipairs(sequences) do text = text:gsub(pattern, "") end
+    end
+    return text
+end
+
+function addon:FormatExportText(text, width)
+    if type(text) ~= "string" then return "" end
+    -- Only line breaks are touched, so wrapping twice is stable and any other
+    -- character of the text is left exactly as it was.
+    text = text:gsub("[\r\n]+", "")
+    if type(width) ~= "number" or width < 1 then width = EXPORT_WIDTH end
+    width = math.floor(width)
+    if #text <= width then return text end
+    local lines = {}
+    for position = 1, #text, width do lines[#lines + 1] = text:sub(position, position + width - 1) end
+    return table.concat(lines, "\n")
+end
+
+addon.ExportTextWidth = EXPORT_WIDTH

@@ -137,6 +137,7 @@ Data/tags.lua
 Data/rotation_tree.lua
 Data/condition_draft.lua
 Data/rotation_draft.lua
+Data/export_text.lua
 Data/codec.lua
 Data/validation.lua
 Data/catalog.lua

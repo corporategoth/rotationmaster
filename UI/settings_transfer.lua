@@ -59,13 +59,43 @@ end
 function addon:TransferHelpBriefs()
     return {copy=L['Help.Transfers.copy'],clear=L['Help.Transfers.clear'],apply=L['Help.Transfers.apply'],cancel=L['Help.Transfers.cancel'],close=L['Help.Transfers.cancel'],destination=L['Help.Transfers.destination'],name=L['Help.Transfers.name'],preview=L['Help.Transfers.preview'],inspect=L['Help.Transfers.inspect']}
 end
+-- Export and import strings are Base64: a fixed-pitch face keeps the 76-character
+-- lines aligned and readable. Shells that show prose (reports, output) keep the
+-- proportional face; the transfer windows call this on their own edit box.
+local EXPORT_FONT='Interface\\AddOns\\'..addon_name..'\\Fonts\\Inconsolata-Regular.ttf'
+local EXPORT_FONT_SIZES={12,11,10,9}
+local EXPORT_BOX_MARGIN=12
+-- The most letters the box accepts: the plain limit plus one newline per line.
+function addon:ExportTextLimit(letters) return letters+math.ceil(letters/self.ExportTextWidth) end
+-- Uses Inconsolata at the largest size whose 76-character line fits the box
+-- without wrapping, measured rather than assumed. If the file is missing or the
+-- client refuses it the box keeps the default font; nothing else changes.
+function addon:UseExportFont(d)
+    local input=d.input;d.exportFont=nil
+    input:SetFontObject('GameFontHighlightSmall')
+    if type(input.SetFont)~='function' then return false end
+    d.exportProbe=d.exportProbe or d.frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');d.exportProbe:Hide()
+    local sample=string.rep('0',self.ExportTextWidth);local limit=input:GetWidth()-EXPORT_BOX_MARGIN;local chosen
+    for _,size in ipairs(EXPORT_FONT_SIZES) do
+        if input:SetFont(EXPORT_FONT,size,'')==false then break end
+        -- A client that cannot load the file keeps the previous face; GetFont says which one is live.
+        local path=type(input.GetFont)=='function' and input:GetFont()
+        if type(path)=='string' and not path:lower():find('inconsolata',1,true) then break end
+        if d.exportProbe:SetFont(EXPORT_FONT,size,'')==false then break end
+        d.exportProbe:SetText(sample)
+        chosen={size=size,width=d.exportProbe:GetStringWidth()}
+        if chosen.width<=limit then break end
+    end
+    if not chosen then input:SetFontObject('GameFontHighlightSmall');return false end
+    d.exportFont=chosen;return true
+end
 function addon:CreateWorkbenchTransferShell(width,height)
     width,height=width or 570,height or 430
     local d={frame=CreateFrame('Frame',nil,UIParent),sharedTransferShell=true}
     d.frame:SetSize(width,height);d.frame:SetPoint('CENTER');d.frame:SetFrameStrata('FULLSCREEN_DIALOG');d.frame:EnableMouse(true);d.frame:SetToplevel(true);self:MakeWindowOpaque(d.frame)
     d.title=d.frame:CreateFontString(nil,'OVERLAY','GameFontNormal');d.chrome=self:CreateWorkbenchDialogChrome(d.frame,d.title);d.chromeUpdate=d.frame:GetScript('OnUpdate')
     d.scroll=self:CreateWorkbenchScrollFrame(d.frame);d.scroll:SetPoint('TOPLEFT',12,-40);d.scroll:SetSize(width-50,height-130)
-    d.input=CreateFrame('EditBox',nil,d.scroll);d.input:SetFontObject('GameFontHighlightSmall');d.input:SetMultiLine(true);d.input:SetAutoFocus(false);d.input:SetMaxLetters(131072);d.input:SetSize(width-60,height-130);d.input:SetPoint('TOPLEFT');d.scroll:SetScrollChild(d.input)
+    d.input=CreateFrame('EditBox',nil,d.scroll);d.input:SetFontObject('GameFontHighlightSmall');d.input:SetMultiLine(true);d.input:SetAutoFocus(false);d.input:SetMaxLetters(self:ExportTextLimit(131072));d.input:SetSize(width-60,height-130);d.input:SetPoint('TOPLEFT');d.scroll:SetScrollChild(d.input)
     d.copy=self:CreateWorkbenchButton(d.frame,L['Copy'],64);d.copy:SetPoint('BOTTOMLEFT',12,28)
     d.clear=self:CreateWorkbenchButton(d.frame,L['Clear'],64);d.clear:SetPoint('BOTTOMLEFT',82,28)
     d.apply=self:CreateWorkbenchButton(d.frame,L['Import'],100);d.apply:SetPoint('BOTTOMRIGHT',-120,28)
@@ -127,7 +157,7 @@ end
 function addon:ShowSettingsTextTransfer(p,title,text,apply,options)
     local d=p.textDialog
     if not d then
-        d=self:CreateWorkbenchTransferShell(570,430);p.textDialog=d
+        d=self:CreateWorkbenchTransferShell(570,430);p.textDialog=d;self:UseExportFont(d)
         d.original=d.frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');d.original:SetPoint('TOPLEFT',12,-36);d.original:SetSize(546,22);d.original:SetJustifyH('LEFT')
         d.destination=addon:CreateWorkbenchCheckBox(d.frame,L['Replace selected entry'],210);d.destination:SetPoint('TOPLEFT',12,-62)
         d.nameLabel=d.frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');d.nameLabel:SetPoint('TOPLEFT',232,-62);d.nameLabel:SetSize(54,24);d.nameLabel:SetText(L['Name'])
@@ -147,7 +177,7 @@ function addon:ShowSettingsTextTransfer(p,title,text,apply,options)
         if options and options.valid and not options.valid()then return false end
         return p:Valid(token)and p.textDialog==d and d.serial==serial and d.frame:IsShown()
     end
-    d.chrome:SetContext(title,L['Import/Export'],addon.pretty_name or L['Rotation Master']);d.input:SetText(text or '')
+    d.chrome:SetContext(title,L['Import/Export'],addon.pretty_name or L['Rotation Master']);d.input:SetText(addon:FormatExportText(text))
     d.options=options;d.mode=options and options.canReplace and 'replace' or 'new';d.nameDirty=false
     local function destination()
         d.destination:SetText(L['Replace selected entry']);d.destination:SetChecked(d.mode=='replace');if options.canReplace then d.destination:Enable() else d.destination:Disable() end;d.name:EnableMouse(d.mode=='new');d.name:SetTextColor(d.mode=='new' and 1 or .5,d.mode=='new' and 1 or .5,d.mode=='new' and 1 or .5)
