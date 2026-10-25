@@ -14,7 +14,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local function righteousness()return{type='OR',value={own(20154),own(21084)}}end
 local function sealed()local out={};for i,id in ipairs({20154,21084,20375,21082,20166,20165,20164})do out[i]=own(id)end;return{type='OR',value=out}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.paladin.retribution.twist',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.era.paladin.retribution.twist',revision=5,
  blocks={['era.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=3,['era.paladin.undead']=1},
  nameKey='Default.Era.Paladin.Retribution.Twist.Name',descriptionKey='Default.Era.Paladin.Retribution.Twist.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN'},

@@ -14,7 +14,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local five={type='POINT',unit='player',operator='GREATERTHANOREQUALS',value=5}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.dps.icyveins',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.dps.icyveins',revision=7,
  blocks={['era.rogue.boundaries']=3,['era.rogue.sod-opener']=4,['era.rogue.sod-upkeep']=3,['era.rogue.sod-builders']=3},
  nameKey='Default.SoD.Rogue.DPS.IcyVeins.Name',descriptionKey='Default.SoD.Rogue.DPS.IcyVeins.Description',
  applicability={families={'era'},actionContext='player',class='ROGUE',rulesets={'season:2'}},
@@ -22,7 +22,7 @@ assert(addon:RegisterDefaultRotation({
  sources={{url='https://www.icy-veins.com/wow-classic/assassination-rogue-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Assassination Rogue DPS rotation',reviewedAt='2026-10-23',revision='2025-04-08'},
  {url='https://www.icy-veins.com/wow-classic/combat-rogue-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Combat Rogue DPS rotation',reviewedAt='2026-10-23',revision='2025-04-08'},
  {url='https://www.icy-veins.com/wow-classic/subtlety-rogue-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Subtlety Rogue DPS rotation',reviewedAt='2026-10-23',revision='2025-04-08'}},
- body={priority=45,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=45,disabled=true,
  cooldowns={block('era.rogue.sod-upkeep','rogue-')},
  rotation={
  block('era.rogue.boundaries','rogue-'),

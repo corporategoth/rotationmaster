@@ -26,7 +26,7 @@ local hidden={type='STEALTHED'}
 local worth=any(boss,lifetime('GREATERTHAN',8))
 local ruptureDue=any(negate(mine(1943)),remain(1943,'LESSTHANOREQUALS',2))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.subtlety.warcrafttavern',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.subtlety.warcrafttavern',revision=7,
  blocks={['mop.rogue.boundaries']=3,['mop.rogue.out-of-combat']=3,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1,['mop.rogue.subtlety-builders']=2},
  nameKey='Default.MoP.Rogue.Subtlety.WarcraftTavern.Name',descriptionKey='Default.MoP.Rogue.Subtlety.WarcraftTavern.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE'},

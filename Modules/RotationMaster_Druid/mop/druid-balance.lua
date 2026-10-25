@@ -27,7 +27,7 @@ local worth=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASS
  {type='CLASSIFICATION',unit='target',value='worldboss'},{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=25})
 local dream=all(talent(17),negate(own(DREAM)),negate(aligned))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.druid.balance',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.druid.balance',revision=7,
  blocks={['mop.druid.boundaries']=4,['mop.druid.target']=2,['mop.druid.mark']=1},
  nameKey='Default.MoP.Druid.Balance.Name',descriptionKey='Default.MoP.Druid.Balance.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID'},

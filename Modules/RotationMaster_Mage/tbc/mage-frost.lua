@@ -11,7 +11,7 @@ local function stop(id)return{id=id,type='stop',suppress_attack=true,conditions=
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local frozen=any({type='DEBUFF',unit='target',spell=122,anyrank=true},{type='DEBUFF',unit='target',spell=33395},{type='DEBUFF',unit='target',spell=12494})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.mage.frost',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.mage.frost',revision=5,
  blocks={['tbc.mage.boundaries']=3,['tbc.mage.frostbolt']=1,['tbc.mage.wand-finish']=2,['tbc.mage.armor']=1,['tbc.mage.upkeep']=1},
  nameKey='Default.TBC.Mage.Frost.Name',descriptionKey='Default.TBC.Mage.Frost.Description',
  applicability={families={'tbc'},actionContext='player',class='MAGE'},

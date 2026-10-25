@@ -23,7 +23,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local shocked={type='DEBUFF',unit='target',spell=8050,anyrank=true,owndebuff=true}
 local melee=negate({type='BEYOND_MELEE',unit='target'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.shaman.elemental',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.shaman.elemental',revision=7,
  blocks={['forever.shaman.manual-target']=2,['forever.shaman.upkeep']=2,['forever.shaman.imbue']=1,['forever.shaman.group-totems']=1,
   ['forever.shaman.caster-aoe']=1,['forever.shaman.stormstrike-hybrid']=1},
  nameKey='Default.Forever.Shaman.Elemental.Name',descriptionKey='Default.Forever.Shaman.Elemental.Description',

@@ -18,7 +18,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local big={type='OR',value={{type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'}}}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.rogue.dps',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.rogue.dps',revision=5,
  blocks={['forever.rogue.boundaries']=3,['forever.rogue.stealth-fallback']=3,['forever.rogue.reactive']=1,['forever.rogue.expose-armor']=1,['forever.rogue.upkeep']=2},
  nameKey='Default.Forever.Rogue.DPS.Name',descriptionKey='Default.Forever.Rogue.DPS.Description',
  applicability={families={'forever'},actionContext='player',class='ROGUE'},
@@ -30,7 +30,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://www.wowhead.com/forever/guide/classes/rogue/subtlety/dps-abilities',title='Wowhead: Forever Subtlety Rogue abilities',reviewedAt='2026-10-23',revision='2026-10-08'},
  {url='https://www.warcrafttavern.com/forever/guides/assassination-rogue/',title='Warcraft Tavern: Forever Assassination Rogue',reviewedAt='2026-10-23'},
  {url='https://worldofwarcraft.blizzard.com/en-us/news/24310968',title='Blizzard: Forever class deep dives, Rogue and Warlock',reviewedAt='2026-10-23',revision='2026-10-07'}},
- body={priority=10,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=10,
  cooldowns={block('forever.rogue.upkeep','rogue-'),
   spell('rogue-preparation',14185,all({type='COMBAT',unit='player'},{type='SPELL_COOLDOWN',spell=1856,operator='GREATERTHAN',value=30},{type='SPELL_COOLDOWN',spell=5277,operator='GREATERTHAN',value=30}))},
  rotation={

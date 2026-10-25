@@ -12,7 +12,7 @@ local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
 local function dot(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
 local function combat()return{type='COMBAT',unit='player'}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.druid.balance',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.druid.balance',revision=6,
  blocks={['tbc.druid.feral-form-target']=2,['tbc.druid.boundaries']=4,['tbc.druid.upkeep']=1},
  nameKey='Default.TBC.Druid.Balance.Name',descriptionKey='Default.TBC.Druid.Balance.Description',
  applicability={families={'tbc'},actionContext='player',class='DRUID'},
@@ -22,7 +22,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.wowhead.com/tbc/guide/classes/druid/balance/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Balance Druid rotation',reviewedAt='2026-10-23',revision='2026-03-31'},
   {url='https://www.warcrafttavern.com/tbc/guides/pve-balance-druid-boomkin-dps-rotation-cooldowns-abilities/',title='Warcraft Tavern: Balance Druid rotation',reviewedAt='2026-10-23'},
   {url='https://github.com/wowsims/tbc/blob/3301fca59306a747e521274c36e073e69acc7b77/sim/druid/balance/rotation.go',title='wowsims/tbc Balance rotation',reviewedAt='2026-10-23',revision='3301fca59306a747e521274c36e073e69acc7b77'}},
- body={priority=0,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=0,
   cooldowns={
    {id='balance-upkeep',type='block',block='tbc.druid.upkeep',prefix='balance-'},
    {id='balance-moonkin',type='spell',action=24858,ranked=false,conditions=negate(any({type='FORM',form=24858},{type='FORM',form=768},{type='FORM',form=5487},{type='FORM',form=9634},{type='FORM',form=783},{type='FORM',form=1066},{type='FORM',form=33943},{type='FORM',form=40120}))},

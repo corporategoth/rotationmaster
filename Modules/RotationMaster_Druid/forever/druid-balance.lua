@@ -15,7 +15,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id,conditions,attack)return{id=id,type='stop',suppress_attack=not attack,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.druid.balance',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.druid.balance',revision=6,
  blocks={['forever.druid.boundaries']=3,['forever.druid.upkeep']=1,['forever.druid.dots']=2},
  nameKey='Default.Forever.Druid.Balance.Name',descriptionKey='Default.Forever.Druid.Balance.Description',
  applicability={families={'forever'},actionContext='player',class='DRUID'},
@@ -27,7 +27,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://worldofwarcraft.blizzard.com/en-us/news/24301515',title='Blizzard: Forever class deep dive, Hunter and Druid',reviewedAt='2026-10-23',revision='2026-09-30',notes='Mechanics only (Eclipse, Hurricane cooldown, Omen of Clarity); no priority.'},
   {url='https://github.com/simulationcraft/simc/blob/forever/SpellDataDump/druid.txt',title='SimulationCraft Forever spell data (1.60.1.70425)',reviewedAt='2026-10-23',revision='4dd64b4a21',notes='Spell IDs, ranks and auras only.'},
  },
- body={priority=10,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=10,
   cooldowns={
    block('bal-upkeep','forever.druid.upkeep','bal-'),
    spell('bal-moonkin',24858,negate(aura(24858))),

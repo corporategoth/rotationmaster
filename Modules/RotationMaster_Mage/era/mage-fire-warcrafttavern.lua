@@ -14,7 +14,7 @@ local function stop(id)return{id=id,type='stop',suppress_attack=true,conditions=
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='mage-fire-wct-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.mage.fire.warcrafttavern',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.era.mage.fire.warcrafttavern',revision=6,
  blocks={['era.mage.boundaries']=3,['era.mage.moving']=2,['era.mage.nova']=1,['era.mage.execute']=2,
   ['era.mage.wand-finish']=2,['era.mage.armor']=1,['era.mage.upkeep']=1},
  nameKey='Default.Era.Mage.Fire.WarcraftTavern.Name',descriptionKey='Default.Era.Mage.Fire.WarcraftTavern.Description',

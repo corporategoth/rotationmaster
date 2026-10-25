@@ -7,7 +7,7 @@
 local _,addon=...
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.priest.initial',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.priest.initial',revision=5,
  blocks={['retail.priest.boundaries']=3,['retail.priest.upkeep']=2},
  nameKey='Default.Retail.Priest.Initial.Name',descriptionKey='Default.Retail.Priest.Initial.Description',
  applicability={families={'retail'},actionContext='player',class='PRIEST'},
@@ -16,7 +16,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/Gethe/wow-ui-source/blob/live/Interface/AddOns/Blizzard_APIDocumentationGenerated/AssistedCombatDocumentation.lua',title='Blizzard API documentation: C_AssistedCombat (12.1.5.70529)',reviewedAt='2026-10-23',revision='e7aa82019d'},
   {url='https://wago.tools/db2/ChrSpecialization',title='Blizzard client data: ChrSpecialization (the class initial specializations, order index 4)',reviewedAt='2026-10-23',revision='12.1.5',notes='Priest initial specialization 1452.'},
  },
- body={priority=10,specs={1452},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=10,specs={1452},
   cooldowns={
    block('retail.priest.upkeep','initial-'),
   },

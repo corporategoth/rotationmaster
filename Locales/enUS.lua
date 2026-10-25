@@ -1018,9 +1018,7 @@ L["Self-Found"] = true
 L["Standard realms"] = true
 L["Season %s"] = true
 L["Game mode %s"] = true
-L["%s: ready, manual only: no switch condition (choose it with /rm set or the minimap menu)."] = true
-L["Automatic switching tries nothing else, then the fallback (%s): no enabled rotation here has a switch condition it can use."] = true
-L["manual only (no switch condition)"] = true
+L["Automatic switching tries nothing else, then the fallback (%s): no enabled rotation here can be selected now."] = true
 L["Revision %s"] = true
 L["Every rotation has an identifier (ID), shown beside its priority: type /rm set <id> to choose it (any case), /rm set auto to go back to automatic switching, and /rm list to see every identifier. A Built In's identifier is fixed; yours is made from its name until you change it."] = true
 L["you switched it off (turn it back on in Rotations)"] = true
@@ -1049,10 +1047,10 @@ L["More than one rotation uses the identifier %s. Give one of them another ident
 L["Identifiers you can use now: %s (or auto). /rm list shows every rotation."] = true
 L["ID"] = true
 L["Choosing a rotation"] = true
-L["Automatic switching tries the enabled rotations in priority order, yours and Built Ins alike: higher numbers are tried first, equal priorities by name. It picks the first whose switch condition matches. The fallback (Default) is used only when none matches. The rotation list is sorted in this same order and shows each priority."] = true
+L["Automatic switching tries the enabled rotations in priority order, yours and Built Ins alike: higher numbers are tried first, equal priorities by name. It picks the first that matches; a rotation with no switch condition always matches, so turn it off to keep it from being chosen. The fallback (Default) is used only when none matches. The rotation list is sorted in this same order and shows each priority."] = true
 L["Priority sits beside Enabled at the top of the editor. A Built In cannot be edited, but its Enabled setting and priority are yours to change for this profile: they are saved at once, shown in amber when they differ from how it ships, and Reset to default puts it back. Copy a Built In to your rotations to edit anything else."] = true
-L["A Built In shows a blue Read-Only pill in place of Undo and Redo; Duplicate makes your own copy. It loads only for the edition and class it was written for (the pill's tooltip). The specializations it is for show beside its ID; its level is part of its switch condition. The switch's tooltip says when it can match together with another rotation, or is for another specialization."] = true
-L["In the list, a red border means the rotation cannot be selected (the tooltip names why), gray means it is switched off, and an amber bar means its switch condition can match at the same time as another rotation (yours or Built In), so only priority decides between them; a wider bar means they also have the same priority and the name decides. /rm why lists the order and what automatic switching would choose now."] = true
+L["A Built In shows a blue Read-Only pill in place of Undo and Redo; Duplicate makes your own copy. It loads only for the edition and class it was written for (the pill's tooltip). The specializations it is for show beside its ID; any level it needs is part of its switch condition. The switch's tooltip says when it can be selected together with another rotation, or is for another specialization."] = true
+L["In the list, a red border means the rotation cannot be selected (the tooltip names why), gray means it is switched off, and an amber bar means it can be selected at the same time as another rotation (yours or Built In), so only priority decides between them; a wider bar means they also have the same priority and the name decides. /rm why lists the order and what automatic switching would choose now."] = true
 L["Priority"] = true
 L["Reset to default"] = true
 L["Use the Built In as it ships: its own Enabled setting and priority."] = true
@@ -1065,10 +1063,10 @@ L["Disabled by you: automatic switching skips it. Select it and click Disabled t
 L["Ships disabled (an alternative to the recommended Built In): automatic switching skips it until you turn it on."] = true
 L["Disabled: automatic switching skips it."] = true
 L["Higher numbers are tried first; equal priorities go by name. Your rotations and Built Ins compete on priority alone."] = true
-L["Same priority as %s: their switch conditions can match together, and the tie is decided by name."] = true
-L["Can match together with %s: only priority decides which is chosen."] = true
+L["Same priority as %s: both can be selected at once, and the tie is decided by name."] = true
+L["Can be selected together with %s: only priority decides which is chosen."] = true
 L["expansions %s–%s"] = true
-L["Loads only for: %s. The switch condition decides the rest."] = true
+L["Loads only for: %s. Its specializations and switch condition decide the rest."] = true
 L["Ships disabled"] = true
 L["Built In rotations turned back on (they had been switched off without your choice): %s"] = true
 L["Disabled Built In rotations"] = true
@@ -1135,7 +1133,7 @@ L["your level is outside its level range"] = true
 L["your level is unavailable"] = true
 L["your specialization is not available yet"] = true
 L["No specialization"] = true
-L["Each rotation says which specializations it is for, beside its ID: several, or Any. It is listed, in the minimap menu and for /rm set, only while you play one of them; its switch condition never hides it. Automatic switching checks the specialization first, then the switch condition, then priority; with no switch condition a rotation is still chosen only by hand. The specialization menu above the list's search box starts at the one you are playing; choose another, or All specializations, to see theirs. Where the game has dual specialization instead of named specializations (Classic Era, TBC, Wrath, Cataclysm and Forever), they are your primary and secondary talents: exports leave them out, and an import is for the talents the list shows."] = true
+L["Each rotation says which specializations it is for, beside its ID: several, or Any. It is listed, in the minimap menu and for /rm set, only while you play one of them; its switch condition never hides it. Automatic switching checks the specialization first, then the switch condition, then priority; a rotation with no switch condition matches whenever its specialization and level apply, so priority alone decides; turn it off to keep it for choosing by hand. The specialization menu above the list's search box starts at the one you are playing; choose another, or All specializations, to see theirs. Where the game has dual specialization instead of named specializations (Classic Era, TBC, Wrath, Cataclysm and Forever), they are your primary and secondary talents: exports leave them out, and an import is for the talents the list shows."] = true
 L["Primary talents"] = true
 L["Secondary talents"] = true
 L["Talent group %d"] = true
@@ -1513,6 +1511,7 @@ L["Default"] = true
 L["Click to add branch name"] = true
 
 L["Switch condition"] = true
+L["No switch condition: this rotation can be selected automatically whenever its specialization and level apply."] = true
 
 L["Edit"] = true
 
@@ -1535,7 +1534,7 @@ L["Custom edits stay in a private draft. Apply saves; Discard restores the saved
 
 L["Closing the window retains drafts for this session. Switching rotations or opening comparison or transfer asks whether to Apply, Discard or Cancel when changes are pending."] = true
 
-L["The switch condition selects the rotation automatically. Edit changes its condition tree. The fallback rotation is selected when no other rotation matches."] = true
+L["The switch condition selects the rotation automatically; with none, it is selected whenever its specialization and level apply. Edit changes its condition tree. The fallback rotation is selected when no other rotation matches."] = true
 
 L["Cooldown cards have their own scrolling workspace and highlight independently of the sequence. Add cooldown creates a reminder; clicking its action shows local highlight settings."] = true
 
@@ -1998,7 +1997,7 @@ L["Priority %d"] = true
 L["Invalid priority"] = true
 L["Switch priority must be a whole number between -100000 and 100000."] = true
 L["Edit the description, tags, switch priority, author, realm, email, website and version. Source citations remain separate from your attribution. Use changes updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values."] = true
-L["Higher numbers are tried first; your rotations and Built Ins compete on priority alone. The fallback is used only when no switch condition of another rotation matches. Equal priorities use name, then identity. Blank means zero."] = true
+L["Higher numbers are tried first; your rotations and Built Ins compete on priority alone. The fallback is used only when no other rotation matches. Equal priorities use name, then identity. Blank means zero."] = true
 L["Invalid switch priority for %s:%s; explicit repair resets it to zero."] = true
 
 -- Rank-aware aura families.

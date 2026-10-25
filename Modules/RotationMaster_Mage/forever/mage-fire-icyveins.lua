@@ -15,7 +15,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.mage.fire.icyveins',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.mage.fire.icyveins',revision=7,
  blocks={['forever.mage.boundaries']=3,['forever.mage.fire-moving']=2,['forever.mage.fire-aoe']=1,['forever.mage.wand']=3,['forever.mage.upkeep']=2},
  nameKey='Default.Forever.Mage.FireIcyVeins.Name',descriptionKey='Default.Forever.Mage.FireIcyVeins.Description',
  applicability={families={'forever'},actionContext='player',class='MAGE'},

@@ -13,7 +13,7 @@ local function hot(id)return{type='BUFF',unit='target',spell=id,anyrank=true,own
 local function hurt(v)return{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=v}end
 local function combat()return{type='COMBAT',unit='player'}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.druid.restoration',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.druid.restoration',revision=5,
  blocks={['tbc.druid.boundaries']=4,['tbc.druid.feral-form-stop']=3,['tbc.druid.upkeep']=1},
  nameKey='Default.TBC.Druid.Restoration.Name',descriptionKey='Default.TBC.Druid.Restoration.Description',
  applicability={families={'tbc'},actionContext='player',class='DRUID'},

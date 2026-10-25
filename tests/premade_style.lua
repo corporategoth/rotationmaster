@@ -348,6 +348,41 @@ test('no shipped switch names a specialization at its top; a specialization prem
         and not topSpecs({type='NOT',value={type='SPECIALIZATION',spec=1}}),'the check itself')
 end)
 
+-- No switch condition matches whenever a premade otherwise applies (the user, 2026-10-25), so a
+-- switch that is always true, such as LEVEL >= 1, says nothing and is rejected; leave the switch
+-- out. An absent switch is the right way to ship a premade with nothing else to test. Shapes
+-- judged always true: a player LEVEL bound no character fails (>= 1, > 0), an AND of only such
+-- conditions, an OR holding one, and a condition that is switched off.
+local function alwaysTrue(switch)
+    if type(switch)~='table' or next(switch)==nil then return false end
+    if switch.disabled then return true end
+    if switch.type=='LEVEL' and switch.unit=='player' and not switch.relative and type(switch.value)=='number' then
+        local v,o=switch.value,switch.operator
+        return o=='GREATERTHANOREQUALS' and v<=1 or o=='GREATERTHAN' and v<1 or o=='NOTEQUALS' and v<1
+    end
+    if (switch.type=='AND' or switch.type=='OR') and type(switch.value)=='table' and #switch.value>0 then
+        local all,any=true,false
+        for _,child in ipairs(switch.value) do if alwaysTrue(child) then any=true else all=false end end
+        return switch.type=='AND' and all or switch.type=='OR' and any
+    end
+    return false
+end
+test('no shipped switch is always true (such as LEVEL >= 1); a premade with nothing to test has no switch',function()
+    local defs=authored();local offences,absent=({}),0
+    for _,p in ipairs(defs.packs) do
+        local switch=p.def.body.switch
+        if alwaysTrue(switch) then offences[#offences+1]=p.def.id..' ('..p.path..')' end
+        if switch==nil then absent=absent+1 end
+    end
+    assert(#offences==0,'always-true switch (leave the switch out): '..table.concat(offences,'; '))
+    assert(absent>=150,absent..' premades ship without a switch')
+    local level=function(operator,value) return {type='LEVEL',unit='player',operator=operator,value=value} end
+    assert(alwaysTrue(level('GREATERTHANOREQUALS',1)) and alwaysTrue(level('GREATERTHAN',0)) and alwaysTrue({type='AND',value={level('GREATERTHANOREQUALS',1),level('GREATERTHANOREQUALS',0)}})
+        and alwaysTrue({type='OR',value={{type='COMBAT',unit='player'},level('GREATERTHANOREQUALS',1)}}) and alwaysTrue({type='COMBAT',unit='player',disabled=true}),'the check itself')
+    assert(not alwaysTrue(nil) and not alwaysTrue({}) and not alwaysTrue(level('GREATERTHANOREQUALS',10)) and not alwaysTrue({type='AND',value={level('GREATERTHANOREQUALS',1),{type='COMBAT',unit='player'}}})
+        and not alwaysTrue({type='OR',value={level('GREATERTHANOREQUALS',10),{type='COMBAT',unit='player'}}}) and not alwaysTrue({type='NOT',value=level('GREATERTHANOREQUALS',1)}),'the check is not too broad')
+end)
+
 test('one enabled premade per switch in every edition, class and spec: alternatives ship disabled, the recommended one does not',function()
     local a,scopes=overlapRows()
     local shadowed,outranked=alternativeOffences(a,scopes)

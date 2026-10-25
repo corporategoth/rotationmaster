@@ -19,13 +19,13 @@ local summon=all(negate({type='PET'}),negate({type='COMBAT',unit='player'}))
 local blocks={['era.warlock.boundaries']=3,['era.warlock.procs']=1,['era.warlock.group-finish']=1,['era.warlock.dying']=2,['era.warlock.curse']=2,
  ['era.warlock.moving']=2,['era.warlock.aoe']=1,['era.warlock.filler']=2,['era.warlock.armor']=1,['era.warlock.safety']=1}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.warlock.dps.warcrafttavern',revision=5,blocks=blocks,
+ format='RotationMaster',schemaVersion=1,id='rm.era.warlock.dps.warcrafttavern',revision=6,blocks=blocks,
  nameKey='Default.Era.Warlock.DPS.WarcraftTavern.Name',descriptionKey='Default.Era.Warlock.DPS.WarcraftTavern.Description',
  applicability={families={'era'},actionContext='player',class='WARLOCK'},
  tags={'dps','ranged','caster','leveling','endgame','warcraft-tavern'},
  sources={{url='https://www.warcrafttavern.com/wow-classic/guides/warlock-leveling-guide/',title='Warcraft Tavern: Classic Warlock leveling guide',reviewedAt='2026-10-23'},
  {url='https://www.warcrafttavern.com/wow-classic/guides/pve-warlock-rotation/',title='Warcraft Tavern: Classic Warlock rotation',reviewedAt='2026-10-23'}},
- body={priority=5,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=5,disabled=true,
  cooldowns={block('era.warlock.armor','lock-wt-'),
   spell('lock-wt-succubus',712,summon),
   spell('lock-wt-imp',688,all(summon,negate(known(712)))),

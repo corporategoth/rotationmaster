@@ -15,7 +15,7 @@ local function group(v)return{type='PROXIMITY_HEALTHPCT',unit='player',operation
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.restoration.hekili',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.restoration.hekili',revision=6,
  blocks={['mop.shaman.manual']=3,['mop.shaman.group']=1,['mop.shaman.restoration-upkeep']=1,['mop.shaman.restoration-damage']=1},
  nameKey='Default.MoP.Shaman.Restoration.Hekili.Name',descriptionKey='Default.MoP.Shaman.Restoration.Hekili.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='SHAMAN'},

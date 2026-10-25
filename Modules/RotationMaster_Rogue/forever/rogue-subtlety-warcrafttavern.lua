@@ -18,7 +18,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local behind=negate({type='THREAT',unit='target',threat=3})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.rogue.subtlety.warcrafttavern',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.rogue.subtlety.warcrafttavern',revision=6,
  blocks={['forever.rogue.boundaries']=3,['forever.rogue.stealth-fallback']=3,['forever.rogue.reactive']=1,['forever.rogue.expose-armor']=1,['forever.rogue.upkeep']=2},
  nameKey='Default.Forever.Rogue.Subtlety.WarcraftTavern.Name',descriptionKey='Default.Forever.Rogue.Subtlety.WarcraftTavern.Description',
  applicability={families={'forever'},actionContext='player',class='ROGUE'},

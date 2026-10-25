@@ -28,7 +28,7 @@ local function pact()return all(known(19028),{type='LEVEL',unit='player',operato
 local function summon()return all(negate({type='PET'}),any(negate(combat()),buff(18708)),any(negate(sacrificed()),pact()))end
 local function ownCurse()return any(own(704),own(702),own(1714),own(18223))end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.warlock.dps',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.warlock.dps',revision=6,
  blocks={['forever.warlock.boundaries']=3,['forever.warlock.upkeep']=2,['forever.warlock.procs']=1,
   ['forever.warlock.moving']=3,['forever.warlock.aoe']=2,['forever.warlock.wand']=2},
  nameKey='Default.Forever.Warlock.DPS.Name',descriptionKey='Default.Forever.Warlock.DPS.Description',
@@ -41,7 +41,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://www.wowhead.com/forever/guide/classes/warlock/demonology/level-30-dps-overview',title='Wowhead: Forever level 30 Demonology Warlock',reviewedAt='2026-10-23',revision='2026-10-09'},
  {url='https://www.method.gg/wow-forever/wow-forever-warlock-leveling-guide-and-talents',title='Method: Forever Warlock leveling guide and talents',reviewedAt='2026-10-23',revision='2026-10-17'},
  {url='https://worldofwarcraft.blizzard.com/en-us/news/24310968',title='Blizzard: Forever class deep dives, Rogue and Warlock',reviewedAt='2026-10-23',revision='2026-10-07'}},
- body={priority=10,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=10,
  cooldowns={block('forever.warlock.upkeep','warlock-'),
   spell('warlock-summon-succubus',712,summon()),
   spell('warlock-summon-voidwalker',697,all(negate(known(712)),summon())),

@@ -19,7 +19,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local unqueued=all(negate(queued(78)),negate(queued(845)))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.warrior.dps.warcrafttavern',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.warrior.dps.warcrafttavern',revision=6,
  blocks={['forever.warrior.boundaries']=3,['forever.warrior.upkeep']=2},
  nameKey='Default.Forever.Warrior.DPS.WarcraftTavern.Name',descriptionKey='Default.Forever.Warrior.DPS.WarcraftTavern.Description',
  applicability={families={'forever'},actionContext='player',class='WARRIOR'},
@@ -27,7 +27,7 @@ assert(addon:RegisterDefaultRotation({
  sources={{url='https://www.warcrafttavern.com/forever/guides/arms-warrior/',title='Warcraft Tavern: Forever Arms Warrior',reviewedAt='2026-10-23'},
  {url='https://www.warcrafttavern.com/forever/guides/fury-warrior/',title='Warcraft Tavern: Forever Fury Warrior',reviewedAt='2026-10-23'},
  {url='https://www.warcrafttavern.com/forever/guides/warrior-leveling/',title='Warcraft Tavern: Forever Warrior leveling',reviewedAt='2026-10-23'}},
- body={priority=5,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=5,disabled=true,
  cooldowns={block('forever.warrior.upkeep','warrior-tavern-'),
   spell('warrior-tavern-heroic-strike',78,all(combat(),unqueued,enemies('LESSTHAN',2))),
   spell('warrior-tavern-cleave',845,all(combat(),unqueued,enemies('GREATERTHANOREQUALS',2))),

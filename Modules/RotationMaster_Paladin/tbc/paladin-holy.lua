@@ -8,7 +8,7 @@ local _,addon=...
 local function negate(c)return{type='NOT',value=c}end
 local function hurt(v)return{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=v}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.holy',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.holy',revision=5,
  blocks={['tbc.paladin.holy-upkeep']=2,['tbc.paladin.boundaries']=2,['tbc.paladin.holy-hostile']=2,['tbc.paladin.holy-emergency']=2},
  nameKey='Default.TBC.Paladin.Holy.Name',descriptionKey='Default.TBC.Paladin.Holy.Description',
  applicability={families={'tbc'},actionContext='player',class='PALADIN'},

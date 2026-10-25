@@ -21,7 +21,7 @@ local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local clearcasting,soul,surge=buff(263725),buff(451038),buff(365362)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.mage.arcane.guide',revision=7,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.mage.arcane.guide',revision=8,
  blocks={['retail.mage.boundaries']=3,['retail.mage.utility']=2},
  nameKey='Default.Retail.Mage.ArcaneGuide.Name',descriptionKey='Default.Retail.Mage.ArcaneGuide.Description',
  applicability={families={'retail'},actionContext='player',class='MAGE'},
@@ -30,7 +30,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.icy-veins.com/wow/arcane-mage-pve-dps-rotation-cooldowns-abilities',title='Icy Veins: Arcane Mage rotation (12.1.5)',reviewedAt='2026-10-23',revision='2026-10-12'},
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/mage_arcane.simc',title='SimulationCraft default action list: Arcane',reviewedAt='2026-10-23',revision='c5fea93f'},
  },
- body={priority=10,disabled=true,specs={62},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=10,disabled=true,specs={62},
   cooldowns={
    block('aguide-utility','retail.mage.utility','aguide-'),
    spell('aguide-barrier',235450,combat()),

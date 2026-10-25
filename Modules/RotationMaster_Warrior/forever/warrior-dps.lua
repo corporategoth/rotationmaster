@@ -32,7 +32,7 @@ local function spare(n)return any(negate(strike()),cooling(12294,n),cooling(2388
 local function giant()return any({type='CREATURE',unit='target',value='GIANT'},{type='CREATURE',unit='target',value='DRAGONKIN'})end
 local unqueued=all(negate(queued(78)),negate(queued(845)))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.warrior.dps',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.warrior.dps',revision=6,
  blocks={['forever.warrior.boundaries']=3,['forever.warrior.upkeep']=2},
  nameKey='Default.Forever.Warrior.DPS.Name',descriptionKey='Default.Forever.Warrior.DPS.Description',
  applicability={families={'forever'},actionContext='player',class='WARRIOR'},
@@ -43,7 +43,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://www.icy-veins.com/wow-forever/fury-warrior-melee-dps-pve-guide',title='Icy Veins: Forever Fury Warrior PvE guide',reviewedAt='2026-10-23',revision='2026-10-17'},
  {url='https://www.method.gg/wow-forever/wow-forever-warrior-leveling-guide-and-talents',title='Method: Forever Warrior leveling guide and talents',reviewedAt='2026-10-23',revision='2026-10-09'},
  {url='https://us.forums.blizzard.com/en/wow/t/2360696',title='Blizzard: WoW Forever beta development notes (Slam, Bloodthrill)',reviewedAt='2026-10-23',revision='2026-10-16'}},
- body={priority=10,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=10,
  cooldowns={block('forever.warrior.upkeep','warrior-dps-'),
   spell('warrior-dps-heroic-strike',78,all(combat(),unqueued,enemies('LESSTHAN',2),spare(2))),
   spell('warrior-dps-cleave',845,all(combat(),unqueued,enemies('GREATERTHANOREQUALS',2))),

@@ -13,7 +13,7 @@ local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='priest-wct-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.priest.dps.warcrafttavern',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.era.priest.dps.warcrafttavern',revision=6,
  blocks={['era.priest.dps-boundaries']=2,['era.priest.shadowform']=1,['era.priest.moving']=2,
   ['era.priest.filler']=2,['era.priest.wand-fallback']=2,['era.priest.upkeep']=1,['era.priest.dps-upkeep']=1},
  nameKey='Default.Era.Priest.Dps.WarcraftTavern.Name',descriptionKey='Default.Era.Priest.Dps.WarcraftTavern.Description',
@@ -25,7 +25,6 @@ assert(addon:RegisterDefaultRotation({
  },
  body={
   priority=5,disabled=true,
-  switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
   cooldowns={block(P..'upkeep','era.priest.upkeep',P),block(P..'dps-upkeep','era.priest.dps-upkeep',P)},
   rotation={
    block(P..'boundaries','era.priest.dps-boundaries',P),

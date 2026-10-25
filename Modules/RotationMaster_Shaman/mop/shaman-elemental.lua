@@ -27,7 +27,7 @@ local refresh=any(all(any(negate(flame),shock('LESSTHAN',3)),any(classified('wor
 local lava=any(shock('GREATERTHAN',2),own(77762),ascended)
 local fulminate=all({type='BUFF_STACKS',unit='player',spell=324,ownbuff=true,operator='GREATERTHANOREQUALS',value=6},shock('GREATERTHANOREQUALS',6))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.elemental',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.elemental',revision=7,
  blocks={['mop.shaman.manual-target']=2,['mop.shaman.lightning-shield']=1,['mop.shaman.group']=1,['mop.shaman.fire-totems']=1},
  nameKey='Default.MoP.Shaman.Elemental.Name',descriptionKey='Default.MoP.Shaman.Elemental.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='SHAMAN'},

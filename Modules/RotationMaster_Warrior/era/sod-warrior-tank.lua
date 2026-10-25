@@ -30,7 +30,7 @@ local function resolve(id)return any(negate(buff(id)),{type='BUFF_REMAIN',unit='
 local shield={type='WEAPON_TYPE',slot='offhand',kind='shield'}
 local stacked=all({type='DEBUFF',unit='target',spell=7386,anyrank=true},{type='DEBUFF_STACKS',unit='target',spell=7386,anyrank=true,operator='GREATERTHANOREQUALS',value=5})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.warrior.tank',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.warrior.tank',revision=6,
  blocks={['era.warrior.boundaries']=3,['era.warrior.upkeep']=1},
  nameKey='Default.SoD.Warrior.Tank.Name',descriptionKey='Default.SoD.Warrior.Tank.Description',
  applicability={families={'era'},actionContext='player',class='WARRIOR',rulesets={'season:2'}},

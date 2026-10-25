@@ -25,7 +25,7 @@ local group={type='GROUP'}
 local unshielded=negate({type='DEBUFF',unit='target',spell=6788})
 local tierSix=any(enemies('GREATERTHANOREQUALS',3),hurt(3,.85))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.priest.discipline',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.priest.discipline',revision=7,
  blocks={['mop.priest.upkeep']=1,['mop.priest.healer-boundaries']=2,['mop.priest.healer-cooldowns']=1},
  nameKey='Default.MoP.Priest.Discipline.Name',descriptionKey='Default.MoP.Priest.Discipline.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PRIEST'},

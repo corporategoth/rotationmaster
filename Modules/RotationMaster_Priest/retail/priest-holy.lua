@@ -17,7 +17,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local friend=all({type='LEVEL',unit='target',operator='GREATERTHAN',value=0},{type='FRIENDLY',unit='target'},negate({type='DEAD',unit='target'}))
 local grouped=all(combat(),{type='GROUP'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.priest.holy',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.priest.holy',revision=6,
  blocks={['retail.priest.upkeep']=2},
  nameKey='Default.Retail.Priest.Holy.Name',descriptionKey='Default.Retail.Priest.Holy.Description',
  applicability={families={'retail'},actionContext='player',class='PRIEST'},
@@ -26,7 +26,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.icy-veins.com/wow/holy-priest-pve-healing-rotation-cooldowns-abilities',title='Icy Veins: Holy Priest healing rotation (Midnight)',reviewedAt='2026-10-23',revision='2026-10-12'},
   {url='https://www.wowhead.com/guide/classes/priest/holy/rotation-cooldowns-pve-healer',title='Wowhead: Holy Priest rotation',reviewedAt='2026-10-23',revision='2026-01-18',notes='Older page; agrees on Holy Words and Prayer of Mending on cooldown.'},
  },
- body={priority=10,specs={257},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=10,specs={257},
   cooldowns={
    block('retail.priest.upkeep','holy-'),
    spell('holy-apotheosis',200183,grouped),

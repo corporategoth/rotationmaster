@@ -27,7 +27,7 @@ local flamed={type='DEBUFF',unit='target',spell=8050,anyrank=true,owndebuff=true
 -- An off-hand weapon (by item type, so a shield never asks for an imbue) without its enchant.
 local dual=all({type='WEAPON_TYPE',slot='offhand',kind='weapon'},negate({type='WEAPON',offhand=true}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.shaman.enhancement',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.shaman.enhancement',revision=6,
  blocks={['era.shaman.manual']=3,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.melee-totems']=1},
  nameKey='Default.SoD.Shaman.Enhancement.Name',descriptionKey='Default.SoD.Shaman.Enhancement.Description',
  applicability={families={'era'},actionContext='player',class='SHAMAN',rulesets={'season:2'}},
@@ -36,7 +36,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://www.icy-veins.com/wow-classic/enhancement-shaman-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Enhancement Shaman DPS rotation',reviewedAt='2026-10-23',revision='2025-04-08'},
  {url='https://www.icy-veins.com/wow-classic/enhancement-shaman-dps-season-of-discovery-leveling',title='Icy Veins: SoD Enhancement Shaman leveling',reviewedAt='2026-10-23',revision='2026-07-18'},
  {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/shaman/enhancement/dps-talent-builds-runes',title='Wowhead: SoD Enhancement Shaman talents and runes',reviewedAt='2026-10-23',revision='2025-02-15'}},
- body={priority=40,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=40,
  cooldowns={
   spell('sod-enh-windfury-weapon',8232,negate(imbue(windfury))),
   spell('sod-enh-rockbiter-weapon',8017,all(negate({type='WEAPON'}),negate(known(8232)))),

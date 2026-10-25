@@ -32,7 +32,7 @@ local noAspect=all(negate(buff(415423)),negate(buff(13163)),negate(buff(5118)),n
 local viperLow=all(mana('LESSTHAN',.5),any(buff(415423),all(known(415423),mana('LESSTHAN',.05))))
 local rapid=buff(3045)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.hunter.melee',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.hunter.melee',revision=6,
  blocks={['era.hunter.boundaries']=3,['sod.hunter.upkeep']=1},
  nameKey='Default.SoD.Hunter.Melee.Name',descriptionKey='Default.SoD.Hunter.Melee.Description',
  applicability={families={'era'},actionContext='player',class='HUNTER',rulesets={'season:2'}},

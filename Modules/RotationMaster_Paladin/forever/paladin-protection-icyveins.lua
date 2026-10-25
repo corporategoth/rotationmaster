@@ -15,7 +15,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id,conditions,attack)return{id=id,type='stop',suppress_attack=not attack,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.paladin.protection.icyveins',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.paladin.protection.icyveins',revision=6,
  blocks={['forever.paladin.boundaries']=3,['forever.paladin.aura-blessing']=1,['forever.paladin.taunt']=2,['forever.paladin.tank-upkeep']=2},
  nameKey='Default.Forever.Paladin.ProtectionIcyVeins.Name',descriptionKey='Default.Forever.Paladin.ProtectionIcyVeins.Description',
  applicability={families={'forever'},actionContext='player',class='PALADIN'},

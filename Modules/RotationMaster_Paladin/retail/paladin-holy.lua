@@ -19,7 +19,7 @@ local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.holy',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.holy',revision=7,
  blocks={['retail.paladin.upkeep']=2},
  nameKey='Default.Retail.Paladin.Holy.Name',descriptionKey='Default.Retail.Paladin.Holy.Description',
  applicability={families={'retail'},actionContext='player',class='PALADIN'},
@@ -28,7 +28,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.icy-veins.com/wow/holy-paladin-pve-healing-rotation-cooldowns-abilities',title='Icy Veins: Holy Paladin healing rotation (Midnight)',reviewedAt='2026-10-23',revision='2026-10-12',notes='Spend Holy Power at 5 before Infusion of Light and Holy Shock; spend again after them.'},
   {url='https://www.wowhead.com/guide/classes/paladin/holy/rotation-cooldowns-pve-healer',title='Wowhead: Holy Paladin rotation',reviewedAt='2026-10-23',revision='2026-08-18',notes='Damage order on an enemy target: Shield of the Righteous at 5 Holy Power, Holy Shock, Shield of the Righteous, Crusader Strike.'},
  },
- body={priority=10,specs={65},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=10,specs={65},
   cooldowns={
    block('retail.paladin.upkeep','holy-'),
    spell('holy-divine-toll',375576,combat()),

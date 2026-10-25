@@ -26,7 +26,7 @@ local dump=all(combat(),{type='HEALTHPCT',unit='target',operator='GREATERTHAN',v
 local armor={type='DEBUFF',unit='target',spell=113746}
 local function devastate(id,conditions)return{id=id,type='branch',conditions={type='SPELL_KNOWN',spell=20243},onTrue={spell(id..'-devastate',20243,conditions)},onFalse={spell(id..'-sunder',7386,conditions)}}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.protection',revision=7,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.protection',revision=8,
  blocks={['mop.warrior.boundaries']=4},
  nameKey='Default.MoP.Warrior.Protection.Name',descriptionKey='Default.MoP.Warrior.Protection.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARRIOR'},

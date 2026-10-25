@@ -25,7 +25,7 @@ local aoe=all(group,hurt(3,.85))
 local renew=all(low(.95),negate({type='BUFF',unit='target',spell=139,ownbuff=true}))
 local binding=all(health('player','LESSTHAN',.7),low(.7),negate({type='ISSAME',unit='target',otherunit='player'}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.priest.holy.icyveins',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.priest.holy.icyveins',revision=7,
  blocks={['mop.priest.upkeep']=1,['mop.priest.healer-boundaries']=2,['mop.priest.healer-cooldowns']=1,['mop.priest.holy-damage']=2},
  nameKey='Default.MoP.Priest.Holy.IcyVeins.Name',descriptionKey='Default.MoP.Priest.Holy.IcyVeins.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PRIEST'},

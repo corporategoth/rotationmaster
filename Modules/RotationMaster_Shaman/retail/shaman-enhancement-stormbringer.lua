@@ -22,7 +22,7 @@ local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 local shocked={type='DEBUFF',unit='target',spell=188389,owndebuff=true}
 local nearly=all(mw(8),any(soon(470057),soon(187874)))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.shaman.enhancement.stormbringer',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.shaman.enhancement.stormbringer',revision=6,
  blocks={['retail.shaman.boundaries']=2,['retail.shaman.upkeep']=2,['retail.shaman.lightning-shield']=1},
  nameKey='Default.Retail.Shaman.Enhancement.Stormbringer.Name',descriptionKey='Default.Retail.Shaman.Enhancement.Stormbringer.Description',
  applicability={families={'retail'},actionContext='player',class='SHAMAN'},
@@ -32,7 +32,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.icy-veins.com/wow/enhancement-shaman-pve-dps-rotation-cooldowns-abilities',title='Icy Veins: Enhancement Shaman rotation (Midnight)',reviewedAt='2026-10-23',revision='2026-10-12'},
   {url='https://www.wowhead.com/guide/classes/shaman/enhancement/rotation-cooldowns-pve-dps',title='Wowhead: Enhancement Shaman rotation',reviewedAt='2026-10-23',revision='2026-08-12'},
  },
- body={priority=5,disabled=true,specs={263},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=5,disabled=true,specs={263},
   cooldowns={
    block('retail.shaman.upkeep','enhsb-'),
    block('retail.shaman.lightning-shield','enhsb-'),

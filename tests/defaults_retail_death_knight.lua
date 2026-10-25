@@ -22,7 +22,7 @@ test('every Death Knight premade loads for its own specialization only and decla
    local row=assert(rows[id],id);local scope=row.applicability
    assert(row.readOnly and row.builtin and #scope.families==1 and scope.families[1]=='retail'and scope.class=='DEATHKNIGHT',id)
    assert(scope.specs==nil and scope.minLevel==nil and scope.maxLevel==nil,id..' scope: load-time facts only')
-   assert(row.envelope.body.switch.type=='LEVEL' and row.envelope.body.switch.value==1 and #row.envelope.body.specs==1 and row.envelope.body.specs[1]==spec,id..' specs')
+   assert(row.envelope.body.switch==nil and #row.envelope.body.specs==1 and row.envelope.body.specs[1]==spec,id..' specs')
    assert(row.eligible==(index==1),id..' eligibility: only the Assisted premade is on by default')
   end
   for other,list2 in pairs(ids)do if other~=spec then for _,id in ipairs(list2)do assert(rows[id]==nil or not rows[id].eligible,id..' eligible in spec '..spec)end end end

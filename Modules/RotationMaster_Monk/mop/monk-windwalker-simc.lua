@@ -21,7 +21,7 @@ local debuff={type='DEBUFF',unit='target',spell=130320,owndebuff=true}
 local capped=negate(chi('GREATERTHANOREQUALS',-1))
 local fists=all(negate({type='MOVING'}),energy('LESSTHANOREQUALS',50))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.monk.windwalker.simc',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.monk.windwalker.simc',revision=7,
  blocks={['mop.monk.boundaries']=3,['mop.monk.upkeep']=1,['mop.monk.windwalker-upkeep']=2,['mop.monk.windwalker-open']=3,['mop.monk.windwalker-tail']=1},
  nameKey='Default.MoP.Monk.Windwalker.Simc.Name',descriptionKey='Default.MoP.Monk.Windwalker.Simc.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK'},

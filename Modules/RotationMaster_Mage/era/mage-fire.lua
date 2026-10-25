@@ -19,7 +19,7 @@ local scorch={type='TALENT',layout='tree',tree=2,talent=10,operator='GREATERTHAN
 local stacked={type='DEBUFF_STACKS',unit='target',spell=22959,operator='GREATERTHANOREQUALS',value=5}
 local elite=any(class('elite'),class('rareelite'),class('worldboss'))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.mage.fire',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.era.mage.fire',revision=5,
  blocks={['era.mage.boundaries']=3,['era.mage.moving']=2,['era.mage.nova']=1,['era.mage.execute']=2,
   ['era.mage.wand-finish']=2,['era.mage.armor']=1,['era.mage.upkeep']=1},
  nameKey='Default.Era.Mage.Fire.Name',descriptionKey='Default.Era.Mage.Fire.Description',

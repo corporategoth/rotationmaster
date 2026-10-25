@@ -22,7 +22,7 @@ local someone=any(hurt(.95),around(.9,1))
 local heavy=around(.6,3)
 local rain=all({type='SPELL_AVAIL',spell=73920},around(.9,3))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.restoration',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.restoration',revision=6,
  blocks={['mop.shaman.manual']=3,['mop.shaman.group']=1,['mop.shaman.restoration-upkeep']=1,['mop.shaman.restoration-damage']=1},
  nameKey='Default.MoP.Shaman.Restoration.Name',descriptionKey='Default.MoP.Shaman.Restoration.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='SHAMAN'},

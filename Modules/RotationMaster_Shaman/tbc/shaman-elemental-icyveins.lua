@@ -10,7 +10,7 @@ local function negate(c)return{type='NOT',value=c}end
 local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v}end
 local function own(id)return{type='BUFF',unit='player',spell=id,anyrank=true,ownbuff=true}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.elemental.icyveins',revision=3,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.elemental.icyveins',revision=4,
  blocks={['tbc.shaman.shield']=1,['tbc.shaman.mainhand-imbue']=1,['tbc.shaman.elemental-totems']=1,['tbc.shaman.bloodlust']=1,
   ['tbc.shaman.elemental-opening']=2,['tbc.shaman.boundaries']=3,['tbc.shaman.interrupt']=1,['tbc.shaman.elemental-aoe']=1},
  nameKey='Default.TBC.Shaman.Elemental.IcyVeins.Name',descriptionKey='Default.TBC.Shaman.Elemental.IcyVeins.Description',

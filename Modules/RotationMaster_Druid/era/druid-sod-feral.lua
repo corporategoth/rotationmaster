@@ -14,7 +14,7 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function spell(id,action,conditions,ranked)return{id=id,type='spell',action=action,ranked=ranked or false,conditions=conditions or {}}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.druid.feral',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.druid.feral',revision=6,
  blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['sod.druid.maul']=2,['sod.druid.cat']=2,['era.druid.stealth-opener']=2,
   ['era.druid.cat-builders']=1,['era.druid.powershift']=2,['sod.druid.bear']=2,['era.druid.feral-humanoid']=2},
  nameKey='Default.SoD.Druid.Feral.Name',descriptionKey='Default.SoD.Druid.Feral.Description',

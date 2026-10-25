@@ -17,7 +17,7 @@ local P='mage-sfire-'
 local scorchTalent={type='TALENT',layout='tree',tree=2,talent=10,operator='GREATERTHANOREQUALS',value=1}
 local balefireStack=any({type='BUFF',unit='player',spell=428878},{type='DEBUFF',unit='player',spell=428878})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.mage.fire',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.mage.fire',revision=6,
  blocks={['era.mage.boundaries']=3,['era.mage.wand-finish']=2,['sod.mage.balefire']=1,['sod.mage.balefire-scorched']=1,
   ['sod.mage.living-bomb']=1,['sod.mage.overheat']=2,['sod.mage.armor']=2,['sod.mage.upkeep']=2},
  nameKey='Default.SoD.Mage.Fire.Name',descriptionKey='Default.SoD.Mage.Fire.Description',
@@ -32,7 +32,6 @@ assert(addon:RegisterDefaultRotation({
  },
  body={
   priority=101,
-  switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
   cooldowns={block(P..'armor','sod.mage.armor',P),block(P..'overheat','sod.mage.overheat',P),
    spell(P..'combustion',11129,all({type='COMBAT',unit='player'},{type='DEBUFF_STACKS',unit='target',spell=22959,operator='GREATERTHANOREQUALS',value=5},
     any(balefireStack,negate({type='RUNE_ENGRAVED',spell=428878})))),

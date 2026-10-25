@@ -84,8 +84,8 @@ test('the editor: one line with Priority left of Enabled; a Built In is read-onl
     assert(builtinGap==mineGap and builtinTop==mineTop,('Built In pane reserves extra rows: %s/%s vs %s/%s'):format(builtinGap,builtinTop,mineGap,mineTop))
     -- Load-time scope only: no specializations, a minimum level only, rulesets by name.
     local text=a:DescribeApplicability({families={'era'},class='DRUID',specs={102},minLevel=10,maxLevel=60,rulesets={'season:2','hardcore','self-found'}})
-    assert(text=='Loads only for: Classic Era · Druid · level 10+ · Season of Discovery, Hardcore, Self-Found. The switch condition decides the rest.',text)
-    assert(a:DescribeApplicability({families={'retail'},class='MONK',minLevel=1})=='Loads only for: Retail · Monk. The switch condition decides the rest.')
+    assert(text=='Loads only for: Classic Era · Druid · level 10+ · Season of Discovery, Hardcore, Self-Found. Its specializations and switch condition decide the rest.',text)
+    assert(a:DescribeApplicability({families={'retail'},class='MONK',minLevel=1})=='Loads only for: Retail · Monk. Its specializations and switch condition decide the rest.')
     -- A rotation for another specialization (its body.specs) says it is not selectable now.
     local other=assert(a:CreateRotationEditor(f.env.CreateFrame('Frame'),269,key(a,'rm.retail.monk.windwalker')))
     assert(other.switch.tooltip:find('You are playing Brewmaster; this rotation is for Windwalker, so it is not selectable now.',1,true),tostring(other.switch.tooltip))
@@ -162,16 +162,19 @@ test('the rotation list: switching order, priorities shown, disabled rows grey, 
     browser:Release()
 end)
 
-test('/rm why says when nothing but the fallback is tried, and marks a rotation without a switch as manual only',function()
+test('/rm why says when nothing but the fallback is tried; a rotation without a switch is ready like any other, no manual-only state',function()
     local f=T.new{level=10,specIndex=1};local a=f.addon
     assert(a:SetDefaultRotationEnabled('rm.retail.monk.brewmaster',false));a:UpdateAutoSwitch()
     local report=table.concat(a:GetRotationEligibilityReport(),'\n')
-    assert(report:find('Automatic switching tries nothing else, then the fallback (Default): no enabled rotation here has a switch condition it can use.',1,true),report)
+    assert(report:find('Automatic switching tries nothing else, then the fallback (Default): no enabled rotation here can be selected now.',1,true),report)
     assert(not report:find('tries: then',1,true),report)
     custom(f,268,'By hand',{switch={}});a:UpdateAutoSwitch()
     report=table.concat(a:GetRotationEligibilityReport(),'\n')
-    assert(report:find('By hand [by-hand]: ready, manual only: no switch condition',1,true),report)
-    assert(table.concat(a:GetRotationIdentifierReport(),'\n'):find('by-hand — By hand (yours) — ready, manual only (no switch condition)',1,true))
+    assert(report:find('By hand [by-hand]: ready',1,true) and not report:find('manual only',1,true),report)
+    assert(report:find('Automatic switching tries: By hand (0), then the fallback (Default).',1,true),report)
+    assert(report:find('Automatic switching would choose: By hand',1,true),report)
+    local list=table.concat(a:GetRotationIdentifierReport(),'\n')
+    assert(list:find('by-hand — By hand (yours) — ready',1,true) and not list:find('manual only',1,true),list)
 end)
 
 test('Classic (TBC): overrides and list order work on a client with one specialization key',function()

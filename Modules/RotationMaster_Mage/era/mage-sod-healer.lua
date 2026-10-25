@@ -20,7 +20,7 @@ local combat={type='COMBAT',unit='player'}
 local beacon={type='BUFF',unit='target',spell=400735,ownbuff=true}
 local fingers=any(buff(400647),buff(400669),buff(400670))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.mage.healer',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.mage.healer',revision=6,
  blocks={['era.mage.wand-finish']=2,['sod.mage.balefire']=1,['sod.mage.armor']=2,['sod.mage.upkeep']=2},
  nameKey='Default.SoD.Mage.Healer.Name',descriptionKey='Default.SoD.Mage.Healer.Description',
  applicability={families={'era'},actionContext='player',class='MAGE',rulesets={'season:2'}},

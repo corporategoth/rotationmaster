@@ -18,7 +18,7 @@ local function stop(id,conditions,attack)return{id=id,type='stop',suppress_attac
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function raptor(op,v)return{type='SPELL_COOLDOWN',spell=2973,operator=op,value=v}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.survival.weave',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.survival.weave',revision=7,
  blocks={['forever.hunter.boundaries']=4,['forever.hunter.survival-pull']=3,['forever.hunter.range-shots']=1,['forever.hunter.melee-aoe']=1,
   ['forever.hunter.pet-care']=2,['forever.hunter.burst']=1},
  nameKey='Default.Forever.Hunter.SurvivalWeave.Name',descriptionKey='Default.Forever.Hunter.SurvivalWeave.Description',

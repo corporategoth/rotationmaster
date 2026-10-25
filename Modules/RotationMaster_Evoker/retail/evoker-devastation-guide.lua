@@ -19,7 +19,7 @@ local burstRoom={type='BUFF_STACKS',unit='player',spell=359618,ownbuff=true,oper
 local flames=all(buff(375802),buff(370901))
 local sweep=buff(1265871)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.devastation.guide',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.devastation.guide',revision=7,
  blocks={['retail.evoker.boundaries']=3,['retail.evoker.utility']=2},
  nameKey='Default.Retail.Evoker.DevastationGuide.Name',descriptionKey='Default.Retail.Evoker.DevastationGuide.Description',
  applicability={families={'retail'},actionContext='player',class='EVOKER'},
@@ -28,7 +28,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/evoker_devastation.simc',title='SimulationCraft default action list: Devastation',reviewedAt='2026-10-23',revision='c5fea93f'},
   {url='https://www.icy-veins.com/wow/devastation-evoker-pve-dps-rotation-cooldowns-abilities',title='Icy Veins: Devastation Evoker rotation (12.1.5)',reviewedAt='2026-10-23',revision='2026-10-12',notes='Empowers at rank 1 on a single target; Azure Strike while moving.'},
  },
- body={priority=10,disabled=true,specs={1467},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=10,disabled=true,specs={1467},
   cooldowns={
    block('dguide-utility','retail.evoker.utility','dguide-'),
    spell('dguide-dragonrage',375087,combat()),

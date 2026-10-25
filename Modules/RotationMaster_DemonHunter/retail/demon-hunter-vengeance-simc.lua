@@ -17,7 +17,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local demise={type='DEBUFF',unit='target',spell=212818,owndebuff=true}
 local charged={type='SPELL_CHARGES',spell=263642,operator='GREATERTHANOREQUALS',value=2}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.vengeance.simc',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.vengeance.simc',revision=6,
  blocks={['retail.demonhunter.boundaries']=3,['retail.demonhunter.utility']=2},
  nameKey='Default.Retail.DemonHunter.VengeanceSimc.Name',descriptionKey='Default.Retail.DemonHunter.VengeanceSimc.Description',
  applicability={families={'retail'},actionContext='player',class='DEMONHUNTER'},
@@ -25,7 +25,7 @@ assert(addon:RegisterDefaultRotation({
  sources={
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/demonhunter_vengeance.simc',title='SimulationCraft default action list: Vengeance',reviewedAt='2026-10-23',revision='c5fea93f'},
  },
- body={priority=5,disabled=true,specs={581},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=5,disabled=true,specs={581},
   cooldowns={
    block('vsimc-utility','retail.demonhunter.utility','vsimc-'),
    spell('vsimc-demon-spikes',203720,all(combat(),negate(buff(203819)))),

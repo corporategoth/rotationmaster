@@ -21,7 +21,7 @@ local lasting=any({type='GROUP'},{type='CLASSIFICATION',unit='target',value='wor
 local blocks={['era.warlock.boundaries']=3,['era.warlock.procs']=1,['era.warlock.group-finish']=1,['era.warlock.dying']=2,['era.warlock.curse']=2,
  ['era.warlock.moving']=2,['era.warlock.aoe']=1,['era.warlock.sustain']=3,['era.warlock.filler']=2,['era.warlock.armor']=1,['era.warlock.pets']=1,['era.warlock.safety']=1}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.warlock.dps',revision=4,blocks=blocks,
+ format='RotationMaster',schemaVersion=1,id='rm.era.warlock.dps',revision=5,blocks=blocks,
  nameKey='Default.Era.Warlock.DPS.Name',descriptionKey='Default.Era.Warlock.DPS.Description',
  applicability={families={'era'},actionContext='player',class='WARLOCK'},
  tags={'dps','ranged','caster','leveling','endgame','aoe','wowhead','icy-veins','warcraft-tavern','wowsims'},
@@ -32,7 +32,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://www.icy-veins.com/wow-classic/hardcore-warlock-class-overview',title='Icy Veins: Hardcore Warlock overview (safety)',reviewedAt='2026-10-23',revision='2023-05-26'},
  {url='https://www.warcrafttavern.com/wow-classic/guides/pve-warlock-rotation/',title='Warcraft Tavern: Classic Warlock rotation (raid DoTs)',reviewedAt='2026-10-23'},
  {url='https://github.com/wowsims/classic/blob/7779ebbf79dc7f1341e6ab939b28a3402c9a730a/ui/warlock/apls/rotation.apl.json',title='wowsims/classic: Warlock rotation APL',reviewedAt='2026-10-23',revision='7779ebbf79dc7f1341e6ab939b28a3402c9a730a'}},
- body={priority=10,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=10,
  cooldowns={block('era.warlock.armor','lock-'),block('era.warlock.pets','lock-'),block('era.warlock.safety','lock-')},
  rotation={
  block('era.warlock.boundaries','lock-'),

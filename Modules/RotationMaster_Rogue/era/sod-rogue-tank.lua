@@ -23,7 +23,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local tanked={type='ISSAME',unit='targettarget',otherunit='player'}
 local instant={8928,8927,8926,6950,6949,6947}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.tank',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.tank',revision=6,
  blocks={['era.rogue.boundaries']=3},
  nameKey='Default.SoD.Rogue.Tank.Name',descriptionKey='Default.SoD.Rogue.Tank.Description',
  applicability={families={'era'},actionContext='player',class='ROGUE',rulesets={'season:2'}},

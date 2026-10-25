@@ -12,7 +12,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.mage.unspecialized',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.mage.unspecialized',revision=5,
  blocks={['mop.mage.boundaries']=3,['mop.mage.upkeep']=1,['mop.mage.armor-molten']=1},
  nameKey='Default.MoP.Mage.Unspecialized.Name',descriptionKey='Default.MoP.Mage.Unspecialized.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE'},
@@ -21,7 +21,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/frost-mage-leveling',title='Icy Veins: MoP Classic Frost Mage leveling',reviewedAt='2026-10-23',revision='2025-06-17',notes='Spell training levels only; no level 1-9 priority.'},
   {url='https://www.wowhead.com/mop-classic/guide/classes/mage/frost/dps-leveling-talent-builds-tips',title='Wowhead: MoP Classic Frost Mage leveling',reviewedAt='2026-10-23',revision='2026-06-29',notes='Frost Nova when mobs get close.'},
  },
- body={priority=0,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=0,
   cooldowns={
    block('mage-armor','mop.mage.armor-molten','mage-'),
    block('mage-upkeep','mop.mage.upkeep','mage-'),

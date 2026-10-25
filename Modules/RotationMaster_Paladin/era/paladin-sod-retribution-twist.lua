@@ -15,7 +15,7 @@ local function swing(op,v)return{type='SWING_TIME_REMAIN',offhand=false,operator
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution.twist',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution.twist',revision=6,
  blocks={['sod.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=3,['sod.paladin.seal']=2},
  nameKey='Default.SoD.Paladin.Retribution.Twist.Name',descriptionKey='Default.SoD.Paladin.Retribution.Twist.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},

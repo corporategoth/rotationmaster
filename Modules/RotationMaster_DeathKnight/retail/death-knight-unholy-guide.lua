@@ -16,7 +16,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local ghouls=buff(1254252)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.unholy.guide',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.unholy.guide',revision=6,
  blocks={['retail.deathknight.boundaries']=3,['retail.deathknight.utility']=2},
  nameKey='Default.Retail.DeathKnight.UnholyGuide.Name',descriptionKey='Default.Retail.DeathKnight.UnholyGuide.Description',
  applicability={families={'retail'},actionContext='player',class='DEATHKNIGHT'},
@@ -25,7 +25,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.icy-veins.com/wow/unholy-death-knight-pve-dps-rotation-cooldowns-abilities',title='Icy Veins: Unholy Death Knight rotation (12.1.5)',reviewedAt='2026-10-23',revision='2026-10-12'},
   {url='https://www.wowhead.com/guide/classes/death-knight/unholy/rotation-cooldowns-pve-dps',title='Wowhead: Unholy Death Knight rotation (Midnight Season 2)',reviewedAt='2026-10-23',revision='2026-09-05',notes='Read from a Wayback snapshot.'},
  },
- body={priority=10,disabled=true,specs={252},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=10,disabled=true,specs={252},
   cooldowns={
    block('uguide-utility','retail.deathknight.utility','uguide-'),
    spell('uguide-army-of-the-dead',42650,combat()),

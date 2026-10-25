@@ -19,7 +19,7 @@ local fingers=any(buff(400647),buff(400669),buff(400670))
 local function fingersStacks(n)return any({type='BUFF_STACKS',unit='player',spell=400647,operator='GREATERTHANOREQUALS',value=n},
  {type='BUFF_STACKS',unit='player',spell=400669,operator='GREATERTHANOREQUALS',value=n},{type='BUFF_STACKS',unit='player',spell=400670,operator='GREATERTHANOREQUALS',value=n})end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.mage.frost',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.mage.frost',revision=6,
  blocks={['era.mage.boundaries']=3,['era.mage.wand-finish']=2,['sod.mage.balefire']=1,['sod.mage.balefire-brain-freeze']=1,
   ['sod.mage.living-bomb']=1,['sod.mage.armor']=2,['sod.mage.upkeep']=2},
  nameKey='Default.SoD.Mage.Frost.Name',descriptionKey='Default.SoD.Mage.Frost.Description',

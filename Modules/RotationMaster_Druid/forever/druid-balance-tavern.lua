@@ -11,7 +11,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id,conditions,attack)return{id=id,type='stop',suppress_attack=not attack,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.druid.balance.tavern',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.druid.balance.tavern',revision=6,
  blocks={['forever.druid.boundaries']=3,['forever.druid.upkeep']=1},
  nameKey='Default.Forever.Druid.BalanceTavern.Name',descriptionKey='Default.Forever.Druid.BalanceTavern.Description',
  applicability={families={'forever'},actionContext='player',class='DRUID'},
@@ -21,7 +21,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.warcrafttavern.com/forever/guides/druid-leveling/',title='Warcraft Tavern: Forever Druid leveling',reviewedAt='2026-10-23'},
   {url='https://github.com/simulationcraft/simc/blob/forever/SpellDataDump/druid.txt',title='SimulationCraft Forever spell data (1.60.1.70425)',reviewedAt='2026-10-23',revision='4dd64b4a21',notes='Spell IDs and ranks only.'},
  },
- body={priority=5,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=5,disabled=true,
   cooldowns={block('dot-upkeep','forever.druid.upkeep','dot-')},
   rotation={
    block('dot-boundaries','forever.druid.boundaries','dot-'),

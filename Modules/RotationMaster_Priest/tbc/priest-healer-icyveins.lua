@@ -12,7 +12,7 @@ local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='priest-heal-iv-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.priest.healer.icyveins',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.priest.healer.icyveins',revision=6,
  blocks={['tbc.priest.boundaries']=4,['tbc.priest.dispels']=1,['tbc.priest.group-heal']=1,['tbc.priest.big-heal']=1,
   ['tbc.priest.healer-damage']=2,['tbc.priest.upkeep']=1},
  nameKey='Default.TBC.Priest.HealerIcyVeins.Name',descriptionKey='Default.TBC.Priest.HealerIcyVeins.Description',

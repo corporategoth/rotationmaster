@@ -25,7 +25,7 @@ local unshielded=negate({type='DEBUFF',unit='target',spell=6788})
 local nochakra=all(negate(own(81208)),negate(own(81206)),negate(own(81209)))
 local aoe=hurt(3,.85)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.priest.holy',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.priest.holy',revision=7,
  blocks={['mop.priest.upkeep']=1,['mop.priest.healer-boundaries']=2,['mop.priest.healer-cooldowns']=1,['mop.priest.holy-damage']=2},
  nameKey='Default.MoP.Priest.Holy.Name',descriptionKey='Default.MoP.Priest.Holy.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PRIEST'},

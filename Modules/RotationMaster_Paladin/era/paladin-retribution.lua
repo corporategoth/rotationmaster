@@ -13,7 +13,7 @@ local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.paladin.retribution',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.era.paladin.retribution',revision=5,
  blocks={['era.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=3,
   ['era.paladin.crusader-opener']=1,['era.paladin.seal']=2,['era.paladin.undead']=1},
  nameKey='Default.Era.Paladin.Retribution.Name',descriptionKey='Default.Era.Paladin.Retribution.Description',
@@ -26,7 +26,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.wowhead.com/classic/guide/classes/paladin/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Classic Retribution Paladin rotation',reviewedAt='2026-10-23',revision='2025-03-20'},
   {url='https://www.warcrafttavern.com/wow-classic/guides/pve-retribution-paladin-rotations-cooldowns/',title='Warcraft Tavern: Classic Retribution Paladin rotations',reviewedAt='2026-10-23'},
   {url='https://www.warcrafttavern.com/wow-classic/guides/paladin-leveling-guide/',title='Warcraft Tavern: Classic Paladin leveling guide',reviewedAt='2026-10-23'}},
- body={priority=2,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=2,
   cooldowns={block('ret-upkeep','era.paladin.ret-upkeep','ret-'),block('ret-safety','era.paladin.safety','ret-')},
   rotation={
    block('ret-opening','era.paladin.melee-opening','ret-'),

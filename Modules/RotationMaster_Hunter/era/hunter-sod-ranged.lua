@@ -33,7 +33,7 @@ local worth=all(combat(),any(classified('worldboss'),classified('elite'),classif
  {type='TT_HEALTH',unit='target',health=0,operator='GREATERTHAN',value=20}))
 local viperLow=all(mana('LESSTHAN',.5),any(buff(415423),all({type='SPELL_KNOWN',spell=415423},mana('LESSTHAN',.1))))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.hunter.ranged',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.hunter.ranged',revision=6,
  blocks={['era.hunter.boundaries']=3,['sod.hunter.upkeep']=1},
  nameKey='Default.SoD.Hunter.Ranged.Name',descriptionKey='Default.SoD.Hunter.Ranged.Description',
  applicability={families={'era'},actionContext='player',class='HUNTER',rulesets={'season:2'}},
@@ -44,7 +44,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/hunter/ranged/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Ranged Hunter rotation, Season of Discovery',reviewedAt='2026-10-23',revision='2025-04-28'},
   {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/hunter/dps-leveling-tips',title='Wowhead: Ranged Hunter leveling tips, Season of Discovery',reviewedAt='2026-10-23',revision='2025-02-07'},
  },
- body={priority=100,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=100,
  cooldowns={block('sod.hunter.upkeep','hunter-'),
   spell('hunter-viper',415423,all(combat(),mana('LESSTHAN',.1),negate(buff(415423)))),
   spell('hunter-hawk',13165,all(negate(buff(13165)),negate(viperLow),any(combat(),all(negate(buff(415423)),negate(buff(13163)),negate(buff(5118)),negate(buff(13159)),negate(buff(13161)),negate(buff(20043)))))),

@@ -29,7 +29,7 @@ local unqueued=all(negate(queued(78)),negate(queued(845)))
 local immune=any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',unit='target',value='MECHANICAL'},{type='CREATURE',unit='target',value='ELEMENTAL'})
 local near={type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=2}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.warrior.dps',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.era.warrior.dps',revision=5,
  blocks={['era.warrior.boundaries']=3,['era.warrior.upkeep']=1,['era.warrior.aoe-strikes']=1},
  nameKey='Default.Era.Warrior.DPS.Name',descriptionKey='Default.Era.Warrior.DPS.Description',
  applicability={families={'era'},actionContext='player',class='WARRIOR'},
@@ -40,7 +40,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://www.icy-veins.com/wow-classic/hardcore-warrior-class-overview',title='Icy Veins: Hardcore Warrior overview (emergency buttons)',reviewedAt='2026-10-23',revision='2023-05-14'},
  {url='https://www.wowhead.com/classic/guide/classes/warrior/fury/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Classic Fury Warrior DPS rotation',reviewedAt='2026-10-23',revision='2025-03-20'},
  {url='https://www.wowhead.com/classic/guide/classes/warrior/arms/leveling-tips',title='Wowhead: Classic Arms Warrior leveling tips',reviewedAt='2026-10-23',revision='2024-12-27'}},
- body={priority=10,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=10,
  cooldowns={block('era.warrior.upkeep','warrior-dps-'),
   spell('warrior-dps-heroic-strike',78,all(combat(),unqueued,enemies('LESSTHAN',2),any(rage('GREATERTHANOREQUALS',40),
    all(target('LESSTHAN',.2),rage('GREATERTHANOREQUALS',30)),all(negate(strike),negate(known(1680)),rage('GREATERTHANOREQUALS',20))))),

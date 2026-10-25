@@ -23,7 +23,7 @@ local big=any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLA
 local ranged=all({type='BEYOND_MELEE',unit='target'},negate({type='MOVING'}))
 local near={type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=2}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.shaman.enhancement',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.era.shaman.enhancement',revision=5,
  blocks={['era.shaman.manual']=3,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.self-heal']=1,['era.shaman.melee-totems']=1},
  nameKey='Default.Era.Shaman.Enhancement.Name',descriptionKey='Default.Era.Shaman.Enhancement.Description',
  applicability={families={'era'},actionContext='player',class='SHAMAN'},
@@ -34,7 +34,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://www.wowhead.com/classic/guide/classes/shaman/enhancement/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Classic Enhancement Shaman DPS rotation',reviewedAt='2026-10-23',revision='2023-12-02'},
  {url='https://www.wowhead.com/classic/guide/classes/shaman/enhancement/leveling-tips',title='Wowhead: Classic Enhancement Shaman leveling tips',reviewedAt='2026-10-23',revision='2024-11-20'},
  {url='https://github.com/wowsims/classic/blob/7779ebbf79dc7f1341e6ab939b28a3402c9a730a/ui/enhancement_shaman/apls/default.apl.json',title='wowsims/classic: Enhancement Shaman default APL',reviewedAt='2026-10-23',revision='7779ebbf79dc7f1341e6ab939b28a3402c9a730a'}},
- body={priority=10,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=10,
  cooldowns={
   spell('enh-windfury-weapon',8232,all(dungeon,any(negate({type='WEAPON'}),rockbiter))),
   spell('enh-rockbiter-weapon',8017,all(negate({type='WEAPON'}),any(negate(known(8232)),negate(dungeon)))),

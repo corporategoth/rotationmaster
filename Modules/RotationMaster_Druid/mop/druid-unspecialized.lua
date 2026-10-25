@@ -15,7 +15,7 @@ local lives=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASS
  {type='HEALTHPCT',unit='target',operator='GREATERTHANOREQUALS',value=.3},{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=6})
 local moving={type='MOVING'}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.druid.unspecialized',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.druid.unspecialized',revision=6,
  blocks={['mop.druid.melee-boundaries']=2},
  nameKey='Default.MoP.Druid.Unspecialized.Name',descriptionKey='Default.MoP.Druid.Unspecialized.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID'},
@@ -23,7 +23,7 @@ assert(addon:RegisterDefaultRotation({
  sources={
   {url='https://www.warcrafttavern.com/mop/guides/druid-leveling-guide/',title='Warcraft Tavern: MoP Classic Druid leveling',reviewedAt='2026-10-23',notes='Only names Wrath and Moonfire for the first levels; the form arms are RM policy.'},
  },
- body={priority=0,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=0,
   cooldowns={},
   rotation={
    block('none-boundaries','mop.druid.melee-boundaries','none-'),

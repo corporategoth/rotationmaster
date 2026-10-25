@@ -21,7 +21,7 @@ local spread=any({type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',va
 local storm=any(all({type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2},holyPower('GREATERTHANOREQUALS',3)),own(326733))
 local capped=all(holyPower('GREATERTHANOREQUALS',5),negate({type='SPELL_AVAIL',spell=255937}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.retribution.icyveins',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.retribution.icyveins',revision=7,
  blocks={['retail.paladin.boundaries']=2,['retail.paladin.upkeep']=2},
  nameKey='Default.Retail.Paladin.Retribution.IcyVeins.Name',descriptionKey='Default.Retail.Paladin.Retribution.IcyVeins.Description',
  applicability={families={'retail'},actionContext='player',class='PALADIN'},
@@ -31,7 +31,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/paladin_retribution.simc',title='SimulationCraft: Retribution Paladin default list',reviewedAt='2026-10-23',revision='c5fea93fb77d',notes='Finishers at holy_power=5 while Wake of Ashes is cooling, before Wake.'},
   {url='https://www.wowhead.com/guide/classes/paladin/retribution/rotation-cooldowns-pve-dps',title='Wowhead: Retribution Paladin rotation',reviewedAt='2026-10-23',revision='2026-04-21',notes='Matches the Icy Veins order; Hammer of Wrath above Blade of Justice for Herald of the Sun.'},
  },
- body={priority=5,disabled=true,specs={70},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=5,disabled=true,specs={70},
   cooldowns={
    block('retail.paladin.upkeep','retiv-'),
    spell('retiv-avenging-wrath',31884,fight),

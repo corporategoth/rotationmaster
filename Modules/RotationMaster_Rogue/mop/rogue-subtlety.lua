@@ -28,7 +28,7 @@ local boss={type='CLASSIFICATION',unit='target',value='worldboss'}
 local hidden={type='STEALTHED'}
 local worth=any(boss,lifetime('GREATERTHAN',8))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.subtlety',revision=7,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.subtlety',revision=8,
  blocks={['mop.rogue.boundaries']=3,['mop.rogue.out-of-combat']=3,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1,['mop.rogue.subtlety-builders']=2},
  nameKey='Default.MoP.Rogue.Subtlety.Name',descriptionKey='Default.MoP.Rogue.Subtlety.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE'},

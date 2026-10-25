@@ -23,7 +23,7 @@ local tanked={type='ISSAME',unit='targettarget',otherunit='player'}
 local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
 local cleave=any({type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2},{type='CLASSIFICATION',unit='target',value='worldboss'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.druid.guardian',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.druid.guardian',revision=7,
  blocks={['mop.druid.melee-boundaries']=2,['mop.druid.mark']=1},
  nameKey='Default.MoP.Druid.Guardian.Name',descriptionKey='Default.MoP.Druid.Guardian.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID'},

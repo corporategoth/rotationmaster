@@ -16,7 +16,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local core=own(264173)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.demonology.icyveins',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.demonology.icyveins',revision=7,
  blocks={['retail.warlock.boundaries']=3,['retail.warlock.upkeep']=2},
  nameKey='Default.Retail.Warlock.Demonology.IcyVeins.Name',descriptionKey='Default.Retail.Warlock.Demonology.IcyVeins.Description',
  applicability={families={'retail'},actionContext='player',class='WARLOCK'},
@@ -25,7 +25,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.icy-veins.com/wow/demonology-warlock-pve-dps-rotation-cooldowns-abilities',title='Icy Veins: Demonology Warlock rotation (Midnight)',reviewedAt='2026-10-23',revision='2026-10-12'},
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/warlock_demonology.simc',title='SimulationCraft: Demonology Warlock default list (diabolist)',reviewedAt='2026-10-23',revision='c5fea93fb77d'},
  },
- body={priority=5,disabled=true,specs={266},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=5,disabled=true,specs={266},
   cooldowns={
    block('retail.warlock.upkeep','demoiv-'),
    spell('demoiv-summon-felguard',30146,all(negate(combat()),negate({type='PET'}))),
