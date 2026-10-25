@@ -11,11 +11,11 @@ local L=LibStub("AceLocale-3.0"):GetLocale(addon_name)
 -- and names the first link that drops the recommendation. With seconds, one
 -- compact line per second follows (to catch combat, where values differ).
 -- The report opens in a copyable window and is kept, newest last, in
--- RotationMasterDB.diagnostics.glow (at most 5 reports of 400 lines), so it
+-- RotationMasterDB.diagnostics.glow (at most 5 reports of 600 lines), so it
 -- survives a /reload and can be read from SavedVariables. Nothing here runs
 -- until the command does.
 
-local MAX_REPORTS,MAX_LINES,MAX_STEPS,MAX_WATCH=5,400,24,60
+local MAX_REPORTS,MAX_LINES,MAX_STEPS,MAX_WATCH=5,600,24,60
 
 local function readable(value)
     local platform=addon.Platform
@@ -292,6 +292,48 @@ local function scanSection(self,report)
     return index,firstError
 end
 
+-- Every step the editor would warn "not on your action bars" for, in the
+-- rotation open in the editor and in the active one, with the spell IDs the
+-- step names, the IDs the client relates to each, whether the scan holds it
+-- (directly, or through which alias) and the slots the client reports. This
+-- is the text to paste when a warning looks wrong.
+local function listIds(list)
+    local out={};for i,value in ipairs(list or {}) do out[i]=show(value) end
+    return table.concat(out,',')
+end
+local function bindingSection(self,report)
+    local index=self.GetIndexedSpellsDiagnostic and self:GetIndexedSpellsDiagnostic(120)
+    if not index or not self.ExplainStepBinding or not self.ListUnboundSteps then report.add('  unavailable (buttons.lua diagnostic support missing)');return end
+    report.add('scan: scans=%s ageSeconds=%s pendingRescan=%s policyAtScan=%s indexedSpells=%s',index.scans,index.age and string.format('%.1f',index.age) or nil,index.pending,index.policy,index.total)
+    for _,entry in ipairs(index.spells) do
+        report.add('  on bars: %s %s buttons=[%s]%s',entry.id,entry.name or '?',table.concat(entry.buttons,','),entry.alias and (' (alias: '..entry.alias..')') or '')
+    end
+    if index.total>#index.spells then report.add('  ... %d more indexed spells',index.total-#index.spells) end
+    local targets={}
+    local pane=self.activeRotationEditor
+    if type(pane)=='table' and pane.active and pane.workspace and type(pane.workspace.Snapshot)=='function' then
+        local ok,body=pcall(pane.workspace.Snapshot,pane.workspace)
+        if ok and type(body)=='table' then targets[#targets+1]={label='open in the editor: '..show(body.name or pane.workspace.id),body=body} end
+    end
+    local _,_,active=rotationRows(self)
+    if active then targets[#targets+1]={label='active rotation: '..show(active.name or self.currentRotation),body=active} end
+    if #targets==0 then report.add('  no rotation is open in the editor and none is active') end
+    for _,target in ipairs(targets) do
+        local unbound=self:ListUnboundSteps(target.body)
+        report.add('%s: %d step(s) with no button',target.label,#unbound)
+        for _,entry in ipairs(unbound) do
+            local explain=self:ExplainStepBinding(entry.step)
+            report.add('  %s [step id %s, %s %s]',self:DescribeUnboundStep(entry),show(entry.step.id),show(explain.type),show(explain.action))
+            if explain.error then report.add('    GetSpellIds error: %s',explain.error) end
+            for _,record in ipairs(explain.ids) do
+                report.add('    spell %s %s: relatives=[%s] directlyIndexed=%s alias=%s buttons=[%s] clientSlots=[%s]',record.id,record.name or '?',listIds(record.relatives),record.direct,
+                    record.how or 'none',table.concat(record.buttons,','),type(record.slots)=='table' and listIds(record.slots) or show(record.slots))
+            end
+            if #explain.ids==0 then report.add('    the step names no spell ID (%s)',explain.error or 'nothing to look up') end
+        end
+    end
+end
+
 function addon:BuildGlowDiagnostic()
     local report=newReport()
     local add=report.add
@@ -330,6 +372,10 @@ function addon:BuildGlowDiagnostic()
 
     section(report,'Button scan')
     local index,firstError=scanSection(self,report)
+
+    section(report,'Steps the editor warns are not on your action bars')
+    local boundOk,boundWhy=pcall(bindingSection,self,report)
+    if not boundOk then add('  report failed: %s',boundWhy) end
 
     section(report,'Rotation steps (top to bottom, as the engine walks them)')
     local rows,rowsWhy,rotation=rotationRows(self)

@@ -74,6 +74,12 @@ local MacroButtons = {}
 -- Pet bar buttons and their pet action index (class pets, and the possessed
 -- unit's abilities on clients that show possession on the pet bar).
 local PetButtons = {}
+-- Retail: the buttons holding each action slot, and what the lazy alias
+-- lookups (see aliasButtons) have already settled for this scan.
+local SlotButtons = {}
+local AliasCache = {}
+local AliasHow = {}
+local NameIndex = nil
 local Flags = {}
 local SpellsGlowing = {}
 local FramePool = {}
@@ -726,6 +732,106 @@ local function AddSpellAliases(button, spell, action)
     AddAlias(SpellRelation('GetOverrideSpell',spell),button)
 end
 
+-- Which action buttons hold a step's spell when the bar reports another ID
+-- for it. Retail has several IDs for one ability: its base spell, the spell
+-- a talent or form currently overrides it with, and per-specialization
+-- versions (Brewmaster's Blackout Kick is not the Windwalker's). The bar
+-- reports whichever it holds, and a step names the one the pack was written
+-- with, so a lookup that misses is retried through, in order:
+--   1. the spells the client relates it to (base and override, both APIs);
+--   2. the action slots the client itself says hold it
+--      (C_ActionBar.FindSpellActionButtons), mapped back to buttons;
+--   3. a spell on a button that is called the same (a specialization's
+--      version of an ability keeps its name).
+-- Settled once per scan and remembered (a miss too, so a spell that really
+-- is on no bar costs one table read per poll); the first button list found
+-- is added to the index under the asked ID, so every consumer of the index
+-- (glow, readiness, range) sees it. Only the restricted clients (Retail,
+-- Forever) look: the others identify spells by rank through the catalog.
+local function BookRelation(name, spell)
+    local namespace=C_SpellBook
+    local fn=type(namespace)=='table' and namespace[name] or nil
+    if type(fn)~='function' then return nil end
+    local ok,value=pcall(fn,spell)
+    if ok then return value end
+end
+local function validSpellId(value)
+    return type(value)=="number" and addon.Platform:CanReadValue(value) and value>0 and value<math.huge and value%1==0
+end
+-- The IDs the client relates to one spell, itself first, without repeats:
+-- base and override by both APIs, and the override of the base.
+function addon:GetSpellIdRelatives(spell)
+    local list={}
+    if not validSpellId(spell) then return list end
+    local seen={}
+    local function add(value) if validSpellId(value) and not seen[value] then seen[value]=true;list[#list+1]=value end end
+    add(spell)
+    local base=SpellRelation('GetBaseSpell',spell)
+    add(base);add(BookRelation('FindBaseSpellByID',spell))
+    add(SpellRelation('GetOverrideSpell',spell));add(BookRelation('FindSpellOverrideByID',spell))
+    if validSpellId(base) then add(SpellRelation('GetOverrideSpell',base));add(BookRelation('FindSpellOverrideByID',base)) end
+    return list
+end
+local function spellNameOf(id)
+    local info=addon.Platform:GetSpellInfo(id)
+    local name=info and info.name
+    if type(name)=='string' and name~='' and addon.Platform:CanReadValue(name) then return name end
+end
+local function nameIndex()
+    if NameIndex then return NameIndex end
+    NameIndex={}
+    for button,spell in pairs(ButtonSpells) do
+        local name=spellNameOf(spell)
+        if name then
+            local holders=NameIndex[name]
+            if holders==nil then holders={};NameIndex[name]=holders end
+            holders[#holders+1]=button
+        end
+    end
+    return NameIndex
+end
+local function aliasButtons(id)
+    local settled=AliasCache[id]
+    if settled~=nil then return settled or nil end
+    if fetchedPolicy~='restricted' or not validSpellId(id) then return nil end
+    AliasCache[id]=false
+    local found,how
+    local function take(buttons,reason)
+        if found or not buttons or #buttons==0 then return end
+        found,how=buttons,reason
+    end
+    for _,relative in ipairs(addon:GetSpellIdRelatives(id)) do
+        if relative~=id and Spells[relative] then take(Spells[relative],'relative '..relative);if found then break end end
+    end
+    if not found then
+        local finder=actionBarFunction('FindSpellActionButtons',nil)
+        if finder then
+            for _,query in ipairs(addon:GetSpellIdRelatives(id)) do
+                local ok,slots=pcall(finder,query)
+                if ok and addon.Platform:CanReadValue(slots) and type(slots)=='table' then
+                    local list={}
+                    for _,slot in ipairs(slots) do for _,button in ipairs(SlotButtons[slot] or {}) do list[#list+1]=button end end
+                    take(list,'client slots of '..query);if found then break end
+                end
+            end
+        end
+    end
+    if not found then
+        local name=spellNameOf(id)
+        if name then take(nameIndex()[name],'same name "'..name..'"') end
+    end
+    if not found then return nil end
+    local buttons=Spells[id]
+    if buttons==nil then buttons={};Spells[id]=buttons end
+    for _,button in ipairs(found) do
+        local present=false
+        for i=1,#buttons do if buttons[i]==button then present=true;break end end
+        if not present then tinsert(buttons,button) end
+    end
+    AliasCache[id]=buttons;AliasHow[id]=how
+    return buttons
+end
+
 local function AddStandardButton(button)
     if not button or ButtonSpells[button] then return end
     local ok,kind,action=pcall(ReadStandardAction,button)
@@ -736,6 +842,14 @@ local function AddStandardButton(button)
     local spell,item=ResolveStandardAction(kind,action)
     AddButton(spell,button,item)
     if kind=='spell' and spell then AddSpellAliases(button,spell,action) end
+    if ButtonSpells[button] and fetchedPolicy=='restricted' then
+        local sloted,slot=pcall(GetActionSlot,button)
+        if sloted and slot then
+            local holders=SlotButtons[slot]
+            if holders==nil then holders={};SlotButtons[slot]=holders end
+            holders[#holders+1]=button
+        end
+    end
 end
 
 -- Pet action slots expose a spell only through GetPetActionInfo. Modern
@@ -1055,6 +1169,11 @@ function addon:Fetch()
 	self:DestroyAllGlows()
 
 	Spells = {}
+    SlotButtons = {}
+    AliasCache = {}
+    AliasHow = {}
+    NameIndex = nil
+    addon.fetchPending = nil
     ButtonItems = {}
     ButtonSpells = {}
     MacroButtons = {}
@@ -1135,7 +1254,7 @@ end
 
 function addon:FindSpell(spellIds,itemIds)
     for index,id in ipairs(spellIds or {}) do
-        if Spells[id] then
+        if Spells[id] or not itemIds and aliasButtons(id) then
             if not itemIds then return id,index end
             local wanted=itemIds[index]
             if self.Platform:CanReadValue(wanted) and type(wanted)=="number" then
@@ -1170,7 +1289,7 @@ local function assistedBinding(self)
         if platform:IsSpellKnown(spell,false)==true then
             local mapped=false
             for _,id in ipairs(platform:GetAssistedSpellCandidates(spell)) do
-                if Spells[id] then mapped=true;break end
+                if Spells[id] or aliasButtons(id) then mapped=true;break end
             end
             if not mapped then missing=missing or {};missing[#missing+1]=spell end
         end
@@ -1178,9 +1297,22 @@ local function assistedBinding(self)
     if missing then return false,missing end
     return true
 end
+-- Asks for a rescan when the last one is older than maxAge seconds (or none
+-- ran); returns whether one was requested. Out of combat only: the editor
+-- never makes the glows flicker mid-fight.
+function addon:EnsureFreshButtonIndex(maxAge)
+    if type(InCombatLockdown)=='function' and InCombatLockdown() then return false end
+    local now=type(GetTime)=='function' and GetTime() or nil
+    if FetchCount>0 and not self.fetchPending and LastFetchAt and now and now-LastFetchAt<=(maxAge or 10) then return false end
+    if type(self.ButtonFetch)~='function' then return false end
+    self:ButtonFetch()
+    return true
+end
 local BINDABLE={spell=true,pet=true,any=true,item=true}
 function addon:GetStepBinding(step)
-    if type(step)~='table' or FetchCount==0 or step.type=='branch' or step.type=='stop' then return nil end
+    -- Nothing is judged before a scan has run, or while a bar change waits for
+    -- the rescan it has scheduled (the index is older than the bars).
+    if type(step)~='table' or FetchCount==0 or addon.fetchPending or step.type=='branch' or step.type=='stop' then return nil end
     if step.type=='assisted' then return assistedBinding(self) end
     if step.action==nil or not BINDABLE[step.type] then return nil end
     local ok,spellIds,itemIds=pcall(self.GetSpellIds,self,step)
@@ -1191,6 +1323,56 @@ function addon:GetStepBinding(step)
         elseif self:FindSpell({id}) then return true end
     end
     return false
+end
+
+-- For /rm debug glow: why a step is, or is not, found on the bars. One record
+-- per spell ID the step names: its name, the IDs the client relates to it,
+-- whether the index holds it directly, how a lookup that missed was settled
+-- (relative, client slots, same name) or that it was not, the buttons that
+-- hold it, and the action slots the client itself reports for it.
+function addon:ExplainStepBinding(step)
+    local result={ids={},bound=nil}
+    if type(step)~='table' then return result end
+    result.type=step.type;result.action=step.action
+    result.pending=self.fetchPending==true;result.scanned=FetchCount>0
+    local ok,spellIds,itemIds=pcall(self.GetSpellIds,self,step)
+    if not ok then result.error=tostring(spellIds);return result end
+    result.bound=self:GetStepBinding(step)
+    for index,id in ipairs(type(spellIds)=='table' and spellIds or {}) do
+        local record={id=id,relatives=self:GetSpellIdRelatives(id),item=itemIds and itemIds[index]}
+        local info=self.Platform:GetSpellInfo(id)
+        record.name=info and info.name
+        record.direct=Spells[id]~=nil and AliasHow[id]==nil
+        record.how=AliasHow[id]
+        record.buttons={}
+        for _,button in ipairs(Spells[id] or {}) do
+            local named,name=pcall(button.GetName,button)
+            record.buttons[#record.buttons+1]=named and name or tostring(button)
+        end
+        local finder=actionBarFunction('FindSpellActionButtons',nil)
+        if finder then
+            local found,slots=pcall(finder,id)
+            if found and self.Platform:CanReadValue(slots) and type(slots)=='table' then record.slots={};for i=1,math.min(#slots,8) do record.slots[i]=slots[i] end
+            else record.slots=found and 'unreadable' or 'error' end
+        end
+        result.ids[#result.ids+1]=record
+    end
+    return result
+end
+-- What the last scan holds, for the same report: each indexed spell with its
+-- name and buttons (capped), plus the scan's age and policy.
+function addon:GetIndexedSpellsDiagnostic(limit)
+    local list={}
+    for id,buttons in pairs(Spells) do
+        local names={}
+        for _,button in ipairs(buttons) do local named,name=pcall(button.GetName,button);names[#names+1]=named and name or '?' end
+        local info=self.Platform:GetSpellInfo(id)
+        list[#list+1]={id=id,name=info and info.name,buttons=names,alias=AliasHow[id],primary=#names>0 and ButtonSpells[buttons[1]]==id}
+    end
+    table.sort(list,function(a,b) return a.id<b.id end)
+    local now=type(GetTime)=='function' and GetTime() or nil
+    local shown={};for i=1,math.min(#list,limit or 120) do shown[i]=list[i] end
+    return {spells=shown,total=#list,scans=FetchCount,age=now and LastFetchAt and now-LastFetchAt or nil,pending=self.fetchPending==true,policy=fetchedPolicy}
 end
 
 -- The enabled, reachable steps of one rotation body whose action is on no

@@ -1439,6 +1439,9 @@ function addon:ButtonFetch()
     if self.fetchTimer then
         self:CancelTimer(self.fetchTimer)
     end
+    -- The bars changed and the index is older than they are until the rescan
+    -- below runs (Fetch clears this): the editor judges nothing meanwhile.
+    self.fetchPending = true
     self.fetchTimer = self:ScheduleTimer(function()
         self.skipAnnounce = true
         self:Fetch()

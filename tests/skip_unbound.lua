@@ -274,6 +274,62 @@ test('restricted retail: a step naming the base or the override of the spell on 
     assert(c.a:GetStepBinding(spell('x',OVERRIDE))==true,'override spell step unbound')
     assert(c.a:GetStepBinding(spell('x',BLACKOUT_KICK))==false)
 end)
+-- The Brewmaster Blackout Kick the Icy Veins reference names (205523) and the
+-- class spell (100784) are two IDs for one ability: whichever the bar reports,
+-- a step naming the other is bound.
+local BREW_KICK=205523
+local function named(c,names) local info=c.e.C_Spell.GetSpellInfo;c.e.C_Spell.GetSpellInfo=function(id) local r=info(id);if type(r)=='table' and names[id] then r.name=names[id] end;return r end end
+local KICK_NAMES={[BLACKOUT_KICK]='Blackout Kick',[BREW_KICK]='Blackout Kick'}
+test('restricted retail: the bar holds the class Blackout Kick, the step names the Brewmaster one (a specialization version of the same ability)',function()
+    local c=restricted();named(c,KICK_NAMES)
+    local frames=retailBars(c,{[1]=BLACKOUT_KICK,[2]=TIGER_PALM})
+    assert(c.a:GetStepBinding(spell('x',BREW_KICK))==true,'Brewmaster Blackout Kick unbound with the class one on the bar')
+    -- The engine sees it too: the index maps the step\'s ID to the same button.
+    assert(c.a:FindSpell({BREW_KICK})==BREW_KICK,'the engine does not find the button')
+    assert(c.a:GetSpellButtonNames(BREW_KICK)[1]=='ActionButton1',table.concat(c.a:GetSpellButtonNames(BREW_KICK),','))
+    -- And the reverse: the Brewmaster one on the bar, the step names the class one.
+    retailBars(c,{[1]=BREW_KICK})
+    assert(c.a:GetStepBinding(spell('x',BLACKOUT_KICK))==true,'class Blackout Kick unbound with the Brewmaster one on the bar')
+    -- A different ability stays unbound, and so does a spell on no bar.
+    assert(c.a:GetStepBinding(spell('x',KEG))==false and c.a:GetStepBinding(spell('x',TIGER_PALM))==false,'an unrelated spell looked bound')
+end)
+test('restricted retail: a talent override of the spell on the bar, the base of the step, and the client\'s own slot answer',function()
+    local c=restricted()
+    local TALENT=1250000
+    c.s.base={[TALENT]=BLACKOUT_KICK};c.s.override={[BLACKOUT_KICK]=TALENT}
+    retailBars(c,{[1]=BLACKOUT_KICK})
+    assert(c.a:GetStepBinding(spell('x',TALENT))==true,'a talent override of the bar spell is unbound')
+    retailBars(c,{[1]=TALENT})
+    assert(c.a:GetStepBinding(spell('x',BLACKOUT_KICK))==true,'the base of the bar spell is unbound')
+    -- Unrelated IDs the client still places on a slot (FindSpellActionButtons).
+    c.s.base,c.s.override={},{}
+    local frames=retailBars(c,{[3]=777001})
+    assert(c.a:GetStepBinding(spell('x',777002))==false)
+    local find=c.e.C_ActionBar.FindSpellActionButtons
+    c.e.C_ActionBar.FindSpellActionButtons=function(id) if id==777002 then return {3} end;return find(id) end
+    c.a:Fetch()
+    assert(c.a:GetStepBinding(spell('x',777002))==true,'a spell the client places on slot 3 is unbound')
+    assert(c.a:ExplainStepBinding(spell('x',777002)).ids[1].how:find('client slots'),'the explanation does not say how')
+end)
+test('binding: a rescan that is pending, or none yet, judges nothing; the editor asks for a rescan when the scan is old',function()
+    local c=restricted();retailBars(c,{[1]=BLACKOUT_KICK})
+    assert(c.a:GetStepBinding(spell('x',KEG))==false)
+    c.a.fetchPending=true;assert(c.a:GetStepBinding(spell('x',KEG))==nil,'judged while the bars are being rescanned')
+    c.a:Fetch();assert(c.a.fetchPending==nil and c.a:GetStepBinding(spell('x',KEG))==false,'Fetch did not clear the pending rescan')
+    local asked=0;c.a.ButtonFetch=function() asked=asked+1 end
+    assert(not c.a:EnsureFreshButtonIndex(10) and asked==0,'a fresh scan was redone')
+    local now=c.e.GetTime();c.e.GetTime=function() return now+60 end
+    assert(c.a:EnsureFreshButtonIndex(10) and asked==1,'an old scan was not redone')
+end)
+test('diagnostic: each unbound step lists its spell IDs, their relatives, how they were looked up, and what is on the bars',function()
+    local c=restricted();retailBars(c,{[1]=BLACKOUT_KICK})
+    local list=c.a:ListUnboundSteps({rotation={spell('k',KEG),spell('b',BLACKOUT_KICK)},cooldowns={}})
+    assert(#list==1 and list[1].step.id=='k')
+    local explain=c.a:ExplainStepBinding(list[1].step)
+    assert(explain.bound==false and explain.ids[1].id==KEG and explain.ids[1].direct==false and #explain.ids[1].buttons==0)
+    local index=c.a:GetIndexedSpellsDiagnostic(10)
+    assert(index.total>=1 and index.spells[1].id==BLACKOUT_KICK and index.spells[1].buttons[1]=='ActionButton1' and index.policy=='restricted')
+end)
 test('binding: before the first scan nothing is judged (no step looks unbound)',function()
     local c=restricted()
     assert(c.a:GetStepBinding(spell('x',BLACKOUT_KICK))==nil,'judged before any scan')
