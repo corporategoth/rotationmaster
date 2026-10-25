@@ -1,8 +1,9 @@
 -- The rotation editor's header, two rows:
 --   row 1  [specialization] [name ........................] [Metadata]
 --   row 2  [kind] [ID  Priority] [Enabled  Delete]       (wraps by group)
--- where the kind is the Read-Only pill on a Built In and Undo + Redo on your
--- own rotation (the Default is editable, so it carries Undo and Redo too). For the Default, a Built In (with and without a Reset to
+-- where the kind slot holds the Read-Only pill on a Built In and, in the very
+-- same space, Undo + Redo on your own rotation (the Default is editable, so it
+-- carries Undo and Redo too); nothing else moves between the two. For the Default, a Built In (with and without a Reset to
 -- default button) and your own rotation, in English, German and Russian, at
 -- the narrowest window (800 px) and a normal one, every visible control
 -- sits inside the pane and on none of the others; the specialization
@@ -112,7 +113,8 @@ for _,language in ipairs({'enUS','deDE','ruRU'}) do
                     if type(v)=='table' and v.kind=='FontString' and v:IsShown() then assert(v.text~=pane.name.tooltip,label..': '..tostring(k)..' is a Name label') end
                 end
                 local _,kind,id,finish_=check(pane,label,case=='builtin overridden' and 'builtin' or case)
-                if size=='normal' then assert(kind==id and id==finish_,label..': row 2 wraps at a normal width') end
+                -- One line, except where Reset to default (116 px) also shows at the minimum width.
+                if size=='normal' or case~='builtin overridden' then assert(kind==id and id==finish_,label..': row 2 wraps') end
                 -- The picker keeps the Built In and Default read-only, your own editable.
                 assert(pane.specButton:IsShown() and (case=='mine')==pane.specButton:IsEnabled(),label..': picker state')
                 pane:Release()
@@ -120,6 +122,25 @@ for _,language in ipairs({'enUS','deDE','ruRU'}) do
         end)
     end
 end
+
+test('the kind slot is one rectangle: the Read-Only pill and Undo + Redo fill the same space, and the rest of row 2 does not move',function()
+    for _,language in ipairs({'enUS','deDE','ruRU'}) do
+        for _,size in ipairs({'min','normal'}) do
+            local label=language..' '..size
+            local _,builtin=open(language,'builtin',WIDTHS[size]);local _,own=open(language,'mine',WIDTHS[size])
+            local rb,ro=audit.resolver(builtin.frame),audit.resolver(own.frame)
+            local pill,undo,redo=rb(builtin.readOnlyPill),ro(own.undo),ro(own.redo)
+            assert(undo.left==pill.left and redo.right==pill.right and undo.right<=redo.left,label..': Undo+Redo do not span the pill\'s slot')
+            assert(own.undo:GetText()=='' and own.redo:GetText()=='',label..': Undo/Redo are not icon-only')
+            assert(own.undo.tooltip and own.redo.tooltip,label..': Undo/Redo lost their tooltips')
+            -- ID, Priority, Enabled and Delete sit where they sit with the pill.
+            for _,name in ipairs({'identifierLabel','identifier','priorityLabel','priorityDown','priority','priorityUp','enable','delete'}) do
+                local a,b=rb(builtin[name]),ro(own[name])
+                assert(a.left==b.left and a.right==b.right and a.top==b.top,label..': '..name..' moves between Built In and own rotation')
+            end
+        end
+    end
+end)
 
 test('the picker holds the longest specialization wording at its fixed width, and every row-1 control fits at the minimum',function()
     for _,language in ipairs({'enUS','deDE','ruRU'}) do

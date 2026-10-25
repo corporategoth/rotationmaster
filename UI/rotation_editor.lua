@@ -13,8 +13,9 @@ local function builtinSwitch(workspace)
     local source=workspace.source;return type(source)=='table' and (source.switchedOn==nil and source.enabled or source.switchedOn) or nil
 end
 -- The editor header: the specialization picker's fixed width (it holds "All
--- specializations" and the longest Retail names), and the gap between controls.
-local SPEC_WIDTH,HEADER_GAP=172,8
+-- specializations" and the longest Retail names), the gap between controls and
+-- the slot at the start of row 2 (the Read-Only pill, or Undo and Redo).
+local SPEC_WIDTH,HEADER_GAP,KIND_WIDTH=172,8,78
 local function builtinOverrides(workspace)
     return workspace.readOnly and type(addon.GetBuiltinOverrides)=='function' and addon:GetBuiltinOverrides(workspace.builtin) or nil
 end
@@ -290,6 +291,13 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     end
     pane.undo=tool(L['Undo'],24,function() if not pane:FlushName() then return end;local flushed,reason=pane:FlushFieldEdits();if not flushed then pane:Message(reason);return end;local ok,problem=workspace.session:Undo();if ok then pane:Render() else pane:Message(problem) end end,'undo')
     pane.redo=tool(L['Redo'],24,function() local ok,problem=workspace.session:Redo();if ok then pane:Render() else pane:Message(problem) end end,'redo')
+    -- Undo and Redo share the Read-Only pill's place at the start of the
+    -- second row (a Built In has nothing to undo): two icon buttons that
+    -- together are as wide as the pill, so nothing moves between the two.
+    for _,control in ipairs({pane.undo,pane.redo}) do
+        control:SetText('');control:SetSize((KIND_WIDTH-4)/2,20)
+        control.icon:ClearAllPoints();control.icon:SetPoint('CENTER',0,0)
+    end
     pane.switchButton=addon:CreateWorkbenchButton(pane.frame,'',300);pane.switch=pane.switchButton
     pane.switchText=pane.switchButton:GetFontString();pane.switchText:ClearAllPoints();pane.switchText:SetPoint('TOPLEFT',6,-4);pane.switchText:SetWordWrap(true);pane.switchText:SetJustifyH('LEFT')
     pane.switchLabel=addon:CreateWorkbenchButton(pane.frame,L['Switch condition'],180);addon:StyleWorkbenchHeader(pane.switchLabel:GetFontString());pane.switchLabel.art:SetAlpha(.1);addon:AlignWorkbenchTextLeft(pane.switchLabel,0)
@@ -349,7 +357,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     -- A Built In shows a blue Read-Only pill where Undo and Redo sit (it has
     -- nothing to undo). It is a label, not a button; its tooltip says where
     -- the pack loads. Duplicate makes an editable copy.
-    pane.readOnlyPill=addon:CreateWorkbenchPill(pane.frame,L['Read-Only'],78);pane.readOnlyPill:SetSelected(true)
+    pane.readOnlyPill=addon:CreateWorkbenchPill(pane.frame,L['Read-Only'],KIND_WIDTH);pane.readOnlyPill:SetSelected(true)
     pane.readOnlyPill:SetAccent(.357,.753,.922,.9);pane.readOnlyPill:GetFontString():SetTextColor(.357,.753,.922);pane.readOnlyPill:Hide()
     pane.switchBaseTooltip=pane.switch.tooltip
     -- What else bears on selection, kept off the page (vertical space is
@@ -610,8 +618,8 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         else self.specButton:Hide() end
         self.name:ClearAllPoints();self.name:SetPoint('TOPLEFT',frame,'TOPLEFT',x,-4)
         self.name:SetWidth(math.max(60,width-x-HEADER_GAP-self.info:GetWidth()-8-reserve))
-        -- Row 2 is three groups, kept whole: the kind (the Read-Only pill on
-        -- a Built In, Undo and Redo on your own), then ID with Priority, then
+        -- Row 2 is three groups, kept whole: the kind slot (the Read-Only pill on
+        -- a Built In; Undo and Redo, in the same space, on your own), then ID with Priority, then
         -- Enabled with Delete (and Reset to default). They run left to right
         -- in that order; a group that does not fit moves down to the next
         -- line, so nothing ever sits on another control. Enabled and Delete
@@ -631,7 +639,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
             for _,control in ipairs(self.tools) do control:Show();kind[#kind+1]=control end
         end
         for _,control in ipairs(self.tools) do if readOnly then control:Hide() end end
-        for index,control in ipairs(kind) do kindWidth=kindWidth+control:GetWidth()+(index>1 and 4 or 0) end
+        kindWidth=KIND_WIDTH -- one slot, whichever of the two shows
         local idLabelWidth=sized(self.identifierLabel);local priorityLabelWidth=sized(self.priorityLabel)
         local idWidth=idLabelWidth+4+self.identifier:GetWidth()
         local priorityWidth=priorityLabelWidth+4+18+2+self.priority:GetWidth()+2+18
