@@ -181,7 +181,7 @@ function addon:RunCPUProfileAction(action)
         if type(self.IsCPURuntimeCaptureRunning)=='function' and self:IsCPURuntimeCaptureRunning() then
             ok,reason=self:CancelCPURuntimeCapture()
         else ok,reason=self:CancelCPUProfile() end
-        message=ok and L['CPU capture cancelled.'] or failure(reason)
+        message=ok and L['CPU capture canceled.'] or failure(reason)
     elseif action=='runtime' then
         local reason
         if type(self.StartCPURuntimeCapture)=='function' then ok,reason=self:StartCPURuntimeCapture(10)

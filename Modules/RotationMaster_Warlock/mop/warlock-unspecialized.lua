@@ -13,12 +13,12 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local corrupted={type='DEBUFF',unit='target',spell=172,anyrank=true,owndebuff=true}
 local petless=all(negate(combat()),negate({type='PET'}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.warlock.unspecialized',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.warlock.unspecialized',revision=6,
  blocks={['mop.warlock.boundaries']=4},
  nameKey='Default.MoP.Warlock.Unspecialized.Name',descriptionKey='Default.MoP.Warlock.Unspecialized.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARLOCK'},
  tags={'dps','caster','ranged','leveling'},
- sources={{url='https://www.icy-veins.com/mists-of-pandaria-classic/affliction-warlock-leveling',title='Icy Veins: Affliction Warlock levelling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-06-10'},
+ sources={{url='https://www.icy-veins.com/mists-of-pandaria-classic/affliction-warlock-leveling',title='Icy Veins: Affliction Warlock leveling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-06-10'},
  {url='https://wago.tools/db2/SpellLevels?build=5.5.4.70531',title='wago.tools: MoP Classic 5.5.4 SpellLevels (level 1-9 kit)',reviewedAt='2026-10-23',revision='5.5.4.70531'}},
  body={priority=1,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
  cooldowns={

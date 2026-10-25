@@ -28,14 +28,14 @@ local boss={type='CLASSIFICATION',unit='target',value='worldboss'}
 local hidden={type='STEALTHED'}
 local worth=any(boss,lifetime('GREATERTHAN',8))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.subtlety',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.subtlety',revision=7,
  blocks={['mop.rogue.boundaries']=3,['mop.rogue.out-of-combat']=3,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1,['mop.rogue.subtlety-builders']=2},
  nameKey='Default.MoP.Rogue.Subtlety.Name',descriptionKey='Default.MoP.Rogue.Subtlety.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE'},
  tags={'subtlety','dps','melee','leveling','endgame','wowsims','wowhead','icy-veins'},
  sources={{url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/rogue/subtlety/apls/subtlety.apl.json',title='wowsims/mop: Subtlety Rogue APL',reviewedAt='2026-10-23',revision='ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9'},
  {url='https://www.wowhead.com/mop-classic/guide/classes/rogue/subtlety/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Subtlety Rogue rotation (MoP Classic, Phase 5)',reviewedAt='2026-10-23',revision='2026-06-29'},
- {url='https://www.icy-veins.com/mists-of-pandaria-classic/subtlety-rogue-leveling',title='Icy Veins: Subtlety Rogue levelling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-09-23'}},
+ {url='https://www.icy-veins.com/mists-of-pandaria-classic/subtlety-rogue-leveling',title='Icy Veins: Subtlety Rogue leveling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-09-23'}},
  body={priority=30,specs={261},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
  cooldowns={block('mop.rogue.upkeep','rogue-'),
   spell('rogue-subtlety-shadow-dance',51713,all(combat(),negate(hidden),energy('GREATERTHANOREQUALS',75),sliced,mine(1943),worth)),

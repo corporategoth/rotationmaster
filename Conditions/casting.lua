@@ -203,7 +203,7 @@ addon:RegisterCondition("CASTING_PROGRESS", {
 })
 
 addon:RegisterCondition("CAST_INTERRUPTABLE", {
-    description = L["Cast Interruptable"],
+    description = L["Cast Interruptible"],
     icon = addon.Artwork.condition["CAST_INTERRUPTABLE"],
     fields = { unit = "string" },
     valid = function(_, value)

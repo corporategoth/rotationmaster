@@ -284,8 +284,10 @@ addon:RegisterCondition("SPELL_HISTORY", {
     end,
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
-        return Functions.presentation.compareString(value.operator, string.format(L["%s was cast"], Functions.presentation.nullable(link, L["<spell>"])),
-                        string.format(L["%s casts ago"], Functions.presentation.nullable(value.value)))
+        local ago = addon.historyCastsAgo[value.operator]
+        return string.format(L["%s {{!was|was not}} cast %s"], Functions.presentation.nullable(link, L["<spell>"]),
+                        ago and string.format(ago, Functions.presentation.nullable(value.value))
+                        or Functions.presentation.nullable(nil, L["<operator>"]) .. " " .. string.format(L["%s casts ago"], Functions.presentation.nullable(value.value)))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -355,8 +357,10 @@ addon:RegisterCondition("SPELL_HISTORY_TIME", {
     end,
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
-        return Functions.presentation.compareString(value.operator, string.format(L["%s was cast"], Functions.presentation.nullable(link, L["<spell>"])),
-                string.format(L["%s seconds ago"], Functions.presentation.nullable(value.value)))
+        local ago = addon.historySecondsAgo[value.operator]
+        return string.format(L["%s {{!was|was not}} cast %s"], Functions.presentation.nullable(link, L["<spell>"]),
+                ago and string.format(ago, Functions.presentation.nullable(value.value))
+                or Functions.presentation.nullable(nil, L["<operator>"]) .. " " .. string.format(L["%s seconds ago"], Functions.presentation.nullable(value.value)))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")

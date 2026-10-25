@@ -25,13 +25,13 @@ local group={type='GROUP'}
 local unshielded=negate({type='DEBUFF',unit='target',spell=6788})
 local tierSix=any(enemies('GREATERTHANOREQUALS',3),hurt(3,.85))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.priest.discipline',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.priest.discipline',revision=6,
  blocks={['mop.priest.upkeep']=1,['mop.priest.healer-boundaries']=2,['mop.priest.healer-cooldowns']=1},
  nameKey='Default.MoP.Priest.Discipline.Name',descriptionKey='Default.MoP.Priest.Discipline.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PRIEST'},
  tags={'discipline','healer','group','leveling','endgame','icy-veins','warcraft-tavern','hekili'},
  sources={{url='https://www.icy-veins.com/mists-of-pandaria-classic/discipline-priest-pve-rotation-cooldowns-abilities',title='Icy Veins: Discipline Priest rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'},
- {url='https://www.icy-veins.com/mists-of-pandaria-classic/discipline-priest-leveling',title='Icy Veins: Discipline Priest levelling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'},
+ {url='https://www.icy-veins.com/mists-of-pandaria-classic/discipline-priest-leveling',title='Icy Veins: Discipline Priest leveling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'},
  {url='https://www.warcrafttavern.com/mop/guides/pve-discipline-priest-rotations-cooldowns/',title='Warcraft Tavern: Discipline Priest rotation (MoP Classic)',reviewedAt='2026-10-23'},
  {url='https://wowtbc.gg/mop/class-guides/discipline-priest/',title='wowtbc.gg: Discipline Priest (MoP Classic)',reviewedAt='2026-10-23'},
  {url='https://www.method.gg/mop-classic/discipline-priest-class-guide-mop-classic',title='Method: Discipline Priest guide (MoP Classic)',reviewedAt='2026-10-23'},

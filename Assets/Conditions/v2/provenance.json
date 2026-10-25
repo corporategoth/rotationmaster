@@ -427,7 +427,7 @@
     },
     {
       "module": "Conditions/casting.lua",
-      "description": "Cast Interruptable",
+      "description": "Cast Interruptible",
       "key": "CAST_INTERRUPTABLE",
       "kind": "condition",
       "name": "cast-interruptable",
@@ -573,7 +573,7 @@
     },
     {
       "module": "Conditions/channeling.lua",
-      "description": "Channel Interruptable",
+      "description": "Channel Interruptible",
       "key": "CHANNEL_INTERRUPTABLE",
       "kind": "condition",
       "name": "channel-interruptable",

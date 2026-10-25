@@ -90,7 +90,7 @@ e7aa82019d, 12.1.5.70529; `forever` ca8368f2f2, 1.60.1.70532; `classic`,
   `GetNextCastSpell(true)` every `assistedCombatIconUpdateRate` seconds and
   shows a flipbook frame on each Blizzard action button (or stance button)
   holding that spell. Options, Gameplay, Combat, Assisted Highlight
-  (`AdvancedOptions.lua`) is a plain `Settings.SetupCVarCheckbox`, greyed out
+  (`AdvancedOptions.lua`) is a plain `Settings.SetupCVarCheckbox`, grayed out
   unless `IsAvailable()`. `assistedCombatReduceHighlights` dims Blizzard's
   spell alerts for rotation spells; `assistedCombatHighlightRPE` marks the
   new-player tutorial turning it on.
@@ -193,7 +193,7 @@ attributed to RotationMaster after turning it on, fighting and turning it
 off; that the logout restore persists (the CVar is per character); and on
 Forever, what `IsAvailable()` answers.
 
-## Behaviour and cost
+## Behavior and cost
 
 - The condition is unavailable, not false, when the API is missing, the value
   cannot be read or Assisted Combat is unavailable for this character or spec.
@@ -281,7 +281,7 @@ Forever, what `IsAvailable()` answers.
   Retail and on Forever (Blizzard's list was for Midnight). Also that
   `UnitPower("player", Enum.PowerType.Runes)` counts ready runes.
 - The condition and step have not been tested on a live Retail client. The
-  tests use a modelled `C_AssistedCombat` built from the documentation.
+  tests use a modeled `C_AssistedCombat` built from the documentation.
   `tests/retail_combat_readiness.lua` models the secret cooldown times the
   same way.
 - The condition reuses the Spell Available icon until original artwork exists

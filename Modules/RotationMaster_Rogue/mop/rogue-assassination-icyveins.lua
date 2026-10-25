@@ -22,13 +22,13 @@ local sliced=own(5171)
 local boss={type='CLASSIFICATION',unit='target',value='worldboss'}
 local dying=all(points('GREATERTHANOREQUALS',2),lifetime('LESSTHAN',4))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.assassination.icyveins',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.assassination.icyveins',revision=7,
  blocks={['mop.rogue.boundaries']=3,['mop.rogue.assassination-opener']=3,['mop.rogue.out-of-combat']=3,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1},
  nameKey='Default.MoP.Rogue.Assassination.IcyVeins.Name',descriptionKey='Default.MoP.Rogue.Assassination.IcyVeins.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE'},
  tags={'assassination','dps','melee','leveling','endgame','icy-veins','method'},
  sources={{url='https://www.icy-veins.com/mists-of-pandaria-classic/assassination-rogue-pve-rotation-cooldowns-abilities',title='Icy Veins: Assassination Rogue rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2025-09-23'},
- {url='https://www.icy-veins.com/mists-of-pandaria-classic/assassination-rogue-leveling',title='Icy Veins: Assassination Rogue levelling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-09-23'},
+ {url='https://www.icy-veins.com/mists-of-pandaria-classic/assassination-rogue-leveling',title='Icy Veins: Assassination Rogue leveling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-09-23'},
  {url='https://www.method.gg/mop-classic/assassination-rogue-class-guide-mop-classic',title='Method: Assassination Rogue guide (MoP Classic)',reviewedAt='2026-10-23'}},
  body={priority=20,disabled=true,specs={259},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
  cooldowns={block('mop.rogue.upkeep','rogue-'),

@@ -23,7 +23,7 @@ local trick=buff(257622)
 local aimedCap={type='SPELL_CHARGES',spell=AIMED,operator='GREATERTHANOREQUALS',value=2}
 local hydra=all(precise,engaged(2),known(470945))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.marksmanship.guide',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.marksmanship.guide',revision=7,
  blocks={['retail.hunter.boundaries']=3,['retail.hunter.utility']=2,['retail.hunter.mark']=1},
  nameKey='Default.Retail.Hunter.MarksmanshipGuide.Name',descriptionKey='Default.Retail.Hunter.MarksmanshipGuide.Description',
  applicability={families={'retail'},actionContext='player',class='HUNTER'},

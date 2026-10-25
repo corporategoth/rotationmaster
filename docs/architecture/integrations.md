@@ -78,7 +78,7 @@ RM has always published a LibDataBroker data source (active rotation text, toolt
 
 | Candidate (TBC Anniversary install) | Decision |
 | --- | --- |
-| Details! (+ TinyThreat) | Not now. Rotation conditions do not need meter totals; Details' own data is built from the same combat log RM already reads. Design for later analytics: read completed-segment totals through Details' published `API.lua` after combat, never during polling, labelled as Details-sourced and never mixed with RM's own measurements. |
+| Details! (+ TinyThreat) | Not now. Rotation conditions do not need meter totals; Details' own data is built from the same combat log RM already reads. Design for later analytics: read completed-segment totals through Details' published `API.lua` after combat, never during polling, labeled as Details-sourced and never mixed with RM's own measurements. |
 | Threat meters (TinyThreat, ThreatClassic) | Not needed. They re-export native `UnitDetailedThreatSituation`; RM's THREAT/THREAT_COUNT already read the native API. |
 | Plater | Not needed. Plater renders the same native nameplates RM already counts (NAME_PLATE_UNIT_ADDED/REMOVED); it adds no enemy information. |
 | Method Raid Tools | Not now. Raid notes are free text authored per raid; there is no stable assignment contract RM could read safely. |

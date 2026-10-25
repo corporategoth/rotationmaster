@@ -25,7 +25,7 @@ local withering=buff(466991)
 -- Kill Command on Howl of the Pack Leader or Nature's Ally, or freely while Bestial Wrath is far off.
 local kill=any(buff(471878),buff(472324),buff(472325),buff(1276720),{type='SPELL_COOLDOWN',spell=WRATH,operator='GREATERTHAN',value=5})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.beastmastery.guide',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.beastmastery.guide',revision=7,
  blocks={['retail.hunter.boundaries']=3,['retail.hunter.utility']=2,['retail.hunter.mark']=1},
  nameKey='Default.Retail.Hunter.BeastMasteryGuide.Name',descriptionKey='Default.Retail.Hunter.BeastMasteryGuide.Description',
  applicability={families={'retail'},actionContext='player',class='HUNTER'},

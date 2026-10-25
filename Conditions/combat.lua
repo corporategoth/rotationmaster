@@ -312,8 +312,13 @@ addon:RegisterCondition("THREAT", {
         return observed >= value.threat - 1
     end,
     print = function(_, value)
-        return string.format(L["you {{!are|are not}} at least %s on %s"], Functions.presentation.nullable(addon.threat[value.threat], L["<threat>"]),
-        Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))
+        local predicate = addon.threatPredicates[value.threat]
+        if not predicate then
+            return string.format(L["you {{!are|are not}} at least %s on %s"], Functions.presentation.nullable(nil, L["<threat>"]),
+                Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))
+        end
+        local units = value.threat == 1 and addon.unitsPossessive or addon.units
+        return string.format(predicate, Functions.presentation.nullable(units[value.unit], L["<unit>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -341,8 +346,9 @@ addon:RegisterCondition("THREAT", {
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Threat"] .. color.RESET .. " - " ..
             "The amount of threat you have with " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ".  This " ..
-            "condition will not be successful if you have no threat whatsoever (ie. are not considered in combat " ..
-            "with that unit.)"))
+            "condition will not be successful if you have no threat whatsoever (that is, you are not considered in " ..
+            "combat with that unit).  It is successful at the chosen level or any level below it in this list: tanking " ..
+            "securely also counts as tanking, and tanking counts as having at least as much threat as the tank."))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["no threat risk"] .. color.RESET .. " - " ..
             "You are not in danger of taking threat away from whoever has threat.")))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["higher threat than tank"] .. color.RESET .. " - " ..
@@ -374,8 +380,8 @@ addon:RegisterCondition("THREAT_COUNT", {
     end,
     print = function(_, value)
         return Functions.presentation.compareString(value.operator,
-                        string.format(L["the number of enemies on which you are at least %s"],
-                        Functions.presentation.nullable(addon.threat[value.threat], L["<threat>"])),
+                        addon.threatCounts[value.threat] or string.format(L["the number of enemies on which you are at least %s"],
+                        Functions.presentation.nullable(nil, L["<threat>"])),
                         Functions.presentation.nullable(value.value))
     end,
     widget = function(parent, spec, value)
@@ -658,9 +664,11 @@ addon:RegisterCondition("COMBAT_HISTORY", {
         return false
     end,
     print = function(_, value)
-        return Functions.presentation.compareString(value.operator, string.format(Functions.presentation.playerize(value.unit, L["%s were %s"], L["%s was %s"]),
-                             Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]), Functions.presentation.nullable(addon.actions[value.action], L["<action>"])),
-                             string.format(L["%s actions ago"], Functions.presentation.nullable(value.value)))
+        local ago = addon.historyActionsAgo[value.operator]
+        return string.format(Functions.presentation.playerize(value.unit, L["%s {{!were|were not}} %s %s"], L["%s {{!was|was not}} %s %s"]),
+                             Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]), Functions.presentation.nullable(addon.actions[value.action], L["<action>"]),
+                             ago and string.format(ago, Functions.presentation.nullable(value.value))
+                             or Functions.presentation.nullable(nil, L["<operator>"]) .. " " .. string.format(L["%s actions ago"], Functions.presentation.nullable(value.value)))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -741,9 +749,11 @@ addon:RegisterCondition("COMBAT_HISTORY_TIME", {
         return false
     end,
     print = function(_, value)
-        return Functions.presentation.compareString(value.operator, string.format(Functions.presentation.playerize(value.unit, L["%s were %s"], L["%s was %s"]),
-            Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]), Functions.presentation.nullable(addon.actions[value.action], L["<action>"])),
-            string.format(L["%s seconds ago"], Functions.presentation.nullable(value.value)))
+        local ago = addon.historySecondsAgo[value.operator]
+        return string.format(Functions.presentation.playerize(value.unit, L["%s {{!were|were not}} %s %s"], L["%s {{!was|was not}} %s %s"]),
+            Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]), Functions.presentation.nullable(addon.actions[value.action], L["<action>"]),
+            ago and string.format(ago, Functions.presentation.nullable(value.value))
+            or Functions.presentation.nullable(nil, L["<operator>"]) .. " " .. string.format(L["%s seconds ago"], Functions.presentation.nullable(value.value)))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")

@@ -29,7 +29,7 @@ local worth=any(classified('worldboss'),classified('elite'),{type='TT_HEALTH',un
 -- Heroic Strike / Cleave dump: 60 rage in the window, 90 outside it (not in execute).
 local dump=any(all(smashed,rage('GREATERTHANOREQUALS',60)),all(target('GREATERTHANOREQUALS',.2),rage('GREATERTHANOREQUALS',90)))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.fury',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.fury',revision=7,
  blocks={['mop.warrior.boundaries']=4,['mop.warrior.gap']=1,['mop.warrior.dps-upkeep']=2},
  nameKey='Default.MoP.Warrior.Fury.Name',descriptionKey='Default.MoP.Warrior.Fury.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARRIOR'},
@@ -37,7 +37,7 @@ assert(addon:RegisterDefaultRotation({
  sources={{url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/warrior/fury/apls/default.apl.json',title='wowsims/mop: Fury Warrior APL',reviewedAt='2026-10-23',revision='ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9'},
  {url='https://wowtbc.gg/mop/class-guides/fury-warrior/',title='wowtbc.gg: Fury Warrior (MoP Classic)',reviewedAt='2026-10-23'},
  {url='https://www.warcrafttavern.com/mop/guides/pve-fury-warrior-dps-rotation-cooldowns/',title='Warcraft Tavern: Fury Warrior rotation (MoP)',reviewedAt='2026-10-23'},
- {url='https://www.icy-veins.com/mists-of-pandaria-classic/fury-warrior-leveling',title='Icy Veins: Fury Warrior levelling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'}},
+ {url='https://www.icy-veins.com/mists-of-pandaria-classic/fury-warrior-leveling',title='Icy Veins: Fury Warrior leveling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'}},
  body={priority=30,specs={72},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
  cooldowns={block('mop.warrior.dps-upkeep','warrior-'),
   spell('warrior-fury-berserker-rage',18499,all(combat(),any(negate({type='BUFF',unit='player',spell=12880}),all(smashed,charges('EQUALS',0),target('GREATERTHANOREQUALS',.2))))),

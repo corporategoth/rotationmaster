@@ -25,14 +25,14 @@ local unshielded=negate({type='DEBUFF',unit='target',spell=6788})
 local nochakra=all(negate(own(81208)),negate(own(81206)),negate(own(81209)))
 local aoe=hurt(3,.85)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.priest.holy',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.priest.holy',revision=6,
  blocks={['mop.priest.upkeep']=1,['mop.priest.healer-boundaries']=2,['mop.priest.healer-cooldowns']=1,['mop.priest.holy-damage']=2},
  nameKey='Default.MoP.Priest.Holy.Name',descriptionKey='Default.MoP.Priest.Holy.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PRIEST'},
  tags={'holy','healer','group','leveling','endgame','warcraft-tavern','icy-veins','hekili'},
  sources={{url='https://www.warcrafttavern.com/mop/guides/pve-holy-priest-rotations-cooldowns/',title='Warcraft Tavern: Holy Priest rotation (MoP Classic)',reviewedAt='2026-10-23'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/holy-priest-pve-rotation-cooldowns-abilities',title='Icy Veins: Holy Priest rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'},
- {url='https://www.icy-veins.com/mists-of-pandaria-classic/holy-priest-leveling',title='Icy Veins: Holy Priest levelling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'},
+ {url='https://www.icy-veins.com/mists-of-pandaria-classic/holy-priest-leveling',title='Icy Veins: Holy Priest leveling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'},
  {url='https://www.method.gg/mop-classic/holy-priest-class-guide-mop-classic',title='Method: Holy Priest guide (MoP Classic)',reviewedAt='2026-10-23'},
  {url='https://wowtbc.gg/mop/class-guides/holy-priest/',title='wowtbc.gg: Holy Priest (MoP Classic)',reviewedAt='2026-10-23'},
  {url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/PriestHoly.simc',title='Hekili (MoP fork): Holy Priest priority',reviewedAt='2026-10-23',revision='0750b5dd98005481baf828cce26149b9abca875b'}},

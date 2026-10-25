@@ -235,11 +235,11 @@ addon:RegisterCondition("TALENT",{
         if legacySlot(value) then return string.format(L["Historical talent slot %s (unavailable)"],value.value) end
         if traitShape(value) then
             local name=talent and talent.name or value.node and string.format(L["talent node %s"],tostring(value.node)) or L["<talent>"]
-            return Functions.presentation.compareString(value.operator,string.format(L["ranks in %s"],name),Functions.presentation.nullable(value.value))
+            return Functions.presentation.compareString(value.operator,string.format(L["the number of ranks in %s"],name),Functions.presentation.nullable(value.value))
         end
         if value.layout=="grid" then return string.format(L["you {{!are|are not}} talented in %s"],talent and talent.name or L["<talent>"]) end
         local tree=value.tree and platform:GetTalentTreeInfo(value.tree,group(spec))
-        return Functions.presentation.compareString(value.operator,string.format(L["talent points in %s (%s)"],
+        return Functions.presentation.compareString(value.operator,string.format(L["the number of talent points in %s (%s)"],
             talent and talent.name or L["<talent>"],tree and tree.name or L["<talent tree>"]),Functions.presentation.nullable(value.value))
     end,
     widget=function(parent,spec,value)

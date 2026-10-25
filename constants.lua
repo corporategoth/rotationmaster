@@ -38,6 +38,24 @@ addon.negatedOperators = {
     GREATERTHAN=L["is not greater than"], GREATERTHANOREQUALS=L["is not greater than or equal to"],
     EQUALS=L["is not equal to"], NOTEQUALS=L["is equal to"], DIVISIBLE=L["is not evenly divisible by"],
 }
+-- History conditions say when something happened ("was cast fewer than 3 casts
+-- ago"), so each operator has a whole phrase per unit of measure; NOT negates
+-- the history template's own verb ("was not cast").
+addon.historyCastsAgo = {
+    LESSTHAN=L["fewer than %s casts ago"], LESSTHANOREQUALS=L["at most %s casts ago"],
+    GREATERTHAN=L["more than %s casts ago"], GREATERTHANOREQUALS=L["at least %s casts ago"],
+    EQUALS=L["exactly %s casts ago"], NOTEQUALS=L["other than %s casts ago"], DIVISIBLE=L["a multiple of %s casts ago"],
+}
+addon.historyActionsAgo = {
+    LESSTHAN=L["fewer than %s actions ago"], LESSTHANOREQUALS=L["at most %s actions ago"],
+    GREATERTHAN=L["more than %s actions ago"], GREATERTHANOREQUALS=L["at least %s actions ago"],
+    EQUALS=L["exactly %s actions ago"], NOTEQUALS=L["other than %s actions ago"], DIVISIBLE=L["a multiple of %s actions ago"],
+}
+addon.historySecondsAgo = {
+    LESSTHAN=L["less than %s seconds ago"], LESSTHANOREQUALS=L["at most %s seconds ago"],
+    GREATERTHAN=L["more than %s seconds ago"], GREATERTHANOREQUALS=L["at least %s seconds ago"],
+    EQUALS=L["exactly %s seconds ago"], NOTEQUALS=L["other than %s seconds ago"], DIVISIBLE=L["a multiple of %s seconds ago"],
+}
 
 
 addon.units = {
@@ -251,6 +269,22 @@ addon.threat = {
     L["higher threat than tank"],
     L["tanking, at risk"],
     L["tanking, secure"],
+}
+-- What THREAT and THREAT_COUNT test at each level: the native threat status
+-- (0 lower than the tank, 1 higher than the tank, 2 tanking insecurely, 3
+-- tanking securely) is at least the level's own status, so level 1 is "on the
+-- threat table at all". %s is the unit (possessive for level 1).
+addon.threatPredicates = {
+    L["you {{!are|are not}} on %s threat table"],
+    L["you {{!have|do not have}} at least as much threat on %s as its tank"],
+    L["you {{!are|are not}} tanking %s"],
+    L["you {{!are|are not}} securely tanking %s"],
+}
+addon.threatCounts = {
+    L["the number of enemies whose threat table you are on"],
+    L["the number of enemies on which you have at least as much threat as their tank"],
+    L["the number of enemies you are tanking"],
+    L["the number of enemies you are securely tanking"],
 }
 
 addon.stats = {

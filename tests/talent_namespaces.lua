@@ -81,7 +81,7 @@ end)
 test('registered talent clones preserve explicit wording and keep failed observations unavailable under NOT',function()
     local _,a,state=fixture();registerCopies(a)
     local rank={tree=1,talent=1,operator='EQUALS',value=2};local points={tree=2,operator='GREATERTHAN',value=10}
-    local summaries={TALENT='talent points in Convection (Tree 1) is equal to 2',TALENT_TREE_POINTS='the number of points spent in Tree 2 is greater than 10',PRIMARY_TALENT_TREE='your primary talent tree is Tree 2'}
+    local summaries={TALENT='the number of talent points in Convection (Tree 1) is equal to 2',TALENT_TREE_POINTS='the number of points spent in Tree 2 is greater than 10',PRIMARY_TALENT_TREE='your primary talent tree is Tree 2'}
     for tag,value in pairs({TALENT=rank,TALENT_TREE_POINTS=points,PRIMARY_TALENT_TREE={tree=2}}) do
         assert(a:printCondition(node(a,value,tag),0)==summaries[tag],'baseline wording changed: '..tag)
         sameOutcome(a,tag,value)

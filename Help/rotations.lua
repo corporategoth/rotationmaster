@@ -9,7 +9,7 @@ local CreateText, CreatePictureText, Indent, Gap =
 
 local function help_top_buttons(group, singular, plural)
     group:AddChild(CreateText(color.BLIZ_YELLOW .. NAME .. color.RESET .. " - " ..
-            "This field is activated by the checkbox immediately preceeding it.  This field is aesthetic only " ..
+            "This field is activated by the checkbox immediately preceding it.  This field is aesthetic only " ..
             "and allows you to identify this " .. singular .. " in the list of " .. plural .. ".  If the checkbox " ..
             "is not set the " .. singular .. " name will be set to the name of the spell or item set or first item " ..
             "in a custom item set automatically, and will change automatically as they do."))
@@ -103,12 +103,12 @@ local function help_action_group(group, singular)
             "The type of action to highlight on your action bars."))
 
     group:AddChild(Indent(40, CreateText(color.GREEN .. L["Spell"] .. color.RESET .. " - " ..
-            "This will limit the avalable options to only spells you can cast (ie. what is in your spell book) " ..
-            "for your specialization.  Often spells you crrently can not cast (eg. those for another a different " ..
-            "specialization, or that require talnts) are hidden.  This is a restriction imposed by the game.")))
+            "This will limit the available options to only spells you can cast (ie. what is in your spell book) " ..
+            "for your specialization.  Often spells you currently cannot cast (eg. those for a different " ..
+            "specialization, or that require talents) are hidden.  This is a restriction imposed by the game.")))
     group:AddChild(Indent(40, CreateText(color.GREEN .. L["Pet Spell"] .. color.RESET .. " - " ..
-            "This will limit the avalable options to only spells your pets cast (ie. what is in your pet spell book). " ..
-            "Often spells you crrently can not cast (eg. those for a different different pet than the one you " ..
+            "This will limit the available options to only spells your pets cast (ie. what is in your pet spell book). " ..
+            "Often spells you currently cannot cast (eg. those for a different pet than the one you " ..
             "have summoned) are hidden.  This is a restriction imposed by the game.")))
     group:AddChild(Indent(40, CreateText(color.GREEN .. L["Any Spell"] .. color.RESET .. " - " ..
             L["Actions automatically require a learned spell or carried item, usable resources, cooldown readiness and valid range. Conditions can additionally test other actions."])))
@@ -138,22 +138,22 @@ local function help_action_group(group, singular)
     group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Item Set"] .. color.RESET .. " - " ..
             "This is a list of items to look for on your action bars.  This list is ordered, the top found item " ..
             "in the list that you are carrying or wearing is what will be looked for on your action bars.  NOTE: " ..
-            "this will NOT highlight the first one in the list that is on your action bars, so if you are carring " ..
+            "this will NOT highlight the first one in the list that is on your action bars, so if you are carrying " ..
             "something higher on the list in your bags, but have not put it on your action bars, the item that " ..
             "is on your action bars (but lower down the list) will NOT be highlighted."))
     group:AddChild(CreateText("You can choose from either a pre-defined Item Set, by picking it by name from the " ..
             "drop down menu.  You can edit these using the " .. color.BLUE .. L["Item Sets"] .. color.RESET ..
             "configuration menu.  Any item set in " .. color.CYAN .. "cyan" .. color.RESET .. " is a global " ..
             "item set available to all your characters, otherwise they are available to this character only.  " ..
-            "If you do not want to setup a reusable item set, you can select " .. color.GREEN .. L["Custom"] ..
+            "If you do not want to set up a reusable item set, you can select " .. color.GREEN .. L["Custom"] ..
             color.RESET .. " to specify an ad-hoc item set."))
 
     group:AddChild(CreatePictureText(
             "Interface\\FriendsFrame\\UI-FriendsList-Large-Up", 24, 24,
             color.BLIZ_YELLOW .. EDIT .. color.RESET .. " - " ..
             "Edit the contents of the item set.  If you have selected a " ..
-            "pre-defind item set, you will be editing that item set, which may effect other usages of that " ..
-            "item set (including on your other characters if it is a global item set.  An item set must have " ..
+            "pre-defined item set, you will be editing that item set, which may affect other usages of that " ..
+            "item set (including on your other characters if it is a global item set).  An item set must have " ..
             "at least one item in it for this " .. singular .. " to be considered valid."))
 
 end
@@ -164,7 +164,7 @@ local function help_conditions(group, singular)
             "not.  If this condition fails, it will be skipped.  If you have live updating enabled in the " ..
             "primary Rotation Master settings, you will see either " .. color.GREEN .. L["Currently satisfied"] ..
             color.RESET .. " or " .. color.RED .. L["Not currently satisfied"] .. color.RESET .. " after the " ..
-            "human readable version of this condition for any non-disabed condition.  Any disabled condition " ..
+            "human readable version of this condition for any non-disabled condition.  Any disabled condition " ..
             "will instead show " .. color.RED .. L["Disabled"] .. color.RESET .. "."))
 
     group:AddChild(Indent(40, CreatePictureText(
@@ -203,7 +203,7 @@ function addon.layout_cooldown_help(frame)
     group:AddChild(CreateText(
         "Cooldowns are used to highlight spells or items that can be activated at any time during your " ..
         "rotation, but are not necessarily part of it.  This is ideal for things such as spells with " ..
-        "long cooldowns that should be activated only at crutial parts of a fight, or mana/health potions " ..
+        "long cooldowns that should be activated only at crucial parts of a fight, or mana/health potions " ..
         "that should be used when you are critically low. Unlike rotation spells, the order of cooldowns " ..
         "makes no difference.  Any amount of your cooldowns (including zero or all) can be active at " ..
         "once."))
@@ -227,7 +227,7 @@ function addon.layout_cooldown_help(frame)
     group:AddChild(Indent(40, CreateText(color.GREEN .. L["None"] .. color.RESET .. " - " ..
             "Do not announce cooldowns at all.")))
     group:AddChild(Indent(40, CreateText(color.GREEN .. L["Raid or Party"] .. color.RESET .. " - " ..
-            "Announce to all memebers of your raid or party (detected automatically).")))
+            "Announce to all members of your raid or party (detected automatically).")))
     group:AddChild(Indent(40, CreateText(color.GREEN .. L["Party Only"] .. color.RESET .. " - " ..
             "Announce to all party only, even if you are in a raid.")))
     group:AddChild(Indent(40, CreateText(color.GREEN .. L["Raid Warning"] .. color.RESET .. " - " ..
@@ -267,7 +267,7 @@ function addon.layout_rotation_help(frame)
     group:AddChild(Gap())
     group:AddChild(CreateText(L["Every rotation has an identifier (ID), shown beside its priority: type /rm set <id> to choose it (any case), /rm set auto to go back to automatic switching, and /rm list to see every identifier. A Built In's identifier is fixed; yours is made from its name until you change it."]))
     group:AddChild(Gap())
-    group:AddChild(CreateText(L["In the list, a red border means the rotation cannot be selected (the tooltip names why), grey means it is switched off, and an amber bar means its switch condition can match at the same time as another rotation (yours or Built In), so only priority decides between them; a wider bar means they also have the same priority and the name decides. /rm why lists the order and what automatic switching would choose now."]))
+    group:AddChild(CreateText(L["In the list, a red border means the rotation cannot be selected (the tooltip names why), gray means it is switched off, and an amber bar means its switch condition can match at the same time as another rotation (yours or Built In), so only priority decides between them; a wider bar means they also have the same priority and the name decides. /rm why lists the order and what automatic switching would choose now."]))
 
     group:AddChild(Gap())
     group:AddChild(CreateText("Fields", "Interface\\AddOns\\" .. addon_name .. "\\Fonts\\Inconsolata-Bold.ttf", 16))

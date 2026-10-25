@@ -203,7 +203,7 @@ addon:RegisterCondition("CHANNELING_PROGRESS", {
 })
 
 addon:RegisterCondition("CHANNEL_INTERRUPTABLE", {
-    description = L["Channel Interruptable"],
+    description = L["Channel Interruptible"],
     icon = addon.Artwork.condition["CHANNEL_INTERRUPTABLE"],
     fields = { unit = "string" },
     valid = function(_, value)

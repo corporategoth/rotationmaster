@@ -22,14 +22,14 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local flame={type='DEBUFF',unit='target',spell=8050,owndebuff=true}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.enhancement',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.enhancement',revision=7,
  blocks={['mop.shaman.manual-target']=2,['mop.shaman.lightning-shield']=1,['mop.shaman.group']=1,['mop.shaman.fire-totems']=1,
   ['mop.shaman.enhancement-upkeep']=2,['mop.shaman.enhancement-aoe']=1},
  nameKey='Default.MoP.Shaman.Enhancement.Name',descriptionKey='Default.MoP.Shaman.Enhancement.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='SHAMAN'},
  tags={'enhancement','dps','melee','leveling','endgame','wowhead','warcraft-tavern'},
  sources={{url='https://www.wowhead.com/mop-classic/guide/classes/shaman/enhancement/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Enhancement Shaman rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2026-06-29'},
- {url='https://www.wowhead.com/mop-classic/guide/classes/shaman/enhancement/dps-leveling-talent-builds-tips',title='Wowhead: Enhancement Shaman levelling (MoP Classic)',reviewedAt='2026-10-23',revision='2026-06-29'},
+ {url='https://www.wowhead.com/mop-classic/guide/classes/shaman/enhancement/dps-leveling-talent-builds-tips',title='Wowhead: Enhancement Shaman leveling (MoP Classic)',reviewedAt='2026-10-23',revision='2026-06-29'},
  {url='https://www.warcrafttavern.com/mop/guides/pve-enhancement-shaman-rotation-cooldowns/',title='Warcraft Tavern: Enhancement Shaman rotation (MoP)',reviewedAt='2026-10-23'},
  {url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/ShamanEnhancement.simc',title='Hekili (MoP fork): Enhancement Shaman priority',reviewedAt='2026-10-23',revision='0750b5dd98005481baf828cce26149b9abca875b'}},
  body={priority=30,specs={263},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},

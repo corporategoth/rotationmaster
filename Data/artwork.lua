@@ -33,7 +33,7 @@ artwork.icons[#artwork.icons+1]={texture=artwork.condition["CASTING_REMAIN"],nam
 artwork.condition["CASTING_SPELL"]=root.."Assets\\Conditions\\v2\\casting-spell-r2"
 artwork.icons[#artwork.icons+1]={texture=artwork.condition["CASTING_SPELL"],name=L["Specific Spell Casting"]}
 artwork.condition["CAST_INTERRUPTABLE"]=root.."Assets\\Conditions\\v2\\cast-interruptable"
-artwork.icons[#artwork.icons+1]={texture=artwork.condition["CAST_INTERRUPTABLE"],name=L["Cast Interruptable"]}
+artwork.icons[#artwork.icons+1]={texture=artwork.condition["CAST_INTERRUPTABLE"],name=L["Cast Interruptible"]}
 artwork.condition["CHANNELING"]=root.."Assets\\Conditions\\v2\\channeling"
 artwork.icons[#artwork.icons+1]={texture=artwork.condition["CHANNELING"],name=L["Channeling"]}
 artwork.condition["CHANNELING_REMAIN"]=root.."Assets\\Conditions\\v2\\channeling-remain-r2"
@@ -41,7 +41,7 @@ artwork.icons[#artwork.icons+1]={texture=artwork.condition["CHANNELING_REMAIN"],
 artwork.condition["CHANNELING_SPELL"]=root.."Assets\\Conditions\\v2\\channeling-spell-r2"
 artwork.icons[#artwork.icons+1]={texture=artwork.condition["CHANNELING_SPELL"],name=L["Specific Spell Channeling"]}
 artwork.condition["CHANNEL_INTERRUPTABLE"]=root.."Assets\\Conditions\\v2\\channel-interruptable"
-artwork.icons[#artwork.icons+1]={texture=artwork.condition["CHANNEL_INTERRUPTABLE"],name=L["Channel Interruptable"]}
+artwork.icons[#artwork.icons+1]={texture=artwork.condition["CHANNEL_INTERRUPTABLE"],name=L["Channel Interruptible"]}
 artwork.condition["CLASS"]=root.."Assets\\Conditions\\v2\\class"
 artwork.icons[#artwork.icons+1]={texture=artwork.condition["CLASS"],name=L["Class"]}
 artwork.condition["CLASSIFICATION"]=root.."Assets\\Conditions\\v2\\classification"
