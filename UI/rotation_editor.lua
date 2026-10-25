@@ -158,7 +158,8 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         if self.liveTimer then self:RefreshLiveStatus() else self.switchLiveBar:SetState(nil) end
         for _,control in ipairs({self.compare,self.clone}) do if self.workspace.pending then control:Disable() else control:Enable() end end
         self.clone:SetText(self.workspace.readOnly and L['Clone to edit'] or L['Duplicate'])
-        if self.workspace.readOnly or workspace.fallback or self.workspace.pending then self.delete:Disable() else self.delete:Enable() end
+        if self.workspace.readOnly or workspace.fallback then self.delete:Disable() else self.delete:Enable() end
+        self.delete.tooltip=self.workspace.pending and L['Discard this new rotation'] or L['Delete rotation']
         -- A Built In's switch is read live (never the workspace's cached copy)
         -- and apart from validity, so the pill shows exactly what a click flips.
         local builtinOn=self.workspace.readOnly and builtinSwitch(self.workspace)
@@ -376,27 +377,75 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     pane.canvas=self:CreateRotationCanvas(pane.frame,pane)
     addon:InstallRotationView(pane)
     pane.hint=text(pane.frame);pane.hint:SetPoint('BOTTOMLEFT',8,12);pane.hint:SetText(L['Click condition text on any card to view or edit its conditions.'])
-    pane.apply=self:CreateWorkbenchButton(pane.frame,L['Apply'],86);pane.apply:SetPoint('BOTTOMRIGHT',-100,8)
-    pane.discard=self:CreateWorkbenchButton(pane.frame,L['Discard'],86);pane.discard:SetPoint('BOTTOMRIGHT',-8,8)
-    -- Bulk actions on the selected cards, left of Apply. Each is one command,
-    -- so one Undo reverses it.
-    local bar=CreateFrame('Frame',nil,pane.frame);pane.selectionBar=bar;bar:SetSize(196,22);bar:SetPoint('BOTTOMRIGHT',-194,8);bar:Hide()
-    bar.label=text(bar);bar.label:SetPoint('LEFT',0,0);bar.label:SetWidth(84);bar.label:SetJustifyH('RIGHT')
-    bar.buttons={}
-    for i,entry in ipairs({{'duplicate','copy',L['Duplicate selected cards']},{'enable','check',L['Enable selected cards']},{'disable','minus',L['Disable selected cards']},{'remove','trash',L['Delete selected cards']},{'clear','close',L['Clear selection']}}) do
-        local button=self:CreateWorkbenchIconButton(bar,entry[2],entry[3]);button:SetSize(20,20);button:SetPoint('LEFT',88+(i-1)*22,0);bar.buttons[entry[1]]=button
-        if entry[1]=='remove' then button.icon:SetVertexColor(1,.3,.3,1) end
-        addon:SetUIScript(button,'OnClick',function() if pane.active then pane:BulkCommand(entry[1]) end end)
+    -- The footer is one row of controls, each anchored to its neighbor so
+    -- none can sit on another: Discard at the right edge, Apply, View Changes
+    -- (draft_change_controls.lua) and, while cards are selected, their
+    -- actions; the hint or status text takes whatever is left. Buttons are as
+    -- wide as their text, so a long translation pushes its neighbors over.
+    pane.apply=self:CreateWorkbenchButton(pane.frame,L['Apply'],86)
+    pane.discard=self:CreateWorkbenchButton(pane.frame,L['Discard'],86)
+    -- Bulk actions on the selected cards, left of View Changes. Each is one
+    -- command, so one Undo reverses it. A Built In cannot be edited, so it
+    -- gets only the count and Clear.
+    local bar=CreateFrame('Frame',nil,pane.frame);pane.selectionBar=bar;bar:SetSize(196,22);bar:Hide()
+    bar.label=text(bar);bar.label:SetJustifyH('LEFT');bar.label:SetHeight(22)
+    bar.buttons={};bar.order={}
+    for _,entry in ipairs({{'duplicate','copy',L['Duplicate selected cards'],true},{'enable','check',L['Enable selected cards'],true},{'disable','minus',L['Disable selected cards'],true},{'remove','trash',L['Delete selected cards'],true},{'clear','close',L['Clear selection']}}) do
+        local key=entry[1]
+        local button=self:CreateWorkbenchIconButton(bar,entry[2],entry[3]);button:SetSize(20,20);bar.buttons[key]=button;bar.order[#bar.order+1]=key
+        button.editing=entry[4]==true
+        if key=='remove' then button.icon:SetVertexColor(1,.3,.3,1) end
+        addon:SetUIScript(button,'OnClick',function() if pane.active then pane:BulkCommand(key) end end)
+    end
+    local FOOTER_GAP,FOOTER_PAD=6,16
+    local function fitButton(button,minimum)
+        local label=button:GetFontString();local width=math.max(minimum,math.ceil(label and label:GetStringWidth() or 0)+FOOTER_PAD)
+        button:SetWidth(width);return width
+    end
+    -- Places every footer control for the current size and selection. The
+    -- selection bar sits in the row when the hint keeps a readable width,
+    -- else on a row of its own above it (footerStacked).
+    function pane:LayoutFooter()
+        local frame=self.frame;local width=frame:GetWidth()
+        local discardWidth=fitButton(self.discard,70);local applyWidth=fitButton(self.apply,70)
+        local viewChanges=self.viewChanges;local viewWidth=viewChanges and fitButton(viewChanges,90) or 0
+        self.discard:ClearAllPoints();self.discard:SetPoint('BOTTOMRIGHT',frame,'BOTTOMRIGHT',-8,8)
+        self.apply:ClearAllPoints();self.apply:SetPoint('RIGHT',self.discard,'LEFT',-FOOTER_GAP,0)
+        if viewChanges then viewChanges:ClearAllPoints();viewChanges:SetPoint('RIGHT',self.apply,'LEFT',-FOOTER_GAP,0) end
+        local lead=viewChanges or self.apply
+        local barWidth=0;local stacked=false
+        if bar:IsShown() then
+            local editable=not self.workspace.readOnly
+            local labelWidth=math.max(20,math.ceil(bar.label:GetStringWidth())+4);local previous
+            bar.label:ClearAllPoints();bar.label:SetPoint('LEFT',bar,'LEFT',0,0);bar.label:SetWidth(labelWidth)
+            local x=labelWidth+4
+            for _,key in ipairs(bar.order) do
+                local button=bar.buttons[key]
+                if button.editing and not editable then button:Hide()
+                else
+                    button:Show();button:ClearAllPoints();button:SetPoint('LEFT',bar,'LEFT',x,0);x=x+22
+                    button:Enable()
+                end
+            end
+            barWidth=x-2;bar:SetSize(barWidth,22)
+            local row=8+discardWidth+applyWidth+viewWidth+FOOTER_GAP*2+12
+            stacked=8+80+barWidth+row>width
+            bar:ClearAllPoints()
+            if stacked then bar:SetPoint('BOTTOMRIGHT',frame,'BOTTOMRIGHT',-8,36) else bar:SetPoint('RIGHT',lead,'LEFT',-12,0) end
+        end
+        -- Hint and status share the left of the row, up to the nearest control.
+        local right=bar:IsShown() and not stacked and bar or lead
+        for _,label in ipairs({self.status,self.hint}) do
+            label:ClearAllPoints();label:SetPoint('BOTTOMLEFT',frame,'BOTTOMLEFT',8,12);label:SetPoint('RIGHT',right,'LEFT',-10,0)
+        end
+        local changed=self.footerStacked~=stacked;self.footerStacked=stacked
+        return changed
     end
     function pane:SelectionChanged()
-        local count=#self.canvas:SelectedIds(false);local width=self.frame:GetWidth()
-        if count==0 or not self.active then bar:Hide() else
-            bar.label:SetText(string.format(L['%d selected'],count));bar:Show()
-            local editable=not self.workspace.readOnly
-            for key,button in pairs(bar.buttons) do if key=='clear' or editable then button:Enable() else button:Disable() end end
-        end
-        local reserve=bar:IsShown() and 200 or 0
-        self.status:SetWidth(math.max(1,width-330-reserve));self.hint:SetWidth(math.max(1,width-330-reserve))
+        local count=#self.canvas:SelectedIds(false)
+        if count==0 or not self.active then bar:Hide() else bar.label:SetText(string.format(L['%d selected'],count));bar:Show() end
+        -- Only a change between the row and the stacked placement moves the canvas.
+        if self.ready and self:LayoutFooter() then self:Resized() end
     end
     function pane:BulkCommand(kind)
         if not self.active then return end
@@ -578,7 +627,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         self.switch:Show()
         local top=self:LayoutViewControls(switchTop+22+math.min(72,switchHeight)+18,width)
         self.canvas.frame:ClearAllPoints();self.canvas.frame:SetPoint('TOPLEFT',8,-top)
-        self.canvas.frame:SetSize(math.max(1,width-40),math.max(1,height-top-48));self.canvas:LayoutScrollBar();local barReserve=self.selectionBar and self.selectionBar:IsShown() and 200 or 0;self.status:SetWidth(math.max(1,width-330-barReserve));self.hint:SetWidth(math.max(1,width-330-barReserve));if (self.status:GetText() or '')=='' then self.hint:Show() else self.hint:Hide() end
+        self:LayoutFooter();self.canvas.frame:SetSize(math.max(1,width-40),math.max(1,height-top-48-(self.footerStacked and 28 or 0)));self.canvas:LayoutScrollBar();if (self.status:GetText() or '')=='' then self.hint:Show() else self.hint:Hide() end
     end
     function pane:Layout() self:LayoutGeometry();self:Render() end
     function pane:SetWidth(value) self.frame:SetWidth(value) end
@@ -598,6 +647,8 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         if self.active then self:Release() end
         workspace=selected;spec=nextSpec;id=selected.id;onSelect=nextSelect;self.workspace=workspace
         workspace.uiView=workspace.uiView or {collapsed={},expanded={},detailsHeights={}};self.view=workspace.uiView
+        -- Opening a rotation never starts with cards selected (no yellow box, no selection bar).
+        self.view.selection={};self.canvas.anchor=nil;self.selectionBar:Hide()
         local preferred=addon.db.profile.rotation_view=='list' and 'list' or 'diagram'
         if self.view.defaultLayout~=preferred then self.view.layout=preferred;self.view.defaultLayout=preferred end
         self.nameDirty=false;self.descriptionDirty=false;self.metadataDirty=false;self.tagsDirty=false;self.priorityDirty=false;self.identifierDirty=false;self.identifierProblem=nil;self.identifierEdited=false;self.scopeDirty=false;self.scopeDraft=nil;self.metadataDraft=nil;self.deleted=false;self.active=true;self.generation=(self.generation or 0)+1
@@ -717,6 +768,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         addon:SetUIScript(self.apply,'OnClick',function() if alive() then self:Apply() end end)
         addon:SetUIScript(self.discard,'OnClick',function()
             if not alive() then return end
+            if self:IsNewRotation() then self:DiscardNew();return end
             local ok,reason=workspace:Discard();if ok then self.metadataWindow:Close(true); self.nameDirty=false;self.descriptionDirty=false;self.metadataDirty=false;self.tagsDirty=false;self.priorityDirty=false;self.identifierDirty=false;self.identifierProblem=nil;self.identifierEdited=false;self.scopeDirty=false;self.scopeDraft=nil;self:ClearPendingFields();self:Render() else self:Message(reason) end
         end)
         if workspace.readOnly then self.apply:Disable();self.discard:Disable() else self.apply:Enable();self.discard:Enable() end

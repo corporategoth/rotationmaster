@@ -83,6 +83,15 @@
       "name": "time",
       "prompt": "Use case: stylized-concept. Asset type: ORIGINAL transparent raster fantasy game condition icon for RotationMaster addon. Primary request: a chunky bronze hourglass with broad blue glass bulbs and bright golden falling sand, no tiny engraving. Style/medium: richly hand-painted classic high-fantasy MMO inventory/spell art, original design rather than copying any existing game icon. Chunky beveled forms, deep ink-dark shadows, luminous saturated highlights, painterly metal/leather texture, clean silhouette. Composition: one centered emblem filling 80 percent of square canvas, generous transparent margin, completely isolated cutout. Readable at 20 to 32 px: one bold semantic motif, very few interior details, strong value separation. True transparent background, no painted square backdrop, no frame, no plate, no vignette, no ground plane, no drop shadow outside silhouette. No letters, numbers, text, labels, watermark, logos.",
       "generated_path": "/home/prez/.codex/generated_images/01a151f9-a028-7492-9346-ffe0391a9e6f/exec-f7d19234-19db-414f-8ff9-6efdb3baeb01.png"
+    },
+    {
+      "name": "stop",
+      "prompt": "Use case: stylized-concept. Asset type: ORIGINAL transparent raster fantasy game Stop rotation-step icon for RotationMaster addon. Primary request: a bold frontal octagonal stop-sign emblem made of worn deep crimson red enamel with a thick warm gold beveled rim; a single large pale gold raised open palm embossed on its face, four upright fingers and one clearly separated thumb, a simple broad palm in a firm halt gesture. The red octagon is the dominant silhouette, with flat horizontal top and bottom and four clipped corners, no pole or handle. The palm is a metal relief symbol on the plaque, not a realistic disembodied hand, not a spellcasting glove. Style/medium: richly hand-painted classic high-fantasy MMO inventory/spell art, entirely original design, no Blizzard art or copied game assets. Chunky beveled forms, deep ink-dark shadows, luminous saturated highlights, painterly worn enamel and hammered gold texture, clean silhouette; match the family's warm gold metal, crimson accents and restrained surface detail. Composition: one centered emblem filling about 85 percent of a square 1254 by 1254 RGBA canvas, generous even transparent margin, completely isolated cutout. Readable at 20 to 24 px on a dark card: one bold octagon, broad red face, high-contrast large gold palm, very few interior details, strong value separation. True transparent background, no painted square backdrop, no surrounding frame, no vignette, no ground plane, no drop shadow outside silhouette. No axes, swords, fireball, flame, magic aura, extra objects, letters, numbers, text, labels, watermark or logos.",
+      "tool": "Built-in image_gen.imagegen",
+      "transparent_background": true,
+      "generation_date": "2026-10-25",
+      "source_path": "Assets/Conditions/source/stop.png",
+      "generated_path": "/home/prez/.codex/generated_images/01a1721e-9c0d-7a11-8989-ab639964de7c/exec-3be01652-30fc-425b-9036-3381d75622db.png"
     }
   ]
 }

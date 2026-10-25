@@ -148,6 +148,9 @@ local function create(parent)
     function browser:BindRow(control,entry,index)
         local lease={};local serial,revision,spec,profile=self.serial,self.resultRevision,self.spec,self.profile
         local navigation=self.navigationRevision;local key=entry.key
+        -- A row selects in its own namespace: every specialization's Default is
+        -- listed under "All specializations", each in the one it belongs to.
+        local target=entry.spec~=nil and entry.spec or spec
         control.browserLease=lease;control.browserEntry=entry;control.browserIndex=index
         control:ClearAllPoints();control:SetPoint('TOPLEFT',child,'TOPLEFT',0,-(index-1)*48);control:SetSize(child:GetWidth(),46)
         control.nameLabel:SetWidth(math.max(32,child:GetWidth()-12));control.statusLabel:SetWidth(math.max(32,child:GetWidth()-12));control.nameLabel:SetText(entry.name)
@@ -155,6 +158,7 @@ local function create(parent)
         local status=entry.readOnly and L['Built In · read-only'] or entry.fallback and L['Fallback rotation'] or L['Custom rotation']
         if entry.scope then status=status..' · '..(entry.scope=='character' and L['This character'] or L['Class']) end
         if self.specValue=='all' and type(entry.specs)=='table' and #entry.specs>0 then status=status..' · '..addon:DescribeRotationSpecs(entry.specs) end
+        if self.specValue=='all' and entry.fallback and self.hasSpecFilter then status=status..' · '..addon:DescribeRotationSpec(entry.spec) end
         -- Who switched a Built In off is said apart from whether it can run here.
         if entry.readOnly and entry.builtinState=='user-disabled' then status=status..' — '..L['Disabled by you']
         elseif entry.readOnly and entry.builtinState=='shipped-disabled' then status=status..' — '..L['Ships disabled']
@@ -185,7 +189,7 @@ local function create(parent)
         if blockedText then lines[#lines+1]=blockedText end
         if disabledText then lines[#lines+1]=disabledText end
         if overlapText then lines[#lines+1]=overlapText end
-        local identifier=self.identifiers and self.identifiers[key]
+        local identifier=self.identifiers and self.identifiers[key];if entry.fallback and entry.spec~=nil and entry.spec~=addon.currentSpec then identifier=nil end
         if identifier then lines[#lines+1]=string.format(L['Identifier: %s (/rm set %s)'],identifier,identifier) end
         if not entry.fallback then lines[#lines+1]=L['Higher numbers are tried first; equal priorities go by name. Your rotations and Built Ins compete on priority alone.'] end
         control.tooltip=#lines>0 and table.concat(lines,'\n\n') or nil
@@ -207,7 +211,7 @@ local function create(parent)
             end)
             button:Show()
         elseif control.enableButton then addon:SetUIScript(control.enableButton,'OnClick',nil);control.enableButton:Hide() end
-        addon:SetUIScript(control,'OnClick',function() if requestValid() and browser.resultRevision==revision and control.browserLease==lease then browser:SelectRotation(spec,key,false,requestValid) end end);control:Show()
+        addon:SetUIScript(control,'OnClick',function() if requestValid() and browser.resultRevision==revision and control.browserLease==lease then browser:SelectRotation(target,key,false,requestValid) end end);control:Show()
     end
     function browser:RefreshViewport()
         if not self.active or self.profile~=addon.db.profile or self.rebuilding or self.refreshing or not self.rows then return end
@@ -243,10 +247,24 @@ local function create(parent)
         local all,state=addon:ListRotationHeaders(self.spec)
         local reason=not all and state or nil;self.rosterStamp=all and state or nil
         all=all or {};self.loadError=reason
+        -- Each specialization has its own fallback (Default), stored under its
+        -- key; every other rotation is shared. "All specializations" lists
+        -- every one's Default beside the shared rotations.
+        local all_specs=self.specValue=='all' and #(self.specKeys or {})>1
+        self.specOrder={};for index,key in ipairs(self.specKeys or {}) do self.specOrder[key]=index end
+        for _,entry in ipairs(all) do entry.spec=self.spec end
+        if all_specs and not reason then
+            for _,key in ipairs(self.specKeys) do if key~=self.spec then
+                for _,entry in ipairs(addon:ListRotationHeaders(key) or {}) do if entry.fallback then entry.spec=key;all[#all+1]=entry end end
+            end end
+        end
         local byKey={};for _,entry in ipairs(all) do byKey[entry.key]=entry end
-        for _,entry in ipairs(addon.ListPendingRotationDrafts and addon:ListPendingRotationDrafts(self.spec) or {}) do
+        local draftSpecs=all_specs and self.specKeys or {self.spec}
+        local drafts={}
+        for _,key in ipairs(draftSpecs) do for _,entry in ipairs(addon.ListPendingRotationDrafts and addon:ListPendingRotationDrafts(key) or {}) do entry.spec=key;drafts[#drafts+1]=entry end end
+        for _,entry in ipairs(drafts) do
             if not byKey[entry.key] then
-                local view=entry.presentation or {};local row={key=entry.key,reference=entry.reference,canonicalId=entry.canonicalId,name=entry.name,scope=entry.scope,kind='custom',pending=true,
+                local view=entry.presentation or {};local row={key=entry.key,spec=entry.spec,reference=entry.reference,canonicalId=entry.canonicalId,name=entry.name,scope=entry.scope,kind='custom',pending=true,
                     fallback=entry.fallback,effectiveFallback=false,validationState='pending',tags=addon.RotationData.GetRotationTags(view) or {},
                     search=addon.RotationData.RotationSearchText(view,entry.name,view.description),priority=addon.RotationData.GetRotationPriority(view.priority)}
                 all[#all+1]=row;byKey[row.key]=row
@@ -262,6 +280,8 @@ local function create(parent)
             local ap,bp=a.priority or -math.huge,b.priority or -math.huge
             if ap~=bp then return ap>bp end
             if a.name~=b.name then return a.name<b.name end
+            -- Defaults of different specializations: the one you play first.
+            if a.fallback and a.spec~=b.spec then return (self.specOrder[a.spec] or math.huge)<(self.specOrder[b.spec] or math.huge) end
             return tostring(a.key)<tostring(b.key)
         end)
         self.overlaps=self.spec==addon.currentSpec and addon.GetSwitchOverlaps and addon:GetSwitchOverlaps(self.spec) or {}
@@ -279,7 +299,7 @@ local function create(parent)
         end
         self.rows=rows;self.rowsByKey={};local positions={}
         for index,entry in ipairs(rows) do self.rowsByKey[entry.key]=entry;positions[entry.key]=index end
-        local parts={tostring(self.spec),tostring(self.specValue),self.filter,self.query,self.tagMode};for _,tag in ipairs(self.selectedTags) do parts[#parts+1]=tag end
+        local parts={tostring(self.specValue=='all' and 'all' or self.spec),tostring(self.specValue),self.filter,self.query,self.tagMode};for _,tag in ipairs(self.selectedTags) do parts[#parts+1]=tag end
         for index,value in ipairs(parts) do parts[index]=#value..':'..value end
         local signature=table.concat(parts,';')
         if signature~=self.navigationSignature then self.navigationSignature=signature;self.navigationRevision=(self.navigationRevision or 0)+1 end
@@ -345,6 +365,14 @@ local function create(parent)
         if self.nativeDetails and self.pane and self.pane.RequestLeave then return self.pane:RequestLeave(callback) end
         callback();return true
     end
+    -- An untouched new rotation has nothing to keep: leaving it (for another
+    -- rotation, or closing the window) removes it instead of leaving a
+    -- placeholder in the list. One with edits was handled by the leave prompt.
+    function browser:DropUntouchedNew(nextKey)
+        local pane=self.pane;local old=pane and self.nativeDetails and pane.workspace
+        if not old or not old.pending or old.id==nextKey or not pane.IsUntouchedNew or not pane:IsUntouchedNew() then return end
+        addon:DiscardPendingRotation(old)
+    end
     function browser:SelectRotation(spec,id,approved,requestValid)
         if not self.active or self.profile~=addon.db.profile or requestValid and not requestValid() then return end
         if not approved and self.pane and self.nativeDetails then
@@ -354,7 +382,8 @@ local function create(parent)
         local found=false
         for _,key in ipairs(self.specKeys) do if key==spec then found=true;break end end
         if not found then spec=self:KeyForSpecValue(self.specValue) end
-        if spec~=self.spec then self.pendingId=nil;self.query="";search:SetText("") end
+        -- Moving between specializations' Defaults under "All" keeps the search.
+        if spec~=self.spec and self.specValue~='all' then self.pendingId=nil;self.query="";search:SetText("") end
         self.spec=spec
         local headers,headerState=addon:ListRotationHeaders(spec)
         local headerError=not headers and headerState or nil
@@ -367,6 +396,7 @@ local function create(parent)
         if not key and reference and type(id)=='string' then key=id end
         self.selected=key or fallback or headers and headers[1] and headers[1].key
         addon.configRotationSelection={spec=spec,id=self.selected}
+        self:DropUntouchedNew(self.selected)
         self:ReleaseDetails()
         local owner={};self.editorOwner=owner
         local function selected(nextSpec,nextId)
@@ -428,7 +458,7 @@ local function create(parent)
     function browser:SetWidth(value) frame:SetWidth(value) end
     function browser:SetHeight(value) frame:SetHeight(value) end
     function browser:Release()
-        self.active=false;self.serial=(self.serial or 0)+1;self.tagPicker:Hide();self:ReleaseDetails();self.pendingId=nil;search:ClearFocus();if self.tagMenu then self.tagMenu:Release() end
+        self.active=false;self.serial=(self.serial or 0)+1;self.tagPicker:Hide();self:DropUntouchedNew(nil);self:ReleaseDetails();self.pendingId=nil;search:ClearFocus();if self.tagMenu then self.tagMenu:Release() end
         specMenu:Hide();addon.rotationListSpec=nil
         for _,control in ipairs(self.rowButtons) do self:RetireRow(control) end
         frame:Hide()

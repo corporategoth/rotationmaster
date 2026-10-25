@@ -324,4 +324,61 @@ test('the editor header: a specialization picker on the ID/Priority/Enabled line
     local fallback=assert(a:CreateRotationEditor(parent,268,DEFAULT or f.env.DEFAULT));fallback:Layout()
     assert(not fallback.specButton:IsShown())
 end)
+-- Each specialization has its own fallback (Default), kept under its key. The
+-- list shows the Default of the specialization it is set to, and "All
+-- specializations" shows every one's, each named by its specialization.
+test('the Rotations list shows each specialization\'s Default, and All lists every one of them, selectable',function()
+    local f=T.new{level=10,specIndex=1};local a=f.addon
+    local host=f.env.CreateFrame('Frame');host:SetSize(1000,3000)
+    local browser=a:CreateRotationBrowser(host,{spec=268})
+    local function defaults() local list={};for _,row in ipairs(browser.rows) do if row.fallback then list[#list+1]=row end end;return list end
+    local function control(row) for _,c in ipairs(browser.rowButtons) do if c.browserEntry==row and c:IsShown() then return c end end end
+    -- One specialization: its own Default only.
+    local own=defaults();assert(#own==1 and own[1].spec==268,'the current specialization shows more or less than its Default: '..#own)
+    browser:SetSpecValue(269)
+    own=defaults();assert(#own==1 and own[1].spec==269 and browser.spec==269 and browser.pane.workspace.fallback and browser.pane.workspace.spec==269,'another specialization does not show its own Default')
+    assert(browser.specWarning:IsShown(),'no not-your-specialization warning')
+    -- All: every specialization has one, in the namespace it belongs to.
+    browser:SetSpecValue('all')
+    local all=defaults();local entries=browser.specEntries
+    assert(#entries>=3 and #all==#entries,'All lists '..#all..' Defaults for '..#entries..' specializations')
+    local seen={};for _,row in ipairs(all) do assert(not seen[row.spec],'two Defaults for one specialization');seen[row.spec]=row end
+    for _,entry in ipairs(entries) do assert(seen[entry.id],'no Default for '..tostring(entry.name)) end
+    assert(a.currentSpec==268 and all[1].spec==268,'your own Default does not come first')
+    -- Each says which specialization it is for; the Retail "No specialization" has its own.
+    for _,entry in ipairs(entries) do
+        local row=seen[entry.id];local c=assert(control(row),'row not drawn for '..entry.name)
+        assert(c.statusLabel:GetText():find(entry.name,1,true),'the row does not name '..entry.name..': '..c.statusLabel:GetText())
+    end
+    local initial;for _,entry in ipairs(entries) do if entry.initial then initial=entry end end
+    assert(initial and seen[initial.id],'"No specialization" has no Default of its own')
+    -- Selecting another specialization\'s Default edits that one, in its namespace, without changing what you are playing.
+    local target=seen[269];local c=control(target);c.scripts.OnClick(c)
+    assert(browser.spec==269 and browser.selected==target.key and browser.pane.workspace.fallback and browser.pane.workspace.spec==269,'the Default of another specialization did not open')
+    assert(browser.specValue=='all' and #defaults()==#entries and a.currentSpec==268,'selecting a Default changed the list or the active specialization')
+    local name=browser.pane.workspace.reference.address.spec;assert(name==269)
+    -- Another of them, then back: the search survives moving between Defaults.
+    browser.search:SetText('def');browser.search.scripts.OnTextChanged(browser.search,true)
+    c=control(seen[270] or seen[268]);if c then c.scripts.OnClick(c) end
+    assert(browser.query=='def','the search was cleared by moving to another Default')
+    browser:Release()
+end)
+-- A new rotation fills its own identifier in from its name; that is not an
+-- edit, so moving on from an untouched one neither asks nor leaves it listed.
+test('an untouched new rotation neither prompts nor lingers when you choose another one',function()
+    local f=T.new{level=10,specIndex=1};local a=f.addon
+    local host=f.env.CreateFrame('Frame');host:SetSize(1000,3000)
+    local browser=a:CreateRotationBrowser(host,{spec=268})
+    local target=key(a,'rm.retail.monk.brewmaster')
+    browser.newButton:Click();local pane=browser.pane;local made=browser.selected
+    assert(pane.workspace.pending and pane.identifierDirty,'the identifier was not filled in on its own')
+    browser:SelectRotation(268,target)
+    assert(not (pane.leavePrompt and pane.leavePrompt.frame:IsShown()),'an untouched new rotation asked what to do')
+    assert(browser.selected==target and not browser.rowsByKey[made] and #a:ListPendingRotationDrafts(268)==0,'it stayed in the list')
+    -- Typing a name makes it a draft worth asking about.
+    browser.newButton:Click();pane=browser.pane;pane.name:SetText('Mine');pane.name.scripts.OnTextChanged(pane.name,true)
+    browser:SelectRotation(268,target);assert(pane.leavePrompt and pane.leavePrompt.frame:IsShown(),'an edited draft did not ask')
+    pane.leavePrompt.discard:Click();assert(#a:ListPendingRotationDrafts(268)==0 and browser.selected==target)
+    browser:Release()
+end)
 finish()

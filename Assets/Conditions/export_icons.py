@@ -64,7 +64,9 @@ def export():
             image = contain_rgba(source, size)
             suffix = '-64' if size == 64 else ''
             path = ROOT / (name + suffix + '.tga')
-            image.save(path, format='TGA', compression=None)
+            # Preserve reviewed exports byte-for-byte; create only missing assets.
+            if not path.exists():
+                image.save(path, format='TGA', compression=None)
             decoded = Image.open(path)
             header = path.read_bytes()[:18]
             assert header[2] == 2 and header[16] == 32 and header[17] & 15 == 8
@@ -79,7 +81,8 @@ def export():
 
 
 def contact_sheet(filename, sizes, cell_width, row_height):
-    sheet = Image.new('RGBA', (cell_width * 4, row_height * 4), DARK)
+    rows = (len(MANIFEST['entries']) + 3) // 4
+    sheet = Image.new('RGBA', (cell_width * 4, row_height * rows), DARK)
     draw = ImageDraw.Draw(sheet)
     for index, entry in enumerate(MANIFEST['entries']):
         left, top = (index % 4) * cell_width, (index // 4) * row_height

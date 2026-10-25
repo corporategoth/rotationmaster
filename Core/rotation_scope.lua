@@ -388,6 +388,19 @@ function addon:BindRotationProfile()
         local key=keyFor(reference);pending[referenceKey(reference)]={reference=copy(reference),key=key}
         return copy(reference),key
     end
+    -- A new rotation that was never saved is only a registered draft: dropping
+    -- it retires every alias and key, so it leaves the roster. The fallback's
+    -- virtual draft is not one: it is re-created whenever it is listed.
+    function coordinator:DiscardPending(reference)
+        if not customReference(reference) then return nil,'invalid-rotation-reference' end
+        local draft=pending[referenceKey(reference)];if not draft then return nil,'unknown-rotation' end
+        if draft.reference.address.id==profile.rotationFallbackID then return nil,'protected-rotation' end
+        for index,value in pairs(pending) do if value==draft then
+            pending[index]=nil;if byReference[index]==draft.key then byReference[index]=nil end
+        end end
+        byKey[draft.key]=nil;headers[draft.key]=nil
+        return true
+    end
     function coordinator:LegacyDraft(number,id)
         local ok,why=ready();if not ok then return nil,why end
         if not validSpec(number) or not text(id,128) then return nil,'invalid-rotation-target' end

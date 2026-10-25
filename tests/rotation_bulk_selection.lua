@@ -121,8 +121,9 @@ test('a read-only rotation can select but offers no bulk edit',function()
     local f,parent=fixture();local a=f.addon;local keys={ctrl=false,shift=false};f.env.IsControlKeyDown=function() return keys.ctrl end;f.env.IsShiftKeyDown=function() return keys.shift end
     local pane=assert(a:CreateRotationEditor(parent,0,'builtin'));assert(pane.workspace.readOnly)
     click(card(pane,'branch'),keys);assert(pane.selectionBar:IsShown())
-    for key,button in pairs(pane.selectionBar.buttons) do assert(button:IsEnabled()==(key=='clear'),key..' is available on a read-only rotation') end
-    pane.selectionBar.buttons.remove:Click();assert(#pane.workspace:Snapshot().rotation==1)
+    -- Only the count and Clear: the editing actions are not drawn at all.
+    for key,button in pairs(pane.selectionBar.buttons) do assert(button:IsShown()==(key=='clear'),key..' is drawn on a read-only rotation') end
+    assert(not pane:BulkCommand('remove') and #pane.workspace:Snapshot().rotation==1,'a read-only rotation was edited')
 end)
 
 -- The condition editor already selects with Ctrl/Shift and groups the

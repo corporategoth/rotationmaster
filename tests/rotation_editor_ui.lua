@@ -287,7 +287,7 @@ test('rotation header separates description and metadata and docks controls with
     local f,parent=fixture();local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'))
     assert(pane.description and pane.info:GetText()=='Metadata' and pane.export==nil)
     assert(pane.enable.pillDecoration and pane.compare.icon and pane.clone.icon)
-    assert(pane.delete.point[1]=='TOPRIGHT' and pane.hint.point[1]=='BOTTOMLEFT' and pane.hint.point[3]==12)
+    assert(pane.delete.point[1]=='TOPRIGHT' and pane.hint.points[1][1]=='BOTTOMLEFT' and pane.hint.points[1][5]==12 and pane.hint.points[2][1]=='RIGHT')
     pane.description:SetText('Shield upkeep while leveling');pane.description.scripts.OnTextChanged(pane.description,true)
     pane.apply:Click();assert(f.addon:GetEditableRotation(0,'mine').description=='Shield upkeep while leveling')
     assert(pane.status:GetText()=='')

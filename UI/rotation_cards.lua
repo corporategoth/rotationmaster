@@ -4,20 +4,63 @@ local tones={white={.85,.85,.85},green={.25,.55,.32},red={.8,.24,.2},gray={.4,.4
 -- The warning a card wears when no action button holds its action (the
 -- editor's model.unbound, from addon:GetStepBinding): amber, apart from the
 -- red of invalid data. A row on a normal card; an icon when compact or open.
+local SUGGESTION_LIST=5
+-- The spells off the bars, as many as read well in a tooltip: the first few
+-- by name, then how many more.
+local function suggestionNames(missing)
+    local names={}
+    for i,id in ipairs(missing) do
+        if i>SUGGESTION_LIST then break end
+        local info=addon.Platform and addon.Platform:GetSpellInfo(id)
+        names[i]=info and info.name or tostring(id)
+    end
+    local text=table.concat(names,', ')
+    if #missing>SUGGESTION_LIST then text=string.format(L['%s, and %d more'],text,#missing-SUGGESTION_LIST) end
+    return text
+end
+-- The amber row on Blizzard's suggestion card: how many of the spells Blizzard
+-- can suggest sit on no action bar (they are skipped when suggested).
+function addon:DescribeSuggestionGap(missing)
+    if #missing==1 then return L["1 of the spells Blizzard can suggest isn't on your action bars, so the card skips it."] end
+    return string.format(L["%d of the spells Blizzard can suggest aren't on your action bars, so the card skips them."],#missing)
+end
 local function unboundTooltip(model)
     local unbound=model.unbound
     if unbound.missing then
-        local names={}
-        for i,id in ipairs(unbound.missing) do
-            local info=addon.Platform and addon.Platform:GetSpellInfo(id)
-            names[i]=info and info.name or tostring(id)
-        end
-        return string.format(L["Blizzard can suggest %s, but no action bar button holds it. Rotation Master highlights an action by lighting the button that holds it, so when one of these is suggested this step is skipped and the next step is used instead. Put them on an action bar to use them."],table.concat(names,', '))
+        return string.format(L['Not on your action bars: %s.'],suggestionNames(unbound.missing))..'\n\n'..L["Rotation Master highlights an action by lighting the button that holds it, so it can't highlight these. The card still works for every suggestion that is on your bars: it skips one only when it is suggested, and the next step is used instead. Put these on an action bar to use them."]
     end
     if model.section=='cooldowns' then
         return L["Rotation Master highlights a cooldown by lighting the action button that holds it. No action bar button holds this action right now, so this cooldown is never shown or announced. Put it on an action bar to use it. Spells inside macros count only where the game lets addons read macros (not on Retail)."]
     end
     return L["Rotation Master highlights a step by lighting the action button that holds it. No action bar button holds this action right now, so this step is skipped and the next step is used instead. Put it on an action bar to use it. Spells inside macros count only where the game lets addons read macros (not on Retail)."]
+end
+-- The icons of the two steps that have no spell of their own.
+-- Blizzard's suggestion wears the icon Blizzard gives its one-button
+-- assistant: the spell "Single-Button Assistant" (1229376), whose icon is
+-- ui_spellbook_onebutton, read from the client so no file name is guessed.
+-- A client without that spell (Classic) keeps the condition icon.
+-- Stop has its own artwork in the condition family (Assets/Conditions/stop);
+-- StepArtwork.stop.shipped says the file is in the addon, and a copy without
+-- it keeps the condition icon rather than a blank texture.
+addon.AssistedCombatSpell=1229376
+addon.StepArtwork=addon.StepArtwork or {stop={texture='Interface\\AddOns\\'..addon_name..'\\Assets\\Conditions\\stop',shipped=true}}
+function addon:GetAssistedStepIcon()
+    local platform=self.Platform
+    local info=type(platform)=='table' and type(platform.GetSpellInfo)=='function' and platform:GetSpellInfo(self.AssistedCombatSpell) or nil
+    local icon=type(info)=='table' and info.iconID or nil
+    if type(icon)=='number' and icon>0 or type(icon)=='string' and icon~='' then return icon end
+end
+-- The icon a rotation card shows for a step; fallback is what it showed
+-- before (the spell's icon, else its condition's).
+function addon:GetStepIcon(step,fallback)
+    if type(step)~='table' then return fallback end
+    if step.type=='stop' then
+        local art=self.StepArtwork and self.StepArtwork.stop
+        if type(art)=='table' and art.shipped==true and type(art.texture)=='string' and art.texture~='' then return art.texture end
+    elseif step.type=='assisted' then
+        return self:GetAssistedStepIcon() or fallback
+    end
+    return fallback
 end
 -- The live bar: a thin stripe down the left edge of a condition field (the
 -- card's, or the switch's) showing that condition for the player right now
@@ -120,7 +163,7 @@ function addon:CreateRotationCard(parent)
         self.condition:SetHeight(math.max(24,ownHeader-shift-(branch and 32 or model.section=='cooldowns' and 54 or 50)))
         self.condition:GetFontString():SetTextColor(model.invalid and 1 or .7,model.invalid and .35 or .75,model.invalid and .3 or .7)
         local spell=addon.Platform and addon.Platform:GetSpellInfo(step.action)
-        self.icon:SetTexture(spell and spell.iconID or addon:GetConditionIcon(step.conditions and step.conditions.type));self.icon:SetAlpha(model.inactive and .4 or 1)
+        self.icon:SetTexture(addon:GetStepIcon(step,spell and spell.iconID or addon:GetConditionIcon(step.conditions and step.conditions.type)));self.icon:SetAlpha(model.inactive and .4 or 1)
         self.expand:PointState(model.compact and 'compact' or model.expanded and 'expanded' or 'normal')
         self.controls.enable:SetWidth(pillWidth);self.controls.enable:ClearAllPoints();self.controls.enable:SetPoint('TOPRIGHT',frame,'TOPRIGHT',-28,-4)
         self.controls.remove:ClearAllPoints();self.controls.remove:SetPoint('TOPRIGHT',frame,'TOPRIGHT',-4,-44)
@@ -170,7 +213,7 @@ function addon:CreateRotationCard(parent)
         if row then
             local left=model.section=='cooldowns' and 68 or 26
             warning:SetPoint('TOPLEFT',left,-46);warning:SetSize(model.width-left-30,(addon.RotationCardNoticeHeight or 30)-2);warning.art:Show()
-            warning:SetText(model.unbound.missing and L["Some suggestions are not on your action bars, so they can't be highlighted. They are skipped."] or L["Not on your action bars, so it can't be highlighted. It is skipped."])
+            warning:SetText(model.unbound.missing and addon:DescribeSuggestionGap(model.unbound.missing) or L["Not on your action bars, so it can't be highlighted. It is skipped."])
         else
             -- Compact or open: an icon beside the title, the text in its tooltip.
             warning:SetText('');warning.art:Hide();warning:SetSize(20,20)
