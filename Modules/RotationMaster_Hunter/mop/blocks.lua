@@ -2,7 +2,7 @@
 -- Consumers: rm.mop.hunter.beastmastery, .marksmanship, .marksmanship.icyveins, .survival and
 -- .unspecialized. A content change needs a block revision bump, every consumer's pin and revision
 -- bumped, and both recorded in tests/fixtures/builtin_composition_ledger.lua.
--- MoP removed hunter melee weapons, so every Stop suppresses the implicit Attack.
+-- MoP removed hunter melee weapons, so every Stop suppresses the implicit auto-attack (Attack or Auto Shot).
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
