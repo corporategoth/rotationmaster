@@ -100,11 +100,15 @@ function addon:BuildRotationEffectFields(owner,card,model,alive,ctx)
     local inherit=extra('positionReset',nil,function() return addon:CreateWorkbenchButton(card.fields,L['Default'],54) end);inherit:ClearAllPoints();inherit:SetPoint('TOPLEFT',0,-positionY-25);inherit.tooltip=L['Use profile position']
     addon:SetUIScript(inherit,'OnClick',function() if ctx.active() then local ok,why=owner:FlushFieldEdits();if ok then ctx.patch(nil,{'setpoint','xoffs','yoffs'}) else owner:Message(why) end end end);if ctx.readOnly then inherit:Disable() else inherit:Enable() end
     local afterPosition=ctx.getY()
-    for i,key in ipairs({'yoffs','xoffs'}) do
-        ctx.setY(positionY+3+(i-1)*22);local input=ctx.input(key,key=='yoffs' and L['Vertical offset'] or L['Horizontal offset'],step[key] or '',nil,true)
-        input:ClearAllPoints();input:SetPoint('TOPLEFT',x+78,-positionY-3-(i-1)*22);input:SetSize(math.max(30,width-x-78),20)
+    -- Horizontal and Vertical side by side, splitting the row beside the pad
+    -- (50/50 with a small gap); the letters name them, the tooltips say it in full.
+    local fromX,gap,letter=x+54,6,14;local half=math.max(letter+30,math.floor((width-fromX-gap)/2))
+    for i,key in ipairs({'xoffs','yoffs'}) do
+        local caption=key=='yoffs' and L['Vertical offset'] or L['Horizontal offset'];local left=fromX+(i-1)*(half+gap)
+        ctx.setY(positionY+14);local input=ctx.input(key,caption,step[key] or '',nil,true)
+        input:ClearAllPoints();input:SetPoint('TOPLEFT',left+letter,-positionY-14);input:SetSize(half-letter,20);input.tooltip=caption
         local axis=extra('axis'..key,nil,function() return card.fields:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall') end)
-        axis:ClearAllPoints();axis:SetPoint('TOPLEFT',x+64,-positionY-7-(i-1)*22);axis:SetText(key=='yoffs' and L['V'] or L['H'])
+        axis:ClearAllPoints();axis:SetPoint('TOPLEFT',left,-positionY-18);axis:SetText(key=='yoffs' and L['V'] or L['H']);axis.tooltip=caption
     end
     ctx.setY(math.max(afterPosition,positionY+54))
     local announces={};for _,entry in ipairs({{'none',L['None']},{'partyraid',L['Raid or Party']},{'party',L['Party Only']},{'raidwarn',L['Raid Warning']},{'emote',L['Emote']},{'local',L['Local Only']}}) do announces[#announces+1]={value=entry[1],text=entry[2]} end

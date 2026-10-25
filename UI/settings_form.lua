@@ -274,7 +274,7 @@ function addon:CreateSettingsForm(parent)
         local caption;if not anchor then caption=L['Position'] end;local y=self:Row(caption,56);local ox,oy=xvalue or 0,yvalue or 0
         if anchor then local title=self:Acquire('labels',function() return label(self.child) end);title:ClearAllPoints();title:SetPoint('TOPLEFT',0,-y);title:SetSize(154,20);title:SetText(L['Anchor']) end
         -- The pad lines up with the swatches and values above it.
-        local padX=220;local numberX=padX+78
+        local padX=220
         -- The anchored variant lays out its own caption column.
         local scope=self.labelScope;if anchor and scope then scope.custom=true end;self.labelScope=nil
         local pad=self:Acquire('positionPad',function() return addon:CreateWorkbenchPositionPad(self.child) end);pad:ClearAllPoints();pad:SetPoint('TOPLEFT',padX,-y)
@@ -283,10 +283,13 @@ function addon:CreateSettingsForm(parent)
         self.fields.positionPad=pad
         local after=self.y
         local function numeric(text) local n=tonumber(text);if n and n==n and n>-math.huge and n<math.huge then return n end end
-        for i,key in ipairs({'yoffs','xoffs'}) do
+        -- H and V side by side, splitting the row beside the pad (50/50 with a small gap).
+        local fromX,gap,letter=padX+54,6,16;local half=math.max(letter+30,math.floor((self.width-fromX-gap)/2))
+        for i,key in ipairs({'xoffs','yoffs'}) do
+            local caption=key=='yoffs' and L['Vertical offset'] or L['Horizontal offset'];local left=fromX+(i-1)*(half+gap)
             local c=self:Edit(key,'',key=='yoffs' and oy or ox,numeric,function(n) if key=='yoffs' then oy=n else ox=n end;changed(ox,oy,false) end)
-            c:ClearAllPoints();c:SetPoint('TOPLEFT',numberX,-y-5-(i-1)*22);c:SetSize(90,20)
-            local t=self:Acquire('labels',function() return label(self.child) end);t:ClearAllPoints();t:SetPoint('TOPLEFT',numberX-18,-y-5-(i-1)*22);t:SetSize(16,20);t:SetText(key=='yoffs' and L['V'] or L['H'])
+            c:ClearAllPoints();c:SetPoint('TOPLEFT',left+letter,-y-14);c:SetSize(half-letter,20);c.tooltip=caption
+            local t=self:Acquire('labels',function() return label(self.child) end);t:ClearAllPoints();t:SetPoint('TOPLEFT',left,-y-14);t:SetSize(letter-2,20);t:SetText(key=='yoffs' and L['V'] or L['H']);t.tooltip=caption
             if not anchor then self.labelScope=scope;self:LabelControl(c,1,0);self:LabelControl(t,1,0);self.labelScope=nil end
         end
         self.labelScope=scope;if not anchor then self:LabelControl(pad,1,0) end
