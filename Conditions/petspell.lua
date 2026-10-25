@@ -325,7 +325,7 @@ addon:RegisterCondition("PETSPELL_HISTORY", {
         addon.layout_condition_operatorwidget_help(frame, L["Pet Spell Cast History"], L["Count"],
             "How far back in your spell history to look for a casting of " .. color.BLIZ_YELLOW .. L["Pet Spell"] ..
             color.RESET .. " (by count).  A value of 1 means your last spell cast, 2 means two spells ago, etc.  " ..
-            "Each instance of a the same spell cast is treated separately.  Any spell cast more than the setting " ..
+            "Each instance of the same spell cast is treated separately.  Any spell cast more than the setting " ..
             "of " .. color.BLUE .. L["Pet Spell History Memory (seconds)"] .. color.RESET .. " in the primary Rotation " ..
             "Master configuration screen ago will not be available.")
     end

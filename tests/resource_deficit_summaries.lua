@@ -32,7 +32,7 @@ end)
 test('zero including signed zero and positive configured values retain the raw resource branch',function()
  for _,tag in ipairs({'POWER','POINT'}) do local _,a,s=setup(tag)
   for _,amount in ipairs({0,-0,tag=='POWER' and 20 or 3}) do if tag=='POWER' then s.current[3]=amount else s.current=amount end
-   local v={type=tag,unit='target',operator='EQUALS',value=amount};expected(a,v,amount);assert(not a:printCondition(v,0):find('defecit',1,true))
+   local v={type=tag,unit='target',operator='EQUALS',value=amount};expected(a,v,amount);assert(not a:printCondition(v,0):find('deficit',1,true))
   end
  end
 end)
@@ -40,7 +40,7 @@ test('HEALTH and MANA positive deficit summaries remain existing independent con
  for _,tag in ipairs({'HEALTH','MANA'}) do local _,a=setup(tag);expected(a,{type=tag,unit='target',operator='EQUALS',value=tag=='HEALTH' and -50 or -80},tag=='HEALTH' and 50 or 80) end
 end)
 test('locale literal named tokens percent data and single or double negation preserve positive amount',function()
- for _,tag in ipairs({'POWER','POINT'}) do local f,a=setup(tag);local amount=tag=='POWER' and 80 or 2;local key=tag=='POWER' and '%s power defecit' or '%s point defecit';f.translations[key]='[%s] {amount} 50%%';a.unitsPossessive.target='unit {name} 25%';a.operators.EQUALS='EQ';a.negatedOperators.EQUALS='NEQ'
+ for _,tag in ipairs({'POWER','POINT'}) do local f,a=setup(tag);local amount=tag=='POWER' and 80 or 2;local key=tag=='POWER' and '%s power deficit' or '%s point deficit';f.translations[key]='[%s] {amount} 50%%';a.unitsPossessive.target='unit {name} 25%';a.operators.EQUALS='EQ';a.negatedOperators.EQUALS='NEQ'
   local node={type=tag,unit='target',operator='EQUALS',value=-amount};local prefix='[unit {name} 25%] {amount} 50% '
   assert(a:printCondition(node,0)==prefix..'EQ '..amount);assert(a:printCondition({type='NOT',value=node},0)==prefix..'NEQ '..amount);assert(a:printCondition({type='NOT',value={type='NOT',value=node}},0)==prefix..'EQ '..amount)
  end

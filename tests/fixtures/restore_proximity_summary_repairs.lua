@@ -10,14 +10,13 @@ local old='\n'..[=[
                         Functions.presentation.nullable(value.value)))
     ]=]
 local repaired='\n'..[=[
-        return string.format(Functions.presentation.playerize(value.unit, L["%s {{!have|do not have}} %s"], L["%s {{!has|does not have}} %s"]),
-                Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
-                Functions.presentation.compareString(value.operator,
-                        string.format(L["number of %s members%s within %s yards"],
-                                (value.samegroup and PARTY or L["Raid or Party"]),
-                                (value.includepets and " (" .. L["including pets"] .. ")" or ""),
-                                Functions.presentation.nullable(value.distance, L["<distance>"])),
-                        Functions.presentation.nullable(value.value)))
+        return Functions.presentation.compareString(value.operator,
+                string.format(L["the number of %s members%s within %s yards of %s"],
+                        (value.samegroup and PARTY or L["Raid or Party"]),
+                        (value.includepets and " (" .. L["including pets"] .. ")" or ""),
+                        Functions.presentation.nullable(value.distance, L["<distance>"]),
+                        Functions.presentation.nullable(addon.units[value.unit], L["<unit>"])),
+                Functions.presentation.nullable(value.value))
     ]=]
 local function inverse(text,callback)
  assert(type(text)=='string','proximity summary inverse needs text')

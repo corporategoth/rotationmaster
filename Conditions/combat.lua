@@ -177,7 +177,7 @@ addon:RegisterCondition("LOC_TYPE", {
     end,
     print = function(_, value)
         return Functions.presentation.compareString(value.operator, string.format(L["time remaining on %s"],
-                Functions.presentation.nullable(addon.loc_types[value.loc_type], L["<school>"])), string.format(L["%s seconds"], Functions.presentation.nullable(value.value)))
+                Functions.presentation.nullable(addon.loc_types[value.loc_type], L["<control type>"])), string.format(L["%s seconds"], Functions.presentation.nullable(value.value)))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -374,7 +374,7 @@ addon:RegisterCondition("THREAT_COUNT", {
     end,
     print = function(_, value)
         return Functions.presentation.compareString(value.operator,
-                        string.format(L["number of enemies you are at least %s"],
+                        string.format(L["the number of enemies on which you are at least %s"],
                         Functions.presentation.nullable(addon.threat[value.threat], L["<threat>"])),
                         Functions.presentation.nullable(value.value))
     end,
@@ -411,13 +411,13 @@ addon:RegisterCondition("THREAT_COUNT", {
                 "You are currently tanking, however you are not at the top of the threat table, and thus are at " ..
                 "risk of them switching targets to somebody else.")))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["tanking, secure"] .. color.RESET .. " - " ..
-                "You are currently tanking  and are not at risk of them switching targets at the moment.")))
+                "You are currently tanking and are not at risk of them switching targets at the moment.")))
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Threat Count"], L["Count"],
                 "The number of units you have at least " .. color.BLIZ_YELLOW .. L["Threat"] .. color.RESET .. " on.")
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText("Threat is measured only on units within a maximum measurable range. The maximum " ..
-                " range is set using Game Options -> Interface -> Game tab -> Names -> Nameplate Distance."))
+                "range is set using Game Options -> Interface -> Game tab -> Names -> Nameplate Distance."))
     end
 })
 
@@ -452,7 +452,7 @@ addon:RegisterCondition("FORM", runtimeCondition('FORM',{
             form = info and info.name
         elseif value.value ~= nil then
             if value.value == 0 then
-                form = L["humanoid"]
+                form = L["humanoid form"]
             elseif character_class == "SHAMAN" then
                 local info = addon.Platform:GetSpellInfo(2645)
                 form = info and info.name
@@ -461,7 +461,7 @@ addon:RegisterCondition("FORM", runtimeCondition('FORM',{
                 form = info and info.name
             end
         end
-        return string.format(L["you {{!are|are not}} in %s form"], Functions.presentation.nullable(form, L["<form>"]))
+        return string.format(L["you {{!are|are not}} in %s"], Functions.presentation.nullable(form, L["<form>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -587,7 +587,7 @@ addon:RegisterCondition("ATTACKABLE", runtimeCondition('ATTACKABLE',{
         return Functions.cache.getCached(cache, addon.Platform.GetUnitAttackabilityObservation, addon.Platform, value.unit)
     end,
     print = function(_, value)
-        return string.format(L["%s {{!is|is not}} attackable"], Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))
+        return string.format(Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} attackable"], L["%s {{!is|is not}} attackable"]), Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -614,7 +614,7 @@ addon:RegisterCondition("ENEMY", {
         return Functions.cache.getCached(cache, addon.Platform.GetUnitFlagObservation, addon.Platform, value.unit, "enemy")
     end,
     print = function(_, value)
-        return string.format(L["%s {{!is|is not}} an enemy"], Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))
+        return string.format(Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} an enemy"], L["%s {{!is|is not}} an enemy"]), Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -696,7 +696,7 @@ addon:RegisterCondition("COMBAT_HISTORY", {
         addon.layout_condition_operatorwidget_help(frame, L["Combat Action History"], L["Count"],
             "How far back in your combat history to look for " .. color.BLIZ_YELLOW .. L["Action"] .. color.RESET ..
             " (by count).  A value of 1 means the last combat action, 2 means two combat actions ago, etc.  " ..
-            "Each combat action treated separately.  Any combat action more than the setting of " .. color.BLUE ..
+            "Each combat action is treated separately.  Any combat action more than the setting of " .. color.BLUE ..
             L["Combat History Memory (seconds)"] .. color.RESET .. " in the primary Rotation Master configuration " ..
             "screen ago will not be available.")
     end
@@ -777,11 +777,12 @@ addon:RegisterCondition("COMBAT_HISTORY_TIME", {
                 "The kind of combat action to look for (Hit, Miss, Parried, etc)."))
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Combat Action History Time"], L["Seconds"],
-            "How far back in your combat history to look for " .. color.BLIZ_YELLOW .. L["Action"] .. color.RESET ..
-            " (by time).  A value of 1 means the last combat action, 2 means two combat actions ago, etc.  " ..
-            "Each combat action treated separately.  Any combat action more than the setting of " .. color.BLUE ..
-            L["Combat History Memory (seconds)"] .. color.RESET .. " in the primary Rotation Master configuration " ..
-            "screen ago will not be available.")
+            "How far back in " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. "'s combat history to look for " ..
+            color.BLIZ_YELLOW .. L["Action"] .. color.RESET .. " (by time).  The condition matches when any recorded " ..
+            "combat action of that kind happened a number of seconds ago that passes the comparison; for example " ..
+            "'is less than 3' means it happened within the last 3 seconds.  Each combat action is treated " ..
+            "separately.  Combat actions older than " .. color.BLUE .. L["Combat History Memory (seconds)"] ..
+            color.RESET .. " (set in the primary Rotation Master configuration screen) are not available.")
     end
 })
 

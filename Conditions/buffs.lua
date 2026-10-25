@@ -99,7 +99,7 @@ addon:RegisterCondition("BUFF_REMAIN", {
         return addon:EvaluateAuraCondition(value, cache, start, "HELPFUL", "remaining")
     end,
     print = function(_, value)
-        return AuraSummary.phrase(Functions.presentation.playerize(value.unit, L["{unit} {{!have|do not have}} {aura} where {remaining} {comparison} {duration}"], L["{unit} {{!have|do not have}} {aura} where {remaining} {comparison} {duration}"]), {
+        return AuraSummary.phrase(Functions.presentation.playerize(value.unit, L["{unit} {{!have|do not have}} {aura} where {remaining} {comparison} {duration}"], L["{unit} {{!has|does not have}} {aura} where {remaining} {comparison} {duration}"]), {
             unit = Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
             aura = string.format(value.ownbuff and L["your own %s"] or "%s", (value.spell and addon:AuraSpellLabel(value) or L["<buff>"])),
             remaining = L["the remaining time"],
@@ -163,9 +163,9 @@ addon:RegisterCondition("BUFF_STACKS", {
         return addon:EvaluateAuraCondition(value, cache, start, "HELPFUL", "stacks")
     end,
     print = function(_, value)
-        return AuraSummary.phrase(L["{unit} {stacks} {comparison} {quantity}"], {
-            unit = Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"]),
-            stacks = string.format(L["stacks of %s"], string.format(value.ownbuff and L["your own %s"] or "%s", (value.spell and addon:AuraSpellLabel(value) or L["<buff>"]))),
+        return AuraSummary.phrase(L["the number of stacks of {aura} on {unit} {comparison} {quantity}"], {
+            unit = Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
+            aura = string.format(value.ownbuff and L["your own %s"] or "%s", (value.spell and addon:AuraSpellLabel(value) or L["<buff>"])),
             comparison = AuraSummary.predicate(value.operator, true),
             quantity = Functions.presentation.nullable(value.value),
         })
@@ -224,7 +224,7 @@ addon:RegisterCondition("STEALABLE", {
         return addon:EvaluateAuraCondition(value, cache, start, "HELPFUL", "stealable")
     end,
     print = function(_, value)
-        return string.format(L["%s {{!has|does not have}} a stealable buff"], Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))
+        return string.format(Functions.presentation.playerize(value.unit, L["%s {{!have|do not have}} a stealable buff"], L["%s {{!has|does not have}} a stealable buff"]), Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")

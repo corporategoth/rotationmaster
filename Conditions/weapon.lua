@@ -118,8 +118,9 @@ do
             return Functions.values.compare(value.operator,duration/1000,value.value)
         end,
         print = function(_, value)
-            return string.format(L["Your %s weapon buff has %s"], (value.offhand and L["off hand"] or L["main hand"]),
-                    Functions.presentation.compareString(value.operator, L["the remaining time"], string.format(L["%s seconds"], Functions.presentation.nullable(value.value))))
+            return Functions.presentation.compareString(value.operator,
+                    string.format(L["the time remaining on your %s weapon buff"], (value.offhand and L["off hand"] or L["main hand"])),
+                    string.format(L["%s seconds"], Functions.presentation.nullable(value.value)))
         end,
         widget = function(parent, spec, value)
             local top = parent:GetUserData("top")
@@ -170,8 +171,9 @@ do
             return Functions.values.compare(value.operator,count,value.value)
         end,
         print = function(_, value)
-            return string.format(L["Your %s weapon buff has %s"], (value.offhand and L["off hand"] or L["main hand"]),
-                    Functions.presentation.compareString(value.operator, L["stacks"], Functions.presentation.nullable(value.value)))
+            return Functions.presentation.compareString(value.operator,
+                    string.format(L["the number of stacks of your %s weapon buff"], (value.offhand and L["off hand"] or L["main hand"])),
+                    Functions.presentation.nullable(value.value))
         end,
         widget = function(parent, spec, value)
             local top = parent:GetUserData("top")

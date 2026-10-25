@@ -294,7 +294,7 @@ addon:RegisterCondition('TALENT_TREE_POINTS',{
         if not integer(tree.pointsSpent,0,512) then return nil,'talent-points-unavailable' end
         return Functions.values.compare(value.operator,tree.pointsSpent,value.value)
     end,
-    print=function(spec,value) return Functions.presentation.compareString(value.operator,string.format(L['points spent in %s'],treeName(value,spec)),Functions.presentation.nullable(value.value)) end,
+    print=function(spec,value) return Functions.presentation.compareString(value.operator,string.format(L['the number of points spent in %s'],treeName(value,spec)),Functions.presentation.nullable(value.value)) end,
     widget=function(parent,spec,value)
         local top=parent:GetUserData('top');local function update() top:SetStatusText(top:GetUserData('funcs'):print(top:GetUserData('root'),spec)) end
         treePicker(parent,spec,value,update);parent:AddChild(addon:Widget_OperatorWidget(value,L['Points'],update))

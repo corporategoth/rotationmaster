@@ -124,8 +124,9 @@ addon:RegisterCondition("CASTING_REMAIN", {
         return Functions.values.compare(value.operator,record.remainingSeconds,value.value)
     end,
     print = function(_, value)
-        return Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"]) .. " " ..
-            Functions.presentation.compareString(value.operator, L["time remaining on spell cast"], string.format(L["%s seconds"], Functions.presentation.nullable(value.value)))
+        return Functions.presentation.compareString(value.operator,
+            string.format(L["the time remaining on %s cast"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])),
+            string.format(L["%s seconds"], Functions.presentation.nullable(value.value)))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -216,7 +217,7 @@ addon:RegisterCondition("CAST_INTERRUPTABLE", {
         return record.interruptible
     end,
     print = function(_, value)
-        return string.format(L["%s's spell {{!is|is not}} interruptable"], Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))
+        return string.format(L["%s spell {{!is|is not}} interruptible"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")

@@ -97,10 +97,10 @@ addon:RegisterCondition("PROXIMITY_HEALTH", {
         local deficit = threshold ~= nil and threshold < 0
         if deficit then threshold = -threshold end
         return Functions.presentation.phrase(
-                (deficit and L["The {operation} health defecit of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}"] or
+                (deficit and L["The {operation} health deficit of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}"] or
                 L["The {operation} health of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}"]),
                 {
-                    operation = Functions.presentation.nullable(value.operation, L["<operation>"]),
+                    operation = Functions.presentation.nullable(addon.math_operations_prose[value.operation], L["<operation>"]),
                     members = value.samegroup and PARTY or L["Raid or Party"],
                     pets = value.includepets and " (" .. L["including pets"] .. ")" or "",
                     distance = Functions.presentation.nullable(value.distance, L["<distance>"]),
@@ -146,19 +146,20 @@ addon:RegisterCondition("PROXIMITY_HEALTH", {
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Minimum"] .. color.RESET .. " - " ..
                 "The lowest value")))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Average"] .. color.RESET .. " - " ..
-                "The value that is the sum of all values divided my the number of values")))
+                "The value that is the sum of all values divided by the number of values")))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Maximum"] .. color.RESET .. " - " ..
                 "The highest value")))
         frame:AddChild(helpers.Gap())
-        addon.layout_condition_operatorwidget_help(frame, L["Health"], L["Health"],
-                "The raw health value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ". " ..
-                        "If this number is negative, it means the health deficit (from max health).")
+        addon.layout_condition_operatorwidget_help(frame, L["Health Within Range"], L["Health"],
+                "The health value the " .. color.BLIZ_YELLOW .. L["Operation"] .. color.RESET .. " result is compared with: " ..
+                        "the lowest, average or highest health of the allies counted.  " ..
+                        "If this number is negative, it compares their health deficit (from max health) instead.")
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " - " ..
                 "The distance (in yards) allies are measured against."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Same Group"] .. color.RESET .. " - " ..
-                "Only count addon.units in the same raid group."))
+                "Only count units in the same raid group."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Include Pets"] .. color.RESET .. " - " ..
                 "Include pets in the count."))
@@ -197,8 +198,8 @@ addon:RegisterCondition("PROXIMITY_HEALTH_COUNT", {
         local deficit = threshold ~= nil and threshold < 0
         if deficit then threshold = -threshold end
         return Functions.presentation.phrase(
-                (deficit and L["The number {members} members{pets} within {distance} yards of {unit} whose health defecit {qualifier} {threshold} {comparison} {value}"] or
-                L["The number {members} members{pets} within {distance} yards of {unit} whose health {qualifier} {threshold} {comparison} {value}"]),
+                (deficit and L["The number of {members} members{pets} within {distance} yards of {unit} whose health deficit {qualifier} {threshold} {comparison} {value}"] or
+                L["The number of {members} members{pets} within {distance} yards of {unit} whose health {qualifier} {threshold} {comparison} {value}"]),
                 {
                     members = value.samegroup and PARTY or L["Raid or Party"],
                     pets = value.includepets and " (" .. L["including pets"] .. ")" or "",
@@ -233,17 +234,20 @@ addon:RegisterCondition("PROXIMITY_HEALTH_COUNT", {
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Health"], L["Health"],
-                "The raw health value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ". " ..
-                        "If this number is negative, it means the health deficit (from max health).")
-        addon.layout_condition_operatorwidget_help(frame, L["Allies Within Range"], L["Count"],
-                "The number of allies whose proximity is measured in relation to " .. color.BLIZ_YELLOW .. L["Unit"] ..
-                        ".  This will only measure the proximity of allies you are in a party or raid with.")
+                "The health each ally within " .. color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " of " ..
+                        color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " is compared with.  " ..
+                        "If this number is negative, it compares each ally's health deficit (from max health) instead.")
+        frame:AddChild(helpers.Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Health Count Within Range"], L["Count"],
+                "The number of allies within " .. color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " of " ..
+                        color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " whose health passes that comparison.  " ..
+                        "This only counts allies you are in a party or raid with.")
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " - " ..
                 "The distance (in yards) allies are measured against."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Same Group"] .. color.RESET .. " - " ..
-                "Only count addon.units in the same raid group."))
+                "Only count units in the same raid group."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Include Pets"] .. color.RESET .. " - " ..
                 "Include pets in the count."))
@@ -282,7 +286,7 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT", {
         return Functions.presentation.phrase(
                 L["The {operation} health percentage of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}%"],
                 {
-                    operation = Functions.presentation.nullable(value.operation, L["<operation>"]),
+                    operation = Functions.presentation.nullable(addon.math_operations_prose[value.operation], L["<operation>"]),
                     members = value.samegroup and PARTY or L["Raid or Party"],
                     pets = value.includepets and " (" .. L["including pets"] .. ")" or "",
                     distance = Functions.presentation.nullable(value.distance, L["<distance>"]),
@@ -328,19 +332,19 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT", {
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Minimum"] .. color.RESET .. " - " ..
                 "The lowest value")))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Average"] .. color.RESET .. " - " ..
-                "The value that is the sum of all values divided my the number of values")))
+                "The value that is the sum of all values divided by the number of values")))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Maximum"] .. color.RESET .. " - " ..
                 "The highest value")))
         frame:AddChild(helpers.Gap())
-        addon.layout_condition_operatorwidget_help(frame, L["Health Percentage"], L["Health"],
-                "The health value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " as a percentage of their " ..
-                        "total health.")
+        addon.layout_condition_operatorwidget_help(frame, L["Health Percentage Within Range"], L["Health"],
+                "The health percentage the " .. color.BLIZ_YELLOW .. L["Operation"] .. color.RESET .. " result is compared with: " ..
+                        "the lowest, average or highest health of the allies counted, each as a percentage of their total health.")
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " - " ..
                 "The distance (in yards) allies are measured against."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Same Group"] .. color.RESET .. " - " ..
-                "Only count addon.units in the same raid group."))
+                "Only count units in the same raid group."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Include Pets"] .. color.RESET .. " - " ..
                 "Include pets in the count."))
@@ -377,7 +381,7 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT_COUNT", {
         local threshold = value.health
         if threshold ~= nil then threshold = threshold * 100 end
         return Functions.presentation.phrase(
-                L["The number {members} members{pets} within {distance} yards of {unit} whose health percentage {qualifier} {threshold}% {comparison} {value}"],
+                L["The number of {members} members{pets} within {distance} yards of {unit} whose health percentage {qualifier} {threshold}% {comparison} {value}"],
                 {
                     members = value.samegroup and PARTY or L["Raid or Party"],
                     pets = value.includepets and " (" .. L["including pets"] .. ")" or "",
@@ -412,17 +416,19 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT_COUNT", {
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Health Percentage"], L["Health"],
-                "The health value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " as a percentage of their " ..
-                        "total health.")
-        addon.layout_condition_operatorwidget_help(frame, L["Allies Within Range"], L["Count"],
-                "The number of allies whose proximity is measured in relation to " .. color.BLIZ_YELLOW .. L["Unit"] ..
-                        ".  This will only measure the proximity of allies you are in a party or raid with.")
+                "The health percentage each ally within " .. color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " of " ..
+                        color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " is compared with, as a percentage of their total health.")
+        frame:AddChild(helpers.Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Health Percentage Count Within Range"], L["Count"],
+                "The number of allies within " .. color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " of " ..
+                        color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " whose health percentage passes that comparison.  " ..
+                        "This only counts allies you are in a party or raid with.")
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " - " ..
                 "The distance (in yards) allies are measured against."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Same Group"] .. color.RESET .. " - " ..
-                "Only count addon.units in the same raid group."))
+                "Only count units in the same raid group."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Include Pets"] .. color.RESET .. " - " ..
                 "Include pets in the count."))
@@ -459,10 +465,10 @@ addon:RegisterCondition("PROXIMITY_MANA", {
         local deficit = threshold ~= nil and threshold < 0
         if deficit then threshold = -threshold end
         return Functions.presentation.phrase(
-                (deficit and L["The {operation} mana defecit of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}"] or
+                (deficit and L["The {operation} mana deficit of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}"] or
                 L["The {operation} mana of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}"]),
                 {
-                    operation = Functions.presentation.nullable(value.operation, L["<operation>"]),
+                    operation = Functions.presentation.nullable(addon.math_operations_prose[value.operation], L["<operation>"]),
                     members = value.samegroup and PARTY or L["Raid or Party"],
                     pets = value.includepets and " (" .. L["including pets"] .. ")" or "",
                     distance = Functions.presentation.nullable(value.distance, L["<distance>"]),
@@ -508,19 +514,20 @@ addon:RegisterCondition("PROXIMITY_MANA", {
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Minimum"] .. color.RESET .. " - " ..
                 "The lowest value")))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Average"] .. color.RESET .. " - " ..
-                "The value that is the sum of all values divided my the number of values")))
+                "The value that is the sum of all values divided by the number of values")))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Maximum"] .. color.RESET .. " - " ..
                 "The highest value")))
         frame:AddChild(helpers.Gap())
-        addon.layout_condition_operatorwidget_help(frame, L["Mana"], L["Mana"],
-                "The raw mana value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ". " ..
-                        "If this number is negative, it means the mana deficit (from max mana).")
+        addon.layout_condition_operatorwidget_help(frame, L["Mana Within Range"], L["Mana"],
+                "The mana value the " .. color.BLIZ_YELLOW .. L["Operation"] .. color.RESET .. " result is compared with: " ..
+                        "the lowest, average or highest mana of the allies counted.  " ..
+                        "If this number is negative, it compares their mana deficit (from max mana) instead.")
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " - " ..
                 "The distance (in yards) allies are measured against."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Same Group"] .. color.RESET .. " - " ..
-                "Only count addon.units in the same raid group."))
+                "Only count units in the same raid group."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Include Pets"] .. color.RESET .. " - " ..
                 "Include pets in the count."))
@@ -559,8 +566,8 @@ addon:RegisterCondition("PROXIMITY_MANA_COUNT", {
         local deficit = threshold ~= nil and threshold < 0
         if deficit then threshold = -threshold end
         return Functions.presentation.phrase(
-                (deficit and L["The number {members} members{pets} within {distance} yards of {unit} whose mana defecit {qualifier} {threshold} {comparison} {value}"] or
-                L["The number {members} members{pets} within {distance} yards of {unit} whose mana {qualifier} {threshold} {comparison} {value}"]),
+                (deficit and L["The number of {members} members{pets} within {distance} yards of {unit} whose mana deficit {qualifier} {threshold} {comparison} {value}"] or
+                L["The number of {members} members{pets} within {distance} yards of {unit} whose mana {qualifier} {threshold} {comparison} {value}"]),
                 {
                     members = value.samegroup and PARTY or L["Raid or Party"],
                     pets = value.includepets and " (" .. L["including pets"] .. ")" or "",
@@ -595,17 +602,20 @@ addon:RegisterCondition("PROXIMITY_MANA_COUNT", {
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Mana"], L["Mana"],
-                "The raw mana value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ". " ..
-                        "If this number is negative, it means the mana deficit (from max mana).")
-        addon.layout_condition_operatorwidget_help(frame, L["Allies Within Range"], L["Count"],
-                "The number of allies whose proximity is measured in relation to " .. color.BLIZ_YELLOW .. L["Unit"] ..
-                        ".  This will only measure the proximity of allies you are in a party or raid with.")
+                "The mana each ally within " .. color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " of " ..
+                        color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " is compared with.  " ..
+                        "If this number is negative, it compares each ally's mana deficit (from max mana) instead.")
+        frame:AddChild(helpers.Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Mana Count Within Range"], L["Count"],
+                "The number of allies within " .. color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " of " ..
+                        color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " whose mana passes that comparison.  " ..
+                        "This only counts allies you are in a party or raid with.")
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " - " ..
                 "The distance (in yards) allies are measured against."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Same Group"] .. color.RESET .. " - " ..
-                "Only count addon.units in the same raid group."))
+                "Only count units in the same raid group."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Include Pets"] .. color.RESET .. " - " ..
                 "Include pets in the count."))
@@ -644,7 +654,7 @@ addon:RegisterCondition("PROXIMITY_MANAPCT", {
         return Functions.presentation.phrase(
                 L["The {operation} mana percentage of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}%"],
                 {
-                    operation = Functions.presentation.nullable(value.operation, L["<operation>"]),
+                    operation = Functions.presentation.nullable(addon.math_operations_prose[value.operation], L["<operation>"]),
                     members = value.samegroup and PARTY or L["Raid or Party"],
                     pets = value.includepets and " (" .. L["including pets"] .. ")" or "",
                     distance = Functions.presentation.nullable(value.distance, L["<distance>"]),
@@ -690,19 +700,19 @@ addon:RegisterCondition("PROXIMITY_MANAPCT", {
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Minimum"] .. color.RESET .. " - " ..
                 "The lowest value")))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Average"] .. color.RESET .. " - " ..
-                "The value that is the sum of all values divided my the number of values")))
+                "The value that is the sum of all values divided by the number of values")))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Maximum"] .. color.RESET .. " - " ..
                 "The highest value")))
         frame:AddChild(helpers.Gap())
-        addon.layout_condition_operatorwidget_help(frame, L["Mana Percentage"], L["Mana"],
-                "The mana value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " as a percentage of their " ..
-                        "total mana.")
+        addon.layout_condition_operatorwidget_help(frame, L["Mana Percentage Within Range"], L["Mana"],
+                "The mana percentage the " .. color.BLIZ_YELLOW .. L["Operation"] .. color.RESET .. " result is compared with: " ..
+                        "the lowest, average or highest mana of the allies counted, each as a percentage of their total mana.")
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " - " ..
                 "The distance (in yards) allies are measured against."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Same Group"] .. color.RESET .. " - " ..
-                "Only count addon.units in the same raid group."))
+                "Only count units in the same raid group."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Include Pets"] .. color.RESET .. " - " ..
                 "Include pets in the count."))
@@ -739,7 +749,7 @@ addon:RegisterCondition("PROXIMITY_MANAPCT_COUNT", {
         local threshold = value.mana
         if threshold ~= nil then threshold = threshold * 100 end
         return Functions.presentation.phrase(
-                L["The number {members} members{pets} within {distance} yards of {unit} whose mana percentage {qualifier} {threshold}% {comparison} {value}"],
+                L["The number of {members} members{pets} within {distance} yards of {unit} whose mana percentage {qualifier} {threshold}% {comparison} {value}"],
                 {
                     members = value.samegroup and PARTY or L["Raid or Party"],
                     pets = value.includepets and " (" .. L["including pets"] .. ")" or "",
@@ -774,17 +784,19 @@ addon:RegisterCondition("PROXIMITY_MANAPCT_COUNT", {
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Mana Percentage"], L["Mana"],
-                "The mana value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " as a percentage of their " ..
-                        "total mana.")
-        addon.layout_condition_operatorwidget_help(frame, L["Allies Within Range"], L["Count"],
-                "The number of allies whose proximity is measured in relation to " .. color.BLIZ_YELLOW .. L["Unit"] ..
-                        ".  This will only measure the proximity of allies you are in a party or raid with.")
+                "The mana percentage each ally within " .. color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " of " ..
+                        color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " is compared with, as a percentage of their total mana.")
+        frame:AddChild(helpers.Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Mana Percentage Count Within Range"], L["Count"],
+                "The number of allies within " .. color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " of " ..
+                        color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " whose mana percentage passes that comparison.  " ..
+                        "This only counts allies you are in a party or raid with.")
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " - " ..
                 "The distance (in yards) allies are measured against."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Same Group"] .. color.RESET .. " - " ..
-                "Only count addon.units in the same raid group."))
+                "Only count units in the same raid group."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Include Pets"] .. color.RESET .. " - " ..
                 "Include pets in the count."))

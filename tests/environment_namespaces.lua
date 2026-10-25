@@ -93,7 +93,7 @@ test('only the explicitly repaired environment evaluators differ from prior sour
         if tag=='INSTANCE' or tag=='ZONEPVP' then source.widget=dofile('tests/fixtures/restore_environment_selector_repairs.lua')(source.widget,tag) end
         baseline[tag]=source
     end
-    assert(a:FunctionSourceHash(baseline)=='4eb1d87c','unrelated environment source changed')
+    assert(a:FunctionSourceHash(baseline)=='830f3476','unrelated environment source changed')
 end)
 test('level operators zone kinds instance tuples and unit flags agree for registered canonical and legacy-shaped copies',function()
     local _,a,s=fixture();copies(a);copies(a,true)

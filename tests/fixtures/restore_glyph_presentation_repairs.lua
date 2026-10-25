@@ -6,7 +6,7 @@ local old='\n'..[=[
 local repaired='\n'..[=[
             local info = value.item and addon.Platform:GetItemDisplayInfo(value.item) or nil
             local link = info and info.link or nil
-            return string.format(L["you {{!have|do not have}} %s glyph"], Functions.presentation.nullable(link, L["<glyph>"]))
+            return string.format(L["you {{!have|do not have}} %s active"], Functions.presentation.nullable(link, L["<glyph>"]))
         ]=]
 local signature='print = function(_, value)'
 local function inverse(text,callback)

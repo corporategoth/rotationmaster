@@ -94,7 +94,7 @@ test('generated current and archived complete sources keep distinct identity beh
  assert(current.evaluate==newBody,'catalog pending new CREATURE identity evaluator')
  a:RegisterCondition('COPY_CREATURE',assert(a:CompileCustomCondition('COPY_CREATURE',a:CopySettingsData(current))));result(a,node('BEAST','COPY_CREATURE'),true)
  local archived=a:CopySettingsData(current);archived.evaluate=restore(archived.evaluate,true);archived.bindings=a:CopySettingsData(oldBindings);archived.parameters.evaluate=a:CopySettingsData(oldParameters)
- assert(archived.evaluate==oldBody and a:FunctionSourceHash(archived)=='eb1ca8a7','complete archived CREATURE export changed')
+ assert(archived.evaluate==oldBody and a:FunctionSourceHash(archived)=='5ece2f27','complete archived CREATURE export changed')
  a:RegisterCondition('SAVED_RAW_CREATURE',assert(a:CompileCustomCondition('SAVED_RAW_CREATURE',archived)));result(a,node('BEAST','SAVED_RAW_CREATURE'),false)
  s.name='Beast';result(a,node('BEAST','SAVED_RAW_CREATURE'),true);s.name='Bête';s.id=nil;unavailable(a,node('BEAST','COPY_CREATURE'))
 end)

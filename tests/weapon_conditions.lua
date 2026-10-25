@@ -70,7 +70,7 @@ test('weapon authored comparison callbacks declare canonical private dependencie
 end)
 test('registered weapon clones preserve selected-hand outcomes negation summaries and client registration boundaries',function()
     local tags={'WEAPON','WEAPON_REMAIN','WEAPON_STACKS','SWING_TIME','SWING_TIME_REMAIN'}
-    local summaries={WEAPON='Your off hand weapon is enchanted',WEAPON_REMAIN='Your off hand weapon buff has the remaining time is equal to 2 seconds',WEAPON_STACKS='Your off hand weapon buff has stacks is equal to 2',SWING_TIME='Your off hand weapon attack speed is equal to 2 seconds',SWING_TIME_REMAIN='Your off hand weapon swing time remaining is equal to 2 seconds'}
+    local summaries={WEAPON='Your off hand weapon is enchanted',WEAPON_REMAIN='the time remaining on your off hand weapon buff is equal to 2 seconds',WEAPON_STACKS='the number of stacks of your off hand weapon buff is equal to 2',SWING_TIME='Your off hand weapon attack speed is equal to 2 seconds',SWING_TIME_REMAIN='Your off hand weapon swing time remaining is equal to 2 seconds'}
     for _,case in ipairs(dofile('tests/fixtures/catalog_inventory.lua').branches) do
         local f,a=sourceFixture(unpack(case[1]));f.env.UnitAttackSpeed=function() return 3,2 end;a.lastMainSwing=98;a.lastOffSwing=99
         for _,tag in ipairs(tags) do

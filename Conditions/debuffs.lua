@@ -91,7 +91,7 @@ addon:RegisterCondition("DEBUFF_REMAIN", {
         return addon:EvaluateAuraCondition(value, cache, start, "HARMFUL", "remaining")
     end,
     print = function(_, value)
-        return AuraSummary.phrase(Functions.presentation.playerize(value.unit, L["{unit} {{!have|do not have}} {aura} where {remaining} {comparison} {duration}"], L["{unit} {{!have|do not have}} {aura} where {remaining} {comparison} {duration}"]), {
+        return AuraSummary.phrase(Functions.presentation.playerize(value.unit, L["{unit} {{!have|do not have}} {aura} where {remaining} {comparison} {duration}"], L["{unit} {{!has|does not have}} {aura} where {remaining} {comparison} {duration}"]), {
             unit = Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
             aura = string.format(value.owndebuff and L["your own %s"] or "%s", (value.spell and addon:AuraSpellLabel(value) or L["<debuff>"])),
             remaining = L["the remaining time"],
@@ -155,9 +155,9 @@ addon:RegisterCondition("DEBUFF_STACKS", {
         return addon:EvaluateAuraCondition(value, cache, start, "HARMFUL", "stacks")
     end,
     print = function(_, value)
-        return AuraSummary.phrase(L["{unit} {stacks} {comparison} {quantity}"], {
-            unit = Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"]),
-            stacks = string.format(L["stacks of %s"], string.format(value.owndebuff and L["your own %s"] or "%s", (value.spell and addon:AuraSpellLabel(value) or L["<debuff>"]))),
+        return AuraSummary.phrase(L["the number of stacks of {aura} on {unit} {comparison} {quantity}"], {
+            unit = Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
+            aura = string.format(value.owndebuff and L["your own %s"] or "%s", (value.spell and addon:AuraSpellLabel(value) or L["<debuff>"])),
             comparison = AuraSummary.predicate(value.operator, true),
             quantity = Functions.presentation.nullable(value.value),
         })
@@ -217,9 +217,14 @@ addon:RegisterCondition("DISPELLABLE", {
         return addon:EvaluateAuraCondition(value, cache, start, "HARMFUL", "dispel")
     end,
     print = function(_, value)
-        return string.format(Functions.presentation.playerize(value.unit, L["%s {{!have|do not have}} a %s debuff"], L["%s {{!has|does not have}} a %s debuff"]),
-            Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
-            string.format(value.owndebuff and L["your own %s"] or "%s", Functions.presentation.nullable(addon.debufftypes[value.debufftype], L["<debuff type>"]))) ..
+        local template
+        if value.owndebuff then
+            template = Functions.presentation.playerize(value.unit, L["%s {{!have|do not have}} a debuff you applied of type %s"], L["%s {{!has|does not have}} a debuff you applied of type %s"])
+        else
+            template = Functions.presentation.playerize(value.unit, L["%s {{!have|do not have}} a debuff of type %s"], L["%s {{!has|does not have}} a debuff of type %s"])
+        end
+        return string.format(template, Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
+            Functions.presentation.nullable(addon.debufftypes[value.debufftype], L["<debuff type>"])) ..
             (value.dispellable and " " .. L["that is dispellable"] or "")
     end,
     widget = function(parent, spec, value)

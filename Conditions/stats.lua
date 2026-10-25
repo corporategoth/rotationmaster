@@ -42,7 +42,7 @@ addon:RegisterCondition("HEALTH", {
     end,
     print = function(_, value)
         if value.value ~= nil and value.value < 0 then
-            return Functions.presentation.compareString(value.operator, string.format(L["%s health defecit"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), -value.value)
+            return Functions.presentation.compareString(value.operator, string.format(L["%s health deficit"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), -value.value)
         else
             return Functions.presentation.compareString(value.operator, string.format(L["%s health"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(value.value))
         end
@@ -137,7 +137,7 @@ addon:RegisterCondition("MANA", {
     end,
     print = function(_, value)
         if value.value ~= nil and value.value < 0 then
-            return Functions.presentation.compareString(value.operator, string.format(L["%s mana defecit"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), -value.value)
+            return Functions.presentation.compareString(value.operator, string.format(L["%s mana deficit"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), -value.value)
         else
             return Functions.presentation.compareString(value.operator, string.format(L["%s mana"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(value.value))
         end
@@ -234,7 +234,7 @@ addon:RegisterCondition("POWER", {
     end,
     print = function(_, value)
         if value.value ~= nil and value.value < 0 then
-            return Functions.presentation.compareString(value.operator, string.format(L["%s power defecit"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), -value.value)
+            return Functions.presentation.compareString(value.operator, string.format(L["%s power deficit"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), -value.value)
         else
             return Functions.presentation.compareString(value.operator, string.format(L["%s power"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(value.value))
         end
@@ -347,9 +347,9 @@ addon:RegisterCondition("POINT", runtimeCondition('POINT',{
     end,
     print = function(_, value)
         if value.value ~= nil and value.value < 0 then
-            return Functions.presentation.compareString(value.operator, string.format(L["%s point defecit"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), -value.value)
+            return Functions.presentation.compareString(value.operator, string.format(L["%s point deficit"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), -value.value)
         else
-            return Functions.presentation.compareString(value.operator, string.format(L["%s points"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(value.value))
+            return Functions.presentation.compareString(value.operator, string.format(L["%s point total"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(value.value))
         end
     end,
     widget = function(parent, spec, value)
@@ -403,7 +403,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 a
         end,
         print = function(_, value)
             local rune_type = value.rune and addon.runes[value.rune] or L["<rune type>"]
-            return Functions.presentation.compareString(value.operator, string.format(L["%s runes available"], rune_type),
+            return Functions.presentation.compareString(value.operator, string.format(L["the number of %s runes available"], rune_type),
                         Functions.presentation.nullable(value.value))
         end,
         widget = function(parent, spec, value)
@@ -428,13 +428,12 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 a
             parent:AddChild(operator_group)
         end,
         help = function(frame)
-            addon.layout_condition_unitwidget_help(frame)
-            frame:AddChild(helpers.Gap())
             frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Rune Type"] .. color.RESET .. " - " ..
                     "Which type of runes you wish to check."))
             frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Blood"] .. color.RESET)))
             frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Unholy"] .. color.RESET)))
             frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Frost"] .. color.RESET)))
+            frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Death"] .. color.RESET)))
             frame:AddChild(helpers.Gap())
             addon.layout_condition_operatorwidget_help(frame, L["Runes"], L["Runes"],
                     "The number of runes currently available.")
@@ -478,7 +477,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 a
         print = function(_, value)
             local rune_type = value.rune and addon.runes[value.rune] or L["<rune type>"]
             return string.format(L["the %s"],
-                    Functions.presentation.compareString(value.operator, string.format(L["cooldown on %s rune"], rune_type),
+                    Functions.presentation.compareString(value.operator, string.format(L["cooldown on your next %s rune"], rune_type),
                     string.format(L["%s seconds"], Functions.presentation.nullable(value.value))))
         end,
         widget = function(parent, spec, value)
@@ -503,13 +502,12 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 a
             parent:AddChild(operator_group)
         end,
         help = function(frame)
-            addon.layout_condition_unitwidget_help(frame)
-            frame:AddChild(helpers.Gap())
             frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Rune Type"] .. color.RESET .. " - " ..
                     "Which type of runes you wish to check."))
             frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Blood"] .. color.RESET)))
             frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Unholy"] .. color.RESET)))
             frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Frost"] .. color.RESET)))
+            frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Death"] .. color.RESET)))
             frame:AddChild(helpers.Gap())
             addon.layout_condition_operatorwidget_help(frame, L["Rune Cooldown"], L["Seconds"],
                     "The number of seconds until a " .. color.BLIZ_YELLOW .. L["Rune Type"] .. color.RESET ..
@@ -542,11 +540,11 @@ addon:RegisterCondition("TT_HEALTH", {
     print = function(_, value)
         local conditionstr
         if value.health ~= nil and value.health < 0 then
-            conditionstr = string.format(L["time until %s is at %s health defecit"],
-                    Functions.presentation.nullable(value.unit, L["<unit>"]), -value.health)
+            conditionstr = string.format(L["time until %s health deficit reaches %s"],
+                    Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"]), -value.health)
         else
-            conditionstr = string.format(L["time until %s is at %s health"],
-                    Functions.presentation.nullable(value.unit, L["<unit>"]), Functions.presentation.nullable(value.health))
+            conditionstr = string.format(L["time until %s health reaches %s"],
+                    Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"]), Functions.presentation.nullable(value.health))
         end
         return string.format(L["%s with %s"],
             Functions.presentation.compareString(value.operator, conditionstr,
@@ -595,9 +593,9 @@ addon:RegisterCondition("TT_HEALTH", {
                 color.RESET .. " to get to. " ..
                 "If this number is negative, it means the health deficit (from max health)."))
         frame:AddChild(helpers.Gap())
-        addon.layout_condition_operatorpercentwidget_help(frame, L["Time Until Health"], L["Seconds"],
-            "How many seconds (estimated) until the target health is acehived on  " .. color.BLIZ_YELLOW ..
-                L["Unit"] .. color.RESET)
+        addon.layout_condition_operatorwidget_help(frame, L["Time Until Health"], L["Seconds"],
+            "How many seconds (estimated) until " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET ..
+                " reaches the target health.")
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Mode"] .. color.RESET .. " - " ..
                 "How the burn rate should be calculated, which is used to estimate the time to target health."))
@@ -640,8 +638,8 @@ addon:RegisterCondition("TT_HEALTHPCT", {
             v = v * 100
         end
         return string.format(L["%s with %s"],
-            Functions.presentation.compareString(value.operator, string.format(L["time until %s is at %s%% health"],
-                                                           Functions.presentation.nullable(value.unit, L["<unit>"]), Functions.presentation.nullable(v)),
+            Functions.presentation.compareString(value.operator, string.format(L["time until %s health reaches %s%%"],
+                                                           Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"]), Functions.presentation.nullable(v)),
                             string.format(L["%s seconds"], Functions.presentation.nullable(value.value))),
                             addon.trendmode[value.mode or "both"])
 
@@ -692,9 +690,9 @@ addon:RegisterCondition("TT_HEALTHPCT", {
                 "The target health the rule is waiting for " .. color.BLIZ_YELLOW .. L["Unit"] ..
                 color.RESET .. " to get to as a percentage of their total health."))
         frame:AddChild(helpers.Gap())
-        addon.layout_condition_operatorpercentwidget_help(frame, L["Time Until Health Percentage"], L["Seconds"],
-            "The health value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " as a percentage of their " ..
-                    "total health.")
+        addon.layout_condition_operatorwidget_help(frame, L["Time Until Health Percentage"], L["Seconds"],
+            "How many seconds (estimated) until " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET ..
+                " reaches the target health percentage.")
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Mode"] .. color.RESET .. " - " ..
                 "How the burn rate should be calculated, which is used to estimate the time to target health."))

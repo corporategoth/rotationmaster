@@ -38,7 +38,7 @@ addon:RegisterCondition("ISSAME", {
         return Functions.cache.getCached(cache, addon.Platform.GetUnitIdentityObservation, addon.Platform, value.unit, value.otherunit)
     end,
     print = function(_, value)
-        return string.format(L["%s {{!is|is not}} %s"], Functions.presentation.nullable(addon.units[value.unit]), Functions.presentation.nullable(addon.units[value.otherunit]))
+        return string.format(Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} %s"], L["%s {{!is|is not}} %s"]), Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]), Functions.presentation.nullable(addon.units[value.otherunit], L["<unit>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -73,8 +73,8 @@ addon:RegisterCondition("CLASS", {
         return observed == value.value
     end,
     print = function(_, value)
-        return string.format(Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} a %s"], L["%s {{!is|is not}} a %s"]),
-            Functions.presentation.nullable(addon.units[value.unit]), Functions.presentation.nullable(LOCALIZED_CLASS_NAMES_MALE[value.value], L["<class>"]))
+        return string.format(L["%s class {{!is|is not}} %s"],
+            Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"]), Functions.presentation.nullable(LOCALIZED_CLASS_NAMES_MALE[value.value], L["<class>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -194,7 +194,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
             return role == value.value
         end,
         print = function(_, value)
-            return string.format(L["%s {{!is|is not}} in a %s role"],
+            return string.format(L["%s role {{!is|is not}} %s"],
                 Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"]),
                 Functions.presentation.nullable(addon.roles[value.value], L["<role>"]))
         end,
@@ -253,7 +253,7 @@ else
                 return role == value.value
             end,
             print = function(_, value)
-                return string.format(L["Your talent {{!is|is not}} a %s role"],
+                return string.format(L["%s role {{!is|is not}} %s"], addon.unitsPossessive.player,
                         Functions.presentation.nullable(addon.roles[value.value], L["<role>"]))
             end,
             widget = function(parent, spec, value)
@@ -277,7 +277,7 @@ else
             end,
             help = function(frame)
                 frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Role"] .. color.RESET .. " - " ..
-                        "The current role of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. "."))
+                        "The role set for your active talent group."))
                 frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Tank"] .. color.RESET .. " - " ..
                         "Designed to keep the attention and take most of the hits from enemies.  aka. Meat Shields.")))
                 frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["DPS"] .. color.RESET .. " - " ..
@@ -329,7 +329,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or LE_EXPANSION_LEVEL_CURRENT >= 2) t
         print = function(_, value)
             local info = value.item and addon.Platform:GetItemDisplayInfo(value.item) or nil
             local link = info and info.link or nil
-            return string.format(L["you {{!have|do not have}} %s glyph"], Functions.presentation.nullable(link, L["<glyph>"]))
+            return string.format(L["you {{!have|do not have}} %s active"], Functions.presentation.nullable(link, L["<glyph>"]))
         end,
         widget = function(parent, spec, value)
             local top = parent:GetUserData("top")
@@ -344,7 +344,10 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or LE_EXPANSION_LEVEL_CURRENT >= 2) t
             parent:AddChild(item_group)
         end,
         help = function(frame)
-            addon.layout_condition_spellwidget_help(frame)
+            frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Item"] .. color.RESET .. " - " ..
+                "The glyph, entered as its item ID or item name; the icon beside the field shows the glyph " ..
+                "selected.  Only glyphs of your class are accepted.  The condition matches while that glyph " ..
+                "is active in one of your glyph sockets."))
         end
     })
 end
@@ -361,8 +364,8 @@ addon:RegisterCondition("CREATURE", {
         return addon:GetConditionCreatureTypeMatch(value.unit,value.value,cache)
     end,
     print = function(_, value)
-        return string.format(Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} a %s"], L["%s {{!is|is not}} a %s"]),
-            Functions.presentation.nullable(addon.units[value.unit]), Functions.presentation.nullable(addon.creatures[value.value], L["<creature type>"]))
+        return string.format(L["%s creature type {{!is|is not}} %s"],
+            Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"]), Functions.presentation.nullable(addon.creatures[value.value], L["<creature type>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -412,8 +415,8 @@ addon:RegisterCondition("CLASSIFICATION", {
         return observed == value.value
     end,
     print = function(_, value)
-        return string.format(Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} a %s"], L["%s {{!is|is not}} a %s"]),
-                Functions.presentation.nullable(addon.units[value.unit]), Functions.presentation.nullable(addon.classifications[value.value], L["<classification>"]))
+        return string.format(L["%s classification {{!is|is not}} %s"],
+                Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"]), Functions.presentation.nullable(addon.classifications[value.value], L["<classification>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -444,7 +447,7 @@ addon:RegisterCondition("CLASSIFICATION", {
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Unit Classification"] .. color.RESET .. " - " ..
                 "The classification of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ".  This " ..
-                "can be used to create conditions only apply to certain unit addon.classifications (eg. bosses)."))
+                "can be used to create conditions that only apply to certain unit classifications (eg. bosses)."))
     end
 })
 
@@ -507,11 +510,12 @@ addon:RegisterCondition("LEVEL", runtimeCondition('LEVEL',{
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
-        addon.layout_condition_operatorwidget_help(frame, L["Relative"], L["Relative"],
-                "Should the level be relative to the player's or absolute.")
+        frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Relative"] .. color.RESET .. " - " ..
+                "When checked, " .. color.BLIZ_YELLOW .. L["Level"] .. color.RESET .. " is an offset from your own " ..
+                "level (for example -3 means three levels below yours); otherwise it is an absolute level."))
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Level"], L["Level"],
-                "The character's level")
+                "The level " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. "'s level is compared with.")
     end
 }))
 
@@ -625,8 +629,8 @@ addon:RegisterCondition("RESIST", {
         return Functions.values.compare(value.operator,observation.ratio,value.value)
     end,
     print = function(_, value)
-        return Functions.presentation.compareString(value.operator, string.format(L["%s's resistance to %s"],
-                Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]), Functions.presentation.nullable(addon.spell_schools[value.school], L["<school>"])),
+        return Functions.presentation.compareString(value.operator, string.format(L["%s resistance to %s"],
+                Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"]), Functions.presentation.nullable(addon.spell_schools[value.school], L["<school>"])),
                 Functions.presentation.nullable(value.value and value.value * 100 or nil) .. '%')
     end,
     widget = function(parent, spec, value)
@@ -689,7 +693,13 @@ addon:RegisterCondition("IMMUNE", {
         return observation.hits < 1
     end,
     print = function(_, value)
-        return string.format(value.partial and L["%s {{!is|is not}} sometimes immune to %s"] or L["%s {{!is|is not}} immune to %s"],
+        local template
+        if value.partial then
+            template = Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} sometimes immune to %s"], L["%s {{!is|is not}} sometimes immune to %s"])
+        else
+            template = Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} immune to %s"], L["%s {{!is|is not}} immune to %s"])
+        end
+        return string.format(template,
                 Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]), Functions.presentation.nullable(addon.spell_schools[value.school], L["<school>"]))
     end,
     widget = function(parent, spec, value)

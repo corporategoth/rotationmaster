@@ -58,7 +58,7 @@ test('released zone popup rows cannot clear the retired owner or a recycled sele
 end)
 test('exact widget inverses preserve complete module and reject unrelated or duplicate bodies',function()
     local _,a=fixture();local file=assert(io.open('Conditions/misc.lua'));local text=file:read('*a');file:close()
-    assert(a:FunctionSourceHash(inverse(text))=='5b75d6d9','misc changed beyond the two exact widget repairs from75f8297')
+    assert(a:FunctionSourceHash(inverse(text))=='ea622a99','misc changed beyond the two exact widget repairs from75f8297')
     for _,tag in ipairs({'ZONEPVP','INSTANCE'}) do
         assert(inverse(repaired[tag],tag)==old[tag]);assert(not pcall(inverse,old[tag],tag));assert(not pcall(inverse,repaired[tag]..' ',tag))
         assert(not pcall(inverse,text..repaired[tag]),'inverse accepted duplicate widget body')

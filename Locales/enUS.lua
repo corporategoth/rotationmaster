@@ -112,15 +112,23 @@ L['Condition summary unavailable: invalid template or values.'] = true
 L['{stat} {comparison} {value}'] = true
 L['{stat} {comparison} {value}%'] = true
 L['The number {members} members{pets} within {distance} yards of {unit} whose health defecit {qualifier} {threshold} {comparison} {value}'] = true
+L["The number of {members} members{pets} within {distance} yards of {unit} whose health deficit {qualifier} {threshold} {comparison} {value}"] = true
 L['The number {members} members{pets} within {distance} yards of {unit} whose health percentage {qualifier} {threshold}% {comparison} {value}'] = true
+L["The number of {members} members{pets} within {distance} yards of {unit} whose health percentage {qualifier} {threshold}% {comparison} {value}"] = true
 L['The number {members} members{pets} within {distance} yards of {unit} whose health {qualifier} {threshold} {comparison} {value}'] = true
+L["The number of {members} members{pets} within {distance} yards of {unit} whose health {qualifier} {threshold} {comparison} {value}"] = true
 L['The number {members} members{pets} within {distance} yards of {unit} whose mana defecit {qualifier} {threshold} {comparison} {value}'] = true
+L["The number of {members} members{pets} within {distance} yards of {unit} whose mana deficit {qualifier} {threshold} {comparison} {value}"] = true
 L['The number {members} members{pets} within {distance} yards of {unit} whose mana percentage {qualifier} {threshold}% {comparison} {value}'] = true
+L["The number of {members} members{pets} within {distance} yards of {unit} whose mana percentage {qualifier} {threshold}% {comparison} {value}"] = true
 L['The number {members} members{pets} within {distance} yards of {unit} whose mana {qualifier} {threshold} {comparison} {value}'] = true
+L["The number of {members} members{pets} within {distance} yards of {unit} whose mana {qualifier} {threshold} {comparison} {value}"] = true
 L['The {operation} health defecit of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}'] = true
+L["The {operation} health deficit of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}"] = true
 L['The {operation} health of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}'] = true
 L['The {operation} health percentage of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}%'] = true
 L['The {operation} mana defecit of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}'] = true
+L["The {operation} mana deficit of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}"] = true
 L['The {operation} mana of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}'] = true
 L['The {operation} mana percentage of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}%'] = true
 L['A readable string, or a transient named phrase from Functions.presentation.phrase. Named values remain literal; typed predicates choose positive or negative wording. The legacy string format remains supported.'] = true
@@ -207,7 +215,9 @@ L["your own %s"] = true
 L["{unit} {{!have|do not have}} {aura}"] = true
 L["{unit} {{!has|does not have}} {aura}"] = true
 L["{unit} {{!have|do not have}} {aura} where {remaining} {comparison} {duration}"] = true
+L["{unit} {{!has|does not have}} {aura} where {remaining} {comparison} {duration}"] = true
 L["{unit} {stacks} {comparison} {quantity}"] = true
+L["the number of stacks of {aura} on {unit} {comparison} {quantity}"] = true
 L["that is dispellable"] = true
 
 L["is less than"] = true
@@ -337,8 +347,11 @@ L["Water"] = true
 L["Air"] = true
 
 L["Minimum"] = true
+L["lowest"] = true
 L["Maximum"] = true
+L["highest"] = true
 L["Average"] = true
+L["average"] = true
 
 L["no threat risk"] = true
 L["higher threat than tank"] = true
@@ -506,8 +519,11 @@ L["%s or %d others"] = true
 L["a %s item set item"] = true
 L["Click the icon above to bind to your action bar"] = true
 L["time until %s is at %s%% health"] = true
+L["time until %s health reaches %s%%"] = true
 L["time until %s is at %s health"] = true
+L["time until %s health reaches %s"] = true
 L["time until %s is at %s health defecit"] = true
+L["time until %s health deficit reaches %s"] = true
 L["including pets"] = true
 L["The %s health defecit of %s members%s within %d yards of %s"] = true
 L["The %s health of %s members%s within %d yards of %s"] = true
@@ -558,6 +574,7 @@ L["<name>"] = true
 L["<distance>"] = true
 L["<quantity>"] = true
 L["<school>"] = true
+L["<control type>"] = true
 L["<operation>"] = true
 L["<stat>"] = true
 
@@ -577,6 +594,7 @@ L["%s has %s where %s"] = true
 L["you are talented in %s"] = true
 L["talent points in %s (%s)"] = true
 L["%s's resistance to %s"] = true
+L["%s resistance to %s"] = true
 L["%s is sometimes immune to %s"] = true
 L["%s is immune to %s"] = true
 L["you have %s glyph"] = true
@@ -604,27 +622,34 @@ L["Include Pets"] = true
 L["Health"] = true
 L["%s health"] = true
 L["%s health defecit"] = true
+L["%s health deficit"] = true
 L["Health Percentage"] = true
 
 L["Mana"] = true
 L["%s mana"] = true
 L["%s mana defecit"] = true
+L["%s mana deficit"] = true
 L["Mana Percentage"] = true
 
 L["Power"] = true
 L["%s power"] = true
 L["%s power defecit"] = true
+L["%s power deficit"] = true
 L["Power Percentage"] = true
 
 L["Points"] = true
 L["%s points"] = true
+L["%s point total"] = true
 L["%s point defecit"] = true
+L["%s point deficit"] = true
 
 L["Rune Type"] = true
 L["Runes"] = true
 L["Rune Cooldown"] = true
 L["%s runes available"] = true
+L["the number of %s runes available"] = true
 L["cooldown on %s rune"] = true
+L["cooldown on your next %s rune"] = true
 
 L["Blood"] = true
 L["Frost"] = true
@@ -667,7 +692,7 @@ L["the boss-mod timer for %s"] = true
 L["Seconds until the boss mod expects the ability. A paused timer keeps its remaining time."] = true
 L["Help.Conditions.BOSSMOD_ENCOUNTER"] = "True while your enabled boss mod (DBM or BigWigs, chosen on the Integrations page) reports a boss encounter in progress. Leave Encounter ID blank for any encounter, or enter the game's encounter ID, which DBM and BigWigs share, to match one boss; while an encounter is active the editor shows its name and ID. This is the boss mod's report, not game state: it starts when the boss mod engages and ends when it records a win, wipe or reset. Use it as a switch condition for encounter-specific rotations; automatic switching picks it up on its normal re-check interval. Unavailable, never simply false, when no boss mod is enabled or loaded."
 L["Help.Conditions.BOSSMOD_STAGE"] = "The stage (phase) your boss mod reports for the current encounter. An encounter whose boss mod has not reported a stage counts as stage 1, and some intermissions are reported as half stages such as 1.5. False when no encounter is in progress; unavailable when no boss mod is enabled or loaded."
-L["Help.Conditions.BOSSMOD_TIMER"] = "Compares the time left on your boss mod's timer for one boss ability, identified by the ability's spell ID; while timers run, the editor lists them with their IDs. Timers are the boss mod's predictions and can shift, pause or be cancelled. When no timer for that ability is running the condition is false, so 'is less than 5 seconds' is only true while a timer is actually counting down. Bars without a spell ID, such as pull or respawn timers, are not tracked. Unavailable when no boss mod is enabled or loaded."
+L["Help.Conditions.BOSSMOD_TIMER"] = "Compares the time left on your boss mod's timer for one boss ability, identified by the ability's spell ID; while timers run, the editor lists them with their IDs. Timers are the boss mod's predictions and can shift, pause or be canceled. When no timer for that ability is running the condition is false, so 'is less than 5 seconds' is only true while a timer is actually counting down. Bars without a spell ID, such as pull or respawn timers, are not tracked. Unavailable when no boss mod is enabled or loaded."
 L["Spell Active or Pending"] = true
 L["Pet Spell Active or Pending"] = true
 L["%s is active or pending"] = true
@@ -761,6 +786,7 @@ L["Threat Count"] = true
 L["you are at least %s on %s"] = true
 L["Shapeshift Form"] = true
 L["humanoid"] = true
+L["humanoid form"] = true
 L["Form"] = true
 L["Attackable"] = true
 L["Hostile"] = true
@@ -777,7 +803,9 @@ L["%s is an enemy"] = true
 L["%s is attackable"] = true
 L["number of %s members%s within %d yards"] = true
 L["number of %s members%s within %s yards"] = true
+L["the number of %s members%s within %s yards of %s"] = true
 L["number of enemies you are at least %s"] = true
+L["the number of enemies on which you are at least %s"] = true
 L["closer than %s yards"] = true
 L["allies"] = true
 L["enemies"] = true
@@ -793,6 +821,7 @@ L["%s are currently channeling %s"] = true
 L["%s is currently channeling %s"] = true
 L["Channel Time Remaining"] = true
 L["time remaining on spell channel"] = true
+L["the time remaining on %s channel"] = true
 L["Channel Interruptable"] = true
 L["%s's channeled spell is interruptable"] = true
 
@@ -804,6 +833,7 @@ L["%s are currently casting %s"] = true
 L["%s is currently casting %s"] = true
 L["Cast Time Remaining"] = true
 L["time remaining on spell cast"] = true
+L["the time remaining on %s cast"] = true
 L["Cast Interruptable"] = true
 L["%s's spell is interruptable"] = true
 
@@ -863,6 +893,8 @@ L["your own action bar"] = true
 L["Weapon Enchant Time Remaining"] = true
 L["Weapon Enchant Stacks"] = true
 L["Your %s weapon buff has %s"] = true
+L["the time remaining on your %s weapon buff"] = true
+L["the number of stacks of your %s weapon buff"] = true
 L["Your %s weapon is enchanted"] = true
 L["Your %s weapon %s"] = true
 L["off hand"] = true
@@ -1941,6 +1973,7 @@ L["This client does not expose a Classic talent-tree layout. The saved tree refe
 L["Talent tree"] = true
 L["Talent Tree Points"] = true
 L["points spent in %s"] = true
+L["the number of points spent in %s"] = true
 L["Talent tree selects the Classic tree whose spent points are compared. Public points are read again on the next evaluation; missing or restricted points are unavailable, including under NOT. Grids and trait trees are unsupported."] = true
 L["Compare whole points spent from zero to 512. An explicit comparison with zero can describe an unspent tree."] = true
 L["Primary Talent Tree"] = true
@@ -1992,7 +2025,7 @@ L["Help.Announces.event"] = "For automatic action types, choose which observed c
 L["Help.Announces.event.START"] = "The cast or channel started. This event does not mean it will finish successfully."
 L["Help.Announces.event.STOP"] = "The cast or channel stopped. A stop alone does not establish whether it succeeded."
 L["Help.Announces.event.SUCCEEDED"] = "The client reported a successful spell cast or item-use spell. For a channel, this can occur as channeling begins rather than after its final tick."
-L["Help.Announces.event.INTERRUPTED"] = "The client reported that the cast was interrupted. This can include cancelling a cast yourself."
+L["Help.Announces.event.INTERRUPTED"] = "The client reported that the cast was interrupted. This can include canceling a cast yourself."
 L["Help.Announces.event.FAILED"] = "The client reported that the cast failed. This is separate from the successful-cast event."
 L["Help.Announces.event.DELAYED"] = "The client reported a delay to the cast. This event is not a completion or success notification."
 L["Help.Announces.announce"] = "Choose a chat destination, local output, a named Emote or Audible. Emote replaces Text with an emote selector and optional recipient. Audible replaces Text with Sound. Text is retained when switching modes. Say, Yell, Whisper and named joined channels are offered only for Via Script/Macro and remain subject to native restrictions."
@@ -2079,26 +2112,35 @@ L["%s {{!are|are not}} in combat"] = true
 L["%s {{!has|does not have}} %s"] = true
 
 L["%s {{!has|does not have}} a %s debuff"] = true
+L["%s {{!has|does not have}} a debuff of type %s"] = true
+L["%s {{!has|does not have}} a debuff you applied of type %s"] = true
 
 L["%s {{!has|does not have}} a stealable buff"] = true
+L["%s {{!have|do not have}} a stealable buff"] = true
 
 L["%s {{!have|do not have}} %s"] = true
 
 L["%s {{!have|do not have}} %s where %s"] = true
 
 L["%s {{!have|do not have}} a %s debuff"] = true
+L["%s {{!have|do not have}} a debuff of type %s"] = true
+L["%s {{!have|do not have}} a debuff you applied of type %s"] = true
 
 L["%s {{!is|is not}} %s"] = true
 
 L["%s {{!is|is not}} PVP flagged"] = true
 
 L["%s {{!is|is not}} a %s"] = true
+L["%s class {{!is|is not}} %s"] = true
+L["%s creature type {{!is|is not}} %s"] = true
+L["%s classification {{!is|is not}} %s"] = true
 
 L["%s {{!is|is not}} active"] = true
 
 L["%s {{!is|is not}} active or pending"] = true
 
 L["%s {{!is|is not}} active with %s"] = true
+L["%s {{!is|is not}} active where %s"] = true
 
 L["%s {{!is|is not}} an enemy"] = true
 
@@ -2107,6 +2149,7 @@ L["%s {{!is|is not}} attackable"] = true
 L["%s {{!is|is not}} available"] = true
 
 L["%s {{!is|is not}} beyond melee range"] = true
+L["%s {{!are|are not}} beyond melee range"] = true
 
 L["%s {{!is|is not}} currently casting"] = true
 L["%s {{!is|is not}} currently channeling"] = true
@@ -2116,20 +2159,25 @@ L["{unit} {{!is|is not}} currently casting {spell}"] = true
 L["{unit} {{!is|is not}} currently channeling {spell}"] = true
 
 L["%s {{!is|is not}} immune to %s"] = true
+L["%s {{!are|are not}} immune to %s"] = true
 
 L["%s {{!is|is not}} in a %s role"] = true
+L["%s role {{!is|is not}} %s"] = true
 
 L["%s {{!is|is not}} in combat"] = true
 
 L["%s {{!is|is not}} in range"] = true
 
 L["%s {{!is|is not}} sometimes immune to %s"] = true
+L["%s {{!are|are not}} sometimes immune to %s"] = true
 
 L["%s {{!will|will not}} run"] = true
 
 L["%s's channeled spell {{!is|is not}} interruptable"] = true
+L["%s channeled spell {{!is|is not}} interruptible"] = true
 
 L["%s's spell {{!is|is not}} interruptable"] = true
+L["%s spell {{!is|is not}} interruptible"] = true
 
 
 
@@ -2157,12 +2205,15 @@ L["not (%s)"] = true
 L["you {{!are|are not}} at least %s on %s"] = true
 
 L["you {{!are|are not}} in %s form"] = true
+L["you {{!are|are not}} in %s"] = true
 
 L["you {{!are|are not}} in a %s instance"] = true
+L["your instance type {{!is|is not}} %s"] = true
 
 L["you {{!are|are not}} in a group"] = true
 
 L["you {{!are|are not}} in a outdoors"] = true
+L["you {{!are|are not}} outdoors"] = true
 
 L["you {{!are|are not}} in a raid"] = true
 
@@ -2177,8 +2228,10 @@ L["you {{!are|are not}} talented in %s"] = true
 L["you {{!have|do not have}} %s equipped"] = true
 
 L["you {{!have|do not have}} %s glyph"] = true
+L["you {{!have|do not have}} %s active"] = true
 
 L["you {{!have|do not have}} a %s totem active with %s"] = true
+L["you {{!have|do not have}} a %s totem active where %s"] = true
 
 L["you {{!have|do not have}} a pet"] = true
 
@@ -2188,6 +2241,7 @@ L["you {{!have|do not have}} a pet named {name}"] = true
 L["your primary talent tree {{!is|is not}} %s"] = true
 
 L["zone {{!is|is not}} a %s zone"] = true
+L["the zone's PVP status {{!is|is not}} %s"] = true
 
 L["{{!in|not in}} %s"] = true
 L["{{!in|not in}} {zone}"] = true

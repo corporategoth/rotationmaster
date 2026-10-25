@@ -19,7 +19,7 @@ function addon.layout_custom_condition_options_help(frame)
 
     group:AddChild(Gap())
     group:AddChild(CreatePictureText("Interface\\Icons\\INV_Misc_QuestionMark", 36, 36,
-        "The icon to use for quick identification of the condition in question.  This icon iself has no real " ..
+        "The icon to use for quick identification of the condition in question.  This icon itself has no real " ..
         "meaning, and is simply used to make conditions more visually distinguishable."))
 
     group:AddChild(Gap())
@@ -40,14 +40,14 @@ function addon.layout_custom_condition_options_help(frame)
     group:AddChild(Indent(40, CreateText(color.GREEN .. "spec" .. color.RESET ..
             " is the talent specification in use for this condition, where multiple specifications are available.")))
     group:AddChild(Indent(40, CreateText(color.GREEN .. "value" .. color.RESET ..
-            " is a vartiable that stores all parameters for this condition.")))
+            " is a variable that stores all parameters for this condition.")))
     group:AddChild(CreateText("This function returns true if this condition is valid, false otherwise."))
 
     group:AddChild(Gap())
     group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Evaluation Function"] .. color.RESET .. " - " ..
         "The function used to evaluate a this condition real-time."))
     group:AddChild(Indent(40, CreateText(color.GREEN .. "value" .. color.RESET ..
-            " is a vartiable that stores all parameters for this condition.")))
+            " is a variable that stores all parameters for this condition.")))
     group:AddChild(Indent(40, CreateText(color.GREEN .. "cache" .. color.RESET ..
             " is a cache that is used to store the results of WoW API calls, such that they do not need " ..
             "to be evaluated more than once.  This cache is reset every time the rotation steps are evaluated." ..
@@ -65,7 +65,7 @@ function addon.layout_custom_condition_options_help(frame)
     group:AddChild(Indent(40, CreateText(color.GREEN .. "spec" .. color.RESET ..
             " is the talent specification in use for this condition, where multiple specifications are available.")))
     group:AddChild(Indent(40, CreateText(color.GREEN .. "value" .. color.RESET ..
-            " is a vartiable that stores all parameters for this condition.")))
+            " is a variable that stores all parameters for this condition.")))
     group:AddChild(CreateText("This function returns a string that describes this condition, including any parameters."))
 
     group:AddChild(Gap())
@@ -77,7 +77,7 @@ function addon.layout_custom_condition_options_help(frame)
     group:AddChild(Indent(40, CreateText(color.GREEN .. "spec" .. color.RESET ..
             " is the talent specification in use for this condition, where multiple specifications are available.")))
     group:AddChild(Indent(40, CreateText(color.GREEN .. "value" .. color.RESET ..
-            " is a vartiable that stores all parameters for this condition.")))
+            " is a variable that stores all parameters for this condition.")))
 
     group:AddChild(Gap())
     group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Help Function"] .. color.RESET .. " - " ..

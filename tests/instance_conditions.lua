@@ -69,9 +69,9 @@ test('saved raw callbacks remain exact and retain their historical missing obser
 end)
 test('only one exact evaluator differs from complete misc baseline and private identities remain exact',function()
     local _,a=fixture();local file=assert(io.open('Conditions/misc.lua'));local text=file:read('*a');file:close();text=dofile('tests/fixtures/restore_environment_selector_repairs.lua')(text);text=dofile('tests/fixtures/restore_zone_pvp_repairs.lua')(text)
-    assert(a:FunctionSourceHash(inverse(text))=='9bc49246','misc changed beyond INSTANCE evaluator from7fa128a')
+    assert(a:FunctionSourceHash(inverse(text))=='5bef8846','misc changed beyond INSTANCE evaluator from7fa128a')
     for name,hash in pairs({color='89a5436e',helpers='3ab28a24'}) do local id='builtin:Conditions/misc.lua:'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/misc.lua'](name)) end
     local zone=a:GetBuiltinConditionSource('ZONEPVP');zone.widget=dofile('tests/fixtures/restore_environment_selector_repairs.lua')(zone.widget,'ZONEPVP');zone.evaluate=dofile('tests/fixtures/restore_zone_pvp_repairs.lua')(zone.evaluate,true)
-    assert(a:FunctionSourceHash(zone)=='d8e7637a','zone source changed beyond its separate approved evaluator')
+    assert(a:FunctionSourceHash(zone)=='9c180925','zone source changed beyond its separate approved evaluator')
 end)
 finish()

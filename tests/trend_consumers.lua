@@ -121,7 +121,7 @@ if arg[1]~='--runtime-only' then
  test('historical restored actual source copies use canonical trend while archived exact raw sources retain legacy authority',function()
   for _,tag in ipairs(tags) do local _,a,s=fixture();local source=assert(a:GetBuiltinConditionSource(tag));assert(source.evaluate==newBodies[tag],'current forecast source catalog stale')
    local copy=assert(a:CompileCustomCondition('COPY_'..tag,source));local rawSource=a:CopySettingsData(source);rawSource.evaluate=oldBodies[tag]
-   local hashes={TT_HEALTH='771c0082',TT_HEALTHPCT='0def75eb'};assert(a:FunctionSourceHash(rawSource)==hashes[tag],'prequalification archived source changed')
+   local hashes={TT_HEALTH='3c6d7b43',TT_HEALTHPCT='6d896c48'};assert(a:FunctionSourceHash(rawSource)==hashes[tag],'prequalification archived source changed')
    local before=a:CopySettingsData(rawSource);a.db.global.custom_conditions={['RAW_'..tag]=rawSource};local raw=assert(a:CompileCustomCondition('RAW_'..tag,rawSource));local v=node(tag)
    a.calculate_trend=function(...) assert(select('#',...)==4 and select(1,...)==s.history and select(2,...)==nil and select(3,...)==false and select(4,...)==false);return -10,3 end
    a.Functions.trends.calculate=function() error('raw source crossed canonical boundary') end;assert(raw.evaluate(v,{})==true)

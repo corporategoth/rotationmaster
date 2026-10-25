@@ -20,7 +20,7 @@ addon:RegisterCondition('DEAD',{
         return Functions.cache.getCached(cache,addon.Platform.GetUnitStateObservation,addon.Platform,value.unit,'dead')
     end,
     print=function(_,value)
-        return addon.Functions.presentation.phrase(L['{unit} {{!is dead or a ghost|is alive}}'],{unit=addon.units[value.unit] or L['<unit>']})
+        return addon.Functions.presentation.phrase(value.unit=='player' and L['{unit} {{!are dead or a ghost|are alive}}'] or L['{unit} {{!is dead or a ghost|is alive}}'],{unit=addon.units[value.unit] or L['<unit>']})
     end,
     widget=widget,
     help=function(frame)
@@ -35,7 +35,7 @@ addon:RegisterCondition('FRIENDLY',{
         return Functions.cache.getCached(cache,addon.Platform.GetUnitStateObservation,addon.Platform,value.unit,'friendly')
     end,
     print=function(_,value)
-        return addon.Functions.presentation.phrase(L['{unit} {{!is friendly to you|is not friendly to you}}'],{unit=addon.units[value.unit] or L['<unit>']})
+        return addon.Functions.presentation.phrase(value.unit=='player' and L['{unit} {{!are friendly|are not friendly}}'] or L['{unit} {{!is friendly to you|is not friendly to you}}'],{unit=addon.units[value.unit] or L['<unit>']})
     end,
     widget=widget,
     help=function(frame)

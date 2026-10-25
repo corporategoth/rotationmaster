@@ -1,4 +1,5 @@
--- Strict test-only inverse of exactly POWER and POINT print signs from efad377.
+-- Strict test-only inverse of exactly POWER and POINT print signs from efad377
+-- (the current bodies also carry the deficit spelling and "point total").
 local old={
  ["POWER"]='\n'..[=[
         if value.value ~= nil and value.value < 0 then
@@ -18,16 +19,16 @@ local old={
 local repaired={
  ["POWER"]='\n'..[=[
         if value.value ~= nil and value.value < 0 then
-            return Functions.presentation.compareString(value.operator, string.format(L["%s power defecit"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), -value.value)
+            return Functions.presentation.compareString(value.operator, string.format(L["%s power deficit"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), -value.value)
         else
             return Functions.presentation.compareString(value.operator, string.format(L["%s power"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(value.value))
         end
     ]=],
  ["POINT"]='\n'..[=[
         if value.value ~= nil and value.value < 0 then
-            return Functions.presentation.compareString(value.operator, string.format(L["%s point defecit"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), -value.value)
+            return Functions.presentation.compareString(value.operator, string.format(L["%s point deficit"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), -value.value)
         else
-            return Functions.presentation.compareString(value.operator, string.format(L["%s points"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(value.value))
+            return Functions.presentation.compareString(value.operator, string.format(L["%s point total"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(value.value))
         end
     ]=],
 }

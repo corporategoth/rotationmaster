@@ -58,7 +58,7 @@ oldBindings["RUNNER"]={
  ["color"]="builtin:Conditions/character.lua:color",
  ["helpers"]="builtin:Conditions/character.lua:helpers",
 }
-oldHashes["RESIST"]="b752e931"
+oldHashes["RESIST"]="72839c13"
 oldBindings["RESIST"]={
  ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
  ["Functions.collections.deepcopy"]="builtin:Functions/collections.lua:deepcopy",
@@ -71,7 +71,7 @@ oldBindings["RESIST"]={
  ["color"]="builtin:Conditions/character.lua:color",
  ["helpers"]="builtin:Conditions/character.lua:helpers",
 }
-oldHashes["IMMUNE"]="922421a9"
+oldHashes["IMMUNE"]="b6f236ba"
 oldBindings["IMMUNE"]={
  ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
  ["Functions.collections.deepcopy"]="builtin:Functions/collections.lua:deepcopy",

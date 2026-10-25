@@ -289,6 +289,12 @@ addon.math_operations = {
     average = L["Average"],
     maximum = L["Maximum"],
 }
+-- The same operations inside a sentence ("the lowest health of ...").
+addon.math_operations_prose = {
+    minimum = L["lowest"],
+    average = L["average"],
+    maximum = L["highest"],
+}
 
 if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
     addon.glyphs = {

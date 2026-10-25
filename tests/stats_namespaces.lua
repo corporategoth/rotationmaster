@@ -223,7 +223,7 @@ test('legacy-shaped full sources retain every original native expression field H
         end
         baseline[tag].icon='Interface\\AddOns\\rotationmaster\\Assets\\Conditions\\'..(tag=='RUNE_COOLDOWN' and 'time' or 'resources')
     end
-    assert(a:FunctionSourceHash(baseline)=='2f0261d2','source changed beyond the selected call substitutions')
+    assert(a:FunctionSourceHash(baseline)=='2289ce64','source changed beyond the selected call substitutions')
     for name,hash in pairs({color='89107d36',helpers='c19dbbac'}) do local id='builtin:Conditions/stats.lua:'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/stats.lua'](name)) end
 end)
 test('registered and canonical and legacy clones agree on validation and positive negative summary matrices',function()
