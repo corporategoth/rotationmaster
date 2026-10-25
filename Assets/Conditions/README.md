@@ -1,6 +1,6 @@
 # Original condition icon family
 
-These sixteen semantic icons are original raster artwork generated separately
+These seventeen semantic icons are original raster artwork generated separately
 with the built-in `image_gen.imagegen` tool, with `transparent_background: true`.
 They are bundled artwork; the addon does not generate or download images at run
 time. No existing game icon or third-party reference image was used as input.
@@ -40,6 +40,7 @@ smaller source texture is appropriate. Both runtime sizes are powers of two.
 | totem | Wooden ritual face with turquoise and feathers | Totems |
 | environment | Green hill, gold sun, blue sky crescent | Instance/outdoors/zone |
 | time | Bronze hourglass with blue bulbs and gold sand | Cooldown/duration/history |
+| stop | Worn crimson octagon with gold rim and raised open palm | Stop rotation/advice, including auto-attack suppression |
 
 ## Rebuild and checks
 
@@ -47,13 +48,15 @@ Run `python3 Assets/Conditions/export_icons.py` with Pillow available. It copies
 originals only when missing, resizes in premultiplied alpha to avoid dark edge
 fringes, contains the full source within a square with a small transparent
 margin, and exports TGA plus QA sheets. It never paints replacement artwork or
-removes generated content. An existing original PNG is not overwritten.
+removes generated content. Existing original PNGs and runtime TGAs are not
+overwritten; existing TGAs are validated against the expected resize. Contact
+sheets grow to fit every manifest entry.
 
 The exporter reopens every TGA and verifies decoded RGBA bytes match the resize,
 dimensions match 64 or 128, image type is 2 (uncompressed true-color), depth is
-32 bits, and the descriptor declares 8 alpha bits. All sixteen originals and
-all thirty-two runtime exports have alpha extrema 0–255. Original transparent
-coverage is 39.91–76.45%; 128 px export coverage is 45.90–77.45%. Every export
+32 bits, and the descriptor declares 8 alpha bits. All seventeen originals and
+all thirty-four runtime exports have alpha extrema 0–255. Original transparent
+coverage is 31.97–76.45%; 128 px export coverage is 41.44–77.45%. Every export
 corner is transparent. The precise per-file results are in the alpha report.
 
 Visual inspection of both contact sheets found distinct major silhouettes and
@@ -62,3 +65,12 @@ There are no opaque square backgrounds or visible white matte rectangles on
 either contrasting background. At 20 px, fine faces, runes, and engraving are
 not individually legible; the larger emblem supplies recognition. These are
 asset-format and visual-preview checks, not an in-game acceptance test.
+
+The Stop addition was accepted from its first generation: its red octagonal
+silhouette and gold palm remain recognizable at 20/24/32 px on both backgrounds,
+distinct from the combat axes and the casting hand/fireball. Only the QA sheets
+and alpha report were regenerated; SHA-256 comparison confirmed all 499 existing
+PNG/TGA artwork files (including the v2 family) remained byte-identical. The two
+QA contact-sheet PNGs are the intentional exception. No Lua integration was
+changed. The release rules already include both root-family Stop TGAs; the
+generated artwork catalog selects the separate v2 family and is unchanged.
