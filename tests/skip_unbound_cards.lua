@@ -22,15 +22,15 @@ local function fixture()
     function a:validateCondition() return true end
     a.UpdateAutoSwitch=function() end;a.SwitchRotation=function() end;a.EvaluateNextAction=function() end
     -- The modelled index: which actions are on a bar, and who watches it.
-    local bars={[TIGER_PALM]=true};local watchers={};local calls=0
+    local bars={[TIGER_PALM]=true};local watchers={};local calls=0;local suggestionMissing={KEG}
     function a:GetStepBinding(step)
         calls=calls+1
-        if step.type=='assisted' then if bars[KEG] then return true end;return false,{KEG} end
+        if step.type=='assisted' then if bars[KEG] then return true end;return false,suggestionMissing end
         if step.type~='spell' or step.action==nil then return nil end
         return bars[step.action]==true
     end
     function a:WatchButtonIndex(key,callback) watchers[key]=callback end
-    local index={bars=bars,watchers=watchers,calls=function() return calls end}
+    local index={bars=bars,watchers=watchers,calls=function() return calls end,missing=function(list) suggestionMissing=list end}
     function index.rescan() for _,callback in pairs(watchers) do callback() end end
     local tones={}
     local decorate=nil
@@ -72,12 +72,24 @@ test('a step on no bar wears the amber warning row and tooltip; a bound step, St
     assert(keg.model.height==tp.model.height+f.addon.RotationCardNoticeHeight,'heights '..keg.model.height..' vs '..tp.model.height)
 end)
 
-test('Blizzard\'s suggestion names the suggestion spells on no bar',function()
+test('Blizzard\'s suggestion counts the suggestion spells on no bar and names them',function()
     local f,parent=fixture()
     local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'))
     local c=card(pane,'blizzard')
-    assert(c.unbound:IsShown() and c.unbound:GetText():find('Some suggestions are not on your action bars'),tostring(c.unbound:GetText()))
-    assert(c.unbound.tooltip:find('Blizzard can suggest',1,true) and c.unbound.tooltip:find(tostring(KEG),1,true),c.unbound.tooltip)
+    assert(c.unbound:IsShown() and c.unbound:GetText()=="1 of the spells Blizzard can suggest isn't on your action bars, so the card skips it.",tostring(c.unbound:GetText()))
+    assert(c.unbound.tooltip:find('Not on your action bars:',1,true) and c.unbound.tooltip:find(tostring(KEG),1,true),c.unbound.tooltip)
+    assert(c.unbound.tooltip:find('still works for every suggestion that is on your bars',1,true),c.unbound.tooltip)
+end)
+
+test('many spells off the bars: the row says how many, the tooltip lists the first few and the rest as a count',function()
+    local f,parent,index=fixture()
+    local list={};for i=1,8 do list[i]=1000+i end;index.missing(list)
+    local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'))
+    local c=card(pane,'blizzard')
+    assert(c.unbound:GetText()=="8 of the spells Blizzard can suggest aren't on your action bars, so the card skips them.",tostring(c.unbound:GetText()))
+    local tip=c.unbound.tooltip
+    for i=1,5 do assert(tip:find(tostring(1000+i),1,true),'the tooltip does not list spell '..i) end
+    assert(not tip:find('1006',1,true) and tip:find(', and 3 more',1,true),'the rest are not summarized: '..tip)
 end)
 
 test('cooldown cards warn too, with the cooldown wording',function()

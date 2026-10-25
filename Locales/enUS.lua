@@ -4036,10 +4036,13 @@ L["Help.Conditions.WEAPON_TYPE.examples"] = "Dual wielding: off hand holds any w
 
 -- Steps whose action is on no action bar (buttons.lua GetStepBinding).
 L["Not on your action bars, so it can't be highlighted. It is skipped."] = true
-L["Some suggestions are not on your action bars, so they can't be highlighted. They are skipped."] = true
+L["1 of the spells Blizzard can suggest isn't on your action bars, so the card skips it."] = true
+L["%d of the spells Blizzard can suggest aren't on your action bars, so the card skips them."] = true
+L['%s, and %d more'] = true
+L['Not on your action bars: %s.'] = true
 L["Rotation Master highlights a step by lighting the action button that holds it. No action bar button holds this action right now, so this step is skipped and the next step is used instead. Put it on an action bar to use it. Spells inside macros count only where the game lets addons read macros (not on Retail)."] = true
 L["Rotation Master highlights a cooldown by lighting the action button that holds it. No action bar button holds this action right now, so this cooldown is never shown or announced. Put it on an action bar to use it. Spells inside macros count only where the game lets addons read macros (not on Retail)."] = true
-L["Blizzard can suggest %s, but no action bar button holds it. Rotation Master highlights an action by lighting the button that holds it, so when one of these is suggested this step is skipped and the next step is used instead. Put them on an action bar to use them."] = true
+L["Rotation Master highlights an action by lighting the button that holds it, so it can't highlight these. The card still works for every suggestion that is on your bars: it skips one only when it is suggested, and the next step is used instead. Put these on an action bar to use them."] = true
 L["Skipped, not on your action bars (they cannot be highlighted): %s."] = true
 L["step %s"] = true
 L["cooldown"] = true
