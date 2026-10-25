@@ -461,6 +461,13 @@ function addon:Widget_OperatorWidget(value, name, update, op_field, val_field)
     edit:SetDisabled(value.disabled)
     operator_group:AddChild(edit)
 
+    -- A caller that fills in the operator and value itself (picking a
+    -- talent supplies a default comparison) shows them with this.
+    operator_group.Refresh = function()
+        operator.configure()
+        edit:SetText(value[val_field or "value"])
+    end
+
     return operator_group
 end
 

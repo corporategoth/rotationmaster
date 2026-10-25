@@ -3993,7 +3993,8 @@ L["Choice Entry ID"] = true
 L["talent node %s"] = true
 L["ranks in %s"] = true
 L["the number of ranks in %s"] = true
-L["Retail and Forever compare the rank of a talent node in your active loadout. Pick it from your talent tree, or enter the node ID (and, for a choice node, the entry ID of the choice) to share a rotation; a choice node's entry has rank zero unless it is the chosen one. A hero talent outside your chosen hero tree has rank zero. Ranks are read again after any talent change; an unreadable node is unavailable, including under NOT."] = true
+L["Retail and Forever compare the rank of a talent in your active loadout. Pick it from the talents of the rotation's specialization (the Specialization list shows another specialization's, outside combat), or enter the node ID (and, for a choice node, the entry ID of the choice) to share a rotation. A choice node's entry has rank zero unless it is the chosen one, a hero talent outside your chosen hero tree has rank zero, and so does a talent of a specialization you are not playing. A talent picked from the list also remembers its spell, and is found again by it if Blizzard renumbers the talent tree. Ranks are read again after any talent change; an unreadable node is unavailable, including under NOT."] = true
+L["Talents of another specialization cannot be loaded during combat. A node ID entered below is kept and evaluated."] = true
 L["Forever is the exception: Talent tree is one of the three talent trees of your active loadout (in the order the talent window shows them); their points are read again after any talent change. Retail has no such trees."] = true
 
 -- Specialization and weapon type conditions (Conditions/specialization.lua, Conditions/equipment.lua).

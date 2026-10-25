@@ -179,6 +179,12 @@ end
 local function traitID(value)
     return platform:CanReadValue(value) and type(value)=='number' and value>0 and value<2147483648 and value%1==0
 end
+-- Blizzard's view loadout config (Constants.TraitConsts.VIEW_TRAIT_CONFIG_ID,
+-- TraitConstantsDocumentation.lua) has a negative ID; every other config is positive.
+local VIEW_CONFIG=-3
+local function traitConfig(value)
+    return traitID(value) or (platform:CanReadValue(value) and value==VIEW_CONFIG)
+end
 local function traits(name,...)
     local namespace=C_Traits
     local fn=type(namespace)=='table' and namespace[name] or nil
@@ -261,8 +267,10 @@ function platform:GetTraitTreeGroups(config,tree)
 end
 
 -- One node's committed state in a config: rank (0 when the node's hero
--- subtree is not chosen), the active entry and the maximum rank.
-function platform:GetTraitNodeState(config,node)
+-- subtree is not chosen), the active entry and the maximum rank. With
+-- withEntries the node's entry IDs come back too (a fresh list), for matching
+-- a saved spell ID against the node.
+function platform:GetTraitNodeState(config,node,withEntries)
     local supported,reason=traitsLayout();if not supported then return nil,reason end
     if not traitID(config) or not traitID(node) then return nil,'invalid-talent-query' end
     local ok,info=traits('GetNodeInfo',config,node)
@@ -280,22 +288,48 @@ function platform:GetTraitNodeState(config,node)
     end
     local rank=info.activeRank
     if info.subTreeID~=nil and info.subTreeActive~=true then rank=0 end
-    return {rank=rank,entry=entry,maxRanks=info.maxRanks}
+    local state={rank=rank,entry=entry,maxRanks=info.maxRanks}
+    if withEntries then
+        if not self:CanReadValue(info.entryIDs) or type(info.entryIDs)~='table' then return nil,'restricted-value' end
+        local entries={}
+        for _,id in ipairs(info.entryIDs) do
+            if not self:CanReadValue(id) then return nil,'restricted-value' end
+            if traitID(id) then entries[#entries+1]=id end
+        end
+        state.entries=entries
+    end
+    return state
 end
 
--- A trait entry's display identity: name, icon and spell ID.
-function platform:GetTraitEntryIdentity(config,entry)
-    if not traitID(config) or not traitID(entry) then return nil,'invalid-talent-query' end
+-- A trait entry's definition: the spell ID it teaches and its display
+-- overrides. Two C_Traits reads, no spell lookup.
+local function entryDefinition(config,entry)
+    if not traitConfig(config) or not traitID(entry) then return nil,'invalid-talent-query' end
     local ok,info=traits('GetEntryInfo',config,entry)
     if not ok then return nil,info end
-    if type(info)~='table' or not self:CanReadValue(info.definitionID) or not self:CanReadValue(info.maxRanks) then return nil,'restricted-value' end
+    if type(info)~='table' or not platform:CanReadValue(info.definitionID) or not platform:CanReadValue(info.maxRanks) then return nil,'restricted-value' end
     if not traitID(info.definitionID) then return nil,'talent-entry-unavailable' end
     local okDef,definition=traits('GetDefinitionInfo',info.definitionID)
     if not okDef then return nil,definition end
     if type(definition)~='table' then return nil,'talent-entry-unavailable' end
     for _,key in ipairs({'spellID','overrideName','overrideIcon'}) do
-        if not self:CanReadValue(definition[key]) then return nil,'restricted-value' end
+        if not platform:CanReadValue(definition[key]) then return nil,'restricted-value' end
     end
+    return info,definition
+end
+
+-- The spell ID a trait entry teaches, or nil and a reason.
+function platform:GetTraitEntrySpell(config,entry)
+    local info,definition=entryDefinition(config,entry)
+    if not info then return nil,definition end
+    if not traitID(definition.spellID) then return nil,'talent-entry-unavailable' end
+    return definition.spellID
+end
+
+-- A trait entry's display identity: name, icon and spell ID.
+function platform:GetTraitEntryIdentity(config,entry)
+    local info,definition=entryDefinition(config,entry)
+    if not info then return nil,definition end
     local spell=traitID(definition.spellID) and definition.spellID or nil
     local name=type(definition.overrideName)=='string' and definition.overrideName~='' and definition.overrideName or nil
     local icon=definition.overrideIcon
@@ -308,70 +342,169 @@ function platform:GetTraitEntryIdentity(config,entry)
 end
 
 -- A node's display identity (its chosen entry, else the given or first one).
-function platform:GetTraitTalentIdentity(node,entry)
+-- A saved spell ID names the talent when the node is gone from the tree.
+function platform:GetTraitTalentIdentity(node,entry,spell)
     local config,why=self:GetActiveTraitConfig();if not config then return nil,why end
     if not traitID(node) then return nil,'invalid-talent-query' end
+    local identity,reason
     if entry==nil then
         local ok,info=traits('GetNodeInfo',config,node)
-        if not ok then return nil,info end
-        if type(info)~='table' or not self:CanReadValue(info.ID) or info.ID~=node or not self:CanReadValue(info.entryIDs) then return nil,'talent-node-unavailable' end
-        local active=info.activeEntry
-        if type(active)=='table' and self:CanReadValue(active.entryID) and traitID(active.entryID) then entry=active.entryID
-        elseif type(info.entryIDs)=='table' and self:CanReadValue(info.entryIDs[1]) and traitID(info.entryIDs[1]) then entry=info.entryIDs[1] end
-        if entry==nil then return nil,'talent-node-unavailable' end
+        if not ok then identity,reason=nil,info
+        elseif type(info)~='table' or not self:CanReadValue(info.ID) or info.ID~=node or not self:CanReadValue(info.entryIDs) then reason='talent-node-unavailable'
+        else
+            local active=info.activeEntry
+            if type(active)=='table' and self:CanReadValue(active.entryID) and traitID(active.entryID) then entry=active.entryID
+            elseif type(info.entryIDs)=='table' and self:CanReadValue(info.entryIDs[1]) and traitID(info.entryIDs[1]) then entry=info.entryIDs[1] end
+            if entry==nil then reason='talent-node-unavailable' end
+        end
     end
-    return self:GetTraitEntryIdentity(config,entry)
+    if entry~=nil then identity,reason=self:GetTraitEntryIdentity(config,entry) end
+    if identity then return identity end
+    if traitID(spell) and self.GetSpellInfo then
+        local spellInfo=self:GetSpellInfo(spell)
+        if spellInfo then return {name=spellInfo.name,icon=spellInfo.iconID,spellID=spell} end
+    end
+    return nil,reason
 end
 
--- The character's talents for the editor, grouped: by tree on Forever, by
--- hero subtree (else one "Talents" group, groupName nil) on Retail. Each
--- talent is {node, entry (choice nodes only), name, icon, spellID, maxRanks}.
-function platform:GetTraitTalents()
-    local config,tree=self:GetActiveTraitConfig();if not config then return nil,tree end
+-- Where a specialization's talents are read. The specialization being played
+-- (or any, on a client with one tree per class) is the active config. Another
+-- specialization of the class is read from Blizzard's view loadout, the config
+-- the talent window fills to show a shared build
+-- (C_ClassTalents.InitializeViewLoadout(specID, level), tree from
+-- C_ClassTalents.GetTraitTreeForSpec(specID); Blizzard_ClassTalentImportExport.lua
+-- ViewLoadout). Returns config, tree and "active" or "view".
+local function classTalents(name,...)
+    local namespace=C_ClassTalents
+    local fn=type(namespace)=='table' and namespace[name] or nil
+    if type(fn)~='function' then return false,'missing-api' end
+    local ok,value=pcall(fn,...)
+    if not ok then return false,'api-error' end
+    if not platform:CanReadValue(value) then return false,'restricted-value' end
+    return true,value
+end
+local function viewLevel()
+    for _,name in ipairs({'GetMaxLevelForPlayerExpansion','GetMaxLevelForLatestExpansion'}) do
+        local fn=rawget(_G,name)
+        if type(fn)=='function' then
+            local ok,level=pcall(fn)
+            if ok and integer(level,1,200) then return level end
+        end
+    end
+    local ok,level=pcall(UnitLevel,'player')
+    if ok and integer(level,1,200) then return level end
+    return 80
+end
+function platform:GetTraitSpecTree(specID)
+    local supported,reason=traitsLayout();if not supported then return nil,reason end
+    local active,tree=self:GetActiveTraitConfig()
+    local wanted=self:GetClientFamily()=='retail' and integer(specID,1,2147483647) and specID or nil
+    if wanted and self.GetPlayerSpecializationID and active then
+        if self:GetPlayerSpecializationID()==wanted then wanted=nil end
+    end
+    if not wanted then
+        if not active then return nil,tree end
+        return active,tree,'active'
+    end
+    if self.IsInitialSpecialization and self:IsInitialSpecialization(wanted) then return nil,'talent-tree-unavailable' end
+    if type(InCombatLockdown)=='function' and InCombatLockdown() then return nil,'in-combat' end
+    local okTree,viewTree=classTalents('GetTraitTreeForSpec',wanted)
+    if not okTree then return nil,viewTree end
+    if viewTree==nil then return nil,'talent-tree-unavailable' end
+    if not traitID(viewTree) then return nil,'invalid-api-result' end
+    local okView,why=classTalents('InitializeViewLoadout',wanted,viewLevel())
+    if not okView then return nil,why end
+    local okInfo,info=traits('GetConfigInfo',VIEW_CONFIG)
+    if not okInfo then return nil,info end
+    if type(info)~='table' then return nil,'talent-config-unavailable' end
+    return VIEW_CONFIG,viewTree,'view'
+end
+
+-- The talents of a specialization for the editor, grouped: by tree on Forever,
+-- by hero subtree on Retail (the class and specialization talents form one
+-- group, name nil). specID names a Retail specialization (default: the one
+-- being played). Each talent is {node, entry (choice nodes only), name, icon,
+-- spellID, maxRanks}; a second result describes where they were read:
+-- {spec, source ("active" or "view"), hero (the subtree IDs the specialization
+-- can choose, when the client says)}.
+function platform:GetTraitTalents(specID)
+    local config,tree,source=self:GetTraitSpecTree(specID)
+    if not config then return nil,tree end
     local ok,nodes=traits('GetTreeNodes',tree)
     if not ok then return nil,nodes end
     if type(nodes)~='table' then return nil,'invalid-api-result' end
-    local trees=self:GetTraitTreeGroups(config,tree)
+    local trees=source=='active' and self:GetTraitTreeGroups(config,tree) or nil
     local groupIndex={}
     for index,group in ipairs(trees or {}) do groupIndex[group.groupID]=index end
+    -- Blizzard lists a hero subtree's nodes only when the specialization can
+    -- choose it (HeroTalentsContainer IsNodeInAvailableSubTree).
+    local heroAllowed
+    if self:GetClientFamily()=='retail' then
+        local okHero,ids=classTalents('GetHeroTalentSpecsForClassSpec',config,source=='view' and specID or nil)
+        if okHero and type(ids)=='table' then
+            local allowed,any={},false
+            for _,id in ipairs(ids) do if traitID(id) then allowed[id]=true;any=true end end
+            if any then heroAllowed=allowed end
+        end
+    end
+    local selection=2 -- Enum.TraitNodeType.Selection
     local groups,byKey={},{}
-    local function groupFor(key,name)
+    local function groupFor(key,name,hero)
         local group=byKey[key]
-        if not group then group={key=key,name=name,talents={}};byKey[key]=group;groups[#groups+1]=group end
+        if not group then group={key=key,name=name,hero=hero,talents={}};byKey[key]=group;groups[#groups+1]=group end
         return group
     end
     for _,group in ipairs(trees or {}) do groupFor('group:'..group.groupID,group.name) end
+    -- The first read that failed, reported when nothing could be listed.
+    local failure
     for index=1,#nodes do
         local node=nodes[index]
         local okNode,info=traits('GetNodeInfo',config,node)
+        if not okNode then failure=failure or info end
         if okNode and type(info)=='table' and self:CanReadValue(info.ID) and info.ID==node and self:CanReadValue(info.isVisible)
             and info.isVisible~=false and self:CanReadValue(info.entryIDs) and type(info.entryIDs)=='table' then
-            local key,name='talents',nil
+            local key,name,hero='talents',nil,nil
             if self:CanReadValue(info.groupIDs) and type(info.groupIDs)=='table' then
                 for _,id in ipairs(info.groupIDs) do
                     if self:CanReadValue(id) and groupIndex[id] then key,name='group:'..id,trees[groupIndex[id]].name;break end
                 end
             end
+            local skip=false
             if key=='talents' and self:CanReadValue(info.subTreeID) and traitID(info.subTreeID) then
-                local okSub,sub=traits('GetSubTreeInfo',config,info.subTreeID)
-                if okSub and type(sub)=='table' and self:CanReadValue(sub.name) and type(sub.name)=='string' and sub.name~='' then
-                    key,name='subtree:'..info.subTreeID,sub.name
+                if heroAllowed and not heroAllowed[info.subTreeID] then skip=true
+                else
+                    local okSub,sub=traits('GetSubTreeInfo',config,info.subTreeID)
+                    if okSub and type(sub)=='table' and self:CanReadValue(sub.name) and type(sub.name)=='string' and sub.name~='' then
+                        key,name,hero='subtree:'..info.subTreeID,sub.name,info.subTreeID
+                    end
                 end
             end
-            local choice=#info.entryIDs>1
-            for _,entry in ipairs(info.entryIDs) do
-                local identity=self:CanReadValue(entry) and self:GetTraitEntryIdentity(config,entry)
-                if identity then
-                    identity.node,identity.entry=node,choice and entry or nil
-                    identity.y=self:CanReadValue(info.posY) and type(info.posY)=='number' and info.posY or 0
-                    identity.x=self:CanReadValue(info.posX) and type(info.posX)=='number' and info.posX or 0
-                    local list=groupFor(key,name).talents
-                    list[#list+1]=identity
+            if not skip then
+                -- Only a selection node offers its entries as alternatives; a
+                -- tiered node's entries are the tiers of one talent.
+                local entries=info.entryIDs
+                local choice=#entries>1 and (info.type==selection or info.type==nil)
+                local shown=entries
+                if #entries>1 and not choice then
+                    local active=type(info.activeEntry)=='table' and self:CanReadValue(info.activeEntry.entryID) and info.activeEntry.entryID or nil
+                    shown={active or entries[1]}
+                end
+                for _,entry in ipairs(shown) do
+                    local identity,why
+                    if self:CanReadValue(entry) then identity,why=self:GetTraitEntryIdentity(config,entry) else why='restricted-value' end
+                    if not identity and why~='talent-entry-unavailable' then failure=failure or why end
+                    if identity then
+                        identity.node,identity.entry=node,choice and entry or nil
+                        identity.y=self:CanReadValue(info.posY) and type(info.posY)=='number' and info.posY or 0
+                        identity.x=self:CanReadValue(info.posX) and type(info.posX)=='number' and info.posX or 0
+                        local list=groupFor(key,name,hero).talents
+                        list[#list+1]=identity
+                    end
                 end
             end
         end
     end
-    local result={}
+    local result,heroes={},{}
     for _,group in ipairs(groups) do
         table.sort(group.talents,function(a,b)
             if a.y~=b.y then return a.y<b.y end
@@ -379,7 +512,46 @@ function platform:GetTraitTalents()
             return (a.entry or 0)<(b.entry or 0)
         end)
         for _,talent in ipairs(group.talents) do talent.x,talent.y=nil,nil end
-        if #group.talents>0 then result[#result+1]={name=group.name,talents=group.talents} end
+        if #group.talents>0 then
+            local list=group.hero and heroes or result
+            list[#list+1]={name=group.name,hero=group.hero,talents=group.talents}
+        end
     end
-    return result
+    -- The class and specialization talents first, then each hero tree.
+    for _,group in ipairs(heroes) do result[#result+1]=group end
+    if #result==0 and failure then return nil,failure end
+    local hero
+    if heroAllowed then hero={};for id in pairs(heroAllowed) do hero[#hero+1]=id end;table.sort(hero) end
+    return result,{spec=source=='view' and specID or nil,source=source,hero=hero}
+end
+
+-- Every spell ID the config's tree teaches and where: spell -> {node, entry
+-- (choice nodes only), visible}. Built on demand by the build context when a
+-- saved node ID no longer holds its talent (node IDs can change between
+-- patches; spell IDs do not).
+function platform:GetTraitSpellIndex(config,tree)
+    if not traitID(config) or not traitID(tree) then return nil,'invalid-talent-query' end
+    local ok,nodes=traits('GetTreeNodes',tree)
+    if not ok then return nil,nodes end
+    if type(nodes)~='table' then return nil,'invalid-api-result' end
+    local selection=2 -- Enum.TraitNodeType.Selection
+    local index={}
+    for position=1,#nodes do
+        local node=nodes[position]
+        local okNode,info=traits('GetNodeInfo',config,node)
+        if okNode and type(info)=='table' and self:CanReadValue(info.ID) and info.ID==node and self:CanReadValue(info.entryIDs)
+            and type(info.entryIDs)=='table' and self:CanReadValue(info.isVisible) then
+            local choice=#info.entryIDs>1 and (info.type==selection or info.type==nil)
+            for _,entry in ipairs(info.entryIDs) do
+                local spell=self:CanReadValue(entry) and self:GetTraitEntrySpell(config,entry)
+                if spell then
+                    local known=index[spell]
+                    if not known or (info.isVisible~=false and not known.visible) then
+                        index[spell]={node=node,entry=choice and entry or nil,visible=info.isVisible~=false}
+                    end
+                end
+            end
+        end
+    end
+    return index
 end

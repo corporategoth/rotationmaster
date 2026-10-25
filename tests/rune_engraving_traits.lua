@@ -308,7 +308,7 @@ test('trait editor groups talents by tree, writes node, entry and a rank on an e
     assert(F.text(parent):find('another talent layout',1,true) and value.tree==1,'viewing converted an old reference')
     local trees=assert(child(parent,'Talent Tree'));trees.configure();assert(trees.list[1]=='Arcane' and trees.list[2]=='Fire' and trees.list[3]=='Frost' and trees.list[4]=='Hero 90')
     local picker=assert(child(parent,'Talent'))
-    trees:Fire('OnValueChanged',3);picker.configure();assert(picker.list[1]=='Spell 8021 (choice)' and picker.list[2]=='Spell 8022 (choice)')
+    trees:Fire('OnValueChanged',3);picker.configure();assert(picker.list[1].text=='Spell 8021 (choice)' and picker.list[2].text=='Spell 8022 (choice)' and picker.list[1].icon,'talent list shows name and icon')
     picker:Fire('OnValueChanged',2)
     assert(value.layout=='traits' and value.node==102 and value.entry==2022 and value.tree==nil and value.talent==nil)
     assert(value.operator=='GREATERTHANOREQUALS' and value.value==1 and a.definitions.TALENT.valid(0,value) and top.statusText=='Updated condition')
