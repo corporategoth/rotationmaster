@@ -21,7 +21,7 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.shaman.restoration',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.shaman.restoration',revision=6,
  blocks={['forever.shaman.manual']=3,['forever.shaman.upkeep']=2,['forever.shaman.group-totems']=1,
   ['forever.shaman.caster-aoe']=1,['forever.shaman.stormstrike-hybrid']=1},
  nameKey='Default.Forever.Shaman.Restoration.Name',descriptionKey='Default.Forever.Shaman.Restoration.Description',

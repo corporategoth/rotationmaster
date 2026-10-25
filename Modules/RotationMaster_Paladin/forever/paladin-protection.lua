@@ -20,7 +20,7 @@ local function stop(id,conditions,attack)return{id=id,type='stop',suppress_attac
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local evil=any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',unit='target',value='DEMON'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.paladin.protection',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.paladin.protection',revision=6,
  blocks={['forever.paladin.boundaries']=3,['forever.paladin.aura-blessing']=1,['forever.paladin.taunt']=2,['forever.paladin.tank-upkeep']=2},
  nameKey='Default.Forever.Paladin.Protection.Name',descriptionKey='Default.Forever.Paladin.Protection.Description',
  applicability={families={'forever'},actionContext='player',class='PALADIN'},

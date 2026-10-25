@@ -19,7 +19,7 @@ local sliced={type='BUFF',unit='player',spell=5171,anyrank=true,ownbuff=true}
 local lasting=any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'},
  {type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.2})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.rogue.dps',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.era.rogue.dps',revision=5,
  blocks={['era.rogue.boundaries']=3,['era.rogue.opener']=3,['era.rogue.upkeep']=2,['era.rogue.builders']=2,['era.rogue.expose-armor']=2},
  nameKey='Default.Era.Rogue.DPS.Name',descriptionKey='Default.Era.Rogue.DPS.Description',
  applicability={families={'era'},actionContext='player',class='ROGUE'},
@@ -30,7 +30,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://www.icy-veins.com/wow-classic/sword-rogue-leveling-talent-build-from-1-to-60',title='Icy Veins: Classic Sword Rogue leveling 1-60',reviewedAt='2026-10-23',revision='2026-07-18'},
  {url='https://www.icy-veins.com/wow-classic/subtlety-rogue-leveling-talent-build-from-1-to-60',title='Icy Veins: Classic Subtlety Rogue leveling 1-60',reviewedAt='2026-10-23',revision='2026-07-18'},
  {url='https://www.wowhead.com/classic/guide/classes/rogue/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Classic Rogue DPS rotation, cooldowns and abilities',reviewedAt='2026-10-23',revision='2025-03-20'}},
- body={priority=10,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=10,
  cooldowns={block('era.rogue.upkeep','rogue-')},
  rotation={
  block('era.rogue.boundaries','rogue-'),

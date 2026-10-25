@@ -7,7 +7,7 @@
 local _,addon=...
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.initial',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.initial',revision=5,
  blocks={['retail.warlock.boundaries']=3,['retail.warlock.upkeep']=2},
  nameKey='Default.Retail.Warlock.Initial.Name',descriptionKey='Default.Retail.Warlock.Initial.Description',
  applicability={families={'retail'},actionContext='player',class='WARLOCK'},
@@ -16,7 +16,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/Gethe/wow-ui-source/blob/live/Interface/AddOns/Blizzard_APIDocumentationGenerated/AssistedCombatDocumentation.lua',title='Blizzard API documentation: C_AssistedCombat (12.1.5.70529)',reviewedAt='2026-10-23',revision='e7aa82019d'},
   {url='https://wago.tools/db2/ChrSpecialization',title='Blizzard client data: ChrSpecialization (the class initial specializations, order index 4)',reviewedAt='2026-10-23',revision='12.1.5',notes='Warlock initial specialization 1454.'},
  },
- body={priority=10,specs={1454},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=10,specs={1454},
   cooldowns={
    block('retail.warlock.upkeep','initial-'),
   },

@@ -20,7 +20,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local function garroted()return{type='DEBUFF',unit='target',spell=703,anyrank=true,owndebuff=true}end
 local function sliced()return{type='BUFF',unit='player',spell=5171,anyrank=true,ownbuff=true}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.rogue.subtlety.wowhead',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.rogue.subtlety.wowhead',revision=6,
  blocks={['forever.rogue.boundaries']=3,['forever.rogue.stealth-fallback']=3,['forever.rogue.expose-armor']=1,['forever.rogue.upkeep']=2},
  nameKey='Default.Forever.Rogue.Subtlety.Wowhead.Name',descriptionKey='Default.Forever.Rogue.Subtlety.Wowhead.Description',
  applicability={families={'forever'},actionContext='player',class='ROGUE'},

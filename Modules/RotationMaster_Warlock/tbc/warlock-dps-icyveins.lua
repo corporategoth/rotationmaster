@@ -19,7 +19,7 @@ local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='warlock-iv-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.warlock.dps.icyveins',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.warlock.dps.icyveins',revision=5,
  blocks={['tbc.warlock.boundaries']=3,['tbc.warlock.procs']=1,['tbc.warlock.moving']=2,['tbc.warlock.curse']=2,['tbc.warlock.aoe']=1,
   ['tbc.warlock.finishers']=1,['tbc.warlock.filler']=2,['tbc.warlock.armor']=1,['tbc.warlock.upkeep']=1},
  nameKey='Default.TBC.Warlock.DpsIcyVeins.Name',descriptionKey='Default.TBC.Warlock.DpsIcyVeins.Description',

@@ -21,7 +21,7 @@ local ARROW=3674
 local arrow=all(any(negate({type='DEBUFF',unit='target',spell=ARROW,owndebuff=true}),{type='DEBUFF_REMAIN',unit='target',spell=ARROW,owndebuff=true,operator='LESSTHAN',value=2}),
  {type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=8})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.survival',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.survival',revision=7,
  blocks={['mop.hunter.boundaries']=3,['mop.hunter.mark']=1,['mop.hunter.pet']=1,['mop.hunter.aspect']=1,['mop.hunter.utility']=1,['mop.hunter.burst']=1,
   ['mop.hunter.talents']=1,['mop.hunter.talent-shots']=1,['mop.hunter.serpent']=1,['mop.hunter.filler']=2},
  nameKey='Default.MoP.Hunter.Survival.Name',descriptionKey='Default.MoP.Hunter.Survival.Description',

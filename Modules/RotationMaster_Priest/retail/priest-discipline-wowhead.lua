@@ -10,7 +10,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local friend=all({type='LEVEL',unit='target',operator='GREATERTHAN',value=0},{type='FRIENDLY',unit='target'},negate({type='DEAD',unit='target'}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.priest.discipline.wowhead',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.priest.discipline.wowhead',revision=6,
  blocks={['retail.priest.upkeep']=2,['retail.priest.disc-cooldowns']=1},
  nameKey='Default.Retail.Priest.Discipline.Wowhead.Name',descriptionKey='Default.Retail.Priest.Discipline.Wowhead.Description',
  applicability={families={'retail'},actionContext='player',class='PRIEST'},
@@ -18,7 +18,7 @@ assert(addon:RegisterDefaultRotation({
  sources={
   {url='https://www.wowhead.com/guide/classes/priest/discipline/rotation-cooldowns-pve-healer',title='Wowhead: Discipline Priest rotation (Season 1)',reviewedAt='2026-10-23',revision='2026-03-09'},
  },
- body={priority=5,disabled=true,specs={256},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=5,disabled=true,specs={256},
   cooldowns={
    block('retail.priest.upkeep','discwh-'),
    block('retail.priest.disc-cooldowns','discwh-'),

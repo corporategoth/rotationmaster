@@ -59,7 +59,7 @@ local casterSection={
  stop('feral-caster-stop'),
 }
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.druid.feral',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.druid.feral',revision=7,
  blocks={['forever.druid.boundaries']=3,['forever.druid.upkeep']=1},
  nameKey='Default.Forever.Druid.Feral.Name',descriptionKey='Default.Forever.Druid.Feral.Description',
  applicability={families={'forever'},actionContext='player',class='DRUID'},

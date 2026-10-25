@@ -76,4 +76,25 @@ test('a specialization restriction (body.specs) applies the same in both engines
  same(runs.standard,runs.lean,'specialization restriction')
  assert(runs.lean[1]:find('/false',1,true) and runs.lean[4]:find('/true',1,true),table.concat(runs.lean,' '))
 end)
+-- A rotation with no switch condition (an empty switch, or none at all) matches whenever it applies, so
+-- automatic switching selects it and it runs identically in both engines; with a switch that fails it is
+-- not selected (a Built In takes over), in both.
+test('a rotation with no switch condition is selected and runs the same in both engines',function()
+ local runs={}
+ for _,engine in ipairs({'standard','lean'})do
+  local c=make(engine,{target=true});local a=c.a
+  local key=a.currentRotation;assert(key and key~=c.e.DEFAULT,'no rotation selected')
+  local seq={}
+  for _,switch in ipairs({'empty','absent','fails'})do
+   local record,token=a:GetRotationRecordSnapshot(0,key)
+   if switch=='empty' then record.body.switch={} elseif switch=='absent' then record.body.switch=nil else record.body.switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=999} end
+   local ref=assert(a:GetScopedRotationCoordinator():Resolve(0,key));assert(a:CommitRotationDraft(ref,token,record,'class'))
+   a:HandleCommand('set auto');a:UpdateAutoSwitch();a:SwitchRotation()
+   for _=1,3 do c.tick();seq[#seq+1]=switch..':'..tostring(c.a.currentSpell)..'/'..tostring(a.currentRotation==key) end
+  end
+  assert(not a.adviceErrorReport,'advice error');runs[engine]=seq
+ end
+ same(runs.standard,runs.lean,'no switch condition')
+ assert(runs.lean[1]:find('/true',1,true) and runs.lean[4]:find('/true',1,true) and runs.lean[7]:find('/false',1,true),table.concat(runs.lean,' '))
+end)
 print(pass..' passed, '..fail..' failed');if fail>0 then os.exit(1)end

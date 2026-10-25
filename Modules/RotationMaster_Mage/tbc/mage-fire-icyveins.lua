@@ -8,7 +8,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id)return{id=id,type='stop',suppress_attack=true,conditions={}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.mage.fire.icyveins',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.mage.fire.icyveins',revision=5,
  blocks={['tbc.mage.boundaries']=3,['tbc.mage.wand-finish']=2,['tbc.mage.moving-fire-blast']=2,['tbc.mage.fire-aoe']=1,
   ['tbc.mage.improved-scorch']=1,['tbc.mage.armor-molten']=1,['tbc.mage.upkeep']=1},
  nameKey='Default.TBC.Mage.FireIcyVeins.Name',descriptionKey='Default.TBC.Mage.FireIcyVeins.Description',

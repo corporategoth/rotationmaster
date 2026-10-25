@@ -18,7 +18,7 @@ local fingers=any({type='BUFF',unit='player',spell=400669},{type='BUFF',unit='pl
 local frozen=any({type='DEBUFF',unit='target',spell=122,anyrank=true},{type='DEBUFF',unit='target',spell=12494})
 local barrage=any({type='BUFF',unit='player',spell=400589},{type='BUFF',unit='player',spell=1326083})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.mage.frost',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.mage.frost',revision=6,
  blocks={['forever.mage.lance-batch']=1,['forever.mage.boundaries']=3,['forever.mage.frostbolt']=1,['forever.mage.wand']=3,['forever.mage.upkeep']=2},
  nameKey='Default.Forever.Mage.Frost.Name',descriptionKey='Default.Forever.Mage.Frost.Description',
  applicability={families={'forever'},actionContext='player',class='MAGE'},
@@ -31,7 +31,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.warcrafttavern.com/forever/news/scrolls-totems-mage-shaman-deep-dive-for-wow-forever/',title='Blizzard Mage and Shaman deep dive (as published by Warcraft Tavern)',reviewedAt='2026-10-23',revision='2026-10-07',notes='Mechanics only (Winter\'s Chill, Fingers of Frost); no priority.'},
   {url='https://github.com/simulationcraft/simc/blob/forever/SpellDataDump/mage.txt',title='SimulationCraft Forever spell data (1.60.1.70425)',reviewedAt='2026-10-23',revision='4dd64b4a21',notes='Spell IDs, ranks and auras only.'},
  },
- body={priority=10,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=10,
   cooldowns={
    block('frost-upkeep','forever.mage.upkeep','frost-'),
    spell('frost-cold-snap',12472,all(combat(),{type='SPELL_COOLDOWN',spell=122,operator='GREATERTHAN',value=2},{type='DISTANCE',unit='target',value=8})),

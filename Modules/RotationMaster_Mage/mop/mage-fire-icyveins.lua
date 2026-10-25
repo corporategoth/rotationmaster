@@ -13,7 +13,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local PYRO,HEAT,ALTER=48108,48107,110909
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.mage.fire.icyveins',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.mage.fire.icyveins',revision=7,
  blocks={['mop.mage.boundaries']=3,['mop.mage.upkeep']=1,['mop.mage.armor-molten']=1,['mop.mage.bombs']=1,['mop.mage.fire-open']=3,['mop.mage.fire-spend']=1,['mop.mage.fire-filler']=2},
  nameKey='Default.MoP.Mage.Fire.IcyVeins.Name',descriptionKey='Default.MoP.Mage.Fire.IcyVeins.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE'},

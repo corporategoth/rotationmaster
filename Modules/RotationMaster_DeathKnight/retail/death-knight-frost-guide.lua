@@ -24,7 +24,7 @@ local function priority(p,builder,spender)return{
 local aoe=priority('fguide-aoe-',207230,194913)
 aoe[#aoe+1]=spell('fguide-aoe-obliterate',49020);aoe[#aoe+1]=spell('fguide-aoe-frost-strike',49143)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.frost.guide',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.frost.guide',revision=6,
  blocks={['retail.deathknight.boundaries']=3,['retail.deathknight.utility']=2},
  nameKey='Default.Retail.DeathKnight.FrostGuide.Name',descriptionKey='Default.Retail.DeathKnight.FrostGuide.Description',
  applicability={families={'retail'},actionContext='player',class='DEATHKNIGHT'},
@@ -33,7 +33,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.icy-veins.com/wow/frost-death-knight-pve-dps-rotation-cooldowns-abilities',title='Icy Veins: Frost Death Knight rotation (12.1.5)',reviewedAt='2026-10-23',revision='2026-10-12'},
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/deathknight_frost.simc',title='SimulationCraft default action list: Frost',reviewedAt='2026-10-23',revision='c5fea93f'},
  },
- body={priority=10,disabled=true,specs={251},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=10,disabled=true,specs={251},
   cooldowns={
    block('fguide-utility','retail.deathknight.utility','fguide-'),
    spell('fguide-remorseless-winter',196770,combat()),

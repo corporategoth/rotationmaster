@@ -18,7 +18,7 @@ local function any(...)return{type='OR',value={...}}end
 local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
 local P='priest-sod-wct-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.priest.healer.warcrafttavern',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.priest.healer.warcrafttavern',revision=7,
  blocks={['era.priest.boundaries']=3,['era.priest.enemy-target']=2,['era.priest.dispels']=1,['era.priest.big-heal']=1,
   ['era.priest.friend-fortitude']=1,['era.priest.upkeep']=1,['era.priest.divine-spirit']=1,['sod.priest.healer-damage']=2,['sod.priest.healer-upkeep']=1},
  nameKey='Default.SoD.Priest.Healer.WarcraftTavern.Name',descriptionKey='Default.SoD.Priest.Healer.WarcraftTavern.Description',

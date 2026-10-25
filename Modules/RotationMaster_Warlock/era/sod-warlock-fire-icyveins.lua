@@ -18,7 +18,7 @@ local curses={980,603,1490,17862,704,1714,702,18223}
 local cursed={type='OR',value={}};for i,id in ipairs(curses)do cursed.value[i]=own(id)end
 local summon=all(negate({type='PET'}),negate(combat()))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.fire.icyveins',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.fire.icyveins',revision=6,
  blocks={['era.warlock.boundaries']=3,['era.warlock.armor']=1,['era.warlock.safety']=1},
  nameKey='Default.SoD.Warlock.Fire.IcyVeins.Name',descriptionKey='Default.SoD.Warlock.Fire.IcyVeins.Description',
  applicability={families={'era'},actionContext='player',class='WARLOCK',rulesets={'season:2'}},

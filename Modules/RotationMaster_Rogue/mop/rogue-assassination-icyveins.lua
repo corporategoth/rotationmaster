@@ -22,7 +22,7 @@ local sliced=own(5171)
 local boss={type='CLASSIFICATION',unit='target',value='worldboss'}
 local dying=all(points('GREATERTHANOREQUALS',2),lifetime('LESSTHAN',4))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.assassination.icyveins',revision=7,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.assassination.icyveins',revision=8,
  blocks={['mop.rogue.boundaries']=3,['mop.rogue.assassination-opener']=3,['mop.rogue.out-of-combat']=3,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1},
  nameKey='Default.MoP.Rogue.Assassination.IcyVeins.Name',descriptionKey='Default.MoP.Rogue.Assassination.IcyVeins.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE'},

@@ -9,7 +9,7 @@ local function negate(c)return{type='NOT',value=c}end
 local function own(id)return{type='BUFF',unit='player',spell=id,anyrank=true,ownbuff=true}end
 local function flame()return{type='DEBUFF',unit='target',spell=8050,anyrank=true,owndebuff=true}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.elemental.nextaction',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.elemental.nextaction',revision=5,
  blocks={['tbc.shaman.mainhand-imbue']=1,['tbc.shaman.bloodlust']=1,['tbc.shaman.elemental-opening']=2,['tbc.shaman.boundaries']=3,['tbc.shaman.interrupt']=1},
  nameKey='Default.TBC.Shaman.Elemental.NextAction.Name',descriptionKey='Default.TBC.Shaman.Elemental.NextAction.Description',
  applicability={families={'tbc'},actionContext='player',class='SHAMAN'},

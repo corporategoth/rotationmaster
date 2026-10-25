@@ -26,7 +26,7 @@ local cursed={type='OR',value={}};for i,id in ipairs(curses)do cursed.value[i]=o
 local incinerated=all(buff(412758),{type='BUFF_REMAIN',unit='player',spell=412758,operator='GREATERTHANOREQUALS',value=1.8})
 local summon=all(negate({type='PET'}),negate(combat()))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.fire',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.fire',revision=6,
  blocks={['era.warlock.boundaries']=3,['era.warlock.armor']=1,['era.warlock.safety']=1},
  nameKey='Default.SoD.Warlock.Fire.Name',descriptionKey='Default.SoD.Warlock.Fire.Description',
  applicability={families={'era'},actionContext='player',class='WARLOCK',rulesets={'season:2'}},

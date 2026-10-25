@@ -10,7 +10,7 @@ local function known(id)return{type='SPELL_KNOWN',spell=id}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.havoc',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.havoc',revision=6,
  blocks={['retail.demonhunter.boundaries']=3,['retail.demonhunter.utility']=2},
  nameKey='Default.Retail.DemonHunter.Havoc.Name',descriptionKey='Default.Retail.DemonHunter.Havoc.Description',
  applicability={families={'retail'},actionContext='player',class='DEMONHUNTER'},
@@ -20,7 +20,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/Gethe/wow-ui-source/blob/live/Interface/AddOns/Blizzard_APIDocumentationGenerated/AssistedCombatDocumentation.lua',title='Blizzard API documentation: C_AssistedCombat (12.1.5.70529)',reviewedAt='2026-10-23',revision='e7aa82019d'},
   {url='https://github.com/kaminaris/MaxDps-DemonHunter',title='MaxDps Demon Hunter (Midnight)',reviewedAt='2026-10-23',revision='238137bc',notes='Assisted Combat spell plus interrupt, defensive and cooldown glows.'},
  },
- body={priority=20,specs={577},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=20,specs={577},
   cooldowns={
    block('havoc-utility','retail.demonhunter.utility','havoc-'),
    spell('havoc-metamorphosis',191427,combat()),

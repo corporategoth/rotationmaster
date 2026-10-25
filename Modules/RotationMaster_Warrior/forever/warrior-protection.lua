@@ -25,7 +25,7 @@ local tanked={type='THREAT',unit='target',threat=3}
 local unqueued=all(negate(queued(78)),negate(queued(845)))
 local function rend()return spell('warrior-prot-rend',772,negate(debuff(772,true)))end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.warrior.protection',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.warrior.protection',revision=6,
  blocks={['forever.warrior.boundaries']=3,['forever.warrior.upkeep']=2},
  nameKey='Default.Forever.Warrior.Protection.Name',descriptionKey='Default.Forever.Warrior.Protection.Description',
  applicability={families={'forever'},actionContext='player',class='WARRIOR'},

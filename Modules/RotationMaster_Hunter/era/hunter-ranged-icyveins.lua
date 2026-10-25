@@ -12,7 +12,7 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.hunter.ranged.icyveins',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.era.hunter.ranged.icyveins',revision=5,
  blocks={['era.hunter.boundaries']=3,['era.hunter.dead-zone']=3,['era.hunter.opening']=3,['era.hunter.solo']=2,
   ['era.hunter.hawk']=1,['era.hunter.upkeep']=1},
  nameKey='Default.Era.Hunter.Ranged.IcyVeins.Name',descriptionKey='Default.Era.Hunter.Ranged.IcyVeins.Description',
@@ -23,7 +23,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.icy-veins.com/wow-classic/beast-mastery-hunter-leveling-guide-1-60',title='Icy Veins: Beast Mastery Hunter leveling 1-60',reviewedAt='2026-10-23',revision='2024-11-17'},
   {url='https://www.icy-veins.com/wow-classic/marksmanship-hunter-leveling-guide-1-60',title='Icy Veins: Marksmanship Hunter leveling 1-60',reviewedAt='2026-10-23',revision='2024-11-17'},
  },
- body={priority=5,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=5,disabled=true,
  cooldowns={block('era.hunter.hawk','hunter-'),block('era.hunter.upkeep','hunter-'),
   spell('hunter-rapid-fire',3045,all(combat(),negate(buff(3045)))),
   spell('hunter-bestial-wrath',19574,all(combat(),{type='PET'})),

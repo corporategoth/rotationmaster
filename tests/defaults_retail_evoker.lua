@@ -23,7 +23,7 @@ test('every Evoker premade loads for its own specialization only and declares Re
    local row=assert(rows[id],id);local scope=row.applicability
    assert(row.readOnly and row.builtin and #scope.families==1 and scope.families[1]=='retail'and scope.class=='EVOKER',id)
    assert(scope.specs==nil and scope.minLevel==nil and scope.maxLevel==nil,id..' scope: load-time facts only')
-   assert(row.envelope.body.switch.type=='LEVEL' and row.envelope.body.switch.value==1 and #row.envelope.body.specs==1 and row.envelope.body.specs[1]==spec,id..' specs')
+   assert(row.envelope.body.switch==nil and #row.envelope.body.specs==1 and row.envelope.body.specs[1]==spec,id..' specs')
    assert(row.eligible==(enabledByDefault[id]==true),id..' default enablement')
   end
   for other,list2 in pairs(ids)do if other~=spec then for _,id in ipairs(list2)do assert(rows[id]==nil or not rows[id].eligible,id..' eligible in spec '..spec)end end end

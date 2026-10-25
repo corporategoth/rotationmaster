@@ -106,22 +106,37 @@ test('a switch condition never hides a rotation from the minimap list or manual 
     assert(report:find('Rotations for Windwalker',1,true),report)
 end)
 
-test('automatic switching: the specialization first, then the switch, then priority; no switch is still manual only',function()
+test('automatic switching: the specialization first, then the switch, then priority; no switch condition matches',function()
     local f=T.new{level=10,specIndex=1};local a=f.addon
     for _,id in ipairs({'rm.retail.monk.brewmaster','rm.retail.monk.windwalker'}) do assert(a:SetDefaultRotationEnabled(id,false)) end
     local mine=custom(f,268,'Brewmaster mine',{priority=50,specs={268},switch=level(1)})
     local theirs=custom(f,268,'Windwalker mine',{priority=60,specs={269},switch=level(1)})
-    local hand=custom(f,268,'By hand',{priority=70,specs={268}})
-    a.db.profile.disable_autoswitch=false;a:DisableRotation();a.manualRotation=false;a:UpdateAutoSwitch();a:SwitchRotation()
-    assert(a.currentRotation==mine,'expected the Brewmaster rotation, got '..tostring(a:GetRotationName(a.currentRotation)))
-    assert(not a:IsManualOnlyRotation(268,mine) and a:IsManualOnlyRotation(268,hand),'manual only means no switch condition')
+    local plain=custom(f,268,'No switch',{priority=40,specs={268}})
+    local function inOrder(key) for _,k in ipairs(a.autoswitchRotation) do if k==key then return true end end end
+    local function pick() a.db.profile.disable_autoswitch=false;a:DisableRotation();a.manualRotation=false;a:UpdateAutoSwitch();a:SwitchRotation();return a.currentRotation end
+    assert(pick()==mine,'expected the Brewmaster rotation, got '..tostring(a:GetRotationName(a.currentRotation)))
+    local order=a.autoswitchRotation;local listed={};for _,k in ipairs(order) do listed[k]=true end
+    assert(listed[plain] and listed[mine],'a rotation with no switch condition is tried by automatic switching')
+    assert(a:HasSwitchCondition(level(1)) and not a:HasSwitchCondition(nil) and not a:HasSwitchCondition({}) and not a:HasSwitchCondition({type='AND',value={}}))
     local report=table.concat(a:GetRotationEligibilityReport(),'\n')
-    assert(report:find('By hand [by-hand]: ready, manual only',1,true),report)
+    assert(report:find('No switch [no-switch]: ready',1,true) and not report:find('manual only',1,true),report)
     assert(report:find('Windwalker mine [windwalker-mine]: cannot be selected, it is for Windwalker.',1,true),report)
     assert(a:AcquireRotationRuntimePass(268):Get(theirs)==nil)
+    -- With no switch it is chosen when it ranks first, exactly like any other rotation that matches.
+    local top=custom(f,268,'Top, no switch',{priority=70,specs={268}})
+    assert(pick()==top,'the highest priority among those that match was not chosen: '..tostring(a:GetRotationName(a.currentRotation)))
+    assert(a:PreviewAutoSwitch()==top)
+    -- It can always be switched off, and then it is not tried.
+    local off=custom(f,268,'Off, no switch',{priority=90,specs={268},disabled=true})
+    assert(pick()==top and not inOrder(off),'a disabled rotation without a switch was tried')
+    -- A rotation whose switch is a broken (unknown) condition is not "no switch": it cannot be selected.
+    local broken=custom(f,268,'Broken',{priority=95,specs={268},switch={type='NO_SUCH_CONDITION'}})
+    assert(pick()==top and not inOrder(broken),'a broken switch was treated as none')
     -- Its overlap with another Brewmaster rotation is judged with its specializations: none with Windwalker's.
     local overlaps=a:GetSwitchOverlaps(268)
     for _,entry in ipairs(overlaps[mine] or {}) do assert(entry.key~=theirs,'overlaps another specialization') end
+    local found;for _,entry in ipairs(overlaps[top] or {}) do if entry.key==mine then found=entry end end
+    assert(found and found.kind=='subsumes' and not found.tie,'a rotation with no switch overlaps one that has: '..tostring(found and found.kind))
     f.state.specIndex=3;f.fire('PLAYER_SPECIALIZATION_CHANGED','player');a.manualRotation=false;a:SwitchRotation()
     assert(a.currentRotation==theirs,'Windwalker did not switch: '..tostring(a:GetRotationName(a.currentRotation)))
 end)
@@ -169,10 +184,10 @@ test('migration on Retail: the namespace becomes body.specs, and exactly the sha
     assert(a:MoveRotationSpecsToProperty(profile) and profile.rotationSpecsMigrated)
     local function check(id,specs,switch) local b=body(profile,id,268)
         assert(same(b.specs,specs) and same(b.switch,switch),id..': '..show(b.specs)..' '..show(b.switch)) end
-    check('only',{268},level(1))       -- it chose itself automatically, and still does
+    check('only',{268},{})            -- it chose itself automatically, and still does: no switch matches
     check('withLevel',{268},level(10))
     check('withTwo',{268},{type='AND',value={level(10),COMBAT}})
-    check('either',{268},level(1))
+    check('either',{268},{})
     check('other',{268},spec(269))        -- never matched where it was saved; left as it was
     check('negated',{268},{type='NOT',value=spec(268)})
     check('mixed',{268},{type='OR',value={spec(268),COMBAT}})
@@ -221,7 +236,9 @@ test('every converted premade: the old switch-derived specializations are its bo
         local specs,rest=f.addon:SplitSwitchSpecializations(switch)
         assert(specs,id..': the old switch was not a recognized shape')
         assert(same(p.body.specs,specs),id..': specs '..show(p.body.specs)..' expected '..show(specs))
-        assert(same(p.body.switch,rest),id..': switch '..show(p.body.switch)..' expected '..show(rest))
+        -- What was left of the switch; nothing left is no switch at all (it matches whenever the premade applies).
+        if next(rest or {})==nil then assert(p.body.switch==nil,id..': switch '..show(p.body.switch)..' expected none')
+        else assert(same(p.body.switch,rest),id..': switch '..show(p.body.switch)..' expected '..show(rest)) end
         count=count+1
     end
     assert(count==155,count..' converted premades')

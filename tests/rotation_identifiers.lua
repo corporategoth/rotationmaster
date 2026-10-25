@@ -1,5 +1,5 @@
 -- Rotation identifiers (ID in the editor): a short, case-insensitive name for /rm set and lists.
--- The user's report: "/rm set Monk: Brewmaster (Retail, Blizzard Assisted with brews)" is
+-- The user's report: "/rm set Blizzard Assisted with brews" is
 -- hard to type and case sensitive. Built Ins derive theirs from the pack id (unique per
 -- class and edition across the whole corpus); your rotations store an editable one (made
 -- from the name until you change it); /rm set takes an identifier first, then the exact name.
@@ -49,24 +49,24 @@ test('/rm set takes an identifier in any case, names it with its identifier, and
     local f=T.new{level=10,specIndex=1};local a=f.addon
     command(f,'set BrewMaster')
     assert(a.manualRotation and a:GetDefaultIdForRuntime(268,a.currentRotation)=='rm.retail.monk.brewmaster','identifier did not select')
-    assert(chat(f):find('manually switched to |cFFFFFFFFMonk: Brewmaster (Retail, Blizzard Assisted with brews) [brewmaster]',1,true),chat(f))
-    assert(chat(f):find('automatically switched to |cFFFFFFFFMonk: Brewmaster (Retail, Blizzard Assisted with brews) [brewmaster]',1,true),'auto message lacks the identifier')
+    assert(chat(f):find('manually switched to |cFFFFFFFFBlizzard Assisted with brews [brewmaster]',1,true),chat(f))
+    assert(chat(f):find('automatically switched to |cFFFFFFFFBlizzard Assisted with brews [brewmaster]',1,true),'auto message lacks the identifier')
     command(f,'set auto');assert(not a.manualRotation)
     -- A rotation that cannot be selected says why; an unknown identifier lists the usable ones.
     command(f,'set brewmaster-GUIDE');assert(chat(f):find('[brewmaster-guide] cannot be selected',1,true) and chat(f):find('ships disabled',1,true),chat(f))
     command(f,'set nothing-here');assert(chat(f):find('Identifiers you can use now: brewmaster (or auto)',1,true),chat(f))
     -- The exact name still works.
-    command(f,'set Monk: Brewmaster (Retail, Blizzard Assisted with brews)');assert(a.manualRotation and a:GetDefaultIdForRuntime(268,a.currentRotation)=='rm.retail.monk.brewmaster')
+    command(f,'set Blizzard Assisted with brews');assert(a.manualRotation and a:GetDefaultIdForRuntime(268,a.currentRotation)=='rm.retail.monk.brewmaster')
     command(f,'set default');assert(a.manualRotation~=nil)
     -- /rm list: identifier — name — status for the live specialization.
     local list=table.concat(a:GetRotationIdentifierReport(),'\n')
-    assert(list:find('brewmaster — Monk: Brewmaster (Retail, Blizzard Assisted with brews) (Built In) — active',1,true),list)
+    assert(list:find('brewmaster — Blizzard Assisted with brews (Built In) — active',1,true),list)
     assert(list:find('default — Default (fallback) — cannot be selected',1,true),list)
     assert(list:find('brewmaster-guide — ',1,true) and list:find('ships disabled',1,true) and list:find('windwalker — ',1,true) and list:find('not for this character now',1,true),list)
     assert(table.concat(a:GetRotationEligibilityReport(),'\n'):find('(Built In) [brewmaster]: ready',1,true))
     -- The minimap menu shows the identifier in brackets.
     local rows={};f.env.UIDropDownMenu_AddButton=function(r) rows[#rows+1]=r.text end;f.env.minimapInitialize()
-    assert(table.concat(rows,'\n'):find('|cff5bc0ebMonk: Brewmaster (Retail, Blizzard Assisted with brews) [brewmaster]|r',1,true),table.concat(rows,'\n'))
+    assert(table.concat(rows,'\n'):find('|cff5bc0ebBlizzard Assisted with brews [brewmaster]|r',1,true),table.concat(rows,'\n'))
 end)
 
 test('your rotations: an identifier made from the name until set, validated, unique, and /rm set finds it',function()
@@ -79,7 +79,7 @@ test('your rotations: an identifier made from the name until set, validated, uni
     -- Checks: format, reserved, and an identifier another rotation already uses (named).
     assert(a:CheckRotationIdentifier(268,aoe,'9x'):find('starts with a letter',1,true))
     assert(a:CheckRotationIdentifier(268,aoe,'auto'):find('reserved',1,true))
-    assert(a:CheckRotationIdentifier(268,aoe,'BrewMaster'):find('Monk: Brewmaster (Retail, Blizzard Assisted with brews) already uses the identifier brewmaster',1,true))
+    assert(a:CheckRotationIdentifier(268,aoe,'BrewMaster'):find('Blizzard Assisted with brews already uses the identifier brewmaster',1,true))
     assert(a:CheckRotationIdentifier(268,aoe,'aoe-cleave')==nil and a:CheckRotationIdentifier(268,aoe,'Mine')==nil)
     -- The editor: Identifier, Priority, Enabled on one line; an invalid or taken identifier blocks Apply and says why.
     local parent=f.env.CreateFrame('Frame');parent:SetSize(1000,700)

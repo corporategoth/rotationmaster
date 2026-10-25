@@ -14,7 +14,7 @@ local function debuff(id)return{type='DEBUFF',unit='target',spell=id,anyrank=tru
 local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v}end
 local function anySeal()local out={};for i,id in ipairs({21084,20375,31892,348700,31801,348704,21082,20166,20165,20164})do out[i]=own(id)end;return{type='OR',value=out}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.retribution.wowhead',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.retribution.wowhead',revision=6,
  blocks={['tbc.paladin.ret-upkeep']=2,['tbc.paladin.melee-opening']=2,['tbc.paladin.boundaries']=2},
  nameKey='Default.TBC.Paladin.Retribution.Wowhead.Name',descriptionKey='Default.TBC.Paladin.Retribution.Wowhead.Description',
  applicability={families={'tbc'},actionContext='player',class='PALADIN'},
@@ -22,7 +22,7 @@ assert(addon:RegisterDefaultRotation({
  sources={{url='https://www.wowhead.com/tbc/guide/classes/paladin/retribution/leveling-tips',title='Wowhead: Retribution Paladin leveling',reviewedAt='2026-10-23',revision='2026-09-04'},
   {url='https://www.wowhead.com/tbc/guide/classes/paladin/retribution/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Retribution Paladin DPS rotation',reviewedAt='2026-10-23',revision='2026-02-10'},
   {url='https://github.com/wowsims/tbc/blob/3301fca59306a747e521274c36e073e69acc7b77/sim/paladin/retribution/rotation.go',title='wowsims/tbc Retribution rotation',reviewedAt='2026-10-23',revision='3301fca59306a747e521274c36e073e69acc7b77',notes='Exorcism and Consecration mana gates; no Hammer of Wrath.'}},
- body={priority=2,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=2,
   cooldowns={{id='ret-wh-upkeep',type='block',block='tbc.paladin.ret-upkeep',prefix='ret-wh-'}},
   rotation={
    {id='ret-wh-opening',type='block',block='tbc.paladin.melee-opening',prefix='ret-wh-'},

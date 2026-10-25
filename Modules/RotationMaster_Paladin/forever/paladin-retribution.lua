@@ -21,7 +21,7 @@ local evil=any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',u
 local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
 local crusaded={type='DEBUFF',unit='target',spell=21183,anyrank=true}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.paladin.retribution',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.paladin.retribution',revision=6,
  blocks={['forever.paladin.boundaries']=3,['forever.paladin.aura-blessing']=1,['forever.paladin.main-seal']=1},
  nameKey='Default.Forever.Paladin.Retribution.Name',descriptionKey='Default.Forever.Paladin.Retribution.Description',
  applicability={families={'forever'},actionContext='player',class='PALADIN'},
@@ -33,7 +33,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://worldofwarcraft.com/en-us/news/24302099',title='Blizzard: Forever class deep dive, Paladin',reviewedAt='2026-10-23',revision='2026-10-15',notes='Holy Strike, non-consuming Judgement, Twist of Light; no priority.'},
   {url='https://github.com/simulationcraft/simc/blob/forever/SpellDataDump/paladin.txt',title='SimulationCraft Forever spell data (1.60.1.70425)',reviewedAt='2026-10-23',revision='4dd64b4a21',notes='Spell IDs, ranks, cooldowns and GCDs only.'},
  },
- body={priority=10,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=10,
   cooldowns={
    block('ret-aura-blessing','forever.paladin.aura-blessing','ret-'),
    spell('ret-judgement',20271,all(combat(),{type='ATTACKABLE',unit='target'},any(own(20154),own(20375),own(21082),own(20164)))),

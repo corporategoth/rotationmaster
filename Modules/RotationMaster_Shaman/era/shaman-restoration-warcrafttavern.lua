@@ -11,7 +11,7 @@ local function target(op,v)return{type='HEALTHPCT',unit='target',operator=op,val
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.shaman.restoration.warcrafttavern',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.era.shaman.restoration.warcrafttavern',revision=5,
  blocks={['era.shaman.manual']=3,['era.shaman.cures']=1,['era.shaman.healer-damage']=2},
  nameKey='Default.Era.Shaman.Restoration.WarcraftTavern.Name',descriptionKey='Default.Era.Shaman.Restoration.WarcraftTavern.Description',
  applicability={families={'era'},actionContext='player',class='SHAMAN'},

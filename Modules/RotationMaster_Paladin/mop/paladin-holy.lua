@@ -19,7 +19,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local focus={type='FRIENDLY',unit='focus'}
 local function onFocus(...)local list={};for i,id in ipairs({...})do list[i]={type='BUFF',unit='focus',spell=id,ownbuff=true}end;return{type='OR',value=list}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.holy',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.holy',revision=6,
  blocks={['mop.paladin.boundaries']=3,['mop.paladin.upkeep']=1,['mop.paladin.seal-insight']=2},
  nameKey='Default.MoP.Paladin.Holy.Name',descriptionKey='Default.MoP.Paladin.Holy.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN'},

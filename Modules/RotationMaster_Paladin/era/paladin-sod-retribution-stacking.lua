@@ -17,7 +17,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local undead=any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',unit='target',value='DEMON'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution.stacking',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution.stacking',revision=6,
  blocks={['sod.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=3},
  nameKey='Default.SoD.Paladin.Retribution.Stacking.Name',descriptionKey='Default.SoD.Paladin.Retribution.Stacking.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},

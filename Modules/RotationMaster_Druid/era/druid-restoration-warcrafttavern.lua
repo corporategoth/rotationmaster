@@ -13,7 +13,7 @@ local function hp(v)return{type='HEALTHPCT',unit='target',operator='LESSTHAN',va
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function spell(id,action,conditions,ranked)return{id=id,type='spell',action=action,ranked=ranked or false,conditions=conditions or {}}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.druid.restoration.warcrafttavern',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.era.druid.restoration.warcrafttavern',revision=6,
  blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['era.druid.heal-cooldowns']=1,['era.druid.resto-damage']=2},
  nameKey='Default.Era.Druid.Restoration.WarcraftTavern.Name',descriptionKey='Default.Era.Druid.Restoration.WarcraftTavern.Description',
  applicability={families={'era'},actionContext='player',class='DRUID'},

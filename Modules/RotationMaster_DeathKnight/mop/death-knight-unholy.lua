@@ -15,7 +15,7 @@ local function remain(id)return{type='DEBUFF_REMAIN',unit='target',spell=id,ownd
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.deathknight.unholy',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.deathknight.unholy',revision=5,
  blocks={['mop.deathknight.boundaries']=3,['mop.deathknight.upkeep']=1,['mop.deathknight.unholy-upkeep']=2,['mop.deathknight.unholy-open']=2,
   ['mop.deathknight.survival']=1,['mop.deathknight.spread']=1},
  nameKey='Default.MoP.DeathKnight.Unholy.Name',descriptionKey='Default.MoP.DeathKnight.Unholy.Description',

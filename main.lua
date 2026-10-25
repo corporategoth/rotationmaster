@@ -32,6 +32,11 @@ if type(consumeSwitch)=='function'then
     addon.ConsumeSwitchConditionEvaluator=nil
 end
 local function switchConditionMatches(value,current)
+    -- No switch condition (none, an empty one, or a tree with nothing in it)
+    -- matches; a broken one (an unknown condition) is not "none" and falls
+    -- through to evaluation, which refuses it.
+    if value==nil then return true end
+    if type(value)=='table' and addon.usefulCondition and not addon:usefulCondition(value) and addon:validateCondition(value) then return true end
     if switchConditionEvaluator then return switchConditionEvaluator(addon,value,current)end
     return addon:evaluateCondition(value)
 end
@@ -1197,6 +1202,7 @@ end
 -- Whether a switch condition matches now (true/false; nil when it cannot be
 -- evaluated). Commands and menus only; polling uses the paths above.
 function addon:SwitchConditionMatchesNow(condition)
+    if condition==nil then return true end
     if type(condition)~='table' then return nil end
     local ok,matched=pcall(switchConditionMatches,condition)
     if not ok then return nil end

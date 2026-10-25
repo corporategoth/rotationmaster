@@ -23,7 +23,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local SHUFFLE,KEG=115307,121253
 local stagger=function(id)return{type='DEBUFF',unit='player',spell=id}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.monk.brewmaster',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.monk.brewmaster',revision=7,
  blocks={['mop.monk.boundaries']=3,['mop.monk.upkeep']=1,['mop.monk.brewmaster-upkeep']=2,['mop.monk.brewmaster-pull']=3},
  nameKey='Default.MoP.Monk.Brewmaster.Name',descriptionKey='Default.MoP.Monk.Brewmaster.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK'},

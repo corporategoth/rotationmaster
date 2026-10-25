@@ -210,6 +210,8 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     end
     function pane:SwitchSummary(snapshot)
         if workspace.fallback then return addon:PlainWorkbenchName(L['No other rotations match.']) end
+        -- Nothing to match is not nothing to say: it says what that means.
+        if addon.HasSwitchCondition and not addon:HasSwitchCondition(snapshot.switch) then return addon:PlainWorkbenchName(L['No switch condition: this rotation can be selected automatically whenever its specialization and level apply.']) end
         return addon:PlainWorkbenchName(addon:DescribeCardCondition(snapshot.switch or {},spec))
     end
     function pane:RenderPriority(snapshot)
@@ -741,7 +743,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         addon:SetUIScript(self.priority,'OnEditFocusGained',workspace.fallback and function(control) control:ClearFocus() end or nil)
         addon:SetUIScript(self.priority,'OnEnter',function()
             if not alive() or not GameTooltip then return end
-            local text=L['Higher numbers are tried first; your rotations and Built Ins compete on priority alone. The fallback is used only when no switch condition of another rotation matches. Equal priorities use name, then identity. Blank means zero.']
+            local text=L['Higher numbers are tried first; your rotations and Built Ins compete on priority alone. The fallback is used only when no other rotation matches. Equal priorities use name, then identity. Blank means zero.']
             if self.priority.tooltip then text=self.priority.tooltip..'\n\n'..text end
             GameTooltip:SetOwner(self.priority,'ANCHOR_RIGHT');GameTooltip:SetText(text,1,1,1,1,true)
         end)

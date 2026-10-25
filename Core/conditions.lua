@@ -768,3 +768,13 @@ end
 function addon:usefulCondition(value)
     return usefulSingle(value)
 end
+
+-- A rotation with no switch condition (none at all, an empty one, or a tree
+-- with nothing in it) matches whenever it is otherwise eligible: its
+-- specializations, level and edition gates still apply, and priority decides
+-- among everything that matches. The user can always disable it. A tree that
+-- is not empty but is broken (an unknown condition) is not "no switch": it
+-- fails validation and the rotation cannot be selected.
+function addon:HasSwitchCondition(switch)
+    return type(switch)=='table' and self:usefulCondition(switch)
+end

@@ -14,7 +14,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local P='mage-sarcane-'
 local combat={type='COMBAT',unit='player'}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.mage.arcane',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.mage.arcane',revision=6,
  blocks={['era.mage.boundaries']=3,['era.mage.wand-finish']=2,['sod.mage.balefire']=1,['sod.mage.armor']=2,['sod.mage.upkeep']=2},
  nameKey='Default.SoD.Mage.Arcane.Name',descriptionKey='Default.SoD.Mage.Arcane.Description',
  applicability={families={'era'},actionContext='player',class='MAGE',rulesets={'season:2'}},

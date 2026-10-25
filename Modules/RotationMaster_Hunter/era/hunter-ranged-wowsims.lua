@@ -14,7 +14,7 @@ local function cooling(id)return any(negate(known(id)),{type='SPELL_COOLDOWN',sp
 local stingless=all(negate({type='DEBUFF',unit='target',spell=1978,anyrank=true,owndebuff=true}),
  negate({type='DEBUFF',unit='target',spell=3043,anyrank=true,owndebuff=true}),negate({type='DEBUFF',unit='target',spell=3034,anyrank=true,owndebuff=true}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.hunter.ranged.wowsims',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.era.hunter.ranged.wowsims',revision=5,
  blocks={['era.hunter.boundaries']=3,['era.hunter.dead-zone']=3,['era.hunter.opening']=3,['era.hunter.solo']=2,
   ['era.hunter.hawk']=1,['era.hunter.upkeep']=1,['era.hunter.cooldowns']=1},
  nameKey='Default.Era.Hunter.Ranged.Wowsims.Name',descriptionKey='Default.Era.Hunter.Ranged.Wowsims.Description',
@@ -24,7 +24,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/wowsims/classic/blob/7779ebbf79dc7f1341e6ab939b28a3402c9a730a/ui/hunter/apls/p1.apl.json',title='wowsims/classic: Hunter P1 APL',reviewedAt='2026-10-23',revision='7779ebb'},
   {url='https://github.com/wowsims/classic/blob/7779ebbf79dc7f1341e6ab939b28a3402c9a730a/sim/hunter/aimed_shot.go',title='wowsims/classic: Aimed Shot model',reviewedAt='2026-10-23',revision='7779ebb'},
  },
- body={priority=4,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=4,disabled=true,
  cooldowns={block('era.hunter.hawk','hunter-'),block('era.hunter.upkeep','hunter-'),block('era.hunter.cooldowns','hunter-')},
  rotation={
   block('era.hunter.boundaries','hunter-'),

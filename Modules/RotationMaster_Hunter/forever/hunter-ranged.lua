@@ -19,7 +19,7 @@ local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASS
 local arcaneTurn=all({type='SPELL_HISTORY_TIME',spell=1293241,operator='LESSTHAN',value=7},
  negate({type='SPELL_HISTORY_TIME',spell=3044,operator='LESSTHAN',value=17}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.ranged',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.ranged',revision=6,
  blocks={['forever.hunter.boundaries']=4,['forever.hunter.deadzone']=3,['forever.hunter.pull']=3,['forever.hunter.moving']=2,
   ['forever.hunter.aspects-ranged']=1,['forever.hunter.pet-care']=2,['forever.hunter.burst']=1},
  nameKey='Default.Forever.Hunter.Ranged.Name',descriptionKey='Default.Forever.Hunter.Ranged.Description',
@@ -33,7 +33,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://worldofwarcraft.blizzard.com/en-us/news/24301515',title='Blizzard: Forever class deep dive, Hunter and Druid',reviewedAt='2026-10-23',revision='2026-09-30',notes='Shared cooldowns and talents; no priority.'},
   {url='https://github.com/simulationcraft/simc/blob/forever/SpellDataDump/hunter.txt',title='SimulationCraft Forever spell data (1.60.1.70425)',reviewedAt='2026-10-23',revision='4dd64b4a21',notes='Spell IDs, ranks and cooldown categories only.'},
  },
- body={priority=10,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=10,
   cooldowns={
    block('ranged-aspects','forever.hunter.aspects-ranged','ranged-'),
    spell('ranged-trueshot-aura',1299346,negate({type='BUFF',unit='player',spell=1299346,anyrank=true})),

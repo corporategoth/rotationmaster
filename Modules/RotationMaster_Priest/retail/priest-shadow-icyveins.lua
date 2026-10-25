@@ -20,7 +20,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 local madness=dot(335467)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.priest.shadow.icyveins',revision=7,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.priest.shadow.icyveins',revision=8,
  blocks={['retail.priest.upkeep']=2},
  nameKey='Default.Retail.Priest.Shadow.IcyVeins.Name',descriptionKey='Default.Retail.Priest.Shadow.IcyVeins.Description',
  applicability={families={'retail'},actionContext='player',class='PRIEST'},
@@ -29,7 +29,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.icy-veins.com/wow/shadow-priest-pve-dps-rotation-cooldowns-abilities',title='Icy Veins: Shadow Priest rotation (Midnight)',reviewedAt='2026-10-23',revision='2026-10-12'},
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/priest_shadow.simc',title='SimulationCraft: Shadow Priest default list',reviewedAt='2026-10-23',revision='c5fea93fb77d'},
  },
- body={priority=5,disabled=true,specs={258},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=5,disabled=true,specs={258},
   cooldowns={
    block('retail.priest.upkeep','shadowiv-'),
    spell('shadowiv-shadowform',232698,all(negate(combat()),negate(own(232698)),negate(own(194249)))),

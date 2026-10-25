@@ -11,7 +11,7 @@ local function known(id)return{type='SPELL_KNOWN',spell=id}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.warrior.dps.wowsims',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.warrior.dps.wowsims',revision=5,
  blocks={['tbc.warrior.boundaries']=4,['tbc.warrior.upkeep']=1,['tbc.warrior.dps-upkeep']=1,['tbc.warrior.dps-opening']=1,['tbc.warrior.dps-leveling']=1,['tbc.warrior.sunder']=1},
  nameKey='Default.TBC.Warrior.DPS.Wowsims.Name',descriptionKey='Default.TBC.Warrior.DPS.Wowsims.Description',
  applicability={families={'tbc'},actionContext='player',class='WARRIOR'},
@@ -20,7 +20,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://www.wowhead.com/tbc/guide/classes/warrior/dps-rotation-cooldowns-abilities-pve',title='Wowhead: TBC Warrior DPS rotation, cooldowns and abilities',reviewedAt='2026-10-23',revision='2026-06-11'},
  {url='https://www.wowhead.com/tbc/guide/classes/warrior/leveling-tips',title='Wowhead: TBC Warrior leveling',reviewedAt='2026-10-23',revision='2026-01-17'},
  {url='https://www.icy-veins.com/tbc-classic/arms-warrior-leveling-guide',title='Icy Veins: Arms Warrior leveling (shared pre-talent arm)',reviewedAt='2026-10-23',revision='2026-01-12'}},
- body={priority=10,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=10,
  cooldowns={block('tbc.warrior.upkeep','warrior-dps-'),block('tbc.warrior.dps-upkeep','warrior-dps-')},
  rotation={
  block('tbc.warrior.boundaries','warrior-dps-'),

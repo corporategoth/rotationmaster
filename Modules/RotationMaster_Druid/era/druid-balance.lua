@@ -6,7 +6,7 @@
 local _,addon=...
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.druid.balance',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.era.druid.balance',revision=5,
  blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['era.druid.caster-cooldowns']=2,['era.druid.feral-cooldowns']=2,['era.druid.forms']=2,
   ['era.druid.cat']=1,['era.druid.stealth-opener']=2,['era.druid.cat-builders']=1,['era.druid.powershift']=2,['era.druid.bear']=2,['era.druid.bear-pull']=3,
   ['era.druid.caster']=2,['era.druid.caster-pull']=3},
@@ -20,7 +20,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/wowsims/classic/blob/7779ebbf79dc7f1341e6ab939b28a3402c9a730a/ui/balance_druid/apls/balance.apl.json',title='wowsims/classic Balance APL',reviewedAt='2026-10-23',revision='7779ebb'},
   {url='https://github.com/kaminaris/MaxDps-Druid/tree/0164267887c2efffb3068100a290c4513f961b7f/Specialization/Classic',title='MaxDps-Druid Classic modules',reviewedAt='2026-10-23',revision='0164267'},
  },
- body={priority=2,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=2,
   cooldowns={ref('era-balance-upkeep','era.druid.upkeep','era-balance-'),ref('era-balance-caster-cooldowns','era.druid.caster-cooldowns','era-balance-'),
    ref('era-balance-feral','era.druid.feral-cooldowns','era-balance-feral-')},
   rotation={

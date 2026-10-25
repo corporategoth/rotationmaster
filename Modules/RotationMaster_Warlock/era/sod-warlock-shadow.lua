@@ -30,7 +30,7 @@ local function invoke(id)return all(invocation,remain(id,6))end
 local blocks={['era.warlock.boundaries']=3,['era.warlock.procs']=1,['era.warlock.dying']=2,['era.warlock.curse']=2,['era.warlock.moving']=2,['era.warlock.aoe']=1,
  ['era.warlock.sustain']=3,['era.warlock.filler']=2,['era.warlock.armor']=1,['era.warlock.pets']=1,['era.warlock.safety']=1}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.shadow',revision=5,blocks=blocks,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.shadow',revision=6,blocks=blocks,
  nameKey='Default.SoD.Warlock.Shadow.Name',descriptionKey='Default.SoD.Warlock.Shadow.Description',
  applicability={families={'era'},actionContext='player',class='WARLOCK',rulesets={'season:2'}},
  tags={'dps','ranged','caster','leveling','endgame','aoe','season-of-discovery','wowsims','wowhead','icy-veins'},
@@ -38,7 +38,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/warlock/dps-talent-builds-runes',title='Wowhead: SoD Warlock DPS talents and runes (Phase 6)',reviewedAt='2026-10-23',revision='2025-01-13'},
  {url='https://www.icy-veins.com/wow-classic/affliction-warlock-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Affliction Warlock DPS rotation',reviewedAt='2026-10-23',revision='2025-04-08'},
  {url='https://www.icy-veins.com/wow-classic/affliction-warlock-dps-season-of-discovery-leveling',title='Icy Veins: SoD Affliction Warlock leveling',reviewedAt='2026-10-23',revision='2025-04-08'}},
- body={priority=60,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=60,
  cooldowns={block('era.warlock.armor','sod-shadow-'),block('era.warlock.pets','sod-shadow-'),
   spell('sod-shadow-pet-life-tap',1454,all(combat(),{type='PET'},{type='MANAPCT',unit='pet',operator='LESSTHAN',value=.3},{type='HEALTHPCT',unit='player',operator='GREATERTHAN',value=.6})),
   block('era.warlock.safety','sod-shadow-')},

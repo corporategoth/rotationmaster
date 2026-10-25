@@ -11,7 +11,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.unspecialized',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.unspecialized',revision=5,
  blocks={['mop.paladin.damage-boundaries']=2,['mop.paladin.upkeep']=1,['mop.paladin.seal-truth']=2},
  nameKey='Default.MoP.Paladin.Unspecialized.Name',descriptionKey='Default.MoP.Paladin.Unspecialized.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN'},
@@ -19,7 +19,7 @@ assert(addon:RegisterDefaultRotation({
  sources={
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/retribution-paladin-leveling',title='Icy Veins: MoP Classic Retribution Paladin leveling',reviewedAt='2026-10-23',revision='2025-09-23',notes='Generators, then Word of Glory when in danger; no guide writes a list for levels 1-9.'},
  },
- body={priority=0,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=0,
   cooldowns={
    block('starter-seal','mop.paladin.seal-truth','starter-'),
    block('starter-upkeep','mop.paladin.upkeep','starter-'),

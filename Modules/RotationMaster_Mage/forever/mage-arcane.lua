@@ -26,7 +26,7 @@ local charged={type='BUFF',unit='player',spell=400573}
 local barrage=any({type='BUFF',unit='player',spell=400589},{type='BUFF',unit='player',spell=1326083})
 local function below(n)return any(negate(charged),stacks('LESSTHAN',n))end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.mage.arcane',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.mage.arcane',revision=7,
  blocks={['forever.mage.boundaries']=3,['forever.mage.frostbolt']=1,['forever.mage.wand']=3,['forever.mage.upkeep']=2},
  nameKey='Default.Forever.Mage.Arcane.Name',descriptionKey='Default.Forever.Mage.Arcane.Description',
  applicability={families={'forever'},actionContext='player',class='MAGE'},

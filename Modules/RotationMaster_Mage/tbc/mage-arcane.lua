@@ -12,7 +12,7 @@ local function buff(id)return{type='BUFF',unit='player',spell=id}end
 local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v}end
 local stacks={type='DEBUFF',unit='player',spell=36032}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.mage.arcane',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.mage.arcane',revision=5,
  blocks={['tbc.mage.boundaries']=3,['tbc.mage.frostbolt']=1,['tbc.mage.wand-finish']=2,['tbc.mage.moving-fire-blast']=2,['tbc.mage.armor']=1,['tbc.mage.upkeep']=1},
  nameKey='Default.TBC.Mage.Arcane.Name',descriptionKey='Default.TBC.Mage.Arcane.Description',
  applicability={families={'tbc'},actionContext='player',class='MAGE'},

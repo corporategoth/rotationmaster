@@ -22,7 +22,7 @@ local fire=buff(82926)
 local focusLow=all({type='SELF_LEVEL',operator='GREATERTHANOREQUALS',value=63},any(negate(buff(53220)),{type='BUFF_REMAIN',unit='player',spell=53220,operator='LESSTHAN',value=5}))
 local lust=any(buff(2825),buff(32182),buff(80353),buff(90355))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.marksmanship',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.marksmanship',revision=7,
  blocks={['mop.hunter.boundaries']=3,['mop.hunter.mark']=1,['mop.hunter.pet']=1,['mop.hunter.aspect']=1,['mop.hunter.utility']=1,['mop.hunter.burst']=1,
   ['mop.hunter.talents']=1,['mop.hunter.talent-shots']=1,['mop.hunter.serpent']=1},
  nameKey='Default.MoP.Hunter.Marksmanship.Name',descriptionKey='Default.MoP.Hunter.Marksmanship.Description',

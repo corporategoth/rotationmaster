@@ -22,7 +22,7 @@ local function shocked()return{type='DEBUFF',unit='target',spell=8050,anyrank=tr
 local stationary=negate({type='MOVING'})
 local ranged={type='BEYOND_MELEE',unit='target'}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.shaman.enhancement',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.shaman.enhancement',revision=6,
  blocks={['forever.shaman.manual-target']=2,['forever.shaman.upkeep']=2,['forever.shaman.imbue']=1,['forever.shaman.group-totems']=1},
  nameKey='Default.Forever.Shaman.Enhancement.Name',descriptionKey='Default.Forever.Shaman.Enhancement.Description',
  applicability={families={'forever'},actionContext='player',class='SHAMAN'},
@@ -31,7 +31,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://www.icy-veins.com/wow-forever/enhancement-shaman-leveling',title='Icy Veins: Forever Enhancement Shaman leveling',reviewedAt='2026-10-23',revision='2026-10-17'},
  {url='https://mobalytics.gg/wow-forever/classes/shaman-leveling-guide',title='Mobalytics: Forever Shaman leveling 1–30 (pre-30 imbue, Fire Nova, totems)',reviewedAt='2026-10-23',revision='2026-10-21'},
  {url='https://us.forums.blizzard.com/en/wow/t/2360696',title='Blizzard: WoW Forever beta development notes (Fire Nova, totems, Stormstrike)',reviewedAt='2026-10-23',revision='2026-10-16'}},
- body={priority=10,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=10,
  cooldowns={block('forever.shaman.upkeep','shaman-enh-'),block('forever.shaman.imbue','shaman-enh-'),block('forever.shaman.group-totems','shaman-enh-'),
   spell('shaman-enh-magma-totem',8190,all(combat(),negate({type='TOTEM',spell=1}),enemies(3))),
   spell('shaman-enh-searing-totem',3599,all(combat(),negate({type='TOTEM',spell=1}),negate(all(known(8190),enemies(3))))),

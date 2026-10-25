@@ -18,7 +18,7 @@ local shadowform={type='BUFF',unit='player',spell=15473}
 local solo=negate({type='GROUP'})
 local unshielded=negate({type='DEBUFF',unit='player',spell=6788})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.priest.dps',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.priest.dps',revision=6,
  blocks={['forever.priest.dps-boundaries']=2,['forever.priest.upkeep']=1,['forever.priest.dps-upkeep']=2,['forever.priest.wand']=2},
  nameKey='Default.Forever.Priest.Dps.Name',descriptionKey='Default.Forever.Priest.Dps.Description',
  applicability={families={'forever'},actionContext='player',class='PRIEST'},
@@ -33,7 +33,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://worldofwarcraft.com/en-us/news/24301514',title='Blizzard: Forever class deep dive, Priest and Warrior',reviewedAt='2026-10-23',revision='2026-09-30',notes='Shadowform rework, baseline spells; no priority.'},
   {url='https://github.com/simulationcraft/simc/blob/forever/SpellDataDump/priest.txt',title='SimulationCraft Forever spell data (1.60.1.70425)',reviewedAt='2026-10-23',revision='4dd64b4a21',notes='Spell IDs, ranks and cooldowns only.'},
  },
- body={priority=10,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=10,
   cooldowns={
    block('dps-upkeep','forever.priest.upkeep','dps-'),
    block('dps-reminders','forever.priest.dps-upkeep','dps-'),

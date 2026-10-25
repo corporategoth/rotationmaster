@@ -12,7 +12,7 @@ local function any(...)return{type='OR',value={...}}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.warlock.demonology',revision=7,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.warlock.demonology',revision=8,
  blocks={['mop.warlock.boundaries']=4,['mop.warlock.upkeep']=1,['mop.warlock.demonology-upkeep']=2,['mop.warlock.demonology-demon']=2,
   ['mop.warlock.demonology-pull']=3,['mop.warlock.demonology-caster']=2,['mop.warlock.demonology-filler']=1},
  nameKey='Default.MoP.Warlock.Demonology.Name',descriptionKey='Default.MoP.Warlock.Demonology.Description',

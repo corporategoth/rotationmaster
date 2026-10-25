@@ -13,7 +13,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local function classified(kind)return{type='CLASSIFICATION',unit='target',value=kind}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.warrior.protection.icyveins',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.warrior.protection.icyveins',revision=7,
  blocks={['tbc.warrior.boundaries']=4,['tbc.warrior.upkeep']=1,['tbc.warrior.prot-upkeep']=1,['tbc.warrior.prot-core']=1,['tbc.warrior.sunder']=1},
  nameKey='Default.TBC.Warrior.Protection.IcyVeins.Name',descriptionKey='Default.TBC.Warrior.Protection.IcyVeins.Description',
  applicability={families={'tbc'},actionContext='player',class='WARRIOR'},

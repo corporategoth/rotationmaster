@@ -27,7 +27,7 @@ local memory=own(139597)
 local capped=negate(chi('GREATERTHANOREQUALS',-1))
 local friendly={type='FRIENDLY',unit='target'}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.monk.mistweaver',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.monk.mistweaver',revision=7,
  blocks={['mop.monk.upkeep']=1},
  nameKey='Default.MoP.Monk.Mistweaver.Name',descriptionKey='Default.MoP.Monk.Mistweaver.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK'},

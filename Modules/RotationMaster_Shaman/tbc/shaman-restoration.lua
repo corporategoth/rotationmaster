@@ -10,7 +10,7 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function hurt(v)return{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=v}end
 local function group()return{type='GROUP'}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.restoration',revision=3,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.restoration',revision=4,
  blocks={['tbc.shaman.shield']=1,['tbc.shaman.bloodlust']=1,['tbc.shaman.boundaries']=3,['tbc.shaman.interrupt']=1},
  nameKey='Default.TBC.Shaman.Restoration.Name',descriptionKey='Default.TBC.Shaman.Restoration.Description',
  applicability={families={'tbc'},actionContext='player',class='SHAMAN'},

@@ -12,7 +12,7 @@ local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution.icyveins',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution.icyveins',revision=7,
  blocks={['sod.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=3,['sod.paladin.seal']=2},
  nameKey='Default.SoD.Paladin.Retribution.IcyVeins.Name',descriptionKey='Default.SoD.Paladin.Retribution.IcyVeins.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},
@@ -20,7 +20,7 @@ assert(addon:RegisterDefaultRotation({
  sources={{url='https://www.icy-veins.com/wow-classic/retribution-paladin-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Retribution Paladin rotation (Phase 4)',reviewedAt='2026-10-23',revision='2024-07-07'},
   {url='https://www.icy-veins.com/wow-classic/retribution-paladin-dps-season-of-discovery-leveling',title='Icy Veins: SoD Retribution Paladin leveling (Phase 4)',reviewedAt='2026-10-23',revision='2024-07-02'},
   {url='https://www.warcrafttavern.com/wow-classic/guides/season-of-discovery-sod-paladin-dps-build-guide/',title='Warcraft Tavern: SoD Paladin DPS guide (Phase 4)',reviewedAt='2026-10-23'}},
- body={priority=101,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=101,disabled=true,
   cooldowns={block('sretiv-upkeep','sod.paladin.ret-upkeep','sretiv-'),block('sretiv-safety','era.paladin.safety','sretiv-')},
   rotation={
    block('sretiv-opening','era.paladin.melee-opening','sretiv-'),

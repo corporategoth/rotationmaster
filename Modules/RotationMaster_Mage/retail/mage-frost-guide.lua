@@ -19,7 +19,7 @@ local brainFreeze,fingers,thermal,spike=buff(190446),buff(44544),buff(1247730),b
 local twoFingers={type='BUFF_STACKS',unit='player',spell=44544,ownbuff=true,operator='GREATERTHANOREQUALS',value=2}
 local frozenRain=all(buff(270232),engaged(3))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.mage.frost.guide',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.mage.frost.guide',revision=7,
  blocks={['retail.mage.boundaries']=3,['retail.mage.utility']=2},
  nameKey='Default.Retail.Mage.FrostGuide.Name',descriptionKey='Default.Retail.Mage.FrostGuide.Description',
  applicability={families={'retail'},actionContext='player',class='MAGE'},
@@ -28,7 +28,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.icy-veins.com/wow/frost-mage-pve-dps-rotation-cooldowns-abilities',title='Icy Veins: Frost Mage rotation (12.1.5)',reviewedAt='2026-10-23',revision='2026-10-12'},
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/mage_frost.simc',title='SimulationCraft default action list: Frost',reviewedAt='2026-10-23',revision='c5fea93f'},
  },
- body={priority=10,disabled=true,specs={64},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=10,disabled=true,specs={64},
   cooldowns={
    block('frguide-utility','retail.mage.utility','frguide-'),
    spell('frguide-barrier',11426,combat()),

@@ -24,7 +24,7 @@ local unshielded=negate({type='DEBUFF',unit='target',spell=6788})
 local friendly={type='FRIENDLY',unit='target'}
 local function dispel(kind)return{type='DISPELLABLE',unit='target',debufftype=kind}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.priest.healer',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.priest.healer',revision=7,
  blocks={['forever.priest.boundaries']=3,['forever.priest.upkeep']=1,['forever.priest.wand']=2},
  nameKey='Default.Forever.Priest.Healer.Name',descriptionKey='Default.Forever.Priest.Healer.Description',
  applicability={families={'forever'},actionContext='player',class='PRIEST'},

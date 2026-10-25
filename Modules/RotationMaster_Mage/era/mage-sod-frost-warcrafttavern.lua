@@ -14,7 +14,7 @@ local function stop(id)return{id=id,type='stop',suppress_attack=true,conditions=
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='mage-sfrost-wct-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.mage.frost.warcrafttavern',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.mage.frost.warcrafttavern',revision=7,
  blocks={['era.mage.boundaries']=3,['era.mage.wand-finish']=2,['sod.mage.balefire-brain-freeze']=1,
   ['sod.mage.living-bomb']=1,['sod.mage.overheat']=2,['sod.mage.armor']=2,['sod.mage.upkeep']=2},
  nameKey='Default.SoD.Mage.Frost.WarcraftTavern.Name',descriptionKey='Default.SoD.Mage.Frost.WarcraftTavern.Description',

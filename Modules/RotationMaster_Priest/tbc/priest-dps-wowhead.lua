@@ -12,7 +12,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local function healthy()return{type='HEALTHPCT',unit='player',operator='GREATERTHAN',value=.5}end
 local P='priest-wh-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.priest.dps.wowhead',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.priest.dps.wowhead',revision=7,
  blocks={['tbc.priest.dps-boundaries']=2,['tbc.priest.shadowform']=1,['tbc.priest.moving']=2,
   ['tbc.priest.dots']=1,['tbc.priest.filler']=2,['tbc.priest.upkeep']=1},
  nameKey='Default.TBC.Priest.DpsWowhead.Name',descriptionKey='Default.TBC.Priest.DpsWowhead.Description',

@@ -17,7 +17,7 @@ local P='mage-frost-'
 local onMe={type='THREAT',unit='target',threat=3}
 local frozen={type='DEBUFF',unit='target',spell=122,anyrank=true}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.mage.frost',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.era.mage.frost',revision=5,
  blocks={['era.mage.boundaries']=3,['era.mage.frostbolt']=1,['era.mage.moving']=2,['era.mage.nova']=1,['era.mage.execute']=2,
   ['era.mage.wand-finish']=2,['era.mage.armor']=1,['era.mage.upkeep']=1},
  nameKey='Default.Era.Mage.Frost.Name',descriptionKey='Default.Era.Mage.Frost.Description',
@@ -38,7 +38,6 @@ assert(addon:RegisterDefaultRotation({
  },
  body={
   priority=1,
-  switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
   cooldowns={block(P..'armor','era.mage.armor',P),block(P..'upkeep','era.mage.upkeep',P)},
   rotation={
    block(P..'boundaries','era.mage.boundaries',P),

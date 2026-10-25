@@ -12,7 +12,7 @@ local function stop(id)return{id=id,type='stop',suppress_attack=true,conditions=
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='mage-grind-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.mage.frost.icyveins',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.era.mage.frost.icyveins',revision=5,
  blocks={['era.mage.boundaries']=3,['era.mage.frostbolt']=1,['era.mage.moving']=2,['era.mage.execute']=2,
   ['era.mage.wand-finish']=2,['era.mage.armor']=1,['era.mage.upkeep']=1},
  nameKey='Default.Era.Mage.Frost.IcyVeins.Name',descriptionKey='Default.Era.Mage.Frost.IcyVeins.Description',

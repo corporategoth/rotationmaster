@@ -223,7 +223,7 @@ function M.checkSlots(a,specs)
    -- Applicability holds only load-time facts; the specialization is the pack's own body.specs (a respec takes effect live).
    assert(row.readOnly and row.builtin and #scope.families==1 and scope.families[1]=='retail'and scope.specs==nil,id..' scope')
    assert(scope.minLevel==nil and scope.maxLevel==nil,id..' level range')
-   local body=row.envelope.body;local sw=body.switch;assert(sw and sw.type=='LEVEL' and sw.value==1 and #body.specs==1 and body.specs[1]==other,id..' specs')
+   local body=row.envelope.body;assert(body.switch==nil and #body.specs==1 and body.specs[1]==other,id..' specs')
    if other==spec then
     assert(row.eligible or row.eligibilityReason=='disabled',id..' not eligible in its own slot: '..tostring(row.eligibilityReason))
    else
@@ -266,7 +266,7 @@ function M.initial(class,spec,id,learn)
  local f,s=M.new(class);local a=f.addon;s.setLevel(4);s.learn(unpack(learn))
  local row=M.row(a,spec,id);local scope=row.applicability
  assert(scope.specs==nil and scope.minLevel==nil and scope.maxLevel==nil,id..' scope: load-time facts only')
- local body=row.envelope.body;local sw=body.switch;assert(sw and sw.type=='LEVEL' and sw.value==1 and #body.specs==1 and body.specs[1]==spec,id..' specs')
+ local body=row.envelope.body;assert(body.switch==nil and #body.specs==1 and body.specs[1]==spec,id..' specs')
  assert(M.selected(a,spec)==id,'initial spec auto-selected '..tostring((M.selected(a,spec))))
  for other,listed in pairs(M.rows(a,spec))do if other~=id then assert(not listed.eligible,other..' eligible in the initial spec')end end
  s.suggest=learn[1];M.expect(a,s,spec,id,learn[1],nil,'the Assisted suggestion')

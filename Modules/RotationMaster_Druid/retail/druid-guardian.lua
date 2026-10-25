@@ -12,7 +12,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local interrupt=any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.druid.guardian',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.druid.guardian',revision=6,
  blocks={['retail.druid.boundaries']=3,['retail.druid.utility']=2},
  nameKey='Default.Retail.Druid.Guardian.Name',descriptionKey='Default.Retail.Druid.Guardian.Description',
  applicability={families={'retail'},actionContext='player',class='DRUID'},
@@ -22,7 +22,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/Gethe/wow-ui-source/blob/live/Interface/AddOns/Blizzard_APIDocumentationGenerated/AssistedCombatDocumentation.lua',title='Blizzard API documentation: C_AssistedCombat (12.1.5.70529)',reviewedAt='2026-10-23',revision='e7aa82019d'},
   {url='https://github.com/kaminaris/MaxDps-Druid',title='MaxDps Druid (Midnight)',reviewedAt='2026-10-23',revision='01642676',notes='Assisted Combat spell plus interrupt, defensive and cooldown glows.'},
  },
- body={priority=20,specs={104},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=20,specs={104},
   cooldowns={
    block('guardian-utility','retail.druid.utility','guardian-'),
    spell('guardian-skull-bash',106839,interrupt),

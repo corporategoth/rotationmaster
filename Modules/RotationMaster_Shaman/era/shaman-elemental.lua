@@ -19,7 +19,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local big=any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'})
 local melee=negate({type='BEYOND_MELEE',unit='target'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.shaman.elemental',revision=3,
+ format='RotationMaster',schemaVersion=1,id='rm.era.shaman.elemental',revision=4,
  blocks={['era.shaman.manual-target']=2,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.self-heal']=1,['era.shaman.caster-totems']=1},
  nameKey='Default.Era.Shaman.Elemental.Name',descriptionKey='Default.Era.Shaman.Elemental.Description',
  applicability={families={'era'},actionContext='player',class='SHAMAN'},

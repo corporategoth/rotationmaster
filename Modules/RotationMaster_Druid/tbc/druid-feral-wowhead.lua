@@ -9,7 +9,7 @@ local function negate(c)return{type='NOT',value=c}end
 local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
 local function energy(op,v)return{type='POWER',unit='player',operator=op,value=v}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.druid.feral.wowhead',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.druid.feral.wowhead',revision=6,
  blocks={['tbc.druid.boundaries']=4,['tbc.druid.upkeep']=1,['tbc.druid.feral-cooldowns']=2,['tbc.druid.cat-opening']=2,
   ['tbc.druid.cat-builders']=1,['tbc.druid.bear-core']=2,['tbc.druid.feral-humanoid']=2},
  nameKey='Default.TBC.Druid.Feral.Wowhead.Name',descriptionKey='Default.TBC.Druid.Feral.Wowhead.Description',

@@ -20,7 +20,7 @@ local function priority(p,builder,spender)return{
 local aoe=priority('fwh-aoe-',207230,194913)
 aoe[#aoe+1]=spell('fwh-aoe-obliterate',49020);aoe[#aoe+1]=spell('fwh-aoe-frost-strike',49143)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.frost.wowhead',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.frost.wowhead',revision=6,
  blocks={['retail.deathknight.boundaries']=3,['retail.deathknight.utility']=2},
  nameKey='Default.Retail.DeathKnight.FrostWowhead.Name',descriptionKey='Default.Retail.DeathKnight.FrostWowhead.Description',
  applicability={families={'retail'},actionContext='player',class='DEATHKNIGHT'},
@@ -28,7 +28,7 @@ assert(addon:RegisterDefaultRotation({
  sources={
   {url='https://www.wowhead.com/guide/classes/death-knight/frost/rotation-cooldowns-pve-dps',title='Wowhead: Frost Death Knight rotation (Midnight Season 2)',reviewedAt='2026-10-23',revision='2026-08-12',notes='Read from a Wayback snapshot.'},
  },
- body={priority=5,disabled=true,specs={251},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=5,disabled=true,specs={251},
   cooldowns={
    block('fwh-utility','retail.deathknight.utility','fwh-'),
    spell('fwh-remorseless-winter',196770,combat()),

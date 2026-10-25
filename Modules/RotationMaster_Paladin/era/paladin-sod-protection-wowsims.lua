@@ -12,7 +12,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function remain(id)return{type='BUFF_REMAIN',unit='player',spell=id,anyrank=true,ownbuff=true,operator='LESSTHANOREQUALS',value=1.5}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.protection.wowsims',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.protection.wowsims',revision=7,
  blocks={['sod.paladin.tank-upkeep']=2,['era.paladin.melee-opening']=3,['sod.paladin.seal']=2},
  nameKey='Default.SoD.Paladin.Protection.Wowsims.Name',descriptionKey='Default.SoD.Paladin.Protection.Wowsims.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},

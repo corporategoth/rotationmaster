@@ -10,7 +10,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.ranged.mobalytics',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.ranged.mobalytics',revision=6,
  blocks={['forever.hunter.boundaries']=4,['forever.hunter.deadzone']=3,['forever.hunter.pull']=3,['forever.hunter.moving']=2,
   ['forever.hunter.aspects-ranged']=1,['forever.hunter.pet-care']=2,['forever.hunter.burst']=1},
  nameKey='Default.Forever.Hunter.RangedMobalytics.Name',descriptionKey='Default.Forever.Hunter.RangedMobalytics.Description',
@@ -22,7 +22,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.icy-veins.com/wow-forever/beast-mastery-hunter-leveling',title='Icy Veins: Forever Beast Mastery Hunter leveling',reviewedAt='2026-10-23',revision='2026-10-17',notes='Arcane Shot only when mana-capped, which RM cannot read in Forever combat.'},
   {url='https://github.com/simulationcraft/simc/blob/forever/SpellDataDump/hunter.txt',title='SimulationCraft Forever spell data (1.60.1.70425)',reviewedAt='2026-10-23',revision='4dd64b4a21',notes='Spell IDs, ranks and cooldown categories only.'},
  },
- body={priority=5,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=5,disabled=true,
   cooldowns={
    block('saver-aspects','forever.hunter.aspects-ranged','saver-'),
    spell('saver-trueshot-aura',1299346,negate({type='BUFF',unit='player',spell=1299346,anyrank=true})),

@@ -8,7 +8,7 @@ local function any(...)return{type='OR',value={...}}end
 local function form(id)return{type='FORM',form=id}end
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.druid.feral',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.era.druid.feral',revision=5,
  blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['era.druid.feral-cooldowns']=2,['era.druid.cat']=1,['era.druid.stealth-opener']=2,
   ['era.druid.cat-builders']=1,['era.druid.powershift']=2,['era.druid.bear']=2,['era.druid.bear-pull']=3,['era.druid.feral-humanoid']=2},
  nameKey='Default.Era.Druid.Feral.Name',descriptionKey='Default.Era.Druid.Feral.Description',

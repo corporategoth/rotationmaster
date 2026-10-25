@@ -19,7 +19,7 @@ local function stop(id,conditions,attack)return{id=id,type='stop',suppress_attac
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local judged={type='DEBUFF',unit='target',spell=20185,anyrank=true,owndebuff=true}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.paladin.holy.wowhead',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.paladin.holy.wowhead',revision=6,
  blocks={['forever.paladin.boundaries']=3,['forever.paladin.aura-blessing']=1,['forever.paladin.dispel']=1,['forever.paladin.healer-upkeep']=2},
  nameKey='Default.Forever.Paladin.HolyWowhead.Name',descriptionKey='Default.Forever.Paladin.HolyWowhead.Description',
  applicability={families={'forever'},actionContext='player',class='PALADIN'},

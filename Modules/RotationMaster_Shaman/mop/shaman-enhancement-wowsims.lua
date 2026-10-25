@@ -21,7 +21,7 @@ local flame={type='DEBUFF',unit='target',spell=8050,owndebuff=true}
 local fits=any(maelstrom(5),all(maelstrom(4),swing(.5)),all(maelstrom(3),swing(1)),all(maelstrom(2),swing(1.5)),all(maelstrom(1),swing(2)))
 local unleashed=own(73683)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.enhancement.wowsims',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.enhancement.wowsims',revision=7,
  blocks={['mop.shaman.manual-target']=2,['mop.shaman.lightning-shield']=1,['mop.shaman.group']=1,['mop.shaman.fire-totems']=1,
   ['mop.shaman.enhancement-upkeep']=2,['mop.shaman.enhancement-aoe']=1},
  nameKey='Default.MoP.Shaman.Enhancement.Wowsims.Name',descriptionKey='Default.MoP.Shaman.Enhancement.Wowsims.Description',

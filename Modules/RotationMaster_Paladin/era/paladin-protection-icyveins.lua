@@ -13,7 +13,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local undead=any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',unit='target',value='DEMON'})
 local function sealed()local out={};for i,id in ipairs({20154,21084,20375,21082,20166,20165,20164})do out[i]=own(id)end;return{type='OR',value=out}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.paladin.protection.icyveins',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.era.paladin.protection.icyveins',revision=6,
  blocks={['era.paladin.tank-upkeep']=2,['era.paladin.melee-opening']=3},
  nameKey='Default.Era.Paladin.Protection.IcyVeins.Name',descriptionKey='Default.Era.Paladin.Protection.IcyVeins.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN'},

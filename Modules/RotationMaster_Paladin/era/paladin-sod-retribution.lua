@@ -17,7 +17,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local undead=any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',unit='target',value='DEMON'})
 local holyPower={type='BUFF_STACKS',unit='player',spell=1226461,operator='GREATERTHANOREQUALS',value=3}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution',revision=6,
  blocks={['sod.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=3,['sod.paladin.seal']=2},
  nameKey='Default.SoD.Paladin.Retribution.Name',descriptionKey='Default.SoD.Paladin.Retribution.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},
@@ -25,7 +25,7 @@ assert(addon:RegisterDefaultRotation({
  sources={{url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/paladin/dps-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Paladin DPS rotation (Phase 8)',reviewedAt='2026-10-23',revision='2025-06-06'},
   {url='https://github.com/wowsims/sod/tree/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/retribution_paladin',title='wowsims/sod Phase 8 Exodin and Wrath-like APLs',reviewedAt='2026-10-23',revision='0e3f6ef'},
   {url='https://www.icy-veins.com/wow-classic/retribution-paladin-dps-season-of-discovery-leveling',title='Icy Veins: SoD Retribution Paladin leveling (Phase 4)',reviewedAt='2026-10-23',revision='2024-07-02',notes='Leveling order and the mana-gated Hammer of Wrath.'}},
- body={priority=102,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=102,
   cooldowns={block('sret-upkeep','sod.paladin.ret-upkeep','sret-'),block('sret-safety','era.paladin.safety','sret-')},
   rotation={
    block('sret-opening','era.paladin.melee-opening','sret-'),

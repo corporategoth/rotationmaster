@@ -22,7 +22,7 @@ local charged={type='BUFF_STACKS',unit='player',spell=324,anyrank=true,operator=
 local surge=buff(440285)
 local refresh=any(negate(flamed),flame('LESSTHAN',3))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.shaman.elemental',revision=3,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.shaman.elemental',revision=4,
  blocks={['era.shaman.manual-target']=2,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.caster-totems']=1},
  nameKey='Default.SoD.Shaman.Elemental.Name',descriptionKey='Default.SoD.Shaman.Elemental.Description',
  applicability={families={'era'},actionContext='player',class='SHAMAN',rulesets={'season:2'}},

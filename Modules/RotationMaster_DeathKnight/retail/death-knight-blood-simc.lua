@@ -16,7 +16,7 @@ local runeWeapon=buff(81256)
 local lowBones=any(negate(buff(195181)),{type='BUFF_REMAIN',unit='player',spell=195181,ownbuff=true,operator='LESSTHAN',value=3},
  {type='BUFF_STACKS',unit='player',spell=195181,ownbuff=true,operator='LESSTHAN',value=6})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.blood.simc',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.blood.simc',revision=7,
  blocks={['retail.deathknight.boundaries']=3,['retail.deathknight.utility']=2},
  nameKey='Default.Retail.DeathKnight.BloodSimc.Name',descriptionKey='Default.Retail.DeathKnight.BloodSimc.Description',
  applicability={families={'retail'},actionContext='player',class='DEATHKNIGHT'},
@@ -24,7 +24,7 @@ assert(addon:RegisterDefaultRotation({
  sources={
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/deathknight_blood.simc',title='SimulationCraft default action list: Blood (Deathbringer)',reviewedAt='2026-10-23',revision='c5fea93f'},
  },
- body={priority=5,disabled=true,specs={250},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=5,disabled=true,specs={250},
   cooldowns={
    block('bsimc-utility','retail.deathknight.utility','bsimc-'),
    spell('bsimc-raise-dead',46585,combat()),

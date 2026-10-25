@@ -25,7 +25,7 @@ local poisoned=any(stacks(458820,4),stacks(1214170,4),stacks(2818,4))
 -- Passive runes: Carnage (bleeds pay), Cut to the Chase (finishers refresh Slice and Dice).
 local carnage,chase=rune(432276),rune(432271)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.dps',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.dps',revision=6,
  blocks={['era.rogue.boundaries']=3,['era.rogue.sod-opener']=4,['era.rogue.sod-upkeep']=3,['era.rogue.sod-builders']=3,['era.rogue.expose-armor']=2},
  nameKey='Default.SoD.Rogue.DPS.Name',descriptionKey='Default.SoD.Rogue.DPS.Description',
  applicability={families={'era'},actionContext='player',class='ROGUE',rulesets={'season:2'}},
@@ -35,7 +35,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://www.icy-veins.com/wow-classic/subtlety-rogue-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Subtlety Rogue DPS rotation (area damage)',reviewedAt='2026-10-23',revision='2025-04-08'},
  {url='https://www.icy-veins.com/wow-classic/assassination-rogue-dps-season-of-discovery-leveling',title='Icy Veins: SoD Assassination Rogue leveling',reviewedAt='2026-10-23',revision='2025-04-08'},
  {url='https://www.zockify.com/wowclassic/rogue/dps/',title='Zockify: SoD DPS Rogue (Phase 8)',reviewedAt='2026-10-23',revision='2025-04-07'}},
- body={priority=50,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=50,
  cooldowns={block('era.rogue.sod-upkeep','rogue-')},
  rotation={
  block('era.rogue.boundaries','rogue-'),

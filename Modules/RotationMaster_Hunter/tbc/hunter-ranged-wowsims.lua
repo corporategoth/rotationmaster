@@ -16,7 +16,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local stingless=all(negate({type='DEBUFF',unit='target',spell=1978,anyrank=true,owndebuff=true}),negate({type='DEBUFF',unit='target',spell=3043,anyrank=true,owndebuff=true}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.hunter.ranged.wowsims',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.hunter.ranged.wowsims',revision=5,
  blocks={['tbc.hunter.opening']=4,['tbc.hunter.leveling']=2,['tbc.hunter.upkeep']=1},
  nameKey='Default.TBC.Hunter.Ranged.Wowsims.Name',descriptionKey='Default.TBC.Hunter.Ranged.Wowsims.Description',
  applicability={families={'tbc'},actionContext='player',class='HUNTER'},
@@ -25,7 +25,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://diziet559.github.io/rotationtools/',title='diziet559 rotationtools: TBC Hunter shot rotations',reviewedAt='2026-10-23',revision='2bd1759b0e0d04bea7b4bb3a4dc356f484423ced'},
  {url='https://www.icy-veins.com/tbc-classic/beast-mastery-hunter-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Beast Mastery Hunter rotation, cooldowns and abilities',reviewedAt='2026-10-23',revision='2026-01-12'},
  {url='https://www.icy-veins.com/tbc-classic/hunter-leveling-guide',title='Icy Veins: Hunter leveling',reviewedAt='2026-10-23',revision='2026-01-12'}},
- body={priority=10,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=10,
  cooldowns={block('tbc.hunter.upkeep','hunter-'),
   spell('hunter-viper',34074,all({type='COMBAT',unit='player'},mana('LESSTHAN',.2),negate(buff(34074)))),
   spell('hunter-hawk',13165,all(negate(buff(13165)),any(negate(buff(34074)),mana('GREATERTHANOREQUALS',.5)),

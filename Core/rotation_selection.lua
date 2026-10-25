@@ -9,7 +9,7 @@ function addon:GetOrderedAutoSwitchRotations(spec,rotations)
     for id,body in pairs(rotations) do
         local priority=type(body)=='table' and data.GetRotationPriority(body.priority)
         if type(id)=='string' and id~=DEFAULT and priority and not body.disabled
-            and type(body.switch)=='table' and self:usefulCondition(body.switch)
+            and (body.switch==nil or type(body.switch)=='table')
             and self:validateCondition(body.switch,spec) and self:rotationValidConditions(body,spec) then
             local tie=id;local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
             if scoped then local ref=scoped:Resolve(spec,id);if ref then if ref.kind=='builtin' then tie='builtin:'..ref.id else local a=ref.address;tie=table.concat({a.scope,a.class,a.owner,tostring(a.spec),a.id},'\0') end end end
@@ -296,14 +296,6 @@ function addon:ExplainRotationRefusal(spec,value)
     end
     return refusalText[code] or string.format(L['it is unavailable (%s)'],tostring(code)),code
 end
--- True when `key` can be selected but has no usable switch condition, so
--- automatic switching never picks it (you choose it by hand).
-function addon:IsManualOnlyRotation(spec,key)
-    local pass=self.AcquireRotationRuntimePass and self:AcquireRotationRuntimePass(spec)
-    local body=pass and pass:Get(key)
-    if type(body)~='table' then return false end
-    return type(body.switch)~='table' or not self:usefulCondition(body.switch)
-end
 -- A rotation's priority as automatic switching ranks it (nil when unknown).
 function addon:GetRotationEffectivePriority(spec,key)
     if key==DEFAULT then return nil end
@@ -321,8 +313,7 @@ function addon:GetDisabledApplicableBuiltins(spec)
     local rows=self:GetBuiltinStates(spec);local user,shipped,anyOn={},{},false
     for _,row in ipairs(rows) do
         if row.applies then
-            local matches=self.SwitchConditionMatchesNow and type(row.body)=='table' and type(row.body.switch)=='table'
-                and self:usefulCondition(row.body.switch) and self:SwitchConditionMatchesNow(row.body.switch)
+            local matches=self.SwitchConditionMatchesNow and type(row.body)=='table' and self:SwitchConditionMatchesNow(row.body.switch)
             if matches~=false then
                 if row.state=='enabled' then anyOn=true
                 elseif row.state=='user-disabled' then user[#user+1]=row
@@ -371,7 +362,6 @@ function addon:GetRotationEligibilityReport()
     end
     local function verdict(name,value)
         local why,code=self:ExplainRotationRefusal(spec,value)
-        if not why and value~=DEFAULT and self:IsManualOnlyRotation(spec,value) then lines[#lines+1]=string.format(L['%s: ready, manual only: no switch condition (choose it with /rm set or the minimap menu).'],name);return end
         if why and code=='specialization-mismatch' then
             local body=self.GetRotationRecordSnapshot and self:GetRotationRecordSnapshot(spec,value)
             local specs=type(body)=='table' and type(body.body)=='table' and body.body.specs
@@ -416,7 +406,7 @@ function addon:GetRotationEligibilityReport()
             if name then names[#names+1]=string.format('%s (%s)',name,tostring(self:GetRotationEffectivePriority(spec,key) or '?')) end
         end
         if #names==0 then
-            lines[#lines+1]=string.format(L['Automatic switching tries nothing else, then the fallback (%s): no enabled rotation here has a switch condition it can use.'],DEFAULT)
+            lines[#lines+1]=string.format(L['Automatic switching tries nothing else, then the fallback (%s): no enabled rotation here can be selected now.'],DEFAULT)
         else
             names[#names+1]=string.format(L['then the fallback (%s)'],DEFAULT)
             lines[#lines+1]=string.format(L['Automatic switching tries: %s. Higher numbers are tried first; equal priorities go by name.'],table.concat(names,', '))
@@ -448,7 +438,10 @@ end
 -- specializations too where it names the same values (specialization IDs);
 -- on dual-specialization clients it tests talents and is an ordinary one;
 -- two overlap when their regions meet and one's other conditions are a
--- subset of the other's (identical, or one subsumes the other). Live: both
+-- subset of the other's (identical, or one subsumes the other). A rotation
+-- with no switch condition is its region and nothing else, so it overlaps every
+-- rotation of the same specializations and levels, which is true: it matches
+-- whenever it applies. Live: both
 -- match right now. Computed on demand (list refresh, editor open), cached on
 -- the auto-switch list identity; never while polling.
 local function canonical(value)
@@ -545,7 +538,7 @@ function addon:GetSwitchOverlaps(spec)
     local rows={}
     for _,key in ipairs(order) do
         local body=pass and pass:Get(key) or (not pass and self.GetRuntimeRotation and self:GetRuntimeRotation(spec,key))
-        if type(body)=='table' and type(body.switch)=='table' then
+        if type(body)=='table' then
             local builtin=self.GetDefaultIdForRuntime and self:GetDefaultIdForRuntime(spec,key)
             local view=builtin and self.GetDefaultRotation and self:GetDefaultRotation(builtin)
             local matches=self.SwitchConditionMatchesNow and self:SwitchConditionMatchesNow(body.switch)
@@ -579,8 +572,8 @@ function addon:DescribeSwitchOverlap(list)
         if entry.tie then ties[#ties+1]=text else others[#others+1]=text end
     end
     local lines={}
-    if #ties>0 then lines[#lines+1]=string.format(L['Same priority as %s: their switch conditions can match together, and the tie is decided by name.'],table.concat(ties,', ')) end
-    if #others>0 then lines[#lines+1]=string.format(L['Can match together with %s: only priority decides which is chosen.'],table.concat(others,', ')) end
+    if #ties>0 then lines[#lines+1]=string.format(L['Same priority as %s: both can be selected at once, and the tie is decided by name.'],table.concat(ties,', ')) end
+    if #others>0 then lines[#lines+1]=string.format(L['Can be selected together with %s: only priority decides which is chosen.'],table.concat(others,', ')) end
     return table.concat(lines,'\n'),#ties>0
 end
 -- The load-time scope of a definition, as one line; nil when it has none.
@@ -610,7 +603,7 @@ function addon:DescribeApplicability(scope)
     if scope.minExpansion or scope.maxExpansion then parts[#parts+1]=string.format(L['expansions %s–%s'],tostring(scope.minExpansion or '?'),tostring(scope.maxExpansion or '?')) end
     if type(scope.rulesets)=='table' then local names={};for _,token in ipairs(scope.rulesets) do names[#names+1]=rulesetName(token) end;parts[#parts+1]=table.concat(names,', ') end
     if #parts==0 then return nil end
-    return string.format(L['Loads only for: %s. The switch condition decides the rest.'],table.concat(parts,' · '))
+    return string.format(L['Loads only for: %s. Its specializations and switch condition decide the rest.'],table.concat(parts,' · '))
 end
 -- END SWITCH OVERLAP
 
@@ -718,7 +711,6 @@ function addon:GetRotationIdentifierReport()
         if not status then
             local why=self:ExplainRotationRefusal(spec,entry.fallback and DEFAULT or entry.key)
             status=why and string.format(L['cannot be selected: %s'],why) or (self.currentRotation==(entry.fallback and DEFAULT or entry.key) and L['active'] or L['ready'])
-            if not why and not entry.fallback and self:IsManualOnlyRotation(spec,entry.key) then status=status..', '..L['manual only (no switch condition)'] end
         end
         local kind=entry.fallback and L['fallback'] or entry.kind=='builtin' and L['Built In'] or L['yours']
         lines[#lines+1]=string.format('%s — %s (%s) — %s',entry.identifier,entry.name,kind,status)

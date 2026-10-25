@@ -16,7 +16,7 @@ local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v
 local function blood()return any(own(31892),own(348700))end
 local function anySeal()local out={};for i,id in ipairs({21084,20375,31892,348700,31801,348704,21082,20166,20165,20164})do out[i]=own(id)end;return{type='OR',value=out}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.retribution.twist',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.retribution.twist',revision=6,
  blocks={['tbc.paladin.ret-upkeep']=2,['tbc.paladin.melee-opening']=2,['tbc.paladin.boundaries']=2},
  nameKey='Default.TBC.Paladin.Retribution.Twist.Name',descriptionKey='Default.TBC.Paladin.Retribution.Twist.Description',
  applicability={families={'tbc'},actionContext='player',class='PALADIN'},

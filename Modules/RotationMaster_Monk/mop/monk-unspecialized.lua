@@ -11,7 +11,7 @@ local function hurt()return{type='HEALTHPCT',unit='player',operator='LESSTHAN',v
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.monk.unspecialized',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.monk.unspecialized',revision=5,
  blocks={['mop.monk.boundaries']=3,['mop.monk.upkeep']=1},
  nameKey='Default.MoP.Monk.Unspecialized.Name',descriptionKey='Default.MoP.Monk.Unspecialized.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK'},
@@ -20,7 +20,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/windwalker-monk-leveling',title='Icy Veins: MoP Classic Windwalker Monk leveling',reviewedAt='2026-10-23',revision='2025-06-17',notes='Early kit (Expel Harm at 7); the 1–9 order is RM policy from the Windwalker priority.'},
   {url='https://www.warcrafttavern.com/mop/guides/monk-leveling-guide/',title='Warcraft Tavern: MoP Monk leveling guide',reviewedAt='2026-10-23'},
  },
- body={priority=0,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=0,
   cooldowns={
    spell('monk-tiger-stance',103985,negate({type='FORM',form=103985})),
    block('monk-class','mop.monk.upkeep','monk-'),

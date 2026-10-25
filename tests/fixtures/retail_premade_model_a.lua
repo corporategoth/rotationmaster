@@ -246,7 +246,7 @@ function M.initial(class,token,spec,id,learn)
  local f,s=M.new(class,token,spec);local a=f.addon;s.setLevel(4);s.learn(unpack(learn))
  local row=M.row(a,id);local scope=row.applicability
  assert(scope.specs==nil and scope.minLevel==nil and scope.maxLevel==nil,id..' scope: load-time facts only')
- local body=row.envelope.body;local sw=body.switch;assert(sw and sw.type=='LEVEL' and sw.value==1 and #body.specs==1 and body.specs[1]==spec,id..' specs')
+ local body=row.envelope.body;assert(body.switch==nil and #body.specs==1 and body.specs[1]==spec,id..' specs')
  assert(M.selected(a)==id,'initial spec auto-selected '..tostring((M.selected(a))))
  for other,listed in pairs(M.rows(a))do if other~=id then assert(not listed.eligible,other..' eligible in the initial spec')end end
  s.suggest=learn[1];M.expect(a,s,id,learn[1],nil,'the Assisted suggestion')

@@ -12,7 +12,7 @@ local function own(id)return{type='BUFF',unit='player',spell=id,anyrank=true,own
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.protection',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.protection',revision=6,
  blocks={['sod.paladin.tank-upkeep']=2,['era.paladin.melee-opening']=3,['sod.paladin.seal']=2},
  nameKey='Default.SoD.Paladin.Protection.Name',descriptionKey='Default.SoD.Paladin.Protection.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},

@@ -34,7 +34,7 @@ local unqueued=all(negate(queued(78)),negate(queued(845)))
 local immune=any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',unit='target',value='MECHANICAL'},{type='CREATURE',unit='target',value='ELEMENTAL'})
 local enraged=any(buff(12880),buff(425415),buff(427066),buff(29131),buff(18499))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.warrior.dps',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.warrior.dps',revision=6,
  blocks={['era.warrior.boundaries']=3,['era.warrior.upkeep']=1,['era.warrior.aoe-strikes']=1},
  nameKey='Default.SoD.Warrior.DPS.Name',descriptionKey='Default.SoD.Warrior.DPS.Description',
  applicability={families={'era'},actionContext='player',class='WARRIOR',rulesets={'season:2'}},
@@ -42,7 +42,7 @@ assert(addon:RegisterDefaultRotation({
  sources={{url='https://github.com/wowsims/sod/tree/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/warrior/apls',title='wowsims/sod: Warrior APLs (Phase 1-6, two-hander and dual wield)',reviewedAt='2026-10-23',revision='0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e'},
  {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/warrior/dps-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Warrior DPS rotation (Phase 7/8)',reviewedAt='2026-10-23',revision='2025-04-12'},
  {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/warrior/dps-talent-builds-runes',title='Wowhead: SoD Warrior DPS talents and runes (Phase 8)',reviewedAt='2026-10-23',revision='2025-04-08'}},
- body={priority=50,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+ body={priority=50,
  cooldowns={block('era.warrior.upkeep','sod-dps-'),
   spell('sod-dps-commanding-shout',403215,negate(buff(403215))),
   spell('sod-dps-heroic-strike',78,all(combat(),unqueued,enemies('LESSTHAN',2),any(rage('GREATERTHANOREQUALS',50),all(strike,buff(425415))))),
