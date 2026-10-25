@@ -363,4 +363,22 @@ test('the Rotations list shows each specialization\'s Default, and All lists eve
     assert(browser.query=='def','the search was cleared by moving to another Default')
     browser:Release()
 end)
+-- A new rotation fills its own identifier in from its name; that is not an
+-- edit, so moving on from an untouched one neither asks nor leaves it listed.
+test('an untouched new rotation neither prompts nor lingers when you choose another one',function()
+    local f=T.new{level=10,specIndex=1};local a=f.addon
+    local host=f.env.CreateFrame('Frame');host:SetSize(1000,3000)
+    local browser=a:CreateRotationBrowser(host,{spec=268})
+    local target=key(a,'rm.retail.monk.brewmaster')
+    browser.newButton:Click();local pane=browser.pane;local made=browser.selected
+    assert(pane.workspace.pending and pane.identifierDirty,'the identifier was not filled in on its own')
+    browser:SelectRotation(268,target)
+    assert(not (pane.leavePrompt and pane.leavePrompt.frame:IsShown()),'an untouched new rotation asked what to do')
+    assert(browser.selected==target and not browser.rowsByKey[made] and #a:ListPendingRotationDrafts(268)==0,'it stayed in the list')
+    -- Typing a name makes it a draft worth asking about.
+    browser.newButton:Click();pane=browser.pane;pane.name:SetText('Mine');pane.name.scripts.OnTextChanged(pane.name,true)
+    browser:SelectRotation(268,target);assert(pane.leavePrompt and pane.leavePrompt.frame:IsShown(),'an edited draft did not ask')
+    pane.leavePrompt.discard:Click();assert(#a:ListPendingRotationDrafts(268)==0 and browser.selected==target)
+    browser:Release()
+end)
 finish()
