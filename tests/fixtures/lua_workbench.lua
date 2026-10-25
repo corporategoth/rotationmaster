@@ -5,8 +5,6 @@ return function()
  local create=f.env.CreateFrame;local function augmented(frame) function frame:RegisterEvent() end;function frame:SetShown(value) if value then self:Show() else self:Hide() end end
  function frame:SetEnabled(value) if value then self:Enable() else self:Disable() end end
  function frame:GetTextColor() return unpack(self.textColor or {1,1,1,1}) end
- function frame:GetFont() return 'Fonts\\FRIZQT__.TTF',12,'' end
- function frame:SetFont() end
  function frame:SetSpacing(value) self.spacing=value end;function frame:GetSpacing() return self.spacing or 0 end
  function frame:SetJustifyH(value) self.justifyH=value end
  function frame:SetNonSpaceWrap() end

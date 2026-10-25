@@ -537,6 +537,7 @@ records["tools/integration_projects.json"]={bytes=124452,hash=3297383619,
 local function digest(s)local n=5381;for i=1,#s do n=(n*33+s:byte(i))%4294967296 end;return n end
 return function(value,path)
  assert(path~='tests/fixtures/restore_bossmod_integration.lua','boss-mod inverse cannot normalize itself')
+ value=dofile('tests/fixtures/restore_function_fonts.lua')(value,path)
  local row=type(value)=='string' and records[path]
  if not row or #value~=row.bytes or digest(value)~=row.hash then return value end
  for i=#row,1,-1 do local s,e=value:find(row[i][1],1,true);value=value:sub(1,s-1)..row[i][2]..value:sub(e+1)end

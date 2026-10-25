@@ -3,6 +3,7 @@ return function(env)
     local frames={}
     local function create(kind,name,parent,template)
         local frame={kind=kind,name=name,parent=parent,template=template,scripts={},width=100,height=100,visible=true,alpha=1}
+        if kind=='EditBox' and os.getenv('RM_FONT_TRACE') then frame.createdAt=debug.traceback('',2) end
         function frame:SetSize(width,height)
             self.width,self.height=width,height
             if self.scripts.OnSizeChanged then self.scripts.OnSizeChanged(self,width,height) end
@@ -67,10 +68,31 @@ return function(env)
             if changed and self.scripts.OnHide then self.scripts.OnHide(self) end
         end
         function frame:Click() if self.enabled~=false and self.scripts.OnClick then self.scripts.OnClick(self) end end
-        function frame:SetText(value) self.text=value end
+        -- The client's rule: a FontString (and an EditBox) must have a font
+        -- before it can show, measure or format text. A template or
+        -- :SetFontObject(object) gives it one; :SetFont(path,size,flags) gives
+        -- it one only when the path and size are usable (the client refuses
+        -- a bad one with false and leaves the old font, or none).
+        local fontRules={FontString=true,EditBox=true}
+        local function needFont(self,method)
+            if fontRules[self.kind] and not self.fontState then
+                -- RM_FONT_TRACE=1 appends the call stack, to find who built it.
+                local stack=os.getenv('RM_FONT_TRACE') and ('\ncreated at'..tostring(self.createdAt)..'\nused at'..debug.traceback('',3)) or ''
+                error(self.kind..':'..method..'(): Font not set'..stack,3)
+            end
+        end
+        function frame:SetText(value) needFont(self,'SetText');self.text=value end
+        function frame:SetFormattedText(format,...) needFont(self,'SetFormattedText');self.text=string.format(format,...) end
         function frame:GetText() return self.text end
         function frame:SetTextColor(...) self.textColor={...} end
-        function frame:SetFontObject() end
+        function frame:SetFontObject(object)
+            if object~=nil then self.fontObject=object;self.fontState={path='Fonts\\FRIZQT__.TTF',size=12,flags=''} end
+        end
+        function frame:SetFont(path,size,flags)
+            if type(path)=='string' and path~='' and type(size)=='number' and size>0 then self.fontState={path=path,size=size,flags=flags or ''};return true end
+            return false
+        end
+        function frame:GetFont() local font=self.fontState;if font then return font.path,font.size,font.flags end end
         function frame:SetAutoFocus(value) self.autoFocus=value end
         function frame:SetMultiLine(value) self.multiLine=value end
         function frame:SetMaxLetters(value) self.maxLetters=value end
@@ -104,6 +126,7 @@ return function(env)
         function frame:SetWordWrap(value) self.wordWrap=value end
         function frame:SetMaxLines(value) self.maxLines=value end
         function frame:GetStringHeight()
+            needFont(self,'GetStringHeight')
             local lines=0
             for part in ((self.text or '')..'\n'):gmatch('(.-)\n') do lines=lines+math.max(1,math.ceil(#part/math.max(1,(self.width or 100)/7))) end
             if self.maxLines and self.maxLines>0 then lines=math.min(lines,self.maxLines) end
@@ -118,16 +141,23 @@ return function(env)
         function frame:SetVertexColor(...) self.color={...} end
         function frame:SetJustifyH() end
         function frame:SetJustifyV(value) self.justifyV=value end
-        function frame:GetStringWidth() return #(self.text or '')*7 end
+        function frame:GetStringWidth() needFont(self,'GetStringWidth');return #(self.text or '')*7 end
         function frame:CreateTexture() return create('Texture',nil,self) end
-        function frame:CreateFontString() return create('FontString',nil,self) end
+        function frame:CreateFontString(name,layer,template)
+            local fontString=create('FontString',name,self,template)
+            if template~=nil then fontString.fontState={path='Fonts\\FRIZQT__.TTF',size=12,flags=''}
+            elseif os.getenv('RM_FONT_TRACE') then fontString.createdAt=debug.traceback('',2) end
+            return fontString
+        end
         function frame:GetFontString()
-            if not self.fontString then self.fontString=self:CreateFontString() end
+            if not self.fontString then self.fontString=self:CreateFontString(nil,nil,'GameFontNormal') end
             self.fontString:SetText(self.text or '');return self.fontString
         end
         frames[#frames+1]=frame
         return frame
     end
+    -- The stock font object the editors and probes use by global.
+    env.ChatFontNormal=env.ChatFontNormal or {}
     env.CreateFrame=create;env.UIParent=create('Frame')
     return frames,create
 end

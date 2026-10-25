@@ -543,6 +543,13 @@ local function reflowVisible(frame)
     end
     return true
 end
+-- A relayout that fails is reported with the stack it failed in. pcall alone
+-- loses it, leaving only the message and this driver's own frame.
+local function reflowFailure(why)
+    if type(why)~='string' or type(debugstack)~='function' then return why end
+    local ok,stack=pcall(function() return debugstack(2) end)
+    return ok and type(stack)=='string' and why..'\n'..stack or why
+end
 local function driveReflow(driver)
     local batch=reflowQueue;reflowQueue={}
     for owner,request in pairs(batch) do
@@ -554,7 +561,7 @@ local function driveReflow(driver)
             reflowQueue[owner]=request
         else
             local start=reflowClock()
-            local ok,why=pcall(request.run)
+            local ok,why=xpcall(request.run,reflowFailure)
             local finish=reflowClock();owner.rmReflowAfter=finish+math.min(.25,math.max(0,finish-start)*2)
             if not ok then local handler=geterrorhandler and geterrorhandler();if handler then pcall(handler,why) end end
         end
@@ -567,7 +574,7 @@ local function driveReflow(driver)
         end
     end
     for _,request in ipairs(due) do
-        local ok,why=pcall(request.run)
+        local ok,why=xpcall(request.run,reflowFailure)
         if not ok then local handler=geterrorhandler and geterrorhandler();if handler then pcall(handler,why) end end
     end
     if next(reflowQueue)==nil and next(settleQueue)==nil then driver:SetScript('OnUpdate',nil) end

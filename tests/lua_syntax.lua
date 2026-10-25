@@ -4,6 +4,7 @@ local function nativeEdit(f,text)
     local edit=f.env.CreateFrame('EditBox',nil,f.env.UIParent)
     -- Native frame methods live on its type, so removing a per-instance
     -- syntax override reveals the original method again.
+    edit:SetFontObject('GameFontHighlightSmall')
     local methods={GetText=edit.GetText,SetText=edit.SetText}
     edit.GetText,edit.SetText=nil,nil;setmetatable(edit,{__index=methods})
     function edit:GetMaxBytes() return self.maxBytes or 0 end

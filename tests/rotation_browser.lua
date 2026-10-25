@@ -264,7 +264,7 @@ test('browser filter and recycled callbacks cannot select old rows or approve re
     b.pane.RequestLeave=nil;visibleBrowserRow(b,'entry-1000'):Click();assert(b.selected=='entry-1000');b:Release()
 end)
 test('browser resize keeps invalid pending detail focus and remeasures retained labels without metadata scans',function()
-    local f,b,editors,frames,create=largeBrowser(1000);local input=create('EditBox',nil,b.pane.frame);input:SetText('bad pending input');input:SetFocus();input:SetCursorPosition(4)
+    local f,b,editors,frames,create=largeBrowser(1000);local input=create('EditBox',nil,b.pane.frame);input:SetFontObject('GameFontHighlightSmall');input:SetText('bad pending input');input:SetFocus();input:SetCursorPosition(4)
     local first=visibleBrowserRow(b,'entry-1');local lease=first.browserLease;local pane=b.pane;local count=#editors;local observations=0;local tags=f.addon.GetRotationTagView;f.addon.GetRotationTagView=function(...) observations=observations+1;return tags(...) end
     b:SetWidth(700);assert(b.pane==pane and #editors==count and first.browserLease==lease and observations==0,'resize rebound the editor or rebuilt library data')
     assert(first.nameLabel:GetWidth()==first:GetWidth()-12 and first.statusLabel:GetWidth()==first:GetWidth()-12)

@@ -126,7 +126,17 @@ function rm:CreateLuaWorkbenchEngine(options)
         local inspector=self.Inspector;inspector.refs={};inspector.root=nil;inspector.target=nil;inspector.history={};inspector.rows={}
         for _,row in ipairs(inspector.buttons or {}) do row.node=nil;attempt(row.Hide,row);if row.text then attempt(row.text.SetText,row.text,'') end end
         self.Automation.environments={};self.Automation.running={};self.EditorActions.lineClipboard=nil
-        local function clearText(widget) if widget then attempt(widget.SetText,widget,'') end end
+        -- A FontString or EditBox with no font raises "Font not set" from
+        -- :SetText(), even for ''. One the editor never painted has none yet,
+        -- so it gets the plain font first; it is being emptied, not shown.
+        local function clearText(widget)
+            if not widget then return end
+            if widget.GetFont and widget.SetFontObject then
+                local ok,font=pcall(widget.GetFont,widget)
+                if not ok or not font then attempt(widget.SetFontObject,widget,GameFontHighlightSmall or 'GameFontHighlightSmall') end
+            end
+            attempt(widget.SetText,widget,'')
+        end
         local function clearInput(value)
             if not value then return end
             clearText(value.editBox)

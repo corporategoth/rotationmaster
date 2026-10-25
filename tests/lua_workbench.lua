@@ -188,7 +188,7 @@ test('debugger tracks orphan controls only during resume and restores every shar
  assert(c.debugError:find('orphan-error',1,true));c:Release();assert(not a.orphan.alive,'failed unattached control leaked')
 end)
 test('function hover keeps interline spacing out of glyph scaling',function()
- local f,a=fixture();local e=assert(a:CreateLuaWorkbenchEngine({id='HOVER'}));local font=f.env.CreateFrame('FontString')
+ local f,a=fixture();local e=assert(a:CreateLuaWorkbenchEngine({id='HOVER'}));local font=f.env.CreateFrame('FontString');font:SetFontObject('GameFontHighlightSmall')
  font:SetSize(400,40);font:SetSpacing(2);font:SetText('first\nsecond\nthird')
  function font:GetStringHeight() return 40 end;function font:GetNumLines() return 3 end
  function font:CalculateScreenAreaFromCharacterSpan(first) return {{left=10,bottom=first==1 and 28 or 14,width=36,height=12}} end

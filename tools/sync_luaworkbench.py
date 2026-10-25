@@ -3,10 +3,12 @@
 import argparse
 import hashlib
 import json
+import re
 from pathlib import Path
 import subprocess
 ROOT=Path(__file__).resolve().parents[1]
 PIN='9abc820'
+FONTED=[]
 MODULES=['Localization','BufferedPaste','LuaEditor','Analysis','LuaConsole','UI','Search','Organization','Helpers','Navigation','DebugProbe','DebugCompiler','Debugger','DebugUI','APIHelp','KnowledgeBase','Inspector','Autocomplete','EditorActions','Snippets','Automation']
 def read(repo,path): return subprocess.check_output(['git','show',f'{PIN}:{path}'],cwd=repo,text=True)
 def adapt(name,body):
@@ -25,6 +27,13 @@ def adapt(name,body):
     if name=='Organization':
         body=body.replace('StaticPopupDialogs.LUAWORKBENCH_REVERT = {','if not addon.embedded then\nStaticPopupDialogs.LUAWORKBENCH_REVERT = {').replace('preferredIndex = 3,\n}', 'preferredIndex = 3,\n}\nend')
     if name=='Automation': body=body.replace("A.frame = CreateFrame('Frame')", "if not addon.embedded then\nA.frame = CreateFrame('Frame')")+'\nend\n'
+    # A FontString raises "Font not set" from :SetText() (even :SetText('')
+    # while releasing the editor) until it has a font. Upstream creates its
+    # measuring and overlay strings bare and sets the font at first paint, so
+    # one released before that first paint failed. Every one starts with a
+    # font; the first paint still replaces it with the editor's own.
+    body,count=re.subn(r'CreateFontString\(nil, (["\'])OVERLAY\1\)',lambda match:'CreateFontString(nil, '+match.group(1)+'OVERLAY'+match.group(1)+", 'GameFontHighlightSmall')",body)
+    FONTED.append(count)
     for frame in ('LuaWorkbenchKnowledgeBase','LuaWorkbenchCopyFunction','LuaWorkbenchTextSnippets','LuaWorkbenchDebugValueTooltip','LuaWorkbenchInspector','LuaWorkbenchFramePicker','LuaWorkbenchSavedHelper'):
         registration="_G.UISpecialFrames[#_G.UISpecialFrames + 1] = '"+frame+"'"
         body=body.replace(registration,'if not addon.embedded then '+registration+' end')
@@ -44,6 +53,7 @@ def main():
     directory=ROOT/'Libs/LuaWorkbench-Embed';directory.mkdir(exist_ok=True)
     code='\n'.join(output)+'\n';(directory/'modules.lua').write_text(code);(directory/'LICENSE').write_text(read(args.checkout,'LICENSE'))
     (directory/'manifest.json').write_text(json.dumps({'repository':'https://github.com/R41z0r/LuaWorkbench','commit':sha,'upstream_sources':hashes,'generated_sha256':hashlib.sha256(code.encode()).hexdigest()},indent=2)+'\n')
+    if sum(FONTED)!=6: raise ValueError(f'expected six bare upstream FontStrings, found {sum(FONTED)}; review the font adapter')
     pinfile=ROOT/'Libs/UPSTREAM.json';pins=json.loads(pinfile.read_text());pins['libraries']['LuaWorkbench-Embed']={'source':'https://github.com/R41z0r/LuaWorkbench','revision':sha,'files':{name:hashlib.sha256((directory/name).read_bytes()).hexdigest() for name in ('modules.lua','LICENSE','manifest.json')}};pinfile.write_text(json.dumps(pins,indent=2)+'\n')
     print(f'Embedded LuaWorkbench: {len(MODULES)} modules, {sha}')
 if __name__=='__main__': main()

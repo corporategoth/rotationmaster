@@ -586,6 +586,7 @@ def main():
             ['lua5.1', 'tests/schema_authoring.lua'],
             ['lua5.1', 'tests/schema_canvas.lua'],
             ['luajit', 'tests/custom_authoring_ui.lua'],
+            ['luajit', 'tests/font_enforcement.lua'],
             ['lua5.1', 'tests/known_spell.lua'],
             ['lua5.1', 'tests/plain_data.lua'],
             ['lua5.1', 'tests/rotation_validation.lua'],

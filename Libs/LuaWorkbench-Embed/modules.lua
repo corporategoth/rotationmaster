@@ -3908,7 +3908,7 @@ function Editor:Attach(input)
  state.source, state.scripts, state.busy, state.elapsed, state.keyEdit = box:GetText(), {}, nil, 0, nil
  state.color = { box:GetTextColor() }
  if not state.overlay then
-  state.overlay = box:CreateFontString(nil, 'OVERLAY')
+  state.overlay = box:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
   state.overlay:SetJustifyH('LEFT')
   state.overlay:SetJustifyV('TOP')
   state.overlay:SetWordWrap(true)
@@ -4807,7 +4807,7 @@ function Console:UpdateLineNumbers()
 			used = used + 1
 			local row = state.rows[used]
 			if not row then
-				row = state.gutter:CreateFontString(nil, "OVERLAY")
+				row = state.gutter:CreateFontString(nil, "OVERLAY", 'GameFontHighlightSmall')
 				row:SetJustifyH("RIGHT")
 				row:SetJustifyV("TOP")
 				state.rows[used] = row
@@ -4847,7 +4847,7 @@ function Console:AttachLineNumbers(input)
 		state.gutter:SetPoint("BOTTOMLEFT", input.scrollBG, "BOTTOMLEFT", 4, 4)
 		state.gutter:SetWidth(54)
 		state.gutter:SetClipsChildren(true)
-		state.measure = state.gutter:CreateFontString(nil, "OVERLAY")
+		state.measure = state.gutter:CreateFontString(nil, "OVERLAY", 'GameFontHighlightSmall')
 		state.measure:SetWordWrap(true)
 		state.measure:SetNonSpaceWrap(true)
 		state.measure:Hide()
@@ -5009,7 +5009,7 @@ function UI:Background(frame, color)
 end
 
 function UI:Text(parent, text, size)
- local label = parent:CreateFontString(nil, "OVERLAY")
+ local label = parent:CreateFontString(nil, "OVERLAY", 'GameFontHighlightSmall')
  label:SetFontObject(GameFontHighlightSmall)
  if size then local font, _, flags = label:GetFont(); label:SetFont(font, size, flags) end
  label:SetJustifyH("LEFT")
@@ -7791,7 +7791,7 @@ function U:ShowSourceSnapshot(record, offset, focus)
   local input = UI:Editor(panel, L.debugSnapshot, true); self.snapshotInput = input
   input.frame:SetPoint('TOPLEFT', 8, -82); input.frame:SetPoint('BOTTOMRIGHT', -8, 8)
   -- Use the syntax renderer without attaching the editable input handlers.
-  local overlay = input.editBox:CreateFontString(nil, 'OVERLAY')
+  local overlay = input.editBox:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
   overlay:SetJustifyH('LEFT'); overlay:SetJustifyV('TOP'); overlay:SetWordWrap(true); overlay:SetNonSpaceWrap(true)
   input.queryEditor = { overlay = overlay }; input.editBox:SetTextColor(0, 0, 0, 0)
   input.editBox:HookScript('OnUpdate', function(_, elapsed)
@@ -7817,7 +7817,7 @@ function U:PaintSnapshotLine()
  if not input or not record or not self.snapshotLine then return end
  local box = input.editBox
  if not self.snapshotMeasure then
-  self.snapshotMeasure = box:CreateFontString(nil, 'OVERLAY')
+  self.snapshotMeasure = box:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
   self.snapshotMeasure:SetWordWrap(true); self.snapshotMeasure:SetNonSpaceWrap(true); self.snapshotMeasure:Hide()
   self.snapshotHighlight = box:CreateTexture(nil, 'BACKGROUND')
   self.snapshotHighlight:SetColorTexture(1, 0.7, 0.15, 0.15)
