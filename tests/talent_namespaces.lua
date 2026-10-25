@@ -1,7 +1,7 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local tags={'TALENT','TALENT_TREE_POINTS','PRIMARY_TALENT_TREE'}
 local ids={isin='builtin:utils.lua:isin',compare='builtin:utils.lua:compare',compareString='builtin:utils.lua:compareString',nullable='builtin:utils.lua:nullable',getCached='builtin:utils.lua:getCached'}
-local helperHashes={integer='e1bd3b0e',treeShape='f0ba2bf9',legacySlot='b8bfb514',group='d6f4e415',info='12d55633',treeExists='85703f5a',treeName='19de3afd'}
+local helperHashes={integer='e1bd3b0e',treeShape='f0ba2bf9',legacySlot='b8bfb514',group='d6f4e415',info='53739904',treeExists='85703f5a',treeName='19de3afd'}
 local function fixture(...)
     local f=F.new(...);local a,e=f.addon,f.env
     local state={rank=2,selected=true,points={5,20,0},calls=0,treeCalls=0,mode='normal',opaque={}}

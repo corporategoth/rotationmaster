@@ -264,7 +264,7 @@ local function buildTalents()
         talents.nodes={}
         local config,tree
         if platform.GetActiveTraitConfig then config,tree=platform:GetActiveTraitConfig() else tree='missing-api' end
-        talents.config,talents.configReason=config,not config and tree or nil
+        talents.config,talents.tree,talents.configReason=config,config and tree or nil,not config and tree or nil
         if config then
             local groups,reason=platform:GetTraitTreeGroups(config,tree)
             if groups then
@@ -436,15 +436,15 @@ function addon:IsRuneEngraved(rune,spell)
 end
 -- Trait talents (Retail, Forever): a node's committed rank, or for a choice
 -- node's entry the rank when that entry is the chosen one (else 0).
-function addon:GetTraitNodeRank(node,entry)
-    local talents=refresh('talents').talents
-    if talents.layout~='traits' then return nil,'talent-layout-mismatch' end
-    if not talents.config then return nil,talents.configReason or 'talent-config-unavailable' end
+-- One node's state, read on first use and kept until the next talent
+-- notification. withEntries also keeps the node's entry IDs, which matching a
+-- saved spell ID needs.
+local function traitNode(talents,node,withEntries)
     local nodes=talents.nodes
     local state=nodes[node]
-    if state==nil then
+    if state==nil or (withEntries and not state.reason and not state.entries) then
         local why
-        state,why=addon.Platform:GetTraitNodeState(talents.config,node)
+        state,why=addon.Platform:GetTraitNodeState(talents.config,node,withEntries)
         if not state then
             -- A node this config lacks stays lacking until the next talent
             -- notification; anything else is read again next time.
@@ -454,6 +454,66 @@ function addon:GetTraitNodeRank(node,entry)
         nodes[node]=state
     end
     if state.reason then return nil,state.reason end
+    return state
+end
+-- Whether a node (with its entries read) still holds the saved spell: the
+-- given choice entry, else any of its entries. nil and a reason when a read
+-- fails.
+local function traitHolds(talents,state,entry,spell)
+    local spells=talents.entrySpells
+    if not spells then spells={};talents.entrySpells=spells end
+    for _,id in ipairs(state.entries) do
+        if entry==nil or id==entry then
+            local known=spells[id]
+            if known==nil then
+                local found,why=addon.Platform:GetTraitEntrySpell(talents.config,id)
+                if found==nil and why~='talent-entry-unavailable' then return nil,why end
+                known=found or false
+                spells[id]=known
+            end
+            if known==spell then return true end
+        end
+    end
+    return false
+end
+-- Where a spell ID sits in the tree now: node, choice entry. The index is
+-- built once per talent notification, and only for a reference that needs it.
+local function traitSpellAt(talents,spell)
+    local index=talents.spellIndex
+    if not index then
+        local why
+        index,why=addon.Platform:GetTraitSpellIndex(talents.config,talents.tree)
+        if not index then return nil,why end
+        talents.spellIndex=index
+    end
+    local at=index[spell]
+    if not at then return nil,'talent-node-unavailable' end
+    return at
+end
+-- spell is the spell ID saved with the reference: when the saved node no
+-- longer holds it (Blizzard renumbered the tree), the talent is found again
+-- by spell.
+function addon:GetTraitNodeRank(node,entry,spell)
+    local talents=refresh('talents').talents
+    if talents.layout~='traits' then return nil,'talent-layout-mismatch' end
+    if not talents.config then return nil,talents.configReason or 'talent-config-unavailable' end
+    local state,why=traitNode(talents,node,spell~=nil)
+    if spell~=nil then
+        if not state and why~='talent-node-unavailable' then return nil,why end
+        local holds,reason=false,nil
+        if state then
+            holds,reason=traitHolds(talents,state,entry,spell)
+            if holds==nil then return nil,reason end
+        end
+        if not holds then
+            local at
+            at,reason=traitSpellAt(talents,spell)
+            if not at then return nil,reason end
+            entry=at.entry
+            state,why=traitNode(talents,at.node,false)
+        end
+    end
+    if not state then return nil,why end
     if entry==nil then return state.rank end
     if state.entry==entry then return state.rank end
     return 0
