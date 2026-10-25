@@ -287,7 +287,7 @@ test('rotation header separates description and metadata and docks controls with
     local f,parent=fixture();local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'))
     assert(pane.description and pane.info:GetText()=='Metadata' and pane.export==nil)
     assert(pane.enable.pillDecoration and pane.compare.icon and pane.clone.icon)
-    assert(pane.delete.point[1]=='TOPRIGHT' and pane.hint.points[1][1]=='BOTTOMLEFT' and pane.hint.points[1][5]==12 and pane.hint.points[2][1]=='RIGHT')
+    local rect=dofile('tests/fixtures/layout_audit.lua').resolver(pane.frame)(pane.delete);assert(rect and math.abs(rect.right-(pane.frame:GetWidth()-8))<.5,'Delete is not docked at the right edge');assert(pane.hint.points[1][1]=='BOTTOMLEFT' and pane.hint.points[1][5]==12 and pane.hint.points[2][1]=='RIGHT')
     pane.description:SetText('Shield upkeep while leveling');pane.description.scripts.OnTextChanged(pane.description,true)
     pane.apply:Click();assert(f.addon:GetEditableRotation(0,'mine').description=='Shield upkeep while leveling')
     assert(pane.status:GetText()=='')
@@ -657,7 +657,7 @@ test('switch priority sits beside Enabled, stages with validation and history, a
     local f,parent=fixture();local a=f.addon;local pane=assert(a:CreateRotationEditor(parent,0,'mine'));local d=pane.metadataWindow;d:Open()
     assert(d.fields.priority==nil and d.priorityDown==nil,'priority is still in the metadata dialog');d.cancel:Click()
     local field=pane.priority;assert(field and field:GetText()=='0' and field:IsShown(),'priority field missing from the header')
-    local _,anchor=pane.priorityUp:GetPoint(1);assert(anchor==pane.enable,'priority is not left of the Enabled pill')
+    do local resolve=dofile('tests/fixtures/layout_audit.lua').resolver(pane.frame);local up,enable=resolve(pane.priorityUp),resolve(pane.enable);assert(up and enable and up.right<=enable.left,'priority is not left of the Enabled pill') end
     pane:Apply();assert(not pane:HasUnsavedChanges() and pane.workspace:Snapshot().priority==nil,'unchanged zero materialized a priority')
     field:SetText('2.5');field.scripts.OnTextChanged(field,true);assert(field:GetText()=='0');field:SetText('-');field.scripts.OnTextChanged(field,true)
     local ok=pane:Apply();assert(not ok and pane.workspace:Snapshot().priority==nil,'invalid priority applied')

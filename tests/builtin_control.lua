@@ -52,7 +52,7 @@ test('a priority override reorders automatic switching among Built Ins',function
     assert(a:GetDefaultIdForRuntime(268,a.currentRotation)=='rm.retail.monk.brewmaster.guide','override did not reorder')
 end)
 
-test('the editor: one line with Priority left of Enabled; a Built In is read-only with its overrides in amber',function()
+test('the editor: Priority left of Enabled; a Built In is read-only with its overrides in amber',function()
     local f=T.new{level=10,specIndex=1};local a=f.addon
     local parent=f.env.CreateFrame('Frame');parent:SetSize(900,700)
     local pane=assert(a:CreateRotationEditor(parent,268,key(a,'rm.retail.monk.brewmaster')))
@@ -61,7 +61,12 @@ test('the editor: one line with Priority left of Enabled; a Built In is read-onl
     assert(pane.readOnlyPill.scripts.OnClick==nil and pane.readOnlyBanner==nil and pane.switchNote==nil,'the pill acts, or a banner/note row remains')
     local br,bg,bb=unpack(pane.readOnlyPill:GetFontString().textColor);assert(br<.4 and bb>.9,'pill is not Built In blue')
     assert(not pane.apply:IsEnabled() and not pane.name:IsMouseEnabled(),'Built In fields are editable')
-    local _,anchor=pane.priorityUp:GetPoint(1);assert(anchor==pane.enable,'priority is not left of Enabled')
+    do -- Priority sits left of Enabled, on the same line.
+        local audit=dofile('tests/fixtures/layout_audit.lua');local resolve=audit.resolver(pane.frame)
+        local up,enable=resolve(pane.priorityUp),resolve(pane.enable)
+        assert(up.right<=enable.left and math.abs((up.top+up.bottom)-(enable.top+enable.bottom))<4,'priority is not left of Enabled')
+        assert(pane.nameLabel==nil,'the name field still has a label')
+    end
     assert(pane.priority:GetText()=='20' and pane.priorityLabel:GetText()=='Priority' and not pane.overrideReset:IsShown())
     pane.priorityUp:Click()
     assert(prefs(a)['rm.retail.monk.brewmaster'].priority==21,'priority step did not save an override')
