@@ -17,7 +17,7 @@ local transformed={type='BUFF',unit='pet',spell=1233448}
 local ghouls=buff(1254252)
 local function scythe(id)return spell(id,85948,all(buff(458123),any(negate(debuff(1241077)),{type='DEBUFF_REMAIN',unit='target',spell=1241077,owndebuff=true,operator='LESSTHAN',value=5})))end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.unholy.simc',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.unholy.simc',revision=5,
  blocks={['retail.deathknight.boundaries']=3,['retail.deathknight.utility']=2},
  nameKey='Default.Retail.DeathKnight.UnholySimc.Name',descriptionKey='Default.Retail.DeathKnight.UnholySimc.Description',
  applicability={families={'retail'},actionContext='player',class='DEATHKNIGHT'},
@@ -25,7 +25,7 @@ assert(addon:RegisterDefaultRotation({
  sources={
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/deathknight_unholy.simc',title='SimulationCraft default action list: Unholy',reviewedAt='2026-10-23',revision='c5fea93f'},
  },
- body={priority=5,disabled=true,switch={type='SPECIALIZATION',spec=252},
+ body={priority=5,disabled=true,specs={252},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
   cooldowns={
    block('usimc-utility','retail.deathknight.utility','usimc-'),
    spell('usimc-outbreak',77575,all(combat(),negate(debuff(1240996)))),

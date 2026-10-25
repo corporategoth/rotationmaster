@@ -183,6 +183,9 @@ function M.new(class,options)
  s.buff=function(unit,id,extra)local list=s.auras[unit].HELPFUL;local aura={spellId=id,name='Spell '..id,sourceUnit='player'};for k,v in pairs(extra or{})do aura[k]=v end;list[#list+1]=aura end
  s.debuff=function(unit,id,extra)local list=s.auras[unit].HARMFUL;local aura={spellId=id,name='Spell '..id,sourceUnit='player'};for k,v in pairs(extra or{})do aura[k]=v end;list[#list+1]=aura end
  s.clearAuras=function()s.auras={player={HELPFUL={},HARMFUL={}},target={HELPFUL={},HARMFUL={}},pet={HELPFUL={},HARMFUL={}}}end
+ -- The character plays talent group 1 (the namespace the helpers read; body.specs reads the
+ -- specialization through it).
+ a.currentSpec=1
  return f,s
 end
 -- Helpers over one fixture. Progression stores rotations per talent group; the suites use group 1.
@@ -192,7 +195,11 @@ function M.rows(a)local byId={};for _,row in ipairs(a:ListDefaultRotations(GROUP
 function M.row(a,id)local row=M.rows(a)[id];assert(row,'missing premade '..id);return row end
 -- Specialization and equipment are cached until their notifications; the model changes them directly.
 local function fresh(a)a:InvalidateBuildContext()end
-function M.switch(a,id)fresh(a);return a:evaluateConditionResult(M.row(a,id).envelope.body.switch).status end
+-- Whether automatic switching would find it matching: its specializations (body.specs), then its switch.
+function M.switch(a,id)fresh(a);local body=M.row(a,id).envelope.body
+ if body.specs and not a:RotationSpecsApply(body.specs,GROUP)then return'no-match'end
+ return a:evaluateConditionResult(body.switch).status
+end
 -- Auto-select exactly as main does: built-in order by priority, first matching switch wins.
 function M.selected(a)
  fresh(a);local rows=a:GetRuntimeRotations(GROUP);local byKey={}
@@ -229,18 +236,23 @@ function M.expect(a,s,id,want,status,label)
  return result
 end
 -- Every premade of a class: listed read-only, Mists only (progression, expansion 4), applicability
--- holding only load-time facts (level and specialization live in the switch), eligible on the modeled
--- Mists client, and never registered on a Wrath client. minLevel is kept for the callers' record.
+-- holding only load-time facts (level lives in the switch, specialization in body.specs), eligible on
+-- the modeled Mists client in its own specialization, and never registered on a Wrath client.
+-- minLevel is kept for the callers' record.
 function M.scope(class,ids,minLevel)
- local f,s=M.new(class);local a=f.addon;local rows=M.rows(a);local token=(class:gsub('%-','')):upper()
+ local f,s=M.new(class);local a=f.addon;local rows=M.rows(a);local token=(class:gsub('%-','')):upper();local initial=s.spec
  for _,id in ipairs(ids)do
   local row=assert(rows[id],id);local scope=row.applicability
+  -- A specialization's premade is eligible while you play that specialization.
+  local specs=row.envelope.body.specs
+  if specs then s.specID(specs[1]);fresh(a);row=assert(M.rows(a)[id],id);scope=row.applicability end
   assert(row.readOnly and row.builtin and scope.families[1]=='progression'and #scope.families==1 and scope.class==token,id)
   assert(scope.minExpansion==4 and scope.maxExpansion==4 and scope.maxLevel==nil and scope.minLevel==nil and scope.specs==nil,id..' scope')
   -- A player-chosen variant ships disabled: listed, ineligible only because it is off.
   if row.envelope.body.disabled then assert(not row.eligible and row.eligibilityReason=='disabled',id..': '..tostring(row.eligibilityReason))
   else assert(row.eligible,id..' not eligible on the Mists client: '..tostring(row.eligibilityReason))end
  end
+ s.spec=initial;fresh(a)
  local wrath=M.new(class,{project=11,expansion=2}).addon;local wrows=M.rows(wrath)
  for _,id in ipairs(ids)do assert(not wrows[id]or not wrows[id].eligible,id..' eligible on a Wrath client')end
  return a,s,f

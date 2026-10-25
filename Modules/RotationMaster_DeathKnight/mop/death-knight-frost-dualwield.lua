@@ -12,7 +12,7 @@ local function rune(kind,op,n)return{type='RUNE',rune=kind,operator=op,value=n}e
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.deathknight.frost.dualwield',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.deathknight.frost.dualwield',revision=5,
  blocks={['mop.deathknight.boundaries']=3,['mop.deathknight.upkeep']=1,['mop.deathknight.frost-upkeep']=2,['mop.deathknight.frost-open']=2,
   ['mop.deathknight.frost-tail']=1,['mop.deathknight.survival']=1,['mop.deathknight.spread']=1},
  nameKey='Default.MoP.DeathKnight.FrostDualWield.Name',descriptionKey='Default.MoP.DeathKnight.FrostDualWield.Description',
@@ -24,7 +24,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/death_knight/frost/apls/masterfrost.apl.json',title='wowsims/mop Frost masterfrost APL',reviewedAt='2026-10-23',revision='ec2c6c2552',notes='Obliterate on two Unholy runes, Frost Strike above 76.'},
   {url='https://www.wowhead.com/mop-classic/guide/classes/death-knight/frost/dps-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Frost Death Knight rotation',reviewedAt='2026-10-23',revision='2025-08-02',notes='Read from a Wayback snapshot; same order.'},
  },
- body={priority=30,switch={type='AND',value={{type='SPECIALIZATION',spec=251},{type='WEAPON_TYPE',slot='offhand',kind='weapon'}}},
+ body={priority=30,specs={251},switch={type='WEAPON_TYPE',slot='offhand',kind='weapon'},
   cooldowns={
    block('masterfrost-upkeep','mop.deathknight.frost-upkeep','masterfrost-'),
    block('masterfrost-class','mop.deathknight.upkeep','masterfrost-'),

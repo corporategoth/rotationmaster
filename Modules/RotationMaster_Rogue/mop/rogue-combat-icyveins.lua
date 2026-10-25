@@ -17,7 +17,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local boss={type='CLASSIFICATION',unit='target',value='worldboss'}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.combat.icyveins',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.combat.icyveins',revision=6,
  blocks={['mop.rogue.boundaries']=3,['mop.rogue.combat-opener']=2,['mop.rogue.out-of-combat']=3,['mop.rogue.combat-aoe']=2,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1,['mop.rogue.combat-upkeep']=1},
  nameKey='Default.MoP.Rogue.Combat.IcyVeins.Name',descriptionKey='Default.MoP.Rogue.Combat.IcyVeins.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE'},
@@ -26,7 +26,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://www.warcrafttavern.com/mop/guides/pve-combat-rogue-dps-rotations-cooldowns/',title='Warcraft Tavern: Combat Rogue rotation (MoP Classic)',reviewedAt='2026-10-23'},
  {url='https://www.method.gg/mop-classic/combat-rogue-class-guide-mop-classic',title='Method: Combat Rogue guide (MoP Classic)',reviewedAt='2026-10-23'},
  {url='https://wowtbc.gg/mop/class-guides/combat-rogue/',title='wowtbc.gg: Combat Rogue (MoP Classic)',reviewedAt='2026-10-23'}},
- body={priority=20,disabled=true,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=260}}},
+ body={priority=20,disabled=true,specs={260},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
  cooldowns={block('mop.rogue.upkeep','rogue-'),block('mop.rogue.combat-upkeep','rogue-')},
  rotation={
  block('mop.rogue.boundaries','rogue-'),

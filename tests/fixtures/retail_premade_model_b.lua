@@ -125,7 +125,7 @@ function M.new(class,options)
   IsAvailable=function()return s.assisted~=false,s.assisted==false and 'Not available for this specialization'or''end,
   GetNextCastSpell=function()return s.suggest end,
   GetRotationSpells=function()return{}end,GetActionSpell=function()return nil end}
- -- The player's specialization, which the premades' SPECIALIZATION switches read (index 1 and its ID;
+ -- The player's specialization, which the premades' specializations (body.specs) match (index 1 and its ID;
  -- an initial spec below 10 is reported the same way). s.respec(id) changes it mid-session.
  e.C_SpecializationInfo={GetSpecialization=function()if s.specID then return 1 end end,
   GetSpecializationInfo=function(index)if index==1 then return s.specID end end}
@@ -220,10 +220,10 @@ function M.checkSlots(a,specs)
   local rows=M.rows(a,spec)
   for other,otherIds in pairs(specs)do for _,id in ipairs(otherIds)do
    local row=assert(rows[id],id..' not listed in slot '..spec);local scope=row.applicability
-   -- Applicability holds only load-time facts; the specialization is the switch (a respec takes effect live).
+   -- Applicability holds only load-time facts; the specialization is the pack's own body.specs (a respec takes effect live).
    assert(row.readOnly and row.builtin and #scope.families==1 and scope.families[1]=='retail'and scope.specs==nil,id..' scope')
    assert(scope.minLevel==nil and scope.maxLevel==nil,id..' level range')
-   local switch=row.envelope.body.switch;assert(switch.type=='SPECIALIZATION'and switch.spec==other,id..' switch')
+   local body=row.envelope.body;local sw=body.switch;assert(sw and sw.type=='LEVEL' and sw.value==1 and #body.specs==1 and body.specs[1]==other,id..' specs')
    if other==spec then
     assert(row.eligible or row.eligibilityReason=='disabled',id..' not eligible in its own slot: '..tostring(row.eligibilityReason))
    else
@@ -259,14 +259,14 @@ function M.checkRestricted(class,specs,learn,recommended)
   assert(M.selected(a,spec)==want,'slot '..spec..' auto-selected '..tostring((M.selected(a,spec)))..', expected '..want)
  end
 end
--- Before a specialization (below level 10) the game reports the class's initial specialization;
+-- Before a specialization ("No specialization") the game reports the class's initial specialization;
 -- its Blizzard Assisted premade auto-selects for a level-4 character, follows the suggestion and
 -- is complete on the real restricted client. learn[1] is the suggested spell.
 function M.initial(class,spec,id,learn)
  local f,s=M.new(class);local a=f.addon;s.setLevel(4);s.learn(unpack(learn))
  local row=M.row(a,spec,id);local scope=row.applicability
  assert(scope.specs==nil and scope.minLevel==nil and scope.maxLevel==nil,id..' scope: load-time facts only')
- local switch=row.envelope.body.switch;assert(switch.type=='SPECIALIZATION'and switch.spec==spec,id..' switch')
+ local body=row.envelope.body;local sw=body.switch;assert(sw and sw.type=='LEVEL' and sw.value==1 and #body.specs==1 and body.specs[1]==spec,id..' specs')
  assert(M.selected(a,spec)==id,'initial spec auto-selected '..tostring((M.selected(a,spec))))
  for other,listed in pairs(M.rows(a,spec))do if other~=id then assert(not listed.eligible,other..' eligible in the initial spec')end end
  s.suggest=learn[1];M.expect(a,s,spec,id,learn[1],nil,'the Assisted suggestion')

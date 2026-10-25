@@ -21,7 +21,7 @@ local ARROW=3674
 local arrow=all(any(negate({type='DEBUFF',unit='target',spell=ARROW,owndebuff=true}),{type='DEBUFF_REMAIN',unit='target',spell=ARROW,owndebuff=true,operator='LESSTHAN',value=2}),
  {type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=8})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.survival',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.survival',revision=6,
  blocks={['mop.hunter.boundaries']=3,['mop.hunter.mark']=1,['mop.hunter.pet']=1,['mop.hunter.aspect']=1,['mop.hunter.utility']=1,['mop.hunter.burst']=1,
   ['mop.hunter.talents']=1,['mop.hunter.talent-shots']=1,['mop.hunter.serpent']=1,['mop.hunter.filler']=2},
  nameKey='Default.MoP.Hunter.Survival.Name',descriptionKey='Default.MoP.Hunter.Survival.Description',
@@ -32,7 +32,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/hunter/survival/apls/sv.apl.json',title='wowsims/mop Survival APL',reviewedAt='2026-10-23',revision='ec2c6c2552',notes='Multi-Shot on Lock and Load at 90 focus, Explosive Shot up to five targets, Black Arrow refresh.'},
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/survival-hunter-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Survival Hunter rotation',reviewedAt='2026-10-23',revision='2026-05-29',notes='Explosive Shot opener while leveling.'},
  },
- body={priority=10,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=255}}},
+ body={priority=10,specs={255},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
    block('sv-pet','mop.hunter.pet','sv-'),
    block('sv-aspect','mop.hunter.aspect','sv-'),

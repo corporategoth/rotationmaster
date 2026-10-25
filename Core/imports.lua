@@ -208,13 +208,48 @@ function addon:ApplyRotationImport(session,token,spec,name,target,expected,optio
     return id
 end
 
+-- Specializations across accounts. Where body.specs holds talent groups
+-- (dual-specialization clients, Platform/specializations.lua), group 2 on
+-- one character is not group 2 on another: an export carries no specs and an
+-- import is for the talent group it is imported into (chosen by the caller,
+-- the Rotations list's specialization; else the one you are playing). A
+-- replacement keeps the replaced rotation's own specs. Where it holds
+-- specialization IDs they travel as they are, and a rotation only for
+-- another class's specializations is refused like any other class mismatch.
+local function stripSlotSpecs(self,body)
+    if type(body)=='table' and body.specs~=nil and self.GetRotationSpecKind and self:GetRotationSpecKind()~='portable' then body.specs=nil end
+    return body
+end
+function addon:PrepareImportedRotationSpecs(specs,chosen,replacement)
+    local kind=self.GetRotationSpecKind and self:GetRotationSpecKind()
+    if kind=='slot' then
+        if replacement then return nil end
+        if type(chosen)=='table' then return data.NormalizeRotationSpecs(chosen) or nil end
+        if type(chosen)=='number' then return {chosen} end
+        local value=self:GetCurrentRotationSpecValue()
+        return value~=nil and {value} or nil
+    end
+    local normalized=data.NormalizeRotationSpecs(specs)
+    if normalized==false then return nil,'invalid-import' end
+    if kind=='portable' and normalized and self.GetSpecializationClassToken then
+        local class;if type(UnitClass)=='function' then local ok,_,token=pcall(UnitClass,'player');if ok and self.Platform:CanReadValue(token) and type(token)=='string' then class=token end end
+        local mine,known=false,false
+        for _,value in ipairs(normalized) do
+            local owner=self:GetSpecializationClassToken(value)
+            if owner then known=true;if owner==class then mine=true end end
+        end
+        if known and not mine and class then return nil,'class-mismatch' end
+    end
+    return normalized
+end
 function addon:GetRotationExportData(spec,id)
     local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator();if scoped then
         local record,why=scoped:Snapshot(spec,id);if not record then return nil,why end
         local result
         if record.source then result=record.source.envelope
         elseif record.origin or record.imported then local retained=record.origin or record.imported;result=data.CopyData(retained.manifest);result.body=record.body
-        else return record.body end
+        else return stripSlotSpecs(self,record.body) end
+        stripSlotSpecs(self,result.body)
         if result.body.tags~=nil then result.tags=data.CopyData(result.body.tags) end;return result
     end
     local function currentTags(envelope)
@@ -232,5 +267,5 @@ function addon:GetRotationExportData(spec,id)
     local imported,reason=self:GetImportedRotationView(spec,id)
     if imported then return currentTags(imported.envelope) end
     if reason~="not-imported" then return nil,reason end
-    return data.CopyData(self:GetEditableRotation(spec,id))
+    return stripSlotSpecs(self,data.CopyData(self:GetEditableRotation(spec,id)))
 end

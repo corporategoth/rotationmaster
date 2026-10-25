@@ -39,7 +39,7 @@ local SPECS={
     [102]={"DRUID",1,"Balance"},[103]={"DRUID",2,"Feral"},[104]={"DRUID",2,"Guardian"},[105]={"DRUID",3,"Restoration"},
     [577]={"DEMONHUNTER",nil,"Havoc"},[581]={"DEMONHUNTER",nil,"Vengeance"},[1480]={"DEMONHUNTER",nil,"Devourer"},
     [1467]={"EVOKER",nil,"Devastation"},[1468]={"EVOKER",nil,"Preservation"},[1473]={"EVOKER",nil,"Augmentation"},
-    -- Retail's initial specializations (levels 1-9, Platform/specializations.lua INITIAL_SPECS),
+    -- Retail's initial specializations ("No specialization", Platform/specializations.lua INITIAL_SPECS),
     -- so the Built In premades for that stage can switch on them without a client lookup.
     [1446]={"WARRIOR",nil,"Initial"},[1451]={"PALADIN",nil,"Initial"},[1448]={"HUNTER",nil,"Initial"},
     [1453]={"ROGUE",nil,"Initial"},[1452]={"PRIEST",nil,"Initial"},[1455]={"DEATHKNIGHT",nil,"Initial"},
@@ -64,6 +64,8 @@ local function specClass(id)
 end
 local function specName(id)
     if not specID(id) then return nil end
+    local listed=SPECS[id]
+    if listed and listed[3]=="Initial" then return L["No specialization"] end
     local display=addon.Platform.GetSpecializationDisplay and addon.Platform:GetSpecializationDisplay(id)
     if display then return display.name,display.icon end
     local known=SPECS[id]
@@ -92,6 +94,10 @@ local function classChoices(class)
     end
     return choices,order
 end
+
+-- For rotation specializations (Core/rotation_selection.lua, Core/imports.lua).
+function addon:GetSpecializationName(id) return (specName(id)) end
+function addon:GetSpecializationClassToken(id) if specID(id) then return specClass(id) end end
 
 if addon.Artwork and addon.Artwork.condition and addon.Artwork.condition["SPECIALIZATION"]==nil then
     -- No original artwork yet: reuses the Primary Talent Tree icon

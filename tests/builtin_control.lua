@@ -86,9 +86,9 @@ test('the editor: one line with Priority left of Enabled; a Built In is read-onl
     local text=a:DescribeApplicability({families={'era'},class='DRUID',specs={102},minLevel=10,maxLevel=60,rulesets={'season:2','hardcore','self-found'}})
     assert(text=='Loads only for: Classic Era · Druid · level 10+ · Season of Discovery, Hardcore, Self-Found. The switch condition decides the rest.',text)
     assert(a:DescribeApplicability({families={'retail'},class='MONK',minLevel=1})=='Loads only for: Retail · Monk. The switch condition decides the rest.')
-    -- A rotation saved for another specialization says it is not selectable now.
+    -- A rotation for another specialization (its body.specs) says it is not selectable now.
     local other=assert(a:CreateRotationEditor(f.env.CreateFrame('Frame'),269,key(a,'rm.retail.monk.windwalker')))
-    assert(other.switch.tooltip:find('You are playing Brewmaster; this rotation is saved for Windwalker',1,true),tostring(other.switch.tooltip))
+    assert(other.switch.tooltip:find('You are playing Brewmaster; this rotation is for Windwalker, so it is not selectable now.',1,true),tostring(other.switch.tooltip))
 end)
 
 test('switch overlap: identical, subsumed and live overlaps between any rotations, ties marked, other specs apart',function()
@@ -146,6 +146,9 @@ test('the rotation list: switching order, priorities shown, disabled rows grey, 
     local brew,guide=position[key(a,'rm.retail.monk.brewmaster')],position[key(a,'rm.retail.monk.brewmaster.guide')]
     assert(position[off]<brew and brew<guide and guide<position[high] and position[high]<position[low],'Built Ins not interleaved by priority (50 > 20 > 10 > 9 > 1)')
     for i=2,#order-1 do assert((order[i-1].priority or 0)>=(order[i].priority or 0),'not sorted by priority at '..i) end
+    -- The list shows Brewmaster's rotations; Windwalker's and Mistweaver's appear under All.
+    assert(position[key(a,'rm.retail.monk.windwalker')]==nil and position[key(a,'rm.retail.monk.mistweaver')]==nil,'another specialization listed')
+    browser:SetSpecValue('all')
     local controls={};for _,control in ipairs(browser.rowButtons) do if control:IsShown() and control.browserEntry then controls[control.browserEntry.key]=control end end
     local offRow=controls[off];assert(offRow.nameLabel.alpha==.5 and offRow.tooltip:find('Disabled',1,true),'disabled custom row not grey')
     local ww=controls[key(a,'rm.retail.monk.windwalker')]

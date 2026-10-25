@@ -19,7 +19,7 @@ local howl=any(buff(471878),buff(472324),buff(472325))
 -- Kill Command just before a ready Takedown, without Twin Fangs and with no Tip of the Spear.
 local beforeTakedown=all(negate(known(1272139)),negate(tip),{type='SPELL_AVAIL',spell=TAKEDOWN})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.survival.guide',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.survival.guide',revision=6,
  blocks={['retail.hunter.boundaries']=3,['retail.hunter.utility']=2,['retail.hunter.mark']=1},
  nameKey='Default.Retail.Hunter.SurvivalGuide.Name',descriptionKey='Default.Retail.Hunter.SurvivalGuide.Description',
  applicability={families={'retail'},actionContext='player',class='HUNTER'},
@@ -28,7 +28,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/hunter_survival.simc',title='SimulationCraft default action list: Survival',reviewedAt='2026-10-23',revision='c5fea93f'},
   {url='https://www.icy-veins.com/wow/survival-hunter-pve-dps-rotation-cooldowns-abilities',title='Icy Veins: Survival Hunter rotation (12.1.5)',reviewedAt='2026-10-23',revision='2026-10-12',notes='Openers only; they match SimulationCraft.'},
  },
- body={priority=10,disabled=true,switch={type='SPECIALIZATION',spec=255},
+ body={priority=10,disabled=true,specs={255},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
   cooldowns={
    block('svguide-utility','retail.hunter.utility','svguide-'),
    spell('svguide-aspect-of-the-eagle',186289,all(combat(),{type='BEYOND_MELEE',unit='target'})),

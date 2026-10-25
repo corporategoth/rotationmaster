@@ -8,7 +8,7 @@ RM stores one account SavedVariables table per client installation, using AceDB'
 
 | Data | Current scope |
 | --- | --- |
-| Rotations, fallback rotation, clone/import lineage and comparisons | Selected profile, then Class or Character owner, specialization key and rotation ID |
+| Rotations, fallback rotation, clone/import lineage and comparisons | Selected profile, then Class or Character owner, specialization key and rotation ID (the key now only places the record and its namespace's fallback; see Specializations) |
 | Built In rotation definitions | Immutable packaged assets with class/client applicability |
 | Built In enable preferences | Selected profile |
 | Desired manual rotation choice | Selected profile, character, edition family, class, specialization and action context |
@@ -40,6 +40,12 @@ A scope change must be staged until Apply and move body, origins, imports and co
 `Data/rotation_store.lua` provides the pure foundation for the integrated coordinator: full scoped addresses, detached reads with validity diagnostics, explicit fallback selection, and guarded plans for create/replace/delete/move/adoption. A record carries its body and source/comparison sidecars together. The migration planner only proposes an unclaimed archive; it never guesses an owner or writes to a live profile. Production workspace, browser, runtime, transfer and adoption paths use the scoped coordinator and `profile.rotationStore`; invalid or unclaimed legacy evidence remains preserved rather than silently assigned.
 
 Owned reads use a validated structural index and inspect only the requested records. External container, membership, record-identity or Character-class changes require explicit `Refresh`; successful refresh retires old plans/tokens, and failed refresh publishes no index. Full inventory and every commit still validate the entire store, including cross-owner aliases. Tests keep Get/ListVisible work constant with 100 versus 1,000 unrelated records. Public APIs return detached copies; source-owned runtime/header readers and guarded workspace transactions provide the internal integration. Loading the module writes no persistence root. Profile transport accepts the optional scoped root without activating it, canonicalizes specialization keys only at the declared structural maps, preserves all owners/lineage/unclaimed evidence, and rejects unsafe aliases or key collisions. Safe incomplete scoped bodies remain repairable; aggregate profile codec limits still apply.
+
+## Specializations
+
+A rotation's specializations are its own property, `body.specs` (docs/rotation-editor.md). Records stay where they were saved, under their specialization key, but that key no longer decides where a rotation applies: the owner's reader (`Data/rotation_store.lua` `ListOwned`) lists every partition of the class and character owners, and the coordinator filters by `body.specs` against the character's specialization value. Only the fallback stays tied to its partition: each specialization key keeps its own fallback, and a fallback from another key is neither listed nor resolved. References keep their full address (with the key they were saved under), so remembered manual choices, comparisons and lineage are unchanged; runtime keys were already opaque per reference. A new rotation is saved under the namespace the list reads (the specialization shown, where keys are specialization values; else the one being played) and gets that specialization in `body.specs` unless the list shows all of them. Moving a record between keys is never needed.
+
+The one-time profile migration (`MoveRotationSpecsToProperty`, flag `rotationSpecsMigrated`) gave each non-fallback record saved under a specialization-valued key (Retail specialization IDs, Wrath/Cataclysm talent groups) that value, so nothing became visible where it was not before. Era and TBC keep one key (0) per class, Forever one per class (its specialization API names one per class) and Mists keys by talent group while its values are specialization IDs, so no key there says which specialization a record was for; their records start as any specialization, except Mists records whose switch named one in a recognized shape.
 
 ## Migration safety
 

@@ -19,7 +19,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 local dance=own(185422)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.subtlety.icyveins',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.subtlety.icyveins',revision=5,
  blocks={['retail.rogue.boundaries']=2,['retail.rogue.upkeep']=2},
  nameKey='Default.Retail.Rogue.Subtlety.IcyVeins.Name',descriptionKey='Default.Retail.Rogue.Subtlety.IcyVeins.Description',
  applicability={families={'retail'},actionContext='player',class='ROGUE'},
@@ -29,7 +29,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/rogue_subtlety.simc',title='SimulationCraft: Subtlety Rogue default list',reviewedAt='2026-10-23',revision='c5fea93fb77d'},
   {url='https://www.wowhead.com/guide/classes/rogue/subtlety/rotation-cooldowns-pve-dps',title='Wowhead: Subtlety Rogue rotation (Season 2)',reviewedAt='2026-10-23',revision='2026-08-22'},
  },
- body={priority=5,disabled=true,switch={type='SPECIALIZATION',spec=261},
+ body={priority=5,disabled=true,specs={261},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
   cooldowns={
    block('retail.rogue.upkeep','subiv-'),
    spell('subiv-goremaws-bite',426591,all(fight,dance)),

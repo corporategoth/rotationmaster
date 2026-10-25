@@ -198,7 +198,7 @@ function data.NewRotationDraft(original,newId,reserved)
             -- An identifier string replaces the stored one; false removes it.
             if first.identifier==false then candidate.identifier=nil elseif first.identifier~=nil then candidate.identifier=detach(first.identifier) end;result='metadata'
         elseif name=='SetBodyField' then
-            if first~='name' and first~='description' and first~='metadata' and first~='tags' and first~='priority' and first~='disabled' and first~='switch' and first~='identifier' then return nil,'protected-body-field' end
+            if first~='name' and first~='description' and first~='metadata' and first~='tags' and first~='priority' and first~='disabled' and first~='switch' and first~='identifier' and first~='specs' then return nil,'protected-body-field' end
             candidate[first]=detach(second);result=first
         else return nil,'invalid-rotation-command' end
         local valid,reason=inspect(candidate);if not valid then return nil,reason end

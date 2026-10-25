@@ -8,7 +8,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.monk.mistweaver',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.monk.mistweaver',revision=5,
  blocks={['retail.monk.heal-boundaries']=2,['retail.monk.utility']=2},
  nameKey='Default.Retail.Monk.Mistweaver.Name',descriptionKey='Default.Retail.Monk.Mistweaver.Description',
  applicability={families={'retail'},actionContext='player',class='MONK'},
@@ -16,7 +16,7 @@ assert(addon:RegisterDefaultRotation({
  sources={
   {url='https://www.icy-veins.com/wow/mistweaver-monk-pve-healing-rotation-cooldowns-abilities',title='Icy Veins: Mistweaver Monk rotation (12.1.5)',reviewedAt='2026-10-23',revision='2026-10-12',notes='Damage filler between heals; the healing priorities need ally health, which is secret.'},
  },
- body={priority=10,disabled=true,switch={type='SPECIALIZATION',spec=270},
+ body={priority=10,disabled=true,specs={270},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
   cooldowns={block('mw-utility','retail.monk.utility','mw-')},
   rotation={
    block('mw-boundaries','retail.monk.heal-boundaries','mw-'),

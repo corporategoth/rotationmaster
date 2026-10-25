@@ -15,7 +15,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local soulburst=buff(1297433)
 local bite=known(1240201)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.devourer.simc',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.devourer.simc',revision=5,
  blocks={['retail.demonhunter.boundaries']=3,['retail.demonhunter.utility']=2},
  nameKey='Default.Retail.DemonHunter.DevourerSimc.Name',descriptionKey='Default.Retail.DemonHunter.DevourerSimc.Description',
  applicability={families={'retail'},actionContext='player',class='DEMONHUNTER'},
@@ -23,7 +23,7 @@ assert(addon:RegisterDefaultRotation({
  sources={
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/demonhunter_devourer.simc',title='SimulationCraft default action list: Devourer (Annihilator)',reviewedAt='2026-10-23',revision='c5fea93f'},
  },
- body={priority=5,disabled=true,switch={type='SPECIALIZATION',spec=1480},
+ body={priority=5,disabled=true,specs={1480},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
   cooldowns={block('dsimc-utility','retail.demonhunter.utility','dsimc-')},
   rotation={
    block('dsimc-boundaries','retail.demonhunter.boundaries','dsimc-'),

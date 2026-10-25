@@ -26,14 +26,14 @@ local hidden={type='STEALTHED'}
 local worth=any(boss,lifetime('GREATERTHAN',8))
 local ruptureDue=any(negate(mine(1943)),remain(1943,'LESSTHANOREQUALS',2))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.subtlety.warcrafttavern',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.subtlety.warcrafttavern',revision=6,
  blocks={['mop.rogue.boundaries']=3,['mop.rogue.out-of-combat']=3,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1,['mop.rogue.subtlety-builders']=2},
  nameKey='Default.MoP.Rogue.Subtlety.WarcraftTavern.Name',descriptionKey='Default.MoP.Rogue.Subtlety.WarcraftTavern.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE'},
  tags={'subtlety','dps','melee','leveling','endgame','subterfuge','warcraft-tavern'},
  sources={{url='https://www.warcrafttavern.com/mop/guides/pve-subtlety-rogue-dps-rotations-cooldowns/',title='Warcraft Tavern: Subtlety Rogue rotation (MoP Classic)',reviewedAt='2026-10-23'},
  {url='https://www.warcrafttavern.com/mop/guides/pve-subtlety-rogue-dps-talents-builds-glyphs/',title='Warcraft Tavern: Subtlety Rogue talents (MoP Classic)',reviewedAt='2026-10-23'}},
- body={priority=35,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=15},{type='SPECIALIZATION',spec=261},{type='TALENT',layout='grid',value=2}}},
+ body={priority=35,specs={261},switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=15},{type='TALENT',layout='grid',value=2}}},
  cooldowns={block('mop.rogue.upkeep','rogue-'),
   spell('rogue-subtlety-wt-shadow-dance',51713,all(combat(),negate(hidden),sliced,energy('GREATERTHANOREQUALS',60))),
   spell('rogue-subtlety-wt-vanish',1856,all(combat(),negate(hidden),negate(own(51713)),negate(own(115192)),sliced,energy('GREATERTHANOREQUALS',60))),

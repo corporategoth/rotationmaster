@@ -293,7 +293,7 @@ end)
 -- an equal or higher priority could only ever be chosen by priority, so it is an alternative and must
 -- ship disabled. Deliberate layering passes by construction: a catch-all under a spec premade subsumes
 -- it at a LOWER priority; Season of Discovery packs (rulesets season:2) and vanilla packs are separate
--- load scopes; Retail initial-spec premades name another specialization.
+-- load scopes; Retail initial-spec premades are for another specialization (body.specs).
 local function overlapRows()
     local f,packs=corpus.load(5,1,'ROGUE');local a=f.addon;f.load('Core/rotation_selection.lua')
     local scopes={}
@@ -302,7 +302,7 @@ local function overlapRows()
         local key=table.concat(ap.families or {},',')..'@'..tostring(ap.minExpansion)..'-'..tostring(ap.maxExpansion)
             ..'/'..tostring(ap.class)..'/'..table.concat(ap.rulesets or {},',')
         scopes[key]=scopes[key] or {}
-        table.insert(scopes[key],{id=p.id,priority=p.body.priority or 0,disabled=p.body.disabled==true,region=a:GetSwitchRegion(p.body.switch,ap)})
+        table.insert(scopes[key],{id=p.id,priority=p.body.priority or 0,disabled=p.body.disabled==true,region=a:GetSwitchRegion(p.body.switch,ap,p.body.specs)})
     end
     return a,scopes
 end
@@ -323,6 +323,30 @@ local function alternativeOffences(a,scopes)
     table.sort(shadowed);table.sort(outranked)
     return shadowed,outranked
 end
+
+-- A premade's specializations are its own property (body.specs), never its switch: the switch only
+-- drives automatic switching (the user, 2026-10-24). No shipped switch names a specialization at its
+-- top: as the switch itself, in an OR, or as a direct child of an AND. Nested deeper (under NOT, in
+-- a mixed group) it would be an ordinary condition; none ships that way either.
+local function topSpecs(switch)
+    if type(switch)~='table' then return false end
+    if switch.type=='SPECIALIZATION' then return true end
+    if (switch.type=='AND' or switch.type=='OR') and type(switch.value)=='table' then
+        for _,child in ipairs(switch.value) do if type(child)=='table' and child.type=='SPECIALIZATION' then return true end end
+    end
+    return false
+end
+test('no shipped switch names a specialization at its top; a specialization premade declares body.specs',function()
+    local defs=authored();local offences,declared={},0
+    for _,p in ipairs(defs.packs) do
+        if topSpecs(p.def.body.switch) then offences[#offences+1]=p.def.id..' ('..p.path..')' end
+        if p.def.body.specs then declared=declared+1;assert(#p.def.body.specs>0,p.def.id..': empty specs') end
+    end
+    assert(#offences==0,'SPECIALIZATION in a switch (move it to body.specs): '..table.concat(offences,'; '))
+    assert(declared>=155,declared..' premades declare body.specs')
+    assert(topSpecs({type='AND',value={{type='LEVEL'},{type='SPECIALIZATION',spec=1}}}) and topSpecs({type='SPECIALIZATION',spec=1})
+        and not topSpecs({type='NOT',value={type='SPECIALIZATION',spec=1}}),'the check itself')
+end)
 
 test('one enabled premade per switch in every edition, class and spec: alternatives ship disabled, the recommended one does not',function()
     local a,scopes=overlapRows()

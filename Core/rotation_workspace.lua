@@ -37,7 +37,12 @@ local function scopedWorkspace(owner,coordinator,spec,value)
     local record,expected,status
     if not pending then record,expected,status=coordinator:Snapshot(spec,reference);if not record then return nil,expected end end
     local builtin=reference.kind=='builtin' and reference.id or nil
-    record=record or {body={name=reference.address.id==profile.rotationFallbackID and profile.rotationFallbackID or NEW,switch={},rotation={},cooldowns={}}}
+    if not record then
+        local fallback=reference.address.id==profile.rotationFallbackID
+        -- A new rotation is for the specialization the list shows (any, when it shows all).
+        local specs=not fallback and owner.DefaultNewRotationSpecs and owner:DefaultNewRotationSpecs() or nil
+        record={body={name=fallback and profile.rotationFallbackID or NEW,specs=specs,switch={},rotation={},cooldowns={}}}
+    end
     local sourceReference=data.CopyData(reference)
     local workspace={spec=spec,id=key,canonicalId=builtin or reference.address.id,reference=data.CopyData(reference),builtin=builtin,readOnly=builtin~=nil,
         fallback=not builtin and reference.address.id==profile.rotationFallbackID or false,pending=pending,

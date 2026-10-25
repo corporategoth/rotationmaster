@@ -50,6 +50,32 @@ function data.SlugRotationIdentifier(name)
     if reservedIdentifiers[text] then text=text.."-rotation" end
     return text
 end
+-- A rotation's specializations (body.specs): the specialization values it is
+-- for (Platform/specializations.lua GetRotationSpecKind says which kind),
+-- at most 16, each a whole number. Absent or empty means any specialization.
+-- Returns a sorted copy without duplicates, nil for "any", or false when the
+-- value is malformed.
+function data.NormalizeRotationSpecs(value)
+    if value==nil then return nil end
+    if type(value)~="table" or getmetatable(value)~=nil then return false end
+    local count=0;for _ in pairs(value) do count=count+1 end
+    if count~=#value or count>16 then return false end
+    local seen,list={},{}
+    for _,entry in ipairs(value) do
+        if not integer(entry,0) or entry>=2^31 then return false end
+        if not seen[entry] then seen[entry]=true;list[#list+1]=entry end
+    end
+    if #list==0 then return nil end
+    table.sort(list);return list
+end
+-- Whether a rotation restricted to `specs` applies to specialization value
+-- `value`; nil (unknown) only matches an unrestricted rotation.
+function data.RotationSpecsMatch(specs,value)
+    if type(specs)~="table" or #specs==0 then return true end
+    if value==nil then return false end
+    for _,entry in ipairs(specs) do if entry==value then return true end end
+    return false
+end
 function data.GetRotationPriority(value)
     if value==nil then return 0 end
     if integer(value,-100000) and value<=100000 then return value end
@@ -300,7 +326,8 @@ local function validate(envelope, options, bodyOnly)
     end
     if not object(envelope.body, "$.body") then return finish() end
     local body = envelope.body
-    unknown(body, {name=true,description=true,metadata=true,tags=true,revision=true,priority=true,disabled=true,switch=true,rotation=true,cooldowns=true,identifier=true}, "$.body")
+    unknown(body, {name=true,description=true,metadata=true,tags=true,revision=true,priority=true,disabled=true,switch=true,rotation=true,cooldowns=true,identifier=true,specs=true}, "$.body")
+    if data.NormalizeRotationSpecs(body.specs)==false then issue('invalid-specs','$.body.specs','error') end
     if body.identifier~=nil and data.NormalizeRotationIdentifier(body.identifier)~=body.identifier then issue('invalid-identifier','$.body.identifier','error') end
     if not data.GetRotationPriority(body.priority) then issue('invalid-priority','$.body.priority','error') end
     if body.revision~=nil then check(body.revision, function(v) return type(v)=="number" and v>=1 and v<=9007199254740991 and v%1==0 end, "$.body.revision") end

@@ -223,7 +223,7 @@ test('restricted clients run complete Built Ins; incomplete ones say why',functi
     f.env.UnitHealth=f.env.UnitHealth or function() end;f.env.UnitHealthMax=f.env.UnitHealthMax or function() end
     assert(a:RegisterDefaultRotation(hurt));assert(a:InitializeRotationLibrary());state.level=60
     local rows={};-- The Retail slot the shipped premade's SPECIALIZATION switch names.
-    for _,row in ipairs(a:ListDefaultRotations(assert(shipped.body.switch.spec))) do rows[row.id]=row end
+    for _,row in ipairs(a:ListDefaultRotations(assert(shipped.body.specs[1]))) do rows[row.id]=row end
     assert(rows['rm.test.complete'] and rows['rm.test.complete'].eligible,'a complete Retail Built In is refused: '..tostring(rows['rm.test.complete'] and rows['rm.test.complete'].eligibilityReason))
     local incomplete=rows['rm.test.incomplete']
     assert(incomplete and not incomplete.eligible and incomplete.eligibilityReason=='invalid-or-unsupported',tostring(incomplete and incomplete.eligibilityReason))

@@ -151,7 +151,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         if not self.descriptionDirty then self.description:SetText(type(snapshot.description)=='string' and snapshot.description or (self.workspace.readOnly and type(self.workspace.description)=='string' and self.workspace.description or '')) end
         if not self.nameDirty and self.name:GetText()~=(snapshot.name or (workspace.fallback and DEFAULT or '')) then self.name:SetText(addon:PlainWorkbenchName(type(snapshot.name)=='string' and snapshot.name or (workspace.fallback and DEFAULT or ''))) end
         self.origin:SetText('')
-        self.switchText:SetText(addon:PlainWorkbenchName(workspace.fallback and L['No other rotations match.'] or addon:DescribeCardCondition(snapshot.switch or {},spec)))
+        self.switchText:SetText(self:SwitchSummary(snapshot))
         if workspace.fallback then self.switch:Disable() else self.switch:Enable() end
         self:ApplySwitchNotes()
         self:BuildScene();self:LayoutGeometry();self.canvas:Render()
@@ -191,8 +191,24 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         if problem then self.identifier:SetTextColor(1,.35,.35);self:Message(problem) else self.identifier:SetTextColor(1,1,1) end
         return problem==nil
     end
+    function pane:ShowsSpecs() return not workspace.fallback and addon.GetRotationSpecKind and addon:GetRotationSpecKind()~=nil end
+    function pane:RenderSpecs(snapshot)
+        if not self:ShowsSpecs() then self.specButton:Hide();return end
+        local specs=data.NormalizeRotationSpecs(snapshot.specs) or nil
+        local text=addon:DescribeRotationSpecs(specs)
+        self.specButton:SetText(text);addon:AlignWorkbenchTextLeft(self.specButton,26)
+        local tip=L['The specializations this rotation is for. It is listed, and can be chosen, only while you play one of them; Any means every specialization.']
+        if self.workspace.readOnly then self.specButton:Disable();self.specButton:SetAlpha(.75);tip=text..'\n\n'..tip
+        else self.specButton:Enable();self.specButton:SetAlpha(1) end
+        self.specButton.tooltip=tip
+    end
+    function pane:SwitchSummary(snapshot)
+        if workspace.fallback then return addon:PlainWorkbenchName(L['No other rotations match.']) end
+        return addon:PlainWorkbenchName(addon:DescribeCardCondition(snapshot.switch or {},spec))
+    end
     function pane:RenderPriority(snapshot)
         self:RenderIdentifier(snapshot)
+        self:RenderSpecs(snapshot)
         local amber={1,.72,.25};local white={1,1,1}
         if self.workspace.readOnly then
             local overrides=builtinOverrides(self.workspace) or {}
@@ -309,6 +325,10 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     pane.priority=addon:CreateWorkbenchEditBox(pane.frame);pane.priority:SetSize(56,20);pane.priority:SetMaxLetters(7)
     pane.priorityDown=addon:CreateWorkbenchIconButton(pane.frame,'minus',L['Decrease priority']);pane.priorityDown:SetSize(18,18)
     pane.priorityUp=addon:CreateWorkbenchIconButton(pane.frame,'plus',L['Increase priority']);pane.priorityUp:SetSize(18,18)
+    -- The rotation's specializations (body.specs), on the same line: where it
+    -- is listed and can be chosen. Several, or Any; read-only on a Built In.
+    pane.specButton=addon:CreateWorkbenchLabeledIconButton(pane.frame,'chevron-down','',150);pane.specButton:SetHeight(20)
+    pane.specMenu=addon:CreateWorkbenchSelector()
     pane.overrideReset=addon:CreateWorkbenchButton(pane.frame,L['Reset to default'],116);pane.overrideReset:SetHeight(20)
     pane.overrideReset.tooltip=L['Use the Built In as it ships: its own Enabled setting and priority.']
     -- A Built In shows a blue Read-Only pill where Undo and Redo sit (it has
@@ -327,8 +347,12 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         if self.workspace.readOnly and addon.GetDefaultRotation then local view=addon:GetDefaultRotation(self.workspace.builtin);scope=view and view.applicability
         else for _,kind in ipairs({'origins','imports'}) do local record=self.workspace.reserved and self.workspace.reserved[kind];if type(record)=='table' and type(record.manifest)=='table' and record.manifest.applicability then scope=record.manifest.applicability;break end end end
         local where=addon.DescribeApplicability and addon:DescribeApplicability(scope)
-        if addon.currentSpec~=nil and spec~=addon.currentSpec and addon.DescribeRotationSpec then
-            lines[#lines+1]=string.format(L['You are playing %s; this rotation is saved for %s, so it is not selectable now.'],addon:DescribeRotationSpec(addon.currentSpec),addon:DescribeRotationSpec(spec))
+        local specs=data.NormalizeRotationSpecs(self.workspace:Snapshot().specs) or nil
+        if workspace.fallback and addon.currentSpec~=nil and spec~=addon.currentSpec and addon.DescribeRotationSpec then
+            lines[#lines+1]=string.format(L['You are playing %s; this fallback is for %s, so it is not used now.'],addon:DescribeRotationSpec(addon.currentSpec),addon:DescribeRotationSpec(spec))
+        elseif specs and addon.GetCurrentRotationSpecValue and not data.RotationSpecsMatch(specs,addon:GetCurrentRotationSpecValue()) then
+            local current=addon:GetCurrentRotationSpecValue()
+            lines[#lines+1]=string.format(L['You are playing %s; this rotation is for %s, so it is not selectable now.'],current~=nil and addon:DescribeRotationSpecValue(current) or L['no specialization yet'],addon:DescribeRotationSpecs(specs))
         end
         if not self.workspace.fallback and spec==addon.currentSpec and addon.GetSwitchOverlaps then
             local overlap=addon:DescribeSwitchOverlap(addon:GetSwitchOverlaps(spec)[self.workspace.id])
@@ -512,7 +536,8 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         local overrides=builtinOverrides(self.workspace)
         local showPriority=not workspace.fallback
         local showReset=overrides~=nil and overrides.overridden
-        local headerReserve=112+(showPriority and 132 or 0)+(showReset and 122 or 0)+180
+        local showSpecs=self:ShowsSpecs()
+        local headerReserve=112+(showPriority and 132 or 0)+(showReset and 122 or 0)+(showSpecs and 158 or 0)+180
         -- A Built In has nothing to undo: the Read-Only pill takes that place.
         local readOnly=self.workspace.readOnly
         if readOnly then
@@ -535,7 +560,9 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         self.priorityLabel:ClearAllPoints();self.priorityLabel:SetPoint('RIGHT',self.priorityDown,'LEFT',-4,0)
         self.identifier:ClearAllPoints();self.identifier:SetPoint('RIGHT',showPriority and self.priorityLabel or self.enable,'LEFT',-10,0)
         self.identifierLabel:ClearAllPoints();self.identifierLabel:SetPoint('RIGHT',self.identifier,'LEFT',-4,0)
-        self.overrideReset:ClearAllPoints();self.overrideReset:SetPoint('RIGHT',self.identifierLabel,'LEFT',-8,0)
+        self.specButton:ClearAllPoints();self.specButton:SetPoint('RIGHT',self.identifierLabel,'LEFT',-8,0)
+        if showSpecs then self.specButton:Show() else self.specButton:Hide() end
+        self.overrideReset:ClearAllPoints();self.overrideReset:SetPoint('RIGHT',showSpecs and self.specButton or self.identifierLabel,'LEFT',-8,0)
         if showReset then self.overrideReset:Show() else self.overrideReset:Hide() end
         local available=self.validation and self.validation.valid and self.validation.supported and self.validation.resolved and not self:HasInvalidPendingFields()
         self.validationButton:ClearAllPoints();self.validationButton:SetPoint('TOPLEFT',8,-y-26);self.validationButton:SetWidth(math.max(100,width-16))
@@ -545,7 +572,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         self.switchLabel:ClearAllPoints();self.switchLabel:SetPoint('TOPLEFT',8,-switchTop)
         self.switch:ClearAllPoints();self.switch:SetPoint('TOPLEFT',8,-switchTop-22)
         self.switchText:SetWidth(math.max(100,width-28))
-        self.switchText:SetText(addon:PlainWorkbenchName(workspace.fallback and L['No other rotations match.'] or addon:DescribeCardCondition(self.workspace:Snapshot().switch or {},spec)))
+        self.switchText:SetText(self:SwitchSummary(self.workspace:Snapshot()))
         local switchHeight=math.max(20,self.switchText:GetStringHeight());self.switchText:SetHeight(math.min(72,switchHeight))
         self.switch:SetSize(math.max(100,width-16),math.min(72,switchHeight)+8)
         self.switch:Show()
@@ -562,7 +589,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         if self.deletePrompt then self.deletePrompt.frame:Hide() end
         if self.metadataWindow then self.metadataWindow:Close(true) end
         if addon.CancelWorkbenchReflow then addon:CancelWorkbenchReflow(self) end
-        self.active=false;self.generation=(self.generation or 0)+1;self.canvas:Release();self.name:ClearFocus();self.description:ClearFocus();self.frame:Hide()
+        self.active=false;self.generation=(self.generation or 0)+1;self.canvas:Release();self.name:ClearFocus();self.description:ClearFocus();self.frame:Hide();self.specMenu:Hide()
         if addon.WatchButtonIndex then addon:WatchButtonIndex(self,nil) end
         self:StopLiveStatus();if addon.liveStatusLastPane==self then addon.liveStatusLastPane=nil end
     end
@@ -603,6 +630,29 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
             if workspace.readOnly then return setBuiltinPriority(value) end
             self.priority:SetText(tostring(value));self.priorityDirty=true;self.priority:SetTextColor(1,1,1);self:UpdateHistory()
         end
+        -- Toggle specializations; the menu stays open for the next one.
+        local function openSpecs()
+            if not alive() or workspace.readOnly or workspace.fallback then return end
+            local current=data.NormalizeRotationSpecs(workspace:Snapshot().specs) or {}
+            local chosen={};for _,value in ipairs(current) do chosen[value]=true end
+            local entries={{value='any',text=L['Any specialization'],selected=#current==0}}
+            for _,entry in ipairs(addon:GetRotationSpecEntries()) do entries[#entries+1]={value=entry.id,text=entry.name,icon=entry.icon,selected=chosen[entry.id]==true} end
+            self.specMenu:Open(self.specButton,entries,nil,function(value)
+                if not alive() then return end
+                local list
+                if value~='any' then
+                    chosen[value]=not chosen[value];list={}
+                    for id,on in pairs(chosen) do if on then list[#list+1]=id end end
+                    list=data.NormalizeRotationSpecs(list) or nil
+                end
+                if not self:FlushName() then return end
+                local ok,problem=workspace:Command('SetBodyField','specs',list)
+                if not ok then self:Message(problem);return end
+                self:Render()
+                if value~='any' then openSpecs() end
+            end,function() return alive() and not workspace.readOnly end,true)
+        end
+        addon:SetUIScript(self.specButton,'OnClick',openSpecs)
         addon:SetUIScript(self.priorityDown,'OnClick',function() stepPriority(-1) end)
         addon:SetUIScript(self.priorityUp,'OnClick',function() stepPriority(1) end)
         local function commitBuiltinPriority()

@@ -53,8 +53,10 @@ test('transfer guards record replacement owner and profile changes without mutat
 end)
 test('comparison uses full-reference self filtering and keeps same-ID different-owner target',function()
     local _,a=fixture();a.GetEditableRotation=function() error('ordinary UI used mutable getter') end
-    local d=a:ShowRotationComparison(0,ref());assert(d and #d.chooser.list==2,'must include Character same ID and current saved fallback')
-    local labels=table.concat(d.chooser.list,' ');assert(labels:find('Character',1,true) and not labels:find('Foreign secret',1,true))
+    -- The owner's rotations saved under another specialization key are offered too: where a
+    -- rotation applies is its body.specs (none here: any specialization), not its key.
+    local d=a:ShowRotationComparison(0,ref());assert(d and #d.chooser.list==3,'must include Character same ID, the rotation saved under key 2 and current saved fallback')
+    local labels=table.concat(d.chooser.list,' ');assert(labels:find('Character',1,true) and labels:find('Other specialization',1,true) and not labels:find('Foreign secret',1,true))
     assert(d.summary:GetText():find('Class',1,true))
 end)
 test('comparison callbacks retire selected and target records and cannot affect a reopened pane',function()

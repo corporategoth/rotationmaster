@@ -19,7 +19,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local focus={type='FRIENDLY',unit='focus'}
 local function onFocus(...)local list={};for i,id in ipairs({...})do list[i]={type='BUFF',unit='focus',spell=id,ownbuff=true}end;return{type='OR',value=list}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.holy',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.holy',revision=5,
  blocks={['mop.paladin.boundaries']=3,['mop.paladin.upkeep']=1,['mop.paladin.seal-insight']=2},
  nameKey='Default.MoP.Paladin.Holy.Name',descriptionKey='Default.MoP.Paladin.Holy.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN'},
@@ -30,7 +30,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.warcrafttavern.com/mop/guides/pve-holy-paladin-rotations-cooldowns/',title='Warcraft Tavern: MoP Holy Paladin rotation',reviewedAt='2026-10-23',notes='Triage thresholds and the damage rotation.'},
   {url='https://www.method.gg/mop-classic/holy-paladin-class-guide-mop-classic',title='Method: MoP Classic Holy Paladin guide',reviewedAt='2026-10-23',revision='2025-07-23',notes='Beacon on the tank; cooldowns in heavy damage, not all at once.'},
  },
- body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=65}}},
+ body={priority=30,specs={65},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
    block('holy-seal','mop.paladin.seal-insight','holy-'),
    block('holy-upkeep','mop.paladin.upkeep','holy-'),

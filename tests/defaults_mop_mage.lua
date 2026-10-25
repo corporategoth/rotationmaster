@@ -15,11 +15,13 @@ end
 local function charges(s,n)s.debuff('player',CHARGE,{applications=n})end
 test('the Mage premades are Mists only, from 1 (catch-all) or 10 to 90, and never on Wrath',function()
  M.scope('mage',{BASE},1);M.scope('mage',{ARCANE,FIRE,FROST},10)
- local a=mage();local rows=M.rows(a)
+ local a,s=mage();local rows=M.rows(a)
  for _,id in ipairs({ARCANEIV,FIREIV})do
   local scope=rows[id].applicability
   assert(rows[id].envelope.body.disabled and rows[id].eligibilityReason=='disabled','source variants ship disabled: '..id)
   assert(scope.families[1]=='progression'and scope.minExpansion==4 and scope.maxExpansion==4 and scope.minLevel==nil and scope.maxLevel==nil,id)
+  -- Eligible in its own specialization (body.specs).
+  s.specID(rows[id].envelope.body.specs[1]);a:InvalidateBuildContext()
   assert(a:SetDefaultRotationEnabled(id,true)and M.row(a,id).eligible,id..' enabled is eligible')
  end
  assert(not rows[ARCANE].envelope.body.disabled and not rows[FIRE].envelope.body.disabled and not rows[FROST].envelope.body.disabled)
@@ -28,7 +30,7 @@ test('switch: the catch-all owns 1-9 and an unspecialized Mage; each specializat
  local a,s=mage(1);s.learn(FFB);assert(M.selected(a)==BASE,'level 1')
  s.specID(62);assert(M.selected(a)==BASE,'levels 1-9 stay in the catch-all');s.spec=nil
  s.setLevel(10);s.learn(BLAST,PYRO,ELEMENTAL);assert(M.selected(a)==BASE,'level 10 without a spec')
- assert(M.switch(a,FIRE)=='unavailable'and M.switch(a,ARCANE)=='unavailable'and M.switch(a,FROST)=='unavailable','no specialization: unavailable, never a match')
+ assert(M.switch(a,FIRE)=='no-match'and M.switch(a,ARCANE)=='no-match'and M.switch(a,FROST)=='no-match','no specialization yet: no specialization premade applies (body.specs)')
  s.specID(62);assert(M.selected(a)==ARCANE,'Arcane')
  assert(M.switch(a,ARCANEIV)=='match','the Icy Veins Arcane variant shares the switch')
  s.specID(63);assert(M.selected(a)==FIRE,'Fire');assert(M.switch(a,FIREIV)=='match')

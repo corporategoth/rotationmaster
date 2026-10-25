@@ -24,7 +24,7 @@ test('switch: the catch-all owns levels 1-9 and a spec-less 10+; each specializa
  assert(f.addon:evaluateConditionResult(M.body(f.addon,ARMS).switch).status=='no-match','below 10 the level test ends the switch before the specialization')
  s.specID(72);assert(M.selected(f,s)==BASE and M.ordered(f,s)==BASE,'levels 1-9 stay in the catch-all whatever the client reports')
  s.level=20;s.spec=nil;assert(M.selected(f,s)==BASE and M.ordered(f,s)==BASE,'no specialization yet')
- assert(f.addon:evaluateConditionResult(M.body(f.addon,FURY).switch).status=='unavailable','no specialization reads unavailable, never a match')
+ assert(not f.addon:RotationSpecsApply(M.body(f.addon,FURY).specs,s.talentGroup),'no specialization yet: no specialization premade applies (body.specs)')
  s.specID(71);assert(M.selected(f,s)==ARMS and M.ordered(f,s)==ARMS)
  s.specID(72);M.know(s,MS,SS);assert(M.selected(f,s)==FURY and M.ordered(f,s)==FURY,'spells of other specializations do not matter')
  s.specID(73);assert(M.selected(f,s)==PROT and M.ordered(f,s)==PROT)

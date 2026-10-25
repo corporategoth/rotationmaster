@@ -13,7 +13,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.protection',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.protection',revision=5,
  blocks={['retail.warrior.boundaries']=2,['retail.warrior.upkeep']=1},
  nameKey='Default.Retail.Warrior.Protection.Name',descriptionKey='Default.Retail.Warrior.Protection.Description',
  applicability={families={'retail'},actionContext='player',class='WARRIOR'},
@@ -23,7 +23,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/Gethe/wow-ui-source/blob/e7aa82019dc298e0351c7159d60c2a9b916b9b67/Interface/AddOns/Blizzard_APIDocumentationGenerated/AssistedCombatDocumentation.lua',title='Blizzard API documentation: C_AssistedCombat (12.1.5)',reviewedAt='2026-10-23',revision='e7aa82019d'},
   {url='https://github.com/kaminaris/MaxDps-Warrior',title='MaxDps Warrior module (Midnight)',reviewedAt='2026-10-23',revision='c3bf773f37',notes='No priority in Midnight: the Assisted Combat spell plus cooldown, defensive and interrupt glows.'},
  },
- body={priority=10,switch={type='SPECIALIZATION',spec=73},
+ body={priority=10,specs={73},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
   cooldowns={
    block('retail.warrior.upkeep','prot-'),
    spell('prot-shield-block',2565,all(fight,{type='THREAT',unit='target',threat=3})),

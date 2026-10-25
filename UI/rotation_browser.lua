@@ -17,12 +17,21 @@ local function sameReference(a,b)
 end
 local function create(parent)
     local frame=addon:TrackWorkbenchSize(CreateFrame("Frame",nil,parent));frame:SetPoint("TOPLEFT",parent,"TOPLEFT",0,0)
-    local browser={frame=frame,rowButtons={},specButtons={},filters={},rows={},active=false,filter="all",query=""}
-    local specs=addon:TrackWorkbenchSize(CreateFrame("Frame",nil,frame));browser.specs=specs
+    local browser={frame=frame,rowButtons={},filters={},rows={},active=false,filter="all",query=""}
     local left=addon:TrackWorkbenchSize(CreateFrame("Frame",nil,frame));browser.left=left
     local detail=addon:TrackWorkbenchSize(CreateFrame("Frame",nil,frame));browser.detail=detail
     -- The editor touches the page "?" corner; it inherits the reserve.
     detail.rmHelpReserve=addon:GetWorkbenchHelpReserve(frame)
+    -- The specialization filter heads the list (no row above the panes): your
+    -- current specialization by default, any of the class's, or all of them.
+    -- Rotations restricted to other specializations (body.specs) are hidden
+    -- like another class's; "any specialization" rotations always show.
+    local specFilter=addon:CreateWorkbenchLabeledIconButton(left,'chevron-down','',240);browser.specFilter=specFilter
+    specFilter:SetPoint("TOPLEFT",left,"TOPLEFT",0,0);specFilter:SetHeight(24)
+    specFilter.tooltip=L['Show the rotations for this specialization (and those for any specialization).']
+    local specMenu=addon:CreateWorkbenchSelector();browser.specMenu=specMenu
+    local specWarning=label(left);browser.specWarning=specWarning;specWarning:SetHeight(16);specWarning:SetTextColor(1,.72,.25)
+    specWarning:SetText(L['This is not your current specialization.']);specWarning:Hide()
     local search=addon:CreateWorkbenchEditBox(left);browser.search=search
     search:SetAutoFocus(false);search:SetMaxLetters(128);search:SetFontObject("GameFontHighlightSmall")
     search:SetSize(240,24);search:SetTextInsets(5,5,0,0)
@@ -37,7 +46,7 @@ local function create(parent)
     local filterEntries={{"all",L["All"]},{"builtin",L["Built In"]},{"custom",L["Custom"]}}
     for index,entry in ipairs(filterEntries) do
         local control=button(left,entry[2],76);browser.filters[entry[1]]=control
-        control:SetPoint("TOPLEFT",left,"TOPLEFT",(index-1)*80,-28)
+        control:SetPoint("TOPLEFT",left,"TOPLEFT",(index-1)*80,-28);control.filterIndex=index
         local key=entry[1];addon:SetUIScript(control,"OnClick",function() browser:SetFilter(key) end)
     end
     browser.selectedTags={};browser.tagMode='any'
@@ -145,6 +154,7 @@ local function create(parent)
         if entry.readOnly then control.nameLabel:SetTextColor(.357,.753,.922) else control.nameLabel:SetTextColor(.9,.92,.94) end
         local status=entry.readOnly and L['Built In · read-only'] or entry.fallback and L['Fallback rotation'] or L['Custom rotation']
         if entry.scope then status=status..' · '..(entry.scope=='character' and L['This character'] or L['Class']) end
+        if self.specValue=='all' and type(entry.specs)=='table' and #entry.specs>0 then status=status..' · '..addon:DescribeRotationSpecs(entry.specs) end
         -- Who switched a Built In off is said apart from whether it can run here.
         if entry.readOnly and entry.builtinState=='user-disabled' then status=status..' — '..L['Disabled by you']
         elseif entry.readOnly and entry.builtinState=='shipped-disabled' then status=status..' — '..L['Ships disabled']
@@ -265,11 +275,11 @@ local function create(parent)
         local selected={};for _,tag in ipairs(self.selectedTags) do if seen[tag:lower()] then selected[#selected+1]=tag end end;self.selectedTags=selected;self.tag=selected[1];self.tagPicker:SetTags(selected)
         local rows={}
         for _,entry in ipairs(all) do
-            if (self.filter=='all' or self.filter==entry.kind) and addon.RotationData.RotationTagMatches(entry.tags,self.selectedTags,self.tagMode) and entry.search:find(self.query,1,true) then rows[#rows+1]=entry end
+            if (self.filter=='all' or self.filter==entry.kind) and self:SpecMatches(entry) and addon.RotationData.RotationTagMatches(entry.tags,self.selectedTags,self.tagMode) and entry.search:find(self.query,1,true) then rows[#rows+1]=entry end
         end
         self.rows=rows;self.rowsByKey={};local positions={}
         for index,entry in ipairs(rows) do self.rowsByKey[entry.key]=entry;positions[entry.key]=index end
-        local parts={tostring(self.spec),self.filter,self.query,self.tagMode};for _,tag in ipairs(self.selectedTags) do parts[#parts+1]=tag end
+        local parts={tostring(self.spec),tostring(self.specValue),self.filter,self.query,self.tagMode};for _,tag in ipairs(self.selectedTags) do parts[#parts+1]=tag end
         for index,value in ipairs(parts) do parts[index]=#value..':'..value end
         local signature=table.concat(parts,';')
         if signature~=self.navigationSignature then self.navigationSignature=signature;self.navigationRevision=(self.navigationRevision or 0)+1 end
@@ -281,6 +291,46 @@ local function create(parent)
         if not self.selected or self.pendingId==self.selected or self.nativeDetails and self.pane and self.pane.workspace.pending then duplicate:Disable();compare:Disable() else duplicate:Enable();compare:Enable() end
         for key,control in pairs(self.filters) do if key==self.filter then control:Disable() else control:Enable() end end
     end
+    -- Whether a row shows under the specialization filter. The fallback is
+    -- the namespace's own; a pending new rotation always shows.
+    function browser:SpecMatches(entry)
+        if self.specValue=='all' or self.specValue==nil or entry.fallback or entry.pending then return true end
+        return addon.RotationData.RotationSpecsMatch(entry.specs,self.specValue)
+    end
+    -- The namespace a filter value reads (fallback, new rotations): the value
+    -- itself where namespaces are specializations, else the current one.
+    function browser:KeyForSpecValue(value)
+        if type(value)=='number' and addon.Platform.RotationKeyIsSpecValue and addon.Platform:RotationKeyIsSpecValue() then
+            for _,entry in ipairs(self.specEntries or {}) do if entry.id==value then return value end end
+        end
+        return addon.currentSpec~=nil and addon.currentSpec or self.specKeys and self.specKeys[1]
+    end
+    function browser:PaintSpecFilter()
+        local current=addon:GetCurrentRotationSpecValue();local text=L['All specializations'];local icon
+        for _,entry in ipairs(self.specEntries or {}) do if entry.id==self.specValue then text=entry.name;icon=entry.icon end end
+        addon:PaintSelectorSelection(specFilter,icon and {icon=icon} or nil,text)
+        if type(self.specValue)=='number' and current~=nil and self.specValue~=current then specWarning:Show() else specWarning:Hide() end
+    end
+    function browser:SetSpecValue(value)
+        if not self.active then return end
+        self.specValue=value;addon.rotationListSpec=value;self:PaintSpecFilter()
+        local key=self:KeyForSpecValue(value)
+        if key~=self.spec then self:SelectRotation(key,key==addon.currentSpec and addon.currentRotation or DEFAULT,true)
+        else self:RefreshRows() end
+        self:Layout();list.workbenchBar:SetValue(0)
+    end
+    addon:SetUIScript(specFilter,'OnClick',function()
+        if not browser.active then return end
+        local entries={}
+        for _,entry in ipairs(browser.specEntries or {}) do entries[#entries+1]={value=entry.id,text=entry.name,icon=entry.icon} end
+        entries[#entries+1]={value='all',text=L['All specializations']}
+        local serial=browser.serial
+        specMenu:Open(specFilter,entries,browser.specValue,function(value)
+            if browser.active and browser.serial==serial and value~=browser.specValue then
+                browser:RequestLeave(function() if browser.active and browser.serial==serial then browser:SetSpecValue(value) end end)
+            end
+        end,function() return browser.active and browser.serial==serial end,true)
+    end)
     function browser:SetTags(tags)
         if not self.active then return end
         local normalized=addon.RotationData.NormalizeRotationTags(tags or {});if not normalized then return end
@@ -302,8 +352,8 @@ local function create(parent)
             return self:RequestLeave(function() if self.active and self.editorOwner==owner and (not requestValid or requestValid()) then self:SelectRotation(spec,id,true,requestValid) end end)
         end
         local found=false
-        for _,entry in ipairs(self.specEntries) do if entry.id==spec then found=true;break end end
-        if not found then spec=self.specEntries[1].id end
+        for _,key in ipairs(self.specKeys) do if key==spec then found=true;break end end
+        if not found then spec=self:KeyForSpecValue(self.specValue) end
         if spec~=self.spec then self.pendingId=nil;self.query="";search:SetText("") end
         self.spec=spec
         local headers,headerState=addon:ListRotationHeaders(spec)
@@ -337,33 +387,32 @@ local function create(parent)
                 self.selected=pane.workspace.id or self.selected;addon.configRotationSelection={spec=self.spec,id=self.selected};self:RefreshRows()
             end end
         end
-        for _,control in ipairs(self.specButtons) do
-            if control.spec==spec then control:Disable() else control:Enable() end
-        end
         self:RefreshRows()
     end
     function browser:Layout()
         local width,height=frame:GetWidth(),frame:GetHeight()
-        local x,y=0,0
-        local hasSelectors=false
-        for _,control in ipairs(self.specButtons) do
-            if control:IsShown() then
-                hasSelectors=true
-                if x+control:GetWidth()>width then x=0;y=y+28 end
-                control:SetPoint("TOPLEFT",specs,"TOPLEFT",x,-y);x=x+control:GetWidth()+4
-            end
-        end
-        local top=hasSelectors and y+32 or 0;local geometry=addon:GetWorkbenchRosterGeometry(width,height,top);local leftWidth=geometry.sidebarWidth
-        specs:SetPoint("TOPLEFT",frame,"TOPLEFT",0,0);specs:SetSize(width,top)
-        left:SetPoint("TOPLEFT",frame,"TOPLEFT",0,-top);left:SetSize(leftWidth,geometry.sidebarHeight)
-        detail:SetPoint("TOPLEFT",frame,"TOPLEFT",geometry.detailX,-top);detail:SetSize(geometry.detailWidth,geometry.sidebarHeight)
+        local geometry=addon:GetWorkbenchRosterGeometry(width,height,0);local leftWidth=geometry.sidebarWidth
+        left:SetPoint("TOPLEFT",frame,"TOPLEFT",0,0);left:SetSize(leftWidth,geometry.sidebarHeight)
+        detail:SetPoint("TOPLEFT",frame,"TOPLEFT",geometry.detailX,0);detail:SetSize(geometry.detailWidth,geometry.sidebarHeight)
         self.splitter:Place(geometry)
-        addon:LayoutWorkbenchRow({self.filters.all,self.filters.builtin,self.filters.custom},0,28,leftWidth)
+        -- The specialization filter (and its warning) sit inside the list
+        -- column, above the search box, only where specializations exist.
+        local offset=0
+        if self.hasSpecFilter then
+            specFilter:Show();specFilter:SetWidth(leftWidth);offset=28
+            if specWarning:IsShown() then specWarning:ClearAllPoints();specWarning:SetPoint('TOPLEFT',left,'TOPLEFT',2,-offset);specWarning:SetWidth(leftWidth-4);offset=offset+18 end
+        else specFilter:Hide();specWarning:Hide() end
+        search:ClearAllPoints();search:SetPoint("TOPLEFT",left,"TOPLEFT",0,-offset)
+        for _,control in pairs(self.filters) do control:ClearAllPoints();control:SetPoint("TOPLEFT",left,"TOPLEFT",(control.filterIndex-1)*80,-offset-28) end
+        addon:LayoutWorkbenchRow({self.filters.all,self.filters.builtin,self.filters.custom},0,offset+28,leftWidth)
+        self.tagLabel:ClearAllPoints();self.tagLabel:SetPoint('TOPLEFT',0,-offset-56)
+        self.tagModeButton:ClearAllPoints();self.tagModeButton:SetPoint('TOPLEFT',40,-offset-56)
+        self.tagPicker.frame:ClearAllPoints();self.tagPicker.frame:SetPoint('TOPLEFT',0,-offset-56)
         search:SetWidth(leftWidth)
         local footerExtra=self.hasRecovery and 26 or 0
         local footerHeight=50+footerExtra
         self.tagPicker:SetWidth(leftWidth)
-        local listTop=56+self.tagPicker.height+8
+        local listTop=offset+56+self.tagPicker.height+8
         list:SetPoint("TOPLEFT",left,"TOPLEFT",0,-listTop);list:SetHeight(math.max(64,left:GetHeight()-listTop-36-footerHeight))
         list:SetWorkbenchColumnWidth(leftWidth);child:SetWidth(list:GetWidth())
         count:ClearAllPoints();count:SetPoint("BOTTOMLEFT",left,"BOTTOMLEFT",0,footerHeight+8);count:SetWidth(leftWidth)
@@ -380,24 +429,31 @@ local function create(parent)
     function browser:SetHeight(value) frame:SetHeight(value) end
     function browser:Release()
         self.active=false;self.serial=(self.serial or 0)+1;self.tagPicker:Hide();self:ReleaseDetails();self.pendingId=nil;search:ClearFocus();if self.tagMenu then self.tagMenu:Release() end
+        specMenu:Hide();addon.rotationListSpec=nil
         for _,control in ipairs(self.rowButtons) do self:RetireRow(control) end
         frame:Hide()
     end
     function browser:Open(selection)
         self.active=false;self.serial=(self.serial or 0)+1;self.tagPicker:Hide();for _,control in ipairs(self.rowButtons) do self:RetireRow(control) end;self.filter="all";self.tag=nil;self.query="";search:SetText("")
-        self.specEntries=addon:GetRotationEditorSpecs()
-        for index,entry in ipairs(self.specEntries) do
-            local control=self.specButtons[index]
-            if not control then control=button(specs,"",120);self.specButtons[index]=control end
-            control.spec=entry.id;control:SetText(entry.name);control:SetWidth(math.min(210,math.max(100,control:GetFontString():GetStringWidth()+24)))
-            local id=entry.id;addon:SetUIScript(control,"OnClick",function() self:SelectRotation(id,id==addon.currentSpec and addon.currentRotation or DEFAULT) end)
-            if #self.specEntries>1 then control:Show() else control:Hide() end
+        -- Session only: every opening starts at your current specialization.
+        self.specEntries=addon.GetRotationSpecEntries and addon:GetRotationSpecEntries() or {};self.hasSpecFilter=#self.specEntries>0
+        local current=addon.GetCurrentRotationSpecValue and addon:GetCurrentRotationSpecValue()
+        self.specValue=self.hasSpecFilter and (current~=nil and current or 'all') or nil;addon.rotationListSpec=self.specValue
+        -- The namespaces this list can read: yours, and every specialization
+        -- where namespaces are specializations (each keeps its own fallback).
+        self.specKeys={}
+        if addon.currentSpec~=nil then self.specKeys[1]=addon.currentSpec end
+        if addon.Platform.RotationKeyIsSpecValue and addon.Platform:RotationKeyIsSpecValue() then
+            for _,entry in ipairs(self.specEntries) do if entry.id~=addon.currentSpec then self.specKeys[#self.specKeys+1]=entry.id end end
         end
-        for index=#self.specEntries+1,#self.specButtons do self.specButtons[index]:Hide();self.specButtons[index]:SetScript("OnClick",nil) end
+        if #self.specKeys==0 then for _,entry in ipairs(addon:GetRotationEditorSpecs()) do self.specKeys[#self.specKeys+1]=entry.id end end
+        if self.hasSpecFilter then self:PaintSpecFilter() end
         self:RefreshRecovery();self:Layout();frame:Show()
         local spec=selection and selection.spec or addon.currentSpec
-        local found=false;for _,entry in ipairs(self.specEntries) do if entry.id==spec then found=true;break end end
-        if not found then spec=self.specEntries[1].id end
+        local found=false;for _,key in ipairs(self.specKeys) do if key==spec then found=true;break end end
+        if not found then spec=self:KeyForSpecValue(self.specValue) end
+        -- Opening a namespace that is another specialization shows that one.
+        if self.hasSpecFilter and spec~=addon.currentSpec and addon.Platform.RotationKeyIsSpecValue and addon.Platform:RotationKeyIsSpecValue() then self.specValue=spec;addon.rotationListSpec=spec;self:PaintSpecFilter() end
         self.active=true;self.profile=addon.db.profile;self.selectedTags={};self.tagPicker.frame:Show();self.tagPicker.input:Show()
         self:SelectRotation(spec,selection and selection.id or spec==addon.currentSpec and addon.currentRotation or DEFAULT)
         return self

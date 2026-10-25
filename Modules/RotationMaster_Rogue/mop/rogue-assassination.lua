@@ -34,7 +34,7 @@ local dying=all(points('GREATERTHANOREQUALS',2),lifetime('LESSTHAN',4))
 local four1,four2=spend('rogue-assassination-four',fourPoint)
 local dying1,dying2=spend('rogue-assassination-dying',dying)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.assassination',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.assassination',revision=6,
  blocks={['mop.rogue.boundaries']=3,['mop.rogue.assassination-opener']=3,['mop.rogue.out-of-combat']=3,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1},
  nameKey='Default.MoP.Rogue.Assassination.Name',descriptionKey='Default.MoP.Rogue.Assassination.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE'},
@@ -43,7 +43,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://www.wowhead.com/mop-classic/guide/classes/rogue/assassination/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Assassination Rogue rotation (MoP Classic, Phase 5)',reviewedAt='2026-10-23',revision='2026-06-29'},
  {url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/RogueAssassination.simc',title='Hekili MoP fork: Assassination Rogue priority',reviewedAt='2026-10-23',revision='0750b5dd98005481baf828cce26149b9abca875b'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/assassination-rogue-leveling',title='Icy Veins: Assassination Rogue levelling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-09-23'}},
- body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=259}}},
+ body={priority=30,specs={259},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
  cooldowns={block('mop.rogue.upkeep','rogue-'),
   spell('rogue-assassination-vendetta',79140,all(combat(),any(sliced,mine(1943)),any(boss,lifetime('GREATERTHAN',20)))),
   spell('rogue-assassination-shadow-blades',121471,all(combat(),mine(79140))),

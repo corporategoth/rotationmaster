@@ -27,7 +27,7 @@ local memory=own(139597)
 local capped=negate(chi('GREATERTHANOREQUALS',-1))
 local friendly={type='FRIENDLY',unit='target'}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.monk.mistweaver',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.monk.mistweaver',revision=6,
  blocks={['mop.monk.upkeep']=1},
  nameKey='Default.MoP.Monk.Mistweaver.Name',descriptionKey='Default.MoP.Monk.Mistweaver.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK'},
@@ -38,7 +38,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.wowhead.com/mop-classic/guide/classes/monk/mistweaver/healer-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Mistweaver Monk rotation (Phase 1)',reviewedAt='2026-10-23',revision='2025-08-10',notes='Read from a Wayback snapshot; group, single-target and downtime modes.'},
   {url='https://www.warcrafttavern.com/mop/guides/pve-mistweaver-monk-rotations-cooldowns/',title='Warcraft Tavern: MoP Mistweaver Monk rotation',reviewedAt='2026-10-23',notes='Thunder Focus Tea with Uplift, statue, fistweaving spenders.'},
  },
- body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=270}}},
+ body={priority=30,specs={270},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
    spell('mist-serpent-stance',115070,negate({type='FORM',form=115070})),
    block('mist-class','mop.monk.upkeep','mist-'),

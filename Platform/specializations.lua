@@ -29,7 +29,8 @@ local function queryInteger(fn,maximum,...)
     return value
 end
 
--- Retail: below level 10 a character has chosen no specialization.
+-- Retail: a character who has not chosen a specialization (new characters
+-- start without one) has none.
 -- GetSpecialization() then answers the class's initial spec, an index past
 -- the class's count (Blizzard's UnitUtil IsInitialSpec), with its own spec ID
 -- (SpecializationID "Initial" rows, Gethe/wow-ui-source and wago.tools
@@ -90,7 +91,7 @@ function platform:GetRotationSpecializations(classID)
         seen[id]=true
         choices[index]={id=id,name=name}
     end
-    -- Retail offers the class's initial spec too (levels 1-9). The live
+    -- Retail offers the class's initial spec too ("No specialization"). The live
     -- selection names it when the player is in it; otherwise the known ID.
     if self:GetClientFamily()=="retail" then
         local initial=INITIAL_SPECS[classID]
@@ -104,7 +105,71 @@ function platform:GetRotationSpecializations(classID)
     return choices
 end
 
--- Whether a Retail spec ID is a class's initial spec (levels 1-9).
+-- A rotation's specializations (body.specs) hold one kind of value per
+-- client, a static fact of the client family (and Classic Progression's
+-- expansion), never of the character's level or whether a second
+-- specialization is unlocked yet:
+--   portable  the game's specialization IDs, the same on every account:
+--             Retail (with each class's "no specialization" ID) and Mists of
+--             Pandaria Classic (progression, expansion 4 and later).
+--   slot      a talent group number (1 or 2, primary or secondary talents),
+--             which means something only on this character: every client
+--             that has (or will get) dual specialization: Classic Era and
+--             Season of Discovery, TBC Anniversary, Wrath and Cataclysm
+--             Classic (progression, expansions 2-3) and Forever.
+-- Exports drop slot values; imports fill them in (Core/imports.lua).
+local SPEC_KINDS={retail='portable',era='slot',tbc='slot',forever='slot'}
+-- Mists of Pandaria and later progression clients name real specializations.
+local function mistsOrLater()
+    local expansion=LE_EXPANSION_LEVEL_CURRENT
+    return integer(expansion,4,100)
+end
+function platform:GetRotationSpecKind()
+    local family=self:GetClientFamily()
+    local kind=SPEC_KINDS[family]
+    if kind then return kind end
+    if family=='progression' then return mistsOrLater() and 'portable' or 'slot' end
+    return nil,'unsupported-client'
+end
+-- Whether the saved-rotation namespace (GetRotationSpecialization().key) is
+-- itself a specialization value: Retail keys by specialization ID and Wrath
+-- or Cataclysm Classic by talent group; Mists Classic keys by talent group
+-- but its values are specialization IDs, and Era, TBC and Forever keep one
+-- namespace per class.
+function platform:RotationKeyIsSpecValue()
+    local family=self:GetClientFamily()
+    if family=='retail' then return true end
+    return family=='progression' and not mistsOrLater()
+end
+-- The character's current specialization value (see GetRotationSpecKind).
+-- Slot clients answer the active talent group, 1 when the client has a
+-- single one; Mists Classic without a specialization yet is unavailable.
+function platform:GetRotationSpecValue()
+    local kind,reason=self:GetRotationSpecKind()
+    if not kind then return nil,reason end
+    if kind=='slot' then
+        local native=method("GetActiveSpecGroup",GetActiveTalentGroup)
+        if type(native)~='function' then return 1 end
+        return queryInteger(native,4,false,false)
+    end
+    if self:GetClientFamily()=='retail' then
+        local selection,why=self:GetRotationSpecialization()
+        if not selection then return nil,why end
+        return selection.key
+    end
+    return self:GetPlayerSpecializationID()
+end
+-- The values a rotation can be restricted to on this client, as a fresh list
+-- of {id,name,initial,slot}. Slot clients always offer both talent groups.
+function platform:GetRotationSpecChoices(classID)
+    local kind,reason=self:GetRotationSpecKind()
+    if not kind then return nil,reason end
+    if kind=='slot' then return {{id=1,slot=true},{id=2,slot=true}} end
+    if self:GetClientFamily()=='retail' then return self:GetRotationSpecializations(classID) end
+    return self:GetClassSpecializationChoices(classID)
+end
+
+-- Whether a Retail spec ID is a class's initial spec ("No specialization").
 function platform:IsInitialSpecialization(specID)
     if self:GetClientFamily()~="retail" or type(specID)~="number" then return false end
     for _,id in pairs(INITIAL_SPECS) do if id==specID then return true end end

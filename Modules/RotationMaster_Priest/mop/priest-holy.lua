@@ -25,7 +25,7 @@ local unshielded=negate({type='DEBUFF',unit='target',spell=6788})
 local nochakra=all(negate(own(81208)),negate(own(81206)),negate(own(81209)))
 local aoe=hurt(3,.85)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.priest.holy',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.priest.holy',revision=5,
  blocks={['mop.priest.upkeep']=1,['mop.priest.healer-boundaries']=2,['mop.priest.healer-cooldowns']=1,['mop.priest.holy-damage']=2},
  nameKey='Default.MoP.Priest.Holy.Name',descriptionKey='Default.MoP.Priest.Holy.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PRIEST'},
@@ -36,7 +36,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://www.method.gg/mop-classic/holy-priest-class-guide-mop-classic',title='Method: Holy Priest guide (MoP Classic)',reviewedAt='2026-10-23'},
  {url='https://wowtbc.gg/mop/class-guides/holy-priest/',title='wowtbc.gg: Holy Priest (MoP Classic)',reviewedAt='2026-10-23'},
  {url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/PriestHoly.simc',title='Hekili (MoP fork): Holy Priest priority',reviewedAt='2026-10-23',revision='0750b5dd98005481baf828cce26149b9abca875b'}},
- body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=257}}},
+ body={priority=30,specs={257},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
  cooldowns={block('mop.priest.upkeep','priest-'),block('mop.priest.healer-cooldowns','priest-'),
   spell('priest-holy-sanctuary-chakra',81206,all(nochakra,{type='GROUP',raid=true})),
   spell('priest-holy-serenity-chakra',81208,all(nochakra,group,negate({type='GROUP',raid=true}))),

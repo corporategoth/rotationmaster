@@ -16,7 +16,7 @@ local function off(id,action,conditions)local step=spell(id,action,conditions);s
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local PYRO,HEAT,ALTER=48108,48107,110909
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.mage.fire',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.mage.fire',revision=6,
  blocks={['mop.mage.boundaries']=3,['mop.mage.upkeep']=1,['mop.mage.armor-molten']=1,['mop.mage.bombs']=1,['mop.mage.fire-open']=3,['mop.mage.fire-spend']=1,['mop.mage.fire-filler']=2},
  nameKey='Default.MoP.Mage.Fire.Name',descriptionKey='Default.MoP.Mage.Fire.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE'},
@@ -27,7 +27,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/MageFire.simc',title='Hekili (MoP Classic fork): Fire Mage priority',reviewedAt='2026-10-23',revision='0750b5dd98'},
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/fire-mage-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Fire Mage rotation',reviewedAt='2026-10-23',revision='2025-06-17',notes='Inferno Blast spreading, AoE, talent rows.'},
  },
- body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=63}}},
+ body={priority=30,specs={63},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
    block('fire-armor','mop.mage.armor-molten','fire-'),
    block('fire-upkeep','mop.mage.upkeep','fire-'),

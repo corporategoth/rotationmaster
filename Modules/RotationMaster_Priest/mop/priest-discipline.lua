@@ -25,7 +25,7 @@ local group={type='GROUP'}
 local unshielded=negate({type='DEBUFF',unit='target',spell=6788})
 local tierSix=any(enemies('GREATERTHANOREQUALS',3),hurt(3,.85))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.priest.discipline',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.priest.discipline',revision=5,
  blocks={['mop.priest.upkeep']=1,['mop.priest.healer-boundaries']=2,['mop.priest.healer-cooldowns']=1},
  nameKey='Default.MoP.Priest.Discipline.Name',descriptionKey='Default.MoP.Priest.Discipline.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PRIEST'},
@@ -36,7 +36,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://wowtbc.gg/mop/class-guides/discipline-priest/',title='wowtbc.gg: Discipline Priest (MoP Classic)',reviewedAt='2026-10-23'},
  {url='https://www.method.gg/mop-classic/discipline-priest-class-guide-mop-classic',title='Method: Discipline Priest guide (MoP Classic)',reviewedAt='2026-10-23'},
  {url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/PriestDiscipline.simc',title='Hekili (MoP fork): Discipline Priest priority',reviewedAt='2026-10-23',revision='0750b5dd98005481baf828cce26149b9abca875b'}},
- body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=256}}},
+ body={priority=30,specs={256},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
  cooldowns={block('mop.priest.upkeep','priest-'),block('mop.priest.healer-cooldowns','priest-'),
   spell('priest-disc-archangel',81700,all(friendly,{type='BUFF_STACKS',unit='player',spell=81661,ownbuff=true,operator='GREATERTHANOREQUALS',value=5})),
   spell('priest-disc-inner-focus',89485,all(combat(),friendly)),

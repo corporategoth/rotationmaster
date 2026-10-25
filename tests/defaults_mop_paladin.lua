@@ -16,12 +16,14 @@ local function paladin(level)
 end
 test('the Paladin premades load, validate and declare Mists of Pandaria only',function()
  M.scope('paladin',{RET,PROT,HOLY},10)
- local a=M.scope('paladin',{START},1);local rows=M.rows(a)
+ local a,s=M.scope('paladin',{START},1);local rows=M.rows(a)
  -- Disabled variants: same scope, eligible once enabled.
  for _,id in ipairs({RETTAV,PROTSIM})do
   local scope=rows[id].applicability
   assert(scope.minExpansion==4 and scope.maxExpansion==4 and scope.minLevel==nil and scope.maxLevel==nil and scope.families[1]=='progression',id)
   assert(not rows[id].eligible and rows[id].eligibilityReason=='disabled',id)
+  -- Eligible in its own specialization (body.specs).
+  s.specID(rows[id].envelope.body.specs[1]);a:InvalidateBuildContext()
   assert(a:SetDefaultRotationEnabled(id,true));assert(M.rows(a)[id].eligible,id..' not eligible once enabled')
  end
  assert(rows[RETTAV].envelope.body.disabled and rows[PROTSIM].envelope.body.disabled,'source variants ship disabled')

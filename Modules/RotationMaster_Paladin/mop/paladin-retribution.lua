@@ -22,7 +22,7 @@ local free=any(buff(90174),buff(105809))
 local inquisition=any(buff(INQ),negate(known(INQ)))
 local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.retribution',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.retribution',revision=5,
  blocks={['mop.paladin.damage-boundaries']=2,['mop.paladin.upkeep']=1,['mop.paladin.seal-truth']=2,['mop.paladin.defensives']=1,['mop.paladin.ret-survival']=1},
  nameKey='Default.MoP.Paladin.Retribution.Name',descriptionKey='Default.MoP.Paladin.Retribution.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN'},
@@ -33,7 +33,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.wowhead.com/mop-classic/guide/classes/paladin/retribution/dps-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Retribution Paladin rotation',reviewedAt='2026-10-23',revision='2025-07-27',notes='Read from a Wayback snapshot; Divine Storm at 2+, Hammer of the Righteous at 4+.'},
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/retribution-paladin-leveling',title='Icy Veins: MoP Classic Retribution Paladin leveling',reviewedAt='2026-10-23',revision='2025-09-23',notes='Word of Glory when in danger; Inquisition only from 81.'},
  },
- body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=70}}},
+ body={priority=30,specs={70},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
    block('ret-seal','mop.paladin.seal-truth','ret-'),
    block('ret-upkeep','mop.paladin.upkeep','ret-'),

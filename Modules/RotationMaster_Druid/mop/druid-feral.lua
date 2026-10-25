@@ -26,7 +26,7 @@ local roar6=any({type='BUFF_REMAIN',unit='player',spell=52610,ownbuff=true,opera
 local worth=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},
  {type='CLASSIFICATION',unit='target',value='worldboss'},{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=20})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.druid.feral',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.druid.feral',revision=6,
  blocks={['mop.druid.melee-boundaries']=2,['mop.druid.mark']=1,['mop.druid.feral-upkeep']=2,['mop.druid.feral-open']=4,['mop.druid.feral-aoe']=2},
  nameKey='Default.MoP.Druid.Feral.Name',descriptionKey='Default.MoP.Druid.Feral.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID'},
@@ -37,7 +37,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.method.gg/mop-classic/feral-druid-class-guide-mop-classic',title='Method: MoP Classic Feral Druid',reviewedAt='2026-10-23',revision='2025-07-22',notes='Bite at five points when safe.'},
   {url='https://wowtbc.gg/mop/class-guides/feral-druid/',title='wowtbc.gg: MoP Feral Druid',reviewedAt='2026-10-23'},
  },
- body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=103}}},
+ body={priority=30,specs={103},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
    block('feral-mark','mop.druid.mark','feral-'),
    block('feral-upkeep','mop.druid.feral-upkeep','feral-'),

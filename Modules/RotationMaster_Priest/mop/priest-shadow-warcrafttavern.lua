@@ -15,13 +15,13 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local function far(n)return negate({type='DISTANCE',unit='target',value=n})end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.priest.shadow.warcrafttavern',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.priest.shadow.warcrafttavern',revision=6,
  blocks={['mop.priest.upkeep']=1,['mop.priest.shadow-shell']=5,['mop.priest.shadow-cooldowns']=2},
  nameKey='Default.MoP.Priest.Shadow.WarcraftTavern.Name',descriptionKey='Default.MoP.Priest.Shadow.WarcraftTavern.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PRIEST'},
  tags={'shadow','dps','caster','leveling','endgame','warcraft-tavern'},
  sources={{url='https://www.warcrafttavern.com/mop/guides/pve-shadow-priest-rotations-cooldowns/',title='Warcraft Tavern: Shadow Priest rotation (MoP Classic)',reviewedAt='2026-10-23'}},
- body={priority=20,disabled=true,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=258}}},
+ body={priority=20,disabled=true,specs={258},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
  cooldowns={block('mop.priest.upkeep','priest-'),block('mop.priest.shadow-cooldowns','priest-')},
  rotation={
  block('mop.priest.shadow-shell','priest-'),

@@ -390,12 +390,15 @@ function data.NewRotationStore(options)
         end
         return seal
     end
+    -- Every partition of the owner: a rotation's specializations are its own
+    -- property (body.specs), so the namespace it was saved under no longer
+    -- hides it. `number` still names the partition whose fallback applies.
     local function privateRows(number,c)
         if not spec(number) then return nil,'invalid-specialization' end
         if not privateContext(c) then return nil,'missing-owner-context' end
         local result={}
-        local function add(kind,name)
-            local a={scope=kind,class=c.class,owner=name,spec=number,id=options.fallbackID}
+        local function partition(kind,name,value)
+            local a={scope=kind,class=c.class,owner=name,spec=value,id=options.fallbackID}
             local allowed,rows,scope=readRows(a,c,readIndex);if not allowed then return nil,rows end
             local count=0
             for id,record in pairs(rows or {}) do
@@ -406,6 +409,20 @@ function data.NewRotationStore(options)
             if count~=(scope and scope.count or 0) then return nil,'stale-store-index' end
             return true
         end
+        local function add(kind,name)
+            local allowed,reason=partition(kind,name,number);if not allowed then return nil,reason end
+            local root=kind=='class' and state.classes or state.characters
+            local bucket=root[name];local map=kind=='class' and bucket or plain(bucket) and bucket.specs
+            local indexed=(kind=='class' and readIndex.classes or readIndex.characters)[name]
+            local numbers,seen={},{[number]=true}
+            for value in pairs(plain(map) and map or {}) do if not seen[value] then seen[value]=true;numbers[#numbers+1]=value end end
+            for value in pairs(indexed and indexed.specs or {}) do if not seen[value] then seen[value]=true;numbers[#numbers+1]=value end end
+            for _,value in ipairs(numbers) do
+                if not spec(value) then return nil,'invalid-store' end
+                allowed,reason=partition(kind,name,value);if not allowed then return nil,reason end
+            end
+            return true
+        end
         local allowed,reason=add('class',c.class);if not allowed then return nil,reason end
         local character=type(c.character)=='string' and state.characters[c.character]
         if character~=nil and character~=false and not plain(character) then return nil,'invalid-store' end
@@ -413,7 +430,8 @@ function data.NewRotationStore(options)
             if text(c.character,512) then allowed,reason=add('character',c.character);if not allowed then return nil,reason end end
         end
         table.sort(result,function(a,b) local x,y=a.address,b.address
-            if x.scope~=y.scope then return x.scope<y.scope end;return x.id<y.id
+            if x.scope~=y.scope then return x.scope<y.scope end
+            if x.id~=y.id then return x.id<y.id end;return x.spec<y.spec
         end)
         return result
     end

@@ -71,7 +71,7 @@ function addon:ShowRotationTransfer(spec,id)
     dialog=self:ShowSettingsTextTransfer(p,L['Import/Export Rotation'],exported or '',function(_,settings)
         if not candidate then return false,L['Preview a pasted rotation before importing it.'] end
         local target=settings.mode=='replace' and reference or nil
-        local generated,why,saved=self:ApplyRotationImport(session,candidate.token,spec,settings.name,target,expected,{scope=dialog.scope:GetChecked() and 'character' or 'class'})
+        local generated,why,saved=self:ApplyRotationImport(session,candidate.token,spec,settings.name,target,expected,{scope=dialog.scope:GetChecked() and 'character' or 'class',specs=type(self.rotationListSpec)=='number' and self.rotationListSpec or nil})
         if not generated then return false,string.format(L['Could not import this rotation: %s'],why) end
         local workspace,problem=self:GetRotationEditWorkspace(spec,saved);if not workspace then return false,problem end
         self:ShowConfig('Rotations',{spec=spec,id=workspace.id});return true

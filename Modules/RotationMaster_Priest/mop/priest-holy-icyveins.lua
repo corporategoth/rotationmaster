@@ -25,14 +25,14 @@ local aoe=all(group,hurt(3,.85))
 local renew=all(low(.95),negate({type='BUFF',unit='target',spell=139,ownbuff=true}))
 local binding=all(health('player','LESSTHAN',.7),low(.7),negate({type='ISSAME',unit='target',otherunit='player'}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.priest.holy.icyveins',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.priest.holy.icyveins',revision=5,
  blocks={['mop.priest.upkeep']=1,['mop.priest.healer-boundaries']=2,['mop.priest.healer-cooldowns']=1,['mop.priest.holy-damage']=2},
  nameKey='Default.MoP.Priest.Holy.IcyVeins.Name',descriptionKey='Default.MoP.Priest.Holy.IcyVeins.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PRIEST'},
  tags={'holy','healer','group','leveling','endgame','icy-veins'},
  sources={{url='https://www.icy-veins.com/mists-of-pandaria-classic/holy-priest-pve-rotation-cooldowns-abilities',title='Icy Veins: Holy Priest rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/holy-priest-leveling',title='Icy Veins: Holy Priest levelling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'}},
- body={priority=20,disabled=true,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=257}}},
+ body={priority=20,disabled=true,specs={257},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
  cooldowns={block('mop.priest.upkeep','priest-'),block('mop.priest.healer-cooldowns','priest-'),
   spell('priest-holy-iv-sanctuary-chakra',81206,all(nochakra,{type='GROUP',raid=true})),
   spell('priest-holy-iv-serenity-chakra',81208,all(nochakra,group,negate({type='GROUP',raid=true}))),

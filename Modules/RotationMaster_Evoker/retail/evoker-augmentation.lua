@@ -16,7 +16,7 @@ local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local ebon={type='BUFF',unit='player',spell=395296,ownbuff=true}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.augmentation',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.augmentation',revision=6,
  blocks={['retail.evoker.boundaries']=3,['retail.evoker.utility']=2},
  nameKey='Default.Retail.Evoker.Augmentation.Name',descriptionKey='Default.Retail.Evoker.Augmentation.Description',
  applicability={families={'retail'},actionContext='player',class='EVOKER'},
@@ -26,7 +26,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/evoker_augmentation.simc',title='SimulationCraft default action list: Augmentation',reviewedAt='2026-10-23',revision='c5fea93f',notes='Same order; Ebon Might refreshed in its pandemic window.'},
   {url='https://warcraft.wiki.gg/wiki/Patch_12.0.0/Planned_API_changes',title='Warcraft Wiki: Patch 12.0.0 API changes (aura whitelist)',reviewedAt='2026-10-23',notes='Ebon Might is a never-secret aura.'},
  },
- body={priority=20,switch={type='SPECIALIZATION',spec=1473},
+ body={priority=20,specs={1473},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
   cooldowns={
    block('aug-utility','retail.evoker.utility','aug-'),
    spell('aug-breath-of-eons',403631,combat()),

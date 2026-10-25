@@ -16,7 +16,7 @@ local function hp(op,v)return{type='POINT',unit='player',operator=op,value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.protection.wowsims',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.protection.wowsims',revision=6,
  blocks={['mop.paladin.damage-boundaries']=2,['mop.paladin.upkeep']=1,['mop.paladin.seal-insight']=2,['mop.paladin.prot-upkeep']=1,['mop.paladin.prot-open']=4,['mop.paladin.prot-aoe']=2},
  nameKey='Default.MoP.Paladin.Protection.Wowsims.Name',descriptionKey='Default.MoP.Paladin.Protection.Wowsims.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN'},
@@ -25,7 +25,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/wowsims/mop/blob/master/ui/specs/paladin/protection/apls/sha.apl.json',title='wowsims MoP: Protection APLs (Sha, Horridon, Iron Juggernaut)',reviewedAt='2026-10-23',revision='ec2c6c2552'},
   {url='https://wowtbc.gg/mop/class-guides/protection-paladin/',title='wowtbc.gg: MoP Protection Paladin guide',reviewedAt='2026-10-23',notes='Same generator order; Sacred Shield maintained.'},
  },
- body={priority=20,disabled=true,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=66}}},
+ body={priority=20,disabled=true,specs={66},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
    block('protsim-upkeep','mop.paladin.prot-upkeep','protsim-'),
    block('protsim-class','mop.paladin.upkeep','protsim-'),

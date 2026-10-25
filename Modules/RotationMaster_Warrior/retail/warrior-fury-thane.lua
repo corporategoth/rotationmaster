@@ -16,7 +16,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.fury.thane',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.fury.thane',revision=6,
  blocks={['retail.warrior.boundaries']=2,['retail.warrior.upkeep']=1,['retail.warrior.charge']=3},
  nameKey='Default.Retail.Warrior.Fury.Thane.Name',descriptionKey='Default.Retail.Warrior.Fury.Thane.Description',
  applicability={families={'retail'},actionContext='player',class='WARRIOR'},
@@ -25,7 +25,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/warrior_fury.simc',title='SimulationCraft: Fury Warrior default list (thane, thane_aoe)',reviewedAt='2026-10-23',revision='c5fea93fb77d'},
   {url='https://www.icy-veins.com/wow/fury-warrior-pve-dps-rotation-cooldowns-abilities',title='Icy Veins: Fury Warrior rotation (Midnight)',reviewedAt='2026-10-23',revision='2026-10-12'},
  },
- body={priority=4,disabled=true,switch={type='SPECIALIZATION',spec=72},
+ body={priority=4,disabled=true,specs={72},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
   cooldowns={
    block('retail.warrior.upkeep','furyth-'),
    spell('furyth-recklessness',1719,fight),

@@ -27,7 +27,7 @@ local worth=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASS
  {type='CLASSIFICATION',unit='target',value='worldboss'},{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=25})
 local dream=all(talent(17),negate(own(DREAM)),negate(aligned))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.druid.balance',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.druid.balance',revision=6,
  blocks={['mop.druid.boundaries']=4,['mop.druid.target']=2,['mop.druid.mark']=1},
  nameKey='Default.MoP.Druid.Balance.Name',descriptionKey='Default.MoP.Druid.Balance.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID'},
@@ -38,7 +38,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/balance-druid-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Balance Druid rotation',reviewedAt='2026-10-23',revision='2025-06-22',notes='Same list; Innervate at 70% mana.'},
   {url='https://www.warcrafttavern.com/mop/guides/pve-balance-druid-rotations-cooldowns/',title='Warcraft Tavern: MoP Classic Balance Druid',reviewedAt='2026-10-23',notes='Astral Storm in Lunar for AoE.'},
  },
- body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=102}}},
+ body={priority=30,specs={102},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
    block('balance-mark','mop.druid.mark','balance-'),
    spell('balance-moonkin',24858,negate(any(form(24858),form(768),form(5487),form(783),form(1066),form(33943),form(40120)))),

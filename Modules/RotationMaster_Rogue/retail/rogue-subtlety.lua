@@ -7,7 +7,7 @@
 local _,addon=...
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.subtlety',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.subtlety',revision=5,
  blocks={['retail.rogue.boundaries']=2,['retail.rogue.upkeep']=2},
  nameKey='Default.Retail.Rogue.Subtlety.Name',descriptionKey='Default.Retail.Rogue.Subtlety.Description',
  applicability={families={'retail'},actionContext='player',class='ROGUE'},
@@ -17,7 +17,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/Gethe/wow-ui-source/blob/e7aa82019dc298e0351c7159d60c2a9b916b9b67/Interface/AddOns/Blizzard_APIDocumentationGenerated/AssistedCombatDocumentation.lua',title='Blizzard API documentation: C_AssistedCombat (12.1.5)',reviewedAt='2026-10-23',revision='e7aa82019d'},
   {url='https://github.com/kaminaris/MaxDps-Rogue',title='MaxDps Rogue module (Midnight)',reviewedAt='2026-10-23',revision='6145c857',notes='No priority in Midnight: the Assisted Combat spell plus cooldown and defensive glows.'},
  },
- body={priority=10,switch={type='SPECIALIZATION',spec=261},
+ body={priority=10,specs={261},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
   cooldowns={
    block('retail.rogue.upkeep','sub-'),
   },

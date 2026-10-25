@@ -26,7 +26,7 @@ local dump=all(combat(),{type='HEALTHPCT',unit='target',operator='GREATERTHAN',v
 local armor={type='DEBUFF',unit='target',spell=113746}
 local function devastate(id,conditions)return{id=id,type='branch',conditions={type='SPELL_KNOWN',spell=20243},onTrue={spell(id..'-devastate',20243,conditions)},onFalse={spell(id..'-sunder',7386,conditions)}}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.protection',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.protection',revision=6,
  blocks={['mop.warrior.boundaries']=4},
  nameKey='Default.MoP.Warrior.Protection.Name',descriptionKey='Default.MoP.Warrior.Protection.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARRIOR'},
@@ -35,7 +35,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/protection-warrior-pve-rotation-cooldowns-abilities',title='Icy Veins: Protection Warrior rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/protection-warrior-leveling',title='Icy Veins: Protection Warrior levelling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'},
  {url='https://www.warcrafttavern.com/mop/guides/pve-protection-warrior-tank-rotation-cooldowns/',title='Warcraft Tavern: Protection Warrior rotation (MoP)',reviewedAt='2026-10-23'}},
- body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=73}}},
+ body={priority=30,specs={73},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
  cooldowns={
   spell('warrior-prot-stance',71,negate({type='FORM',form=71})),
   spell('warrior-prot-shout',6673,all(negate(buff(6673)),negate(buff(469)))),

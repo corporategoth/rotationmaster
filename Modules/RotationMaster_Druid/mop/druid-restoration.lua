@@ -17,7 +17,7 @@ local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local still=negate({type='MOVING'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.druid.restoration',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.druid.restoration',revision=5,
  blocks={['mop.druid.boundaries']=4,['mop.druid.mark']=1,['mop.druid.healer-upkeep']=1,['mop.druid.healer-open']=3},
  nameKey='Default.MoP.Druid.Restoration.Name',descriptionKey='Default.MoP.Druid.Restoration.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID'},
@@ -28,7 +28,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.method.gg/mop-classic/restoration-druid-class-guide-mop-classic',title='Method: MoP Classic Restoration Druid',reviewedAt='2026-10-23',revision='2025-07-22',notes='Harmony from a direct heal.'},
   {url='https://www.warcrafttavern.com/mop/guides/pve-restoration-druid-rotations-cooldowns/',title='Warcraft Tavern: MoP Classic Restoration Druid',reviewedAt='2026-10-23',notes='Damage in downtime.'},
  },
- body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=105}}},
+ body={priority=30,specs={105},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
    block('resto-mark','mop.druid.mark','resto-'),
    block('resto-upkeep','mop.druid.healer-upkeep','resto-'),

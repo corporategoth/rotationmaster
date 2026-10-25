@@ -1,10 +1,9 @@
 -- Specialization and level can change mid-session (a level-up, a respec), so a shipped premade's
--- applicability holds only what cannot: edition, class, expansion, build and ruleset. Level and
--- specialization are visible switch conditions that the auto-switch re-reads, so the right premade
--- is chosen without a reload. Retail still files a Built In under the specialization its switch
--- names, so another specialization's premade stays unavailable in that list, as
--- applicability.specs did; an imported or older pack that still declares specs/minLevel/maxLevel
--- is honoured as before.
+-- applicability holds only what cannot: edition, class, expansion, build and ruleset. Level is a
+-- visible switch condition and specialization the premade's own body.specs, both re-read live, so
+-- the right premade is chosen without a reload; another specialization's premade stays listed but
+-- unavailable, as applicability.specs did; an imported or older pack that still declares
+-- specs/minLevel/maxLevel is honoured as before.
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 
 local LOAD_TIME={families=true,actionContext=true,class=true,universal=true,minExpansion=true,maxExpansion=true,minBuild=true,maxBuild=true,rulesets=true}
@@ -21,7 +20,7 @@ test('Retail: the Brewmaster premade is filed under Brewmaster only; a level-up 
     local P='rm.retail.monk.'
     local function row(spec,id) for _,r in ipairs(a:ListDefaultRotations(spec)) do if r.id==id then return r end end end
     local function runtime(spec,id) return a:GetRuntimeRotations(spec)[row(spec,id).runtimeKey]~=nil end
-    -- Filed by the switch: listed in every Monk slot, eligible and at runtime only under Brewmaster.
+    -- By its body.specs: listed in every Monk slot, eligible and at runtime only under Brewmaster.
     for _,spec in ipairs({268,269,270,1450}) do
         local r=assert(row(spec,P..'brewmaster'),'not listed under '..spec)
         assert(r.eligible==(spec==268) and runtime(spec,P..'brewmaster')==(spec==268),'Brewmaster premade in slot '..spec..': '..tostring(r.eligibilityReason))
@@ -34,9 +33,9 @@ test('Retail: the Brewmaster premade is filed under Brewmaster only; a level-up 
     s.respec(268);assert(M.selected(a)==P..'brewmaster','Brewmaster: '..tostring(M.selected(a)))
     s.respec(269);assert(M.selected(a)==P..'windwalker','Windwalker: '..tostring(M.selected(a)))
     s.respec(268);assert(M.selected(a)==P..'brewmaster','back to Brewmaster: '..tostring(M.selected(a)))
-    -- The switch itself reads the live specialization: Brewmaster's switch is false in Windwalker.
+    -- Its specializations (body.specs) read the live specialization: Brewmaster's do not hold in Windwalker.
     s.respec(269);local body=row(268,P..'brewmaster').envelope.body
-    assert(a:evaluateConditionResult(body.switch).status=='no-match','Brewmaster switch in Windwalker')
+    assert(not a:RotationSpecsApply(body.specs,269),'Brewmaster premade in Windwalker')
 end)
 
 test('a pack that still declares specs, minLevel or maxLevel keeps those gates (imported or older packs)',function()

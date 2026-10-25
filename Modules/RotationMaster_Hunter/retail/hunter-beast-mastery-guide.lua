@@ -25,7 +25,7 @@ local withering=buff(466991)
 -- Kill Command on Howl of the Pack Leader or Nature's Ally, or freely while Bestial Wrath is far off.
 local kill=any(buff(471878),buff(472324),buff(472325),buff(1276720),{type='SPELL_COOLDOWN',spell=WRATH,operator='GREATERTHAN',value=5})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.beastmastery.guide',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.beastmastery.guide',revision=6,
  blocks={['retail.hunter.boundaries']=3,['retail.hunter.utility']=2,['retail.hunter.mark']=1},
  nameKey='Default.Retail.Hunter.BeastMasteryGuide.Name',descriptionKey='Default.Retail.Hunter.BeastMasteryGuide.Description',
  applicability={families={'retail'},actionContext='player',class='HUNTER'},
@@ -34,7 +34,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/hunter_beast_mastery.simc',title='SimulationCraft default action list: Beast Mastery',reviewedAt='2026-10-23',revision='c5fea93f'},
   {url='https://www.icy-veins.com/wow/beast-mastery-hunter-pve-dps-rotation-cooldowns-abilities',title='Icy Veins: Beast Mastery Hunter rotation (12.1.5)',reviewedAt='2026-10-23',revision='2026-10-12'},
  },
- body={priority=10,disabled=true,switch={type='SPECIALIZATION',spec=253},
+ body={priority=10,disabled=true,specs={253},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
   cooldowns={block('bmguide-utility','retail.hunter.utility','bmguide-'),spell('bmguide-bloodshed',321530,combat())},
   rotation={
    block('bmguide-boundaries','retail.hunter.boundaries','bmguide-'),

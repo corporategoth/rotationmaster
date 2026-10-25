@@ -13,16 +13,19 @@ local function samples(packs,family,class)
     local result,seen={},{}
     for _,pack in ipairs(packs) do
         local scope=pack.applicability;local applicable=matches(scope,family,class)
-        local levels={1,19,20,60,70,90,100};local specs={0,1};local builds={70006}
+        local levels={1,19,20,60,70,90,100};local specs={0,1};local builds={70006};local values={false}
         if applicable then
+            -- A premade's own specializations (body.specs) are sampled as the character's
+            -- specialization value, and as the namespace where namespaces are specializations.
+            for _,value in ipairs(pack.body.specs or {}) do values[#values+1]=value;specs[#specs+1]=value end
             for _,key in ipairs({'minLevel','maxLevel'}) do if scope[key] then levels[#levels+1]=scope[key];if scope[key]>1 then levels[#levels+1]=scope[key]-1 end;levels[#levels+1]=scope[key]+1 end end
             local largest=0;for _,spec in ipairs(scope.specs or {}) do specs[#specs+1]=spec;largest=math.max(largest,spec) end;specs[#specs+1]=largest+1
             for _,key in ipairs({'minBuild','maxBuild'}) do if scope[key] then builds[#builds+1]=scope[key];if scope[key]>1 then builds[#builds+1]=scope[key]-1 end;builds[#builds+1]=scope[key]+1 end end
         end
-        for _,level in ipairs(levels) do for _,spec in ipairs(specs) do for _,context in ipairs({'player','vehicle','petbattle'}) do for _,build in ipairs(builds) do
-            local key=table.concat({level,spec,context,build},':')
-            if not seen[key] then seen[key]=true;result[#result+1]={level=level,spec=spec,context=context,build=build} end
-        end end end end
+        for _,level in ipairs(levels) do for _,spec in ipairs(specs) do for _,context in ipairs({'player','vehicle','petbattle'}) do for _,build in ipairs(builds) do for _,value in ipairs(values) do
+            local key=table.concat({level,spec,context,build,tostring(value)},':')
+            if not seen[key] then seen[key]=true;result[#result+1]={level=level,spec=spec,context=context,build=build,value=value or nil} end
+        end end end end end
     end
     return result
 end
@@ -51,6 +54,8 @@ for _,client in ipairs(clients) do for _,class in ipairs(classes) do
         if not early then support.install(f,{stubNatives=true}) end
         for _,sample in ipairs(samples(packs,client[1],class)) do
             state.level,state.context,state.build=sample.level,sample.context,sample.build
+            -- The sampled namespace is the one being played, with the sampled specialization value.
+            a.currentSpec=sample.spec;a.GetRotationSpecValue=function() return sample.value end
             local rows=a:ListDefaultRotations(sample.spec);assert(#rows==visibleCount,'default list did not enforce declared class')
             local runtime=a:GetRuntimeRotations(sample.spec)
             for _,row in ipairs(rows) do
@@ -62,6 +67,8 @@ for _,client in ipairs(clients) do for _,class in ipairs(classes) do
                     local scope=row.applicability
                     assert(matches(scope,client[1],class))
                     assert(not scope.specs or corpus.contains(scope.specs,sample.spec))
+                    local own=row.envelope.body.specs
+                    if own and a.Platform:GetRotationSpecKind() then assert(a.RotationData.RotationSpecsMatch(own,a.Platform:RotationKeyIsSpecValue() and sample.spec or sample.value),row.id..': eligible for another specialization') end
                     assert(scope.actionContext==sample.context and (not scope.minLevel or sample.level>=scope.minLevel) and (not scope.maxLevel or sample.level<=scope.maxLevel))
                     assert((not scope.minBuild or sample.build>=scope.minBuild) and (not scope.maxBuild or sample.build<=scope.maxBuild))
                     assert((not scope.minExpansion or client[3]>=scope.minExpansion) and (not scope.maxExpansion or client[3]<=scope.maxExpansion),'expansion selector ignored')
@@ -71,6 +78,7 @@ for _,client in ipairs(clients) do for _,class in ipairs(classes) do
         end
         for _,pack in ipairs(packs) do
             local witness=witnesses[pack.id];local spec=witness and witness.spec or 0
+            a.currentSpec=spec;a.GetRotationSpecValue=function() return witness and witness.value end
             if witness then state.level,state.context,state.build=witness.level,witness.context,witness.build end
             assert(a:SetDefaultRotationEnabled(pack.id,false));assert(#a:ListDefaultRotations(spec)==visibleCount)
             local view=a:GetDefaultRotation(pack.id);assert(view.readOnly and not view.enabled)

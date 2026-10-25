@@ -275,7 +275,9 @@ function addon:BindRotationProfile()
         if not customReference(reference) then return nil,'invalid-rotation-reference' end
         local a=reference.address;local c,contextReason=context();if not c then return nil,contextReason end
         if c.class~=a.class or a.scope=='character' and c.character~=a.owner then return nil,'foreign-owner' end
-        if a.spec~=number then return nil,'invalid-specialization' end
+        -- Only a fallback belongs to one namespace; any other rotation is
+        -- reachable from every one (body.specs decides where it applies).
+        if a.spec~=number and a.id==profile.rotationFallbackID then return nil,'invalid-specialization' end
         -- The private store performs the complete typed address/class gate.
         local ok,reason=reader:Read(a,c,function() return true end)
         if not ok then return nil,reason end
@@ -315,7 +317,7 @@ function addon:BindRotationProfile()
         local c,errorText=context();if not c then return nil,errorText end
         local rows,reason=reader:ListOwned(number,c);if not rows then return nil,reason end
         local found
-        for _,row in ipairs(rows) do if row.address.id==value then
+        for _,row in ipairs(rows) do if row.address.id==value and (row.address.id~=profile.rotationFallbackID or row.address.spec==number) then
             if found then return nil,'ambiguous-rotation-reference' end
             found={kind='custom',address=row.address}
         end end
@@ -323,7 +325,7 @@ function addon:BindRotationProfile()
     end
     function coordinator:PendingReference(number,r)
         local c,contextReason=context();if not c then return nil,contextReason end
-        local a=r.address;if a.spec~=number then return nil,'invalid-specialization' end
+        local a=r.address;if a.spec~=number and a.id==profile.rotationFallbackID then return nil,'invalid-specialization' end
         if a.class~=c.class or a.scope=='character' and a.owner~=c.character then return nil,'foreign-owner' end
         return copy(r)
     end
@@ -432,7 +434,10 @@ function addon:BindRotationProfile()
         record=detached;record.body=body
         local target={kind='custom',address=destination}
         local fallbackKey=destination.id==profile.rotationFallbackID and DEFAULT or nil
-        local publication=prepareActivePublication and prepareActivePublication(a.spec,previousKey,reference,target,body,nil,fallbackKey)
+        -- The live rotation is resolved in the character's namespace; only a
+        -- fallback is tied to the namespace it is saved under.
+        local publishSpec=a.spec;if a.id~=profile.rotationFallbackID and rawget(owner,'currentSpec')~=nil then publishSpec=rawget(owner,'currentSpec') end
+        local publication=prepareActivePublication and prepareActivePublication(publishSpec,previousKey,reference,target,body,nil,fallbackKey)
         local choicePublication=prepareChoicePublication and prepareChoicePublication(profile,reference,target)
         local now,contextProblem=context()
         local readyNow,currentProblem=ready();if not readyNow then return nil,currentProblem end
@@ -578,6 +583,13 @@ function addon:BindRotationProfile()
         local c,contextReason=context();if not c then return nil,contextReason end
         if not plain(prepared) then return nil,'invalid-import' end
         local body=data.CopyData(prepared.body);if not plain(body) then return nil,'invalid-import' end
+        -- Specializations (body.specs) travel only where they mean the same on
+        -- every account; see addon:PrepareImportedRotationSpecs.
+        if owner.PrepareImportedRotationSpecs then
+            local specs,specReason=owner:PrepareImportedRotationSpecs(body.specs,options and options.specs,replacement)
+            if specReason then return nil,specReason end
+            body.specs=specs
+        end
         local manifest=prepared.manifest and copy(prepared.manifest)
         if prepared.manifest and not manifest then return nil,'invalid-import' end
         if manifest and manifest.applicability and manifest.applicability.class and manifest.applicability.class~=c.class then return nil,'class-mismatch' end
@@ -697,7 +709,7 @@ function addon:BindRotationProfile()
         local rows,stamp=reader:ListOwned(number,c);if not rows then return nil,stamp end
         local fallback=fallbackReference(number);local result={};local presentationChanged=false;local virtualSignature
         local validation,validationStamp=owner:GetRotationValidationOptions()
-        for _,row in ipairs(rows) do
+        for _,row in ipairs(rows) do if row.address.id~=profile.rotationFallbackID or row.address.spec==number then
             local reference={kind='custom',address=row.address};local key=keyFor(reference)
             local header=headers[key]
             local valid=header and reader:IsCurrent(header.seal,c)
@@ -709,7 +721,7 @@ function addon:BindRotationProfile()
                 local state=not status.valid and 'invalid' or not status.supported and 'unsupported' or not status.resolved and 'unresolved' or 'valid'
                 local first=status.diagnostics[1]
                 local projection={validationState=state,problem=first and {code=first.code,path=first.path,condition=first.condition,reason=first.reason},body={name=type(body.name)=='string' and body.name or nil,description=type(body.description)=='string' and body.description or nil,
-                    priority=body.priority,disabled=body.disabled,identifier=type(body.identifier)=='string' and body.identifier or nil,tags=tagsView(body.tags),metadata=metadataView(body.metadata)},tags=manifest and copy(manifest.tags),sources=manifest and copy(manifest.sources)}
+                    priority=body.priority,disabled=body.disabled,identifier=type(body.identifier)=='string' and body.identifier or nil,tags=tagsView(body.tags),metadata=metadataView(body.metadata),specs=data.NormalizeRotationSpecs(body.specs) or nil},tags=manifest and copy(manifest.tags),sources=manifest and copy(manifest.sources)}
                 return projection
             end)
             if not projected then return nil,view end
@@ -718,8 +730,9 @@ function addon:BindRotationProfile()
             result[#result+1]={key=key,reference=copy(reference),canonicalId=row.address.id,kind='custom',scope=row.address.scope,
                 name=view.body.name or L['Unnamed rotation'],description=view.body.description or '',enabled=not view.body.disabled,
                 priority=data.GetRotationPriority(view.body.priority),identifier=view.body.identifier,tags=data.GetRotationTags(view) or {},search=data.RotationSearchText(view,view.body.name or '',view.body.description or ''),
-                readOnly=false,pending=false,virtual=false,fallback=row.address.id==profile.rotationFallbackID,effectiveFallback=fallback and same(fallback,reference) or false,validationState=view.validationState,problem=view.problem}
-        end
+                readOnly=false,pending=false,virtual=false,fallback=row.address.id==profile.rotationFallbackID,effectiveFallback=fallback and same(fallback,reference) or false,validationState=view.validationState,problem=view.problem,
+                specs=copy(view.body.specs)}
+        end end
         local virtual={kind='custom',address={scope='class',class=c.class,owner=c.class,spec=number,id=profile.rotationFallbackID}}
         local exists,missing=reader:Read(virtual.address,c,function() return true end)
         if not exists and missing=='unknown-rotation' then
@@ -735,7 +748,8 @@ function addon:BindRotationProfile()
                 local problem=first and {code=first.code,path=first.path,condition=first.condition,reason=first.reason}
                 local _,builtinState=owner:GetBuiltinSwitch(id)
                 builtinPresentation[id]={name=name,description=description,eligible=eligible,reason=eligibilityReason,problem=problem,state=builtinState}
-                return {key=keyFor(reference),reference=reference,canonicalId=id,kind='builtin',name=name,description=description,identifier=owner.GetBuiltinIdentifier and owner:GetBuiltinIdentifier(id) or nil,enabled=view.enabled,switchedOn=view.switchedOn==true,builtinState=builtinState,eligible=eligible,eligibilityReason=eligibilityReason,priority=data.GetRotationPriority(body.priority),
+                local specs=type(view.envelope)=='table' and type(view.envelope.body)=='table' and data.NormalizeRotationSpecs(view.envelope.body.specs) or nil
+                return {key=keyFor(reference),reference=reference,canonicalId=id,kind='builtin',name=name,description=description,specs=specs,identifier=owner.GetBuiltinIdentifier and owner:GetBuiltinIdentifier(id) or nil,enabled=view.enabled,switchedOn=view.switchedOn==true,builtinState=builtinState,eligible=eligible,eligibilityReason=eligibilityReason,priority=data.GetRotationPriority(body.priority),
                     tags=data.GetRotationTags(view.envelope) or {},search=data.RotationSearchText(view.envelope,name,description),readOnly=true,pending=false,virtual=false,fallback=false,effectiveFallback=false,validationState=view.validation.valid and 'valid' or 'invalid',problem=problem}
             end)
             if not rows then return nil,why end;for _,row in ipairs(rows) do result[#result+1]=row end
@@ -862,6 +876,10 @@ function addon:BindRotationProfile()
             local status=asset.validation
             if asset.unavailable or not status.valid or not status.supported or not status.resolved then return nil,reference.address.id==fallbackID and 'invalid-fallback' or asset.unavailable or 'rotation-unavailable' end
             if asset.body.disabled then return nil,'disabled' end
+            -- A rotation restricted to other specializations (body.specs);
+            -- the fallback belongs to its namespace instead.
+            if not candidates and reference.address.id~=fallbackID and type(asset.body.specs)=='table' and owner.RotationSpecsApply
+                and not owner:RotationSpecsApply(asset.body.specs,number) then return nil,'specialization-mismatch' end
             if asset.applicability then local allowed,eligibilityReason=libraryReader:Eligible({enabled=true,validation=status,applicability=asset.applicability},number,candidates);if not allowed then return nil,eligibilityReason end
             else
                 local info=rotationContext(owner,number)
@@ -1142,7 +1160,7 @@ function addon:GetProfileRotationHeaders(profile)
     local result={}
     for _,number in ipairs(specs) do
         local rows,problem=reader:ListOwned(number,c);if not rows then return finish(nil,problem) end
-        for _,row in ipairs(rows) do
+        for _,row in ipairs(rows) do if row.address.spec==number then
             local ok,view=reader:Read(row.address,c,function(record)
                 local body=record.body;local manifest=record.origin and record.origin.manifest or record.imported and record.imported.manifest
                 local projection={body={name=type(body.name)=='string' and body.name or nil,description=type(body.description)=='string' and body.description or nil,
@@ -1153,7 +1171,7 @@ function addon:GetProfileRotationHeaders(profile)
                     fallback=row.address.id==fallback,readOnly=false,pending=false}
             end)
             if not ok then return finish(nil,view) end;result[#result+1]=view
-        end
+        end end
     end
     local now=self:GetRotationOwnerContext()
     if not now or not same(c,now) or profile.rotationStore~=state or profile.rotationFallbackID~=fallback then return finish(nil,'rotation-profile-changed') end

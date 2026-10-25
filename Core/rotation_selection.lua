@@ -51,6 +51,7 @@ local issueText={
     ['unexpected-stop-option']=L['has a setting this version does not understand (%s)'],
     ['invalid-priority']=L['has an invalid switch priority'],
     ['invalid-identifier']=L['has an invalid identifier'],
+    ['invalid-specs']=L['has an invalid specialization list'],
 }
 local refusalText={
     ['disabled']=L['it is disabled'],
@@ -141,23 +142,97 @@ function addon:FirstRotationIssue(body,validation)
     if not problem then return nil end
     return problem,self:DescribeRotationIssue(problem,body)
 end
+-- Rotation specializations (body.specs) for the list, the editor and
+-- commands. Values are specialization IDs or talent groups, as
+-- Platform/specializations.lua GetRotationSpecKind classifies the client.
+function addon:GetRotationSpecKind()
+    local platform=self.Platform
+    if type(platform)~='table' or type(platform.GetRotationSpecKind)~='function' then return nil end
+    return (platform:GetRotationSpecKind())
+end
+-- The character's current value; nil when unknown (or no specialization concept).
+function addon:GetCurrentRotationSpecValue()
+    if not self:GetRotationSpecKind() then return nil end
+    if type(self.GetRotationSpecValue)=='function' then return (self:GetRotationSpecValue()) end
+    return (self.Platform:GetRotationSpecValue())
+end
+-- A talent group as the game words it (primary or secondary talents), with
+-- its main talent tree when the client can name it for that group.
+local function slotName(owner,slot)
+    -- Your own name for it (General > Specialization Names) wins.
+    local char=owner.db and owner.db.char;local own=type(char)=='table' and type(char.specs)=='table' and char.specs[slot]
+    if type(own)=='string' and own:find('%S') then return own end
+    local base
+    if slot==1 then base=L['Primary talents']
+    elseif slot==2 then base=L['Secondary talents']
+    else base=string.format(L['Talent group %d'],slot) end
+    local platform=owner.Platform;local tree
+    if type(platform)=='table' and type(platform.GetTalentLayout)=='function' and platform:GetTalentLayout()=='tree' and type(platform.GetPrimaryTalentTree)=='function' then
+        local primary=platform:GetPrimaryTalentTree(slot);tree=primary and primary.name
+    elseif owner:GetCurrentRotationSpecValue()==slot and type(owner.GetTraitPrimaryTree)=='function' and type(platform.GetTalentTreeInfo)=='function' then
+        local index=owner:GetTraitPrimaryTree();local info=index and platform:GetTalentTreeInfo(index);tree=info and info.name
+    end
+    if type(tree)=='string' and tree~='' then return string.format(L['%s (%s)'],base,tree) end
+    return base
+end
+-- The values this character can restrict a rotation to, each {id,name}.
+function addon:GetRotationSpecEntries()
+    if not self:GetRotationSpecKind() then return {} end
+    local classID
+    if type(UnitClass)=='function' then local ok,_,_,id=pcall(UnitClass,'player');if ok then classID=id end end
+    local choices=self.Platform:GetRotationSpecChoices(classID) or {}
+    local entries={}
+    for _,choice in ipairs(choices) do
+        local name
+        if choice.slot then name=slotName(self,choice.id)
+        elseif choice.initial then name=L['No specialization']
+        else name=choice.name or self:DescribeRotationSpecValue(choice.id) end
+        entries[#entries+1]={id=choice.id,name=name,initial=choice.initial,slot=choice.slot,icon=choice.icon}
+    end
+    return entries
+end
+function addon:DescribeRotationSpecValue(value)
+    if type(value)~='number' then return L['Unknown specialization'] end
+    if self:GetRotationSpecKind()=='slot' then return slotName(self,value) end
+    if self.Platform and self.Platform.IsInitialSpecialization and self.Platform:IsInitialSpecialization(value) then return L['No specialization'] end
+    local display=self.Platform and self.Platform.GetSpecializationDisplay and self.Platform:GetSpecializationDisplay(value)
+    if type(display)=='table' and type(display.name)=='string' then return display.name end
+    local name=self.GetSpecializationName and self:GetSpecializationName(value)
+    return name or string.format(L['specialization %d'],value)
+end
+-- "Any specialization", or the names joined.
+function addon:DescribeRotationSpecs(specs)
+    if type(specs)~='table' or #specs==0 or not self:GetRotationSpecKind() then return L['Any specialization'] end
+    local names={};for i,value in ipairs(specs) do names[i]=self:DescribeRotationSpecValue(value) end
+    return table.concat(names,', ')
+end
+-- What a new rotation is for: the specialization the Rotations list shows
+-- (any when it shows all of them), else the one you are playing.
+function addon:DefaultNewRotationSpecs()
+    if not self:GetRotationSpecKind() then return nil end
+    local filter=self.rotationListSpec
+    if filter=='all' then return nil end
+    if type(filter)=='number' then return {filter} end
+    local value=self:GetCurrentRotationSpecValue()
+    return value~=nil and {value} or nil
+end
 -- A specialization's name as the editor shows it.
 function addon:DescribeRotationSpec(spec)
     if type(self.GetRotationEditorSpecs)=='function' then
         local ok,entries=pcall(self.GetRotationEditorSpecs,self)
         if ok and type(entries)=='table' then for _,entry in ipairs(entries) do if entry.id==spec and type(entry.name)=='string' then return entry.name end end end
     end
-    if self.Platform and self.Platform.IsInitialSpecialization and self.Platform:IsInitialSpecialization(spec) then return L['No specialization (levels 1-9)'] end
+    if self.Platform and self.Platform.IsInitialSpecialization and self.Platform:IsInitialSpecialization(spec) then return L['No specialization'] end
     local display=self.Platform and self.Platform.GetSpecializationDisplay and self.Platform:GetSpecializationDisplay(spec)
     if type(display)=='table' and type(display.name)=='string' then return display.name end
     if spec==0 then return L['Rotations'] end
     return tostring(spec)
 end
 -- The specialization RM runs when the Rotations editor does not offer it.
--- On Retail below level 10 no specialization is chosen: GetSpecialization()
--- answers the class's initial spec (an index past the class's count, its own
--- spec ID), RM keys rotations by that ID, and the editor lists only the
--- class's chosen specs, so nothing saved there can run at that level.
+-- On Retail a character who has not chosen a specialization reports the
+-- class's initial spec (an index past the class's count, its own spec ID);
+-- RM keys rotations by that ID and the editor offers it as "No
+-- specialization". This names any other unoffered namespace.
 function addon:GetUnofferedRotationSpec()
     local spec=self.currentSpec
     if spec==nil or type(self.GetRotationEditorSpecs)~='function' then return nil end
@@ -250,12 +325,24 @@ function addon:GetDisabledApplicableBuiltins(spec)
     if not anyOn then for _,row in ipairs(shipped) do user[#user+1]=row end end
     return user
 end
+-- The specialization you are playing, as rotations see it (body.specs): its
+-- name and value; the saved namespace on clients without specializations.
+local function currentSpecText(self,spec)
+    if spec==nil then return L['None'],'nil' end
+    if self:GetRotationSpecKind() then
+        local value=self:GetCurrentRotationSpecValue()
+        if value==nil then return L['None'],'nil' end
+        return self:DescribeRotationSpecValue(value),tostring(value)
+    end
+    return self:DescribeRotationSpec(spec),tostring(spec)
+end
 -- /rm why: each rotation's eligibility for the current character, with the
 -- first blocking issue. Returns the lines.
 function addon:GetRotationEligibilityReport()
     local spec=self.currentSpec;local lines={}
     local level=type(UnitLevel)=='function' and UnitLevel('player')
-    lines[1]=string.format(L['Specialization: %s (%s), level %s'],spec~=nil and self:DescribeRotationSpec(spec) or L['None'],tostring(spec),tostring(level or '?'))
+    local specName,specValue=currentSpecText(self,spec)
+    lines[1]=string.format(L['Specialization: %s (%s), level %s'],specName,specValue,tostring(level or '?'))
     local active=self.currentRotation and (self.currentRotation==DEFAULT and DEFAULT or self:GetRotationName(self.currentRotation) or tostring(self.currentRotation))
     lines[2]=string.format(L['Active rotation: %s'],active and (active..' ('..(self.manualRotation and L['manual'] or L['automatic'])..')') or L['None'])
     if spec==nil then lines[3]=L['No rotation can run until your specialization is available.'];return lines end
@@ -271,12 +358,17 @@ function addon:GetRotationEligibilityReport()
     end
     local unoffered,offered=self:GetUnofferedRotationSpec()
     if unoffered then
-        lines[#lines+1]=string.format(L['You have not chosen a specialization yet (Retail characters below level 10 have none), so Rotation Master uses %s (%s). The Rotations editor only offers %s, so rotations saved there cannot run until you choose a specialization.'],
+        lines[#lines+1]=string.format(L['You have not chosen a specialization yet, so Rotation Master uses %s (%s). The Rotations editor only offers %s, so rotations saved there cannot run until you choose a specialization.'],
             self:DescribeRotationSpec(unoffered),tostring(unoffered),table.concat(offered,', '))
     end
     local function verdict(name,value)
-        local why=self:ExplainRotationRefusal(spec,value)
+        local why,code=self:ExplainRotationRefusal(spec,value)
         if not why and value~=DEFAULT and self:IsManualOnlyRotation(spec,value) then lines[#lines+1]=string.format(L['%s: ready, manual only: no switch condition (choose it with /rm set or the minimap menu).'],name);return end
+        if why and code=='specialization-mismatch' then
+            local body=self.GetRotationRecordSnapshot and self:GetRotationRecordSnapshot(spec,value)
+            local specs=type(body)=='table' and type(body.body)=='table' and body.body.specs
+            if type(specs)=='table' then why=string.format(L['it is for %s'],self:DescribeRotationSpecs(specs)) end
+        end
         lines[#lines+1]=why and string.format(L['%s: cannot be selected, %s.'],name,why) or string.format(L['%s: ready'],name)
     end
     verdict(string.format(L['Fallback (%s)'],DEFAULT),DEFAULT)
@@ -341,9 +433,12 @@ end
 -- BEGIN SWITCH OVERLAP
 -- Rotations (your own and Built Ins alike, which compete on priority) whose
 -- switch conditions can match at the same time, so that priority alone
--- decides between them (a tie, by name). Static: each switch becomes a region (specializations and
--- a player level range, from SPECIALIZATION and LEVEL conditions joined by
--- AND, narrowed by a Built In's applicability) plus its other conditions;
+-- decides between them (a tie, by name). Static: each switch becomes a region (the rotation's
+-- specializations, body.specs, and a player level range from LEVEL
+-- conditions joined by AND, narrowed by a Built In's applicability) plus its
+-- other conditions; a SPECIALIZATION condition left in a switch narrows the
+-- specializations too where it names the same values (specialization IDs);
+-- on dual-specialization clients it tests talents and is an ordinary one;
 -- two overlap when their regions meet and one's other conditions are a
 -- subset of the other's (identical, or one subsumes the other). Live: both
 -- match right now. Computed on demand (list refresh, editor open), cached on
@@ -374,7 +469,7 @@ local function addCondition(region,condition)
         elseif operator=='LESSTHAN' then region.hi=math.min(region.hi,math.ceil(value)-1);return
         elseif operator=='EQUALS' then region.lo=math.max(region.lo,value);region.hi=math.min(region.hi,value);return end
     end
-    if condition.type=='SPECIALIZATION' and type(condition.spec)=='number' then narrowSpecs(region,{condition.spec});return end
+    if condition.type=='SPECIALIZATION' and type(condition.spec)=='number' and region.portable then narrowSpecs(region,{condition.spec});return end
     addAtom(region,condition)
 end
 local function meets(a,b)
@@ -398,8 +493,11 @@ local function sameSpecs(a,b)
     for spec in pairs(b.specs) do if not a.specs[spec] then return false end end
     return true
 end
-function addon:GetSwitchRegion(switch,applicability)
+function addon:GetSwitchRegion(switch,applicability,specs)
     local region=newRegion()
+    local platform=self.Platform
+    region.portable=type(platform)=='table' and type(platform.GetRotationSpecKind)=='function' and platform:GetRotationSpecKind()=='portable'
+    if type(specs)=='table' and #specs>0 then narrowSpecs(region,specs) end
     if type(applicability)=='table' then
         if type(applicability.specs)=='table' then narrowSpecs(region,applicability.specs) end
         if type(applicability.minLevel)=='number' then region.lo=math.max(region.lo,applicability.minLevel) end
@@ -444,7 +542,7 @@ function addon:GetSwitchOverlaps(spec)
             local view=builtin and self.GetDefaultRotation and self:GetDefaultRotation(builtin)
             local matches=self.SwitchConditionMatchesNow and self:SwitchConditionMatchesNow(body.switch)
             rows[#rows+1]={key=key,name=body.name or key,priority=data.GetRotationPriority(body.priority) or 0,builtin=builtin~=nil,
-                region=self:GetSwitchRegion(body.switch,view and view.applicability),live=matches==true}
+                region=self:GetSwitchRegion(body.switch,view and view.applicability,body.specs),live=matches==true}
         end
     end
     local result={}
@@ -598,7 +696,7 @@ end
 function addon:GetRotationIdentifierReport()
     local spec=self.currentSpec;local lines={}
     if spec==nil then return {L['No rotation can run until your specialization is available.']} end
-    lines[1]=string.format(L['Rotations for %s (use /rm set <id>):'],self:DescribeRotationSpec(spec))
+    lines[1]=string.format(L['Rotations for %s (use /rm set <id>):'],(currentSpecText(self,spec)))
     local states={}
     for _,row in ipairs(self.GetBuiltinStates and self:GetBuiltinStates(spec) or {}) do states[row.id]=row end
     for _,entry in ipairs(self:ListRotationIdentifiers(spec)) do

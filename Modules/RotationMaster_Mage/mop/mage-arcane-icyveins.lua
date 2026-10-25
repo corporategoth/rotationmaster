@@ -13,7 +13,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local MISSILES=79683
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.mage.arcane.icyveins',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.mage.arcane.icyveins',revision=6,
  blocks={['mop.mage.boundaries']=3,['mop.mage.upkeep']=1,['mop.mage.armor-frost']=1,['mop.mage.bombs']=1,['mop.mage.arcane-open']=3,['mop.mage.arcane-aoe-moving']=2},
  nameKey='Default.MoP.Mage.Arcane.IcyVeins.Name',descriptionKey='Default.MoP.Mage.Arcane.IcyVeins.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE'},
@@ -24,7 +24,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.method.gg/mop-classic/arcane-mage-class-guide-mop-classic',title='Method: MoP Classic Arcane Mage guide',reviewedAt='2026-10-23',notes='Phase 1 text; Missiles only at four charges.'},
   {url='https://wowtbc.gg/mop/class-guides/arcane-mage',title='wowtbc.gg: MoP Classic Arcane Mage PvE guide',reviewedAt='2026-10-23'},
  },
- body={priority=25,disabled=true,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=62}}},
+ body={priority=25,disabled=true,specs={62},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
    block('arcaneiv-armor','mop.mage.armor-frost','arcaneiv-'),
    block('arcaneiv-upkeep','mop.mage.upkeep','arcaneiv-'),

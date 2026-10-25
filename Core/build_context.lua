@@ -292,6 +292,14 @@ local function buildTalents()
     elseif platform.GetPlayerSpecializationID then
         talents.specMode='id';talents.specValue,talents.specReason=platform:GetPlayerSpecializationID()
     else talents.specReason='missing-api' end
+    -- The rotation specialization value (body.specs): a specialization ID or
+    -- a talent group, as Platform/specializations.lua classifies this client.
+    -- Read once: the specialization ID or talent group already observed above
+    -- is reused, so a notification costs no extra native reads.
+    local kind=platform.GetRotationSpecKind and platform:GetRotationSpecKind()
+    if kind=='portable' and talents.specMode=='id' then talents.rotationSpec,talents.rotationSpecReason=talents.specValue,talents.specReason
+    elseif kind=='slot' and talents.group then talents.rotationSpec=talents.group
+    elseif kind and platform.GetRotationSpecValue then talents.rotationSpec,talents.rotationSpecReason=platform:GetRotationSpecValue() end
     snapshot.talents=talents
 end
 -- Rulesets are the realm's season and game rules: a pack's
@@ -386,6 +394,13 @@ function addon:GetItemSetName(setID)
     if ok and readable(name) and type(name)=='string' and name~='' then return name end
 end
 function addon:GetTalentBuild() return refresh('talents').talents end
+-- The character's rotation specialization value (a specialization ID, or a
+-- talent group on dual-specialization clients) and the reason when unknown.
+-- Cached until a talent or specialization notification.
+function addon:GetRotationSpecValue()
+    local talents=refresh('talents').talents
+    return talents.rotationSpec,talents.rotationSpecReason
+end
 -- mode ('tree' or 'id'), value (primary tree index or specialization ID),
 -- reason when the value is unavailable, and the player's class token.
 -- Cached until a talent or specialization notification; no allocation.

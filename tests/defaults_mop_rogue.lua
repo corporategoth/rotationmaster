@@ -43,7 +43,8 @@ test('variants ship disabled at a lower priority and take over only when chosen'
  local f,s=rogue(90,{13877});s.talents[18]=true;local a=f.addon;local rows={}
  for _,row in ipairs(a:ListDefaultRotations(1))do rows[row.id]=row end
  for _,id in ipairs({ASSA_IV,COMBAT_IV,COMBAT_HK})do assert(not rows[id].eligible and rows[id].eligibilityReason=='disabled',id);assert(M.body(a,id).priority==20)end
- for _,id in ipairs({ASSA,COMBAT,SUB})do assert(rows[id].eligible and M.body(a,id).priority==30,id)end
+ -- Each is eligible in its own specialization only (body.specs).
+ for _,id in ipairs({ASSA,COMBAT,SUB})do assert((rows[id].eligible or rows[id].eligibilityReason=='specialization-mismatch') and M.body(a,id).priority==30,id)end
  assert(M.body(a,SUB_WT).priority==35 and not M.body(a,SUB_WT).disabled and M.body(a,START).priority==1)
  assert(a:SetDefaultRotationEnabled(COMBAT_IV,true));assert(M.selected(f,s)==COMBAT,'enabled but lower priority')
  assert(a:SetDefaultRotationEnabled(COMBAT,false));assert(M.selected(f,s)==COMBAT_IV)

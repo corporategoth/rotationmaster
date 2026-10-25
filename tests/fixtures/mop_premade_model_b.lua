@@ -231,7 +231,11 @@ function M.upkeep(f,s,id)
  end
  return out
 end
-function M.switches(f,id)f.sync();return f.addon:evaluateCondition(M.body(f.addon,id).switch)==true end
+-- Whether automatic switching would find it matching: its specializations (body.specs), then its switch.
+function M.switches(f,id)f.sync();local a=f.addon;local body=M.body(a,id)
+ if body.specs and not a:RotationSpecsApply(body.specs,a.currentSpec)then return false end
+ return a:evaluateCondition(body.switch)==true
+end
 function M.know(s,...)for _,id in ipairs({...})do s.known[id]=true end end
 -- The pack the real auto-switch would pick: enabled, eligible, matching switch, highest priority.
 function M.selected(f,s)

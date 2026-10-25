@@ -16,7 +16,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function off(id,action,conditions)local step=spell(id,action,conditions);step.disabled=true;return step end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.vengeance.guide',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.vengeance.guide',revision=5,
  blocks={['retail.demonhunter.boundaries']=3,['retail.demonhunter.utility']=2},
  nameKey='Default.Retail.DemonHunter.VengeanceGuide.Name',descriptionKey='Default.Retail.DemonHunter.VengeanceGuide.Description',
  applicability={families={'retail'},actionContext='player',class='DEMONHUNTER'},
@@ -25,7 +25,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.wowhead.com/guide/classes/demon-hunter/vengeance/rotation-cooldowns-pve-tank',title='Wowhead: Vengeance Demon Hunter rotation (Midnight Season 1)',reviewedAt='2026-10-23',revision='2026-02-24',notes='Read from a Wayback snapshot; Season 1 data. Spirit Bomb at 6 souls.'},
   {url='https://www.icy-veins.com/wow/vengeance-demon-hunter-pve-tank-rotation-cooldowns-abilities',title='Icy Veins: Vengeance Demon Hunter rotation (12.1.5)',reviewedAt='2026-10-23',revision='2026-10-12',notes='Hero-tree goals: Fracture before Soul Cleave (Aldrachi), Fracture on cooldown and Voidfall spending (Annihilator).'},
  },
- body={priority=10,disabled=true,switch={type='SPECIALIZATION',spec=581},
+ body={priority=10,disabled=true,specs={581},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
   cooldowns={
    block('vguide-utility','retail.demonhunter.utility','vguide-'),
    spell('vguide-demon-spikes',203720,all(combat(),negate(buff(203819)))),

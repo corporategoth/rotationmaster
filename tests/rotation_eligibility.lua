@@ -9,7 +9,7 @@
 -- stores rotations under that ID, but the editor offered only the class's
 -- chosen specs and silently opened on the first of them, so the fallback was
 -- saved under a spec RM never reads at that level. The editor now offers the
--- initial spec as its own entry, "No specialization (levels 1-9)", with its
+-- initial spec as its own entry, "No specialization", with its
 -- own rotations; class-wide Built Ins (no specs selector) apply there too.
 local F=dofile('tests/fixtures/addon.lua')
 local test,finish=F.suite()
@@ -37,15 +37,15 @@ test('Retail below level 10: the editor offers the initial spec RM runs, and /rm
     local selection=assert(a.Platform:GetRotationSpecialization())
     assert(selection.key==1450 and selection.index==5,'runtime spec '..tostring(selection.key))
     local function listed() local ids={};for _,entry in ipairs(a:GetRotationEditorSpecs(10)) do ids[#ids+1]=entry.id..'='..entry.name end;return table.concat(ids,',') end
-    assert(listed()=='268=Brewmaster,270=Mistweaver,269=Windwalker,1450=No specialization (levels 1-9)',listed())
+    assert(listed()=='268=Brewmaster,270=Mistweaver,269=Windwalker,1450=No specialization',listed())
     a.currentSpec=selection.key;assert(a:GetUnofferedRotationSpec()==nil)
     local report=table.concat(a:GetRotationEligibilityReport(),'\n')
-    assert(report:find('Specialization: No specialization (levels 1-9) (1450), level 4',1,true),report)
+    assert(report:find('Specialization: No specialization (1450), level 4',1,true),report)
     assert(not report:find('have not chosen',1,true),report)
     -- After choosing Windwalker at 10 the initial entry stays offered (its
     -- rotations are kept) and RM runs Windwalker.
     retailSpecs(f.env,10,3);a.currentSpec=a.Platform:GetRotationSpecialization().key
-    assert(a.currentSpec==269 and listed()=='268=Brewmaster,270=Mistweaver,269=Windwalker,1450=No specialization (levels 1-9)')
+    assert(a.currentSpec==269 and listed()=='268=Brewmaster,270=Mistweaver,269=Windwalker,1450=No specialization')
     -- The live initial spec ID wins over the known one; another class's list
     -- carries that class's initial spec.
     retailSpecs(f.env,10,5);local info=f.env.C_SpecializationInfo.GetSpecializationInfo
@@ -85,7 +85,9 @@ end
 local function assisted() return {name='Default',priority=0,cooldowns={},rotation={{id='blizzard',type='assisted',conditions={}}}} end
 local function enterInitialSpec(a)
     -- The editor's specs as Retail lists them, the initial spec included.
-    a.GetRotationEditorSpecs=function() return {{id=262,name='Elemental'},{id=263,name='Enhancement'},{id=264,name='Restoration'},{id=1444,name='No specialization (levels 1-9)',initial=true}} end
+    a.GetRotationEditorSpecs=function() return {{id=262,name='Elemental'},{id=263,name='Enhancement'},{id=264,name='Restoration'},{id=1444,name='No specialization',initial=true}} end
+    -- Retail's specialization values: the namespace is the specialization ID (Platform/specializations.lua).
+    a.Platform.GetRotationSpecKind=function() return 'portable' end;a.Platform.RotationKeyIsSpecValue=function() return true end
     a:DisableRotation();a.currentSpec=1444;a.manualRotation=false
 end
 
@@ -97,7 +99,7 @@ test('repro: a one-step Blizzard suggestion fallback saved under a chosen spec i
     assert(a.currentRotation==nil,'refused fallback became active')
     local text=table.concat(warnings,'\n');if os.getenv('RM_SHOW') then print(text) end
     assert(text:find('The fallback rotation is unavailable',1,true),text)
-    assert(text:find('no fallback rotation is saved for No specialization (levels 1-9) (there is one for Elemental).',1,true),'reason not named: '..text)
+    assert(text:find('no fallback rotation is saved for No specialization (there is one for Elemental).',1,true),'reason not named: '..text)
     assert(text:find('/rm why',1,true))
     c.tick()
 end)
@@ -116,9 +118,15 @@ end)
 
 test('below level 10 an initial-spec rotation auto-selects and a chosen-spec one does not; at 10 the chosen spec applies',function()
     local _,a,_,warnings=wholePoll()
+    -- The fixture's TBC starter clone is for any specialization; switch it off here.
+    for _,row in ipairs(a:ListRotationHeaders(0)) do if row.name=='Copy of Shaman: early leveling' then
+        local record,token=a:GetRotationRecordSnapshot(0,row.key);record.body.disabled=true
+        assert(a:CommitRotationDraft(row.reference,token,record,'class'))
+    end end
     enterInitialSpec(a)
-    local function switched(name) local body={name=name,priority=10,switch={type='COMBAT',unit='player'},cooldowns={},rotation={{id='blizzard',type='assisted',conditions={}}}};return body end
-    save(a,1444,'starter',switched('Starter'));save(a,262,'elemental',switched('Elemental only'))
+    -- Each is for its specialization (body.specs); where it is saved no longer decides.
+    local function switched(name,spec) local body={name=name,priority=10,specs={spec},switch={type='COMBAT',unit='player'},cooldowns={},rotation={{id='blizzard',type='assisted',conditions={}}}};return body end
+    save(a,1444,'starter',switched('Starter',1444));save(a,262,'elemental',switched('Elemental only',262))
     a.db.profile.disable_autoswitch=false
     a:UpdateAutoSwitch();a:SwitchRotation()
     assert(a.currentRotation and a:GetRotationName(a.currentRotation)=='Starter','below 10: '..tostring(a.currentRotation and a:GetRotationName(a.currentRotation))..' '..table.concat(warnings,'; '))

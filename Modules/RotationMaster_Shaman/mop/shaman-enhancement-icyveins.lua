@@ -18,7 +18,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local flame={type='DEBUFF',unit='target',spell=8050,owndebuff=true}
 local spend=any(maelstrom(5),all(maelstrom(3),{type='SWING_TIME_REMAIN',operator='GREATERTHANOREQUALS',value=1.1}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.enhancement.icyveins',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.enhancement.icyveins',revision=5,
  blocks={['mop.shaman.manual-target']=2,['mop.shaman.lightning-shield']=1,['mop.shaman.group']=1,['mop.shaman.fire-totems']=1,
   ['mop.shaman.enhancement-upkeep']=2},
  nameKey='Default.MoP.Shaman.Enhancement.IcyVeins.Name',descriptionKey='Default.MoP.Shaman.Enhancement.IcyVeins.Description',
@@ -26,7 +26,7 @@ assert(addon:RegisterDefaultRotation({
  tags={'enhancement','dps','melee','leveling','endgame','icy-veins'},
  sources={{url='https://www.icy-veins.com/mists-of-pandaria-classic/enhancement-shaman-pve-rotation-cooldowns-abilities',title='Icy Veins: Enhancement Shaman rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2025-06-22'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/enhancement-shaman-leveling',title='Icy Veins: Enhancement Shaman levelling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-06-22'}},
- body={priority=20,disabled=true,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=263}}},
+ body={priority=20,disabled=true,specs={263},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
  cooldowns={block('mop.shaman.lightning-shield','shaman-enh-iv-'),block('mop.shaman.enhancement-upkeep','shaman-enh-iv-'),block('mop.shaman.fire-totems','shaman-enh-iv-'),
   block('mop.shaman.group','shaman-enh-iv-'),
   spell('shaman-enh-iv-shamanistic-rage',30823,combat()),

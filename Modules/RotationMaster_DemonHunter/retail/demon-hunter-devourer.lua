@@ -7,7 +7,7 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.devourer',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.devourer',revision=5,
  blocks={['retail.demonhunter.boundaries']=3,['retail.demonhunter.utility']=2},
  nameKey='Default.Retail.DemonHunter.Devourer.Name',descriptionKey='Default.Retail.DemonHunter.Devourer.Description',
  applicability={families={'retail'},actionContext='player',class='DEMONHUNTER'},
@@ -17,7 +17,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/Gethe/wow-ui-source/blob/live/Interface/AddOns/Blizzard_APIDocumentationGenerated/AssistedCombatDocumentation.lua',title='Blizzard API documentation: C_AssistedCombat (12.1.5.70529)',reviewedAt='2026-10-23',revision='e7aa82019d'},
   {url='https://github.com/kaminaris/MaxDps-DemonHunter',title='MaxDps Demon Hunter (Midnight)',reviewedAt='2026-10-23',revision='238137bc',notes='Assisted Combat spell plus interrupt, defensive and cooldown glows.'},
  },
- body={priority=20,switch={type='SPECIALIZATION',spec=1480},
+ body={priority=20,specs={1480},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
   cooldowns={
    block('devourer-utility','retail.demonhunter.utility','devourer-'),
    spell('devourer-void-metamorphosis',1217605,combat()),

@@ -104,6 +104,91 @@ function addon:MoveRotationHandlesToIdentifiers(profile)
     end
     eachRow(profile.rotations,moveHandle)
 end
+-- A rotation's specializations became its own property (body.specs). This
+-- moves the old evidence into it once per profile, then marks the profile
+-- (rotationSpecsMigrated), because an absent body.specs afterwards means
+-- "any specialization" by choice:
+--   * Where the saved namespace is a specialization value (Retail: the
+--     specialization ID; Wrath and Cataclysm Classic: the talent group), a
+--     rotation saved under it was only ever offered there, so it gets that
+--     value. The fallback stays tied to its namespace and is left alone.
+--   * Where SPECIALIZATION reads the game's specialization ID (Retail, Mists
+--     of Pandaria Classic), a switch condition of exactly one of the shapes
+--     that used to file a Built In under a specialization moves into
+--     body.specs: SPECIALIZATION itself, an OR of only SPECIALIZATION, or an
+--     AND with one SPECIALIZATION child (the rest stays; an AND left with one
+--     child becomes that child). A switch left with nothing becomes "level 1
+--     or higher", the shipped catch-alls' always-true switch, because no
+--     switch condition means manual only and the rotation chose itself
+--     automatically before. Anything
+--     else (under NOT, mixed into an OR, two different ones in an AND, a
+--     disabled one) stays an ordinary condition. On Retail the switch's
+--     specializations must include the namespace's, which is what stays.
+--   * Elsewhere (Era, TBC, Forever, and the talent-group namespaces of Mists
+--     Classic) SPECIALIZATION tests talent trees or is unavailable, and the
+--     namespace is not a specialization, so nothing moves.
+local function alwaysTrue() return {type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1} end
+local function specCondition(c) return plain(c) and c.type=='SPECIALIZATION' and not c.disabled and type(c.spec)=='number' and c.spec>=0 and c.spec%1==0 end
+function addon:SplitSwitchSpecializations(switch)
+    if not plain(switch) or switch.disabled then return nil end
+    if specCondition(switch) then return {switch.spec},alwaysTrue() end
+    if not plain(switch.value) then return nil end
+    if switch.type=='OR' then
+        local specs={}
+        for i,child in ipairs(switch.value) do if not specCondition(child) then return nil end;specs[i]=child.spec end
+        if #specs==0 then return nil end
+        return data.NormalizeRotationSpecs(specs),alwaysTrue()
+    elseif switch.type=='AND' then
+        local spec,rest
+        for _,child in ipairs(switch.value) do
+            if specCondition(child) then
+                if spec and spec~=child.spec then return nil end
+                spec=child.spec
+            else rest=rest or {};rest[#rest+1]=clone(child) end
+        end
+        if not spec then return nil end
+        if not rest then return {spec},alwaysTrue() end
+        if #rest==1 then return {spec},rest[1] end
+        local remainder=clone(switch);remainder.value=rest
+        return {spec},remainder
+    end
+end
+local function migrateBody(owner,body,key,kind,keyIsValue)
+    if not plain(body) or body.specs~=nil then return end
+    local specs,remainder
+    if kind=='portable' then specs,remainder=owner:SplitSwitchSpecializations(body.switch) end
+    if keyIsValue and key~=0 then
+        if specs then
+            local found=false;for _,value in ipairs(specs) do if value==key then found=true;break end end
+            if found then body.switch=remainder end
+        end
+        body.specs={key}
+    elseif specs then body.specs=specs;body.switch=remainder end
+end
+function addon:MoveRotationSpecsToProperty(profile)
+    if not plain(profile) or profile.rotationSpecsMigrated then return false end
+    local platform=self.Platform
+    local kind=platform and platform.GetRotationSpecKind and platform:GetRotationSpecKind()
+    if not kind then return false end
+    local keyIsValue=platform:RotationKeyIsSpecValue()==true
+    local store=profile.rotationStore
+    if not plain(store) then return false end
+    local fallback=profile.rotationFallbackID
+    local function each(map)
+        if not plain(map) then return end
+        for key,rows in pairs(map) do
+            if type(key)=='number' and plain(rows) then
+                for id,record in pairs(rows) do
+                    if id~=fallback and plain(record) then migrateBody(self,record.body,key,kind,keyIsValue) end
+                end
+            end
+        end
+    end
+    if plain(store.classes) then for _,map in pairs(store.classes) do each(map) end end
+    if plain(store.characters) then for _,bucket in pairs(store.characters) do if plain(bucket) then each(bucket.specs) end end end
+    profile.rotationSpecsMigrated=true
+    return true
+end
 -- Explicit startup entry point; the caller activates it only when every UI and
 -- runtime route is ready. Profiles migrate independently; char archives stay put.
 function addon:InitializeScopedRotationStorage()
@@ -118,6 +203,8 @@ function addon:InitializeScopedRotationStorage()
         local p=self.db.profile;local plan,why=self:PlanRotationProfileMigration(p,p.rotationFallbackID or DEFAULT)
         local ok;if plan then ok,why=self:ApplyRotationProfileMigration(plan) end;results[#results+1]={profile=false,ok=ok==true,reason=why}
     end
+    for _,profile in pairs(self.db.sv and self.db.sv.profiles or {}) do self:MoveRotationSpecsToProperty(profile) end
+    self:MoveRotationSpecsToProperty(self.db.profile)
     local ok,why=self:BindRotationProfile();return ok,why,results
 end
 local function currentCharacter(owner)

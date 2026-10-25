@@ -20,7 +20,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 local rolled=any(own(193356),own(199600),own(193358),own(193357),own(199603),own(193359))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.outlaw.icyveins',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.outlaw.icyveins',revision=5,
  blocks={['retail.rogue.boundaries']=2,['retail.rogue.upkeep']=2},
  nameKey='Default.Retail.Rogue.Outlaw.IcyVeins.Name',descriptionKey='Default.Retail.Rogue.Outlaw.IcyVeins.Description',
  applicability={families={'retail'},actionContext='player',class='ROGUE'},
@@ -30,7 +30,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/rogue_outlaw.simc',title='SimulationCraft: Outlaw Rogue default list',reviewedAt='2026-10-23',revision='c5fea93fb77d'},
   {url='https://www.wowhead.com/guide/classes/rogue/outlaw/rotation-cooldowns-pve-dps',title='Wowhead: Outlaw Rogue rotation (Season 1)',reviewedAt='2026-10-23',revision='2026-04-23'},
  },
- body={priority=5,disabled=true,switch={type='SPECIALIZATION',spec=260},
+ body={priority=5,disabled=true,specs={260},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
   cooldowns={
    block('retail.rogue.upkeep','outlawiv-'),
    spell('outlawiv-roll-the-bones',1214909,all(fight,negate(rolled))),

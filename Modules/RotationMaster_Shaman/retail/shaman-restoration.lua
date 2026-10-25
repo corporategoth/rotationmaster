@@ -15,7 +15,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local friend=all({type='LEVEL',unit='target',operator='GREATERTHAN',value=0},{type='FRIENDLY',unit='target'},negate({type='DEAD',unit='target'}))
 local grouped=all(combat(),{type='GROUP'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.shaman.restoration',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.shaman.restoration',revision=5,
  blocks={['retail.shaman.upkeep']=2},
  nameKey='Default.Retail.Shaman.Restoration.Name',descriptionKey='Default.Retail.Shaman.Restoration.Description',
  applicability={families={'retail'},actionContext='player',class='SHAMAN'},
@@ -23,7 +23,7 @@ assert(addon:RegisterDefaultRotation({
  sources={
   {url='https://www.icy-veins.com/wow/restoration-shaman-pve-healing-rotation-cooldowns-abilities',title='Icy Veins: Restoration Shaman healing rotation (Midnight)',reviewedAt='2026-10-23',revision='2026-10-12'},
  },
- body={priority=10,switch={type='SPECIALIZATION',spec=264},
+ body={priority=10,specs={264},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
   cooldowns={
    block('retail.shaman.upkeep','resto-'),
    spell('resto-water-shield',52127,all(negate(combat()),negate({type='BUFF',unit='player',spell=52127,ownbuff=true}))),

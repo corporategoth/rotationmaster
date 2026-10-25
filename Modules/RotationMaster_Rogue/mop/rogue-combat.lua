@@ -24,7 +24,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local boss={type='CLASSIFICATION',unit='target',value='worldboss'}
 local lust=any(buff(2825),buff(32182),buff(80353),buff(90355))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.combat',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.combat',revision=6,
  blocks={['mop.rogue.boundaries']=3,['mop.rogue.combat-opener']=2,['mop.rogue.out-of-combat']=3,['mop.rogue.combat-aoe']=2,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1,['mop.rogue.combat-upkeep']=1},
  nameKey='Default.MoP.Rogue.Combat.Name',descriptionKey='Default.MoP.Rogue.Combat.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE'},
@@ -33,7 +33,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/rogue/combat/apls/combat.apl.json',title='wowsims/mop: Combat Rogue APL',reviewedAt='2026-10-23',revision='ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9'},
  {url='https://www.wowhead.com/mop-classic/guide/classes/rogue/combat/dps-leveling-talent-builds-tips',title='Wowhead: Combat Rogue levelling (MoP Classic)',reviewedAt='2026-10-23',revision='2026-06-29'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/combat-rogue-leveling',title='Icy Veins: Combat Rogue levelling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-09-23'}},
- body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=260}}},
+ body={priority=30,specs={260},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
  cooldowns={block('mop.rogue.upkeep','rogue-'),block('mop.rogue.combat-upkeep','rogue-')},
  rotation={
  block('mop.rogue.boundaries','rogue-'),

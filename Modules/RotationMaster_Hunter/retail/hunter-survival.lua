@@ -6,7 +6,7 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.survival',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.survival',revision=5,
  blocks={['retail.hunter.boundaries']=3,['retail.hunter.utility']=2},
  nameKey='Default.Retail.Hunter.Survival.Name',descriptionKey='Default.Retail.Hunter.Survival.Description',
  applicability={families={'retail'},actionContext='player',class='HUNTER'},
@@ -16,7 +16,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/Gethe/wow-ui-source/blob/live/Interface/AddOns/Blizzard_APIDocumentationGenerated/AssistedCombatDocumentation.lua',title='Blizzard API documentation: C_AssistedCombat (12.1.5.70529)',reviewedAt='2026-10-23',revision='e7aa82019d'},
   {url='https://github.com/kaminaris/MaxDps-Hunter',title='MaxDps Hunter (Midnight)',reviewedAt='2026-10-23',revision='8800ce72',notes='Assisted Combat spell plus interrupt, defensive and cooldown glows.'},
  },
- body={priority=20,switch={type='SPECIALIZATION',spec=255},
+ body={priority=20,specs={255},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
   cooldowns={
    block('sv-utility','retail.hunter.utility','sv-'),
    spell('sv-takedown',1250646,combat()),

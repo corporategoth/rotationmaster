@@ -17,7 +17,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local function far(n)return negate({type='DISTANCE',unit='target',value=n})end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.priest.shadow',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.priest.shadow',revision=6,
  blocks={['mop.priest.upkeep']=1,['mop.priest.shadow-shell']=5,['mop.priest.shadow-cooldowns']=2},
  nameKey='Default.MoP.Priest.Shadow.Name',descriptionKey='Default.MoP.Priest.Shadow.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PRIEST'},
@@ -28,7 +28,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://www.method.gg/mop-classic/shadow-priest-class-guide-mop-classic',title='Method: Shadow Priest guide (MoP Classic)',reviewedAt='2026-10-23'},
  {url='https://wowtbc.gg/mop/class-guides/shadow-priest/',title='wowtbc.gg: Shadow Priest (MoP Classic)',reviewedAt='2026-10-23'},
  {url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/PriestShadow.simc',title='Hekili (MoP fork): Shadow Priest priority',reviewedAt='2026-10-23',revision='0750b5dd98005481baf828cce26149b9abca875b'}},
- body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=258}}},
+ body={priority=30,specs={258},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
  cooldowns={block('mop.priest.upkeep','priest-'),block('mop.priest.shadow-cooldowns','priest-')},
  rotation={
  block('mop.priest.shadow-shell','priest-'),

@@ -25,7 +25,7 @@ local taste=own(60503)
 local worth=any(classified('worldboss'),classified('elite'),{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=15})
 local burst=all(combat(),any(negate({type='SPELL_KNOWN',spell=86346}),smashed),worth)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.arms',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.arms',revision=6,
  blocks={['mop.warrior.boundaries']=4,['mop.warrior.gap']=1,['mop.warrior.dps-upkeep']=2},
  nameKey='Default.MoP.Warrior.Arms.Name',descriptionKey='Default.MoP.Warrior.Arms.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARRIOR'},
@@ -34,7 +34,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://wowtbc.gg/mop/class-guides/arms-warrior/',title='wowtbc.gg: Arms Warrior (MoP Classic)',reviewedAt='2026-10-23'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/arms-warrior-leveling',title='Icy Veins: Arms Warrior levelling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'},
  {url='https://www.method.gg/mop-classic/arms-warrior-class-guide-mop-classic',title='Method: Arms Warrior guide (MoP Classic)',reviewedAt='2026-10-23',revision='2025-07-22'}},
- body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=71}}},
+ body={priority=30,specs={71},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
  cooldowns={block('mop.warrior.dps-upkeep','warrior-'),
   spell('warrior-arms-berserker-rage',18499,all(combat(),negate({type='BUFF',unit='player',spell=12880}),any(smashed,{type='SPELL_AVAIL',spell=118000},own(46924)))),
   spell('warrior-arms-recklessness',1719,burst),

@@ -16,7 +16,7 @@ local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local still=negate({type='MOVING'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.druid.restoration.wowhead',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.druid.restoration.wowhead',revision=5,
  blocks={['mop.druid.boundaries']=4,['mop.druid.mark']=1,['mop.druid.healer-upkeep']=1,['mop.druid.healer-open']=3},
  nameKey='Default.MoP.Druid.Restoration.Wowhead.Name',descriptionKey='Default.MoP.Druid.Restoration.Wowhead.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID'},
@@ -25,7 +25,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.wowhead.com/mop-classic/guide/classes/druid/restoration/healer-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Restoration Druid healing (single-target scenario)',reviewedAt='2026-10-23',revision='2026-06-20'},
   {url='https://www.method.gg/mop-classic/restoration-druid-class-guide-mop-classic',title='Method: MoP Classic Restoration Druid',reviewedAt='2026-10-23',revision='2025-07-22',notes='Same single-target block.'},
  },
- body={priority=20,disabled=true,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=105}}},
+ body={priority=20,disabled=true,specs={105},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
    block('rtank-mark','mop.druid.mark','rtank-'),
    block('rtank-upkeep','mop.druid.healer-upkeep','rtank-'),

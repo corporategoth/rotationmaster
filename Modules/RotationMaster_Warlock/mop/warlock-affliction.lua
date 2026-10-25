@@ -16,7 +16,7 @@ local function shards(op,n)return{type='POINT',unit='player',operator=op,value=n
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.warlock.affliction',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.warlock.affliction',revision=6,
  blocks={['mop.warlock.boundaries']=4,['mop.warlock.upkeep']=1,['mop.warlock.pet-felhunter']=1,['mop.warlock.affliction-upkeep']=1,
   ['mop.warlock.affliction-dots']=3,['mop.warlock.affliction-filler']=1},
  nameKey='Default.MoP.Warlock.Affliction.Name',descriptionKey='Default.MoP.Warlock.Affliction.Description',
@@ -26,7 +26,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/WarlockAffliction.simc',title='Hekili (MoP fork): Affliction Warlock priority',reviewedAt='2026-10-23',revision='0750b5dd98005481baf828cce26149b9abca875b'},
  {url='https://wowtbc.gg/mop/class-guides/affliction-warlock/',title='wowtbc.gg: Affliction Warlock (MoP Classic)',reviewedAt='2026-10-23'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/affliction-warlock-leveling',title='Icy Veins: Affliction Warlock levelling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-06-10'}},
- body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=265}}},
+ body={priority=30,specs={265},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
  cooldowns={block('mop.warlock.upkeep','warlock-'),block('mop.warlock.pet-felhunter','warlock-'),block('mop.warlock.affliction-upkeep','warlock-aff-')},
  rotation={
  block('mop.warlock.boundaries','warlock-'),

@@ -23,7 +23,7 @@ local tanked={type='ISSAME',unit='targettarget',otherunit='player'}
 local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
 local cleave=any({type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2},{type='CLASSIFICATION',unit='target',value='worldboss'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.druid.guardian',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.druid.guardian',revision=6,
  blocks={['mop.druid.melee-boundaries']=2,['mop.druid.mark']=1},
  nameKey='Default.MoP.Druid.Guardian.Name',descriptionKey='Default.MoP.Druid.Guardian.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID'},
@@ -34,7 +34,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/guardian-druid-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Guardian Druid rotation',reviewedAt='2026-10-23',revision='2025-06-22',notes='Maul on Tooth and Claw procs; Swipe at three enemies.'},
   {url='https://www.warcrafttavern.com/mop/guides/pve-guardian-druid-tank-rotations-cooldowns/',title='Warcraft Tavern: MoP Classic Guardian Druid',reviewedAt='2026-10-23',notes='Faerie Fire as a filler for Mangle resets.'},
  },
- body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='SPECIALIZATION',spec=104}}},
+ body={priority=30,specs={104},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
    block('guardian-mark','mop.druid.mark','guardian-'),
    spell('guardian-savage-defense',62606,all(combat(),{type='FORM',form=BEAR},negate(own(DEFENSE)))),

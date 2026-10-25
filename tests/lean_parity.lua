@@ -55,4 +55,25 @@ test('a rotation write reaches the lean engine on the next poll',function()
  local ref=assert(c.a:GetScopedRotationCoordinator():Resolve(0,key));assert(c.a:CommitRotationDraft(ref,token,record,'class'))
  c.tick();c.tick();assert(c.a.currentSpell==324,'lean kept the old body: '..tostring(c.a.currentSpell))
 end)
+-- A rotation chosen by hand and restricted to a talent group (body.specs on this TBC client) stops and
+-- resumes with the group, identically in both engines.
+test('a specialization restriction (body.specs) applies the same in both engines',function()
+ local runs={}
+ for _,engine in ipairs({'standard','lean'})do
+  local c=make(engine,{target=true});local a=c.a;local group=1
+  c.e.GetActiveTalentGroup=function()return group end
+  if type(c.e.C_SpecializationInfo)=='table' then c.e.C_SpecializationInfo.GetActiveSpecGroup=function()return group end end
+  local key=a.currentRotation;assert(key,'no rotation selected')
+  local record,token=a:GetRotationRecordSnapshot(0,key);record.body.specs={2}
+  local ref=assert(a:GetScopedRotationCoordinator():Resolve(0,key));assert(a:CommitRotationDraft(ref,token,record,'class'))
+  local seq={}
+  -- What UpdateSkill does on ACTIVE_TALENT_GROUP_CHANGED (this fixture's catalog cannot run it whole).
+  local function step(label)if a.InvalidateBuildContext then a:InvalidateBuildContext('talents')end;a:InvalidateRotationChoiceContext();a:SwitchRotation()
+   for _=1,3 do c.tick();seq[#seq+1]=label..':'..tostring(a.currentSpell)..'/'..tostring(a.currentRotation~=nil and a.currentRotation~=c.e.DEFAULT)end end
+  step('primary');group=2;step('secondary');group=1;step('primary again')
+  assert(not a.adviceErrorReport,'advice error');runs[engine]=seq
+ end
+ same(runs.standard,runs.lean,'specialization restriction')
+ assert(runs.lean[1]:find('/false',1,true) and runs.lean[4]:find('/true',1,true),table.concat(runs.lean,' '))
+end)
 print(pass..' passed, '..fail..' failed');if fail>0 then os.exit(1)end

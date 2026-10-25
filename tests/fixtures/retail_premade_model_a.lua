@@ -132,7 +132,7 @@ function M.new(class,token,spec,options)
   GetRotationSpells=function()return s.rotationSpells or{}end,
   GetActionSpell=function()return nil end}
  s.specID=spec
- -- The player's specialization, which the premades' SPECIALIZATION switches read (index 1 and its ID;
+ -- The player's specialization, which the premades' specializations (body.specs) match (index 1 and its ID;
  -- an initial spec below 10 is reported the same way). s.respec(id) changes it mid-session.
  e.C_SpecializationInfo={GetSpecialization=function()if s.specID then return 1 end end,
   GetSpecializationInfo=function(index)if index==1 then return s.specID end end}
@@ -179,7 +179,11 @@ end
 -- Helpers over one fixture; spec is the fixture's current specialization.
 function M.rows(a)local byId={};for _,row in ipairs(a:ListDefaultRotations(a.currentSpec))do byId[row.id]=row end;return byId end
 function M.row(a,id)local row=M.rows(a)[id];assert(row,'missing premade '..id);return row end
-function M.switch(a,id)return a:evaluateConditionResult(M.row(a,id).envelope.body.switch).status end
+-- Whether automatic switching would find it matching: its specializations (body.specs), then its switch.
+function M.switch(a,id)local body=M.row(a,id).envelope.body
+ if body.specs and not a:RotationSpecsApply(body.specs,a.currentSpec)then return'no-match'end
+ return a:evaluateConditionResult(body.switch).status
+end
 -- Auto-select exactly as main does: built-in order by priority, first matching switch wins.
 function M.selected(a)
  local spec=a.currentSpec;local rows=a:GetRuntimeRotations(spec);local byKey={}
@@ -235,14 +239,14 @@ function M.restricted(class,token,specs,recommended)
   assert(M.selected(a)==want,'slot '..spec..' auto-selected '..tostring((M.selected(a)))..', expected '..tostring(want))
  end
 end
--- Before a specialization (below level 10) the game reports the class's initial specialization;
+-- Before a specialization ("No specialization") the game reports the class's initial specialization;
 -- its Blizzard Assisted premade auto-selects for a level-4 character, follows the suggestion and
 -- is complete on the real restricted client. learn[1] is the suggested spell.
 function M.initial(class,token,spec,id,learn)
  local f,s=M.new(class,token,spec);local a=f.addon;s.setLevel(4);s.learn(unpack(learn))
  local row=M.row(a,id);local scope=row.applicability
  assert(scope.specs==nil and scope.minLevel==nil and scope.maxLevel==nil,id..' scope: load-time facts only')
- local switch=row.envelope.body.switch;assert(switch.type=='SPECIALIZATION'and switch.spec==spec,id..' switch')
+ local body=row.envelope.body;local sw=body.switch;assert(sw and sw.type=='LEVEL' and sw.value==1 and #body.specs==1 and body.specs[1]==spec,id..' specs')
  assert(M.selected(a)==id,'initial spec auto-selected '..tostring((M.selected(a))))
  for other,listed in pairs(M.rows(a))do if other~=id then assert(not listed.eligible,other..' eligible in the initial spec')end end
  s.suggest=learn[1];M.expect(a,s,id,learn[1],nil,'the Assisted suggestion')

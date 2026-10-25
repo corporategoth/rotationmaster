@@ -28,7 +28,7 @@ local function priority(p,spender)return{
  spell(p..'moving-scorch',2948,{type='MOVING'}),
  spell(p..'fire-blast',108853,heating)}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.mage.fire.guide',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.mage.fire.guide',revision=7,
  blocks={['retail.mage.boundaries']=3,['retail.mage.utility']=2},
  nameKey='Default.Retail.Mage.FireGuide.Name',descriptionKey='Default.Retail.Mage.FireGuide.Description',
  applicability={families={'retail'},actionContext='player',class='MAGE'},
@@ -38,7 +38,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.wowhead.com/guide/classes/mage/fire/rotation-cooldowns-pve-dps',title='Wowhead: Fire Mage rotation (Midnight Season 2)',reviewedAt='2026-10-23',revision='2026-08-16',notes='Read from a Wayback snapshot of 2026-09-17.'},
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/mage_fire.simc',title='SimulationCraft default action list: Fire',reviewedAt='2026-10-23',revision='c5fea93f'},
  },
- body={priority=10,disabled=true,switch={type='SPECIALIZATION',spec=63},
+ body={priority=10,disabled=true,specs={63},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
   cooldowns={
    block('fguide-utility','retail.mage.utility','fguide-'),
    spell('fguide-barrier',235313,combat()),

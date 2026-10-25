@@ -12,7 +12,7 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.druid.guardian.simc',revision=4,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.druid.guardian.simc',revision=5,
  blocks={['retail.druid.boundaries']=3,['retail.druid.utility']=2},
  nameKey='Default.Retail.Druid.GuardianSimc.Name',descriptionKey='Default.Retail.Druid.GuardianSimc.Description',
  applicability={families={'retail'},actionContext='player',class='DRUID'},
@@ -20,7 +20,7 @@ assert(addon:RegisterDefaultRotation({
  sources={
   {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/druid_guardian.simc',title='SimulationCraft default action list: Guardian',reviewedAt='2026-10-23',revision='c5fea93f',notes='Heart of the Wild and Feline Potential cat-weaving sub-lists left out.'},
  },
- body={priority=5,disabled=true,switch={type='SPECIALIZATION',spec=104},
+ body={priority=5,disabled=true,specs={104},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
   cooldowns={
    block('gsimc-utility','retail.druid.utility','gsimc-'),
    spell('gsimc-bear-form',5487,all(negate(combat()),negate(buff(5487)),negate(buff(102558)))),
