@@ -6,8 +6,8 @@ local function fixture()
         if kind=='EditBox' then
             -- Native font reflow may disturb its insertion point. The dialog
             -- must restore that point without rewriting the diagnostic text.
-            frame.SetFontObject=function(self,font) self.fontObject=font;self.fontChanges=(self.fontChanges or 0)+1;if self.text then self:SetCursorPosition(#self.text) end end
-            frame.SetFont=function(self,font,size,flags) self.font={font,size,flags};self.fontChanges=(self.fontChanges or 0)+1;if self.text then self:SetCursorPosition(#self.text) end;return true end
+            frame.SetFontObject=function(self,font) self.fontObject=font;self.fontState={path='Fonts\\FRIZQT__.TTF',size=12,flags=''};self.fontChanges=(self.fontChanges or 0)+1;if self.text then self:SetCursorPosition(#self.text) end end
+            frame.SetFont=function(self,font,size,flags) self.font={font,size,flags};self.fontState={path=font,size=size,flags=flags};self.fontChanges=(self.fontChanges or 0)+1;if self.text then self:SetCursorPosition(#self.text) end;return true end
             frame.SetScript=function() error('raw native comparison attached an input script') end
             frame.HookScript=function() error('raw native comparison attached an input hook') end
         end

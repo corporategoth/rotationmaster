@@ -588,7 +588,7 @@ end)
 test('builtin condition code keeps the selected documentation provider in read-only mode',function()
     local f,a=fixture(true);f.load('Data/builtin_sources.lua');f.load('Core/builtin_sources.lua');f.load('Conditions/combat.lua')
     a.db.profile.lua_editor='Documentation provider';a:RegisterLuaEditorProvider('Documentation provider',function(parent)
-        local c={frame=f.env.CreateFrame('Frame',nil,parent),edit=f.env.CreateFrame('EditBox',nil,parent)}
+        local c={frame=f.env.CreateFrame('Frame',nil,parent),edit=f.env.CreateFrame('EditBox',nil,parent)};c.edit:SetFontObject('GameFontHighlightSmall')
         function c:GetText() return self.edit:GetText() end;function c:SetText(text) self.edit:SetText(text) end
         function c:SetReadOnly(readonly) self.readOnly=readonly;if readonly then self.edit:Disable() else self.edit:Enable() end end
         function c:SetContext(context) self.context=context end;function c:Release() self.frame:Hide() end
