@@ -1486,5 +1486,98 @@
         "alpha_bits": 8
       }
     }
+  },
+  {
+    "name": "stop",
+    "source_sha256": "031d276e4b2a0fe68fe86f86a36d779ceb845c5d0e3a5c153bae97011e8ba1d8",
+    "source": {
+      "mode": "RGBA",
+      "size": [
+        1254,
+        1254
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "transparent_pixels": 502708,
+      "opaque_pixels": 390,
+      "partial_alpha_pixels": 1069418,
+      "transparent_percent": 31.97,
+      "nonzero_alpha_bounds": [
+        33,
+        49,
+        1226,
+        1254
+      ],
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "exports": {
+      "64": {
+        "mode": "RGBA",
+        "size": [
+          64,
+          64
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 1568,
+        "opaque_pixels": 136,
+        "partial_alpha_pixels": 2392,
+        "transparent_percent": 38.28,
+        "nonzero_alpha_bounds": [
+          3,
+          3,
+          61,
+          60
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      },
+      "128": {
+        "mode": "RGBA",
+        "size": [
+          128,
+          128
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 6789,
+        "opaque_pixels": 255,
+        "partial_alpha_pixels": 9340,
+        "transparent_percent": 41.44,
+        "nonzero_alpha_bounds": [
+          8,
+          9,
+          120,
+          118
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      }
+    }
   }
 ]
