@@ -80,6 +80,9 @@ local SlotButtons = {}
 local AliasCache = {}
 local AliasHow = {}
 local NameIndex = nil
+-- Whether the scan was made under the restricted policy (the alias lookups run
+-- only then; elsewhere a miss costs nothing extra).
+local aliasing = false
 local Flags = {}
 local SpellsGlowing = {}
 local FramePool = {}
@@ -1182,6 +1185,7 @@ function addon:Fetch()
 	SpellsGlowing = {}
 
     fetchedPolicy=readClientPolicy(addon.Platform)
+    aliasing=fetchedPolicy=='restricted'
     FetchCount=FetchCount+1;LastFetchAt=type(GetTime)=='function' and GetTime() or nil
     -- Restricted clients (Retail, Forever) run complete rotations too, so
     -- their bars are scanned as well. Action slot contents are not combat
@@ -1254,7 +1258,7 @@ end
 
 function addon:FindSpell(spellIds,itemIds)
     for index,id in ipairs(spellIds or {}) do
-        if Spells[id] or not itemIds and aliasButtons(id) then
+        if Spells[id] or aliasing and not itemIds and aliasButtons(id) then
             if not itemIds then return id,index end
             local wanted=itemIds[index]
             if self.Platform:CanReadValue(wanted) and type(wanted)=="number" then
@@ -1289,7 +1293,7 @@ local function assistedBinding(self)
         if platform:IsSpellKnown(spell,false)==true then
             local mapped=false
             for _,id in ipairs(platform:GetAssistedSpellCandidates(spell)) do
-                if Spells[id] or aliasButtons(id) then mapped=true;break end
+                if Spells[id] or aliasing and aliasButtons(id) then mapped=true;break end
             end
             if not mapped then missing=missing or {};missing[#missing+1]=spell end
         end
