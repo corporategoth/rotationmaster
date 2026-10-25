@@ -347,6 +347,12 @@ test('reports: /rm why and /rm debug glow name the skipped steps',function()
     local text=table.concat(lines,'\n')
     assert(text:find('skipped, not on your action bars %(cannot be highlighted%): Spell 421 %(step 1%); Big cooldown %(cooldown%)'),text)
     assert(text:find('spell 421 .*mapped=false'),'step mapping missing')
+    -- The editor-warning section a user pastes back: scan facts, what is on the bars, each unbound step's IDs and lookups.
+    assert(text:find('== Steps the editor warns are not on your action bars',1,true),'section missing')
+    assert(text:find('scan: scans=%d+ ageSeconds=.-pendingRescan=false policyAtScan=probe indexedSpells=%d+'),'scan line missing: '..text)
+    assert(text:find('on bars: %d+ .-buttons=%['),'bars missing')
+    assert(text:find('active rotation: .-: 2 step%(s%) with no button'),'active rotation count missing')
+    assert(text:find('spell 421 .-relatives=%[421%] directlyIndexed=false alias=none buttons=%[%] clientSlots='),'step lookup missing')
     assert(text:find('not on your action bars: this spell is skipped'),'step reason missing')
     -- Every step bound: no line.
     classicBars(c,{[1]=LB,[2]=FS,[3]=LS,[4]=CL})
