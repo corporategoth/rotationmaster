@@ -155,17 +155,37 @@ local function create(parent)
         control:ClearAllPoints();control:SetPoint('TOPLEFT',child,'TOPLEFT',0,-(index-1)*48);control:SetSize(child:GetWidth(),46)
         control.nameLabel:SetWidth(math.max(32,child:GetWidth()-12));control.statusLabel:SetWidth(math.max(32,child:GetWidth()-12));control.nameLabel:SetText(entry.name)
         if entry.readOnly then control.nameLabel:SetTextColor(.357,.753,.922) else control.nameLabel:SetTextColor(.9,.92,.94) end
-        local status=entry.readOnly and L['Built In · read-only'] or entry.fallback and L['Fallback rotation'] or L['Custom rotation']
-        if entry.scope then status=status..' · '..(entry.scope=='character' and L['This character'] or L['Class']) end
-        if self.specValue=='all' and type(entry.specs)=='table' and #entry.specs>0 then status=status..' · '..addon:DescribeRotationSpecs(entry.specs) end
-        if self.specValue=='all' and entry.fallback and self.hasSpecFilter then status=status..' · '..addon:DescribeRotationSpec(entry.spec) end
-        -- Who switched a Built In off is said apart from whether it can run here.
-        if entry.readOnly and entry.builtinState=='user-disabled' then status=status..' — '..L['Disabled by you']
-        elseif entry.readOnly and entry.builtinState=='shipped-disabled' then status=status..' — '..L['Ships disabled']
-        elseif entry.readOnly and entry.builtinState==nil and not entry.enabled then status=status..' — '..L['Disabled']
-        elseif entry.readOnly and not entry.eligible and entry.validationState=='valid' then status=status..' — '..L['Not available'] end
-        if not entry.fallback then status=status..' · '..(entry.priority and string.format(L['Priority %d'],entry.priority) or L['Invalid priority']) end
-        if entry.validationState and entry.validationState~='valid' and entry.validationState~='pending' then status=status..' — '..L['Not available'] end
+        -- The line is only what the list is sorted and chosen by: the kind, the
+        -- specialization and the priority. Everything else (read-only, scope,
+        -- switched off, not available here) is the row's color, order and
+        -- tooltip, never more words in the line.
+        local kind=entry.readOnly and L['Built In'] or entry.fallback and L['Fallback'] or L['Custom']
+        local specText
+        if self.hasSpecFilter then
+            if entry.fallback then specText=addon:GetFallbackSpecName(entry.spec) or L['Any specialization']
+            else specText=addon:DescribeRotationSpecs(entry.specs) end
+        end
+        local priorityText=not entry.fallback and (entry.priority and string.format(L['Priority %d'],entry.priority) or L['Invalid priority']) or nil
+        local function line(specPart)
+            local parts={kind};if specPart then parts[#parts+1]=specPart end;if priorityText then parts[#parts+1]=priorityText end
+            return table.concat(parts,' · ')
+        end
+        local status=line(specText)
+        -- One line, never cut in the middle of the kind or the priority: when
+        -- the specializations are too long for the column, they give way (the
+        -- full text is in the tooltip).
+        local room=control.statusLabel:GetWidth()
+        if specText and room>0 then
+            control.statusLabel:SetText(status)
+            if control.statusLabel:GetStringWidth()>room then
+                local characters={};for character in specText:gmatch('[%z\1-\127\194-\244][\128-\191]*') do characters[#characters+1]=character end
+                for count=#characters-1,0,-1 do
+                    status=line(table.concat(characters,'',1,count)..'…')
+                    control.statusLabel:SetText(status)
+                    if control.statusLabel:GetStringWidth()<=room then break end
+                end
+            end
+        end
         control.statusLabel:SetText(status);control.statusLabel:SetTextColor(.67,.72,.77);addon:SetWorkbenchListSelection(control,key==self.selected)
         -- Red when anything in it (a card, a branch child, a cooldown, the
         -- switch) stops it being selected; the tooltip names the first issue.
@@ -187,6 +207,13 @@ local function create(parent)
         if addon.SetWorkbenchNotice then addon:SetWorkbenchNotice(control,overlapText and true or false,tie) end
         local lines={}
         if blockedText then lines[#lines+1]=blockedText end
+        if entry.readOnly then lines[#lines+1]=L['Built In: it cannot be edited. Duplicate makes your own copy; Enabled and Priority are your settings for this profile.'] end
+        if entry.readOnly and not entry.eligible and not blockedText then
+            local reasons=addon.BuiltinEligibilityReasons or {}
+            lines[#lines+1]=string.format(L['Not available for this character: %s'],reasons[entry.eligibilityReason] or L['Unavailable'])
+        end
+        if specText and status~=line(specText) then lines[#lines+1]=line(specText) end
+        if entry.scope then lines[#lines+1]=entry.scope=='character' and L['This character'] or L['Class'] end
         if disabledText then lines[#lines+1]=disabledText end
         if overlapText then lines[#lines+1]=overlapText end
         local identifier=self.identifiers and self.identifiers[key];if entry.fallback and entry.spec~=nil and entry.spec~=addon.currentSpec then identifier=nil end

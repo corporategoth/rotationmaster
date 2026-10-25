@@ -152,7 +152,7 @@ test('the rotation list: switching order, priorities shown, disabled rows grey, 
     local controls={};for _,control in ipairs(browser.rowButtons) do if control:IsShown() and control.browserEntry then controls[control.browserEntry.key]=control end end
     local offRow=controls[off];assert(offRow.nameLabel.alpha==.5 and offRow.tooltip:find('Disabled',1,true),'disabled custom row not grey')
     local ww=controls[key(a,'rm.retail.monk.windwalker')]
-    assert(ww and ww.nameLabel.alpha==.5 and ww.statusLabel:GetText():find('Disabled by you',1,true) and ww.enableButton:IsShown())
+    assert(ww and ww.nameLabel.alpha==.5 and ww.tooltip:find('Disabled by you',1,true) and not ww.statusLabel:GetText():find('Disabled',1,true) and ww.enableButton:IsShown())
     local mw=controls[key(a,'rm.retail.monk.mistweaver')];assert(mw.nameLabel.alpha==.5 and mw.tooltip:find('Ships disabled',1,true))
     assert(controls[high].statusLabel:GetText():find('Priority 9',1,true) and controls[high].tooltip:find('Higher numbers are tried first',1,true))
     -- Alpha low and Zulu high both match from level 1: amber, naming each other.

@@ -1005,7 +1005,6 @@ L["then the fallback (%s)"] = true
 L["Automatic switching tries: %s. Higher numbers are tried first; equal priorities go by name."] = true
 L["Automatic switching would choose: %s"] = true
 L["%d Built In disabled: %s"] = true
-L["Disabled by you"] = true
 L["Read-Only"] = true
 L["Built In: it cannot be edited. Duplicate makes your own copy; Enabled and Priority are your settings for this profile."] = true
 L["level %d+"] = true
@@ -1069,7 +1068,6 @@ L["Same priority as %s: their switch conditions can match together, and the tie 
 L["Can match together with %s: only priority decides which is chosen."] = true
 L["expansions %s–%s"] = true
 L["Loads only for: %s. The switch condition decides the rest."] = true
-L["Ships disabled"] = true
 L["Built In rotations turned back on (they had been switched off without your choice): %s"] = true
 L["Disabled Built In rotations"] = true
 L["Open Rotations, select the Built In and turn it back on to make it selectable."] = true
@@ -1363,9 +1361,7 @@ L["All"] = true
 L["Built In"] = true
 L["No rotations match this search."] = true
 L["New rotation"] = true
-L["Fallback rotation"] = true
-L["Custom rotation"] = true
-L["Not available"] = true
+L["Fallback"] = true
 L["%d of %d rotations"] = true
 
 -- Totem observation semantics

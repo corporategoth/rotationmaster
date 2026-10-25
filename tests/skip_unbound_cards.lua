@@ -150,6 +150,25 @@ test('Built In read-only views show the warning',function()
     assert(card(pane,'keg').unbound:IsShown() and not card(pane,'tp').unbound:IsShown())
 end)
 
+test('clicking a Built In card expands it but never selects it or recolors it: no gold outline, no selection bar',function()
+    local f,parent,_,tones=fixture()
+    local pane=assert(f.addon:CreateRotationEditor(parent,0,'builtin'))
+    local function tone(c) local t=tones[c.frame];return t and (t[1]..','..t[2]..','..t[3]) end
+    for _,id in ipairs({'tp','keg','stop'}) do
+        local before=tone(card(pane,id))
+        local c=card(pane,id);c.action:Click()
+        c=card(pane,id);assert(c.model.expanded,id..' did not expand')
+        assert(not c.selected and c.selection==nil and not pane.selectionBar:IsShown(),id..' selected after its action was clicked')
+        c.frame.scripts.OnMouseUp(c.frame,'LeftButton')
+        assert(not c.selected and not pane.selectionBar:IsShown() and #pane.canvas:SelectedIds(false)==0,id..' selected after a body click')
+        assert(tone(card(pane,id))==before,id..' changed color when clicked: '..tostring(before)..' -> '..tostring(tone(card(pane,id))))
+    end
+    -- Your own rotation still selects.
+    local mine=assert(f.addon:CreateRotationEditor(f.env.CreateFrame('Frame'),0,'mine'))
+    local c=card(mine,'tp');c.frame.scripts.OnMouseUp(c.frame,'LeftButton')
+    assert(card(mine,'tp').selected and mine.selectionBar:IsShown(),'your own rotation no longer selects')
+end)
+
 test('without a button index (no buttons.lua) nothing is warned',function()
     local f,parent=fixture()
     f.addon.GetStepBinding=nil

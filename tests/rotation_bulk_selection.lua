@@ -117,13 +117,23 @@ test('Shift-drag on empty canvas boxes cards, and Ctrl+Shift adds to the selecti
     assert(not canvas.box and not canvas.boxFrame:IsShown() and selection(pane)=='s1,s2,s4','Ctrl+Shift box did not add to the selection')
 end)
 
-test('a read-only rotation can select but offers no bulk edit',function()
+test('a read-only rotation (a Built In) never selects: no outline, no selection bar, no bulk edit',function()
     local f,parent=fixture();local a=f.addon;local keys={ctrl=false,shift=false};f.env.IsControlKeyDown=function() return keys.ctrl end;f.env.IsShiftKeyDown=function() return keys.shift end
     local pane=assert(a:CreateRotationEditor(parent,0,'builtin'));assert(pane.workspace.readOnly)
-    click(card(pane,'branch'),keys);assert(pane.selectionBar:IsShown())
-    -- Only the count and Clear: the editing actions are not drawn at all.
-    for key,button in pairs(pane.selectionBar.buttons) do assert(button:IsShown()==(key=='clear'),key..' is drawn on a read-only rotation') end
+    local function none(label) assert(not pane.selectionBar:IsShown() and #pane.canvas:SelectedIds(false)==0,label..': the selection bar or a selection appeared');for _,c in ipairs(pane.canvas.cards) do assert(not c.selected,label..': a card is drawn selected') end end
+    click(card(pane,'branch'),keys);none('click')
+    keys.ctrl=true;click(card(pane,'branch'),keys);keys.ctrl=false;none('ctrl-click')
+    keys.shift=true;click(card(pane,'branch'),keys);keys.shift=false;none('shift-click')
+    pane.canvas:Select('branch',false,false);pane.canvas:SelectBox(-1000,-1000,1000,1000,false);none('programmatic select')
+    -- Shift-drag on empty canvas pans instead of drawing a selection box.
+    local canvas=pane.canvas;keys.shift=true;canvas.frame.scripts.OnMouseDown(canvas.frame,'LeftButton');keys.shift=false
+    assert(not canvas.box,'a selection box started on a read-only rotation');canvas.frame.scripts.OnMouseUp(canvas.frame,'LeftButton');none('box')
     assert(not pane:BulkCommand('remove') and #pane.workspace:Snapshot().rotation==1,'a read-only rotation was edited')
+end)
+test('your own rotation still selects: the outline, the bar and the bulk actions',function()
+    local _,_,pane,keys=editor()
+    click(card(pane,'s1'),keys);assert(pane.selectionBar:IsShown() and card(pane,'s1').selected,'a click did not select')
+    for key,button in pairs(pane.selectionBar.buttons) do assert(button:IsShown(),key..' is missing on your own rotation') end
 end)
 
 -- The condition editor already selects with Ctrl/Shift and groups the

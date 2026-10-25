@@ -9,6 +9,7 @@ local reasons={
     ["unsupported-context-selector"]=L["Required context is not supported yet"],
     ["restricted-or-unsupported-client"]=L["Reference only on this client"],
 }
+addon.BuiltinEligibilityReasons=reasons
 local function label(parent,text,kind)
     local widget=addon:CreateConditionLabel()
     if kind=='Heading' then widget:SetFontObject(addon.WorkbenchHeaderFont);widget:SetColor(unpack(addon.WorkbenchHeaderColor)) end

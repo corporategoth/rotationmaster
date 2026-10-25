@@ -68,21 +68,26 @@ for _,language in ipairs({'enUS','deDE','ruRU'}) do
                 local _,pane=open(language,case[1],WIDTHS[size]);local label=case[2]
                 check(pane,label..' no selection')
                 assert(not pane.selectionBar:IsShown(),label..' opens with cards selected')
-                select(pane,'yes');assert(pane.selectionBar:IsShown(),label..' selection bar')
-                local seen=check(pane,label..' one selected',true);local present=names(seen)
-                assert(present['selection clear'],'Clear is missing')
-                for _,key in ipairs({'duplicate','enable','disable','remove'}) do
-                    assert((present['selection '..key]==true)==(case[1]=='mine'),label..': '..key..' '..(case[1]=='mine' and 'is missing' or 'is drawn on a read-only rotation'))
+                select(pane,'yes')
+                if case[1]=='builtin' then
+                    -- A Built In has nothing to copy, delete or enable: a click never selects.
+                    assert(not pane.selectionBar:IsShown() and #pane.canvas:SelectedIds(false)==0,'a click selected a card on a Built In')
+                    check(pane,label..' clicked')
+                else
+                    assert(pane.selectionBar:IsShown(),label..' selection bar')
+                    local seen=check(pane,label..' one selected',true);local present=names(seen)
+                    assert(present['selection clear'],'Clear is missing')
+                    for _,key in ipairs({'duplicate','enable','disable','remove'}) do assert(present['selection '..key],key..' is missing') end
+                    assert(pane.viewChanges.icon==nil,'View Changes draws a glyph of its own')
+                    -- Selecting more and clearing again keeps the footer clean.
+                    select(pane,'no');pane.selectionBar.buttons.clear:Click();assert(not pane.selectionBar:IsShown());check(pane,label..' cleared')
                 end
-                assert(pane.viewChanges.icon==nil,'View Changes draws a glyph of its own')
-                -- Selecting more and clearing again keeps the footer clean.
-                select(pane,'no');pane.selectionBar.buttons.clear:Click();assert(not pane.selectionBar:IsShown());check(pane,label..' cleared')
             end
         end)
     end
 end
 test('a Built In never starts with a card selected, even after one was selected in an earlier visit',function()
-    local f,pane=open('enUS','builtin',WIDTHS.min)
+    local f,pane=open('enUS','mine',WIDTHS.min)
     select(pane,'yes');assert(pane.selectionBar:IsShown() and #pane.canvas:SelectedIds(false)==1)
     pane:Open(0,'builtin',function() end)
     assert(not pane.selectionBar:IsShown() and #pane.canvas:SelectedIds(false)==0,'the earlier selection came back')

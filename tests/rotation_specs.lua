@@ -320,9 +320,115 @@ test('the editor header: a specialization picker on the ID/Priority/Enabled line
     pane.apply:Click()
     local saved;for _,row in ipairs(a:ListRotationHeaders(268)) do if row.key==mineKey then saved=row end end
     assert(saved and saved.specs==nil,'Any was not saved')
-    -- The fallback belongs to its namespace and has no picker.
+    -- The fallback shows the specialization it belongs to, read-only (see below).
     local fallback=assert(a:CreateRotationEditor(parent,268,DEFAULT or f.env.DEFAULT));fallback:Layout()
-    assert(not fallback.specButton:IsShown())
+    assert(fallback.specButton:IsShown() and not fallback.specButton:IsEnabled() and fallback.specButton:GetText()=='Brewmaster','Default picker')
+end)
+
+-- The fallback's own editor page shows the specialization it belongs to, in
+-- the same control as every rotation but read-only, worded like the list's
+-- specialization dropdown.
+test('the Default\'s editor shows its specialization read-only: a specialization, "No specialization", a talent group, or All',function()
+    local f=T.new{level=10,specIndex=1};local a=f.addon
+    local parent=f.env.CreateFrame('Frame');parent:SetSize(900,700)
+    local entries=a:GetRotationSpecEntries();local names={}
+    for _,entry in ipairs(entries) do names[entry.id]=entry.name end
+    for _,entry in ipairs(entries) do
+        local pane=assert(a:CreateRotationEditor(parent,entry.id,f.env.DEFAULT));assert(pane.workspace.fallback);pane:Layout()
+        assert(pane.specButton:IsShown() and not pane.specButton:IsEnabled(),'the Default of '..entry.name..' has no read-only picker')
+        assert(pane.specButton:GetText()==entry.name,'the Default of '..entry.name..' says '..tostring(pane.specButton:GetText()))
+        pane.specButton:Click();assert(not pane.specMenu.frame or not pane.specMenu.frame:IsShown(),'a read-only picker opened a menu')
+        assert(pane.workspace:Snapshot().specs==nil and not pane.workspace:IsDirty(),'the Default changed')
+        local _,anchor=pane.specButton:GetPoint(1);assert(anchor==pane.identifierLabel)
+        pane:Release()
+    end
+    local initial;for _,entry in ipairs(entries) do if entry.initial then initial=entry end end
+    assert(initial and initial.name=='No specialization',"Retail's initial specialization is labeled No specialization")
+    -- Where one Default serves every specialization, it says so.
+    local era=T.new{project=2,expansion=0,level=10};local ea=era.addon
+    local eparent=era.env.CreateFrame('Frame');eparent:SetSize(900,700)
+    local pane=assert(ea:CreateRotationEditor(eparent,0,era.env.DEFAULT));pane:Layout()
+    assert(ea:GetRotationSpecKind()=='slot' and pane.specButton:IsShown() and not pane.specButton:IsEnabled() and pane.specButton:GetText()=='All specializations',tostring(pane.specButton:GetText()))
+end)
+
+-- The header stays on one line at the narrowest editor width, in English,
+-- German and Russian, with the picker on the Default, a Built In and your own.
+test('the editor header keeps the picker, ID, Priority and Enabled on one line at the minimum width (enUS, deDE, ruRU)',function()
+    local audit=dofile('tests/fixtures/layout_audit.lua')
+    local function chars(text) local n=0;for _ in (text or ''):gmatch('[^\128-\191]') do n=n+1 end return n end
+    for _,language in ipairs({'enUS','deDE','ruRU'}) do
+        local f=T.new{level=10,specIndex=1};local a=f.addon
+        if language~='enUS' then f.env.GetLocale=function() return language end;f.load('Locales/'..language..'.lua') end
+        local mine=custom(f,268,'Mine',{specs={268},switch=COMBAT})
+        for _,case in ipairs({{'Default',f.env.DEFAULT},{'Built In',key(a,'rm.retail.monk.brewmaster')},{'own',mine}}) do
+            local parent=f.env.CreateFrame('Frame');parent:SetSize(800-24-210-18,420)
+            local pane=assert(a:CreateRotationEditor(parent,268,case[2]))
+            for _,label in ipairs({pane.identifierLabel,pane.priorityLabel,pane.nameLabel,pane.descriptionLabel}) do function label:GetStringWidth() return chars(self.text)*7 end end
+            pane:Layout()
+            local resolve=audit.resolver(pane.frame);local label=language..' '..case[1]
+            local controls={{'picker',pane.specButton},{'identifier label',pane.identifierLabel},{'identifier',pane.identifier},{'enable',pane.enable},{'delete',pane.delete},{'info',pane.info}}
+            if case[1]~='Default' then controls[#controls+1]={'priority',pane.priority};controls[#controls+1]={'priority label',pane.priorityLabel} end
+            local rects={}
+            for _,c in ipairs(controls) do
+                if c[2]:IsShown() then
+                    local r=assert(resolve(c[2]),label..': '..c[1]..' has no position');rects[#rects+1]={c[1],r}
+                    assert(r.right>=r.left and r.left>=-.5 and r.right<=pane.frame.width+.5,string.format('%s: %s leaves the pane [%.1f..%.1f]',label,c[1],r.left,r.right))
+                end
+            end
+            for i=1,#rects do for j=i+1,#rects do
+                local x,y=rects[i][2],rects[j][2]
+                assert(not (x.left<y.right-.5 and y.left<x.right-.5 and x.bottom<y.top-.5 and y.bottom<x.top-.5),label..': '..rects[i][1]..' overlaps '..rects[j][1])
+            end end
+            assert(pane.specButton:IsShown(),label..': no picker')
+            local picker,identifier=resolve(pane.specButton),resolve(pane.identifier)
+            assert(math.abs((picker.top+picker.bottom)-(identifier.top+identifier.bottom))<1,label..': the picker is on another row than the ID')
+            assert((case[1]=='own')==pane.specButton:IsEnabled(),label..': the picker is '..(pane.specButton:IsEnabled() and 'editable' or 'read-only'))
+            -- The tools row (Undo, Redo...) leaves the controls above alone.
+            for _,tool in ipairs(pane.tools) do
+                if tool:IsShown() then
+                    local t=resolve(tool);for _,c in ipairs(rects) do local r=c[2]
+                        assert(not (t.left<r.right-.5 and r.left<t.right-.5 and t.bottom<r.top-.5 and r.bottom<t.top-.5),label..': a tool overlaps the '..c[1])
+                    end
+                end
+            end
+            pane:Release()
+        end
+    end
+end)
+-- A list row's line is only the kind, the specialization and the priority; the
+-- rest (read-only, switched off, not available) is color and tooltip.
+test('a list row says kind, specialization and priority on one line at the narrowest window (enUS, deDE, ruRU), and nothing else',function()
+    local function width(text) local w=0;for char in (text or ''):gmatch('[%z\1-\127\194-\244][\128-\191]*') do w=w+(#char==1 and 6 or 7) end return w end
+    for _,language in ipairs({'enUS','deDE','ruRU'}) do
+        local f=T.new{level=10,specIndex=1};local a=f.addon
+        if language~='enUS' then f.env.GetLocale=function() return language end;f.load('Locales/'..language..'.lua') end
+        for _,id in ipairs({'rm.retail.monk.windwalker','rm.retail.monk.mistweaver'}) do assert(a:SetDefaultRotationEnabled(id,false)) end
+        custom(f,268,'Mine',{specs={268,269,270},switch=COMBAT,priority=7})
+        local host=f.env.CreateFrame('Frame');host:SetSize(800-24,500)
+        local browser=a:CreateRotationBrowser(host,{spec=268});browser:SetSpecValue('all')
+        local seen={}
+        -- Text is measured per character (a Cyrillic or accented letter is wider), as the client measures it.
+        for _,c in ipairs(browser.rowButtons) do function c.statusLabel:GetStringWidth() return width(self.text) end end
+        browser:RefreshRows()
+        for _,c in ipairs(browser.rowButtons) do
+            if c:IsShown() and c.browserEntry then
+                local entry=c.browserEntry;local text=c.statusLabel:GetText();local label=language..' '..tostring(entry.name)
+                local parts={};for part in (text..' · '):gmatch('(.-) · ') do parts[#parts+1]=part end
+                assert(#parts==(entry.fallback and 2 or 3),label..': the line is not kind, specialization'..(entry.fallback and '' or ', priority')..': '..text)
+                assert(not text:find('only',1,true) and not text:find('Disabled',1,true) and not text:find('Not available',1,true) and not text:find('Ships',1,true),label..': extra words: '..text)
+                if not entry.fallback then assert(parts[3]:find('%d+$'),label..': the priority was cut: '..text) end
+                assert(c.statusLabel:GetWidth()<220,'not the narrow column: '..c.statusLabel:GetWidth())
+                assert(width(text)<=c.statusLabel:GetWidth(),label..': the line is wider than the column ('..width(text)..'): '..text)
+                seen[entry.fallback and 'fallback' or entry.readOnly and 'builtin' or 'custom']=text
+            end
+        end
+        assert(seen.fallback and seen.builtin and seen.custom,language..': a kind of row was not listed')
+        if language=='enUS' then
+            assert(seen.custom:find('^Custom · ') and seen.custom:find('…') and seen.custom:find('Priority 7$'),'long specializations give way, kind and priority stay: '..seen.custom)
+            assert(seen.fallback:find('^Fallback · ') and not seen.fallback:find('Priority'),seen.fallback)
+            assert(seen.builtin:find('^Built In · ') and seen.builtin:find('Priority %-?%d+$'),seen.builtin)
+        end
+    end
 end)
 -- Each specialization has its own fallback (Default), kept under its key. The
 -- list shows the Default of the specialization it is set to, and "All

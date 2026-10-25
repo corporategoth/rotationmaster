@@ -191,6 +191,14 @@ function addon:GetRotationSpecEntries()
     end
     return entries
 end
+-- The specialization (or talent group, or "No specialization") whose Default a
+-- fallback is, named as the Rotations list's specialization dropdown names it;
+-- nil where the client keeps one Default for every specialization.
+function addon:GetFallbackSpecName(spec)
+    local platform=self.Platform
+    if type(platform)~='table' or type(platform.RotationKeyIsSpecValue)~='function' or not platform:RotationKeyIsSpecValue() then return nil end
+    for _,entry in ipairs(self:GetRotationSpecEntries()) do if entry.id==spec then return entry.name end end
+end
 function addon:DescribeRotationSpecValue(value)
     if type(value)~='number' then return L['Unknown specialization'] end
     if self:GetRotationSpecKind()=='slot' then return slotName(self,value) end

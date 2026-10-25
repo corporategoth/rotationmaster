@@ -192,14 +192,19 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         if problem then self.identifier:SetTextColor(1,.35,.35);self:Message(problem) else self.identifier:SetTextColor(1,1,1) end
         return problem==nil
     end
-    function pane:ShowsSpecs() return not workspace.fallback and addon.GetRotationSpecKind and addon:GetRotationSpecKind()~=nil end
+    function pane:ShowsSpecs() return addon.GetRotationSpecKind and addon:GetRotationSpecKind()~=nil end
+    -- What the fallback applies to, worded as the Rotations list's
+    -- specialization dropdown words it: the specialization (or talent group,
+    -- or "No specialization") whose Default it is where the client keeps one
+    -- Default per specialization, else every specialization.
+    function pane:FallbackSpecText() return addon:GetFallbackSpecName(spec) or L['All specializations'] end
     function pane:RenderSpecs(snapshot)
         if not self:ShowsSpecs() then self.specButton:Hide();return end
         local specs=data.NormalizeRotationSpecs(snapshot.specs) or nil
-        local text=addon:DescribeRotationSpecs(specs)
+        local text=workspace.fallback and self:FallbackSpecText() or addon:DescribeRotationSpecs(specs)
         self.specButton:SetText(text);addon:AlignWorkbenchTextLeft(self.specButton,26)
         local tip=L['The specializations this rotation is for. It is listed, and can be chosen, only while you play one of them; Any means every specialization.']
-        if self.workspace.readOnly then self.specButton:Disable();self.specButton:SetAlpha(.75);tip=text..'\n\n'..tip
+        if self.workspace.readOnly or workspace.fallback then self.specButton:Disable();self.specButton:SetAlpha(.75);tip=text..'\n\n'..tip
         else self.specButton:Enable();self.specButton:SetAlpha(1) end
         self.specButton.tooltip=tip
     end
@@ -609,6 +614,11 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         self.priorityLabel:ClearAllPoints();self.priorityLabel:SetPoint('RIGHT',self.priorityDown,'LEFT',-4,0)
         self.identifier:ClearAllPoints();self.identifier:SetPoint('RIGHT',showPriority and self.priorityLabel or self.enable,'LEFT',-10,0)
         self.identifierLabel:ClearAllPoints();self.identifierLabel:SetPoint('RIGHT',self.identifier,'LEFT',-4,0)
+        -- The picker takes what the line leaves it (up to its natural width), so
+        -- at the narrowest window it narrows instead of leaving the pane.
+        local used=36+self.enable:GetWidth()+10+self.identifier:GetWidth()+4+self.identifierLabel:GetStringWidth()+8
+        if showPriority then used=used+8+18+2+self.priority:GetWidth()+2+18+4+self.priorityLabel:GetStringWidth() end
+        self.specButton:SetWidth(math.max(90,math.min(150,width-8-used-8)))
         self.specButton:ClearAllPoints();self.specButton:SetPoint('RIGHT',self.identifierLabel,'LEFT',-8,0)
         if showSpecs then self.specButton:Show() else self.specButton:Hide() end
         self.overrideReset:ClearAllPoints();self.overrideReset:SetPoint('RIGHT',showSpecs and self.specButton or self.identifierLabel,'LEFT',-8,0)
@@ -640,6 +650,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         if addon.CancelWorkbenchReflow then addon:CancelWorkbenchReflow(self) end
         self.active=false;self.generation=(self.generation or 0)+1;self.canvas:Release();self.name:ClearFocus();self.description:ClearFocus();self.frame:Hide();self.specMenu:Hide()
         if addon.WatchButtonIndex then addon:WatchButtonIndex(self,nil) end
+        if addon.activeRotationEditor==self then addon.activeRotationEditor=nil end
         self:StopLiveStatus();if addon.liveStatusLastPane==self then addon.liveStatusLastPane=nil end
     end
     function pane:Open(nextSpec,nextId,nextSelect)
@@ -655,6 +666,11 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         local token=self.generation
         local function alive() return self.active and self.generation==token end
         if addon.WatchButtonIndex then addon:WatchButtonIndex(self,function() if alive() then self:RefreshBindings() end end) end
+        -- The warnings read the last bar scan. An old one is rescanned now (the
+        -- scan is event driven; a missed event must not leave a false warning),
+        -- and until it lands nothing is judged.
+        if addon.EnsureFreshButtonIndex then addon:EnsureFreshButtonIndex(10) end
+        addon.activeRotationEditor=self
         for _,control in ipairs(self.tools) do
             addon:SetUIScript(control,'OnClick',function() if alive() then control.action() end end)
         end

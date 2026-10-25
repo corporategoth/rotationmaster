@@ -84,6 +84,10 @@ function addon:CreateRotationCanvas(parent,owner)
     -- cards it touches (Ctrl+Shift adds to the selection). The selection is
     -- view state: it survives renders and drops cards that no longer exist.
     function canvas:SelectionSet() owner.view.selection=owner.view.selection or {};return owner.view.selection end
+    -- Selection drives copy, delete and enable, which a Built In (read-only)
+    -- has none of: clicking its cards never selects them, so they never draw
+    -- the gold outline and the selection bar never appears.
+    function canvas:CanSelect() return owner.active and not owner.workspace.readOnly end
     -- Selected ids in document order; with topLevel, a card inside another
     -- selected card is left out (it travels with its parent).
     function canvas:SelectedIds(topLevel)
@@ -113,7 +117,7 @@ function addon:CreateRotationCanvas(parent,owner)
         owner.view.selection={};self.anchor=nil;self:PaintSelection()
     end
     function canvas:Select(id,toggle,range)
-        if not owner.active or not self.scene then return end
+        if not self:CanSelect() or not self.scene then return end
         local selection=self:SelectionSet();local byId={};for _,model in ipairs(self.scene.cards) do byId[model.id]=model end
         local model=byId[id];if not model then return end
         local anchor=self.anchor and byId[self.anchor]
@@ -130,7 +134,7 @@ function addon:CreateRotationCanvas(parent,owner)
     end
     -- Selects the cards touching a box given in canvas (child) coordinates.
     function canvas:SelectBox(left,top,right,bottom,additive)
-        if not owner.active or not self.scene then return end
+        if not self:CanSelect() or not self.scene then return end
         local selection=additive and self:SelectionSet() or {}
         for _,model in ipairs(self.scene.cards) do
             if model.x<=right and model.x+model.width>=left and model.y<=bottom and model.y+model.height>=top then selection[model.id]=true end
@@ -138,7 +142,7 @@ function addon:CreateRotationCanvas(parent,owner)
         owner.view.selection=selection;self:PaintSelection()
     end
     function canvas:BeginBoxSelect()
-        if not owner.active or self.drag then return false end
+        if not self:CanSelect() or self.drag then return false end
         local x,y=addon:WorkbenchPointerIn(self.child);if not x then return false end
         self:CancelDrag()
         local box={x=x,y=y,additive=IsControlKeyDown and IsControlKeyDown() or false,generation=self.generation};self.box=box
@@ -199,7 +203,7 @@ function addon:CreateRotationCanvas(parent,owner)
         end)
         if pan then
             control:RegisterForDrag('LeftButton')
-            local function begin() if IsShiftKeyDown and IsShiftKeyDown() then self:BeginBoxSelect() else self:BeginPan() end end
+            local function begin() if IsShiftKeyDown and IsShiftKeyDown() and self:CanSelect() then self:BeginBoxSelect() else self:BeginPan() end end
             addon:SetUIScript(control,'OnMouseDown',function(_,button) if button=='LeftButton' then begin() end end)
             addon:SetUIScript(control,'OnDragStart',function() if not self.box and not self.pan then begin() end end)
             addon:SetUIScript(control,'OnDragStop',function() if self.box then self:EndBoxSelect() elseif self.pan then self:CancelDrag() end end)
