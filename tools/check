@@ -895,6 +895,7 @@ def main():
             [sys.executable, 'tests/test_catalog_check.py'],
             [sys.executable, 'tests/test_lint.py'],
             [sys.executable, 'tests/test_install_hooks.py'],
+            [sys.executable, 'tests/test_us_spelling.py'],
         ])
     for command in commands:
         print('+ ' + ' '.join(command), flush=True)

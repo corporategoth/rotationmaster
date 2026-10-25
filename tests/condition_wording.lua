@@ -3,8 +3,11 @@
 -- client family, and fails on the text defects the website's condition
 -- reference turned up: doubled words ("Cat Form form"), "a" before a vowel
 -- ("a Elite"), raw keys where a label belongs ("target is closer", "The minimum
--- health"), leftover format specifiers or named slots, and a verb that does not
--- agree with "you" or "your target" across a playerize pair.
+-- health"), leftover format specifiers or named slots, a verb that does not
+-- agree with "you" or "your target" across a playerize pair, a plural count
+-- used as a singular subject ("talent points in X is", where "the number of"
+-- belongs) and a comparison verb in a "when" phrase ("was cast is less than 3
+-- casts ago").
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 
 local function tocPaths(prefix)
@@ -71,7 +74,8 @@ local samples={WEAPON_TYPE={slot='mainhand',kind='weapon'},FORM={form=768},PET_N
 local function enumerations(a,e,tag)
     local byTag={CLASS={value=e.LOCALIZED_CLASS_NAMES_MALE},CLASSIFICATION={value=a.classifications},CREATURE={value=a.creatures},
         ROLE={value=a.roles},INSTANCE={value=a.instances},ZONEPVP={value=a.zonepvp},CLASS_GROUP={class=e.LOCALIZED_CLASS_NAMES_MALE}}
-    local result={operation=a.math_operations,action=a.actions,mode=a.trendmode,debufftype=a.debufftypes,loc_type=a.loc_types,otherunit=a.units}
+    local result={operation=a.math_operations,action=a.actions,mode=a.trendmode,debufftype=a.debufftypes,loc_type=a.loc_types,otherunit=a.units,
+        operator=a.operators,threat=a.threat}
     for field,map in pairs(byTag[tag] or {}) do result[field]=map end
     return result
 end
@@ -123,6 +127,27 @@ local function defects(text,raws)
         for before in lower:gmatch('(%a*)'..(bad:sub(1,1)=="'" and '' or ' ')..bad:gsub('%p','%%%0')..'%f[%W]') do
             if not ({of=true,to=true,than=true,with=true,from=true,at=true,on=true,by=true,['for']=true})[before] then found[#found+1]='"'..bad..'"' end
         end
+    end
+    -- A plural count as the subject of "is": "talent points in X is equal to 2",
+    -- "ranks in X is", "stacks of X is". Counts read "the number of ... is".
+    local subject=flat:lower():match('^(.-) is ')
+    if subject and not subject:find('number of',1,true) then
+        local head={}
+        for word in subject:gmatch('[%a\']+') do
+            if word~='the' and word~='your' and word~='a' and word~='an' then head[#head+1]=word end
+            if #head==2 then break end
+        end
+        for _,word in ipairs(head) do
+            if ({points=true,ranks=true,stacks=true,charges=true,runes=true,members=true,enemies=true,allies=true,casts=true,actions=true,pieces=true,units=true})[word] then
+                found[#found+1]='plural subject "'..word..'" with "is" (use "the number of")'
+            end
+        end
+    end
+    -- A "when" phrase takes no comparison verb: "was cast is less than 3 casts
+    -- ago" reads "was cast fewer than 3 casts ago".
+    if flat:find('%f[%a]is not [%a ]-than [^,]- ago%f[%A]') or flat:find('%f[%a]is [%a ]-than [^,]- ago%f[%A]')
+        or flat:find('%f[%a]is n?o?t? ?equal to [^,]- ago%f[%A]') or flat:find('%f[%a]is n?o?t? ?evenly divisible by [^,]- ago%f[%A]') then
+        found[#found+1]='comparison verb before "ago"'
     end
     -- Raw keys: remove every label first (a label may contain its key, e.g.
     -- "your target"), then the key itself must not remain.
@@ -229,6 +254,49 @@ test('the detector itself catches each defect class',function()
     assert(has('your target\'s is in a Tank role',nil,"'s is"))
     assert(has('you have <glyph> glyph',nil,'label noun repeated'))
     assert(not has('talent points in <talent> (<talent tree>)',nil,'doubled'))
+    assert(has('talent points in Improved Execute (Fury) is equal to 2',nil,'plural subject'))
+    assert(has('ranks in Improved Execute is not less than 2',nil,'plural subject'))
+    assert(has('stacks of [Sunder Armor] is 5',nil,'plural subject'))
+    assert(not has('the number of talent points in Improved Execute (Fury) is equal to 2',nil,'plural subject'))
+    assert(not has('the number of stacks of [Sunder Armor] on your target is 5',nil,'plural subject'))
+    assert(not has('the lowest health of Party members within 10 yards is less than 50%',nil,'plural subject'))
+    assert(has('[Spell 1] was cast is less than 3 casts ago',nil,'"ago"'))
+    assert(has('you were hit is not less than 3 actions ago',nil,'"ago"'))
+    assert(has('[Spell 1] was cast is equal to 3 seconds ago',nil,'"ago"'))
+    assert(has('[Spell 1] was cast is evenly divisible by 3 casts ago',nil,'"ago"'))
+    assert(not has('[Spell 1] was cast fewer than 3 casts ago',nil,'"ago"'))
+    assert(not has('[Spell 1] was not cast less than 3 seconds ago',nil,'"ago"'))
+end)
+
+-- The counts and histories the plural and "ago" rules exist for, rendered with
+-- every operator, positive and under NOT: TALENT counts talent points (or
+-- trait ranks), and the history conditions say when something happened.
+test('counts and histories keep their wording under every operator',function()
+    local f,a=load(5,1,'DRUID')
+    local seen=0
+    for _,op in ipairs(keys(a.operators)) do
+        for _,case in ipairs({
+            {{type='TALENT',tree=1,talent=1,operator=op,value=2},'^the number of talent points in '},
+            {{type='SPELL_HISTORY',spell=116,operator=op,value=3},' was cast [%a ]-3 casts ago$',' was not cast [%a ]-3 casts ago$'},
+            {{type='SPELL_HISTORY_TIME',spell=116,operator=op,value=3},' was cast [%a ]-3 seconds ago$',' was not cast [%a ]-3 seconds ago$'},
+            {{type='PETSPELL_HISTORY',spell=116,operator=op,value=3},' was cast [%a ]-3 casts ago$',' was not cast [%a ]-3 casts ago$'},
+            {{type='PETSPELL_HISTORY_TIME',spell=116,operator=op,value=3},' was cast [%a ]-3 seconds ago$',' was not cast [%a ]-3 seconds ago$'},
+            {{type='COMBAT_HISTORY',unit='player',action='WOUND',operator=op,value=3},'^you were hit [%a ]-3 actions ago$','^you were not hit [%a ]-3 actions ago$'},
+            {{type='COMBAT_HISTORY',unit='target',action='WOUND',operator=op,value=3},'^your target was hit [%a ]-3 actions ago$','^your target was not hit [%a ]-3 actions ago$'},
+            {{type='COMBAT_HISTORY_TIME',unit='target',action='HEAL',operator=op,value=3},'^your target was healed [%a ]-3 seconds ago$','^your target was not healed [%a ]-3 seconds ago$'},
+        }) do
+            local node,positive,negative=case[1],case[2],case[3] or case[2]
+            for _,pair in ipairs({{node,positive},{{type='NOT',value=node},negative}}) do
+                local text=plain(a:printCondition(pair[1],0))
+                assert(text:find(pair[2]),node.type..' '..op..': "'..text..'"')
+                assert(not text:find('%f[%a]is%f[%A]') or node.type=='TALENT',node.type..' '..op..' compares with "is": "'..text..'"')
+                local problems=defects(text,{})
+                assert(#problems==0,node.type..' '..op..': '..table.concat(problems,'; ')..' in "'..text..'"')
+                seen=seen+1
+            end
+        end
+    end
+    assert(seen==7*8*2,'rendered '..seen)
 end)
 
 test('the sweep visited every registered condition at least once',function()
