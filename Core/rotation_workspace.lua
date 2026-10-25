@@ -56,7 +56,7 @@ local function scopedWorkspace(owner,coordinator,spec,value)
         workspace.effectiveFallback=effective and equal(effective,workspace.reference) or false
     end
     function workspace:ValidTarget()
-        if owner:GetScopedRotationCoordinator()~=coordinator then return false end
+        if self.discarded or owner:GetScopedRotationCoordinator()~=coordinator then return false end
         if builtin then return coordinator:Resolve(spec,sourceReference)~=nil end
         if self.pending then return coordinator:IsPending(sourceReference) and coordinator:Resolve(spec,sourceReference)~=nil end
         return coordinator:TokenCurrent(expected)
@@ -151,7 +151,7 @@ function addon:GetRotationEditWorkspace(spec,id)
     if not value then value={name=id==DEFAULT and DEFAULT or NEW,switch={},rotation={},cooldowns={}} end
     if builtin then value.name=source.name end
     function workspace:ValidTarget()
-        if addon.db.profile~=profile or profile.rotations~=capturedRoot then return false end
+        if self.discarded or addon.db.profile~=profile or profile.rotations~=capturedRoot then return false end
         if self.builtin then return addon:GetDefaultIdForRuntime(spec,id)==self.builtin end
         return originalAt(profile,spec,id)==self.original and not addon:GetDefaultIdForRuntime(spec,id)
     end
@@ -225,6 +225,24 @@ function addon:GetRotationWorkspace(spec,value)
     local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
     local reference=scoped and scoped:Resolve(spec,value)
     for _,w in ipairs(profiles[self.db.profile] or {}) do if w.spec==spec and (w.id==value or scoped and reference and equal(w.reference,reference)) and w:ValidTarget() then return w end end
+end
+-- Throws away a new rotation that was never saved: it leaves the roster and
+-- cannot be selected or applied any more. Saved rotations, Built Ins and the
+-- fallback are refused. Safe to repeat.
+function addon:DiscardPendingRotation(workspace)
+    if type(workspace)~='table' then return nil,'invalid-rotation-target' end
+    if workspace.discarded then return true end
+    if not workspace.pending or workspace.readOnly or workspace.fallback then return nil,'not-a-new-rotation' end
+    local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
+    if scoped and workspace.reference then
+        local ok,why=scoped:DiscardPending(workspace.reference)
+        if not ok and why~='unknown-rotation' then return nil,why end
+    end
+    local list=profiles[self.db.profile]
+    for index=#(list or {}),1,-1 do if list[index]==workspace then table.remove(list,index) end end
+    workspace.discarded=true
+    if workspace.session and workspace.session.Cancel then workspace.session:Cancel() end
+    return true
 end
 function addon:ListPendingRotationDrafts(spec)
     local result={}

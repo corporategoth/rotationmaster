@@ -1482,6 +1482,7 @@ L["Switch condition"] = true
 L["Edit"] = true
 
 L["Delete rotation"] = true
+L["Discard this new rotation"] = true
 
 L["Add action"] = true
 

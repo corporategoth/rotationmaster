@@ -158,7 +158,8 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         if self.liveTimer then self:RefreshLiveStatus() else self.switchLiveBar:SetState(nil) end
         for _,control in ipairs({self.compare,self.clone}) do if self.workspace.pending then control:Disable() else control:Enable() end end
         self.clone:SetText(self.workspace.readOnly and L['Clone to edit'] or L['Duplicate'])
-        if self.workspace.readOnly or workspace.fallback or self.workspace.pending then self.delete:Disable() else self.delete:Enable() end
+        if self.workspace.readOnly or workspace.fallback then self.delete:Disable() else self.delete:Enable() end
+        self.delete.tooltip=self.workspace.pending and L['Discard this new rotation'] or L['Delete rotation']
         -- A Built In's switch is read live (never the workspace's cached copy)
         -- and apart from validity, so the pill shows exactly what a click flips.
         local builtinOn=self.workspace.readOnly and builtinSwitch(self.workspace)
@@ -717,6 +718,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         addon:SetUIScript(self.apply,'OnClick',function() if alive() then self:Apply() end end)
         addon:SetUIScript(self.discard,'OnClick',function()
             if not alive() then return end
+            if self:IsNewRotation() then self:DiscardNew();return end
             local ok,reason=workspace:Discard();if ok then self.metadataWindow:Close(true); self.nameDirty=false;self.descriptionDirty=false;self.metadataDirty=false;self.tagsDirty=false;self.priorityDirty=false;self.identifierDirty=false;self.identifierProblem=nil;self.identifierEdited=false;self.scopeDirty=false;self.scopeDraft=nil;self:ClearPendingFields();self:Render() else self:Message(reason) end
         end)
         if workspace.readOnly then self.apply:Disable();self.discard:Disable() else self.apply:Enable();self.discard:Enable() end
