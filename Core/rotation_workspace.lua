@@ -79,6 +79,15 @@ local function scopedWorkspace(owner,coordinator,spec,value)
     end
     local session,problem=sessionFor(baseline);if not session then return nil,problem end;workspace.session=session;flags()
     function workspace:Snapshot() flags();return self.session:Snapshot() end
+    -- The class this rotation is for: the owner class of a saved rotation, the
+    -- declared class of a Built In (nil when it declares none, which is the
+    -- player's class). Tree conditions are named for it (Data/talent_trees.lua).
+    function workspace:RotationClass()
+        local address=self.reference and self.reference.address
+        if type(address)=='table' and data.IsRotationClassToken(address.class) then return address.class end
+        local scope=type(self.source)=='table' and self.source.applicability
+        if type(scope)=='table' and data.IsRotationClassToken(scope.class) then return scope.class end
+    end
     function workspace:TargetReference()
         local result=data.CopyData(self.reference)
         if not self.readOnly then

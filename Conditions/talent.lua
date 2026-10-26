@@ -36,10 +36,21 @@ end
 local function group(spec)
     if platform:GetClientInfo().family=="progression" and integer(spec,1,4) then return spec end
 end
+-- Whether the trees being edited are the player's class's (so the game can
+-- name their talents), as opposed to another class's rotation.
+local function ownTrees()
+    local context=addon.TalentTrees.ContextClass()
+    return context==nil or addon.TalentTrees.IsPlayerClass(context)
+end
 local function info(value,spec)
     if traitShape(value) then return integer(value.node,1,2147483647) and platform:GetTraitTalentIdentity(value.node,value.entry,value.spell) or nil end
     if value.layout=="grid" then return platform:GetGridTalentInfo(value.value,group(spec)) end
-    if treeShape(value) then return platform:GetTreeTalentInfo(value.tree,value.talent,group(spec)) end
+    if treeShape(value) then
+        -- The game answers for the player's own class only; another class's
+        -- talent index would name one of the player's talents instead.
+        if not ownTrees() then return nil end
+        return platform:GetTreeTalentInfo(value.tree,value.talent,group(spec))
+    end
 end
 local function text(parent,message)
     local label=addon:CreateConditionLabel();label:SetFullWidth(true);label:SetText(message);parent:AddChild(label)
@@ -66,15 +77,15 @@ local function icon(parent,value,spec)
 end
 local function treeWidget(parent,spec,value,update)
     local trees,treeOrder={},{}
-    for index=1,platform:GetTalentTreeCount() or 0 do
-        local tree=platform:GetTalentTreeInfo(index,group(spec))
-        if tree then trees[index]=tree.name;treeOrder[#treeOrder+1]=index end
-    end
+    -- Names, never positions: the game's for the player's class, the shipped
+    -- table's for another class's rotation or before the game has the data.
+    local listed=addon.TalentTrees.Choices(addon.TalentTrees.ContextClass(),group(spec))
+    if listed then trees,treeOrder=listed.choices,listed.order end
     local talents,talentOrder={},{}
     local talentIcon,talentPicker,treePicker
     local function choices()
         talents,talentOrder={},{}
-        if value.tree then
+        if value.tree and ownTrees() then
             for index=1,platform:GetTreeTalentCount(value.tree) or 0 do
                 local talent=platform:GetTreeTalentInfo(value.tree,index,group(spec))
                 if talent then talents[index]=talent.name;talentOrder[#talentOrder+1]=index end
@@ -278,9 +289,9 @@ addon:RegisterCondition("TALENT",{
             return Functions.presentation.compareString(value.operator,string.format(L["the number of ranks in %s"],name),Functions.presentation.nullable(value.value))
         end
         if value.layout=="grid" then return string.format(L["you {{!are|are not}} talented in %s"],talent and talent.name or L["<talent>"]) end
-        local tree=value.tree and platform:GetTalentTreeInfo(value.tree,group(spec))
+        local tree=value.tree and addon.TalentTrees.Name(value.tree,addon.TalentTrees.ContextClass(),group(spec))
         return Functions.presentation.compareString(value.operator,string.format(L["the number of talent points in %s (%s)"],
-            talent and talent.name or L["<talent>"],tree and tree.name or L["<talent tree>"]),Functions.presentation.nullable(value.value))
+            talent and talent.name or L["<talent>"],tree or L["<talent tree>"]),Functions.presentation.nullable(value.value))
     end,
     widget=function(parent,spec,value)
         local top=parent:GetUserData("top")
@@ -299,14 +310,14 @@ addon:RegisterCondition("TALENT",{
 })
 
 local function treeName(value,spec)
-    local tree=integer(value.tree,1,16) and platform:GetTalentTreeInfo(value.tree,group(spec))
-    return tree and tree.name or value.tree and string.format(L['Talent tree %s'],tostring(value.tree)) or L['<talent tree>']
+    local name=integer(value.tree,1,16) and addon.TalentTrees.Name(value.tree,addon.TalentTrees.ContextClass(),group(spec))
+    return name or value.tree and string.format(L['Talent tree %s'],tostring(value.tree)) or L['<talent tree>']
 end
 local function treePicker(parent,spec,value,update)
     local choices,order={},{}
-    local count=platform:GetTalentTreeCount()
-    for index=1,count or 0 do local tree=platform:GetTalentTreeInfo(index,group(spec));if tree then choices[index]=tree.name;order[#order+1]=index end end
-    if not count then text(parent,L['This client does not expose a Classic talent-tree layout. The saved tree reference is preserved.']) end
+    local listed=addon.TalentTrees.Choices(addon.TalentTrees.ContextClass(),group(spec))
+    if listed then choices,order=listed.choices,listed.order
+    else text(parent,L['This client does not expose a Classic talent-tree layout. The saved tree reference is preserved.']) end
     local picker=dropdown(parent,L['Talent tree'],function(selected) value.tree=selected;update() end)
     picker:SetDisabled(#order==0 or value.disabled==true)
     picker.configure=function() picker:SetList(choices,order);picker:SetValue(value.tree) end
@@ -341,6 +352,7 @@ addon:RegisterCondition('TALENT_TREE_POINTS',{
     end,
     help=function(frame)
         frame:AddChild(addon.help_funcs.CreateText(L['Talent tree selects the Classic tree whose spent points are compared. Public points are read again on the next evaluation; missing or restricted points are unavailable, including under NOT. Grids and trait trees are unsupported.']))
+        frame:AddChild(addon.help_funcs.Gap());frame:AddChild(addon.help_funcs.CreateText(L["Talent trees are named, never numbered: the list shows each tree by name, in the order the talent window shows them, for the class the rotation is for. Your own class takes the names the game gives its trees; another class's rotation uses Rotation Master's own list of that class's trees. The rotation saves the tree's position in that order, so it keeps its meaning when you share it."]))
         frame:AddChild(addon.help_funcs.Gap());frame:AddChild(addon.help_funcs.CreateText(L['Forever is the exception: Talent tree is one of the three talent trees of your active loadout (in the order the talent window shows them); their points are read again after any talent change. Retail has no such trees.']))
         frame:AddChild(addon.help_funcs.Gap());addon.layout_condition_operatorwidget_help(frame,L['Talent Tree Points'],L['Points'],L['Compare whole points spent from zero to 512. An explicit comparison with zero can describe an unspent tree.'])
     end,
@@ -366,6 +378,7 @@ addon:RegisterCondition('PRIMARY_TALENT_TREE',{
     end,
     help=function(frame)
         frame:AddChild(addon.help_funcs.CreateText(L['Talent tree selects the unique Classic tree with the most positive spent points. Equal maxima, no spent points, missing records and restricted points are unavailable, including under NOT.']))
+        frame:AddChild(addon.help_funcs.Gap());frame:AddChild(addon.help_funcs.CreateText(L["Talent trees are named, never numbered: the list shows each tree by name, in the order the talent window shows them, for the class the rotation is for. Your own class takes the names the game gives its trees; another class's rotation uses Rotation Master's own list of that class's trees. The rotation saves the tree's position in that order, so it keeps its meaning when you share it."]))
         frame:AddChild(addon.help_funcs.Gap());frame:AddChild(addon.help_funcs.CreateText(L['The primary tree is derived from readable points, not the saved rotation slot. Hybrid builds may need tree-point or individual-talent conditions instead; the primary tree does not assign a tank or healer role. Grids and trait trees are unsupported.']))
         frame:AddChild(addon.help_funcs.Gap());frame:AddChild(addon.help_funcs.CreateText(L['Forever is the exception: Talent tree is one of the three talent trees of your active loadout (in the order the talent window shows them); their points are read again after any talent change. Retail has no such trees.']))
     end,
@@ -382,6 +395,7 @@ do
         if name=="info" then return info end
         if name=="integer" then return integer end
         if name=="legacySlot" then return legacySlot end
+        if name=="ownTrees" then return ownTrees end
         if name=="platform" then return platform end
         if name=="text" then return text end
         if name=="traitFamily" then return traitFamily end

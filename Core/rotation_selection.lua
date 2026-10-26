@@ -170,7 +170,7 @@ local function slotName(owner,slot)
     if type(platform)=='table' and type(platform.GetTalentLayout)=='function' and platform:GetTalentLayout()=='tree' and type(platform.GetPrimaryTalentTree)=='function' then
         local primary=platform:GetPrimaryTalentTree(slot);tree=primary and primary.name
     elseif owner:GetCurrentRotationSpecValue()==slot and type(owner.GetTraitPrimaryTree)=='function' and type(platform.GetTalentTreeInfo)=='function' then
-        local index=owner:GetTraitPrimaryTree();local info=index and platform:GetTalentTreeInfo(index);tree=info and info.name
+        local index=owner:GetTraitPrimaryTree();local info=index and platform:GetTalentTreeInfo(index);tree=info and info.name or index and owner.TalentTrees and owner.TalentTrees.Name(index)
     end
     if type(tree)=='string' and tree~='' then return string.format(L['%s (%s)'],base,tree) end
     return base

@@ -75,6 +75,7 @@ embeds.xml
 locales.xml
 constants.lua
 Data/artwork.lua
+Data/talent_trees.lua
 Functions/values.lua
 Functions/presentation.lua
 Functions/text.lua

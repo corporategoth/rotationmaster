@@ -776,6 +776,8 @@ def main():
             ['lua5.1', 'tests/platform_talents.lua'],
             ['lua5.1', 'tests/talent_conditions.lua'],
             ['lua5.1', 'tests/talent_namespaces.lua'],
+            ['lua5.1', 'tests/talent_trees.lua'],
+            ['luajit', 'tests/talent_trees.lua'],
             ['lua5.1', 'tests/combat_namespaces.lua'],
             ['lua5.1', 'tests/spell_catalog.lua'],
             ['lua5.1', 'tests/spell_search.lua'],
@@ -916,6 +918,7 @@ def main():
             [sys.executable, 'tests/test_catalog_check.py'],
             [sys.executable, 'tests/test_lint.py'],
             [sys.executable, 'tests/test_install_hooks.py'],
+            [sys.executable, 'tests/test_talent_trees.py'],
             [sys.executable, 'tests/test_us_spelling.py'],
             [sys.executable, 'tests/test_rank_wording.py'],
         ])
