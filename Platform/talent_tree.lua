@@ -8,7 +8,7 @@ local platform=addon.Platform
 -- A provider is a table registered once per client family set:
 --   id        string, unique
 --   families  { [family]=true } (Platform:GetClientFamily values)
---   priority  number, lower is tried first (default 100)
+--   priority  number or function returning one, lower is tried first (default 100)
 --   available function() -> boolean, cheap, no game reads that can be secret
 --   open      function(context) -> handle | nil, reason
 -- context = { spec, hero, selection={node,entry,spell}, specs={{id,name,icon}},
@@ -23,15 +23,10 @@ function platform:RegisterTalentTreeProvider(id,provider)
     assert(type(id)=='string' and type(provider)=='table' and type(provider.open)=='function' and type(provider.families)=='table','invalid-talent-tree-provider')
     provider.id=id
     for index,current in ipairs(providers) do
-        if current.id==id then providers[index]=provider;return end
+        if current.id==id then providers[index]=provider;provider.order=current.order;return end
     end
     providers[#providers+1]=provider
     provider.order=#providers
-    table.sort(providers,function(a,b)
-        local pa,pb=a.priority or 100,b.priority or 100
-        if pa~=pb then return pa<pb end
-        return (a.order or 0)<(b.order or 0)
-    end)
 end
 -- The providers that can serve this client right now, in the order to try them.
 function platform:GetTalentTreeProviders()
@@ -47,6 +42,16 @@ function platform:GetTalentTreeProviders()
             if available then list[#list+1]=provider end
         end
     end
+    local function rank(provider)
+        local priority=provider.priority
+        if type(priority)=='function' then local ok,value=pcall(priority);priority=ok and value or nil end
+        return type(priority)=='number' and priority or 100
+    end
+    table.sort(list,function(a,b)
+        local ra,rb=rank(a),rank(b)
+        if ra~=rb then return ra<rb end
+        return (a.order or 0)<(b.order or 0)
+    end)
     return list
 end
 -- Whether the editors should offer the "Show talent tree" button.
@@ -115,7 +120,19 @@ end
 --   view = { spec, config, tree, source, order = {nodeID...}, index = {[nodeID]=position},
 --            nodes = {[nodeID]={id, x, y, kind, maxRanks, entries={entryID...}, hero, edges={nodeID...}, visible}},
 --            heroes = {{id, name, node, position, entry}...} }
-function platform:GetTraitView(specID)
+function platform:GetTraitView(specID,options)
+    -- Reading another specialization fills the shared view config (-3), the one
+    -- Blizzard's talent window shows a linked or inspected build from: leave it
+    -- alone while that window is on screen showing such a build.
+    if traitID(specID) and self:GetClientFamily()=='retail' and not (options and options.ignoreInspect) then
+        local played=self.GetPlayerSpecializationID and self:GetPlayerSpecializationID()
+        local frame=rawget(_G,'PlayerSpellsFrame')
+        if played~=specID and type(frame)=='table' and type(frame.IsShown)=='function' and type(frame.IsInspecting)=='function' then
+            local okShown,shown=pcall(frame.IsShown,frame)
+            local okInspecting,inspecting=pcall(frame.IsInspecting,frame)
+            if okShown and okInspecting and shown and inspecting then return nil,'talent-window-inspecting' end
+        end
+    end
     local config,tree,source=self:GetTraitSpecTree(specID)
     if not config then return nil,tree end
     -- Only a loadout string needs the specialization; the tree can be read without it.

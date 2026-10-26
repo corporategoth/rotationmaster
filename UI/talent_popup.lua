@@ -30,6 +30,7 @@ end
 local function reasonText(why)
     if why=='in-combat' then return L['The talent tree cannot be shown during combat.'] end
     if why=='talent-window-busy' then return L['Finish or discard the changes in your own talent window first.'] end
+    if why=='talent-window-inspecting' then return L['Close the build shown in your own talent window first.'] end
     return L['The talent tree cannot be shown right now. Use the Talent list instead.']
 end
 local function field(object,method,...)
@@ -43,7 +44,7 @@ local endSession
 local function getWindow()
     local d=addon.talentTreeWindow
     if d then return d end
-    d={frame=CreateFrame('Frame',nil,UIParent),specButtons={},heroButtons={},slots={},lines={},serial=0}
+    d={frame=CreateFrame('Frame',nil,UIParent),specButtons={},heroButtons={},slots={},lines={},paneLabels={},serial=0}
     addon.talentTreeWindow=d
     local frame=d.frame
     frame:SetSize(760,150);frame:SetPoint('TOP',UIParent,'TOP',0,-40)
@@ -56,7 +57,10 @@ local function getWindow()
     d.specLabel=frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');d.specLabel:SetText(L['Specialization'])
     d.heroLabel=frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');d.heroLabel:SetText(L['Hero Talents'])
     d.status=frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');d.status:SetJustifyH('LEFT');d.status:SetJustifyV('TOP')
-    d.canvas=CreateFrame('Frame',nil,frame);d.content=CreateFrame('Frame',nil,d.canvas);d.canvas:Hide()
+    d.canvas=CreateFrame('Frame',nil,frame)
+    d.shade=d.canvas:CreateTexture(nil,'BACKGROUND');d.shade:SetAllPoints(d.canvas);d.shade:SetColorTexture(.03,.035,.04,1)
+    d.background=d.canvas:CreateTexture(nil,'BACKGROUND',nil,1);d.background:SetAllPoints(d.canvas);d.background:SetAlpha(.7);d.background:Hide()
+    d.content=CreateFrame('Frame',nil,d.canvas);d.canvas:Hide()
     addon:SetUIScript(frame,'OnHide',function() endSession(d) end)
     frame:Hide()
     return d
@@ -307,7 +311,7 @@ end
 
 local function showBlizzard(ctx)
     local frame,talents=A.frame,A.talents
-    local view,why=platform:GetTraitView(ctx.spec)
+    local view,why=platform:GetTraitView(ctx.spec,{ignoreInspect=true})
     if not view then return nil,why end
     local selection=ctx.selection and platform:FindTraitViewSelection(view,ctx.selection) or nil
     local hero
@@ -383,8 +387,14 @@ function closeBlizzard()
 end
 
 local blizzard={families={retail=true,forever=true},priority=10}
+-- Opt-in only: in the first real-client test Blizzard's view showed the player's own
+-- purchased talents, greyed every row it counted as locked and gave no usable click
+-- (docs/talent-selector-design.md section 5.6). Turn it on with
+--   /run RotationMaster.db.global.talent_popup_provider='blizzard'
 function blizzard.available()
-    return platform:CanShowTraitViewLoadout()
+    local db=addon.db
+    local choice=db and db.global and db.global.talent_popup_provider
+    return choice=='blizzard' and platform:CanShowTraitViewLoadout()
         and (type(rawget(_G,'PlayerSpellsFrame_LoadUI'))=='function' or type(rawget(_G,'PlayerSpellsFrame'))=='table')
         and registry()~=nil
 end
@@ -429,27 +439,61 @@ end
 platform:RegisterTalentTreeProvider('blizzard',blizzard)
 
 -- Provider: RM's own drawn tree ---------------------------------------------------
-local NODE,HALF,GAP=34,25,3
-local function setEdges(slot,r,g,b)
-    for _,edge in ipairs(slot.edges) do edge:SetColorTexture(r,g,b,1) end
+-- Blizzard's talent look from Blizzard's own art (the talents-node-* atlases and the
+-- spec backgrounds), drawn without Blizzard's talent frame: the tree is read from
+-- the trait API as it stands, so every talent shows as a choice that can be
+-- clicked (the green "selectable" frame), nothing is greyed for locked rows, and
+-- the player's own purchased talents are not shown at all. Where the client lacks
+-- an atlas or a mask the plain textures below are used instead.
+local NODE,HALF,GAP=34,24,4
+local PANE_GAP=1500 -- tenths of a pixel: the empty strip between the class and specialization trees
+local function atlasExists(name)
+    return type(name)=='string' and C_Texture and type(C_Texture.GetAtlasInfo)=='function' and C_Texture.GetAtlasInfo(name)~=nil
+end
+local function setAtlas(texture,name)
+    if type(texture.SetAtlas)=='function' and atlasExists(name) then
+        local ok=pcall(texture.SetAtlas,texture,name,false)
+        return ok
+    end
+    return false
+end
+-- Square for an ability, circle for a passive (Blizzard's SpendSquare / SpendCircle entry types).
+local function shapeOf(entryType)
+    local enum=rawget(_G,'Enum')
+    local kinds=type(enum)=='table' and enum['TraitNodeEntryType'] or nil
+    if type(kinds)=='table' and (entryType==kinds['SpendSquare'] or entryType==kinds['SpendCapstoneSquare']) then return 'square' end
+    return 'circle'
+end
+local function setEdges(slot,r,g,b,a)
+    for _,edge in ipairs(slot.edges) do edge:SetColorTexture(r,g,b,a) end
 end
 local function paintSlot(slot)
-    if slot.selected then setEdges(slot,1,.82,0);slot.glow:Show() else setEdges(slot,.38,.4,.42);slot.glow:Hide() end
-    if slot.hover then setEdges(slot,.9,.95,1) end
+    local selected=slot.selected
+    if slot.fancy then
+        setAtlas(slot.art,'talents-node-'..slot.shape..(selected and '-yellow' or '-green'))
+        if slot.hovered then slot.hover:Show() else slot.hover:Hide() end
+        if selected then setEdges(slot,1,.82,0,1) else setEdges(slot,0,0,0,0) end
+    else
+        if selected then setEdges(slot,1,.82,0,1) elseif slot.hovered then setEdges(slot,.9,.95,1,1) else setEdges(slot,.38,.4,.42,1) end
+    end
+    if selected then slot.glow:Show() else slot.glow:Hide() end
 end
 local function newSlot(d,index)
     local slot=CreateFrame('Button',nil,d.content);slot:RegisterForClicks('LeftButtonUp')
-    slot.glow=slot:CreateTexture(nil,'BACKGROUND');slot.glow:SetPoint('TOPLEFT',slot,'TOPLEFT',-5,5);slot.glow:SetPoint('BOTTOMRIGHT',slot,'BOTTOMRIGHT',5,-5);slot.glow:SetColorTexture(1,.82,0,.35)
-    slot.icon=slot:CreateTexture(nil,'ARTWORK');slot.icon:SetPoint('TOPLEFT',2,-2);slot.icon:SetPoint('BOTTOMRIGHT',-2,2)
+    slot.glow=slot:CreateTexture(nil,'BACKGROUND');slot.glow:SetPoint('TOPLEFT',slot,'TOPLEFT',-7,7);slot.glow:SetPoint('BOTTOMRIGHT',slot,'BOTTOMRIGHT',7,-7);slot.glow:SetColorTexture(1,.82,0,.28)
+    slot.icon=slot:CreateTexture(nil,'ARTWORK',nil,1);slot.icon:SetPoint('CENTER')
+    slot.art=slot:CreateTexture(nil,'ARTWORK',nil,3);slot.art:SetPoint('CENTER')
+    slot.hover=slot:CreateTexture(nil,'OVERLAY');slot.hover:SetPoint('CENTER');slot.hover:Hide()
+    if type(slot.CreateMaskTexture)=='function' then slot.mask=slot:CreateMaskTexture() end
     slot.edges={}
     for _,edge in ipairs({{from='TOPLEFT',to='TOPRIGHT',flat=true},{from='BOTTOMLEFT',to='BOTTOMRIGHT',flat=true},{from='TOPLEFT',to='BOTTOMLEFT'},{from='TOPRIGHT',to='BOTTOMRIGHT'}}) do
         local art=slot:CreateTexture(nil,'OVERLAY');art:SetPoint(edge.from,slot,edge.from);art:SetPoint(edge.to,slot,edge.to)
         if edge.flat then art:SetHeight(2) else art:SetWidth(2) end
         slot.edges[#slot.edges+1]=art
     end
-    slot.rank=slot:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');slot.rank:SetPoint('BOTTOMRIGHT',-3,3)
+    slot.rank=slot:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');slot.rank:SetPoint('BOTTOMRIGHT',3,-3)
     addon:SetUIScript(slot,'OnEnter',function(self)
-        self.hover=true;paintSlot(self)
+        self.hovered=true;paintSlot(self)
         local data=self.data
         if data and GameTooltip then
             d.tooltipOwner=self
@@ -457,23 +501,74 @@ local function newSlot(d,index)
             if data.spell and GameTooltip.SetSpellByID then pcall(GameTooltip.SetSpellByID,GameTooltip,data.spell) else GameTooltip:SetText(data.name or '') end
             if data.maxRanks and data.maxRanks>1 then GameTooltip:AddLine(string.format(L['Ranks: %d'],data.maxRanks),1,1,1) end
             if data.choice then GameTooltip:AddLine(L['Choose one of the talents on this node.'],.7,.7,.7) end
+            GameTooltip:AddLine(self.selected and L['Click to clear this talent.'] or L['Click to choose this talent.'],.5,.8,.5)
             GameTooltip:Show()
         end
     end)
     addon:SetUIScript(slot,'OnLeave',function(self)
-        self.hover=nil;paintSlot(self)
+        self.hovered=nil;paintSlot(self)
         if GameTooltip and GameTooltip:IsOwned(self) then GameTooltip:Hide() end
     end)
     addon:SetUIScript(slot,'OnClick',function(self)
         local data=self.data
-        if data and self.ctx then self.ctx.onSelect({node=data.node,entry=data.entry,spell=data.spell,name=data.name,icon=data.icon}) end
+        if not data or not self.ctx then return end
+        -- Clicking the chosen talent again clears the choice.
+        if self.selected then self.ctx.onSelect(false)
+        else self.ctx.onSelect({node=data.node,entry=data.entry,spell=data.spell,name=data.name,icon=data.icon}) end
     end)
     d.slots[index]=slot
     return slot
 end
+-- Sizes and art for one entry: full size for a talent, half size for either of a choice's two.
+local function styleSlot(slot,size,shape)
+    slot:SetSize(size,size)
+    local fancy=atlasExists('talents-node-'..shape..'-green') and atlasExists('talents-node-'..shape..'-yellow') and atlasExists('talents-node-'..shape..'-greenglow')
+    slot.fancy,slot.shape=fancy,shape
+    local icon=fancy and size*.86 or size-4
+    slot.icon:SetSize(icon,icon)
+    slot.art:SetSize(size*1.3,size*1.3);slot.hover:SetSize(size*1.3,size*1.3)
+    if fancy then slot.art:Show();setAtlas(slot.hover,'talents-node-'..shape..'-greenglow') else slot.art:Hide() end
+    if slot.mask then
+        if fancy and shape=='circle' and setAtlas(slot.mask,'talents-node-circle-mask') then
+            slot.mask:ClearAllPoints();slot.mask:SetAllPoints(slot.icon)
+            if not slot.masked then slot.icon:AddMaskTexture(slot.mask);slot.masked=true end
+        elseif slot.masked then slot.icon:RemoveMaskTexture(slot.mask);slot.masked=false end
+    end
+end
 
 local drawn={families={retail=true,forever=true},priority=50}
 function drawn.available() return platform:CanReadTraitTree() end
+local function label(d,index)
+    local text=d.paneLabels[index]
+    if not text then text=d.content:CreateFontString(nil,'OVERLAY','GameFontNormalLarge');d.paneLabels[index]=text end
+    return text
+end
+-- The class, hero and specialization panes: hero nodes are their own pane, and the
+-- others split at the widest empty strip (the class tree on the left, the specialization's on the right).
+local function panes(nodes,hero)
+    local result={}
+    local plain,heroNodes={},{}
+    for _,node in ipairs(nodes) do if node.hero and node.hero==hero then heroNodes[#heroNodes+1]=node else plain[#plain+1]=node end end
+    table.sort(plain,function(a,b) return a.x<b.x end)
+    local split,widest=nil,PANE_GAP
+    for index=2,#plain do
+        local gap=plain[index].x-plain[index-1].x
+        if gap>widest then widest,split=gap,index end
+    end
+    local function box(list,kind)
+        if #list==0 then return end
+        local low,high=list[1].x,list[1].x
+        for _,node in ipairs(list) do low=math.min(low,node.x);high=math.max(high,node.x) end
+        result[#result+1]={kind=kind,x=(low+high)/2}
+    end
+    if split then
+        local left,right={},{}
+        for index,node in ipairs(plain) do if index<split then left[#left+1]=node else right[#right+1]=node end end
+        box(left,'class');box(right,'spec')
+    else box(plain,'tree') end
+    box(heroNodes,'hero')
+    return result
+end
 local function draw(d,ctx)
     local view,why=platform:GetTraitView(ctx.spec)
     if not view then return nil,why end
@@ -487,43 +582,67 @@ local function draw(d,ctx)
     local minX,minY,maxX,maxY
     for _,id in ipairs(view.order) do
         local node=view.nodes[id]
-        if node and node.visible and node.kind~=SUBTREE_SELECTION and #node.entries>0 and (not node.hero or node.hero==hero) then
+        -- A hero tree's talents belong to the tree being shown even when the client
+        -- marks them hidden until that hero tree is bought.
+        if node and node.kind~=SUBTREE_SELECTION and #node.entries>0 and (node.hero and node.hero==hero or not node.hero and node.visible) then
             shownNodes[#shownNodes+1]=node
             minX=math.min(minX or node.x,node.x);maxX=math.max(maxX or node.x,node.x)
             minY=math.min(minY or node.y,node.y);maxY=math.max(maxY or node.y,node.y)
         end
     end
     if #shownNodes==0 then return nil,'talent-tree-unavailable' end
-    local margin=NODE
-    local width,height=(maxX-minX)/10+margin*2,(maxY-minY)/10+margin*2
-    local scale=math.max(.35,math.min(1,(d.canvasWidth or width)/width,(d.canvasHeight or height)/height))
+    local margin,top=NODE+8,NODE+30
+    local width,height=(maxX-minX)/10+margin*2,(maxY-minY)/10+margin+top
+    local scale=math.max(.35,math.min(1.25,(d.canvasWidth or width)/width,(d.canvasHeight or height)/height))
     d.content:SetScale(scale);d.content:SetSize(width,height)
     d.content:ClearAllPoints();d.content:SetPoint('TOPLEFT',d.canvas,'TOPLEFT',math.max(0,((d.canvasWidth or width)-width*scale)/2)/scale,-math.max(0,((d.canvasHeight or height)-height*scale)/2)/scale)
+    -- The spec's own backdrop, when Blizzard's talent art is loaded.
+    local backdrop
+    local util=rawget(_G,'ClassTalentUtil')
+    if type(util)=='table' and type(util.GetVisualsForSpecID)=='function' and traitID(view.spec) then
+        local ok,visuals=pcall(util.GetVisualsForSpecID,view.spec)
+        backdrop=ok and type(visuals)=='table' and type(visuals.background)=='string' and visuals.background or nil
+    end
+    if backdrop and setAtlas(d.background,backdrop) then d.background:Show() else d.background:Hide() end
     local drawnAt={}
     local used=0
     for _,node in ipairs(shownNodes) do
-        local cx,cy=(node.x-minX)/10+margin,(node.y-minY)/10+margin
+        local cx,cy=(node.x-minX)/10+margin,(node.y-minY)/10+top
         drawnAt[node.id]={cx,cy}
         local choice=node.kind==SELECTION and #node.entries>1
         for position,entry in ipairs(node.entries) do
             used=used+1
             local slot=d.slots[used] or newSlot(d,used)
             local identity=platform:GetTraitEntryIdentity(view.config,entry) or {}
-            local size=choice and HALF or NODE
-            slot:SetSize(size,size)
+            styleSlot(slot,choice and HALF or NODE,shapeOf(identity.entryType))
             slot:ClearAllPoints()
-            local offset=choice and (position-(#node.entries+1)/2)*(HALF+GAP) or 0
+            local offset=choice and (position-(#node.entries+1)/2)*(HALF+GAP+6) or 0
             slot:SetPoint('CENTER',d.content,'TOPLEFT',cx+offset,-cy)
             slot.icon:SetTexture(identity.icon or QUESTION)
             slot.data={node=node.id,entry=choice and entry or nil,spell=identity.spellID,name=identity.name,icon=identity.icon,maxRanks=node.maxRanks,choice=choice}
             slot.ctx=ctx
             slot.rank:SetText(node.maxRanks>1 and tostring(node.maxRanks) or '')
             slot.selected=selection~=nil and selection.node==node.id and (not choice or selection.entry==entry)
-            slot.hover=nil;paintSlot(slot);slot:Show()
+            slot.hovered=nil;paintSlot(slot);slot:Show()
         end
     end
     for index=used+1,#d.slots do d.slots[index]:Hide();d.slots[index].data=nil;d.slots[index].ctx=nil end
-    -- Lines between linked talents, where the client can draw them.
+    -- Pane titles.
+    local request=ctx.window and ctx.window.request
+    local className=select(1,UnitClass('player'))
+    local specName
+    for _,spec in ipairs(request and request.specs or {}) do if spec.id==view.spec then specName=spec.name end end
+    local heroName
+    for _,candidate in ipairs(view.heroes) do if candidate.id==hero then heroName=candidate.name end end
+    local titles=0
+    for _,pane in ipairs(panes(shownNodes,hero)) do
+        titles=titles+1
+        local text=label(d,titles)
+        local name=pane.kind=='class' and className or pane.kind=='spec' and specName or pane.kind=='hero' and heroName or nil
+        text:ClearAllPoints();text:SetPoint('TOP',d.content,'TOPLEFT',(pane.x-minX)/10+margin,-8);text:SetText(name or '');text:Show()
+    end
+    for index=titles+1,#d.paneLabels do d.paneLabels[index]:Hide() end
+    -- Faint lines between talents that lead to one another (what each one requires).
     local lines=0
     if d.content.CreateLine then
         for _,node in ipairs(shownNodes) do
@@ -533,8 +652,9 @@ local function draw(d,ctx)
                     lines=lines+1
                     local line=d.lines[lines]
                     if not line then
-                        line=d.content:CreateLine(nil,'BACKGROUND');line:SetThickness(2);line:SetColorTexture(.5,.52,.55,.9);d.lines[lines]=line
+                        line=d.content:CreateLine(nil,'BACKGROUND');line:SetThickness(3);d.lines[lines]=line
                     end
+                    line:SetColorTexture(.55,.58,.62,.55)
                     line:SetStartPoint('TOPLEFT',d.content,from[1],-from[2]);line:SetEndPoint('TOPLEFT',d.content,to[1],-to[2]);line:Show()
                 end
             end
@@ -558,6 +678,7 @@ function drawn.open(ctx)
     function handle.Close()
         for _,slot in ipairs(d.slots) do slot:Hide();slot.data=nil;slot.ctx=nil end
         for _,line in ipairs(d.lines) do line:Hide() end
+        for _,text in ipairs(d.paneLabels) do text:Hide() end
         d.canvas:Hide()
     end
     local done,why=handle.Reload(nil,ctx)
