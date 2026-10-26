@@ -461,6 +461,8 @@ def main():
             ['luajit', 'tests/rotation_specs.lua'],
             ['lua5.1', 'tests/assisted_display.lua'],
             ['luajit', 'tests/assisted_display.lua'],
+            ['lua5.1', 'tests/tooltips.lua'],
+            ['luajit', 'tests/tooltips.lua'],
             ['lua5.1', 'tests/retail_glow.lua'],
             ['luajit', 'tests/retail_glow.lua'],
             ['lua5.1', 'tests/condition_support.lua'],
