@@ -347,6 +347,8 @@ def main():
             ['lua5.1', 'tests/platform_spellbook.lua'],
             ['lua5.1', 'tests/platform_auras.lua'],
             ['lua5.1', 'tests/aura_conditions.lua'],
+            ['lua5.1', 'tests/aura_lookup_by_name.lua'],
+            ['luajit', 'tests/aura_lookup_by_name.lua'],
             ['lua5.1', 'tests/platform_unit_power.lua'],
             ['lua5.1', 'tests/platform_player_movement.lua'],
             ['luajit', 'tests/platform_player_movement.lua'],
