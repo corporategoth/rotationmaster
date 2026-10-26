@@ -1,5 +1,7 @@
 # Rotation editor
 
+Import/Export has three actions that are easy to confuse. With Replace selected entry ticked, the first button reads **Compare import** and shows what would change in the selected rotation. For a new named copy it reads **Preview import** and opens everything the import contains in the same read-only view a Built In has (header, specializations, switch condition, steps and cooldowns); it saves nothing. **Check import** is different: it lists problems with the text, such as why it cannot be imported and any unsupported data.
+
 Open `/rm config` and select Rotations. Default and custom rotations share the same view. Defaults are read-only: inspect their cards and conditions, enable or disable them, or use Clone to edit. A clone is independent and keeps its original source for comparison.
 
 Custom rotations use a private draft. Apply saves the draft; Discard restores the saved rotation. Undo and Redo step through structural, field and condition edits. Closing the window keeps the draft available during this session. Apply before `/reload` or logout to retain edits across sessions. Switching rotations or opening comparison/transfer while a draft is dirty offers Apply, Discard or Cancel.

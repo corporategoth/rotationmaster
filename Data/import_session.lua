@@ -48,5 +48,22 @@ function data.NewImportSession(codec,options)
         local diff=data.DiffRotations(left,right)
         return {key="import",left=left,right=right,diff=diff}
     end
+    -- The staged candidate as a detached copy to show in full, whether or not it
+    -- is ready to import: its body and, for an envelope, the manifest around it.
+    -- Nothing is validated, registered or evaluated here; a problem with the
+    -- data is for the caller to report, never a reason to mutate the candidate.
+    function session:Preview(token)
+        if not current or token~=current.token then return nil,"stale-import" end
+        local envelope=current.kind=="envelope"
+        local incoming=envelope and current.value.body or current.value
+        if type(incoming)~="table" then return nil,"no-previewable-body" end
+        local body,why=data.CopyData(incoming);if not body then return nil,why.code end
+        local manifest
+        if envelope then
+            manifest,why=data.CopyData(current.value);if not manifest then return nil,why.code end
+            manifest.body=nil
+        end
+        return {kind=current.kind,body=body,manifest=manifest}
+    end
     return session
 end

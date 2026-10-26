@@ -69,11 +69,13 @@ function addon:BindWorkbenchHelp(control,descriptor)
     local function onEnter(...)
         if not current() then return end
         if enter then enter(...) end
-        if not current() or not descriptor.brief or not GameTooltip then return end
-        if tooltipOwned(control) then if descriptor.brief~=control.tooltip then GameTooltip:AddLine(descriptor.brief,1,1,1,true) end
+        -- A brief may be a function, read each time the tip opens, for a control whose meaning follows a mode.
+        local brief=descriptor.brief;if type(brief)=='function' then local ok,value=pcall(brief);brief=ok and value or nil end
+        if not current() or not brief or not GameTooltip then return end
+        if tooltipOwned(control) then if brief~=control.tooltip then GameTooltip:AddLine(brief,1,1,1,true) end
         else
             if not pcall(GameTooltip.SetOwner,GameTooltip,control,'ANCHOR_RIGHT') then return end
-            GameTooltip:SetText(descriptor.brief,1,1,1,1,true)
+            GameTooltip:SetText(brief,1,1,1,1,true)
         end
         GameTooltip:Show()
     end

@@ -9,6 +9,8 @@ end
 -- A Built In's on/off switch, live from the library when it is loaded,
 -- else the workspace's copy of the source (its enabled flag).
 local function builtinSwitch(workspace)
+    -- An import preview shows the switch the incoming rotation carries; it is nobody's setting.
+    if workspace.preview then return workspace:Snapshot().disabled~=true end
     if type(addon.GetBuiltinSwitch)=='function' then return (addon:GetBuiltinSwitch(workspace.builtin)) end
     local source=workspace.source;return type(source)=='table' and (source.switchedOn==nil and source.enabled or source.switchedOn) or nil
 end
@@ -17,11 +19,13 @@ end
 -- the slot at the start of row 2 (the Read-Only pill, or Undo and Redo).
 local SPEC_WIDTH,HEADER_GAP,KIND_WIDTH=172,8,78
 local function builtinOverrides(workspace)
-    return workspace.readOnly and type(addon.GetBuiltinOverrides)=='function' and addon:GetBuiltinOverrides(workspace.builtin) or nil
+    return workspace.readOnly and not workspace.preview and type(addon.GetBuiltinOverrides)=='function' and addon:GetBuiltinOverrides(workspace.builtin) or nil
 end
-function addon:CreateRotationEditor(parent,spec,id,onSelect)
-    if parent.rmRotationEditor then return parent.rmRotationEditor:Open(spec,id,onSelect) end
-    local workspace,why=self:GetRotationEditWorkspace(spec,id);if not workspace then return nil,why end
+-- `detached` is a workspace made by NewRotationPreviewWorkspace: the pane then
+-- shows an incoming rotation read-only and writes nothing anywhere.
+function addon:CreateRotationEditor(parent,spec,id,onSelect,detached)
+    if parent.rmRotationEditor then return parent.rmRotationEditor:Open(spec,id,onSelect,detached) end
+    local workspace,why=detached,nil;if not workspace then workspace,why=self:GetRotationEditWorkspace(spec,id) end;if not workspace then return nil,why end
     local pane={frame=self:TrackWorkbenchSize(CreateFrame('Frame',nil,parent)),workspace=workspace,view={collapsed={},expanded={},detailsHeights={}},active=false,tools={}}
     pane.frame:SetPoint('TOPLEFT',parent,'TOPLEFT',0,0)
     -- The field has no label of its own: it is the wide one beside the
@@ -177,9 +181,9 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     function pane:RenderIdentifier(snapshot)
         local locked=self.workspace.readOnly or workspace.fallback
         if locked then
-            local identifier=workspace.fallback and 'default' or addon.GetBuiltinIdentifier and addon:GetBuiltinIdentifier(self.workspace.builtin) or ''
+            local identifier=workspace.fallback and 'default' or workspace.preview and (type(snapshot.identifier)=='string' and snapshot.identifier or '') or addon.GetBuiltinIdentifier and addon:GetBuiltinIdentifier(self.workspace.builtin) or ''
             self.identifier:SetText(identifier);self.identifier:SetTextColor(.75,.75,.75);self.identifier:SetAlpha(.75)
-            self.identifier.tooltip=workspace.fallback and L['The fallback is always /rm set default.'] or L["A Built In's identifier is fixed. Use it with /rm set."]
+            self.identifier.tooltip=workspace.fallback and L['The fallback is always /rm set default.'] or not workspace.preview and L["A Built In's identifier is fixed. Use it with /rm set."] or nil
             return
         end
         self.identifier:SetAlpha(1)
@@ -226,7 +230,14 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         self:RenderIdentifier(snapshot)
         self:RenderSpecs(snapshot)
         local amber={1,.72,.25};local white={1,1,1}
-        if self.workspace.readOnly then
+        if self.workspace.preview then
+            -- The incoming priority, as it would be saved; nothing here is a setting of this profile.
+            if not self.priority:HasFocus() then self.priority:SetText(tostring(snapshot.priority~=nil and snapshot.priority or 0)) end
+            self.priority:SetTextColor(white[1],white[2],white[3]);self.priority.tooltip=nil;self.enable.tooltip=nil
+            self.priorityLabel:SetText(L['Priority']);self.priorityLabel:SetTextColor(1,1,1);self.enable:GetFontString():SetTextColor(white[1],white[2],white[3])
+            self.name:SetAlpha(.75);self.description:SetAlpha(.75)
+            self.priorityDown:Disable();self.priorityUp:Disable();self.enable:Disable()
+        elseif self.workspace.readOnly then
             local overrides=builtinOverrides(self.workspace) or {}
             if not self.priority:HasFocus() then self.priority:SetText(tostring(overrides.effectivePriority or 0)) end
             -- An override colours the value (the priority number, the pill's
@@ -235,6 +246,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
             self.priority:SetTextColor(color[1],color[2],color[3])
             self.priorityLabel:SetText(L['Priority']);self.priorityLabel:SetTextColor(1,1,1)
             color=overrides.enabled~=nil and amber or white
+            self.priorityDown:Enable();self.priorityUp:Enable();self.enable:Enable()
             self.enable:GetFontString():SetTextColor(color[1],color[2],color[3])
             self.enable.tooltip=overrides.enabled~=nil and string.format(L['Your setting for this profile. The Built In ships %s.'],overrides.shippedEnabled and L['enabled'] or L['disabled']) or L['As the Built In ships. Click to change it for this profile.']
             self.priority.tooltip=overrides.priority~=nil and string.format(L['Your priority for this profile; the Built In ships with %d.'],overrides.shippedPriority or 0) or nil
@@ -243,6 +255,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
             if not self.priorityDirty then self.priority:SetText(tostring(snapshot.priority~=nil and snapshot.priority or 0));self.priority:SetTextColor(1,1,1) end
             self.priorityLabel:SetText(L['Priority']);self.priorityLabel:SetTextColor(1,1,1);self.enable:GetFontString():SetTextColor(1,1,1);self.enable.tooltip=nil;self.priority.tooltip=nil
             self.name:SetAlpha(1);self.description:SetAlpha(1)
+            self.priorityDown:Enable();self.priorityUp:Enable();self.enable:Enable()
         end
     end
     -- A Built In priority or Enabled change is saved now, then selection follows.
@@ -329,6 +342,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     end,'copy')
     table.remove(pane.tools);pane.clone:Hide()
     pane.enable=tool(workspace.readOnly and L['Enable Built In'] or L['Enabled'],116,function()
+        if workspace.preview then return end
         if workspace.readOnly then
             local current=builtinSwitch(workspace)==true;local ok,problem=addon:SetDefaultRotationEnabled(workspace.builtin,not current)
             if ok then if workspace.source then workspace.source.enabled=not current end;pane:BuiltinOverrideChanged() else pane:Message(problem) end
@@ -369,7 +383,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     function pane:SwitchNotes()
         local lines,amber={},false
         local scope
-        if self.workspace.readOnly and addon.GetDefaultRotation then local view=addon:GetDefaultRotation(self.workspace.builtin);scope=view and view.applicability
+        if self.workspace.readOnly and not self.workspace.preview and addon.GetDefaultRotation then local view=addon:GetDefaultRotation(self.workspace.builtin);scope=view and view.applicability
         else for _,kind in ipairs({'origins','imports'}) do local record=self.workspace.reserved and self.workspace.reserved[kind];if type(record)=='table' and type(record.manifest)=='table' and record.manifest.applicability then scope=record.manifest.applicability;break end end end
         local where=addon.DescribeApplicability and addon:DescribeApplicability(scope)
         local specs=data.NormalizeRotationSpecs(self.workspace:Snapshot().specs) or nil
@@ -379,7 +393,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
             local current=addon:GetCurrentRotationSpecValue()
             lines[#lines+1]=string.format(L['You are playing %s; this rotation is for %s, so it is not selectable now.'],current~=nil and addon:DescribeRotationSpecValue(current) or L['no specialization yet'],addon:DescribeRotationSpecs(specs))
         end
-        if not self.workspace.fallback and spec==addon.currentSpec and addon.GetSwitchOverlaps then
+        if not self.workspace.fallback and not self.workspace.preview and spec==addon.currentSpec and addon.GetSwitchOverlaps then
             local overlap=addon:DescribeSwitchOverlap(addon:GetSwitchOverlaps(spec)[self.workspace.id])
             if overlap then lines[#lines+1]=overlap;amber=true end
         end
@@ -392,7 +406,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         -- The live bar steps inside the amber overlap edge when that shows.
         local inset=amber and 4 or 0;local bar=self.switchLiveBar
         bar:ClearAllPoints();bar:SetPoint('TOPLEFT',self.switch,'TOPLEFT',inset,0);bar:SetPoint('BOTTOMLEFT',self.switch,'BOTTOMLEFT',inset,0)
-        local pill=L['Built In: it cannot be edited. Duplicate makes your own copy; Enabled and Priority are your settings for this profile.']
+        local pill=self.workspace.preview and L['Import preview: this is the incoming rotation, read-only. Nothing is saved until you click Import.'] or L['Built In: it cannot be edited. Duplicate makes your own copy; Enabled and Priority are your settings for this profile.']
         self.readOnlyPill.tooltip=where and pill..'\n\n'..where or pill
     end
     pane.delete=tool(L['Delete'],24,function() if pane.ConfirmDelete then pane:ConfirmDelete() end end)
@@ -710,8 +724,8 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         if addon.activeRotationEditor==self then addon.activeRotationEditor=nil end
         self:StopLiveStatus();if addon.liveStatusLastPane==self then addon.liveStatusLastPane=nil end
     end
-    function pane:Open(nextSpec,nextId,nextSelect)
-        local selected,problem=addon:GetRotationEditWorkspace(nextSpec,nextId);if not selected then return nil,problem end
+    function pane:Open(nextSpec,nextId,nextSelect,nextDetached)
+        local selected,problem=nextDetached,nil;if not selected then selected,problem=addon:GetRotationEditWorkspace(nextSpec,nextId) end;if not selected then return nil,problem end
         if self.active then self:Release() end
         workspace=selected;spec=nextSpec;id=selected.id;onSelect=nextSelect;self.workspace=workspace
         workspace.uiView=workspace.uiView or {collapsed={},expanded={},detailsHeights={}};self.view=workspace.uiView
@@ -727,7 +741,8 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         -- scan is event driven; a missed event must not leave a false warning),
         -- and until it lands nothing is judged.
         if addon.EnsureFreshButtonIndex then addon:EnsureFreshButtonIndex(10) end
-        addon.activeRotationEditor=self
+        -- An import preview is nobody's active editor: refreshes of the profile's rotations never reach it.
+        if not workspace.preview then addon.activeRotationEditor=self end
         for _,control in ipairs(self.tools) do
             addon:SetUIScript(control,'OnClick',function() if alive() then control.action() end end)
         end
@@ -737,17 +752,17 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         addon:SetUIScript(self.enable,'OnClick',function() if alive() then self.enable.action() end end)
         addon:SetUIScript(self.delete,'OnClick',function() if alive() then self.delete.action() end end)
         addon:SetUIScript(self.overrideReset,'OnClick',function()
-            if not alive() or not workspace.readOnly or not addon.ResetBuiltinOverrides then return end
+            if not alive() or not workspace.readOnly or workspace.preview or not addon.ResetBuiltinOverrides then return end
             local ok,problem=addon:ResetBuiltinOverrides(workspace.builtin)
             if ok then self:BuiltinOverrideChanged() else self:Message(problem) end
         end)
         local function setBuiltinPriority(value)
-            if not alive() or not workspace.readOnly or not addon.SetBuiltinPriority then return end
+            if not alive() or not workspace.readOnly or workspace.preview or not addon.SetBuiltinPriority then return end
             local ok,problem=addon:SetBuiltinPriority(workspace.builtin,value)
             if ok then self:Message('');self:BuiltinOverrideChanged() else self.priority:SetTextColor(1,.35,.35);self:Message(problem=='invalid-priority' and L['Switch priority must be a whole number between -100000 and 100000.'] or problem) end
         end
         local function stepPriority(delta)
-            if not alive() or workspace.fallback then return end
+            if not alive() or workspace.fallback or workspace.preview then return end
             local text=self.priority:GetText();local number=tonumber(text);if text~='' and number==nil then return end
             local value=data.GetRotationPriority(text=='' and nil or number);if value==nil then return end
             value=math.max(-100000,math.min(100000,value+delta))
@@ -780,14 +795,14 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         addon:SetUIScript(self.priorityDown,'OnClick',function() stepPriority(-1) end)
         addon:SetUIScript(self.priorityUp,'OnClick',function() stepPriority(1) end)
         local function commitBuiltinPriority()
-            if not alive() or not workspace.readOnly then return end
+            if not alive() or not workspace.readOnly or workspace.preview then return end
             local text=self.priority:GetText();local current=builtinOverrides(workspace)
             local value=text:match('^%s*$') and current and current.shippedPriority or tonumber(text)
             if current and value==current.effectivePriority then self:RenderPriority(workspace:Snapshot());return end
             setBuiltinPriority(value)
         end
         addon:SetUIScript(self.priority,'OnTextChanged',function(_,user)
-            if not alive() or not user then return end
+            if not alive() or not user or workspace.preview then return end
             local text=self.priority:GetText()
             if text~='' and text~='-' and not text:match('^%-?%d+$') then self.priority:SetText(self.lastPriorityText or '0');return end
             self.lastPriorityText=text
@@ -795,7 +810,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         end)
         addon:SetUIScript(self.priority,'OnEnterPressed',function(control) control:ClearFocus();commitBuiltinPriority() end)
         addon:SetUIScript(self.priority,'OnEditFocusLost',function() commitBuiltinPriority() end)
-        addon:SetUIScript(self.priority,'OnEditFocusGained',workspace.fallback and function(control) control:ClearFocus() end or nil)
+        addon:SetUIScript(self.priority,'OnEditFocusGained',(workspace.fallback or workspace.preview) and function(control) control:ClearFocus() end or nil)
         addon:SetUIScript(self.priority,'OnEnter',function()
             if not alive() or not GameTooltip then return end
             local text=L['Higher numbers are tried first; your rotations and Built Ins compete on priority alone. The fallback is used only when no other rotation matches. Equal priorities use name, then identity. Blank means zero.']
@@ -875,7 +890,10 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         if addon.liveStatusPane==self then addon.liveStatusPane=nil end
     end
     function pane:StartLiveStatus()
-        self:StopLiveStatus();addon.liveStatusLastPane=self
+        self:StopLiveStatus()
+        -- Incoming conditions are never evaluated against the live game: an import preview has no bars.
+        if self.workspace.preview then self:ClearLiveStatus();return end
+        addon.liveStatusLastPane=self
         local interval=self:LiveInterval()
         if not self.active or not interval or type(addon.ScheduleRepeatingTimer)~='function' then self:ClearLiveStatus();return end
         local token=self.generation
@@ -978,7 +996,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     addon:InstallRotationUnsaved(pane);addon:InstallRotationChangeReview(pane)
     pane.ready=true;parent.rmRotationEditor=pane
     if addon.InstallRotationNavigation then addon:InstallRotationNavigation(pane) end
-    return pane:Open(spec,id,onSelect)
+    return pane:Open(spec,id,onSelect,detached)
 end
 -- General > Live Status Update Frequency changed: the open editor (if any)
 -- restarts its dots at the new interval, or clears them at 0.

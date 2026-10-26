@@ -250,7 +250,17 @@ function addon:BuildAnnounceSettings(p)
                 if not entry.outputs then entry.value=entry.value or ''end
                 if not transferCurrent()then return false end;store.profile.announces=store.profile.announces or {}
                 if settings.mode=='replace' and selected then entry.name=selected.name;store.profile.announces[p.selection]=entry else entry.name=settings.name; store.profile.announces[#store.profile.announces+1]=entry;p.selection=#store.profile.announces end;p.creating=false;p.newAnnounce=nil;return true
-            end,{canReplace=selected~=nil,selectedName=selected and (self:SettingsNonempty(selected.name) or named[p.selection].name),fallbackName=L['Imported announcement'],originalName=function(input) local decoded=codec:Decode(input);local entry=decoded and type(decoded.value)=='table' and decoded.value.announcement;if type(entry)=='table' then if self:SettingsNonempty(entry.name) then return entry.name end;local info=entryInfo(entry);return info and info.name end end})
+            end,{canReplace=selected~=nil,selectedName=selected and (self:SettingsNonempty(selected.name) or named[p.selection].name),fallbackName=L['Imported announcement'],originalName=function(input) local decoded=codec:Decode(input);local entry=decoded and type(decoded.value)=='table' and decoded.value.announcement;if type(entry)=='table' then if self:SettingsNonempty(entry.name) then return entry.name end;local info=entryInfo(entry);return info and info.name end end,
+                review={kind='announcement',
+                    parse=function(input)
+                        local decoded,errorText=codec:Decode(input);local wrapper=decoded and decoded.value;local entry=type(wrapper)=='table'and wrapper.announcement
+                        if type(wrapper)~='table' or wrapper.format~='RM-Announcement' or (wrapper.version~=1 and wrapper.version~=2) or wrapper.version==1 and type(entry)=='table'and entry.outputs~=nil or wrapper.version==2 and type(entry)=='table'and entry.outputs==nil or not self:IsValidAnnouncement(entry)then return nil,errorText or L['Invalid announcement.'] end
+                        return self:CopySettingsData(entry)
+                    end,
+                    current=function() return selected end,
+                    problems=function(entry,dialog) local list={}
+                        if entry.type=='macro' and not identifierFree(entry.identifier,dialog.mode=='replace' and selected or nil) then list[#list+1]=L['Use a unique Via Script/Macro identifier.'] end;return list
+                    end}})
             dialog=p.textDialog;transferSerial=dialog and dialog.serial
         end})
     -- The page name is in the tab and title bar; the page "?" is the shell's.

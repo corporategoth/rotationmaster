@@ -13,6 +13,23 @@ function addon:ShowCustomConditionTransfer(parent,update,key,condition)
     local dialog
     local options={canReplace=key~=nil and self.db.global.custom_conditions[key]~=nil,selectedName=key,fallbackName=L['IMPORTED_CONDITION'],valid=valid,
         originalName=function(input) local parsed=self:ParseCustomConditionImport(input,codec);return parsed and parsed.name end,
+        review={kind='customcondition',
+            parse=function(input)
+                local parsed,why=self:ParseCustomConditionImport(input,codec)
+                if not parsed then
+                    if self.ParseFunctionBundleImport and self:ParseFunctionBundleImport(input,codec) then return nil,L['This is a dependency bundle. Import opens the bundle review.'] end
+                    return nil,why
+                end
+                local record=self:CopySettingsData(parsed.condition);record.name=parsed.name;return record
+            end,
+            current=function() local record=self:CopySettingsData(condition);record.name=key;return record end,
+            problems=function(record,dialog)
+                local list={};local destination=dialog.mode=='replace' and key or dialog.name:GetText()
+                if not self:IsCustomConditionIdentifier(destination,dialog.mode=='replace') then list[#list+1]=L['Use letters, numbers and underscores for the condition identifier.']
+                elseif dialog.mode=='new' and self:describeCondition(destination)~=nil then list[#list+1]=L['That condition identifier already exists.'] end
+                return list
+            end,
+            notes=function() return {L['This import contains Lua code. Only continue if you trust its author. Import opens the code for review; saving the condition can execute it.']} end},
         onClose=function()
             if dialog then owner.widgets[dialog]=nil;dialog.rmConditionOwner=nil end
             if p.active then p:Release() end

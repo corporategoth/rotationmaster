@@ -52,7 +52,26 @@ function addon:BuildProfileSettings(p)
                     local target=selectedName==db:GetCurrentProfile() and db.profile or db.profiles[selectedName]
                     return target==selected and self:SettingsDataEqual(target,baseline)
                 end,
-                sections=function(dialog)return {{title=L['Import/Export'],text=L['Help.Transfers.profile_overview']},{title=L['Destination'],text=dialog.mode=='replace' and L['Help.Transfers.profile_replace'] or L['Help.Transfers.profile_new']}}end},originalName=function(input) local decoded=codec:Decode(input);return decoded and type(decoded.value)=='table' and decoded.value.name end})
+                sections=function(dialog)return {{title=L['Import/Export'],text=L['Help.Transfers.profile_overview']},{title=L['Destination'],text=dialog.mode=='replace' and L['Help.Transfers.profile_replace'] or L['Help.Transfers.profile_new']}}end},originalName=function(input) local decoded=codec:Decode(input);return decoded and type(decoded.value)=='table' and decoded.value.name end,
+                review={kind='profile',maxRows=400,
+                    parse=function(input)
+                        local decoded,errorText=codec:Decode(input);local wrapper=decoded and decoded.value;local candidate=type(wrapper)=='table' and self:ProfileFromPortable(wrapper.profile,{preserveLegacyBodies=true})
+                        if type(wrapper)~='table' or wrapper.format~='RM-Profile' or wrapper.version~=1 or type(candidate)~='table' then return nil,errorText or L['Invalid profile.'] end
+                        return {name=type(wrapper.name)=='string' and wrapper.name or nil,profile=candidate}
+                    end,
+                    current=function() return selected and {name=selectedName,profile=selected} end,
+                    problems=function(entry,dialog) local list={}
+                        local copy=self:CopySettingsData(entry.profile)
+                        local plan,migrationError=self:PlanRotationProfileMigration(copy,copy.rotationFallbackID or DEFAULT)
+                        if not plan then list[#list+1]=tostring(migrationError)
+                        else local migrated,why=self:ApplyRotationProfileMigration(plan);if not migrated or not self:ValidateProfileTransfer(copy) then list[#list+1]=tostring(why or L['Invalid profile.']) end end
+                        if dialog.mode=='new' then for _,name in ipairs(db:GetProfiles()) do if name==dialog.name:GetText() then list[#list+1]=L['This name is already in use.'];break end end
+                        elseif selected then
+                            local target=selectedName==db:GetCurrentProfile() and db.profile or db.profiles[selectedName]
+                            if target~=selected or not self:SettingsDataEqual(baseline,self:CopySettingsData(target)) then list[#list+1]=L['The selected profile changed. Reopen the import window.'] end
+                        end
+                        return list
+                    end}})
         end},function(left,right)
             local first,second=saved(left.name),saved(right.name)
             if not first or not second then p:Message(L['Settings changed elsewhere. Cancel to reload them before applying.']);return end
