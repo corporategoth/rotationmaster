@@ -4,7 +4,7 @@ local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- one opening, and active color children retain their original anchor frame.
 function addon:CreateWorkbenchSelector()
     local menu={frame=CreateFrame('Frame',nil,UIParent),rows={},serial=0,revision=0}
-    local frame=menu.frame;frame:SetFrameStrata('FULLSCREEN_DIALOG');frame:SetToplevel(true);frame:SetClampedToScreen(true);frame:EnableMouse(true);self:MakeWindowOpaque(frame)
+    local frame=menu.frame;frame:SetClampedToScreen(true);frame:EnableMouse(true);self:MakeWindowOpaque(frame)
     menu.search=self:CreateWorkbenchEditBox(frame);self:AttachWorkbenchSearchHint(menu.search);menu.search:SetPoint('TOPLEFT',8,-8);menu.search:SetSize(284,24)
     menu.scroll=self:CreateWorkbenchScrollFrame(frame);menu.scroll:SetPoint('TOPLEFT',8,-40);menu.scroll:SetSize(272,210)
     menu.child=CreateFrame('Frame',nil,menu.scroll);menu.child:SetWidth(272);menu.scroll:SetScrollChild(menu.child)
@@ -96,7 +96,6 @@ function addon:CreateWorkbenchSelector()
         if frame:IsShown() then self:Hide() end
         self.serial=self.serial+1;self.active=true;self.valid=valid;self.anchor=anchor;self.entries=entries;self.selected=selected;self.changed=changed;self.inline=inline
         frame:ClearAllPoints();frame:SetPoint('TOPLEFT',anchor,'BOTTOMLEFT',0,-2);self.width=math.max(180,math.min(720,anchor:GetWidth()));frame:SetWidth(self.width);self.search:SetWidth(self.width-16)
-        local front=_G.RotationMasterFrontmostDialog;frame:SetFrameLevel(math.max(anchor:GetFrameLevel(),front and front:GetFrameLevel() or 0)+100)
         self.search:SetText('');self.scroll:ClearAllPoints();self.scroll:SetPoint('TOPLEFT',8,inline and -8 or -40)
         if inline then self.search:ClearFocus();self.search:Hide() else self.search:Show() end
         local serial=self.serial
@@ -110,7 +109,7 @@ function addon:CreateWorkbenchSelector()
             local child=menu.colorRow and menu.colorRow.colorOwner
             if down and not menu.mouseDown and over and not over(frame) and not over(anchor) and not (child and child.frame and over(child.frame)) then menu:Hide() end;menu.mouseDown=down
         end)
-        addon:RegisterWindowForEscape(self);if not inline and self:IsValid() then self.search:SetFocus() end
+        addon:OpenPopup(self,anchor);if not inline and self:IsValid() then self.search:SetFocus() end
     end
     function menu:Release() self.serial=self.serial+1;self:Hide();if self.OnRelease then self:OnRelease() end end
     self:SetUIScript(menu.search,'OnEscapePressed',function() menu:Hide() end)

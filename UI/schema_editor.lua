@@ -2,9 +2,9 @@ local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 function addon:ShowFieldSchemaEditor(owner,fields,fieldOrder,changed,ownerValid,resume,requiredFields)
     local d=owner.schemaEditor
-    if d and d.active then d.frame:Show();return d end
+    if d and d.active then d.frame:Show();addon:OpenPopup(d,owner);return d end
     d=d or {frame=CreateFrame('Frame',nil,UIParent),path={}};owner.schemaEditor=d;d.active=true;d.path={};d.serial=(d.serial or 0)+1;local serial=d.serial
-    local frame=d.frame;frame:SetSize(760,540);frame:ClearAllPoints();frame:SetPoint('CENTER');frame:EnableMouse(true);frame:SetToplevel(true);frame:SetClampedToScreen(true);addon:MakeWindowOpaque(frame)
+    local frame=d.frame;frame:SetSize(760,540);frame:ClearAllPoints();frame:SetPoint('CENTER');frame:EnableMouse(true);frame:SetClampedToScreen(true);addon:MakeWindowOpaque(frame)
     d.title=d.title or frame:CreateFontString(nil,'OVERLAY','GameFontNormal');d.chrome=d.chrome or addon:CreateWorkbenchDialogChrome(frame,d.title);d.chrome:SetContext(L['Field schema'],L['Fields'],owner.model.key)
     d.close=d.close or addon:CreateWorkbenchIconButton(frame,'close',L['Close']);d.close:SetPoint('TOPRIGHT',-5,-5)
     d.host=d.host or addon:TrackWorkbenchSize(CreateFrame('Frame',nil,frame));d.host:SetPoint('TOPLEFT',8,-64);d.host:SetSize(744,420)
@@ -69,5 +69,5 @@ function addon:ShowFieldSchemaEditor(owner,fields,fieldOrder,changed,ownerValid,
     p.scroll.workbenchBar:SetValue(restoredScroll or 0)
     if d.model.requiredFieldsInvalid then p:Message(L['Required field references need review. Apply keeps the displayed root requirements.']) end
     addon:SetUIScript(frame,'OnUpdate',function() if not valid() then d:Close() else d:UpdateActions() end end)
-    owner:HideForChild();frame:Show();addon:RegisterWindowForEscape(d);return d
+    owner:HideForChild();frame:Show();addon:OpenPopup(d,owner);return d
 end

@@ -28,5 +28,5 @@ function addon:ShowLuaDebugOutput(control)
         addon:SetUIScript(d.input,'OnEscapePressed',function() d:Hide() end);addon:SetUIScript(d.frame,'OnHide',function() d.input:ClearFocus() end)
         d.input:EnableMouseWheel(true);addon:SetUIScript(d.input,'OnMouseWheel',function(_,delta) d.scroll.workbenchBar:SetValue(d.scroll.workbenchBar:GetValue()-delta*40) end)
     end
-    d:Refresh();d.frame:Show();self:RegisterWindowForEscape(d);return d
+    d:Refresh();d.frame:Show();self:OpenPopup(d);return d
 end

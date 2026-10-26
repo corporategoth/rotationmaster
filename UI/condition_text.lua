@@ -7,7 +7,7 @@ function addon:ShowConditionText(value,heading)
     local dialog=self.conditionTextWindow
     if not dialog then
         dialog={frame=CreateFrame('Frame',nil,UIParent)};self.conditionTextWindow=dialog
-        local frame=dialog.frame;frame:SetSize(700,400);frame:SetPoint('CENTER');frame:SetToplevel(true);frame:EnableMouse(true)
+        local frame=dialog.frame;frame:SetSize(700,400);frame:SetPoint('CENTER');frame:EnableMouse(true)
         local title=frame:CreateFontString(nil,'OVERLAY','GameFontNormal');title:SetPoint('TOPLEFT',12,-8);dialog.title=title
         dialog.chrome=self:CreateWorkbenchDialogChrome(frame,title)
         local scroll=addon:CreateWorkbenchScrollFrame(frame);scroll:SetPoint('TOPLEFT',12,-36);scroll:SetSize(660,300);dialog.scroll=scroll
@@ -31,5 +31,5 @@ function addon:ShowConditionText(value,heading)
         addon.HideOnEscape(dialog)
     end
     dialog.chrome:SetContext(heading or L['Full condition text'],L['Report'],'');dialog.copy:SetText(heading and L['Copy report'] or L['Copy full condition'])
-    dialog:Show();dialog:SetText(value);return dialog
+    dialog:Show();addon:OpenPopup(dialog);dialog:SetText(value);return dialog
 end

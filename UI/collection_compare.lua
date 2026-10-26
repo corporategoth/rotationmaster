@@ -131,7 +131,7 @@ function addon:ShowCollectionComparison(p,kind,left,right,options)
     options=options or {}
     local d=p.comparison
     if not d then
-        d={frame=CreateFrame('Frame',nil,UIParent),cells={}};p.comparison=d;local frame=d.frame;frame:SetSize(760,520);frame:SetPoint('CENTER');frame:SetFrameStrata('FULLSCREEN_DIALOG');frame:SetToplevel(true);frame:SetClampedToScreen(true);frame:EnableMouse(true);self:MakeWindowOpaque(frame)
+        d={frame=CreateFrame('Frame',nil,UIParent),cells={}};p.comparison=d;local frame=d.frame;frame:SetSize(760,520);frame:SetPoint('CENTER');frame:SetClampedToScreen(true);frame:EnableMouse(true);self:MakeWindowOpaque(frame)
         d.title=frame:CreateFontString(nil,'OVERLAY','GameFontNormal');d.chrome=self:CreateWorkbenchDialogChrome(frame,d.title)
         d.leftHeading=frame:CreateFontString(nil,'OVERLAY','GameFontNormal');d.leftHeading:SetPoint('TOPLEFT',12,-64);d.rightHeading=frame:CreateFontString(nil,'OVERLAY','GameFontNormal');d.rightHeading:SetPoint('TOPLEFT',366,-64)
         d.close=self:CreateWorkbenchIconButton(frame,'close',L['Close']);d.close:SetPoint('TOPRIGHT',-5,-5);self:SetUIScript(d.close,'OnClick',function() frame:Hide() end)
@@ -171,5 +171,5 @@ function addon:ShowCollectionComparison(p,kind,left,right,options)
     d.chrome:SetContext(options.title or L['Compare']..': '..(left.name or '')..' / '..(right.name or ''),L['Read-only'],addon.pretty_name);d.leftHeading:SetText(options.leftHeading or left.name or L['Selected entry']);d.rightHeading:SetText(options.rightHeading or right.name or L['Compared entry'])
     self:SetUIScript(d.frame,'OnUpdate',function() if not valid() then d.frame:Hide() end end)
     self:SetUIScript(d.toggle,'OnClick',function() if valid() then showSame=not showSame;draw() end end)
-    p.cleanups[#p.cleanups+1]=function() d.frame:Hide() end;d.frame:Show();self:RegisterWindowForEscape(d);draw();return d
+    p.cleanups[#p.cleanups+1]=function() d.frame:Hide() end;d.frame:Show();self:OpenPopup(d,p);draw();return d
 end

@@ -8,7 +8,7 @@ function addon:ShowLuaInputProbe()
     local d=self.luaInputProbe
     if not d then
         d={frame=CreateFrame('Frame',nil,UIParent),session=0};self.luaInputProbe=d
-        local frame=d.frame;frame:SetSize(600,300);frame:SetPoint('CENTER');frame:SetToplevel(true);frame:EnableMouse(true)
+        local frame=d.frame;frame:SetSize(600,300);frame:SetPoint('CENTER');frame:EnableMouse(true)
         d.title=frame:CreateFontString(nil,'OVERLAY','GameFontNormal');d.chrome=self:CreateWorkbenchDialogChrome(frame,d.title)
         d.chrome:SetContext(L['Native input test'],L['Input test'],'')
         local instructions=frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');instructions:SetPoint('TOPLEFT',12,-40);instructions:SetWidth(576);instructions:SetHeight(38);instructions:SetJustifyH('LEFT');instructions:SetWordWrap(true)
@@ -41,6 +41,6 @@ function addon:ShowLuaInputProbe()
     self:SetUIScript(d.stockFont,'OnClick',function() selectFont('stock') end)
     self:SetUIScript(d.rmFont,'OnClick',function() selectFont('rm') end)
     self:SetUIScript(d.close,'OnClick',function() if d.active and d.session==session then d:Hide() end end)
-    d.frame:Show();d.edit:SetText(sample);d.edit:SetCursorPosition(0);selectFont('stock')
+    d.frame:Show();addon:OpenPopup(d);d.edit:SetText(sample);d.edit:SetCursorPosition(0);selectFont('stock')
     return d
 end

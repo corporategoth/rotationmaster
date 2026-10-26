@@ -6,7 +6,7 @@ function addon:CreateConditionTypePicker(parent,scope,current,choose,alive,reuse
     local picker=reuse or {rows={},categories={}}
     local width=math.max(300,math.min(540,parent:GetWidth()-48))
     local host=picker.host or CreateFrame("Frame",nil,parent);picker.host=host;host:SetSize(width+8,300);host:SetClampedToScreen(true)
-    host:SetFrameStrata("FULLSCREEN_DIALOG");host:SetFrameLevel(parent:GetFrameLevel()+100);host:EnableMouse(true);addon:MakeWindowOpaque(host)
+    host:EnableMouse(true);addon:MakeWindowOpaque(host)
     local input=picker.frame or addon:CreateWorkbenchEditBox(host);picker.frame=input
     input:SetAutoFocus(false);input:SetMaxLetters(128);input:SetHeight(26)
     input:ClearAllPoints();input:SetPoint("TOPLEFT",8,-4);input:SetPoint("TOPRIGHT",-8,-4)
@@ -89,7 +89,7 @@ function addon:CreateConditionTypePicker(parent,scope,current,choose,alive,reuse
     if not picker.escape then
         picker.escape={frame=host}
         addon:SetUIScript(host,"OnHide",function() popup:Hide();input:ClearFocus();addon:SetUIScript(host,"OnUpdate",nil) end)
-        addon:RegisterWindowForEscape(picker.escape)
+        addon:OpenPopup(picker.escape,parent)
     end
     function picker:Release() self:Dismiss();input:Hide() end
     picker:Release();return picker

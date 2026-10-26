@@ -58,7 +58,7 @@ function addon:InstallRotationNavigation(pane)
             if not ok then pane:Message(why);return end
             prompt.frame:Hide();pane:RefreshAdvice();pane:AfterDelete()
         end)
-        prompt.frame:SetFrameLevel(self.frame:GetFrameLevel()+100);prompt.frame:Show();addon:RegisterWindowForEscape(prompt)
+        prompt.frame:Show();addon:OpenPopup(prompt,self)
     end
     function pane:RequestLeave(callback)
         if not self.active or type(callback)~='function' then return nil,'rotation-pane-released' end
@@ -98,7 +98,7 @@ function addon:InstallRotationNavigation(pane)
         end)
         addon:SetUIScript(prompt.cancel,'OnClick',function() if valid() then prompt.frame:Hide() end end)
         prompt.message:SetText(L['Apply this draft, discard its changes, or keep editing.'])
-        prompt.frame:SetFrameLevel(self.frame:GetFrameLevel()+100);prompt.frame:Show();addon:RegisterWindowForEscape(prompt)
+        prompt.frame:Show();addon:OpenPopup(prompt,self)
         return false,'rotation-navigation-pending'
     end
 end

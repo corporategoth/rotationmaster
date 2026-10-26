@@ -32,7 +32,7 @@ end
 function addon:ShowWorkbenchIconPicker(current,choose,ownerValid)
     local d=self.iconPicker
     if not d then
-        d={frame=CreateFrame('Frame',nil,UIParent),buttons={},categoryButtons={}};self.iconPicker=d;local frame=d.frame;frame:SetSize(630,430);frame:SetPoint('CENTER');frame:SetFrameStrata('FULLSCREEN_DIALOG');frame:SetToplevel(true);frame:SetClampedToScreen(true);frame:EnableMouse(true);self:MakeWindowOpaque(frame)
+        d={frame=CreateFrame('Frame',nil,UIParent),buttons={},categoryButtons={}};self.iconPicker=d;local frame=d.frame;frame:SetSize(630,430);frame:SetPoint('CENTER');frame:SetClampedToScreen(true);frame:EnableMouse(true);self:MakeWindowOpaque(frame)
         d.title=frame:CreateFontString(nil,'OVERLAY','GameFontNormal');d.chrome=self:CreateWorkbenchDialogChrome(frame,d.title)
         d.close=self:CreateWorkbenchIconButton(frame,'close',L['Close']);d.close:SetPoint('TOPRIGHT',-5,-5);self:SetUIScript(d.close,'OnClick',function() frame:Hide() end)
         d.search=self:CreateWorkbenchEditBox(frame);self:AttachWorkbenchSearchHint(d.search);d.search:SetPoint('TOPLEFT',166,-38);d.search:SetSize(432,24)
@@ -66,5 +66,5 @@ function addon:ShowWorkbenchIconPicker(current,choose,ownerValid)
     for i=#d.categories+1,#d.categoryButtons do d.categoryButtons[i]:Hide() end
     self:SetUIScript(d.search,'OnTextChanged',function(_,user) if user and valid() then page=1;draw() end end);self:SetUIScript(d.search,'OnEscapePressed',function() d.frame:Hide() end)
     self:SetUIScript(d.prev,'OnClick',function() if valid() then page=math.max(1,page-1);draw() end end);self:SetUIScript(d.next,'OnClick',function() if valid() then page=page+1;draw() end end)
-    d.chrome:SetContext(L['Select Icon'],L['Category'],self.pretty_name);d.frame:Show();self:RegisterWindowForEscape(d);draw();d.search:SetFocus();return d
+    d.chrome:SetContext(L['Select Icon'],L['Category'],self.pretty_name);d.frame:Show();self:OpenPopup(d);draw();d.search:SetFocus();return d
 end

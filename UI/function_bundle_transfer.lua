@@ -5,7 +5,7 @@ local function problemText(why) if type(why)=='table' then return (why.callback 
 function addon:ShowFunctionBundleSource(owner,row,ownerValid)
     local view=owner.sourceReview
     if not view then
-        view={frame=CreateFrame('Frame',nil,UIParent)};owner.sourceReview=view;view.frame:SetSize(880,680);view.frame:SetPoint('CENTER');view.frame:SetFrameStrata('FULLSCREEN_DIALOG');view.frame:SetToplevel(true);view.frame:EnableMouse(true);self:MakeWindowOpaque(view.frame)
+        view={frame=CreateFrame('Frame',nil,UIParent)};owner.sourceReview=view;view.frame:SetSize(880,680);view.frame:SetPoint('CENTER');view.frame:EnableMouse(true);self:MakeWindowOpaque(view.frame)
         view.title=view.frame:CreateFontString(nil,'OVERLAY','GameFontNormal');view.chrome=self:CreateWorkbenchDialogChrome(view.frame,view.title);view.chromeUpdate=view.frame:GetScript('OnUpdate')
         view.body=CreateFrame('Frame',nil,view.frame);view.body:SetPoint('TOPLEFT',8,-36);view.body:SetSize(864,606);view.form=self:CreateSettingsForm(view.body)
         view.close=self:CreateWorkbenchButton(view.frame,L['Close'],104);view.close:SetPoint('BOTTOMRIGHT',-12,28);self:SetUIScript(view.close,'OnClick',function() view.frame:Hide() end)
@@ -40,7 +40,7 @@ function addon:ShowFunctionBundleSource(owner,row,ownerValid)
     end
     self:SetUIScript(view.frame,'OnHide',function() if view.code then view.code:Release() end;view.form:Release() end)
     self:SetUIScript(view.frame,'OnUpdate',function(...) if view.chromeUpdate then view.chromeUpdate(...) end;if not valid() then view.frame:Hide() end end)
-    view.frame:SetFrameLevel(owner.frame:GetFrameLevel()+10);view.frame:Show();self:RegisterWindowForEscape(view)
+    view.frame:Show();self:OpenPopup(view,owner)
     self:BindTransferHelp(view,{heading=L['Review source'],owner=row.originalName,brief=L['Help.Transfers.source_brief'],sections={{title=L['Read-only'],text=L['Help.Transfers.source_review']}},briefs={close=L['Help.Transfers.source_close'],xClose=L['Help.Transfers.source_close']}},helpValid)
     return view
 end
@@ -137,7 +137,7 @@ function addon:ShowFunctionBundleTransfer(p,id,source,options)
     end)
     p.cleanups[#p.cleanups+1]=function() if d.serial==serial then d.frame:Hide() end end
     addon:SetUIScript(d.frame,'OnUpdate',function(...) if d.chromeUpdate then d.chromeUpdate(...) end;if d.frame:IsShown() and not valid() then d.frame:Hide() end end)
-    d.frame:SetFrameLevel(p.frame:GetFrameLevel()+250);d.frame:Show();d:Export();if options.text then d.input:SetText(addon:FormatExportText(options.text));d:Review() end;addon:RegisterWindowForEscape(d)
+    d.frame:Show();d:Export();if options.text then d.input:SetText(addon:FormatExportText(options.text));d:Review() end;addon:OpenPopup(d,p)
     local briefs=self:TransferHelpBriefs();briefs.review=L['Help.Transfers.bundle_review'];briefs.includeDependencies=L['Help.Transfers.bundle_dependencies']
     local sourceEvidence=self:CopySettingsData(source)
     self:BindTransferHelp(d,{heading=L['Function dependency bundle'],owner=source and source.name or id,brief=L['Help.Transfers.bundle_brief'],sections={{title=L['Import/Export'],text=L['Help.Transfers.bundle']},{title=L['Review source'],text=L['Help.Transfers.source_review']}},briefs=briefs,valid=function() return d.exportSource==source and addon:SettingsDataEqual(source,sourceEvidence) end},valid)

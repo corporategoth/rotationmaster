@@ -338,7 +338,7 @@ function addon:CreateSettingsForm(parent)
         end
         local promptWidth=addon:FitWorkbenchPrompt(prompt.frame,self.frame,430);prompt.text:SetWidth(math.max(1,promptWidth-24))
         if prompt.discard then prompt.discard:Hide() end;prompt.accept:SetText(L['Confirm']);prompt.accept:ClearAllPoints();prompt.accept:SetPoint('BOTTOMRIGHT',-120,12)
-        prompt.text:SetText(message);addon:SetUIScript(prompt.accept,'OnClick',self:Guard(function() prompt.frame:Hide();callback() end));prompt.frame:SetFrameLevel(self.frame:GetFrameLevel()+250);prompt.frame:Show();addon:RegisterWindowForEscape(prompt)
+        prompt.text:SetText(message);addon:SetUIScript(prompt.accept,'OnClick',self:Guard(function() prompt.frame:Hide();callback() end));prompt.frame:Show();addon:OpenPopup(prompt,self)
     end
     function p:ConfirmPending(apply,discard)
         self:Confirm(L['Apply changes before leaving this page?'],apply)

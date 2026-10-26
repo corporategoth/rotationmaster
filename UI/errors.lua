@@ -9,7 +9,6 @@ function addon:ShowErrors()
         self.errorsWindow = window
         window:SetSize(760, 520)
         window:SetPoint("CENTER")
-        window:SetFrameStrata("DIALOG")
         window:SetMovable(true)
         window:SetResizable(true)
         if window.SetResizeBounds then window:SetResizeBounds(600, 300)
@@ -129,4 +128,6 @@ function addon:ShowErrors()
     window.Refresh()
     if self.ApplyWorkbenchScale then self:ApplyWorkbenchScale(window) end
     window:Show()
+    -- An independent report: a peer window in the shared layering (Escape is its own UISpecialFrames entry).
+    if self.OpenPopup then self:OpenPopup(window,nil,{escape=false,kind="window"}) end
 end

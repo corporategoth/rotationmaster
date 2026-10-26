@@ -6,7 +6,7 @@ function addon:InstallDragPresentation(ghost,decoration)
     function ghost:CaptureCancel(callback)
         self.cancelOwner=self.cancelOwner or {frame=self}
         function self.cancelOwner:Hide() callback() end
-        addon:RegisterWindowForEscape(self.cancelOwner)
+        addon:OpenPopup(self.cancelOwner,nil,{layer=false})
     end
     local nativeHide,present,follow=ghost.Hide,ghost.Present,ghost.FollowPointer
     ghost.placeholders={};ghost.previewLines={}

@@ -104,7 +104,7 @@ function addon:ShowDefaultRotation(spec,id)
     local window=self.defaultRotationWindow
     if not window then
         window={frame=CreateFrame('Frame',nil,UIParent),children={}};self.defaultRotationWindow=window
-        local frame=window.frame;frame:SetSize(880,680);frame:SetPoint('CENTER');frame:SetFrameStrata('FULLSCREEN_DIALOG');frame:SetToplevel(true);frame:SetClampedToScreen(true);frame:EnableMouse(true);self:MakeWindowOpaque(frame)
+        local frame=window.frame;frame:SetSize(880,680);frame:SetPoint('CENTER');frame:SetClampedToScreen(true);frame:EnableMouse(true);self:MakeWindowOpaque(frame)
         window.title=frame:CreateFontString(nil,'OVERLAY','GameFontNormal');window.chrome=self:CreateWorkbenchDialogChrome(frame,window.title)
         window.close=self:CreateWorkbenchIconButton(frame,'close',L['Close']);window.close:SetPoint('TOPRIGHT',-5,-5)
         window.viewport=self:CreateWorkbenchGroupViewport(frame);window.viewport:SetPoint('TOPLEFT',12,-40);window.viewport:SetSize(830,612)
@@ -128,6 +128,6 @@ function addon:ShowDefaultRotation(spec,id)
     local ok,why=pcall(refresh)
     if not ok then window:Clear();error(why,0) end
     addon:SetUIScript(window.frame,'OnUpdate',function() if window.active and window.serial==serial and not valid() then window:Hide() end end)
-    window.frame:Show();addon:RegisterWindowForEscape(window)
+    window.frame:Show();addon:OpenPopup(window)
     return window
 end

@@ -52,7 +52,7 @@ function addon:ShowCustomConditionTransfer(parent,update,key,condition)
             if not valid() or dialog.serial~=serial or dialog.input:GetText()~=input then return end
             self:LayoutCustomConditionEditor(parent,update,destination,parsed.condition);dialog.frame:Hide()
         end)
-        p.prompt.frame:SetParent(UIParent);self:RegisterWindowForEscape(p.prompt)
+        p.prompt.frame:SetParent(UIParent);self:OpenPopup(p.prompt,p)
         return false,L['Confirm the Lua import, then review it before saving.']
     end,options)
     function dialog:Hide() self.frame:Hide() end

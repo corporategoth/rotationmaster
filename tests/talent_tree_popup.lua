@@ -169,6 +169,7 @@ test('Blizzard\'s window is opened in view mode on the wanted specialization and
     assert(picked[2400] and picked[2400].entry==2,'the Spellslinger hero tree is chosen: '..tostring(picked[2400] and picked[2400].entry))
     assert(picked[2301] and picked[2301].purchased and not picked[2301].choice,'the selected talent is in the loadout')
     assert(w.frame.strata=='FULLSCREEN_DIALOG','above the RM windows')
+    assert(d.frame:GetFrameLevel()>w.frame:GetFrameLevel(),'the control strip is beneath Blizzard\'s window')
     assert(w.buttons[2301].glowing==true,'Blizzard\'s own glow marks the selected talent too')
     local ring=a.talentTreeRing
     assert(ring and ring:IsShown() and ring.points[1][2]==w.buttons[2301],'the ring sits on the selected talent\'s button')

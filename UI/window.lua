@@ -44,22 +44,267 @@ function addon:MakeWindowOpaque(widget)
     frame.rmOpaqueBackground:Show()
 end
 
--- One standard Escape target closes the frontmost RM window. Registering every
--- dialog separately would let one Escape close its underlying configuration too.
--- Frames remain private to their owners; pooled controls leave this registry.
+-- Window layering -------------------------------------------------------------
+-- ONE place decides what is in front of what; docs/architecture/window-layering.md
+-- has the rules and the layer map. Every RM window, popup, prompt and menu is
+-- an entry here. The client orders frames by (strata, level) only: a frame
+-- level is global within a strata, not relative to a parent, and a window's
+-- own level says nothing about its content, which can sit well above it.
+--   * A popup is placed above everything that is open, measured from the
+--     highest level in the other windows' CONTENT, never from their own level.
+--   * A popup stays above the window that opened it (its opener) and above
+--     everything inside that window, however the opener was raised since:
+--     native click-raise (SetToplevel) lifts a clicked window over its child,
+--     and the next sync puts the child back before it can be drawn.
+--   * Every open goes through here, including one that re-shows a window that
+--     is already visible (OnShow does not fire for that).
+-- The Escape target below is the same registry: one proxy closes the
+-- frontmost RM window, so one Escape never closes the window under it too.
+local STRATA_RANK={BACKGROUND=1,LOW=2,MEDIUM=3,HIGH=4,DIALOG=5,FULLSCREEN=6,FULLSCREEN_DIALOG=7,TOOLTIP=8}
+local WINDOW_STRATA='FULLSCREEN_DIALOG'
+-- Levels left between one window's content and the next window. The client
+-- rejects levels above 10000; a stack that would pass the ceiling is compacted.
+local LEVEL_GAP,LEVEL_FLOOR,LEVEL_CEILING=10,10,8000
 local escapeName="RotationMasterFrontmostDialog"
 local escapeProxyName="RotationMasterEscapeTarget"
 local dialogs={}
+local entryOf=setmetatable({},{__mode='k'})
 local watcher
 local escapeProxy
-local function updateEscapeTarget()
-    local target,level,selected
+local settling,compacting,needCompact,lastFront=false,false,false,nil
+local serial=0
+
+local function frameOf(value)
+    if type(value)~='table' then return nil end
+    if type(value.frame)=='table' then return value.frame end
+    if type(value.GetFrameLevel)=='function' then return value end
+end
+local function levelOf(frame) return type(frame.GetFrameLevel)=='function' and frame:GetFrameLevel() or 0 end
+local function strataOf(frame) return type(frame.GetFrameStrata)=='function' and frame:GetFrameStrata() or 'MEDIUM' end
+local function rank(strata) return STRATA_RANK[strata] or 0 end
+local function entryFor(value)
+    local frame=frameOf(value)
+    for _=1,200 do
+        if not frame then return nil end
+        local entry=entryOf[frame]
+        if entry then return entry end
+        frame=type(frame.GetParent)=='function' and frame:GetParent() or nil
+    end
+end
+local function isShown(entry) return entry.frame:IsShown() end
+-- Drawn right now (the frame and every ancestor shown). Windows that only look shown, inside a hidden pane, do not take part.
+local function isVisible(entry)
+    local frame=entry.frame
+    if type(frame.IsVisible)=='function' then return frame:IsVisible() and true or false end
+    return frame:IsShown()
+end
+-- Never move a protected Blizzard frame in combat; RM's own frames are not protected.
+local function touchable(frame)
+    local locked=rawget(_G,'InCombatLockdown')
+    if type(locked)=='function' and locked() and type(frame.IsProtected)=='function' then
+        local ok,protected=pcall(frame.IsProtected,frame)
+        return ok and not protected
+    end
+    return true
+end
+local function setLevel(entry,level)
+    local frame=entry.frame
+    if level>LEVEL_CEILING then needCompact=true;level=LEVEL_CEILING end
+    if levelOf(frame)~=level and type(frame.SetFrameLevel)=='function' and touchable(frame) then frame:SetFrameLevel(level) end
+end
+local function setStrata(entry,strata)
+    local frame=entry.frame
+    if strataOf(frame)~=strata and type(frame.SetFrameStrata)=='function' and touchable(frame) then frame:SetFrameStrata(strata) end
+end
+-- Highest level among a frame and its descendants in one strata. A nested
+-- window (a registered frame inside this one) places itself and is skipped.
+local function topOf(frame,strata,pruned)
+    local top=levelOf(frame)
+    local function walk(node,depth)
+        if depth>64 or type(node.GetChildren)~='function' then return end
+        for _,child in ipairs({node:GetChildren()}) do
+            if not (pruned and entryOf[child]) then
+                if strataOf(child)==strata then local level=levelOf(child);if level>top then top=level end end
+                walk(child,depth+1)
+            end
+        end
+    end
+    walk(frame,0)
+    return top
+end
+local function extentOf(entry) return topOf(entry.frame,strataOf(entry.frame),true) end
+-- True when `other` is opened by `entry` (directly or through a chain) or sits inside its frame.
+local function belongsTo(other,entry)
+    local current,hops=other.opener,0
+    while current and hops<24 do
+        if current==entry then return true end
+        current,hops=current.opener,hops+1
+    end
+    local frame=type(other.frame.GetParent)=='function' and other.frame:GetParent() or nil
+    for _=1,200 do
+        if not frame then return false end
+        if frame==entry.frame then return true end
+        frame=type(frame.GetParent)=='function' and frame:GetParent() or nil
+    end
+    return false
+end
+-- The nearest opener in the chain that is still open: closing a menu or a
+-- hidden-for-child owner hands its popups to the window beneath it.
+local function liveOpener(entry)
+    local current,hops=entry.opener,0
+    while current and hops<24 do
+        if isVisible(current) then return current end
+        current,hops=current.opener,hops+1
+    end
+end
+local function wantedStrata(entry,opener)
+    local want=entry.strata
+    if opener and rank(strataOf(opener.frame))>rank(want) then want=strataOf(opener.frame) end
+    for _,foreign in ipairs(entry.over) do
+        if rank(strataOf(foreign))>rank(want) then want=strataOf(foreign) end
+    end
+    return want
+end
+
+local updateEscapeTarget
+-- Every shown popup above its opener's content; relative order of what had to
+-- move is kept. Cheap when nothing is out of order, so it also runs whenever
+-- the frontmost window changes (a click raised one natively).
+local function compact()
+    needCompact=false
+    local order={}
+    for _,entry in ipairs(dialogs) do if entry.layered and isVisible(entry) then order[#order+1]=entry end end
+    table.sort(order,function(a,b)
+        local first,second=levelOf(a.frame),levelOf(b.frame)
+        if first~=second then return first<second end
+        return a.serial<b.serial
+    end)
+    local cursor=LEVEL_FLOOR
+    for _,entry in ipairs(order) do
+        local span=extentOf(entry)-levelOf(entry.frame)
+        setLevel(entry,cursor);cursor=cursor+span+LEVEL_GAP
+    end
+    needCompact=false
+end
+local function settle()
+    if settling then return end
+    settling=true
+    local order={}
+    for _,entry in ipairs(dialogs) do if entry.layered and isVisible(entry) then order[#order+1]=entry end end
+    table.sort(order,function(a,b)
+        local first,second=levelOf(a.frame),levelOf(b.frame)
+        if first~=second then return first<second end
+        return a.serial<b.serial
+    end)
+    local done,lifted={},0
+    local function fix(entry,depth)
+        if done[entry] then return end
+        done[entry]=true
+        local opener=depth<=24 and liveOpener(entry) or nil
+        local need=0
+        if opener then fix(opener,depth+1);need=extentOf(opener)+LEVEL_GAP end
+        for _,foreign in ipairs(entry.over) do
+            local value=topOf(foreign,strataOf(foreign),false)+LEVEL_GAP
+            if value>need then need=value end
+        end
+        if need==0 then return end
+        setStrata(entry,wantedStrata(entry,opener))
+        if levelOf(entry.frame)<need then
+            if lifted+LEVEL_GAP>need then need=lifted+LEVEL_GAP end
+            setLevel(entry,need);lifted=extentOf(entry)
+        end
+    end
+    for _,entry in ipairs(order) do fix(entry,0) end
+    settling=false
+    if needCompact and not compacting then compacting=true;compact();settle();compacting=false;needCompact=false end
+end
+-- The highest level occupied by any other open window's content (and by any
+-- foreign frame this one must clear). Windows this one opened, or that sit
+-- inside it, move with it and do not count.
+local function frontLevel(entry)
+    local top=0
+    for _,other in ipairs(dialogs) do
+        if other~=entry and other.layered and isVisible(other) and not belongsTo(other,entry) and strataOf(other.frame)==strataOf(entry.frame) then
+            local value=extentOf(other)
+            if value>top then top=value end
+        end
+    end
+    for _,foreign in ipairs(entry.over) do
+        local value=topOf(foreign,strataOf(foreign),false)
+        if value>top then top=value end
+    end
+    return top
+end
+-- Who opened this window: an explicit opener, the window it is nested in, or
+-- (only when it is first shown, and never for a peer window) the frontmost
+-- window that was open. The first two are firm. The last is a guess (the
+-- window the user was in), so it holds only until that window is itself opened
+-- again: showing a window again brings it in front of the popups guessed
+-- to belong to it. Peers never constrain each other.
+local function resolveOpener(entry,opening)
+    local opener=entry.hint and entryFor(entry.hint)
+    if not opener then
+        local parent=type(entry.frame.GetParent)=='function' and entry.frame:GetParent() or nil
+        opener=parent and entryFor(parent)
+    end
+    local guessed=false
+    if not opener and opening and entry.kind~='window' then
+        guessed=true
+        local best
+        for _,other in ipairs(dialogs) do
+            if other~=entry and other.layered and isVisible(other) and not belongsTo(other,entry)
+                and (not best or levelOf(other.frame)>=levelOf(best.frame)) then best=other end
+        end
+        opener=best
+    end
+    if opener==entry or opener and belongsTo(opener,entry) then opener=nil end
+    if opener or opening or entry.hint then entry.opener=opener;entry.guessed=opener~=nil and guessed end
+end
+-- Opening a window again releases the popups that were only guessed to belong to it.
+local function releaseGuessed(entry)
+    for _,other in ipairs(dialogs) do
+        if other.guessed and other.opener==entry then other.opener=nil;other.guessed=false end
+    end
+end
+-- Bring one window to the front of everything open and keep its own popups,
+-- and its opener's chain, in order.
+local function present(entry,opening)
+    local frame=entry.frame
+    if not entry.layered then updateEscapeTarget(true);return end
+    -- The first placement after a hide is an opening, however it was reached.
+    resolveOpener(entry,opening or not entry.placed)
+    entry.placed=true
+    setStrata(entry,wantedStrata(entry,liveOpener(entry)))
+    local floor=frontLevel(entry)
+    if levelOf(frame)<=floor then
+        -- Let the client act first (it also clears frames outside RM), then guarantee the order.
+        if type(frame.Raise)=='function' and touchable(frame) then frame:Raise() end
+        if levelOf(frame)<=floor then setLevel(entry,floor+LEVEL_GAP) end
+    end
+    settle()
+    updateEscapeTarget(true)
+end
+local function scan()
+    local target,level,selected,front,frontValue,foreignRaised
     for _,entry in ipairs(dialogs) do
         if entry.frame:IsShown() then
             local current=entry.frame:GetFrameLevel()
-            if not level or current>=level then target,level,selected=entry.frame,current,entry end
+            if entry.escape and (not level or current>=level) then target,level,selected=entry.frame,current,entry end
+            if entry.layered and (not frontValue or current>=frontValue) then front,frontValue=entry,current end
+            -- A foreign panel it must clear (Blizzard's) was raised by a click: not a registry change.
+            for _,foreign in ipairs(entry.over) do if levelOf(foreign)>=current then foreignRaised=true end end
         end
     end
+    return target,selected,front,foreignRaised
+end
+function updateEscapeTarget(settled)
+    local target,selected,front,foreignRaised=scan()
+    -- A click raised a different window natively, or a foreign panel: restore the order before anything is drawn.
+    if not settled and (front~=lastFront or foreignRaised) then
+        settle()
+        target,selected,front=scan()
+    end
+    lastFront=front
     _G[escapeName]=target
     if escapeProxy then
         escapeProxy.target=selected;escapeProxy.syncing=true
@@ -75,22 +320,8 @@ local function remove(entry)
         if current==entry then table.remove(dialogs,index);break end
     end
 end
-local function present(entry)
-    remove(entry)
-    local level=entry.level
-    for _,current in ipairs(dialogs) do
-        if current.frame:IsShown() then level=math.max(level,current.frame:GetFrameLevel()+100) end
-    end
-    dialogs[#dialogs+1]=entry
-    entry.frame:SetFrameStrata("FULLSCREEN_DIALOG")
-    entry.frame:SetFrameLevel(level)
-    entry.frame:Raise()
-    updateEscapeTarget()
-end
-function addon:RegisterWindowForEscape(widget)
-    local frame=widget and (widget.frame or widget);if frame then frame.rmEscapeOwner=widget end
-    if type(UISpecialFrames)~="table" or not frame or not frame.GetScript or not frame.IsShown then return false end
-    if widget.rmEscapeEntry then present(widget.rmEscapeEntry);return true end
+local function ensureEscape()
+    if type(UISpecialFrames)~="table" then return false end
     local registered=false
     for _,name in pairs(UISpecialFrames) do if name==escapeProxyName then registered=true;break end end
     if not registered then UISpecialFrames[#UISpecialFrames+1]=escapeProxyName end
@@ -113,32 +344,123 @@ function addon:RegisterWindowForEscape(widget)
         watcher=CreateFrame("Frame",nil,UIParent)
         -- Native SetToplevel can raise any already-shown window on a child
         -- click without OnShow. Observe only RM roots while they are open.
-        watcher:SetScript("OnUpdate",updateEscapeTarget)
+        watcher:SetScript("OnUpdate",function() updateEscapeTarget() end)
     end
-    local entry={frame=frame,widget=widget,level=frame:GetFrameLevel(),strata=frame:GetFrameStrata()}
-    widget.rmEscapeEntry=entry
+    return true
+end
+-- Registers a window with the layer registry (and optionally the Escape
+-- target). Idempotent: returns the existing entry. Does not place it.
+local function register(widget,options)
+    local frame=widget and (widget.frame or widget)
+    if type(frame)~='table' or not frame.GetScript or not frame.IsShown then return nil end
+    local wantEscape=options.escape~=false
+    -- A frame is one entry however many throwaway widget tables name it.
+    local entry=widget.rmLayerEntry or entryOf[frame]
+    if entry then
+        if wantEscape and not entry.escape and ensureEscape() then entry.escape=true;frame.rmEscapeOwner=widget end
+        return entry
+    end
+    serial=serial+1
+    -- A frame already above the window strata (a drag ghost) keeps its own; layer=false opts out of ordering entirely.
+    local current=strataOf(frame)
+    entry={frame=frame,widget=widget,level=levelOf(frame),originalStrata=current,serial=serial,over={},layered=options.layer~=false,
+        strata=options.strata or widget.rmLayerStrata or rank(current)>rank(WINDOW_STRATA) and current or WINDOW_STRATA,kind=options.kind or widget.rmLayerKind or 'popup'}
+    if wantEscape and ensureEscape() then entry.escape=true;frame.rmEscapeOwner=widget end
+    widget.rmLayerEntry=entry;entryOf[frame]=entry;dialogs[#dialogs+1]=entry
+    if entry.layered then setStrata(entry,entry.strata) end
+    -- Click-raise belongs to windows that hang from UIParent; the registry
+    -- puts any popup its opened back above it (see updateEscapeTarget).
+    if entry.layered and type(frame.SetToplevel)=='function' and type(frame.GetParent)=='function' and frame:GetParent()==UIParent then frame:SetToplevel(true) end
     local onShow,onHide=frame:GetScript("OnShow"),frame:GetScript("OnHide")
     local show=function(self,...)
         addon:ApplyWorkbenchScale(self)
         if onShow then onShow(self,...) end
-        if widget.rmEscapeEntry==entry then present(entry) end
+        if widget.rmLayerEntry==entry then releaseGuessed(entry);present(entry,true) end
     end
     local hide=function(self,...)
         if onHide then onHide(self,...) end
+        entry.hint=nil;entry.over={};entry.placed=false
         updateEscapeTarget()
     end
     frame:SetScript("OnShow",show);frame:SetScript("OnHide",hide)
     local release=widget.OnRelease
     widget.OnRelease=function(control,...)
-        remove(entry);control.rmEscapeEntry=nil;control.OnRelease=release
+        remove(entry);entryOf[frame]=nil;control.rmLayerEntry=nil;control.OnRelease=release
+        for _,other in ipairs(dialogs) do if other.opener==entry then other.opener=entry.opener end end
         if frame:GetScript("OnShow")==show then frame:SetScript("OnShow",onShow) end
         if frame:GetScript("OnHide")==hide then frame:SetScript("OnHide",onHide) end
-        frame:SetFrameLevel(entry.level);frame:SetFrameStrata(entry.strata)
+        frame:SetFrameLevel(entry.level);frame:SetFrameStrata(entry.originalStrata)
+        if lastFront==entry then lastFront=nil end
         updateEscapeTarget()
         if release then return release(control,...) end
     end
-    present(entry)
+    return entry
+end
+-- Open (or re-open) a window: register it once, then place it above everything
+-- open and above `opener` (a frame or widget inside the window that opened it;
+-- optional). Call after every Show, including one that re-shows a window that
+-- is already visible. options.over: foreign frames it must clear (Blizzard
+-- panels it was opened over); options.kind='window' for a peer window;
+-- options.escape=false for a window that is not an Escape target.
+function addon:OpenPopup(widget,opener,options)
+    options=options or {}
+    local entry=register(widget,options)
+    if not entry then return false end
+    if opener then entry.hint=opener end
+    releaseGuessed(entry)
+    if options.over then
+        entry.over={}
+        for _,foreign in ipairs(type(options.over)=='table' and not options.over.GetFrameLevel and options.over or {options.over}) do entry.over[#entry.over+1]=foreign end
+    end
+    if isShown(entry) then present(entry,false) end
     return true
+end
+-- The user (or a command) wants this window in front: it and the whole chain
+-- of windows that opened it come forward, their popups staying above them.
+function addon:RaiseWindow(widget)
+    local entry=entryFor(widget)
+    if not entry or not isShown(entry) then return false end
+    local root,hops=entry,0
+    while hops<24 do
+        local up=liveOpener(root)
+        if not up then break end
+        root,hops=up,hops+1
+    end
+    present(root,false)
+    return true
+end
+-- Put a foreign frame (a Blizzard panel this addon opened) in front of every
+-- RM window except `except` (the popup that must stay above it).
+function addon:RaiseForeignWindow(frame,except)
+    if type(frame)~='table' or not touchable(frame) then return false end
+    local excluded=entryFor(except)
+    local top=0
+    for _,entry in ipairs(dialogs) do
+        if entry~=excluded and entry.layered and isVisible(entry) and not (excluded and belongsTo(entry,excluded)) then
+            local value=extentOf(entry);if value>top then top=value end
+        end
+    end
+    if rank(strataOf(frame))<rank(WINDOW_STRATA) and type(frame.SetFrameStrata)=='function' then pcall(frame.SetFrameStrata,frame,WINDOW_STRATA) end
+    if levelOf(frame)<=top and type(frame.SetFrameLevel)=='function' then pcall(frame.SetFrameLevel,frame,math.min(LEVEL_CEILING,top+LEVEL_GAP)) end
+    return true
+end
+-- Test and diagnostics hook: the layer registry in registration order.
+function addon:GetWindowLayers()
+    local result={}
+    for _,entry in ipairs(dialogs) do
+        result[#result+1]={frame=entry.frame,widget=entry.widget,kind=entry.kind,escape=entry.escape,opener=entry.opener and entry.opener.frame or nil,shown=isShown(entry)}
+    end
+    return result
+end
+-- One frame of the sync the Escape watcher performs (tests drive it directly).
+function addon:SyncWindowLayers() updateEscapeTarget() end
+
+function addon:RegisterWindowForEscape(widget)
+    local frame=widget and (widget.frame or widget);if frame then frame.rmEscapeOwner=widget end
+    local entry=register(widget,{escape=true})
+    if not entry then return false end
+    if isShown(entry) then present(entry,false) end
+    return entry.escape==true
 end
 
 -- Child editors share the main workbench chrome without navigation tabs.

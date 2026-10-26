@@ -182,6 +182,22 @@ function rm:CreateLuaWorkbenchControl(parent,changed,valid)
     local engine=assert(self:CreateLuaWorkbenchEngine({id='RM',environment=c.environment,status=function(text,failed) if c.status then c.status:SetText(text or '');c.status:SetTextColor(failed and 1 or .5,failed and .3 or .85,.5) end end,show=function() if c.showOwner then c.showOwner() end end,help=function() self:ShowWorkbenchHelp(L['Lua editor'],{{title=L['Run current buffer'],text=L['Play runs the current buffer once without debugging. Condition callbacks use the fields configured in Test; functions use Test arguments. Returns, printed output and full errors are available in Output. Running does not apply source changes or replace the live callback.']},{title=L['Debug current buffer'],text=L['The Debug button starts a separate session and pauses at the first executable line or breakpoint. Continue resumes execution, Step over advances past the current operation, and Step into enters instrumented script functions. Native functions cannot be stepped into. Stop ends the session. F5 continues, F10 steps over, F11 steps into, and Shift+F5 stops.']},{title=L['Debugger terminal'],text=L['The debugger terminal appears below the code while debugging. When paused, enter expressions or assignments to inspect or change the current variables. The drawer button hides or shows the terminal. Output provides a copyable report of printed output, terminal evaluations and complete errors.']}},frame) end}))
     c.engine=engine;engine.control=c
     local UI,W,C,E=engine.UI,engine.Workspace,engine.Query.Console,engine.Query.Editor
+    -- The embedded library's stand-alone panels hang from UIParent at DIALOG strata, which is below every RM
+    -- window. Whenever one is opened, lay it out with the RM windows, above the editor it came from.
+    for _,spec in ipairs({{engine.Inspector,'Show','panel'},{engine.DebugProbe,'ShowTerminal','terminal'},{engine.DebugProbe,'ShowSnapshot','snapshot'},{engine.DebugProbe,'BuildPanel','panel'}}) do
+        local object,method,field=spec[1],spec[2],spec[3]
+        local original=object and object[method]
+        if type(original)=='function' then
+            object[method]=function(self,...)
+                local function after(...)
+                    local panel=self[field]
+                    if type(panel)=='table' and panel.IsShown and panel:IsShown() then rm:OpenPopup({frame=panel},frame,{escape=false}) end
+                    return ...
+                end
+                return after(original(self,...))
+            end
+        end
+    end
     W.window=frame;W.helpFrame={};UI.colors.background={.055,.06,.065,1};UI.colors.panel={.09,.10,.11,1};UI.colors.hover={.15,.17,.18,1}
     local baseEditor=UI.Editor
     function UI:Editor(owner,label,readonly) local input=baseEditor(self,owner,label,readonly);input.editBox:SetFont('Interface\\AddOns\\'..addon_name..'\\Fonts\\Inconsolata-Regular.ttf',12,'');return input end

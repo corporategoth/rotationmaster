@@ -35,7 +35,7 @@ function addon:ShowRotationAdoption(owner,onApplied)
     local window=self.rotationAdoptionWindow
     if not window then
         window={frame=CreateFrame('Frame',nil,UIParent)};self.rotationAdoptionWindow=window
-        local frame=window.frame;frame:SetSize(1000,650);frame:SetPoint('CENTER');frame:SetFrameStrata('FULLSCREEN_DIALOG');frame:SetToplevel(true);frame:SetClampedToScreen(true);frame:EnableMouse(true);self:MakeWindowOpaque(frame)
+        local frame=window.frame;frame:SetSize(1000,650);frame:SetPoint('CENTER');frame:SetClampedToScreen(true);frame:EnableMouse(true);self:MakeWindowOpaque(frame)
         window.title=frame:CreateFontString(nil,'OVERLAY','GameFontNormal');window.chrome=self:CreateWorkbenchDialogChrome(frame,window.title)
         window.close=self:CreateWorkbenchIconButton(frame,'close',L['Close']);window.close:SetPoint('TOPRIGHT',-5,-5)
         window.content=CreateFrame('Frame',nil,frame);window.content:SetPoint('TOPLEFT',12,-40);window.content:SetSize(976,598)
@@ -108,5 +108,5 @@ function addon:ShowRotationAdoption(owner,onApplied)
         if not plan then adopt:Disable();p:Message(string.format(L['Could not adopt this record: %s'],reason or 'missing-archival-body')) end
     end)
     self:SetUIScript(window.frame,'OnUpdate',function() if window.active and window.serial==serial and not valid() then window:Hide() end end)
-    self:RegisterWindowForEscape(window);return window
+    self:OpenPopup(window);return window
 end

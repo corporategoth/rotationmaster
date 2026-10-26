@@ -4,7 +4,7 @@ local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local function constructor()
     local w={type='RM-ItemListPopup'}
     local frame=CreateFrame('Frame',nil,UIParent);w.frame=frame;frame:Hide()
-    frame:SetFrameStrata('FULLSCREEN_DIALOG');frame:SetToplevel(true);frame:SetClampedToScreen(true);frame:EnableMouse(true)
+    frame:SetClampedToScreen(true);frame:EnableMouse(true)
     w.title=frame:CreateFontString(nil,'OVERLAY','GameFontNormal')
     w.chrome=addon:CreateWorkbenchDialogChrome(frame,w.title)
     local content=CreateFrame('Frame',nil,frame);content:SetPoint('TOPLEFT',10,-38);content:SetPoint('BOTTOMRIGHT',-10,28)
@@ -131,5 +131,5 @@ function addon:OpenItemListPopup(name,editbox,items,isvalid,update,onclose,optio
             leading=function(form,y,width) return self:LayoutNewItemField(form,form:Reference('new_item',nil,p.newItem,w.editbox,{accept=function(value) return w:Accept(value) end},function(value) p.newItem=value end,true),y,width) end}})
         p:CreationActions(function() w:Apply() end,function() w:Close() end,true)
     end)
-    w.frame:Show();self:RegisterWindowForEscape(w);return w
+    w.frame:Show();self:OpenPopup(w);return w
 end

@@ -40,7 +40,7 @@ function addon:ShowConditionSourceTest(owner,options)
     local cacheKey=debugSurface and 'sourceDebugSurface' or 'sourcePreview';local d=owner[cacheKey]
     if d and d.active then d:Close() end
     if not d then
-        d={frame=CreateFrame('Frame',nil,UIParent)};owner[cacheKey]=d;d.frame:SetSize(debugSurface and 620 or 760,debugSurface and 430 or 550);d.frame:SetPoint('CENTER');d.frame:SetFrameStrata('FULLSCREEN_DIALOG');d.frame:SetToplevel(true);d.frame:SetClampedToScreen(true);d.frame:EnableMouse(true);self:MakeWindowOpaque(d.frame)
+        d={frame=CreateFrame('Frame',nil,UIParent)};owner[cacheKey]=d;d.frame:SetSize(debugSurface and 620 or 760,debugSurface and 430 or 550);d.frame:SetPoint('CENTER');d.frame:SetClampedToScreen(true);d.frame:EnableMouse(true);self:MakeWindowOpaque(d.frame)
         d.title=d.frame:CreateFontString(nil,'OVERLAY','GameFontNormal');d.chrome=self:CreateWorkbenchDialogChrome(d.frame,d.title)
         d.info=d.frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');d.info:SetPoint('TOPLEFT',12,-36);d.info:SetSize(736,40);d.info:SetJustifyH('LEFT');d.info:SetWordWrap(true)
         d.status=d.frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');d.status:SetPoint('TOPLEFT',12,-80);d.status:SetSize(736,36);d.status:SetJustifyH('LEFT');d.status:SetWordWrap(true)
@@ -209,7 +209,7 @@ function addon:ShowConditionSourceTest(owner,options)
         self:ShowResult(accepted,status,matched,reason)
     end
     d.frame:ClearAllPoints();if debugSurface then d.frame:SetPoint('TOPLEFT',owner.frame,'TOPRIGHT',8,0) else d.frame:SetPoint('CENTER') end
-    d.frame:SetFrameLevel(owner.frame:GetFrameLevel()+20);d.frame:Show();if not debugSurface then owner:HideForChild() end;if rootOwner then rootOwner.widgets[d]=true end
+    d.frame:Show();addon:OpenPopup(d,owner);if not debugSurface then owner:HideForChild() end;if rootOwner then rootOwner.widgets[d]=true end
     local available,unavailable=addon:AreFunctionBindingsAvailable(source.bindings)
     if debugSurface or available then
         d:Render(source)
@@ -224,7 +224,7 @@ function addon:ShowConditionSourceTest(owner,options)
         if d.pendingTest and d.frame:IsShown() then d.pendingTest=nil;d.elapsed=0;d:Check() end
         if d.liveEnabled and d.frame:IsShown() then d.elapsed=d.elapsed+(tonumber(elapsed) or 0);if d.elapsed>=.5 then d.elapsed=d.elapsed%.5;d:Check(true) end end
     end)
-    addon:RegisterWindowForEscape(d);return d
+    addon:OpenPopup(d,owner);return d
 end
 function addon:ShowConditionSourcePreview(owner) return self:ShowConditionSourceTest(owner) end
 function addon:CreateConditionDebugSurface(owner,callback) return self:ShowConditionSourceTest(owner,{debugSurface=true,callback=callback}) end

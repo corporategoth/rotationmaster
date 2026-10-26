@@ -12,7 +12,7 @@ local function rgb(r,g,b)
 end
 function addon:CreateWorkbenchColorPicker(parent)
     local picker={frame=CreateFrame('Frame',nil,UIParent),h=0,s=0,v=1,a=1}
-    local frame=picker.frame;frame:SetSize(270,244);frame:SetPoint('CENTER',parent,'CENTER');frame:SetFrameStrata('FULLSCREEN_DIALOG');frame:SetClampedToScreen(true);frame:SetToplevel(true);frame:EnableMouse(true);addon:MakeWindowOpaque(frame)
+    local frame=picker.frame;frame:SetSize(270,244);frame:SetPoint('CENTER',parent,'CENTER');frame:SetClampedToScreen(true);frame:EnableMouse(true);addon:MakeWindowOpaque(frame)
     local square=CreateFrame('Button',nil,frame);picker.square=square;square:SetPoint('TOPLEFT',12,-30);square:SetSize(180,150)
     local base=square:CreateTexture(nil,'ARTWORK',nil,0);base:SetAllPoints(square)
     for index,name in ipairs({'color-saturation','color-value'}) do local texture=square:CreateTexture(nil,'ARTWORK',nil,index);texture:SetAllPoints(square);texture:SetTexture(addon:ControlTexture(name)) end
@@ -79,7 +79,7 @@ function addon:CreateWorkbenchColorPicker(parent)
         self.hueValue:SetText(string.format('%.3f',self.h));self.alphaValue:SetText(string.format('%.3f',self.a))
         self.loading=true;hue:SetValue(self.h);alpha:SetValue(self.a);self.loading=false
         local r,g,b=hsv(self.h,1,1);base:SetColorTexture(r,g,b,1);marker:ClearAllPoints();marker:SetPoint('CENTER',square,'TOPLEFT',self.s*180,-(1-self.v)*150)
-        frame:SetFrameLevel(parent:GetFrameLevel()+150);frame:Show();addon:RegisterWindowForEscape(self)
+        frame:Show();addon:OpenPopup(self,anchor or parent)
     end
     frame:Hide();return picker
 end

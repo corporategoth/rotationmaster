@@ -176,7 +176,7 @@ function addon:ShowWorkbenchHelp(heading,sections,owner,request)
     local d=self.helpWindow
     if not d then
         d={frame=CreateFrame('Frame',nil,UIParent),rows={}};self.helpWindow=d;local frame=d.frame
-        frame:SetPoint('CENTER');frame:SetSize(540,360);frame:SetFrameStrata('FULLSCREEN_DIALOG');frame:SetToplevel(true);frame:SetClampedToScreen(true);frame:EnableMouse(true);addon:MakeWindowOpaque(frame)
+        frame:SetPoint('CENTER');frame:SetSize(540,360);frame:SetClampedToScreen(true);frame:EnableMouse(true);addon:MakeWindowOpaque(frame)
         d.title=frame:CreateFontString(nil,'OVERLAY','GameFontNormal');d.chrome=addon:CreateWorkbenchDialogChrome(frame,d.title)
         d.scroll=addon:CreateWorkbenchScrollFrame(frame);d.scroll:SetPoint('TOPLEFT',12,-38);d.child=CreateFrame('Frame',nil,d.scroll);d.scroll:SetScrollChild(d.child);d.child:SetWidth(490)
         d.close=addon:CreateWorkbenchIconButton(frame,'close',L['Close']);d.close:SetPoint('TOPRIGHT',-5,-5)
@@ -217,7 +217,7 @@ function addon:ShowWorkbenchHelp(heading,sections,owner,request)
     if not current() then return end
     d.child:SetHeight(math.max(1,y));local visible=math.min(300,math.max(100,y));d.frame:SetHeight(38+visible+28);d.scroll:SetSize(510,visible);d.chrome:LayoutTitle()
     d.frame.rmHelpCurrent=current
-    local front=_G.RotationMasterFrontmostDialog;d.frame:SetFrameLevel(front and front~=d.frame and front:GetFrameLevel()+20 or d.frame:GetFrameLevel()+1);d.frame:Show();d.scroll.workbenchBar:SetValue(0);d.scroll:UpdateWorkbenchScroll();addon:RegisterWindowForEscape(d);return d
+    d.frame:Show();d.scroll.workbenchBar:SetValue(0);d.scroll:UpdateWorkbenchScroll();addon:OpenPopup(d);return d
 end
 
 -- Release pages use their own small, pooled table; ordinary diagnostic reports
@@ -229,7 +229,7 @@ function addon:ShowIntegrationProjectLink(id)
     local d=self.integrationProjectWindow
     if not d then
         d={frame=CreateFrame('Frame',nil,UIParent),rows={},generation=0};self.integrationProjectWindow=d
-        local frame=d.frame;frame:SetPoint('CENTER');frame:SetSize(640,140);frame:SetFrameStrata('FULLSCREEN_DIALOG');frame:SetToplevel(true);frame:SetClampedToScreen(true);frame:EnableMouse(true)
+        local frame=d.frame;frame:SetPoint('CENTER');frame:SetSize(640,140);frame:SetClampedToScreen(true);frame:EnableMouse(true)
         d.title=frame:CreateFontString(nil,'OVERLAY','GameFontNormal');d.chrome=self:CreateWorkbenchDialogChrome(frame,d.title)
         local function heading(text,x,width)
             local label=frame:CreateFontString(nil,'OVERLAY','GameFontNormalSmall');label:SetPoint('TOPLEFT',x,-36);label:SetWidth(width);label:SetHeight(18);label:SetJustifyH('LEFT');label:SetText(text);return label
@@ -289,5 +289,5 @@ function addon:ShowIntegrationProjectLink(id)
     end
     d.child:SetHeight(math.max(1,y));d.scroll:SetHeight(math.min(240,y));d.scroll:SetVerticalScroll(0)
     d.frame:SetSize(640,86+math.min(240,y));d.chrome:SetContext(name or id,L['Links'],'');d.title:SetText(name or id)
-    d:Show();self:RegisterWindowForEscape(d);return d
+    d:Show();self:OpenPopup(d);return d
 end
