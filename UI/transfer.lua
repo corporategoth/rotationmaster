@@ -74,6 +74,9 @@ function addon:ShowRotationTransfer(spec,id)
     p:Open(function() end)
     local reference=self:ResolveRotationReference(spec,id)
     local record,recordToken;if reference then record,recordToken=self:GetRotationRecordSnapshot(spec,reference) end
+    -- A snapshot that failed answers (nil, reason): the reason is a string, not a token. A selection with no saved
+    -- record (a new rotation not applied yet, a Default never saved) has nothing to replace.
+    if type(record)~='table' or type(recordToken)~='table' then recordToken=nil end
     local original=record and record.body;local profile=self.db.profile;local coordinator=self:GetScopedRotationCoordinator();local context=self:GetRotationOwnerContext()
     local expected={profile=profile,reference=reference,recordToken=recordToken}
     local candidate,dialog;local active=true;local generation=p.generation
@@ -83,7 +86,10 @@ function addon:ShowRotationTransfer(spec,id)
         if not now or not context or now.class~=context.class or now.character~=context.character then return false end
         return not recordToken or coordinator:TokenCurrent(recordToken)
     end
-    local canReplace=reference and reference.kind=='custom' and recordToken~=nil
+    -- Which selections an import can replace: a saved custom rotation, the saved Default included (it is a custom
+    -- record and Apply replaces it in place). Never a Built In, a new rotation not yet applied, or a Default that was
+    -- never saved. canReplace is the one answer; the dialog's mode starts from it and everything below reads the mode.
+    local canReplace=reference~=nil and reference.kind=='custom' and record~=nil and recordToken~=nil
     local options={valid=valid,canReplace=canReplace,selectedName=original and original.name or source and self:RotationDisplayName(source),fallbackName=L['Imported rotation'],requirePreview=true,
         help={heading=L['Import/Export Rotation'],brief=L['Help.Transfers.rotation_brief'],briefs=self:TransferHelpBriefs(),sections={{title=L['Import/Export'],text=L['Help.Transfers.rotation']},{title=L['Preview import'],text=L['Help.Transfers.rotation_preview']},{title=L['Applies to'],text=L['Copies belong to your Class unless This character is selected. Replacement keeps its original owner.']}}}}
     options.originalName=function(text) local decoded=codec:Decode(text);local value=decoded and decoded.value;if type(value)=='table' then return self:RotationDisplayName(value) end end
@@ -95,7 +101,7 @@ function addon:ShowRotationTransfer(spec,id)
         d.inspect:Enable();local ready,reason=session:GetReady(candidate.token)
         d.status:SetText(ready and L['Ready to import. Choose replacement or a named copy.'] or string.format(L['This import cannot be applied: %s'],reason));if ready then d.apply:Enable() end
         if p.importPreview then p.importPreview.frame:Hide() end;if p.importContent then p.importContent.frame:Hide() end
-        if d.mode=='replace' then
+        if d.mode=='replace' and canReplace then
             -- Replacing: what would change in the selected rotation.
             local own=original or source and (source.body or source) or {rotation={},cooldowns={}};local view=session:Compare(candidate.token,own,self.RotationData.GetRotationTags(source));if view then self:ShowNativeImportPreview(p,view,spec) end
         else
@@ -130,7 +136,7 @@ function addon:ShowRotationTransfer(spec,id)
         dialog.classScope:SetChecked(not dialog.scope:GetChecked());if dialog.mode=='new' then dialog.classScope:Enable() else dialog.classScope:Disable() end
     end
     local destination=dialog.destination:GetScript('OnClick')
-    self:SetUIScript(dialog.destination,'OnClick',function(...) if valid() and dialog.options==options then destination(...);if dialog.mode=='new' then dialog.scope:SetChecked(false) end;scopeState();if p.importPreview then p.importPreview.frame:Hide() end;if p.importContent then p.importContent.frame:Hide() end end end)
+    self:SetUIScript(dialog.destination,'OnClick',function(...) if dialog.options==options then destination(...);if not valid() then return end;if dialog.mode=='new' then dialog.scope:SetChecked(false) end;scopeState();if p.importPreview then p.importPreview.frame:Hide() end;if p.importContent then p.importContent.frame:Hide() end end end)
     self:SetUIScript(dialog.scope,'OnClick',function() if valid() and dialog.options==options and dialog.mode=='new' and context.character then dialog.scope:SetChecked(true);scopeState() end end)
     self:SetUIScript(dialog.classScope,'OnClick',function() if valid() and dialog.options==options and dialog.mode=='new' then dialog.scope:SetChecked(false);scopeState() end end)
     dialog.scope.tooltip=L['Copies belong to your Class unless This character is selected. Replacement keeps its original owner.']

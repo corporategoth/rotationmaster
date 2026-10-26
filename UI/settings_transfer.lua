@@ -183,6 +183,13 @@ function addon:ShowSettingsTextTransfer(p,title,text,apply,options)
     -- The first button follows the destination: replacing an entry compares the
     -- import with it, a new copy previews the import in full. The second one
     -- always checks the import for problems. A button grows with its label.
+    -- A button never does nothing in silence: a window that went stale says so, and an error is shown
+    -- on the status line instead of vanishing.
+    local function run(action,...)
+        if not valid() then d.status:SetText(L['This import window is out of date. Close it and open it again.']);return end
+        local ok,result=pcall(action,...);if not ok then d.status:SetText(string.format(L['Import preview unavailable: %s'],tostring(result)));return end
+        return result
+    end
     local function labels()
         if not (options.requirePreview or options.review) then return end
         local compare=d.mode=='replace' and options.canReplace and true or false
@@ -202,7 +209,7 @@ function addon:ShowSettingsTextTransfer(p,title,text,apply,options)
     end
     if options then
         d.original:Show();d.destination:Show();d.nameLabel:Show();d.name:Show();d.newName=options.fallbackName or '';d.scroll:ClearAllPoints();d.scroll:SetPoint('TOPLEFT',12,-98);d.scroll:SetHeight(232);d.input:SetHeight(232)
-        addon:SetUIScript(d.destination,'OnClick',function() if valid() and options.canReplace then d.mode=d.mode=='replace' and 'new' or 'replace';destination();if options.review and addon.CloseTransferReview then addon:CloseTransferReview(p) end end end)
+        addon:SetUIScript(d.destination,'OnClick',function() if not valid() then d.status:SetText(L['This import window is out of date. Close it and open it again.']);return end;if options.canReplace then d.mode=d.mode=='replace' and 'new' or 'replace';destination();if options.review and addon.CloseTransferReview then addon:CloseTransferReview(p) end end end)
         addon:SetUIScript(d.name,'OnTextChanged',function(_,user) if user and valid() and d.mode=='new' then d.nameDirty=true;d.newName=d.name:GetText() end end)
         addon:SetUIScript(d.name,'OnEscapePressed',function() d.frame:Hide() end)
         addon:SetUIScript(d.input,'OnTextChanged',function(_,user) if user then preview();if options.review and addon.CloseTransferReview then addon:CloseTransferReview(p) end;if options.invalidate then options.invalidate(d) end end end)
@@ -210,10 +217,10 @@ function addon:ShowSettingsTextTransfer(p,title,text,apply,options)
     else
         d.original:Hide();d.destination:Hide();d.nameLabel:Hide();d.name:Hide();d.scroll:ClearAllPoints();d.scroll:SetPoint('TOPLEFT',12,-40);d.scroll:SetHeight(300);d.input:SetHeight(300);addon:SetUIScript(d.input,'OnTextChanged',nil);d.status:SetText(L['Copy this text to export. Import replaces the selected settings.'])
     end
-    if options and options.requirePreview then d.preview:Show();d.inspect:Show();d.apply:Disable();d.inspect:Disable();addon:SetUIScript(d.preview,'OnClick',function() if valid() then options.preview(d) end end);addon:SetUIScript(d.inspect,'OnClick',function() if valid() then return options.inspect(d) end end) elseif options and options.review and addon.BuildTransferReview then
+    if options and options.requirePreview then d.preview:Show();d.inspect:Show();d.apply:Disable();d.inspect:Disable();addon:SetUIScript(d.preview,'OnClick',function() run(options.preview,d) end);addon:SetUIScript(d.inspect,'OnClick',function() return run(options.inspect,d) end) elseif options and options.review and addon.BuildTransferReview then
         -- Looking is optional here: Import is never gated, the buttons only show the import.
         local show,check=addon:BuildTransferReview(p,options.review);d.preview:Show();d.inspect:Show();d.apply:Enable();d.inspect:Enable()
-        addon:SetUIScript(d.preview,'OnClick',function() if valid() then show(d) end end);addon:SetUIScript(d.inspect,'OnClick',function() if valid() then check(d) end end)
+        addon:SetUIScript(d.preview,'OnClick',function() run(show,d) end);addon:SetUIScript(d.inspect,'OnClick',function() return run(check,d) end)
     else d.preview:Hide();d.inspect:Hide();d.apply:Enable() end
     addon:SetUIScript(d.clear,'OnClick',function() if valid() then d.input:SetText('');d.input:SetFocus();d.input:SetCursorPosition(0);d.scroll.workbenchBar:SetValue(0);if options then preview();if options.invalidate then options.invalidate(d) end end end end)
     addon:SetUIScript(d.copy,'OnClick',function() if valid() then d.input:SetFocus();d.input:SetCursorPosition(0);d.input:HighlightText(0,-1) end end)
@@ -224,6 +231,6 @@ function addon:ShowSettingsTextTransfer(p,title,text,apply,options)
         local result=p:WithSettingsHistory(function() local ok,why=apply(d.input:GetText(),settings);return {ok,why} end);if not valid()then return end;local ok,why=result[1],result[2];if not ok then d.status:SetText(why or L['Invalid import.']);return end
         d.frame:Hide();p:Draw()
     end)
-    d.frame:SetFrameLevel(p.frame:GetFrameLevel()+250);d.frame:Show();d.scroll.workbenchBar:SetValue(0);d.scroll:UpdateWorkbenchScroll();addon:RegisterWindowForEscape(d);if options then preview() end
+    d.frame:SetFrameLevel(p.frame:GetFrameLevel()+250);d.frame:Show();d.scroll.workbenchBar:SetValue(0);d.scroll:UpdateWorkbenchScroll();addon:RegisterWindowForEscape(d);if options then destination();preview() end
     self:BindTransferHelp(d,options and options.help,valid);return d
 end

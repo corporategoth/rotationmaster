@@ -96,6 +96,25 @@ for _,kind in ipairs(kinds()) do
     end)
 end
 
+-- "New" is selected (nothing exists yet to replace): Replace is unticked and disabled, the mode is new, the label is
+-- Preview import, a click on the disabled checkbox changes nothing and Preview opens the single-column view.
+local function newSelected(name,make,text)
+    test(name..': with New selected nothing can be replaced and Preview works',function()
+        local f,parent,a=fixture();local p=make(a,parent);local d=p.textDialog;assert(d and d.frame:IsShown(),'no transfer window')
+        assert(d.mode=='new' and not d.destination:GetChecked() and not d.destination:IsEnabled(),'mode '..tostring(d.mode))
+        assert(d.preview:GetText()=='Preview import' and d.inspect:GetText()=='Check import')
+        d.destination:Click();assert(d.mode=='new' and not d.destination:GetChecked() and d.preview:GetText()=='Preview import','a disabled checkbox flipped the mode')
+        paste(d,a:NewRotationCodec():Encode(text));d.preview:Click()
+        local c=p.comparison;assert(c and c.frame:IsShown() and c.fromImport and not c.rightHeading:IsShown(),'Preview did nothing: '..tostring(d.status:GetText()))
+    end)
+end
+newSelected('effect',function(a,parent) a.db.global.effects={};a.RemoveAllCurrentGlows=function() end;a.HideGlow=function() end;a.Glow=function() end;local p=a:OpenNativeSettings(parent,'Effects');p.fields.transfer:Click();return p end,{name='Incoming',type='pixel',lines=5})
+newSelected('announcement',function(a,parent) a.events={SUCCEEDED='Success'};a.db.profile.announces={};local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildAnnounceSettings(form) end);p.fields.transfer:Click();return p end,{format='RM-Announcement',version=1,announcement={type='spell',spell=8042,event='SUCCEEDED',announce='local',value='Incoming text',name='Second'}})
+newSelected('item set',function(a,parent) a.db.profile.itemsets={};a.db.global.itemsets={};a.db.char={bindings={}};a.UpdateItemSetButtons=function() end;local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildItemSettings(form) end);p.fields.transfer:Click();return p end,{format='RM-ItemSet',version=1,name='Incoming',items={5,6}})
+newSelected('profile',function(a,parent)
+    local profiles={One={enable=true,poll=.1}};a.db.profile=profiles.One;a.db.profiles=profiles;a.db.GetCurrentProfile=function() return 'One' end;a.db.GetProfiles=function() return {'One'} end;a.DisableRotation=function() end;a.EnableRotation=function() end
+    local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildProfileSettings(form) end);p.previousSelection=p.selection;p.creating=true;p:Draw();assert(p.creating,'the New entry is not selected');p.fields.transfer:Click();return p end,{format='RM-Profile',version=1,name='Incoming',profile={poll=.5}})
+
 test('a comparison the user opened from the page is not closed by the import window',function()
     local f,parent,a=fixture();a.db.profile.itemsets={a={name='One',items={1}},b={name='Two',items={2}}};a.db.global.itemsets={};a.db.char={bindings={}};a.UpdateItemSetButtons=function() end
     local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildItemSettings(form) end)
