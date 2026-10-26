@@ -833,7 +833,7 @@ return {
         ["setglobal"]=true,
     },
     -- Globals outside the client: Lua's own, and optional addons/the addon's own frames.
-    excluded={"ECSLoader","ExtendedCharacterStats","LibStub","LuaWorkbench","MI2_GetMobData","RealMobHealth","RotationMasterDB","RotationMasterFrontmostDialog","SyncUI_ActionBar","SyncUI_MultiBar","SyncUI_PetBar","SyncUI_SideBar","WeakAuras","_G","_VERSION","addonName","assert","bit","collectgarbage","coroutine","debug","dofile","error","gcinfo","getfenv","getmetatable","io","ipairs","load","loadfile","loadstring","math","module","newproxy","next","os","pairs","pcall","print","rawequal","rawget","rawset","require","select","setfenv","setmetatable","string","table","tonumber","tostring","type","unpack","xpcall"},
+    excluded={"ECSLoader","ExtendedCharacterStats","LibStub","LuaWorkbench","MI2_GetMobData","RealMobHealth","RotationMasterDB","RotationMasterFrontmostDialog","WeakAuras","_G","_VERSION","addonName","assert","bit","collectgarbage","coroutine","debug","dofile","error","gcinfo","getfenv","getmetatable","io","ipairs","load","loadfile","loadstring","math","module","newproxy","next","os","pairs","pcall","print","rawequal","rawget","rawset","require","select","setfenv","setmetatable","string","table","tonumber","tostring","type","unpack","xpcall"},
     removed={
         "ActionButton_CalculateAction",
         "ActionButton_GetPagedID",

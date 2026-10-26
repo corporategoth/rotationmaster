@@ -1,6 +1,6 @@
 local F=dofile('tests/fixtures/addon.lua')
 local test,finish=F.suite()
-local expected={'ExtendedCharacterStats','MobInfo2','!!!LuaWorkbench','WowLua','WeakAuras','Masque','Questie','DBM-Core','BigWigs','Titan','ElvUI','Bartender4','ButtonForge','G15Buttons','SyncUI','LUI','Dominos','DiabolicUI','AzeriteUI','Neuron','FarmingBar','TotemTimers','SamyTotemTimers'}
+local expected={'ExtendedCharacterStats','MobInfo2','!!!LuaWorkbench','WeakAuras','ForeverAuras','Masque','Questie','DBM-Core','BigWigs','Titan','ElvUI','Bartender4','ButtonForge','LUI','Dominos','AzeriteUI','AzeriteUI6','EllesmereUIActionBars','FarmingBar','TotemTimers'}
 local function fixture(legacy)
  local f=F.new();local present,versions,calls={},{},{}
  local function loaded(id)calls[#calls+1]={'loaded',id};return present[id]==true end

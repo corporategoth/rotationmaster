@@ -1,16 +1,16 @@
 # Optional integrations
 
-The Integrations page is a fixed inventory of addons that RM actually consumes or detects, with editor preferences alongside it. The current research catalog contains 23 addon identities and 85 release, source and author links. Bundled libraries are dependencies, not addon inventory rows. The Native row is an RM editor preference, not an installable addon. Registered custom editor providers can participate without being fabricated as supported third-party addon records.
+The Integrations page is a fixed inventory of addons that RM actually consumes or detects, with editor preferences alongside it. The current research catalog contains 20 addon identities and 81 release, source and author links. Bundled libraries are dependencies, not addon inventory rows. The Native row is an RM editor preference, not an installable addon. Registered custom editor providers can participate without being fabricated as supported third-party addon records.
 
 | Group | Supported addon identities |
 | --- | --- |
-| Lua editors | `!!!LuaWorkbench` (LuaWorkbench), `WowLua` (detection only) |
+| Lua editors | `!!!LuaWorkbench` (LuaWorkbench) |
 | Condition data | `ExtendedCharacterStats`, `MobInfo2` |
-| Recommendation notifications | `WeakAuras` |
+| Recommendation notifications | `WeakAuras` (Classic editions, and Forever through the Musca Auras fork), `ForeverAuras` (Forever) |
 | Quest callbacks | `Questie` |
 | Boss mods | `DBM-Core` (DBM), `BigWigs` — one enabled at a time |
 | Top panels | `Titan` (Titan Panel; passive, through RM's LibDataBroker object) |
-| Action bars | `ElvUI`, `Bartender4`, `ButtonForge`, `G15Buttons`, `SyncUI`, `LUI`, `Dominos`, `DiabolicUI`, `AzeriteUI`, `Neuron`, `FarmingBar`, `TotemTimers`, `SamyTotemTimers` |
+| Action bars | `ElvUI`, `Bartender4`, `ButtonForge`, `LUI`, `Dominos`, `AzeriteUI` (v5), `AzeriteUI6`, `EllesmereUIActionBars` (EllesmereUI), `FarmingBar`, `TotemTimers` |
 
 ## Cards and display evidence
 
@@ -20,7 +20,7 @@ Pill colors distinguish Not loaded (gray), Supported (blue, read-only), Disabled
 
 Only Native syntax highlighting has card-specific Help. Its gold Help button uses the same 20-pixel button and 18-pixel icon as condition cards. It sits below Status, right aligned; Native Help shares the first option row instead of adding space before it. General editor, line-number and integration guidance remains in the page Help. Show line numbers appears directly below the Lua editor section heading, outside Native; Native contains only its Syntax highlighting checkbox. Passive or detection-only integrations have no invented preference switches. Some read-only integrations still call provider APIs during their existing gameplay work; read-only controls do not imply a data-only backend.
 
-Clicking a linked addon name opens a draggable, reusable Provider / URL / Copy dialog. Provider labels, URL fields and Copy icons share each row’s vertical center, including wrapped labels. It lists every curated channel for that identity; Copy selects the immutable URL for manual Ctrl+C. It neither opens an external browser nor installs anything. The author-published WowLua GitHub URL is deliberately retained with an unavailable label and note; it is not presented as a working repository, and another official source is listed.
+Clicking a linked addon name opens a draggable, reusable Provider / URL / Copy dialog. Provider labels, URL fields and Copy icons share each row’s vertical center, including wrapped labels. It lists every curated channel for that identity; Copy selects the immutable URL for manual Ctrl+C. It neither opens an external browser nor installs anything.
 
 ## Release channels and client scope
 
@@ -28,9 +28,65 @@ Clicking a linked addon name opens a draggable, reusable Provider / URL / Copy d
 
 The generated block in `Integrations/catalog.lua` contains links and declared edition scopes. `GetIntegrationClientSupport(id, client)` classifies them as supported, unsupported or unknown. The settings page hides only explicit unsupported results, including editor candidates and menu alternatives; unknown entries stay visible. Native remains available. Editor resolution applies the same scope rules when an editor is opened. Client information is read on these cold paths, not on a recommendation timer.
 
-Scope describes the editions advertised for the exact addon identity, not actual-client acceptance. An old patch or lack of a recent release does not establish a maximum supported interface version. Interface bounds require explicit evidence; progression branches are stated separately, and an unknown progression branch remains unknown. G15 Buttons and SyncUI are historical Retail identities without an inferred patch maximum. LUI's same-folder Classic fork is distinguished from Retail Core. A different-folder successor cannot silently widen the original integration's scope.
+Scope describes the editions advertised for the exact addon identity, not actual-client acceptance. An old patch or lack of a recent release does not establish a maximum supported interface version. Interface bounds require explicit evidence; progression branches are stated separately, and an unknown progression branch remains unknown. LUI's same-folder Classic fork is distinguished from Retail Core. A different-folder successor cannot silently widen the original integration's scope.
 
 Catalog loading performs no discovery or native query. Listing uses bounded addon load/version metadata and existing cached status; it does not construct editors, invoke gameplay readiness callbacks, query quest progress, install/load another addon, or register a provider. Controls are pooled and guarded by the form owner and drawing generation. These settings changes add no gameplay subscription, polling loop, recommendation work or CPU-profiling behavior. Offline geometry checks do not establish native pixel acceptance.
+
+## Edition scope is what RM can do with the addon
+
+An addon is listed for an edition only when RM can do something with it there, and a row is hidden on an edition outside its scope. Decided 2026-10-25, per addon:
+
+| Addon | What RM does with it | Editions kept | Dropped, and why |
+| --- | --- | --- | --- |
+| WeakAuras | Calls the global `WeakAuras.ScanEvents` with `ROTATIONMASTER_SPELL_UPDATE` and `ROTATIONMASTER_COOLDOWN_UPDATE` so custom-event auras can follow the recommendation (`main.lua`, `buttons.lua`). It reads nothing from WeakAuras. | Classic Era, TBC, Classic progression; Forever through Musca Auras, which installs the same `WeakAuras` folder and defines the same `ScanEvents` | Retail: the newest Retail file (5.21.1, January 2026) predates Midnight. Official WeakAuras has no Forever file. |
+| ForeverAuras | The same global: its `Init.lua` creates `WeakAuras = {}` and `GenericTrigger.lua` defines `WeakAuras.ScanEvents`. A different folder, so its own row. | Forever | n/a |
+| MobInfo2 | RESIST, IMMUNE and RUNNER look a creature up by name and level. | Era, TBC, Classic progression | Retail, Forever: an NPC name is secret there, so the conditions are unavailable (`docs/restricted-clients.md`). |
+| DBM, BigWigs | Boss-mod conditions through the encounter adapter. | Era, TBC, Classic progression | Retail, Forever: the adapter reports them incompatible by design (`Integrations/encounters.lua`). |
+| TotemTimers | Maps the totem buttons. | Forever, Era, TBC, Classic progression | Retail: the project's Retail file is the historical 2020 release. |
+| WowLua | Detection only, no function. | none | Row removed. |
+| G15Buttons, SyncUI, Neuron, DiabolicUI, SamyTotemTimers | Button scans. | none | No update in more than two years (2014, 2020, 2022, 2022, 2023). Scans and rows removed. |
+
+The remaining rows keep their advertised editions. LittleWigs and the DBM dungeon module pack are companion links on the BigWigs and DBM rows: they register through the boss mod RM already reads, so they add no code.
+
+## Action-bar button discovery
+
+`Fetch()` in `buttons.lua` indexes every action button once per bar change (the existing `ButtonFetch` events), through `AddStandardButton`, which reads the secure `type` and `action` attributes. Sources, in scan order:
+
+| Source | Buttons | Evidence |
+| --- | --- | --- |
+| LibActionButton-1.0 variants | Every library `LibStub:IterateLibraries()` lists whose name starts with `LibActionButton-1.0` (for example the `-ElvUI` fork), each read once through `GetAllButtons`. The two historical names are still tried when LibStub cannot be iterated. | Bartender4, ElvUI, AzeriteUI6 create buttons here. |
+| EllesmereUI Action Bars | `EABButton1` to `EABButton180` (`CheckButton`, `ActionBarButtonTemplate`, secure `action` attribute rewritten on page changes). The stock bars are reparented to the hidden `EABHiddenParent`. | `EllesmereUIActionBars/EUI_ActionBars_Secure.lua` (`GetOrCreateButton`, `BAR_SLOT_OFFSETS`), `EUI_ActionBars_Disposal.lua`, commit `1fdf4d2`. |
+| Blizzard | `ActionButton`, `MultiBar*Button`, `MultiBar5-7Button`, pet and override buttons. | `ActionButtonUtil.ActionBarButtonNames`, Blizzard_ActionBar. |
+| Dominos | `Dominos.ActionButtons:GetAll()` where reachable, plus the names: `DominosActionButton` for action IDs 1-24 and 73-132, and `MultiBarRight/Left/BottomRight/BottomLeft/5/6/7ActionButton1-12` (frames Dominos creates for IDs 25-72 and 133-168; Blizzard's own are `...Button<n>`). | `Dominos/bars/actionBar/buttons.lua` `GetActionButtonName`, commit `3a65bfa`. The earlier scan of `DominosActionButton1-60` missed IDs 61-132 and every bar named after a Blizzard bar. |
+| AzeriteUI6 | Action buttons come from LibActionButton; the pet bar is `AZUI6_PetActionBarButton1-10`. AzeriteUI (v5) keeps `AzeriteUIActionButton1-24`. | `AzeriteUI6/Components/ActionBars`, commit `05e2e2e`. |
+| Others | Bartender4 pet and stance, ElvUI pet, ButtonForge, LUI, FarmingBar, TotemTimers. | unchanged |
+| Registered providers | See below. | |
+
+**Hidden duplicates.** EllesmereUI hides Blizzard's bars but the `ActionButtonN` frames stay in `_G` with their action attributes. The EllesmereUI scan runs before the Blizzard one and records the slots its visible buttons draw; a Blizzard button that is not visible (`IsVisible()` false) and whose slot is drawn that way is left out of the index, so the glow lands on the button the player sees and no overlay is built for a hidden twin. If the EllesmereUI bars are hidden, nothing is recorded and the stock buttons stay. No other addon uses this rule.
+
+**Not verified without a client.** Everything above comes from the addons' public source at the commits named. Not checked in game: that the recommendation overlay fits EllesmereUI's custom button shapes and masks, that a paged EllesmereUI main bar re-indexes on every page change (it relies on `ACTIONBAR_PAGE_CHANGED`), AzeriteUI6's stance bar (not scanned), and Dominos' registry on a build older than the cited commit (the name scan covers it).
+
+## Button provider API
+
+Another addon, or a user script, can add its buttons without an RM release. Obtain the Rotation Master instance with `LibStub("AceAddon-3.0"):GetAddon(actualInstalledAddonName)` or `_G[actualInstalledAddonName]`; the name follows the installation folder, as for `RegisterLuaEditorProvider`.
+
+```lua
+local rm = LibStub("AceAddon-3.0"):GetAddon("RotationMaster", true)
+if rm and rm.RegisterButtonProvider then
+  rm:RegisterButtonProvider("MyBars", function(addButton, addPetButton)
+    for _, button in ipairs(MyBars.buttons) do addButton(button) end
+    for index, button in ipairs(MyBars.petButtons) do addPetButton(button, index) end
+  end)
+end
+```
+
+- `RegisterButtonProvider(id, fn)` returns `true`, or `false, "invalid-id"` (not a string of 1 to 128 bytes) or `false, "invalid-provider"` (`fn` is not a function). Registering an id again replaces the earlier function. A rescan is scheduled.
+- `fn(addButton, addPetButton)` runs at every bar scan. `addButton(button)` indexes an action button the way the built-in scans do: the frame needs `GetAttribute`, a secure `type` of `action`, `macro`, `item` or `spell`, and an `action` slot for action buttons. `addPetButton(button, index)` maps a pet bar button to its pet action index (1 to 10). Anything else is ignored.
+- Each provider may add at most 512 buttons per scan. An error in `fn` is caught, recorded and does not stop other providers or the scan.
+- `UnregisterButtonProvider(id)` returns `true` if the id was registered, and rescans.
+- `ListButtonProviders()` returns a list of `{id=, buttons=, error=}` sorted by id: how many buttons the last scan took and the last error message, if any.
+
+Providers add buttons to the same index as the built-in scans; they do not change glow, cooldown or range behavior.
 
 ## Editor enablement and selection
 
@@ -38,7 +94,7 @@ Enabled and selected are separate. An enabled, available editor offers Disable o
 
 The UI has no None or Automatic row. Existing `profile.lua_editor="auto"` remains compatible: it resolves to a sorted enabled, available registered external provider, then Native. Disabled providers are excluded. Plain remains the emergency fallback when Native is disabled; it cannot itself be disabled. `profile.lua_native_highlighting` is an optional Boolean. When absent, its legacy value follows whether `lua_editor` is plain; explicit editor actions preserve that inferred preference. Selecting Native uses the native or plain token according to this preference.
 
-`profile.lua_editor_disabled` is an optional plain true-only map with at most 64 entries. Provider identifiers follow the existing nonblank name contract, are bounded to 128 bytes, and exclude auto/plain. Stored unknown identifiers are inert future preferences. Registered custom providers can be selected and disabled through this same map. Adding a 65th disabled identifier is refused without partial changes. WowLua remains detection-only unless a real editor provider is separately registered.
+`profile.lua_editor_disabled` is an optional plain true-only map with at most 64 entries. Provider identifiers follow the existing nonblank name contract, are bounded to 128 bytes, and exclude auto/plain. Stored unknown identifiers are inert future preferences. Registered custom providers can be selected and disabled through this same map. Adding a 65th disabled identifier is refused without partial changes.
 
 Editor preference changes and Questie's independent opt-in use the existing Apply/Discard transaction. Selection plus disable/handoff are staged atomically; conflicts refuse partial publication. Profile copy/import preserve the preferences, reset restores defaults, and merely drawing or collapsing the page does not normalize saved data. Apply affects the next source-editor opening and does not forcibly replace an editor already open.
 
@@ -84,7 +140,7 @@ RM has always published a LibDataBroker data source (active rotation text, toolt
 | Method Raid Tools | Not now. Raid notes are free text authored per raid; there is no stable assignment contract RM could read safely. |
 | GTFO | Not now. Its alerts are sound/visual side effects without a documented callback; "standing in bad" is better left to the player. |
 | TomTom, HandyNotes, Atlas, GatherMate2, RareScanner, NovaInstanceTracker | No rotation value; native ZONE/INSTANCE/OUTDOORS cover location. |
-| LittleWigs | Uses the BigWigs contract; covered by the BigWigs adapter when installed. |
+| LittleWigs | Uses the BigWigs contract; covered by the BigWigs adapter when installed. Listed as a companion link on the BigWigs row, with the DBM dungeon module pack on the DBM row; neither is a separate identity. |
 | ElvUI skins / other themes | ElvUI is not installed on the test client; Masque covers button skins. |
 
 ## Masque preview button skins

@@ -51,9 +51,9 @@ test('copy and URL focus select only their own field and unselect every other UR
 end)
 test('release popup reuses bounded rows and retired copy callbacks cannot target a newer addon',function()
  local _,a=fixture();local d=a:ShowIntegrationProjectLink('LUI');local stale=d.rows[1].copy.scripts.OnClick
- local last=#a:GetIntegrationProjectLinks('LUI');local warm=d.rows[last];local nextDialog=a:ShowIntegrationProjectLink('G15Buttons');assert(nextDialog==d and d.title:GetText()=='G15Buttons')
+ local last=#a:GetIntegrationProjectLinks('LUI');local warm=d.rows[last];local nextDialog=a:ShowIntegrationProjectLink('Dominos');assert(nextDialog==d and d.title:GetText()=='Dominos')
  assert(not warm.frame:IsShown() and not warm.edit.focused and warm.edit.selection[2]==0)
- stale();assert(not d.rows[1].edit.focused,'old LUI copy selected the new G15Buttons URL')
+ stale();assert(not d.rows[1].edit.focused,'old LUI copy selected the new Dominos URL')
  local hidden=d.rows[1].copy.scripts.OnClick;d.close:Click();hidden();assert(not d.rows[1].edit.focused)
  assert(a:ShowIntegrationProjectLink('LUI')==d and d.rows[last]==warm)
  a:ShowConditionText('ordinary CPU report','CPU profile');local report=a.conditionTextWindow

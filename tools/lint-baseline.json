@@ -54,14 +54,6 @@
     },
     {
       "code": "create-global",
-      "message": "implicit global creation 'FetchNeuron'",
-      "path": "buttons.lua",
-      "severity": "warning",
-      "source": "function FetchNeuron()",
-      "count": 1
-    },
-    {
-      "code": "create-global",
       "message": "implicit global creation 'base64dec'",
       "path": "utils.lua",
       "severity": "warning",
@@ -946,54 +938,6 @@
       "path": "Conditions/stats.lua",
       "severity": "warning",
       "source": "if RealMobHealth then",
-      "count": 1
-    },
-    {
-      "code": "undefined-global",
-      "message": "undefined global 'SyncUI_ActionBar'",
-      "path": "buttons.lua",
-      "severity": "warning",
-      "source": "syncbars[1] = SyncUI_ActionBar",
-      "count": 1
-    },
-    {
-      "code": "undefined-global",
-      "message": "undefined global 'SyncUI_MultiBar'",
-      "path": "buttons.lua",
-      "severity": "warning",
-      "source": "syncbars[2] = SyncUI_MultiBar",
-      "count": 1
-    },
-    {
-      "code": "undefined-global",
-      "message": "undefined global 'SyncUI_PetBar'",
-      "path": "buttons.lua",
-      "severity": "warning",
-      "source": "syncbars[6] = SyncUI_PetBar",
-      "count": 1
-    },
-    {
-      "code": "undefined-global",
-      "message": "undefined global 'SyncUI_SideBar'",
-      "path": "buttons.lua",
-      "severity": "warning",
-      "source": "syncbars[3] = SyncUI_SideBar.Bar1",
-      "count": 1
-    },
-    {
-      "code": "undefined-global",
-      "message": "undefined global 'SyncUI_SideBar'",
-      "path": "buttons.lua",
-      "severity": "warning",
-      "source": "syncbars[4] = SyncUI_SideBar.Bar2",
-      "count": 1
-    },
-    {
-      "code": "undefined-global",
-      "message": "undefined global 'SyncUI_SideBar'",
-      "path": "buttons.lua",
-      "severity": "warning",
-      "source": "syncbars[5] = SyncUI_SideBar.Bar3",
       "count": 1
     },
     {

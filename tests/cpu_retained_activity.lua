@@ -76,14 +76,14 @@ local function visuals(countButtons)
   glow.AutoCastGlow_Stop=function(button,id)local x=button['_AutoCastGlow'..tostring(id or '')];if x then x:Hide()end end
   glow.ButtonGlow_Stop=function(button)if button._ButtonGlow then button._ButtonGlow:Hide()end end
   f.libraries['LibCustomGlow-1.0']=glow
-  e.C_AddOns={IsAddOnLoaded=function(name)return name=='G15Buttons' and s.g15 or false end,GetAddOnMetadata=function(_,field)return field=='Title' and 'Rotation Master' or 'test'end}
+  e.C_AddOns={IsAddOnLoaded=function()return false end,GetAddOnMetadata=function(_,field)return field=='Title' and 'Rotation Master' or 'test'end}
   e.tinsert=table.insert;e.tremove=table.remove;e.HasAction=function()return true end;e.GetActionInfo=function(slot)return 'spell',1000+slot end
   local create=e.CreateFrame;e.CreateFrame=function(...)local w=create(...);local texture=w.CreateTexture;w.CreateTexture=function(...)local t=texture(...);t.SetBlendMode=function()end;t.SetRotation=function()end;return t end;return w end
-  s.buttons={};for i=1,countButtons or 4 do local w=e.CreateFrame('Button',nil,e.UIParent);local slot=i;function w:GetAttribute(key)if key=='type'then return 'action'elseif key=='action'then return slot end end;s.buttons[i]=w;if i<=12 then e['ActionButton'..i]=w else e['objG15_btn_'..(i-11)]=w;s.g15=true end end
+  s.buttons={};for i=1,countButtons or 4 do local w=e.CreateFrame('Button',nil,e.UIParent);local slot=i;function w:GetAttribute(key)if key=='type'then return 'action'elseif key=='action'then return slot end end;s.buttons[i]=w;if i<=12 then e['ActionButton'..i]=w else s.extra=s.extra or {};s.extra[#s.extra+1]=w end end
   a.debug=function()end;a.verbose=function()end
   a.ScheduleRepeatingTimer=function(_,fn,delay,...)local token={fn=fn,delay=delay,args={...}};s.repeating=s.repeating or {};s.repeating[#s.repeating+1]=token;return token end
  end)
- f.load('buttons.lua');a.db.profile.effect='pulse';a.db.global.effects={pulse={type='pulse',texture='Texture',sequence={.8,1},frequency=.1},pixel={type='pixel'},autocast={type='autocast'},blizzard={type='blizzard'}}
+ f.load('buttons.lua');if s.extra then a:RegisterButtonProvider('test-bars',function(add)for _,w in ipairs(s.extra)do add(w)end end)end;a.db.profile.effect='pulse';a.db.global.effects={pulse={type='pulse',texture='Texture',sequence={.8,1},frequency=.1},pixel={type='pixel'},autocast={type='autocast'},blizzard={type='blizzard'}}
  a:Fetch()
  return f,a,s
 end

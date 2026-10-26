@@ -2909,25 +2909,21 @@ L["Help.Integrations.questie_enabled"] = "Opt in to Questie callbacks for this p
 L["ExtendedCharacterStats"] = true
 L["MobInfo2"] = true
 L["LuaWorkbench"] = true
-L["WowLua"] = true
 L["WeakAuras"] = true
 L["ElvUI"] = true
 L["Bartender4"] = true
 L["ButtonForge"] = true
-L["G15Buttons"] = true
-L["SyncUI"] = true
 L["LUI"] = true
 L["Dominos"] = true
-L["DiabolicUI"] = true
 L["AzeriteUI"] = true
-L["Neuron"] = true
 L["FarmingBar"] = true
 L["TotemTimers"] = true
-L["SamyTotemTimers"] = true
+L["ForeverAuras"] = true
+L["AzeriteUI6"] = true
+L["EllesmereUI Action Bars"] = true
 L["Optional character statistics conditions."] = true
 L["Recorded creature history conditions; no current history is queried."] = true
 L["Lua editor integration. Choose an editor in Lua editor options."] = true
-L["Optional editor addon; no built-in connection is registered."] = true
 L["Recommendation event bridge; no WeakAuras display is required."] = true
 L["Quest update receipts only; native quest progress is not verified."] = true
 L["Optional action-bar mapping and glow support."] = true
@@ -3044,9 +3040,7 @@ L["Publisher lists Retail, Forever, Classic Era, TBC and Mists Classic."] = true
 
 L["Retail, Forever and TBC. Other editions are unverified."] = true
 
-L["Retail, Classic Era, TBC and older progression releases. Current-patch support is unverified. RM currently detects WowLua but does not offer it as an editor."] = true
 
-L["Current Classic Era, TBC and Mists Classic releases; Retail release evidence is historical. Current Retail and Forever support is unverified."] = true
 
 L["Classic Era, TBC and Mists Classic. Retail and Forever releases are unverified."] = true
 
@@ -3058,11 +3052,9 @@ L["Retail, Forever, Classic Era, TBC and Mists Classic. Choose the file for your
 
 L["Separate Retail, Classic Era, TBC and Mists Classic releases. Forever is unverified."] = true
 
-L["Historical Retail release. All current editions are unverified. This is G15 Buttons (continued)."] = true
 
 L["WoWInterface"] = true
 
-L["Historical Retail 8.3 release. All current editions are unverified."] = true
 
 L["Primary LUI Core updates for Retail. Fresh installs use the author-linked full bundle below; Classic uses a separate fork."] = true
 
@@ -3080,15 +3072,10 @@ L["Author-linked full Classic bundle; historical Wrath release. For current Clas
 
 L["Retail, Forever, Classic Era, TBC and Mists Classic."] = true
 
-L["Original historical project. Current editions are unverified; newer forks are not verified replacements for the integration."] = true
 
-L["Legacy AzeriteUI5, now deprecated. Current editions are unverified. RM supports this original addon identity."] = true
 
-L["CurseForge — AzeriteUI6 successor"] = true
 
-L["Successor supports all five editions but uses a different addon identity. RM does not yet integrate with AzeriteUI6."] = true
 
-L["Historical project; author reports a development hiatus. All current editions are unverified."] = true
 
 L["Retail, Classic Era, TBC and Mists Classic releases. Latest-patch compatibility and Forever are unverified."] = true
 
@@ -3098,7 +3085,6 @@ L["CurseForge — TotemTimers Classic"] = true
 
 L["Classic Era, TBC, Wrath, Cataclysm and Mists Classic. Compatibility with RM action buttons is unverified."] = true
 
-L["Historical Classic Era and TBC releases. Current editions are unverified. Other similarly named addons are not verified replacements."] = true
 
 L["Copy link %d"] = true
 
@@ -3120,10 +3106,6 @@ L["Official historical release page. Current patch compatibility is unverified; 
 L["Official source — CurseForge SVN"] = "Official source — CurseForge SVN"
 L["Official project page. Release edition and current patch compatibility are unverified."] = "Official project page. Release edition and current patch compatibility are unverified."
 L["Official project page. Publisher lists Retail, Forever, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified."] = "Official project page. Publisher lists Retail, Forever, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified."
-L["Official project page. Publisher lists Retail, Classic Era, TBC, Classic progression. Choose the matching file; exact patch and RM integration behavior may be unverified."] = "Official project page. Publisher lists Retail, Classic Era, TBC, Classic progression. Choose the matching file; exact patch and RM integration behavior may be unverified."
-L["GitHub — official published URL, unavailable"] = "GitHub — official published URL, unavailable"
-L["Author-published source link. The repository page was unavailable when checked; use another provider if it remains unavailable."] = "Author-published source link. The repository page was unavailable when checked; use another provider if it remains unavailable."
-L["Official source — CurseForge Git"] = "Official source — CurseForge Git"
 L["WowUp Hub"] = "WowUp Hub"
 L["Official website"] = "Official website"
 L["Official project page. Publisher lists Forever, Classic Era, TBC, Classic progression. Choose the matching file; exact patch and RM integration behavior may be unverified."] = "Official project page. Publisher lists Forever, Classic Era, TBC, Classic progression. Choose the matching file; exact patch and RM integration behavior may be unverified."
@@ -3133,13 +3115,28 @@ L["WoWAce"] = "WoWAce"
 L["CurseForge — LUI Core"] = "CurseForge — LUI Core"
 L["CurseForge — LUI Classic fork"] = "CurseForge — LUI Classic fork"
 L["GitHub — LUI Core"] = "GitHub — LUI Core"
+L["CurseForge — Musca Auras"] = "CurseForge — Musca Auras"
+L["GitHub — Musca Auras"] = "GitHub — Musca Auras"
+L["CurseForge — LittleWigs"] = "CurseForge — LittleWigs"
+L["CurseForge — DBM Dungeons"] = "CurseForge — DBM Dungeons"
+L["CurseForge — EllesmereUI"] = "CurseForge — EllesmereUI"
+L["CurseForge — EllesmereUI Action Bars"] = "CurseForge — EllesmereUI Action Bars"
+L["Current Classic Era, TBC and Mists Classic releases. The newest Retail file (January 2026) predates Midnight and RM does not list Retail. There is no Forever file; see Musca Auras and ForeverAuras."] = "Current Classic Era, TBC and Mists Classic releases. The newest Retail file (January 2026) predates Midnight and RM does not list Retail. There is no Forever file; see Musca Auras and ForeverAuras."
+L["WeakAuras ported to Forever by a different team. It installs the WeakAuras folder, so it shares this identity; it is not an official WeakAuras release."] = "WeakAuras ported to Forever by a different team. It installs the WeakAuras folder, so it shares this identity; it is not an official WeakAuras release."
+L["Source of the Forever fork. It defines the same WeakAuras.ScanEvents function that RM calls."] = "Source of the Forever fork. It defines the same WeakAuras.ScanEvents function that RM calls."
+L["Author source repository: a modified WeakAuras for Forever. It still creates the WeakAuras global with ScanEvents, which is all RM calls."] = "Author source repository: a modified WeakAuras for Forever. It still creates the WeakAuras global with ScanEvents, which is all RM calls."
+L["Release page linked by the author's README. It returned HTTP 403 to automated checks, so its edition and version are unverified."] = "Release page linked by the author's README. It returned HTTP 403 to automated checks, so its edition and version are unverified."
+L["A project with this name exists on Wago; its author and editions could not be read (the page requires JavaScript)."] = "A project with this name exists on Wago; its author and editions could not be read (the page requires JavaScript)."
+L["Legacy AzeriteUI5, deprecated by its authors. The Classic Era and TBC releases are the current ones; AzeriteUI6 is a separate row."] = "Legacy AzeriteUI5, deprecated by its authors. The Classic Era and TBC releases are the current ones; AzeriteUI6 is a separate row."
+L["Current AzeriteUI series. Retail, Forever, Classic Era, TBC and Mists Classic. Action buttons come from LibActionButton-1.0."] = "Current AzeriteUI series. Retail, Forever, Classic Era, TBC and Mists Classic. Action buttons come from LibActionButton-1.0."
+L["Official project page. This page requires JavaScript; edition metadata was not independently readable."] = "Official project page. This page requires JavaScript; edition metadata was not independently readable."
+L["Full EllesmereUI suite including the Action Bars module. Retail and Forever."] = "Full EllesmereUI suite including the Action Bars module. Retail and Forever."
+L["Standalone Action Bars only. Retail and Forever. Its install folder was not confirmed; RM also recognizes the bars by the frames they create."] = "Standalone Action Bars only. Retail and Forever. Its install folder was not confirmed; RM also recognizes the bars by the frames they create."
+L["Official source repository. The action bars are the EllesmereUIActionBars folder. Source availability does not certify integration behavior."] = "Official source repository. The action bars are the EllesmereUIActionBars folder. Source availability does not certify integration behavior."
+L["BigWigs plugin for dungeon and delve bosses. Requires BigWigs and feeds the same bars and stages, so the BigWigs row covers it; no separate RM connection."] = "BigWigs plugin for dungeon and delve bosses. Requires BigWigs and feeds the same bars and stages, so the BigWigs row covers it; no separate RM connection."
+L["DBM module pack for dungeons, delves and events. Requires DBM-Core and registers through it, so the DBM row covers it; no separate RM connection."] = "DBM module pack for dungeons, delves and events. Requires DBM-Core and registers through it, so the DBM row covers it; no separate RM connection."
 L["GitHub — LUI Classic fork"] = "GitHub — LUI Classic fork"
 L["Official Classic fork for Classic Era, TBC and Mists. RM button integration on this fork is unverified."] = "Official Classic fork for Classic Era, TBC and Mists. RM button integration on this fork is unverified."
-L["Official current source/release track uses DiabolicUI2, a different addon identity. Compatibility with the original RM integration is unverified."] = "Official current source/release track uses DiabolicUI2, a different addon identity. Compatibility with the original RM integration is unverified."
-L["Wago Addons — AzeriteUI6 successor"] = "Wago Addons — AzeriteUI6 successor"
-L["Official AzeriteUI6 successor, with a different addon identity. RM does not yet integrate with AzeriteUI6; use the original project for the existing integration."] = "Official AzeriteUI6 successor, with a different addon identity. RM does not yet integrate with AzeriteUI6; use the original project for the existing integration."
-L["GitHub — AzeriteUI6 successor"] = "GitHub — AzeriteUI6 successor"
-L["Official source repository. This project is archived; current patch compatibility is unverified."] = "Official source repository. This project is archived; current patch compatibility is unverified."
 L["Official project page. Publisher lists Retail, Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified."] = "Official project page. Publisher lists Retail, Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified."
 L["GitHub — TotemTimers Classic"] = "GitHub — TotemTimers Classic"
 L["WoWInterface — TotemTimers Classic"] = "WoWInterface — TotemTimers Classic"
