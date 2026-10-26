@@ -49,7 +49,7 @@ function addon:BuildAnnounceSettings(p)
         if entry.type=='macro' then
             p:Edit(prefix..'identifier',L['Identifier'],entry.identifier or '',function(value)if identifierFree(value,entry) then return value end end,function(v)change('identifier',v)end)
         elseif entry.type=='item' then p:ItemSequence(prefix..'action',entry.item,function(v)change('item',v)end)
-        else p:Spell(prefix..'action',L['Spell'],entry.spell,entry.type=='pet' and (BOOKTYPE_PET or "pet") or addon.currentSpec,function(v)change('spell',v)end);p:InlineCheck(prefix..'action',prefix..'ranked',L['Use this exact spell rank'],entry.ranked,function(v)change('ranked',v)end) end
+        else p:Spell(prefix..'action',L['Spell'],entry.spell,entry.type=='pet' and (BOOKTYPE_PET or "pet") or addon.currentSpec,function(v)change('spell',v)end);if self:ClientHasSpellRanks() then p:InlineCheck(prefix..'action',prefix..'ranked',L['Use this exact spell rank'],entry.ranked,function(v)change('ranked',v)end,nil,L['Unticked, any rank of the spell matches. Ticked, only the rank you chose matches.']) end end
         if entry.type~='macro' then p:Choice(prefix..'event',L['Event'],entry.event,events,function(v)change('event',v)end) end
         local items=source or {entry};local snapshot,identities={},{};for i,output in ipairs(items)do snapshot[i]=output;identities[i]=output.id end
         local function collectionCurrent()

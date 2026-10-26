@@ -136,13 +136,13 @@ function addon:CreateSettingsForm(parent)
         self.fields['section_'..key]=c;addon:SetUIScript(c,'OnClick',self:Guard(function() if self:FlushEdits() then self.closedSections[key]=not self.closedSections[key];self:Draw() end end))
         if not self.closedSections[key] then build() end
     end
-    function p:Check(key,caption,value,changed)
+    function p:Check(key,caption,value,changed,tooltip)
         local y=self:Row(nil);local c=self:Acquire('checks',function() return addon:CreateWorkbenchCheckBox(self.child,'',420) end)
-        c:ClearAllPoints();c:SetPoint('TOPLEFT',0,-y);c:SetWidth(self.width);c:SetText(caption);c:GetFontString():SetWidth(self.width-22);c:SetChecked(value==true);c.rmCheck=true;c:Enable();self.fields[key]=c
+        c:ClearAllPoints();c:SetPoint('TOPLEFT',0,-y);c:SetWidth(self.width);c:SetText(caption);c.tooltip=tooltip;c:GetFontString():SetWidth(self.width-22);c:SetChecked(value==true);c.rmCheck=true;c:Enable();self.fields[key]=c
         addon:SetUIScript(c,'OnClick',self:Guard(function() if self:FlushEdits() then c:SetChecked(not c:GetChecked());changed(c:GetChecked()) end end));return c
     end
-    function p:InlineCheck(fieldKey,key,caption,value,changed,minimum)
-        local rowY=self.y-30;local option=self:Check(key,caption,value,changed)
+    function p:InlineCheck(fieldKey,key,caption,value,changed,minimum,tooltip)
+        local rowY=self.y-30;local option=self:Check(key,caption,value,changed,tooltip)
         local height,_,inline=addon:LayoutWorkbenchFieldOption(self.fields[fieldKey],option,self.surface or self.child,220,rowY,self.width-220,minimum)
         self:LabelControl(self.fields[fieldKey],1,1);self:LabelControl(option,inline and 0 or 1,0)
         self.y=rowY+height+6;return option

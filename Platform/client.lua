@@ -90,6 +90,21 @@ local function clientFacts(self)
 end
 function platform:GetClientFamily() return (clientFacts(self)) end
 function platform:GetCombatDataPolicy() local _,policy=clientFacts(self);return policy end
+
+-- Spell ranks exist on Classic Era, TBC Anniversary, Wrath Classic and Forever
+-- (its spellbook documents IsSpellBookItemLowRank). Retail, Mists and Cataclysm
+-- have none. Every rank checkbox is shown only where this is true; stored
+-- values and evaluation do not depend on it. Read live, never cached: only
+-- test harnesses change the project.
+function addon:ClientHasSpellRanks()
+    local project=primitive(WOW_PROJECT_ID)
+    if type(project)~='number' then return false end
+    local constant=WOW_PROJECT_CLASSIC;if type(constant)=='number' and project==constant then return true end
+    constant=WOW_PROJECT_BURNING_CRUSADE_CLASSIC;if type(constant)=='number' and project==constant then return true end
+    constant=WOW_PROJECT_WRATH_CLASSIC;if type(constant)=='number' and project==constant then return true end
+    constant=WOW_PROJECT_CAMELOT;if type(constant)=='number' and project==constant then return true end
+    return false
+end
 -- Private policy consumers need no locale/build/season/rules snapshot. The
 -- public getter above keeps its complete fresh result and callback behavior.
 local policyType,policyRawget,policyEqual,policyProtect=type,rawget,rawequal,pcall

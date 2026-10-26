@@ -8,6 +8,8 @@ function addon.IsConditionSpellID(value)
     return type(value)=="number" and value>0 and value<math.huge and value%1==0
 end
 
+local RANK_TIP = L["Unticked, any rank of the spell matches. Ticked, only the rank you chose matches."]
+
 function addon:Widget_GetSpellId(spellid, ranked)
     if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
         if not ranked then
@@ -78,9 +80,10 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
     spellIcon:SetDisabled(value.disabled)
     spell_group:AddChild(spellIcon)
 
-    if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and spec ~= (BOOKTYPE_PET or "pet") then
+    if addon:ClientHasSpellRanks() and spec ~= (BOOKTYPE_PET or "pet") then
         local nr_button = addon:CreateConditionCheckBox()
         nr_button:SetLabel(L["Use this exact spell rank"])
+        nr_button.button.tooltip = RANK_TIP
         nr_button:SetValue(value.ranked or false)
         nr_button:SetCallback("OnValueChanged", function(_, _, val)
             value.ranked = val
@@ -197,17 +200,25 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update, sto
     return spell_group
 end
 
+-- Rank choice for an aura picked by ID. The checkbox reads "Use this exact
+-- spell rank" like every other rank option, so it is the inverse of the stored
+-- `anyrank`: unticked (anyrank=true) matches every rank, ticked (anyrank unset,
+-- the meaning of every saved condition) matches only the chosen ID. Hidden on
+-- clients without spell ranks; the stored value still applies there.
 function addon:Widget_AuraRankWidget(value,update)
-    local check=self:CreateConditionCheckBox();check:SetLabel(L['Match all ranks']);check:SetWidth(170);check:SetValue(value.anyrank==true);check:SetDisabled(value.disabled)
-    check:SetCallback('OnValueChanged',function(_,_,enabled) value.anyrank=enabled and true or nil;update() end)
+    if not self:ClientHasSpellRanks() then return nil end
+    local check=self:CreateConditionCheckBox();check:SetLabel(L["Use this exact spell rank"]);check:SetWidth(170);check:SetValue(value.anyrank~=true);check:SetDisabled(value.disabled)
+    check.button.tooltip=RANK_TIP
+    check:SetCallback('OnValueChanged',function(_,_,exact) value.anyrank=(not exact) and true or nil;update() end)
     return check
 end
 
 -- Exact-rank choice for a spell picked by ID where any rank matches by
--- default (casts, channels). Ranks exist only on the classic clients.
+-- default (casts, channels). Hidden on clients without spell ranks.
 function addon:Widget_SpellRankWidget(value,update)
-    if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then return nil end
+    if not self:ClientHasSpellRanks() then return nil end
     local check=self:CreateConditionCheckBox();check:SetLabel(L["Use this exact spell rank"]);check:SetValue(value.ranked==true);check:SetDisabled(value.disabled)
+    check.button.tooltip=RANK_TIP
     check:SetCallback('OnValueChanged',function(_,_,enabled) value.ranked=enabled and true or nil;update() end)
     return check
 end
@@ -504,6 +515,7 @@ end
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do
     local function sourceGetter(name)
+        if name=="RANK_TIP" then return RANK_TIP end
         if name=="SpellData" then return SpellData end
         if name=="Widget_GetSpellId" then return addon.Widget_GetSpellId end
         if name=="Widget_SpellWidget" then return addon.Widget_SpellWidget end

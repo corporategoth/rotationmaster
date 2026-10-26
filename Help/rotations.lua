@@ -119,12 +119,10 @@ local function help_action_group(group, singular)
     group:AddChild(Indent(40, CreateText(color.GREEN .. L["Stop"] .. color.RESET .. " - " ..
             L["Stop ends lower priority actions. The implicit auto-attack (Attack or Shoot) remains eligible unless you suppress it. An unavailable Stop condition also suppresses it. Optional reminders remain independent."])))
 
-    if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+    if addon:ClientHasSpellRanks() then
         group:AddChild(Gap())
-        group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Rank"] .. color.RESET .. " - " ..
-                "If enabled, use a specific rank of the spell in question.  This is normally only used for " ..
-                "things like downranking spells.  Note that this requires that specific rank of the spell in " ..
-                "question being on your action bars (as opposed to any rank if this is disabled.)"))
+        group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Use this exact spell rank"] .. color.RESET .. " - " ..
+                L["Unticked (the default), any rank of the spell matches. Ticked, only the rank you chose matches, and that rank must be on your action bars."]))
     end
 
     group:AddChild(Gap())

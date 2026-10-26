@@ -17,6 +17,18 @@ local function unchanged(left,right)
     return equal(left,right)
 end
 
+-- The value a newly chosen condition type starts with. Aura conditions start
+-- with every rank matching (`anyrank`) on clients that have spell ranks, so
+-- "Use this exact spell rank" starts unticked like the other rank options.
+-- Saved conditions without the field keep matching the exact ID.
+function addon:NewConditionValue(tag)
+    local value={type=tag}
+    local definition=self.conditionDefinitions and self.conditionDefinitions[tag]
+    if type(definition)=="table" and type(definition.fields)=="table" and definition.fields.anyrank=="boolean"
+        and type(self.ClientHasSpellRanks)=="function" and self:ClientHasSpellRanks() then value.anyrank=true end
+    return value
+end
+
 -- Editing is detached from the running rotation. Only explicit Apply writes
 -- the original plain table, after schema, semantic and concurrent-edit checks.
 function addon:NewConditionEditSession(spec,original,targetValid,options)

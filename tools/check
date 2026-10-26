@@ -473,6 +473,7 @@ def main():
             ['luajit', 'tests/spec_weapon_conditions.lua'],
             ['lua5.1', 'tests/cond_spell_identity.lua'],
             ['luajit', 'tests/cond_spell_identity.lua'],
+            ['luajit', 'tests/rank_checkbox.lua'],
             ['lua5.1', 'tests/retail_combat_readiness.lua'],
             ['luajit', 'tests/retail_combat_readiness.lua'],
             ['lua5.1', 'tests/retail_points.lua'],
@@ -909,6 +910,7 @@ def main():
             [sys.executable, 'tests/test_lint.py'],
             [sys.executable, 'tests/test_install_hooks.py'],
             [sys.executable, 'tests/test_us_spelling.py'],
+            [sys.executable, 'tests/test_rank_wording.py'],
         ])
     for command in commands:
         print('+ ' + ' '.join(command), flush=True)

@@ -10,7 +10,7 @@ local function constructor()
     local w={type='RM-CheckBox',alive=false,disabled=false}
     local frame=CreateFrame('Frame',nil,UIParent);w.frame=frame;frame:SetSize(180,24)
     local button=addon:CreateWorkbenchCheckBox(frame,'',180);w.button=button;button:SetAllPoints(frame)
-    function w:OnAcquire() self.alive=true;self:SetLabel('');self:SetValue(false);self:SetDisabled(false);self:SetWidth(180);self:SetHeight(24) end
+    function w:OnAcquire() self.alive=true;button.tooltip=nil;self:SetLabel('');self:SetValue(false);self:SetDisabled(false);self:SetWidth(180);self:SetHeight(24) end
     function w:OnRelease() self.alive=false;self:SetValue(false) end
     function w:SetLabel(text) button:SetText(text or '') end
     function w:SetValue(value) button:SetChecked(value==true) end
