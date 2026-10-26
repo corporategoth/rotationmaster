@@ -1,0 +1,9 @@
+{
+  "name": "BigWigsMods/packager release.sh",
+  "source": "https://github.com/BigWigsMods/packager",
+  "commit": "0f24d2169de3ceb3b79a981311b2ebab4c6160c7",
+  "url": "https://raw.githubusercontent.com/BigWigsMods/packager/0f24d2169de3ceb3b79a981311b2ebab4c6160c7/release.sh",
+  "sha256": "b528d51b954e14152e4f7c2612fa514dc494213e335ba9d5345ae7d6a75891a4",
+  "license": "Unlicense (public domain), as stated in the script header",
+  "note": "Vendored unmodified. tools/package_release.py --parity compares its output with release.sh; the release workflow runs this copy after verifying the checksum. To update: replace release.sh with the new commit, update commit/url/sha256 here, run --parity."
+}
