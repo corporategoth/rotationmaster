@@ -12,7 +12,8 @@ test('native unit factory has one actual UI owner and preserves its original sou
     assert(a.builtinSourceModules['UI/condition_unit.lua']('Widget_UnitWidget')==a.Widget_UnitWidget)
     assert(a.builtinSourceModules['Conditions/common.lua']('Widget_UnitWidget')==a.Widget_UnitWidget and a:ResolveFunctionBinding(id)==a.Widget_UnitWidget)
     assert(not a.builtinFunctions['builtin:UI/condition_unit.lua:Widget_UnitWidget'],'historical factory gained a second source ID')
-    assert(a:FunctionSourceHash(a.builtinFunctions[id].source)=='40eccf8e')
+    -- Recorded again on purpose: the selector adds the announcement target to its choices (6a676575).
+    assert(a:FunctionSourceHash(a.builtinFunctions[id].source)=='76056438')
 end)
 test('native owner loads without frame allocation Ace lookup or registration',function()
     local f=F.new();local stub=f.env.LibStub;local create=f.env.CreateFrame;local frames=0
@@ -33,7 +34,7 @@ test('public typed contract original parameter order and documentation remain un
     assert(#source.args==5 and #source.returns==1)
     for index,arg in ipairs(expected) do local actual=source.args[index];assert(actual.name==arg[1] and actual.type==arg[2] and actual.description==arg[3]) end
     assert(source.returns[1].type=='RMConditionSelector' and source.returns[1].description=='Configured unit selector; add it with parent:AddChild(widget).')
-    assert(source.code:find('addon.keys(units)',1,true),'live compatibility dispatch changed')
+    assert(source.code:find('addon.keys(choices)',1,true),'live compatibility dispatch changed')
 end)
 test('default unit field disabled state sorted dropdown and explicit selection are native',function()
     local f,a=fixture();assert(not f.libraries['AceGUI-3.0'])
@@ -66,7 +67,7 @@ test('retired and ancestor-releasing callbacks cannot mutate either original or 
 end)
 test('actual old requirement bundle imports and executes through the exact historical factory ID',function()
     local _,a=fixture();local source={description='Saved unit field',args={{name='value',type='table'},{name='units',type='table'},{name='update',type='function'},{name='field',type='string | nil'}},returns={{type='RMConditionSelector'}},bindings={unitFactory=id},code='return unitFactory(addon,value,units,update,field)'}
-    local bundle=assert(a:BuildFunctionBundle('function','SAVED_UNIT_FACTORY',source));assert(#bundle.requirements==1 and bundle.requirements[1].id==id and bundle.requirements[1].hash=='40eccf8e')
+    local bundle=assert(a:BuildFunctionBundle('function','SAVED_UNIT_FACTORY',source));assert(#bundle.requirements==1 and bundle.requirements[1].id==id and bundle.requirements[1].hash=='76056438')
     local plan=assert(a:PlanFunctionBundleImport(bundle));assert(plan.valid and plan.requirements[1].status=='available');assert(a:ApplyFunctionBundleImport(plan))
     local value={otherunit='focus'};local changed=0;local widget=a:ResolveFunctionBinding('SAVED_UNIT_FACTORY')(value,choices(),function() changed=changed+1 end,'otherunit');widget.configure();assert(widget.value=='focus')
     widget:Fire('OnValueChanged','target');assert(value.otherunit=='target' and changed==1);a:ReleaseConditionWidget(widget)

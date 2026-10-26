@@ -39,7 +39,10 @@ test('required missing failed nil malformed and restricted native facts are unav
  end
 end)
 test('policy and load-time silence support all identified probe families and live replacement',function()
- for _,project in ipairs({1,18,999}) do local _,p,s=fixture(project);unavailable(function() return identity(p,'target',true) end,'unsupported-policy');unavailable(function() return power(p,'target',4,'current') end,'unsupported-policy');assert(#s.calls==0) end
+ -- An unknown client reads nothing. Retail and Forever read identity, and only the secondary resources Blizzard stopped making
+ -- secret (48e9d4b0: conditions follow what the game keeps secret, not the policy); a primary power stays unsupported there.
+ do local _,p,s=fixture(999);unavailable(function() return identity(p,'target',true) end,'unsupported-policy');unavailable(function() return power(p,'target',4,'current') end,'unsupported-policy');assert(#s.calls==0) end
+ for _,project in ipairs({1,18}) do local _,p=fixture(project);assert(identity(p,'target',true).exists and power(p,'target',4,'current')==3);unavailable(function() return power(p,'target',0,'current') end,'unsupported-policy') end
  for _,project in ipairs({2,5,11,14,19}) do local f,p,s=fixture(project);f.load('Platform/points.lua');assert(#s.calls==0);assert(identity(p,'target',true).exists and power(p,'target',4,'current')==3);f.env.UnitPower=function(...) assert(select('#',...)==2);return -.5 end;assert(power(p,'target',4,'current')==-.5) end
 end)
 test('nil unit and opaque query fields cannot reach cache indexing or native APIs',function()

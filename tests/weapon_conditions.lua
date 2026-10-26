@@ -62,7 +62,8 @@ test('weapon authored comparison callbacks declare canonical private dependencie
         assert(source.bindings['Functions.cache.getCached']=='builtin:utils.lua:getCached')
         assert(source.bindings.Functions==nil,'namespace became an opaque captured table')
     end
-    for name,hash in pairs({enchantObservation='5abf63f3',numericObservation='02dee6a9',swingSpeed='56aa868b'}) do
+    -- swingSpeed changed on purpose: with no off-hand weapon the check reads false (994be32a).
+    for name,hash in pairs({enchantObservation='5abf63f3',numericObservation='02dee6a9',swingSpeed='5af56bab'}) do
         local id='builtin:Conditions/weapon.lua:'..name;local record=assert(a.builtinFunctions[id])
         assert(a:FunctionSourceHash(record.source)==hash,'native observation helper changed during pure-call migration')
         assert(a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/weapon.lua'](name),'legacy observation getter identity changed')

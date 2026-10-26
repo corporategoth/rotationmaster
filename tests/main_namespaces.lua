@@ -59,37 +59,19 @@ test('periodic report keeps the addon receiver gate warning reset order and live
  a.Functions.cache.ReportCacheStats=function(...) assert(select('#',...)==1 and (...)==a);count=count+1;return report(...) end
  e.GetTime=function() return 132 end;a:EvaluateNextActionInternal();assert(count==2,'canonical report was captured')
 end)
-test('actual cast callback shallow copy keeps source nested identity dispatch and pre-copy dedup',function()
- local _,a=fixture();a.debug=function() end;local leaf=a.Functions.collections.deepcopy;local copied,dispatched=0,0;local items={1};local nested={kept=true}
- local record=setmetatable({id='namespace-item',type='item',item=items,event='SUCCEEDED',announce='local',value='Used {{item}}',metadata=nested},{})
- a.db.profile.announces={record};a.announced={};a.spellHistory={};a.events={SUCCEEDED='Succeeded'}
- a.Functions.collections.deepcopy=function(...) assert(select('#',...)==1 and (...)==record);copied=copied+1;local out=leaf(...);assert(out~=record and getmetatable(out)==nil and out.item==items and out.metadata==nested);return out end
- a.GetSpellIds=function(_,entry) assert(entry~=record and entry.action==items and entry.item==items);return {403},{1} end
- a.Platform.GetItemDisplayInfo=function(_,id) assert(id==1);return {link='item:1'} end
- a.DispatchAnnouncement=function(_,entry,text) assert(entry.action==items and entry.metadata==nested and text=='Used item:1');dispatched=dispatched+1 end
- a:UNIT_SPELLCAST_SUCCEEDED('UNIT_SPELLCAST_SUCCEEDED','player','namespace-cast',403);a:UNIT_SPELLCAST_SUCCEEDED('UNIT_SPELLCAST_SUCCEEDED','player','namespace-cast',403)
- assert(copied==1 and dispatched==1 and record.action==nil and record.item==items and getmetatable(record)~=nil,'source or dedup order changed')
- a.Functions.collections.deepcopy=function(...) assert(select('#',...)==1 and (...)==record);copied=copied+10;return leaf(...) end
- a:UNIT_SPELLCAST_SUCCEEDED('UNIT_SPELLCAST_SUCCEEDED','player','namespace-next',403);assert(copied==11 and dispatched==2 and record.action==nil)
- local other=setmetatable({Functions={collections={deepcopy=function(...) assert(select('#',...)==1 and (...)==record);copied=copied+100;return leaf(...) end}},announced={},spellHistory={}},{__index=a})
- other:UNIT_SPELLCAST_SUCCEEDED('UNIT_SPELLCAST_SUCCEEDED','player','other-owner',403);assert(copied==111 and dispatched==3,'copy used lexical addon instead of actual event owner')
-end)
-test('canonical failures retain staged advice and cast mutation boundaries',function()
+test('canonical failures retain staged advice and post-publication state',function()
  local marker={};local e,a,events=fixture(marker);roster(e,a);local ok,why=pcall(a.EvaluateNextActionInternal,a);assert(not ok and why==marker and #events==0 and a.currentSpell==nil,'cache error published advice or changed error identity')
  local e,a,events=fixture();local resets=0;a.evaluationProfile.reset=function() resets=resets+1 end;a.Functions.cache.ReportCacheStats=function(...) assert((...)==a);error(marker) end
  e.GetTime=function() return 116 end;ok,why=pcall(a.EvaluateNextActionInternal,a);assert(not ok and why==marker and #events>0 and a.lastCacheReport==100 and resets==0,'post-publish reporting error moved/reset state')
- local _,a=fixture();a.debug=function() end;a.events={SUCCEEDED='Succeeded'};a.spellHistory={};a.announced={};local record={id='failed-copy',type='spell',spell=403,event='SUCCEEDED',announce='local',value='Cast'};a.db.profile.announces={record}
- a.Functions.collections.deepcopy=function(...) assert(select('#',...)==1 and (...)==record);error(marker) end
- a.DispatchAnnouncement=function() error('copy error reached dispatch') end;ok,why=pcall(a.UNIT_SPELLCAST_SUCCEEDED,a,'UNIT_SPELLCAST_SUCCEEDED','player','failed',403)
- assert(not ok and why==marker and record.action==nil and a.announced['failed-copy']==nil and #a.spellHistory==0,'copy error consumed cast/history or mutated source')
 end)
-test('actual cpu command uses bundled argument parser for start report cancel and no argument',function()
+test('actual perf command uses bundled argument parser for its remainder',function()
  local h=assert(io.open('tests/startup.lua'));local source=h:read('*a');h:close();local prefix=source:sub(1,assert(source:find('\nlocal function initialize',1,true))-1)
  local make=assert(loadstring(prefix..'\nreturn fixture','@cpu-command-actual-main-fixture'))();local e,a,load=make(true,true)
  local fallback=e.LibStub;e.LibStub=false;load('Libs/LibStub/LibStub.lua');local lib=e.LibStub
  setmetatable(lib,{__call=function(self,name,silent) if self.libs[name] then return self:GetLibrary(name,silent) end;return fallback(name,silent) end});load('Libs/AceConsole-3.0/AceConsole-3.0.lua');load('main.lua')
- local seen;a.RunCPUProfileAction=function(self,...) assert(self==a);seen=pack(...) end
- for _,case in ipairs({{'cpu start','start'},{'cpu report','report'},{'cpu cancel','cancel'},{'cpu',false}}) do a:HandleCommand(case[1]);assert(seen and seen.n==2 and seen[1]==(case[2] or nil) and seen[2]==1e9,'cpu command argument routing changed') end
+ -- /rm cpu was an unreleased alias and is gone (48d591d1); the capture commands live under /rm perf, which hands its remainder on.
+ local seen;a.HandlePerformanceCommand=function(self,...) assert(self==a);seen=pack(...) end
+ for _,case in ipairs({{'perf cpu start','cpu start'},{'perf runtime 30','runtime 30'},{'perf memory report','memory report'},{'perf','' }}) do seen=nil;a:HandleCommand(case[1]);assert(seen and seen.n==1 and seen[1]==case[2],'perf command argument routing changed: '..tostring(seen and seen[1])) end
 end)
 test('strict inverse retains postslash main bytes unused capture aliases and existing source contracts',function()
  local f=F.new();f.load('Core/function_data.lua');local a=f.addon;local function hash(text) return a:FunctionSourceHash(text) end

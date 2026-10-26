@@ -64,7 +64,8 @@ local function callCondition(definition, stage, value, cache, start, path, conte
         return definition.evaluate(value, cache, start)
     end
     if not addon.Diagnostics then
-        if not guard then return true,run()end
+        -- A callback may return more than (matched, reason); the extra values are not the guard's skipped/invoked flags.
+        if not guard then local result,reason=run();return true,result,reason end
         local result,reason=run();return true,result,reason,skipped,invoked
     end
     local ok, result, reason = addon.Diagnostics:Call({module="conditions", operation=stage,
