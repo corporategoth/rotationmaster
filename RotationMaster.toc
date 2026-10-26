@@ -57,6 +57,7 @@ Platform/zone_pvp.lua
 Platform/loss_of_control.lua
 Platform/specializations.lua
 Platform/talents.lua
+Platform/talent_tree.lua
 Platform/engraving.lua
 Platform/spells.lua
 Platform/assisted_combat.lua
@@ -190,6 +191,7 @@ UI/window.lua
 UI/help.lua
 UI/spell_search.lua
 UI/spell_icon.lua
+UI/talent_popup.lua
 UI/errors.lua
 UI/cpu_profile.lua
 UI/analytics_capture.lua

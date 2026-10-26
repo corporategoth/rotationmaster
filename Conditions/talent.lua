@@ -144,7 +144,8 @@ local function traitsWidget(parent,spec,value,update)
     local groups,selectedGroup,selectedTalent={},nil,nil
     local names,order={},{}
     local talents,talentOrder={},{}
-    local talentIcon,talentPicker,groupPicker,nodeBox,entryBox,operators
+    local talentIcon,talentPicker,groupPicker,nodeBox,entryBox,operators,specPicker
+    local treeOwner={}
     local function choices()
         talents,talentOrder={},{}
         local current=selectedGroup and groups[selectedGroup]
@@ -186,7 +187,7 @@ local function traitsWidget(parent,spec,value,update)
         for index,choice in ipairs(specs) do
             specNames[choice.id]={text=choice.name,icon=choice.icon};specOrder[index]=choice.id
         end
-        local specPicker=dropdown(parent,L["Specialization"],function(selected)
+        specPicker=dropdown(parent,L["Specialization"],function(selected)
             if selected==shown then return end
             shown=selected;reload();show()
         end)
@@ -200,15 +201,64 @@ local function traitsWidget(parent,spec,value,update)
     end)
     groupPicker.configure=show
     talentIcon=icon(parent,value,spec)
-    talentPicker=dropdown(parent,L["Talent"],function(selected)
-        local talent=selectedGroup and groups[selectedGroup].talents[selected]
-        if not talent then return end
-        selectedTalent=selected;adopt()
+    local function currentSelection()
+        if traitShape(value) and value.node then return {node=value.node,entry=value.entry,spell=value.spell} end
+    end
+    -- Keeps the open talent tree (if it is this editor's) on the condition's talent.
+    local function refreshTree()
+        if not addon.RefreshTalentTree then return end
+        local current=info(value,spec)
+        addon:RefreshTalentTree(treeOwner,currentSelection(),current and current.name)
+    end
+    local function apply(talent)
+        adopt()
         value.node,value.entry,value.spell=talent.node,talent.entry,talent.spellID
         nodeBox:SetText(tostring(talent.node));entryBox:SetText(talent.entry and tostring(talent.entry) or "")
         talentIcon:SetImage(talent.icon);update()
+    end
+    -- The talent list and, where the client can show the tree, a button beside it.
+    local row
+    if platform.HasTalentTreeProvider and addon.OpenTalentTree and platform:HasTalentTreeProvider() then
+        row=addon:CreateConditionGroup();row:SetFullWidth(true);row:SetLayout("Table");row:SetUserData("table",{columns={1,0}})
+        parent:AddChild(row)
+    end
+    talentPicker=dropdown(row or parent,L["Talent"],function(selected)
+        local talent=selectedGroup and groups[selectedGroup].talents[selected]
+        if not talent then return end
+        selectedTalent=selected;apply(talent);refreshTree()
     end)
     talentPicker.configure=show
+    if row then
+        local button=addon:CreateConditionButton();button:SetText(L["Show talent tree"]);button:SetAutoWidth(true)
+        button:SetUserData("cell",{alignV="bottom"})
+        button.frame.tooltip=L["Opens the talent tree of the rotation's specialization. Click a talent to choose it for this condition."]
+        button:SetDisabled(value.disabled)
+        button:SetCallback("OnClick",function()
+            local current=info(value,spec)
+            addon:OpenTalentTree({owner=treeOwner,spec=shown,selection=currentSelection(),selectionName=current and current.name,
+                specs=specs,
+                onSelect=function(selection)
+                    local found
+                    for groupIndex,candidate in ipairs(groups) do
+                        for talentIndex,talent in ipairs(candidate.talents) do
+                            if talent.node==selection.node and talent.entry==selection.entry then selectedGroup,selectedTalent,found=groupIndex,talentIndex,talent end
+                        end
+                    end
+                    if not found then selectedTalent=nil end
+                    choices()
+                    apply({node=selection.node,entry=selection.entry,spellID=selection.spell,icon=found and found.icon or selection.icon})
+                    show()
+                end,
+                -- The tree and the lists show the same specialization.
+                onSpec=function(chosen)
+                    if chosen==shown then return end
+                    shown=chosen;reload();show()
+                    if specPicker then specPicker:SetValue(shown) end
+                end})
+        end)
+        button:SetCallback("OnRelease",function() addon:CloseTalentTree(treeOwner) end)
+        row:AddChild(button)
+    end
     local function identifier(entered)
         local number=tonumber(entered)
         if number and number>0 and number<2147483648 and number%1==0 then return number end
@@ -220,7 +270,7 @@ local function traitsWidget(parent,spec,value,update)
         if not number then nodeBox:SetText(traitShape(value) and value.node and tostring(value.node) or "");return end
         -- A node typed by hand no longer goes with the spell of the talent picked before.
         adopt();value.node,value.spell=number,nil;selectedTalent=nil;talentPicker:SetValue(nil)
-        local current=info(value,spec);talentIcon:SetImage(current and current.icon);update()
+        local current=info(value,spec);talentIcon:SetImage(current and current.icon);update();refreshTree()
     end)
     parent:AddChild(nodeBox)
     entryBox=addon:CreateConditionEditBox();entryBox:SetLabel(L["Choice Entry ID"])
@@ -230,7 +280,7 @@ local function traitsWidget(parent,spec,value,update)
         if entered~="" and entered~=nil and not number then entryBox:SetText(value.entry and tostring(value.entry) or "");return end
         if not traitShape(value) then return end
         value.entry,value.spell=number,nil;selectedTalent=nil;talentPicker:SetValue(nil)
-        local current=info(value,spec);talentIcon:SetImage(current and current.icon);update()
+        local current=info(value,spec);talentIcon:SetImage(current and current.icon);update();refreshTree()
     end)
     parent:AddChild(entryBox)
     operators=addon:Widget_OperatorWidget(value,L["Rank"],update);parent:AddChild(operators)
@@ -295,6 +345,10 @@ addon:RegisterCondition("TALENT",{
         frame:AddChild(addon.help_funcs.CreateText(L["Classic conditions compare points spent in a tree talent. Mists selections use six tiers with three choices. Historical references from another talent system remain unavailable and are never automatically converted."]))
         frame:AddChild(addon.help_funcs.Gap())
         frame:AddChild(addon.help_funcs.CreateText(L["Retail and Forever compare the rank of a talent in your active loadout. Pick it from the talents of the rotation's specialization (the Specialization list shows another specialization's, outside combat), or enter the node ID (and, for a choice node, the entry ID of the choice) to share a rotation. A choice node's entry has rank zero unless it is the chosen one, a hero talent outside your chosen hero tree has rank zero, and so does a talent of a specialization you are not playing. A talent picked from the list also remembers its spell, and is found again by it if Blizzard renumbers the talent tree. Ranks are read again after any talent change; an unreadable node is unavailable, including under NOT."]))
+        if platform.HasTalentTreeProvider and platform:HasTalentTreeProvider() then
+            frame:AddChild(addon.help_funcs.Gap())
+            frame:AddChild(addon.help_funcs.CreateText(L["Show talent tree opens the talent tree of the specialization shown: Blizzard's own talent window in view mode where the game lets Rotation Master drive it (it goes back to how it was when you pick a talent or close it), otherwise a tree Rotation Master draws. Click a talent to choose it; the Talent list follows. It cannot open during combat."]))
+        end
     end,
 })
 

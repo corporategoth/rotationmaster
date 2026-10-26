@@ -52,7 +52,7 @@ M.heroOf={[62]={42,43},[63]={41,43},[64]={41,42}}
 -- Node table. spec=nil is a class talent. hero=subTreeID for a hero talent.
 -- entries: list of spell IDs; kind: 'single' (default), 'selection', 'tiered', 'subtree'.
 M.nodes={
-    {id=2001,x=1,y=1,entries={1459},ranks=1},
+    {id=2001,x=1,y=1,entries={1459},ranks=1,edges={2002,2003}},
     {id=2002,x=2,y=1,kind='selection',entries={212653,1953},ranks=1},
     {id=2003,x=1,y=2,entries={45438},ranks=1},
     {id=2004,x=2,y=2,kind='tiered',entries={100000,100001},ranks=2},
@@ -62,8 +62,8 @@ M.nodes={
     {id=2101,x=1,y=1,spec=62,entries={5143},ranks=1,granted=true},
     {id=2102,x=2,y=1,spec=62,entries={321739},ranks=1},
     -- Fire
-    {id=2201,x=1,y=1,spec=63,entries={11366},ranks=1,granted=true},
-    {id=2202,x=2,y=1,spec=63,entries={190319},ranks=1},
+    {id=2201,x=1,y=1,spec=63,entries={11366},ranks=1,granted=true,edges={2202}},
+    {id=2202,x=2,y=1,spec=63,entries={190319},ranks=1,edges={2203}},
     {id=2203,x=3,y=1,spec=63,entries={257541},ranks=2},
     {id=2204,x=4,y=1,spec=63,entries={235870,155148},kind='selection',ranks=1},
     -- Frost
@@ -72,7 +72,7 @@ M.nodes={
     {id=2303,x=3,y=1,spec=64,entries={153595},ranks=1},
     -- Hero: the selection node, then each subtree's talents.
     {id=2400,x=5,y=1,kind='subtree',entries={},subtrees={41,42,43},ranks=1},
-    {id=2411,x=1,y=9,hero=41,entries={431044},ranks=1},{id=2412,x=2,y=9,hero=41,entries={431066},ranks=1},
+    {id=2411,x=1,y=9,hero=41,entries={431044},ranks=1,edges={2412}},{id=2412,x=2,y=9,hero=41,entries={431066},ranks=1},
     {id=2421,x=1,y=9,hero=42,entries={443739},ranks=1},{id=2422,x=2,y=9,hero=42,entries={444735},ranks=1},
     {id=2431,x=1,y=9,hero=43,entries={451038},ranks=1},{id=2432,x=2,y=9,hero=43,entries={449559},ranks=1},
 }
@@ -130,6 +130,7 @@ function M.install(env,state)
         return p,1
     end
     local traits={}
+    traits.GetLoadoutSerializationVersion=function() gate('GetLoadoutSerializationVersion');return 2 end
     traits.GetConfigInfo=function(config)
         gate('GetConfigInfo')
         if config==M.ACTIVE or (config==M.VIEW and state.viewSpec) then return {ID=config,type=1,name='Loadout',treeIDs={M.TREE},usesSharedActionBars=false} end
@@ -146,9 +147,11 @@ function M.install(env,state)
         if node.kind=='subtree' then for position=1,#node.subtrees do entries[position]=entryID(node,position) end
         else for position=1,#node.entries do entries[position]=entryID(node,position) end end
         local rank,position=purchasedRank(node,config)
-        local info={ID=id,posX=node.x,posY=node.y,flags=0,entryIDs=entries,isVisible=visible(node,spec),isAvailable=true,
+        local scale=state.scale or 1
+        local info={ID=id,posX=node.x*scale,posY=node.y*scale,flags=0,entryIDs=entries,isVisible=visible(node,spec),isAvailable=true,
             ranksPurchased=node.granted and 0 or rank,activeRank=rank,currentRank=rank,maxRanks=node.ranks,totalMaxRanks=node.ranks,
             type=({single=0,tiered=1,selection=2,subtree=3})[node.kind or 'single'],groupIDs={},conditionIDs={},visibleEdges={}}
+        for _,target in ipairs(node.edges or {}) do info.visibleEdges[#info.visibleEdges+1]={targetNode=target,type=0,visualStyle=0,isActive=false} end
         if type(rank)=='number' and rank>0 and position then info.activeEntry={entryID=entryID(node,position),rank=rank} end
         if node.hero then
             info.subTreeID=node.hero

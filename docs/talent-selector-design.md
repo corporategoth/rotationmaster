@@ -1,6 +1,6 @@
 # Universal talent selector: design
 
-Status: design only. Nothing in this document is built except where it says "shipped with the Retail talent fix".
+Status: phase 1 (Retail and Forever) is built on branch `claude/talent-popup`; the classic clients (phase 2) are designed below and not built. Sections 2 and 4-7 say what exists; section 3 is the long-term data model, of which phase 1 ships the trait half (`Platform:GetTraitView`).
 Written against the pinned Blizzard UI source (`docs/quality/client-api-sources.json`: live 12.1.5.70575, forever 1.60.1.70532, classic 5.5.4.70579, classic_era 1.15.9.70003, classic_anniversary 2.5.6.70006) and the committed client API manifests. No real client was available; every in-game claim below is marked as modeled or unverified.
 
 ## 1. Where we start
@@ -69,74 +69,85 @@ talent = {
 
 No condition format changes are needed for the popup. Two optional hardening steps, not required: classic references could additionally store `talentID` (Era/TBC/Mists `GetTalentInfo` returns a stable `talentID`) so an index shift between client builds cannot repoint a saved talent; and `tree` references could be resolved through a catalog `key` instead of positional indices. Both are additive and follow the `spell` precedent: new optional field, fallback only when the primary reference stops holding.
 
-## 4. Providers behind `Platform/`
+## 4. Decisions (the user's, in order)
 
-One module per client family, selected by the existing `GetTalentLayout()`, behind one entry point:
+1. "I would kind of prefer to use something already done by others both on the website and in game. It's less for us to maintain and already works." A research pass found no addon that is a drop-in picker: every talent viewer is a standalone window with no selection API, and the useful data library (LibTalentTree-1.0) is not needed once Blizzard's own window does the drawing. No third-party addon or library is embedded or depended on. (LibTalentTree-1.0 was evaluated and set aside: its README grants redistribution of unmodified copies and unrestricted use of its API with all other rights reserved, its TOC says it may be used and redistributed in any way including embedding, its CurseForge page says LGPLv3, and its repository has no LICENSE file. If it is ever embedded, record exactly that and keep its header intact.)
+2. "Make it beside the dropdown, a button to pop up the talent tree, with the selection visible (which will then have tooltips for each talent working too)." The dropdown stays; a **Show talent tree** button sits beside the Talent list.
+3. "Use the Blizzard talent template to display the tree; it can do all the normal tooltips. We highlight one talent (or none), and when they click a different one we take that and close the template." Plan A below. "Do things the same way [the other addons] are, across different versions of the game": one provider per client family, Blizzard's own frame where the client has one that can show a build read-only.
+4. Plan B is the fallback: RM's own drawn tree, used when Blizzard's frame cannot be driven. On a client with no provider the button is hidden.
 
-```lua
-platform:GetTalentCatalog(query) -> catalog | nil, reason
-query = { spec = <body.specs value>, hero = <subtree id>?, want = "active"|"any" }
-```
+## 5. The provider interface and what each client can show
 
-| File (new) | Family | Source | Offline spec |
+One interface (`Platform/talent_tree.lua`): `platform:RegisterTalentTreeProvider(id, {families, priority, available, open})`; `open(context)` returns a handle (`Reload`, `Close`) or nil and a reason; `platform:GetTalentTreeProviders()` lists the available providers for the client in priority order; `platform:HasTalentTreeProvider()` decides whether the button exists. The UI (`UI/talent_popup.lua`) tries them in order and keeps the first whose `open` succeeds, so a provider that cannot show the tree now (combat, a window it must not disturb, a missing API) says why and the next one runs. The context carries the wanted specialization and hero tree, the saved selection `{node, entry, spell}`, and `onSelect` / `onClose` callbacks. `ref` fields written on a pick are exactly the ones the dropdown writes (section 3), so no saved data changes.
+
+### 5.1 Retail and Forever: Blizzard's PlayerSpells talents frame in view mode (Plan A, built)
+
+Verified by reading the pinned Blizzard source (Gethe/wow-ui-source live b9be937 and forever 172a387; the import/export file is byte-identical on both):
+
+* **Showing another build read-only.** `PlayerSpellsUtil.InspectLoadout("specID:level:importString")` calls `PlayerSpellsFrame:SetInspectString(importString, level)`, which calls `TalentsFrame:ViewLoadout`: it validates only the header (serialization version equal to `C_Traits.GetLoadoutSerializationVersion()`, at least 152 bits), calls `C_ClassTalents.InitializeViewLoadout(specID, level)`, reads one record per node of `C_Traits.GetTreeNodes(treeID)` and calls `C_ClassTalents.ViewLoadout(entries, importText)`. **The 128 bit tree hash is never checked in view mode** (it is only checked on import), so a zero-filled hash is valid, as the file's own format notes say for third-party sites. The class and specialization come from the header, so the tree can be any specialization of the class. `SetInspecting` then switches the frame to the view config (`Constants.TraitConsts.VIEW_TRAIT_CONFIG_ID`), hides Apply/Reset/Undo/loadout controls, selects the talents tab and leaves purchase and refund disabled (`IsInspecting()`).
+* **Which hero tree shows.** In view mode `HeroTalentsContainer` displays only an *active* subtree, and a subtree is active when the loadout buys the SubTreeSelection node with that subtree's entry. So the loadout string carries the hero choice: the selection node, flagged as a choice node with the 0-based entry index. The addon builds this itself (`EncodeTraitView`): per node `0`, or `1,1,0,<choice bit>[,<2 bit entry>]`, packed six bits per base64 character, least significant bit first (`ExportUtil.ConvertToBase64`). The test fixture decodes our strings with an independent reimplementation of Blizzard's `ImportDataStream`.
+* **Highlighting the selected talent.** The talent is encoded as purchased in the same string (Blizzard then draws it learned, and for a choice node shows the chosen entry), and RM also calls `TalentDisplayMixin:SetGlowing(true)` on `TalentsFrame:GetTalentButtonByNodeID(node)` and anchors a gold ring frame of its own to it, both re-applied on `TalentFrameBase.ButtonsUpdated` (buttons are pooled and re-acquired on every tree reload) and cleared on close. If the client refuses a loadout whose talent has no bought path (`ViewLoadout` returns false and `SetInspecting` clears itself, so `IsInspecting()` is false afterwards) the addon retries with the hero choice alone and then with the bare tree; the ring still marks the node.
+* **Capturing a click.** `TalentButtonSpendMixin:OnClick`, `TalentButtonSelectMixin:OnClick` and `TalentSelectionChoiceMixin:OnClick` all start with `EventRegistry:TriggerEvent("TalentButton.OnClick", self, button)` *before* the `IsInspecting()` early return, so the event fires in view mode. The callback gets `(owner, button, mouseButton)`. `GetNodeID`, `GetEntryID`, `GetSpellID`, `GetNodeInfo` (and `GetBaseButton` on a choice entry) give the node, the entry and the spell; a choice node is only picked through one of its entries (the base button's entry is the *active* one, nil when nothing was chosen); the hero selection node and right clicks are ignored. The pick is applied on the next frame (`C_Timer.After(0)`) so it does not run inside Blizzard's click handler.
+* **Closing and restoring.** `PlayerSpellsFrame:OnHide` runs `ClearInspectUnit`, which returns the frame to the player's own config. RM records whether the window was shown, its tab and its strata before it opens; on close it clears view mode, restores the strata and tab, and hides the window only if it was hidden before. If the player closes Blizzard's window (Escape) the `PlayerSpellsFrame.CloseFrame` event ends the session. RM refuses to disturb the window when it is already inspecting a link or another player, or when `TalentsFrame:HasAnyConfigChanges()` (staged, uncommitted talent changes); the drawn tree serves instead.
+* **Specialization of the header.** Retail: the rotation's specialization (the view loadout reads another specialization's tree, as `GetTraitSpecTree` already does) else the played one. Forever has no specialization API of its own; the header uses `PlayerUtil.GetCurrentSpecID()`, and if that is missing the string cannot be built and the drawn tree serves.
+* **Combat.** Nothing is read or opened in combat (`InCombatLockdown()`); every talent API call goes through `pcall` and `CanReadValue`. While the session is open `PLAYER_REGEN_DISABLED` ends it (Talent Tree Tweaks notes that closing an inspecting frame in combat can fail, so it is closed as combat starts). Only the header and the node records are written: every node gets its record, so no read runs past the string.
+
+**Needs a real client to confirm (no client was available):** that `ShowUIPanel(PlayerSpellsFrame)` and `SetInspectString` from addon code leave no taint that surfaces in the player's own talent window (the main risk: all Blizzard code that runs from our call, and every field it writes, runs tainted; out of combat the frame has no protected actions, but this has not been exercised); that `ViewLoadout` accepts a loadout with only the chosen hero tree and one purchased talent; that the Camelot (Forever) frame honors the same calls (its `PlayerSpellsFrame` file is the shared mixin plus overrides, and its `IsTabSystemAvailable` is false, which `SetInspecting` does not depend on); how the frame layers against RM's full-screen-dialog windows (RM raises Blizzard's frame to `FULLSCREEN_DIALOG` and anchors its own small control strip above it); that hovering a choice node in view mode still opens its entries so a click reaches an entry button; and that a 12.x client has not renamed `TalentButton.OnClick`, `ButtonsUpdated` or `CloseFrame`. Each of these degrades to the drawn tree, never to a broken window: `open` fails closed and the next provider runs.
+
+### 5.2 Retail and Forever: the drawn tree (Plan B, built)
+
+RM draws the nodes itself from `C_Traits.GetNodeInfo` (position in tenths of a pixel, `visibleEdges`, entries) of the view config, with plain textures, pooled slots and `CreateLine` links, scaled to fit the window; a choice node is two half-size entries; only the chosen hero tree is drawn; each talent has `GameTooltip:SetSpellByID` with its ranks. Positions and edges are read from the specialization's own view loadout, so any specialization of the class works. It is built lazily on first open, reuses its frames, and has no `OnUpdate`. It needs no Blizzard UI addon.
+
+### 5.3 Classic clients (phase 2, researched, not built)
+
+Each point below was read in the pinned classic_era 8165d4c, classic (progression) 15c8a754 and anniversary 2cfec7c sources.
+
+| Client | Blizzard frame | Can it show a given tree read-only? | Click capture |
 | --- | --- | --- | --- |
-| `Platform/talent_provider_traits.lua` | Retail | what `GetTraitTalents` does today, plus positions and edges (`GetNodeInfo` `posX/posY/visibleEdges`) | view loadout (shipped) |
-| same file, Forever branch | Forever | the class trait tree; its three classic trees are node groups (`GetGroupDisplayInfoByTreeID`), so `trees` = the groups and `layout = "graph"` with the group as the tab | not needed: one class tree, all groups readable in the active config |
-| `Platform/talent_provider_tree.lua` | Era, SoD, TBC, Wrath, Cata | `GetNumTalentTabs`, `GetNumTalents`, `GetTalentInfo{specializationIndex, talentIndex, groupIndex}` -> `row` = `tier`, `col` = `column`, `maxRank`, `rank`, `talentID`, `spellID`; `GetTalentTabInfo` for tab name/icon/background | all three trees are always readable; `groupIndex` reads the inactive talent group of dual spec (the rotation's slot) |
-| `Platform/talent_provider_grid.lua` | Mists | `GetTalentInfo{tier, column, groupIndex}`, 6 x 3, class-wide (not per specialization) | `groupIndex` for the other group |
+| Era, SoD, TBC Anniversary, Wrath | `Blizzard_TalentUI` (`PlayerTalentFrame`, `Classic/Blizzard_TalentUI.lua`), `Blizzard_FrameXML/Vanilla/TalentFrameBase.lua` `TalentFrame_Update(frame)` | Only the player's own class and talent group. There is no view or link mode in the player frame. | `PlayerTalentFrameTalent_OnClick` **spends a point** (`LearnTalent`, or `AddPreviewTalentPoints` with the preview option) on the active group: hooking the button cannot stop it, so the player frame is not usable as a picker. |
+| Era, SoD, TBC, Wrath | `Blizzard_InspectUI` `InspectTalentFrame` (`talentButton_OnClick` only inserts a chat link) | It shows an *inspected* unit's trees, filled by `NotifyInspect(unit)` and `INSPECT_READY`; only that unit's class. It cannot show a class or a build the player does not have. | A `HookScript("OnClick")` on `InspectTalentFrameTalent<N>` works (the original does nothing but link), `GetTalentInfo`-style indices come from `PanelTemplates_GetSelectedTab(InspectTalentFrame)` and `button:GetID()`. |
+| Cataclysm | `Cata/Blizzard_TalentUI.lua` (`PlayerTalentFrameTalent_OnClick` spends or previews the same way), `Cata/TalentFrameBase.lua` | Same limits as above. | Same. |
+| Mists | `Mists/Blizzard_TalentUI.lua`: `PlayerTalentFrame_SelectTalent(tier, id)` on click (a **real choice** of the talent in that tier); `Mists/InspectTalentFrame.lua` `InspectTalentButtonMixin:OnClick` (chat link only) | Own class only, or an inspected unit. | Same pattern. |
 
-Today's `GetTreeTalentInfo`, `GetGridTalentInfo`, `GetTraitTalents` stay as the low-level readers; the providers are thin and only normalize. Evaluation never goes through a catalog (it keeps the cached per-notification reads in `Core/build_context.lua`); catalogs are built when an editor opens and dropped when it closes, so there is no hot-path cost.
+Conclusion: Blizzard's classic frames cannot be driven the way the modern one can. There is no loadout string, the player's frame acts on a click, and the inspect frame needs another player and shows only that player's class. The classic provider is therefore a grid RM draws itself from shipped data (section 5.5); only Blizzard's textures, and for the player's own class its live ranks and `GameTooltip:SetTalent`, are reused.
 
-Mapping the rotation to a catalog: `body.specs` holds one kind of value per client (`Platform/specializations.lua` `GetRotationSpecKind`): Retail and Mists specialization IDs ("portable"), everything else a talent group slot. The editor passes the rotation's spec (already available to the widget as `spec`). Retail with several `body.specs` opens on the first one that is not the played specialization if the rotation is not for the played one, else the played one; a specialization switcher lists the class's others.
+### 5.4 What the other addons do (second research pass)
 
-## 5. The popup window
+Read from the source of Talent Tree Tweaks, Talent Loadout Manager, Talent Tree Viewer, LibTalentTree, Talented (Classic, TBC, Forever) and Modern Talents TBC; their code is not copied (several are All Rights Reserved).
 
-### What the user sees
+* **Talent Tree Tweaks** drives Blizzard's frame exactly as 5.1 does: `SetInspectString` (refused in combat), `EventRegistry "TalentButton.OnClick"` for clicks, `HideUIPanel`. **Both it and Talent Loadout Manager ship taint workarounds** around `SetInspecting`, `ShowUIPanel` / `HideUIPanel` and `PlayerSpellsFrame:OnHide`: tainted `lockInspect`, `inspectUnit` and `inspectString` fields are reset after a close, `OnShow`'s micro-button, action-bar-grid and cast-bar code is stubbed through `setfenv`, because the taint "can block action buttons from working". Rotation Master does **not** port those workarounds (they edit Blizzard's secure environment and cannot be checked without a client). That is the main reason the drawn tree exists and is a one-line priority change away from being first: if a Blizzard error that names Rotation Master appears after the tree was opened, make `drawn` priority 5.
+* **Talent Tree Viewer** never touches Blizzard's frame: it builds its own frame from `TalentFrameBaseTemplate` on LibTalentTree data. That is the shape of the drawn provider, except that RM draws plain textures instead of inheriting Blizzard's templates (no `Blizzard_PlayerSpells` dependency, no Blizzard code running under RM's taint).
+* **LibTalentTree** rewrites the shared view config (-3) for every class and specialization to build its cache. It is not used: calling it while RM's view is open would swap the displayed tree.
+* **Forever** (Camelot): the frame is the shared `PlayerSpellsFrameMixin` plus overrides; `SetTab` is refused while inspecting ("switching tabs loads the player's own config"), the spec tabs are hidden while inspecting, there are no hero talents, and the class tree is split into pseudo-spec visuals keyed by spec ID (Mage 1482, Druid 1484, ...). The header must carry that pseudo-spec ID, which is what `PlayerUtil.GetCurrentSpecID()` answers; Retail specialization IDs do not load there.
+* **Classic**: Talented (Classic, TBC) draws its own buttons with Blizzard's textures and ships static per-class data and its own tooltips; Modern Talents TBC reuses `PlayerTalentButtonTemplate` and native `GameTooltip:SetTalent` but only for the player's own class. `TalentButtonTemplate` delegates a click to a `talentButton_OnClick` field that can be set, and `TalentBranchTemplate` plus the `Interface\TalentFrame` textures are reusable. Nothing hijacks Blizzard's classic frames safely, since a click on them spends or previews points. The phase 2 scope and data plan are in section 5.5; until it is built the button stays hidden on classic clients and the dropdowns serve.
 
-A resizable workbench dialog (`UI/window.lua`, same chrome and Escape handling as the other pickers), opened by an icon button beside the Talent dropdowns (which stay: section 8).
+### 5.5 Phase 2 plan: a data-driven grid provider for the classic clients
 
-* Header: specialization switcher (Retail), hero tree switcher, the active/preview badge ("Your talents" vs "Preview: Frost, not your active loadout").
-* Body, by `layout`:
-  * **graph** (Retail, Forever): node icons at `x/10, -y/10` from the tree origin, lines between linked nodes, class tree on the left and specialization tree on the right as in the game's window (the node coordinates already encode this), hero tree as a separate tab or panel so its coordinates (which overlap the main tree's) do not collide. Choice nodes draw as a split icon; clicking a half selects that entry. Pan and zoom are needed only for Forever's group tabs and small screens; a fixed fit-to-width scale computed from the bounding box is enough for the first version.
-  * **tree** (Era/TBC/Wrath/Cata): three tabs (or three columns when width allows) with the 4-column classic grid at `row`/`col`, rank badges, the tab's background art by `GetTalentTabInfo`.
-  * **grid** (Mists): 6 rows of 3.
-* Click behavior: single click selects the talent for the condition (the dialog closes unless Shift is held, for conditions that want several). Multi-rank talents: the rank is not part of the choice; the condition's `Rank` field stays where it is, and the popup shows `n/m` only as information. A selected talent shows a highlight ring; the talent currently stored in the condition is pre-selected and scrolled into view.
-* Hover: spell tooltip, `GameTooltip:SetSpellByID(spellID)` (classic additionally `SetTalent(talentID, inspect, pet, group)` where available so rank text is right). If the spell is unknown to the client, the name only.
-* Active-state decoration (rank > 0) only for `source = "active"`; a previewed specialization shows no ranks, because it is not the character's.
+Research basis: a pass over Talented (Classic, TBC, Forever), Classic Talent Viewer (Mists), Modern Talents TBC, zTalentPlanner and the pinned classic Blizzard sources. Facts:
 
-### Reuse Blizzard's buttons, or draw our own
+* **No classic talent API takes a class.** `C_SpecializationInfo.GetTalentInfo`'s query has `groupIndex, isInspect, tier, column, target, specializationIndex, talentIndex, isPet` and nothing that names a class or specialization; `GetNumTalentTabs` and `GetTalentTabInfo` likewise; `TalentFrame_Update(frame)` has no class parameter; there is no `C_ClassTalents` / `C_Traits` view loadout on these clients. `GetSpecializationInfo` takes an optional `classID` and `GetNumSpecializationsForClassID(classID)` exists, which may give another class's tree names and icons (unverified on the classic clients) but not its talents. The Mists inspect frame passes a class to `GameTooltip:SetTalent` and `GetTalentLink`, only for an inspected unit. So the player's own class can be read live, and **any other class needs shipped data**. Only Forever (a trait client) can read any class from the game, which phase 1 already does.
+* **Every classic addon draws its own buttons** (Talented, Classic Talent Viewer, Modern Talents TBC's own-class reskin), with Blizzard's textures; none inherits `TalentButtonTemplate` for foreign classes. Talented ships hand-edited tables with English tooltip prose; its licenses conflict (zlib on CurseForge, CC BY in the README, "Ace3 style BSD" on the TBC page, no LICENSE file), so its data is not copied. Classic Talent Viewer's table is All Rights Reserved.
+* **Seed data**: wowsims (MIT) publishes per-class tree JSON for classic, wotlk, cata and mop (`row`, `column`, `spellIds` per rank, `maxPoints`, prerequisite position; Mists as a flat 18-per-class list with `spellId`); there is no TBC set. Its provenance is a scraper of Wowhead pages, so the file records the upstream commit and the MIT notice and treats the facts (positions, spell IDs) as game facts.
+* **Which key a classic talent is saved under** is already fixed by the condition: `{tree, talent}` (Blizzard's 1-based tab and talent index; Era, TBC, Wrath, Cata) or the grid slot 1-18 (Mists). Wrath's index order is not row-major, so a shipped table needs an explicit index map from the in-game dump; Era and TBC are row-major.
 
-| | Reuse `Blizzard_SharedTalentUI` templates (`TalentButtonSpendTemplate`, `TalentButtonSelectTemplate`, `TalentEdgeStraightTemplate`...) | Draw our own (textures, `CreateLine`, atlases) |
-| --- | --- | --- |
-| Look | Exactly Blizzard's, including future art changes | Close, but ours; frozen until we update |
-| Coupling | Heavy: the mixins expect a `TalentFrameBaseMixin` parent (`GetAndCacheNodeInfo`, `GetTalentFrame`, currency, search, gating) and Blizzard_SharedTalentUI/Blizzard_PlayerSpells loaded | None |
-| Taint | Mixin code and its callbacks run under our script's taint; any template path that touches secure state or `securecall`-guarded Blizzard globals can spread taint to Blizzard frames that share a mixin table | None: our frames, our scripts |
-| Secret values | Blizzard code would read C_Traits and compare/format values itself; a secret value reaching it errors inside Blizzard code where we cannot guard | We read through `CanReadValue` and decide |
-| Clients | Retail and Forever only; classic frames are a different generation | One drawing layer for all five |
-| Cost | Low to start, high to maintain (every Blizzard UI refactor, 11.0 and 12.x both moved things) | Medium once, then small |
+Plan (not built on this branch):
 
-Recommendation: draw our own, borrowing only what is data: atlas names for node art and edges (read from `Blizzard_SharedTalentUI/Blizzard_TalentButtonArt.lua` and the edge templates, checked for existence with `C_Texture.GetAtlasInfo` and replaced by plain textures when absent) and the position math above. Rejected on the same grounds: hooking Blizzard's talent window in view mode and capturing clicks (view mode disables clicks, and hooks on secure buttons are the classic taint source).
+1. `tools/` script that turns the wowsims seed into one committed table per client (Lua, spell IDs only: no tooltip prose; tooltips come from `GameTooltip:SetSpellByID`, icons from `C_Spell`/`GetSpellInfo` of the rank-1 spell), keyed `client -> class -> tree -> {row, column, ranks = {spellID...}, prereq = {row, column}, index}`; a second tools script run in game on one character of each class writes the authoritative tab/index order to SavedVariables and the generator folds it in. TBC has no seed and starts from the dump. Each client's table carries an `X-ExpectedBuild`-style stamp; the picker shows one line when `GetBuildInfo()` differs.
+2. A `classic` provider (families `era`, `tbc`, `progression`; progression covers `WOW_PROJECT_ID` 11 Wrath, 14 Cataclysm and 19 Mists) registered with `platform:RegisterTalentTreeProvider`. It draws a grid of RM's own buttons (Blizzard's `Interface\TalentFrame` textures, 63 px cell, 32 px button) and arrows from the table for any class, takes the live rank and the talent group from `GetTalentInfo` when the class is the player's, highlights the saved `{tree, talent}` or Mists slot, and answers a click through `ctx.onSelect({tree=..., talent=...})` or `({value=slot})`. The shell, switchers (trees as tabs instead of specializations), status line, combat rule and close handling in `UI/talent_popup.lua` are provider-neutral; what changes is the selection table the condition writes (`Conditions/talent.lua` `treeWidget` / `gridWidget` call `OpenTalentTree` with their own `onSelect`) and a data-driven variant of the drawn code (`draw` takes nodes from `GetTraitView` today; the classic provider supplies rows, columns, ranks and prerequisite arrows from the table).
+3. Own class only on a client with no table for the player's class falls back to reading the live tree; with neither, the button stays hidden.
+4. Refresh per patch: rerun the dump on one character of the player's class, diff against the committed table, and spot check the others against a manual wago.tools download (its robots.txt forbids automated fetching). A runtime self-check compares the player's own class to the table and warns on drift. Estimated: converter and table 1-2 days, dump tool and runs 1 day plus game access to each client, provider and grid drawing 3-4 days, 30-60 minutes per client per patch.
+Risks: index order on Wrath and Cataclysm (key by rank-1 spell ID as well as index), hotfixed rank spell IDs, no TBC seed, Titan Reforged shares project ID 11 with Wrath but has merged content (out of scope), and per-client class lists (Hunter pet talents, Death Knight, Monk).
 
-Cost of drawing: node pool (about 120 nodes for a Retail class + spec, plus hero), line pool (about 150), one `OnEnter/OnLeave/OnClick` set bound by index. All pooled, built once, reconfigured per catalog; nothing runs on a timer.
+## 6. What phase 1 ships
 
-## 6. Offline editing
+* `Platform/talent_tree.lua`: provider registry, `GetTraitView` (node order, geometry, entries, edges, hero trees, active or view loadout; never in combat), `FindTraitViewSelection` (node and entry, else the spell), `EncodeTraitView`, `GetTraitViewLevel`.
+* `UI/talent_popup.lua`: the control strip (specialization and hero tree switchers, the current choice, the reason a tree cannot be shown; movable, same chrome and Escape handling as the other RM dialogs), the `blizzard` provider (priority 10) and the `drawn` provider (priority 50), `addon:OpenTalentTree / CloseTalentTree / RefreshTalentTree`.
+* `Conditions/talent.lua`: the **Show talent tree** button in a table row with the Talent list (only where a provider exists); a pick writes `node`, `entry`, `spell` through the same path as the list, moves the list and the node and entry boxes, and the tree's specialization switch moves the Specialization list; changing the list or the boxes moves the tree's highlight; releasing the editor closes the tree.
+* Tests: `tests/talent_tree_popup.lua` with `tests/fixtures/blizzard_talent_window.lua` (a model of the window and its events, decoding our strings independently) and the extended `tests/fixtures/retail_traits.lua`.
 
-The editor is open for a rotation whose specialization the character is not playing (a Frost mage editing a Fire rotation).
+## 7. Offline editing and fallback
 
-* **Retail**: view loadout (shipped). Remaining work for the popup: positions and edges come from the same view-config `GetNodeInfo`; hero trees of the previewed specialization come from `GetHeroTalentSpecsForClassSpec(VIEW_TRAIT_CONFIG_ID, specID)`. Constraints: not in combat; replaces whatever build Blizzard's own window is previewing from a link (a one-line notice in the dialog); `level` should be the maximum level so hero nodes are visible (the shipped code passes `GetMaxLevelForPlayerExpansion()`, else the player's level). Unverified in a real client: that the view config answers `isVisible = true` for exactly the previewed specialization's nodes, and that `InitializeViewLoadout` is callable from addon code outside a hardware event.
-* **Forever**: not needed, one class tree.
-* **Era/TBC/Wrath/Cata**: the three trees are all readable; dual spec's other group is read with `groupIndex`. A character with a single talent group has no second group, but the *shape* of the trees is identical, so the preview reads group 1's data and hides ranks.
-* **Mists**: grid is class-wide, group index only changes which choice is selected.
-* **Class mismatch**: a rotation for another class cannot be previewed on any client (the API only knows the character's class). The popup then says so and falls back to node/ID entry.
-
-Failure reasons (`in-combat`, `talent-tree-unavailable`, `missing-api`, `restricted-value`, `api-error`) are surfaced as one line in the dialog and in the condition editor; they never produce an empty tree.
-
-## 7. Fallback dropdown (d)
-
-Kept as the always-available path, not removed:
-
-* where the popup cannot draw (any reason from section 6, a client the provider does not know, no `CreateLine`), the existing dropdowns remain and now share the catalog (icons in the list, group tabs, the specialization list). This is what the Retail fix ships.
-* manual entry (node ID, choice entry ID; spell ID for the website) stays for sharing and for talents the client cannot list.
+Another specialization is read from the view loadout (section 2) and never in combat; the tree, the control strip and the dropdown all use that. A rotation for another class cannot be previewed on any client. The dropdowns and the node and entry boxes stay as the always-available path: where no provider can open (combat, a window that must not be disturbed, a missing API) the strip says why.
 
 ## 8. Website equivalent (e)
 
@@ -171,37 +182,24 @@ The rule as given: Blizzard API data may not be kept longer than 30 days without
 
 The existing `Web/editor` draft/render modules (`Web/editor/draft.mjs`, `render.mjs`) gain a talent picker per edition that mirrors the popup: the same graph/tree/grid drawing with SVG (nodes as `<g>` with `<title>` tooltips from the catalog, edges as `<line>`), specialization/hero switcher from the rotation's `specs`, click writes the same `ref` fields. Without JavaScript or without a catalog for the edition it is the numeric-field form that exists today.
 
-## 9. Work estimate (one developer, in-game testing included)
+## 9. Work remaining
 
-| Step | Work | Days |
-| --- | --- | --- |
-| A | Providers and `GetTalentCatalog` (tree, grid, traits incl. positions/edges), unit tests with fixtures per client | 4-5 |
-| B | Popup shell, graph layout and drawing, pooled nodes/lines, Retail + Forever, tooltips, selection | 6-8 |
-| C | Classic tree and Mists grid drawing, tab art, dual-group handling | 3-4 |
-| D | Spec/hero switchers, offline preview notices, combat handling, fallback wiring in the condition editor | 3 |
-| E | Localization of new strings (ten locales), help text, docs | 1-2 |
-| F | In-game verification pass per client (Retail, Forever, Era, TBC, Wrath/Cata, Mists) and fixes | 5-8 (largest uncertainty; needs real clients) |
-| G | Dump command and committed catalogs for all classes/editions; check tool | 3-4 plus maintainer login time |
-| H | Game Data API snapshot job and 30-day expiry logic | 3-4 (+2 if classic endpoints need discovery) |
-| I | Web picker (SVG), per-edition catalog loading, tests | 5-7 |
-
-Total about 33-45 working days; A-F (the in-game selector) about 22-30, G-I (website) about 11-17. The Retail fix already delivered covers part of A and D for Retail.
+| Step | Work |
+| --- | --- |
+| F | In-game verification of phase 1 on Retail and Forever (section 5.1 list), including taint on the player's own talent window |
+| C | Classic provider (section 5.5): shipped per-class table (tools script plus in-game dump), data-driven grid, Mists tier/column grid |
+| G | Dump command and committed catalogs for the website (in-game `GetTraitView` output; Raidbots `talents.json` as a validator) |
+| I | Web picker (SVG) |
 
 ## 10. Risks
 
-1. **View loadout behavior is unverified in a real client** (section 6). If `InitializeViewLoadout` is blocked for addons or returns different visibility, offline Retail editing degrades to node ID entry; nothing else breaks. This is the first thing to test.
-2. **Taint**: custom drawing avoids the Blizzard templates for this reason; the remaining taint surface is `GameTooltip` use, which every picker already has.
-3. **Blizzard changes the tree shape** (12.x already reshuffled hero talent containers). The model keys on node and spell IDs and ignores layout containers, and the spell fallback covers node renumbering; position math follows `TranslateNodePositionsToAnchorPositions`, which is one function to re-read per major patch.
-4. **Hero tree overlap**: hero nodes use their own coordinate space; drawing them in the main canvas would overlay. They get their own panel.
-5. **Classic Game Data endpoints may not exist**; plan G does not depend on them.
-6. **API data quality** (missing specs, duplicate talents, IDs that may not match `C_Traits`): the API is a validator, not the primary source.
-7. **Performance**: a catalog is built per editor open (roughly 600 API reads for a Retail class) -- fine for a dialog, never on the evaluation path. If it shows in profiling, cache per talent notification the way the build context does.
-8. **Window size**: Retail trees are about 800 x 600 at Blizzard's scale; on low UI scales the dialog must scale to fit and fall back to the dropdowns when it cannot.
-9. **Saved data**: only additive optional fields (`spell`, later `talentID`), validated in `valid`; the website schema catalog must be regenerated when merged (`tools/export_web_schema.lua` / `tools/export_web_conditions.py` on the website branch) because TALENT's field list gained `spell`.
+1. **Taint from driving Blizzard's window** (section 5.1): unverified; a Blizzard error that points at Rotation Master after the tree was opened is the signal. The drawn provider is the answer; a setting that prefers it is a one-line change (`priority`).
+2. **The shared view config** (`VIEW_TRAIT_CONFIG_ID`): `InitializeViewLoadout` replaces what the player's open window is previewing from a link. RM refuses when the window is inspecting.
+3. **Blizzard renames** `TalentButton.OnClick`, `ButtonsUpdated` or `PlayerSpellsFrame.CloseFrame`: the click is lost, the tree opens but nothing picks; the strip's Close button and the Talent list still work.
+4. **Classic data for other classes** does not exist in game (section 5.3).
+5. **Window layering**: RM's windows are full-screen dialogs; Blizzard's frame is raised to the same strata and the strip is anchored above it.
 
-## 11. Decisions needed
+## 11. Open decisions
 
-1. Draw our own tree (recommended) versus reuse Blizzard's templates for Retail.
-2. Whether the in-game dump may be the primary website source, with the Game Data API as validator (recommended), or the API must be primary.
-3. Whether classic references gain an optional `talentID` now or later.
-4. Whether the popup replaces the dropdowns where it works, or sits beside them (recommended: beside, until in-game verified on every client).
+1. Whether the drawn tree should be preferred by default until Blizzard's window is verified (currently Blizzard's first).
+2. Whether to build the classic provider now (section 5.3) or after the in-game pass of phase 1.
