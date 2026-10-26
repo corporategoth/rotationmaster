@@ -38,6 +38,11 @@ function addon:GetGeneralOptionHelp()
     if self.GetAssistedHighlightSupport and self:GetAssistedHighlightSupport() then
         ordered[#ordered+1]={id="assisted_highlight",title=L["Blizzard's suggestion highlight"],text=L["Help.General.assisted_highlight"]}
     end
+    ordered[#ordered+1]={id="tooltips",title=L["Show Rotation Master in tooltips"],text=L["Help.General.tooltips"]}
+    ordered[#ordered+1]={id="tooltip_itemsets",title=L["List item sets in item tooltips"],text=L["Help.General.tooltip_itemsets"]}
+    ordered[#ordered+1]={id="tooltip_rotations",title=L["List rotations in spell and item tooltips"],text=L["Help.General.tooltip_rotations"]}
+    ordered[#ordered+1]={id="tooltip_conditions",title=L["Include rotation conditions"],text=L["Help.General.tooltip_conditions"]}
+    ordered[#ordered+1]={id="tooltip_limit",title=L["Names listed per tooltip line"],text=L["Help.General.tooltip_limit"]}
     if WOW_PROJECT_ID~=WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT>=2 and self.db and self.db.char and self.db.char.specs then
         ordered[#ordered+1]={id="spec1",title=PRIMARY or L['Primary'],text=L['Help.General.spec1']}
         ordered[#ordered+1]={id="spec2",title=SECONDARY or L['Secondary'],text=L['Help.General.spec2']}

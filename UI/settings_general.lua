@@ -155,6 +155,18 @@ function addon:BuildGeneralSettings(p)
         end)
         if self.Platform:GetAssistedCombatAvailability()==false then p:Text(L["Assisted Combat is not available for your current specialization, so Blizzard's highlight stays off."]) end
     end
+    -- Lines Rotation Master adds to spell and item tooltips (Core/tooltips.lua).
+    p:Heading(L['Tooltips'])
+    local function tooltipsChanged() p:RunSettingsEffect('tooltips',function() if self.RefreshTooltipIntegration then self:RefreshTooltipIntegration() end end) end
+    local tooltipsOn=profile.tooltips~=false
+    p:Check('tooltips',L['Show Rotation Master in tooltips'],tooltipsOn,function(v) profile.tooltips=v;tooltipsChanged();p:Draw() end)
+    local tooltipChecks={
+        p:Check('tooltip_itemsets',L['List item sets in item tooltips'],profile.tooltip_itemsets~=false,function(v) profile.tooltip_itemsets=v;tooltipsChanged() end),
+        p:Check('tooltip_rotations',L['List rotations in spell and item tooltips'],profile.tooltip_rotations~=false,function(v) profile.tooltip_rotations=v;tooltipsChanged() end),
+        p:Check('tooltip_conditions',L['Include rotation conditions'],profile.tooltip_conditions==true,function(v) profile.tooltip_conditions=v;tooltipsChanged() end),
+    }
+    if not tooltipsOn then for _,control in ipairs(tooltipChecks) do control:Disable() end end
+    p:Slider('tooltip_limit',L['Names listed per tooltip line'],profile.tooltip_limit or 3,1,20,1,function(v) profile.tooltip_limit=v;tooltipsChanged() end)
     if WOW_PROJECT_ID~=WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT>=2 and store.char and store.char.specs then
         p:Heading(L['Specialization Names']);for i,caption in ipairs({PRIMARY,SECONDARY}) do p:Edit('spec'..i,caption,store.char.specs[i],nil,function(v) store.char.specs[i]=v end) end
     end
