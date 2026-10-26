@@ -41,8 +41,8 @@ on that side). Retire it or remove the GitHub secrets before the first tag.
 
 Runner assumptions (see `.gitea/workflows/test.yml`): the `ubuntu-latest` label is the Gitea Ubuntu image, root or sudo is
 available, apt and the internet work, and the runner takes one job at a time. A full release run is three test jobs plus
-packaging and takes the better part of an hour (the whole suite was about 36 minutes on a loaded workstation, and
-`tests/default_corpus.lua` alone more than 15); the job timeouts are 120 minutes.
+packaging and takes the better part of an hour (the suite without the single slowest test was about 21 minutes on a loaded workstation; that test alone passes in about
+35 more); the job timeouts are 120 minutes.
 
 ## Before tagging
 

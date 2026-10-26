@@ -11,8 +11,8 @@
 # (Core/rotation_library.lua:602 indexes addon.Platform), tests/test_check.py, tests/test_catalog_check.py and
 # tests/test_us_spelling.py (docs/talent-selector-design.md and Modules/README.md use British spellings).
 # tests/client_locale.lua fails because Locales/enUS.lua has 4102 entries (limit 4096).
-# lua5.1 tests/default_corpus.lua is not listed: it takes longer than the 15 minutes the first measurement allowed;
-# see docs/dev/running-things.md.
+# lua5.1 tests/default_corpus.lua is not listed: it passes (81 tests) but takes about 35 minutes on one core of a loaded
+# workstation; see docs/dev/running-things.md.
 #
 # This list is temporary. Remove a line the moment its command is green again; never add a line to hide a
 # regression you just made. An empty list (only comments) is the goal.

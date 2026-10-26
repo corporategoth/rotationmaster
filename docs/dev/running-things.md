@@ -32,7 +32,7 @@ touch `core.hooksPath`).
 | `lua5.1 tests/<name>.lua`, `luajit tests/<name>.lua` | One suite | usually under a second |
 
 `tools/check_all.py --json out.json` also writes every command's exit code and duration. `default_corpus.lua` is the one
-very slow suite (many minutes); `tools/check_all.py --list` prints the command list without running anything.
+very slow suite (about 35 minutes on one core of a loaded machine); `tools/check_all.py --list` prints the command list without running anything.
 
 ### Heavy runs
 
