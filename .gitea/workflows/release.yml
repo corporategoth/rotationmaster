@@ -1,0 +1,233 @@
+# Release: runs on a pushed version tag, re-tests, builds the package, creates the Gitea release and uploads to
+# CurseForge, Wago and (stable tags only, unless WOWI_UPLOAD_BETA=true) WoWInterface.
+#
+# Tags: `2.0.0` is a release, `2.0.0-beta.1` a beta, `2.0.0-alpha.1` an alpha. The word beta or alpha anywhere in the tag
+# makes CurseForge and Wago mark the file that way and the Gitea release a prerelease; the packager decides from the
+# tag name, tools/release_plan.py states the decision in the log before anything is uploaded.
+#
+# Credentials come from repository secrets only (Settings > Actions > Secrets): CF_API_KEY, WOWI_API_TOKEN,
+# WAGO_API_TOKEN, and optionally RELEASE_TOKEN (a Gitea token allowed to write releases, if the built-in token cannot).
+# No GitHub credential is used anywhere: GitHub is a push mirror and receives the release from Gitea.
+# Optional repository variable: WOWI_UPLOAD_BETA=true uploads betas to WoWInterface as well.
+#
+# Run it by hand from the Actions tab (workflow_dispatch) with dry_run=true to do everything except upload and create the
+# release. docs/release/RELEASING.md has the full procedure.
+name: Release
+
+on:
+  push:
+    tags:
+      - '[0-9]*'
+      - 'v[0-9]*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to release (for example 2.0.0-beta.1)
+        required: true
+        type: string
+      dry_run:
+        description: Build and check only; upload nothing and create no release
+        required: false
+        default: true
+        type: boolean
+      gitea_release:
+        description: Create or update the Gitea release
+        required: false
+        default: true
+        type: boolean
+      upload_sites:
+        description: Upload to CurseForge, Wago and WoWInterface
+        required: false
+        default: true
+        type: boolean
+      allow_known_failures:
+        description: Let suites listed in tools/known_failures.txt fail
+        required: false
+        default: false
+        type: boolean
+      allow_missing_tokens:
+        description: Skip a site whose secret is missing instead of failing
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: release-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  TAG: ${{ github.event.inputs.tag || github.ref_name }}
+  DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run != 'false' }}
+  GITEA_RELEASE: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.gitea_release != 'false' }}
+  UPLOAD_SITES: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.upload_sites != 'false' }}
+  ALLOW_KNOWN_FAILURES: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.allow_known_failures == 'true' }}
+  ALLOW_MISSING_TOKENS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.allow_missing_tokens == 'true' }}
+
+jobs:
+  verify-static:
+    name: Static checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: refs/tags/${{ github.event.inputs.tag || github.ref_name }}
+      - uses: ./.gitea/actions/toolchain
+        with:
+          pre-commit: 'true'
+      - name: pre-commit, commit stage, all files
+        run: pre-commit run --all-files --show-diff-on-failure --color never
+      - name: Workflow files are well formed
+        run: .venv-ci/bin/python tools/lint_workflows.py
+
+  # A release must be green: no baseline unless the run was started by hand with allow_known_failures.
+  verify-tests:
+    name: Tests (${{ matrix.runtime }})
+    needs: [verify-static]
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        runtime: [lua5.1, luajit, python]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: refs/tags/${{ github.event.inputs.tag || github.ref_name }}
+      - uses: ./.gitea/actions/toolchain
+      - name: Run the suite
+        run: |
+          set -euo pipefail
+          baseline=()
+          if [ "${ALLOW_KNOWN_FAILURES}" = "true" ]; then
+            baseline=(--baseline tools/known_failures.txt)
+          fi
+          python3 tools/check_all.py --runtime "${{ matrix.runtime }}" "${baseline[@]}" --json "test-results-${{ matrix.runtime }}.json"
+      - name: Upload the result summary
+        if: ${{ always() }}
+        uses: christopherhx/gitea-upload-artifact@62ac910c5d3dfa85c7cb2df15afe2e342b2407c2 # untagged head
+        with:
+          name: release-test-results-${{ matrix.runtime }}
+          path: test-results-${{ matrix.runtime }}.json
+          if-no-files-found: ignore
+
+  package-and-publish:
+    name: Package and publish
+    needs: [verify-static, verify-tests]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: refs/tags/${{ github.event.inputs.tag || github.ref_name }}
+          fetch-depth: 0
+      - uses: ./.gitea/actions/toolchain
+
+      - name: The tag is what is checked out
+        run: |
+          set -euo pipefail
+          git tag --points-at HEAD | grep -Fx -- "${TAG}" || { echo "::error::HEAD is not tag ${TAG}"; exit 1; }
+          if git rev-parse --verify --quiet origin/master >/dev/null && ! git merge-base --is-ancestor HEAD origin/master; then
+            echo "::warning::${TAG} is not reachable from master; tag after merging."
+          fi
+
+      # Says what will happen before it happens: release type, which sites, the packager flags. Fails when a site that
+      # should receive the file has no secret. Only whether a secret is set is read here; values are never printed.
+      - name: Release plan
+        id: plan
+        env:
+          CF_API_KEY: ${{ secrets.CF_API_KEY }}
+          WOWI_API_TOKEN: ${{ secrets.WOWI_API_TOKEN }}
+          WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
+          WOWI_UPLOAD_BETA: ${{ vars.WOWI_UPLOAD_BETA }}
+        run: |
+          set -euo pipefail
+          args=(--tag "${TAG}")
+          [ "${DRY_RUN}" = "true" ] && args+=(--dry-run)
+          [ "${UPLOAD_SITES}" != "true" ] && args+=(--dry-run)
+          [ "${WOWI_UPLOAD_BETA}" = "true" ] && args+=(--wowi-beta)
+          [ "${ALLOW_MISSING_TOKENS}" = "true" ] && args+=(--allow-missing-tokens)
+          python3 tools/release_plan.py "${args[@]}" | tee plan.env
+          cat plan.env >> "${GITHUB_OUTPUT}"
+
+      # Hand-written notes (docs/release/notes/<tag>.md) are required for a stable tag; a beta falls back to a
+      # generated summary. CHANGELOG.md goes into the package (the manual-changelog of .pkgmeta) and to CurseForge.
+      - name: Release notes
+        env:
+          BETA_GUIDE_URL: ${{ vars.BETA_GUIDE_URL }}
+        run: |
+          set -euo pipefail
+          require=()
+          [ "${{ steps.plan.outputs.type }}" = "release" ] && require=(--require-curated)
+          guide=()
+          [ -n "${BETA_GUIDE_URL}" ] && guide=(--beta-url "${BETA_GUIDE_URL}")
+          python3 tools/release_notes.py --tag "${TAG}" "${require[@]}" "${guide[@]}" --target curseforge --out CHANGELOG.md
+          python3 tools/release_notes.py --tag "${TAG}" "${require[@]}" "${guide[@]}" --target gitea --out release-notes-gitea.md
+          echo "--- Gitea release body ---"
+          cat release-notes-gitea.md
+
+      - name: The vendored packager is the pinned one
+        run: |
+          set -euo pipefail
+          expected="$(jq -r .sha256 tools/vendor/bigwigs-packager/UPSTREAM.json)"
+          echo "${expected}  tools/vendor/bigwigs-packager/release.sh" | sha256sum -c -
+
+      # Pass one: build only (-d), no secrets in the environment. The zip it makes is the one that gets checked and the
+      # one attached to the Gitea release.
+      - name: Build the package with the BigWigs packager
+        run: bash tools/vendor/bigwigs-packager/release.sh -d -u -e -l -r "${GITHUB_WORKSPACE}/.release"
+
+      - name: Check the package
+        run: |
+          set -euo pipefail
+          zip=".release/RotationMaster-${TAG}.zip"
+          [ -f "${zip}" ] || { echo "::error::the packager did not build ${zip}"; ls -l .release; exit 1; }
+          echo "ZIP=${zip}" >> "${GITHUB_ENV}"
+          python3 tools/package_release.py --check-zip "${zip}" --version "${TAG}"
+
+      - name: Keep the package
+        uses: christopherhx/gitea-upload-artifact@62ac910c5d3dfa85c7cb2df15afe2e342b2407c2 # untagged head
+        with:
+          name: RotationMaster-${{ github.event.inputs.tag || github.ref_name }}
+          path: ${{ env.ZIP }}
+          if-no-files-found: error
+
+      - name: Gitea release
+        if: ${{ env.DRY_RUN != 'true' && env.GITEA_RELEASE == 'true' }}
+        env:
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          flag=()
+          [ "${{ steps.plan.outputs.prerelease }}" = "true" ] && flag=(--prerelease)
+          python3 tools/gitea_release.py --tag "${TAG}" --notes release-notes-gitea.md --asset "${ZIP}" "${flag[@]}"
+
+      # Pass two: the same packager run again without -d, now with the credentials, uploading what the plan allows (the
+      # plan's flags also switch off a site that should not get this tag, or that has no secret and was allowed to skip).
+      - name: Upload to CurseForge, Wago and WoWInterface
+        if: ${{ env.DRY_RUN != 'true' && env.UPLOAD_SITES == 'true' }}
+        env:
+          CF_API_KEY: ${{ secrets.CF_API_KEY }}
+          WOWI_API_TOKEN: ${{ secrets.WOWI_API_TOKEN }}
+          WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          echo "Uploading to: ${{ steps.plan.outputs.sites }}"
+          # shellcheck disable=SC2086
+          bash tools/vendor/bigwigs-packager/release.sh ${{ steps.plan.outputs.packager }} -r "${GITHUB_WORKSPACE}/.release"
+
+      - name: Summary
+        if: ${{ always() }}
+        run: |
+          {
+            echo "## Release ${TAG}"
+            echo
+            echo "- type: ${{ steps.plan.outputs.type }}"
+            echo "- dry run: ${DRY_RUN}"
+            echo "- sites: ${{ steps.plan.outputs.sites }}"
+            echo "- package: ${ZIP:-not built}"
+          } >> "${GITHUB_STEP_SUMMARY:-/dev/null}"

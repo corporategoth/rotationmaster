@@ -1,0 +1,64 @@
+# Weekly: the slow and the strict. Everything in test.yml without the known-failures list, the translation report,
+# and the check that the offline package builder still agrees with the vendored BigWigs packager. Cheap to run by
+# hand from the Actions tab too.
+name: Nightly
+
+on:
+  schedule:
+    - cron: "17 4 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: nightly
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  strict-tests:
+    name: Strict tests (${{ matrix.runtime }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        runtime: [lua5.1, luajit, python]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.gitea/actions/toolchain
+      - name: Run every suite, no known-failures list
+        run: python3 tools/check_all.py --runtime ${{ matrix.runtime }} --json strict-results-${{ matrix.runtime }}.json
+      - name: Upload the result summary
+        if: ${{ always() }}
+        uses: christopherhx/gitea-upload-artifact@62ac910c5d3dfa85c7cb2df15afe2e342b2407c2 # untagged head
+        with:
+          name: strict-results-${{ matrix.runtime }}
+          path: strict-results-${{ matrix.runtime }}.json
+          if-no-files-found: ignore
+
+  package-and-translations:
+    name: Package parity and translation status
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: ./.gitea/actions/toolchain
+      - name: Offline builder and the real packager agree
+        run: python3 tools/package_release.py --parity
+      - name: Translation status
+        run: |
+          python3 tools/translation_status.py | tee translation-status.txt
+          python3 tools/translation_status.py --json --details > translation-status.json
+          python3 tools/translation_status.py --fail-on invalid,orphans
+      - name: Upload the translation report
+        if: ${{ always() }}
+        uses: christopherhx/gitea-upload-artifact@62ac910c5d3dfa85c7cb2df15afe2e342b2407c2 # untagged head
+        with:
+          name: translation-status
+          path: |
+            translation-status.txt
+            translation-status.json
+          if-no-files-found: ignore

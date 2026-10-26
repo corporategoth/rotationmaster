@@ -1,0 +1,6 @@
+# Development-only files stay out of archives made with `git archive` and the forge's "download source" zips.
+# (The release package is built by .pkgmeta, which also leaves them out; tools/package_release.py --check proves it.)
+/.claude export-ignore
+/.gitea export-ignore
+/.gitattributes export-ignore
+/.pre-commit-config.yaml export-ignore
