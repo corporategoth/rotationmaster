@@ -16,17 +16,22 @@
 
 default_install_hook_types: [pre-commit, pre-push]
 
-# Vendored libraries, fonts, art and the large frozen fixtures are not reformatted or re-scanned: their bytes
-# are pinned (Libs/UPSTREAM.json, tests/fixtures) and changing them is its own decision.
-exclude: '^(Libs/|LibsAugment/|Fonts/|Assets/.*\.(tga|blp|png)$|textures/|tools/vendor/|tests/fixtures/)'
+# Vendored libraries, fonts, art, the pinned simulator data and the large frozen fixtures are not reformatted or
+# re-scanned: their bytes are pinned (Libs/UPSTREAM.json, Data/wowsims/SOURCE.json, tests/fixtures) and changing
+# them is its own decision.
+exclude: '^(Libs/|LibsAugment/|Fonts/|Assets/.*\.(tga|blp|png)$|textures/|tools/vendor/|tests/fixtures/|Data/wowsims/)'
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:
+      # These two rewrite files. A few files predate them (a missing final newline, an extra blank line at the end)
+      # and other suites hash their bytes, so they stay as they are; every other file, and every new one, is held to it.
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
+        exclude: &whitespace_legacy '^(\.github/|Assets/Controls/.*\.svg$|init\.lua$|locales\.xml$|LICENSE$|TODO$|constants\.lua$|globals\.lua$|custom_casting_remain\.txt$|docs/architecture/condition-modernization-audit\.md$)'
       - id: end-of-file-fixer
+        exclude: *whitespace_legacy
       - id: check-yaml
       - id: check-json
       - id: check-xml
@@ -35,6 +40,8 @@ repos:
         args: ['--maxkb=2048']
       - id: check-merge-conflict
       - id: detect-private-key
+        # The tests of tools/precommit_hygiene.py quote key headers on purpose.
+        exclude: '^tools/test_devtools\.py$'
       - id: check-case-conflict
       - id: check-symlinks
       - id: mixed-line-ending

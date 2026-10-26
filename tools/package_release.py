@@ -42,7 +42,7 @@ SUPPORTED_CLIENTS = {
     11509: 'Classic Era / Season of Discovery 1.15.9',
     20506: 'TBC Anniversary 2.5.6',
     30405: 'Wrath of the Lich King Classic 3.4.5',
-    38002: 'Titan (Wrath) 3.80.2',
+    38002: 'Wrath Titan Reforged 3.80.2',
     40402: 'Cataclysm Classic 4.4.2',
     50504: 'Mists of Pandaria Classic 5.5.4',
     120105: 'Retail (Midnight) 12.1.5',

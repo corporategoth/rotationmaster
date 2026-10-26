@@ -51,7 +51,7 @@ SECRET_PATTERNS = [
      re.compile(r'(?i)\b(?:password|passwd|secret|api[_-]?key)\b["\']?\s*[:=]\s*["\'][^"\'$\s{<%*]{12,}["\']')),
 ]
 # Files whose text legitimately discusses credentials (this guard, the docs that name the secrets, the fixtures).
-SECRET_SKIP = ('tools/precommit_hygiene.py', 'Libs/', 'Locales/', 'tests/', 'Assets/', 'Fonts/')
+SECRET_SKIP = ('tools/precommit_hygiene.py', 'tools/test_devtools.py', 'Libs/', 'Locales/', 'tests/', 'Assets/', 'Fonts/')
 LF_ONLY = ('.lua', '.toc', '.xml', '.py', '.md', '.yml', '.yaml', '.txt', '.json')
 LF_SKIP = ('Libs/', 'LibsAugment/', 'Fonts/', 'tests/fixtures/', 'tools/vendor/')
 
