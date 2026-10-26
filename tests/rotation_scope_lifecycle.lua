@@ -2,6 +2,7 @@ local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite();local mak
 local function clone(v) if type(v)~='table' then return v end;assert(not getmetatable(v));local r={};for k,c in pairs(v) do r[k]=clone(c) end;return r end
 local function fixture(saved,class,name)
     class=class or 'SHAMAN';name=name or 'A';local env=setmetatable({ScopeDB=saved},{__index=_G});env._G=env
+    dofile('tests/fixtures/tbc_player_env.lua')(env)
     local scripts={};env.CreateFrame=function() return {RegisterEvent=function() end,SetScript=function(_,e,fn) scripts[e]=fn end} end
     env.UnitFactionGroup=function() return 'Horde' end;env.GetLocale=function() return 'enUS' end;env.UnitClass=function() return class,class end
     env.UnitRace=function() return 'Orc','Orc' end;env.GetRealmName=function() return 'Realm' end;env.UnitNameUnmodified=function() return name end
@@ -12,7 +13,7 @@ local function fixture(saved,class,name)
     env.LibStub=false;load('Libs/LibStub/LibStub.lua');load('Libs/CallbackHandler-1.0/CallbackHandler-1.0.lua');load('Libs/AceDB-3.0/AceDB-3.0.lua')
     env.LibStub:NewLibrary('AceLocale-3.0',1).GetLocale=function() return setmetatable({},{__index=function(_,k) return k end}) end
     a.db=env.LibStub('AceDB-3.0'):New('ScopeDB',{profile={enable=true},global={effects={}},char={bindings={}}},'Shared')
-    for _,p in ipairs({'Core/rotation_active.lua','Data/catalog.lua','Data/diff.lua','Data/rotation_store.lua','Core/rotation_references.lua','Core/rotation_library.lua','Core/rotation_scope.lua','Core/rotation_migration.lua','Core/rotation_lifecycle.lua'}) do load(p) end
+    for _,p in ipairs({'Platform/client.lua','Core/rotation_active.lua','Data/catalog.lua','Data/diff.lua','Data/rotation_store.lua','Core/rotation_references.lua','Core/rotation_library.lua','Core/rotation_scope.lua','Core/rotation_migration.lua','Core/rotation_lifecycle.lua'}) do load(p) end
     a.GetRotationContext=function() return {class=class,family='tbc',spec=0,level=11,actionContext='player',combatDataPolicy='probe'} end
     return a,env,scripts
 end

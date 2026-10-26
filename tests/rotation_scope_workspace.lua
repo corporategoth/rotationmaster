@@ -7,8 +7,9 @@ local function fixture()
     local context={family='tbc',class='SHAMAN',level=11,spec=0,actionContext='player',combatDataPolicy='probe'}
     local n=0;a.uuid=function() n=n+1;return 'new-'..n end
     local env=setmetatable({DEFAULT='Localized fallback',NEW='New',LibStub=function() return {GetLocale=function() return setmetatable({}, {__index=function(_,k) return k end}) end} end},{__index=_G})
+    dofile('tests/fixtures/tbc_player_env.lua')(env)
     local function load(path) local file=io.open(path);if file then file:close();local chunk=assert(loadfile(path));setfenv(chunk,env);chunk('rotationmaster',a) end end
-    for _,path in ipairs({'Data/catalog.lua','Data/diff.lua','Data/rotation_store.lua','Core/rotation_references.lua','Core/rotation_library.lua','Core/rotation_tags.lua','Core/imports.lua','Data/rotation_draft.lua','Core/rotation_editor.lua','Core/rotation_workspace.lua','Core/rotation_scope.lua'}) do load(path) end
+    for _,path in ipairs({'Platform/client.lua','Data/catalog.lua','Data/diff.lua','Data/rotation_store.lua','Core/rotation_references.lua','Core/rotation_library.lua','Core/rotation_tags.lua','Core/imports.lua','Data/rotation_draft.lua','Core/rotation_editor.lua','Core/rotation_workspace.lua','Core/rotation_scope.lua'}) do load(path) end
     a.GetRotationContext=function() return context end
     a.validateCondition=function() return true end
     return a,context,envelope,load
