@@ -156,12 +156,16 @@ jobs:
       # Hand-written notes (docs/release/notes/<tag>.md) are required for a stable tag; a beta falls back to a
       # generated summary. CHANGELOG.md goes into the package (the manual-changelog of .pkgmeta) and to CurseForge.
       - name: Release notes
+        env:
+          BETA_GUIDE_URL: ${{ vars.BETA_GUIDE_URL }}
         run: |
           set -euo pipefail
           require=()
           [ "${{ steps.plan.outputs.type }}" = "release" ] && require=(--require-curated)
-          python3 tools/release_notes.py --tag "${TAG}" "${require[@]}" --target curseforge --out CHANGELOG.md
-          python3 tools/release_notes.py --tag "${TAG}" "${require[@]}" --target gitea --out release-notes-gitea.md
+          guide=()
+          [ -n "${BETA_GUIDE_URL}" ] && guide=(--beta-url "${BETA_GUIDE_URL}")
+          python3 tools/release_notes.py --tag "${TAG}" "${require[@]}" "${guide[@]}" --target curseforge --out CHANGELOG.md
+          python3 tools/release_notes.py --tag "${TAG}" "${require[@]}" "${guide[@]}" --target gitea --out release-notes-gitea.md
           echo "--- Gitea release body ---"
           cat release-notes-gitea.md
 
@@ -174,7 +178,7 @@ jobs:
       # Pass one: build only (-d), no secrets in the environment. The zip it makes is the one that gets checked and the
       # one attached to the Gitea release.
       - name: Build the package with the BigWigs packager
-        run: bash tools/vendor/bigwigs-packager/release.sh -d -u -e -l -r .release
+        run: bash tools/vendor/bigwigs-packager/release.sh -d -u -e -l -r "${GITHUB_WORKSPACE}/.release"
 
       - name: Check the package
         run: |
@@ -214,7 +218,7 @@ jobs:
           set -euo pipefail
           echo "Uploading to: ${{ steps.plan.outputs.sites }}"
           # shellcheck disable=SC2086
-          bash tools/vendor/bigwigs-packager/release.sh ${{ steps.plan.outputs.packager }} -r .release
+          bash tools/vendor/bigwigs-packager/release.sh ${{ steps.plan.outputs.packager }} -r "${GITHUB_WORKSPACE}/.release"
 
       - name: Summary
         if: ${{ always() }}

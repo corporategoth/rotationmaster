@@ -55,7 +55,10 @@ def release_metadata():
     # Its MIT notice stays in the package: the shipped tables are derived from that data.
     # Generated files that are not for the game: Data/talent_trees.json is the website's copy of a Lua table,
     # Assets/Controls/*.svg are the sources of the shipped .tga controls.
-    ignored = ['tests', 'tools', 'docs', 'README.md', 'CONTRIBUTING.md', 'TODO', 'custom_casting_remain.txt',
+    # Development-only trees and files. The packager already skips every dotfile; naming them here keeps the intent in
+    # the file and lets tools/package_release.py --check state it as a rule.
+    ignored = ['tests', 'tools', 'docs', '.claude', '.gitea', '.github', '.pre-commit-config.yaml', '.gitattributes',
+               'README.md', 'CONTRIBUTING.md', 'TODO', 'custom_casting_remain.txt',
                'Modules/README.md',
                'Data/talent_trees.json', 'Data/wowsims/ids.json', 'Data/wowsims/kinds.json',
                'Data/wowsims/mapping.json', 'Data/wowsims/SOURCE.json', 'Assets/Controls/*.svg',

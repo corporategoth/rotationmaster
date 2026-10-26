@@ -23,6 +23,11 @@ ignore:
   - tests
   - tools
   - docs
+  - .claude
+  - .gitea
+  - .github
+  - .pre-commit-config.yaml
+  - .gitattributes
   - README.md
   - CONTRIBUTING.md
   - TODO

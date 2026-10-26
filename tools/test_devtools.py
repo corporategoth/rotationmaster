@@ -87,7 +87,7 @@ class Pkgmeta(unittest.TestCase):
         self.assertEqual(meta['changelog'], 'CHANGELOG.md')
         self.assertEqual(len(meta['move-folders']), 14)
         self.assertIn('RotationMaster_WowSims', meta['move-folders'].values())
-        for item in ('tests', 'tools', 'docs', 'README.md', 'Data/wowsims/mapping.json'):
+        for item in ('tests', 'tools', 'docs', '.claude', '.gitea', 'README.md', 'Data/wowsims/mapping.json'):
             self.assertIn(item, meta['ignore'])
         self.assertNotIn('Data/wowsims', meta['ignore'], 'the MIT notice in Data/wowsims ships')
 
@@ -261,6 +261,10 @@ class Notes(unittest.TestCase):
         self.assertNotIn('note to self', text)
         self.assertIn('test release', text)
         self.assertIn('compare/1.0.0...2.0.0-beta.1', text)
+        self.assertIn('beta guide (docs/release/BETA.md)', text)
+        self.assertEqual(R.main(['--root', str(root), '--tag', '2.0.0-beta.1', '--target', 'gitea', '--out', str(out),
+                                 '--beta-url', 'https://example.invalid/BETA']), 0)
+        self.assertIn('beta guide (https://example.invalid/BETA)', out.read_text())
         self.assertEqual(R.main(['--root', str(root), '--tag', '2.0.0', '--require-curated']), 1)
 
     def test_previous_tag_skips_prereleases_for_a_stable_tag(self):
@@ -316,6 +320,12 @@ class Fast(unittest.TestCase):
         commands = check_all.collect()
         self.assertGreater(len(commands), 500)
         self.assertEqual(commands[0][1], 'tests/verify.py')
+
+    def test_the_slow_and_known_failure_lists_name_real_commands(self):
+        labels = {check_all.label(command) for command in check_all.collect()}
+        for name in ('slow_tests.txt', 'known_failures.txt'):
+            listed = check_all.load_baseline(TOOLS / name)
+            self.assertEqual(sorted(listed - labels), [], f'{name} lists a command tools/check does not run')
 
     def test_baseline_file_ignores_comments(self):
         root = temp_dir(self)

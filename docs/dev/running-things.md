@@ -25,6 +25,7 @@ touch `core.hooksPath`).
 | `python3 tools/check_all.py` | The same command list, never stopping at the first failure; prints one line per command and the output of failures | minutes |
 | `python3 tools/check_all.py --runtime lua5.1` (or `luajit`, `python`) | Only the commands that use that runtime (CI runs the three as a matrix) | |
 | `python3 tools/check_all.py --baseline tools/known_failures.txt` | Lets the commands listed in that file fail (see below) | |
+| `python3 tools/check_all.py --skip-slow tools/slow_tests.txt` | Leaves out the six commands that take over 30 s each (what the pre-push hook runs) | about 15 min |
 | `python3 tools/fast_tests.py Core/foo.lua` | Only the suites named after the files you changed (the pre-commit hook) | seconds |
 | `python3 tools/test_devtools.py` | The tools' own tests (package builder, release notes, translation tools, workflow lint) | about 10 s |
 | `python3 tests/test_us_spelling.py` | American English in enUS, help text and Markdown | seconds |

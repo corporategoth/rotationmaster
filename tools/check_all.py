@@ -13,6 +13,7 @@ red rather than only what is first. The command list stays in one place.
   python3 tools/check_all.py --runtime python      only python (static checks and python suites)
   python3 tools/check_all.py --list                print the selected commands and exit
   python3 tools/check_all.py --baseline FILE       fail only on suites not listed in FILE (known red)
+  python3 tools/check_all.py --skip-slow FILE      leave out the commands listed in FILE (tools/slow_tests.txt)
 
 Output of a passing command is dropped; a failing command's output is printed in full after it.
 Exit status is 0 when nothing outside the baseline failed. Commands run serially.
@@ -81,6 +82,7 @@ def main(argv=None):
     parser.add_argument('--list', action='store_true', help='Print the selected commands and exit.')
     parser.add_argument('--timeout', type=int, default=3600, help='Seconds one command may run (default 3600).')
     parser.add_argument('--baseline', help='File of command labels (one per line) known to fail; they do not fail the run.')
+    parser.add_argument('--skip-slow', metavar='FILE', help='File of command labels to leave out (the slow ones; see tools/slow_tests.txt).')
     parser.add_argument('--json', dest='json_path', help='Write a machine-readable summary here.')
     parser.add_argument('--verbose', action='store_true', help='Print the output of passing commands too.')
     args = parser.parse_args(argv)
@@ -88,13 +90,14 @@ def main(argv=None):
     namespace = runpy.run_path(str(ROOT / 'tools' / 'check'), run_name='rotationmaster_tools_check')
     check_main = namespace['main']
     baseline = load_baseline(args.baseline)
+    slow = load_baseline(args.skip_slow)
     out_stream = sys.stdout
     results = []
     real_run = subprocess.run
     started = time.time()
 
     def selected(command):
-        return args.runtime == 'all' or runtime_of(command) == args.runtime
+        return (args.runtime == 'all' or runtime_of(command) == args.runtime) and label(command) not in slow
 
     def recording_run(command, **kwargs):
         if args.list:

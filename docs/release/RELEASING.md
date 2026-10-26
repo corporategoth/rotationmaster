@@ -30,7 +30,9 @@ Repository **Settings > Actions > Secrets** (never in a file; the workflows and 
 | `WOWI_API_TOKEN` | WoWInterface upload (addon 25079, from `## X-WoWI-ID`); stable tags and, with the variable, betas |
 | `RELEASE_TOKEN` | *Optional.* A Gitea access token with permission to write releases, if the workflow's built-in token cannot |
 
-Optional **variable** (Settings > Actions > Variables): `WOWI_UPLOAD_BETA=true`.
+Optional **variables** (Settings > Actions > Variables): `WOWI_UPLOAD_BETA=true` (also upload betas to WoWInterface) and
+`BETA_GUIDE_URL` (the public web address of `docs/release/BETA.md`, used in the test-release notice on CurseForge and the Gitea
+release; without it the notice names the file's path in the repository).
 
 Nothing is passed to GitHub: it is a push mirror, a release is a Gitea object, and GitHub receives it through the mirror and
 its webhook, never from CI. `.github/workflows/main.yml` is the old four-pass GitHub workflow; Gitea ignores it once
@@ -38,8 +40,9 @@ its webhook, never from CI. `.github/workflows/main.yml` is the old four-pass Gi
 on that side). Retire it or remove the GitHub secrets before the first tag.
 
 Runner assumptions (see `.gitea/workflows/test.yml`): the `ubuntu-latest` label is the Gitea Ubuntu image, root or sudo is
-available, apt and the internet work, and the runner takes one job at a time. A full release run is several tests jobs plus
-packaging; `default_corpus.lua` alone takes minutes.
+available, apt and the internet work, and the runner takes one job at a time. A full release run is three test jobs plus
+packaging and takes the better part of an hour (the whole suite was about 36 minutes on a loaded workstation, and
+`tests/default_corpus.lua` alone more than 15); the job timeouts are 120 minutes.
 
 ## Before tagging
 

@@ -161,11 +161,20 @@ def read_glossary(path=GLOSSARY_PATH):
     return glossary
 
 
+# Glossary terms that are also ordinary English words: in a sentence a hit says nothing, so they only count
+# when the string is short (a label, a button).
+COMMON_WORDS = {'Yes', 'No', 'Any', 'All', 'None', 'Always', 'AND', 'OR', 'NOT', 'Add', 'Check', 'Copy', 'Search',
+                'General', 'Name', 'Scale', 'Apply', 'Cancel', 'Reset', 'Edit', 'Delete', 'Enable', 'Disable'}
+
+
 def glossary_hits(english, locale, glossary):
     """Glossary terms that occur in an English string, with this locale's wording."""
     found = []
-    lowered = ' '.join(w.lower() for w in WORD.findall(strip_tokens(english)))
+    words = WORD.findall(strip_tokens(english))
+    lowered = ' '.join(w.lower() for w in words)
     for term, row in glossary.items():
+        if term in COMMON_WORDS and len(words) > 2:
+            continue
         if locale in row:
             needle = re.escape(term.lower())
             if re.search(rf'(?<![a-z]){needle}(?:s|es)?(?![a-z])', lowered):

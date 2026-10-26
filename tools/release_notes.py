@@ -157,7 +157,7 @@ def strip_markdown(text):
     return re.sub(r'^\s*[-*]\s+', '- ', text, flags=re.M)
 
 
-def render(tag, body, target, previous, url, kind):
+def render(tag, body, target, previous, url, kind, guide=None):
     link = None
     if url and tag:
         link = f'{url}/compare/{previous}...{tag}' if previous else f'{url}/commits/tag/{tag}'
@@ -167,7 +167,7 @@ def render(tag, body, target, previous, url, kind):
         parts.append(f'## {tag}{label}' if target == 'curseforge' else '')
         if kind != 'release':
             parts.append('**This is a test release.** Back up your saved variables before installing, and report problems '
-                         'as described in the beta guide (docs/release/BETA.md).')
+                         f'as described in the beta guide ({guide or "docs/release/BETA.md"}).')
     parts.append(body)
     if link:
         parts.append(f'Full changelog: {link}')
@@ -186,6 +186,7 @@ def main(argv=None):
     parser.add_argument('--require-curated', action='store_true', help='Fail when there is no hand-written notes file.')
     parser.add_argument('--include-noise', action='store_true', help='List internal commits too.')
     parser.add_argument('--changelog-url', help='Repository web URL for the compare link.')
+    parser.add_argument('--beta-url', help='Web address of the beta guide, for the test-release notice (default: its path in the repository).')
     parser.add_argument('--out', type=Path, help='Write here instead of standard output.')
     args = parser.parse_args(argv)
     root = args.root.resolve()
@@ -206,7 +207,7 @@ def main(argv=None):
         if not body:
             body = '- Internal changes only.'
     print(f'release_notes: {tag} ({release_type(tag)}), {source}', file=sys.stderr)
-    text = render(tag, body, args.target, previous, repo_url(args.changelog_url), release_type(tag))
+    text = render(tag, body, args.target, previous, repo_url(args.changelog_url), release_type(tag), args.beta_url)
     if args.out:
         args.out.write_text(text, encoding='utf-8')
     else:

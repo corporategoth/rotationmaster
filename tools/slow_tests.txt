@@ -1,0 +1,9 @@
+# Commands slower than about 30 seconds on a loaded workstation (measured 2026-10-26, whole suite about 36 minutes).
+# `tools/check_all.py --skip-slow tools/slow_tests.txt` leaves them out; the pre-push hook does, CI and the release workflow
+# run them. One command per line, as tools/check_all.py prints them. Refresh with `tools/check_all.py --json out.json`.
+lua5.1 tests/default_corpus.lua
+python3 tests/test_catalog_check.py
+lua5.1 tests/builtin_composition.lua
+luajit tests/builtin_composition.lua
+python3 tests/test_check.py
+lua5.1 tests/premade_style.lua
