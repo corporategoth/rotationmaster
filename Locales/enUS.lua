@@ -4013,6 +4013,17 @@ L["ranks in %s"] = true
 L["the number of ranks in %s"] = true
 L["Retail and Forever compare the rank of a talent in your active loadout. Pick it from the talents of the rotation's specialization (the Specialization list shows another specialization's, outside combat), or enter the node ID (and, for a choice node, the entry ID of the choice) to share a rotation. A choice node's entry has rank zero unless it is the chosen one, a hero talent outside your chosen hero tree has rank zero, and so does a talent of a specialization you are not playing. A talent picked from the list also remembers its spell, and is found again by it if Blizzard renumbers the talent tree. Ranks are read again after any talent change; an unreadable node is unavailable, including under NOT."] = true
 L["Talents of another specialization cannot be loaded during combat. A node ID entered below is kept and evaluated."] = true
+L["Show talent tree"] = true
+L["Opens the talent tree of the rotation's specialization. Click a talent to choose it for this condition."] = true
+L["Hero Talents"] = true
+L["The talent tree cannot be shown during combat."] = true
+L["Finish or discard the changes in your own talent window first."] = true
+L["The talent tree cannot be shown right now. Use the Talent list instead."] = true
+L["Click a talent to choose it for this condition."] = true
+L["Selected: %s"] = true
+L["Ranks: %d"] = true
+L["Choose one of the talents on this node."] = true
+L["Show talent tree opens the talent tree of the specialization shown: Blizzard's own talent window in view mode where the game lets Rotation Master drive it (it goes back to how it was when you pick a talent or close it), otherwise a tree Rotation Master draws. Click a talent to choose it; the Talent list follows. It cannot open during combat."] = true
 L["Forever is the exception: Talent tree is one of the three talent trees of your active loadout (in the order the talent window shows them); their points are read again after any talent change. Retail has no such trees."] = true
 
 -- Specialization and weapon type conditions (Conditions/specialization.lua, Conditions/equipment.lua).
