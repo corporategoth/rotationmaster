@@ -33,6 +33,39 @@ function addon:ShowNativeImportPreview(p,view,spec)
     end
     return d
 end
+-- The full content of an incoming rotation, read-only, in the rotation editor
+-- itself: header, specializations, switch condition, steps and cooldowns, as
+-- they are shown for a Built In. The editor works on a detached copy of the
+-- staged candidate (NewRotationPreviewWorkspace): nothing here can reach the
+-- candidate, the live profile or the rotation in the transfer window.
+function addon:ShowNativeImportContent(p,preview,spec)
+    local d=p.importContent
+    if not d then
+        d={frame=CreateFrame('Frame',nil,UIParent)};p.importContent=d;d.frame:SetSize(940,620);d.frame:SetPoint('CENTER');d.frame:SetFrameStrata('FULLSCREEN_DIALOG');d.frame:SetToplevel(true);d.frame:SetClampedToScreen(true);d.frame:EnableMouse(true);self:MakeWindowOpaque(d.frame)
+        d.title=d.frame:CreateFontString(nil,'OVERLAY','GameFontNormal');d.chrome=self:CreateWorkbenchDialogChrome(d.frame,d.title);d.close=self:CreateWorkbenchIconButton(d.frame,'close',L['Close']);d.close:SetPoint('TOPRIGHT',-5,-5);self:SetUIScript(d.close,'OnClick',function() d.frame:Hide() end)
+        d.host=CreateFrame('Frame',nil,d.frame);d.host:SetPoint('TOPLEFT',12,-34);d.host:SetSize(916,562)
+        function d:Clear()
+            local pane,workspace=self.pane,self.workspace;self.pane=nil;self.workspace=nil
+            if pane and pane.active then pane:Release() end
+            if workspace then workspace:Close() end
+        end
+        self:SetUIScript(d.frame,'OnHide',function() d:Clear() end);d.frame:Hide()
+    end
+    d:Clear();d.serial=(d.serial or 0)+1;local serial=d.serial
+    local workspace,why=self:NewRotationPreviewWorkspace(spec,preview);if not workspace then return nil,why end
+    local pane,problem=self:CreateRotationEditor(d.host,spec,workspace.id,nil,workspace);if not pane then workspace:Close();return nil,problem end
+    d.workspace=workspace;d.pane=pane
+    d.chrome:SetContext(L['Import preview'],L['Read-only'],self.pretty_name)
+    p.cleanups[#p.cleanups+1]=function() if d.serial==serial then d.frame:Hide() end end;d.frame:Show();self:RegisterWindowForEscape(d)
+    if self.BindTransferHelp then
+        local generation=p.generation
+        self:BindTransferHelp(d,{heading=L['Import preview'],brief=L['Help.Transfers.preview_view_brief'],sections={{title=L['Read-only'],text=L['Help.Transfers.preview_view']}},briefs={close=L['Help.Transfers.cancel']}},function()
+            return p.importContent==d and d.serial==serial and p.generation==generation and (not p.Valid or p:Valid(generation))
+                and d.workspace==workspace and not workspace.closed and d.pane==pane and pane.active
+        end)
+    end
+    return d
+end
 function addon:ShowRotationTransfer(spec,id)
     local codec=self:NewRotationCodec();local session=self.RotationData.NewImportSession(codec,self:GetImportValidationOptions())
     local source,exportError=self:GetRotationExportData(spec,id);local exported;if source then exported,exportError=codec:Encode(source) end
@@ -54,14 +87,24 @@ function addon:ShowRotationTransfer(spec,id)
     local options={valid=valid,canReplace=canReplace,selectedName=original and original.name or source and self:RotationDisplayName(source),fallbackName=L['Imported rotation'],requirePreview=true,
         help={heading=L['Import/Export Rotation'],brief=L['Help.Transfers.rotation_brief'],briefs=self:TransferHelpBriefs(),sections={{title=L['Import/Export'],text=L['Help.Transfers.rotation']},{title=L['Preview import'],text=L['Help.Transfers.rotation_preview']},{title=L['Applies to'],text=L['Copies belong to your Class unless This character is selected. Replacement keeps its original owner.']}}}}
     options.originalName=function(text) local decoded=codec:Decode(text);local value=decoded and decoded.value;if type(value)=='table' then return self:RotationDisplayName(value) end end
-    options.invalidate=function(d) if not valid() or dialog and (d~=dialog or d.options~=options) then return end;candidate=nil;session:Clear();d.apply:Disable();d.inspect:Disable();d.status:SetText(L['Text changed. Preview again before importing.']);if p.importPreview then p.importPreview.frame:Hide() end end
+    options.invalidate=function(d) if not valid() or dialog and (d~=dialog or d.options~=options) then return end;candidate=nil;session:Clear();d.apply:Disable();d.inspect:Disable();d.status:SetText(d.mode=='replace' and L['Text changed. Compare again before importing.'] or L['Text changed. Preview again before importing.']);if p.importPreview then p.importPreview.frame:Hide() end;if p.importContent then p.importContent.frame:Hide() end end
     options.preview=function(d)
         if not valid() then return end
         local why;candidate,why=session:Stage(d.input:GetText());d.apply:Disable();d.inspect:Disable()
         if not candidate then d.status:SetText(string.format(L['Import preview unavailable: %s'],why));return end
         d.inspect:Enable();local ready,reason=session:GetReady(candidate.token)
         d.status:SetText(ready and L['Ready to import. Choose replacement or a named copy.'] or string.format(L['This import cannot be applied: %s'],reason));if ready then d.apply:Enable() end
-        local own=original or source and (source.body or source) or {rotation={},cooldowns={}};local view=session:Compare(candidate.token,own,self.RotationData.GetRotationTags(source));if view then self:ShowNativeImportPreview(p,view,spec) end
+        if p.importPreview then p.importPreview.frame:Hide() end;if p.importContent then p.importContent.frame:Hide() end
+        if d.mode=='replace' then
+            -- Replacing: what would change in the selected rotation.
+            local own=original or source and (source.body or source) or {rotation={},cooldowns={}};local view=session:Compare(candidate.token,own,self.RotationData.GetRotationTags(source));if view then self:ShowNativeImportPreview(p,view,spec) end
+        else
+            -- A new copy: nothing to compare with, so everything that would be created.
+            local incoming,missing=session:Preview(candidate.token)
+            local shown,problem
+            if incoming then local ok,result,reason=pcall(self.ShowNativeImportContent,self,p,incoming,spec);if ok then shown,problem=result,reason else problem=result end else problem=missing end
+            if not shown and valid() then d.status:SetText((d.status:GetText() or '')..'\n'..string.format(L['This import cannot be shown in full (%s). Use Check import for details.'],tostring(problem))) end
+        end
     end
     options.inspect=function()
         if not valid() or not candidate then return end;local object=candidate.kind=='envelope' and candidate.value or {body=candidate.value};local report=self.RotationData.DiffRotations({},object)
@@ -87,7 +130,7 @@ function addon:ShowRotationTransfer(spec,id)
         dialog.classScope:SetChecked(not dialog.scope:GetChecked());if dialog.mode=='new' then dialog.classScope:Enable() else dialog.classScope:Disable() end
     end
     local destination=dialog.destination:GetScript('OnClick')
-    self:SetUIScript(dialog.destination,'OnClick',function(...) if valid() and dialog.options==options then destination(...);if dialog.mode=='new' then dialog.scope:SetChecked(false) end;scopeState() end end)
+    self:SetUIScript(dialog.destination,'OnClick',function(...) if valid() and dialog.options==options then destination(...);if dialog.mode=='new' then dialog.scope:SetChecked(false) end;scopeState();if p.importPreview then p.importPreview.frame:Hide() end;if p.importContent then p.importContent.frame:Hide() end end end)
     self:SetUIScript(dialog.scope,'OnClick',function() if valid() and dialog.options==options and dialog.mode=='new' and context.character then dialog.scope:SetChecked(true);scopeState() end end)
     self:SetUIScript(dialog.classScope,'OnClick',function() if valid() and dialog.options==options and dialog.mode=='new' then dialog.scope:SetChecked(false);scopeState() end end)
     dialog.scope.tooltip=L['Copies belong to your Class unless This character is selected. Replacement keeps its original owner.']

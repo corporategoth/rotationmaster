@@ -52,12 +52,13 @@ function addon:BindTransferHelp(d,metadata,ownerValid)
     if self.BindWorkbenchHelp then
         lease.cleanups[#lease.cleanups+1]=self:BindWorkbenchHelp(d.help,{brief=d.help.tooltip,valid=current})
         for key,brief in pairs(metadata.briefs or {}) do local control=d[key];if control then
+            if type(brief)=='function' then local describe=brief;brief=function() return describe(d) end end
             lease.cleanups[#lease.cleanups+1]=self:BindWorkbenchHelp(control,{brief=brief,valid=current})
         end end
     end
 end
 function addon:TransferHelpBriefs()
-    return {copy=L['Help.Transfers.copy'],clear=L['Help.Transfers.clear'],apply=L['Help.Transfers.apply'],cancel=L['Help.Transfers.cancel'],close=L['Help.Transfers.cancel'],destination=L['Help.Transfers.destination'],name=L['Help.Transfers.name'],preview=L['Help.Transfers.preview'],inspect=L['Help.Transfers.inspect']}
+    return {copy=L['Help.Transfers.copy'],clear=L['Help.Transfers.clear'],apply=L['Help.Transfers.apply'],cancel=L['Help.Transfers.cancel'],close=L['Help.Transfers.cancel'],destination=L['Help.Transfers.destination'],name=L['Help.Transfers.name'],preview=function(d) return d.mode=='replace' and d.options and d.options.canReplace and L['Help.Transfers.compare'] or L['Help.Transfers.preview'] end,inspect=L['Help.Transfers.inspect']}
 end
 -- Export and import strings are Base64: a fixed-pitch face keeps the 76-character
 -- lines aligned and readable. Shells that show prose (reports, output) keep the
@@ -163,7 +164,7 @@ function addon:ShowSettingsTextTransfer(p,title,text,apply,options)
         d.nameLabel=d.frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');d.nameLabel:SetPoint('TOPLEFT',232,-62);d.nameLabel:SetSize(54,24);d.nameLabel:SetText(L['Name'])
         d.name=addon:CreateWorkbenchEditBox(d.frame);d.name:SetPoint('TOPLEFT',290,-62);d.name:SetSize(268,24);d.name:SetMaxLetters(256)
         d.status=d.frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');d.status:SetPoint('TOPLEFT',12,-346);d.status:SetSize(546,32);d.status:SetWordWrap(true);d.status:SetJustifyH('LEFT')
-        d.preview=addon:CreateWorkbenchButton(d.frame,L['Preview import'],90);d.preview:SetPoint('BOTTOMLEFT',152,28);d.inspect=addon:CreateWorkbenchButton(d.frame,L['Inspect import'],90);d.inspect:SetPoint('BOTTOMLEFT',248,28)
+        d.preview=addon:CreateWorkbenchButton(d.frame,L['Preview import'],90);d.preview:SetPoint('BOTTOMLEFT',152,28);d.inspect=addon:CreateWorkbenchButton(d.frame,L['Check import'],90);d.inspect:SetPoint('BOTTOMLEFT',d.preview,'BOTTOMRIGHT',6,0)
         local function hide() d.frame:Hide() end
         addon:SetUIScript(d.cancel,'OnClick',hide);addon:SetUIScript(d.close,'OnClick',hide);addon:SetUIScript(d.frame,'OnHide',function() d.input:ClearFocus();if d.options and d.options.onClose then d.options.onClose() end end)
         addon:SetUIScript(d.input,'OnSizeChanged',function() d.scroll:UpdateWorkbenchScroll() end)
@@ -179,8 +180,18 @@ function addon:ShowSettingsTextTransfer(p,title,text,apply,options)
     end
     d.chrome:SetContext(title,L['Import/Export'],addon.pretty_name or L['Rotation Master']);d.input:SetText(addon:FormatExportText(text))
     d.options=options;d.mode=options and options.canReplace and 'replace' or 'new';d.nameDirty=false
+    -- The first button follows the destination: replacing an entry compares the
+    -- import with it, a new copy previews the import in full. The second one
+    -- always checks the import for problems. A button grows with its label.
+    local function labels()
+        if not options.requirePreview then return end
+        local compare=d.mode=='replace' and options.canReplace and true or false
+        d.preview:SetText(compare and L['Compare import'] or L['Preview import']);d.preview.tooltip=compare and L['Help.Transfers.compare'] or L['Help.Transfers.preview']
+        d.inspect:SetText(L['Check import']);d.inspect.tooltip=L['Help.Transfers.inspect']
+        for _,button in ipairs({d.preview,d.inspect}) do local label=button.GetFontString and button:GetFontString();if label and label.GetStringWidth then button:SetWidth(math.max(90,math.ceil(label:GetStringWidth() or 0)+16)) end end
+    end
     local function destination()
-        d.destination:SetText(L['Replace selected entry']);d.destination:SetChecked(d.mode=='replace');if options.canReplace then d.destination:Enable() else d.destination:Disable() end;d.name:EnableMouse(d.mode=='new');d.name:SetTextColor(d.mode=='new' and 1 or .5,d.mode=='new' and 1 or .5,d.mode=='new' and 1 or .5)
+        labels();d.destination:SetText(L['Replace selected entry']);d.destination:SetChecked(d.mode=='replace');if options.canReplace then d.destination:Enable() else d.destination:Disable() end;d.name:EnableMouse(d.mode=='new');d.name:SetTextColor(d.mode=='new' and 1 or .5,d.mode=='new' and 1 or .5,d.mode=='new' and 1 or .5)
         if d.mode=='replace' then d.name:SetText(options.selectedName or '') else d.name:SetText(d.newName or options.fallbackName or '') end
     end
     local function preview()

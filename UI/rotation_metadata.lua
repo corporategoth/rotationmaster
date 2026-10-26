@@ -123,7 +123,7 @@ function addon:InstallRotationMetadata(pane)
         if source then sources(source.envelope) end
         local reserved=pane.workspace.reserved or {}
         for _,kind in ipairs({'origins','imports','comparisons'}) do local entry=reserved[kind];if type(entry)=='table' then sources(entry.manifest) end end
-        self.note:SetText(readOnly and L['Built In rotation: duplicate it to edit its metadata.'] or L['Apply updates the draft. Apply the rotation to save it.'])
+        self.note:SetText(readOnly and (pane.workspace.preview and L['Import preview: the metadata is shown as imported and cannot be edited here.'] or L['Built In rotation: duplicate it to edit its metadata.']) or L['Apply updates the draft. Apply the rotation to save it.'])
         if type(pane.workspace:Snapshot().metadata)~='table' and pane.workspace:Snapshot().metadata~=nil then self.note:SetText(string.format(L['Saved metadata is invalid (%s). Editing these fields replaces it.'],tostring(pane.workspace:Snapshot().metadata))) end
         self.chrome:SetContext(pane:RotationDisplayName(),L['Metadata'],pane:RotationDisplayName());self:Layout(table.concat(lines,'\n\n'));scroll.workbenchBar:SetValue(0);descriptionScroll.workbenchBar:SetValue(0)
         for _,input in pairs(self.fields) do input:EnableMouse(not readOnly) end

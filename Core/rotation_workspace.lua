@@ -221,6 +221,41 @@ function addon:GetRotationEditWorkspace(spec,id)
     return workspace
 end
 
+-- A detached, read-only workspace for an incoming rotation (an import preview).
+-- The editor draws it exactly as it draws a Built In, but it belongs to no
+-- profile: it is a private copy of the candidate, never cached, listed or
+-- resolved by reference, and every write is refused. Close it when the window
+-- that shows it closes.
+function addon:NewRotationPreviewWorkspace(spec,preview)
+    if type(spec)~='number' or type(preview)~='table' or type(preview.body)~='table' then return nil,'no-previewable-body' end
+    local body,why=data.CopyData(preview.body);if not body then return nil,why.code end
+    local manifest;if preview.manifest~=nil then manifest,why=data.CopyData(preview.manifest);if not manifest then return nil,why.code end end
+    local session,problem=self:NewRotationEditSession(spec,body,{readOnly=true,newId=self.uuid});if not session then return nil,problem end
+    local workspace={spec=spec,id='import-preview',canonicalId='import-preview',readOnly=true,preview=true,fallback=false,pending=false,
+        title=type(body.name)=='string' and body.name or '',description=type(body.description)=='string' and body.description or '',
+        original=data.CopyData(body),session=session,reserved=manifest and {imports={manifest=manifest}} or {}}
+    function workspace:ValidTarget() return not self.closed end
+    function workspace:Snapshot() return self.session:Snapshot() end
+    function workspace:Metadata() return {id=self.id,kind='preview',metadata=data.CopyData(self:Snapshot().metadata or {}),source=data.CopyData(self.reserved)} end
+    function workspace:IsDirty() return false end
+    function workspace:Command() return nil,'readonly-rotation' end
+    function workspace:Apply() return nil,'readonly-rotation' end
+    function workspace:Discard() return nil,'readonly-rotation' end
+    function workspace:Close() if not self.closed then self.closed=true;self.session:Cancel() end end
+    function workspace:ConditionEditorTarget(target)
+        local function condition()
+            local snapshot=self.session:Snapshot()
+            if type(target)=='table' and target.kind=='switch' then return snapshot.switch or {} end
+            local tree=data.IndexRotationSteps(snapshot);local row=tree and tree.byId[target]
+            return row and (row.step.conditions or {})
+        end
+        local baseline=condition();if not baseline then return nil,'missing-rotation-step' end
+        return {condition=data.CopyData(baseline),readOnly=true,valid=function() return not self.closed and equal(baseline,condition()) end,
+            commit=function() return nil,'readonly-rotation' end}
+    end
+    return workspace
+end
+
 function addon:GetRotationWorkspace(spec,value)
     local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
     local reference=scoped and scoped:Resolve(spec,value)

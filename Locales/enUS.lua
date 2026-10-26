@@ -1007,6 +1007,8 @@ L["Automatic switching would choose: %s"] = true
 L["%d Built In disabled: %s"] = true
 L["Read-Only"] = true
 L["Built In: it cannot be edited. Duplicate makes your own copy; Enabled and Priority are your settings for this profile."] = true
+L["Import preview: this is the incoming rotation, read-only. Nothing is saved until you click Import."] = true
+L["Import preview: the metadata is shown as imported and cannot be edited here."] = true
 L["level %d+"] = true
 L["Season of Mastery"] = true
 L["Season of Discovery"] = true
@@ -1276,10 +1278,14 @@ L["Name for imported copy"] = true
 L["Imported rotation"] = true
 L["Copy export"] = true
 L["Preview import"] = true
+L["Compare import"] = true
+L["Import preview"] = true
 L["Import as new rotation"] = true
 L["Export unavailable: %s"] = true
 L["Preview a pasted rotation before importing it."] = true
 L["Text changed. Preview again before importing."] = true
+L["Text changed. Compare again before importing."] = true
+L["This import cannot be shown in full (%s). Use Check import for details."] = true
 L["Import preview unavailable: %s"] = true
 L["Ready to import as a new copy."] = true
 L["This import cannot be applied: %s"] = true
@@ -1289,7 +1295,7 @@ L["Incoming rotation"] = true
 
 L["Always"] = true
 L["Condition reference (code is not run)."] = true
-L["Inspect import"] = true
+L["Check import"] = true
 
 L["Export Built In"] = true
 
@@ -3236,9 +3242,9 @@ L["Help.Transfers.destination"] = "Choose a new named copy or replacement of the
 
 L["Help.Transfers.name"] = "Set the name for a new copy. Replacement keeps the selected entry as its destination."
 
-L["Help.Transfers.preview"] = "Decode and validate the current text for review. Preview does not import it."
+L["Help.Transfers.preview"] = "Preview import shows everything this import contains, read-only, in the same view the rotation editor uses. Nothing is saved. Import is enabled only for a ready preview; changing the text requires another one."
 
-L["Help.Transfers.inspect"] = "Show read-only validation details for the current preview."
+L["Help.Transfers.inspect"] = "Check import lists problems with the text instead of its content: why it cannot be imported and any unsupported data. It does not import or change anything."
 
 L["Help.Transfers.profile_brief"] = "Explain profile import destinations and when changes are saved."
 
@@ -3266,11 +3272,17 @@ L["Help.Transfers.rotation_brief"] = "Explain rotation preview, destination, and
 
 L["Help.Transfers.rotation"] = "Copy the text to export the current rotation, or paste a rotation to import. Choose replacement of the selected editable rotation or a new named copy. Class and This character set the owner of a new copy; replacement keeps the original owner. The imported rotation is opened for editing after a successful import."
 
-L["Help.Transfers.rotation_preview"] = "Preview import validates the current text and shows an incoming comparison. It does not save the rotation. Import is enabled only for a ready preview; changing the text requires another preview. Inspect import shows read-only diagnostics, including unsupported data that prevents import."
+L["Help.Transfers.rotation_preview"] = "With Replace selected entry ticked, the button reads Compare import and shows what would change in that rotation. For a new named copy it reads Preview import and shows everything the import contains, read-only, as the rotation editor shows it. Neither saves anything. Import is enabled only for a ready preview or comparison; changing the text requires another one. Check import shows read-only diagnostics, including unsupported data that prevents import."
 
 L["Help.Transfers.comparison_brief"] = "Explain this read-only incoming rotation comparison."
 
 L["Help.Transfers.comparison"] = "This view compares the saved or exported rotation with the current incoming preview. It does not apply changes. Close it to choose the destination and import from the transfer dialog. A changed preview, closed owner, or changed profile retires this comparison Help."
+
+L["Help.Transfers.compare"] = "Compare import shows what would change in the rotation you are replacing, side by side with its current content. Nothing is saved. Import is enabled only for a ready comparison; changing the text requires another one."
+
+L["Help.Transfers.preview_view_brief"] = "Explain this read-only preview of the incoming rotation."
+
+L["Help.Transfers.preview_view"] = "This view shows the rotation as it would be imported: name, specializations, switch condition, steps and cooldowns. It is read-only and works on a copy; it saves and changes nothing. Close it to choose the destination and import from the transfer dialog. A changed text, closed transfer or changed profile retires this Help."
 
 L["Destination"] = "Destination"
 
