@@ -99,7 +99,7 @@ function addon:ShowConditionSourceTest(owner,options)
             widget.SetCallback=function(control,event,callback) if type(callback)=='function' then return record.setCallback(control,event,guarded(callback)) end end
             for name,callback in pairs(callbacks) do if type(callback)=='function' then widget:SetCallback(name,callback) end end
         end
-        if record.addChild then widget.AddChild=function(control,child,...) if not attached() then return end;d:Guard(child);return record.addChild(control,child,...) end end
+        if record.addChild then widget.AddChild=function(control,child,...) if child==nil or not attached() then return end;d:Guard(child);return record.addChild(control,child,...) end end
         for _,child in ipairs(widget.children or {}) do self:Guard(child) end
     end
     function d:Invoke(operation,callback,...)

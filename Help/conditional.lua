@@ -38,11 +38,10 @@ function addon.layout_condition_spellwidget_help(frame)
         "selected.  You can drag a new spell from your spell book or action bars into this icon slot to " ..
         "replace your selected spell."))
 
-    if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+    if addon:ClientHasSpellRanks() then
         group:AddChild(Gap())
-        group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Rank"] .. color.RESET .. " - " ..
-                "If enabled, use a specific rank of the spell in question.  This is normally only used for " ..
-                "things like downranked spells."))
+        group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Use this exact spell rank"] .. color.RESET .. " - " ..
+                L["Unticked (the default), any rank of the spell matches. Ticked, only the rank you chose matches."]))
     end
 
     group:AddChild(Gap())
@@ -123,9 +122,14 @@ function addon.layout_condition_unitwidget_help(frame)
 end
 function addon.layout_condition_castspell_help(frame)
     frame:AddChild(Gap())
-    frame:AddChild(CreateText(L['A spell picked in the editor is matched by its spell ID, so the condition works on every client language. Any rank of that spell matches unless Use this exact spell rank is ticked. Conditions saved with a spell name keep matching by that name. If the client cannot read the spell being cast, the condition is unavailable, including under NOT.']))
+    if addon:ClientHasSpellRanks() then
+        frame:AddChild(CreateText(L['A spell picked in the editor is matched by its spell ID, so the condition works on every client language. Any rank of that spell matches unless Use this exact spell rank is ticked. Conditions saved with a spell name keep matching by that name. If the client cannot read the spell being cast, the condition is unavailable, including under NOT.']))
+    else
+        frame:AddChild(CreateText(L['A spell picked in the editor is matched by its spell ID, so the condition works on every client language. Conditions saved with a spell name keep matching by that name. If the client cannot read the spell being cast, the condition is unavailable, including under NOT.']))
+    end
 end
 function addon.layout_condition_aurarank_help(frame)
+    if not addon:ClientHasSpellRanks() then return end
     frame:AddChild(Gap())
-    frame:AddChild(CreateText(color.BLIZ_YELLOW..L['Match all ranks']..color.RESET..' - '..L['For a numeric spell selection, also recognize auras with the same readable localized spell name. Exact IDs remain the default. Spell names already match by name. Unavailable metadata or restricted aura identity stays unavailable, including under NOT. Different spells sharing a name can match; use exact IDs when that distinction matters.']))
+    frame:AddChild(CreateText(color.BLIZ_YELLOW..L['Use this exact spell rank']..color.RESET..' - '..L['Unticked, any rank of the spell matches: a numeric spell selection also recognizes auras with the same readable localized spell name. Ticked, only the exact spell ID you chose matches. Conditions saved before this option keep the exact ID until you untick it. Spell names already match by name. Unavailable metadata or restricted aura identity stays unavailable, including under NOT. Different spells sharing a name can match; tick the option when that distinction matters.']))
 end

@@ -134,7 +134,7 @@ function addon:BuildRotationCardFields(owner,card,model,alive)
         return button
     end
     local function flag(key,caption,value,commit)
-        local control=acquire('flags',function() return addon:CreateWorkbenchCheckBox(frame,'',fieldWidth) end);control:ClearAllPoints();control:SetPoint('TOPLEFT',0,-y);control:SetText(caption);control:SetChecked(value==true);controls[key]=control;controls[#controls+1]=control;y=y+24
+        local control=acquire('flags',function() return addon:CreateWorkbenchCheckBox(frame,'',fieldWidth) end);control:ClearAllPoints();control:SetPoint('TOPLEFT',0,-y);control:SetText(caption);control.tooltip=nil;control:SetChecked(value==true);controls[key]=control;controls[#controls+1]=control;y=y+24
         addon:SetUIScript(control,'OnClick',function() if active() then commit(not value) end end)
         if readOnly then control:Disable() else control:Enable() end;return control
     end
@@ -171,9 +171,12 @@ function addon:BuildRotationCardFields(owner,card,model,alive)
             if id and id>0 and id%1==0 then patch({action=id}) else patch(nil,{'action'}) end
         end)
         field:SetDisabled(readOnly);field.frame:Show();local spellY=y
-        local exact=flag('ranked',L['Use this exact spell rank'],step.ranked,function(value) patch({ranked=value}) end)
-        local height,inputWidth=addon:LayoutWorkbenchFieldOption(field.frame,exact,frame,44,spellY,fieldWidth-44)
-        field:SetWidth(inputWidth);y=spellY+height+4
+        if addon:ClientHasSpellRanks() then
+            local exact=flag('ranked',L['Use this exact spell rank'],step.ranked,function(value) patch({ranked=value}) end)
+            exact.tooltip=L['Unticked, any rank of the spell matches. Ticked, only the rank you chose matches.']
+            local height,inputWidth=addon:LayoutWorkbenchFieldOption(field.frame,exact,frame,44,spellY,fieldWidth-44)
+            field:SetWidth(inputWidth);y=spellY+height+4
+        else field:SetWidth(fieldWidth-44);y=spellY+28 end
     elseif step.type=='stop' then
         flag('suppress',L['Also suppress auto-attack (Attack or Shoot)'],step.suppress_attack,function(value) patch({suppress_attack=value}) end)
     elseif step.type=='item' then

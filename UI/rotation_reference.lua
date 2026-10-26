@@ -57,7 +57,7 @@ function addon:CreateRotationStepCard(parent,step,spec,position,kind,status)
     else label(card,L["Unknown action type"]) end
     if step.use_name~=nil then label(card,step.use_name and L["Custom step name"] or L["Automatic step name"]) end
     if step.disabled then label(card,L["Disabled"]) end
-    if step.ranked then label(card,L["Use this exact spell rank"]) end
+    if step.ranked and addon:ClientHasSpellRanks() then label(card,L["Use this exact spell rank"]) end
     if step.name and step.name~="" and step.type~="item" then label(card,step.name) end
     self:CreateConditionReference(card,step.conditions,spec)
     return card

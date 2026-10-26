@@ -1364,7 +1364,7 @@ L["%d of %d rotations"] = true
 
 -- Totem observation semantics
 L["The elemental slot to check: Fire, Earth, Water or Air. Empty, zero-duration and expired totems do not match."] = true
-L["The active totem to check. Unranked checks match its localized name across ranks. Exact-rank checks require the native spell ID; name-only observations are unavailable."] = true
+L["The active totem to check. Unticked, Use this exact spell rank matches its localized name across ranks. Ticked, it requires the native spell ID; name-only observations are unavailable."] = true
 L["Compare the active totem's remaining seconds with this amount. An absent or expired totem does not match; unavailable observations stay unavailable."] = true
 
 L["Stop"] = true
@@ -1708,7 +1708,7 @@ L["Drag a card into one highlighted gap, or use the left-side Up / Down arrows. 
 L["Drag the title bar to move. Set Scale with the top-left slider; child windows follow it. The question mark toggles Help. Close with X, Escape, or right-click in the content area."] = true
 L["Edit the description, author, realm, email, website and version. Source citations remain separate from your attribution. Use changes updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values."] = true
 L["Editing settings"] = true
-L["Expand an announcement to choose its action, event, channel and text. Spell fields search the catalog; exact rank limits matching to that rank. Enabled toggles the announcement. Add announcement creates a new entry after an action is selected."] = true
+L["Expand an announcement to choose its action, event, channel and text. Spell fields search the catalog; where the client has spell ranks, Use this exact spell rank limits matching to the rank you chose. Enabled toggles the announcement. Add announcement creates a new entry after an action is selected."] = true
 L["Groups and toggles"] = true
 L["Help and saving"] = true
 L["Highlight effects"] = true
@@ -1862,7 +1862,7 @@ L['Built In preferences'] = true
 
 L['Edits stay in a draft until Apply. Cancel restores saved settings. Changing tabs or closing asks to apply pending changes; Cancel on the page discards them. Effect previews do not save changes. Action-bar binding operations are explicit and immediate.'] = true
 
-L['Expand an announcement to choose its action, event, channel and text. Spell fields search the catalog; exact rank limits matching to that rank. Enabled toggles the announcement. New opens a draft with Apply and Cancel. Audible replaces text with sound selection and Play. Duplicate, Import/Export and Compare are below the list; imports are validated and never execute code. Apply saves changes.'] = true
+L['Expand an announcement to choose its action, event, channel and text. Spell fields search the catalog; where the client has spell ranks, Use this exact spell rank limits matching to the rank you chose. Enabled toggles the announcement. New opens a draft with Apply and Cancel. Audible replaces text with sound selection and Play. Duplicate, Import/Export and Compare are below the list; imports are validated and never execute code. Apply saves changes.'] = true
 
 L['Ignore mana'] = true
 
@@ -1997,9 +1997,12 @@ L["Higher numbers are tried first; your rotations and Built Ins compete on prior
 L["Invalid switch priority for %s:%s; explicit repair resets it to zero."] = true
 
 -- Rank-aware aura families.
-L["Match all ranks"] = true
 L["%s (any rank)"] = true
-L["For a numeric spell selection, also recognize auras with the same readable localized spell name. Exact IDs remain the default. Spell names already match by name. Unavailable metadata or restricted aura identity stays unavailable, including under NOT. Different spells sharing a name can match; use exact IDs when that distinction matters."] = true
+L["Unticked, any rank of the spell matches: a numeric spell selection also recognizes auras with the same readable localized spell name. Ticked, only the exact spell ID you chose matches. Conditions saved before this option keep the exact ID until you untick it. Spell names already match by name. Unavailable metadata or restricted aura identity stays unavailable, including under NOT. Different spells sharing a name can match; tick the option when that distinction matters."] = true
+L["Unticked, any rank of the spell matches. Ticked, only the rank you chose matches."] = true
+L["Unticked (the default), any rank of the spell matches. Ticked, only the rank you chose matches."] = true
+L["Unticked (the default), any rank of the spell matches. Ticked, only the rank you chose matches, and that rank must be on your action bars."] = true
+L["A spell picked in the editor is matched by its spell ID, so the condition works on every client language. Conditions saved with a spell name keep matching by that name. If the client cannot read the spell being cast, the condition is unavailable, including under NOT."] = true
 
 -- Spell ID identity for casts, channels and forms.
 L["A spell picked in the editor is matched by its spell ID, so the condition works on every client language. Any rank of that spell matches unless Use this exact spell rank is ticked. Conditions saved with a spell name keep matching by that name. If the client cannot read the spell being cast, the condition is unavailable, including under NOT."] = true
@@ -2065,7 +2068,7 @@ L["Help.Announces.type.spell"] = "Watch one of your spells. Choose the spell in 
 L["Help.Announces.type.pet"] = "Watch a spell from your pet spellbook. The spell selector uses the pet catalog for this action type."
 L["Help.Announces.type.item"] = "Watch item-use spells from a reusable item set or a custom list. This is an announcement trigger; it does not choose an item to use for you."
 L["Help.Announces.spell"] = "Search by spell name, select a result, or drag a spell from your spellbook or action bar into the field. The icon and name identify the selected spell. Spell and pet spell choices keep their respective catalog scope."
-L["Help.Announces.ranked"] = "Checked limits matching to the selected rank. Unchecked includes the known ranks in that spell family. This checkbox is shown only for Spell and Pet Spell."
+L["Help.Announces.ranked"] = "Unchecked (the default), any known rank of the spell matches. Checked limits matching to the rank you chose. This checkbox is shown only for Spell and Pet Spell, and only on clients with spell ranks."
 L["Help.Announces.items"] = "Choose a reusable set, or Custom to edit this announcement's own list. For a custom list, search for or drag items into the fields; Add item appends one and a red trash can removes an entry. Any matching item-use spell in the list can trigger the announcement; list order does not limit announcements to the first carried item. Changes to a shared set belong on the Item Sets page."
 L["Help.Announces.event"] = "For automatic action types, choose which observed cast event triggers this entry. A start, stop, interruption, failure or delay is different from a successful cast. Client support determines which events and observations are available. Via Script/Macro has no cast event."
 L["Help.Announces.event.START"] = "The cast or channel started. This event does not mean it will finish successfully."

@@ -47,6 +47,8 @@ local function constructor()
         error('condition-widget-parent-cycle',0)
     end
     function group:AddChild(child)
+        -- A hidden option (a rank checkbox on a client without ranks) is nil.
+        if child==nil then return end
         validateChild(self,child)
         self.children[#self.children+1]=child;child.parent=self
         child.frame:SetParent(frame);child.frame:Show();self:DoLayout()

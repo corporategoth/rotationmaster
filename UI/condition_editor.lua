@@ -324,7 +324,7 @@ local function createShell()
                 if not alive() then return end
                 local current=at(active.working,model.fieldPath)
                 if not model.missingOperand and current and current.type==tag then return end
-                self:Command(model.missingOperand and "Add" or "Replace",model.fieldPath,{type=tag})
+                self:Command(model.missingOperand and "Add" or "Replace",model.fieldPath,addon.NewConditionValue and addon:NewConditionValue(tag) or {type=tag})
             end,alive,card.picker)
         card.picker=picker;self.openPicker=picker;picker:Open(card.typeButton)
     end
