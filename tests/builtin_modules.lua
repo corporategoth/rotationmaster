@@ -172,7 +172,7 @@ test('each flavour TOC lists exactly its edition\'s blocks and packs, every file
             end
         end
     end
-    local p=assert(io.popen("find Modules -name '*.lua' ! -name bind.lua"));local onDisk=0
+    local p=assert(io.popen("find Modules -path Modules/RotationMaster_WowSims -prune -o -name '*.lua' ! -name bind.lua -print"));local onDisk=0
     for path in p:lines()do onDisk=onDisk+1;assert(listed[path],path..' is in no flavour TOC')end
     p:close()
     -- 278 with Era; +42 MoP Death Knight, Druid, Hunter, Mage, Monk, Paladin; +38 MoP Priest, Rogue, Shaman, Warlock, Warrior;
@@ -185,7 +185,8 @@ test('every module on disk is one the loader can name, and bind.lua reaches Rota
     local listed={};for _,module in ipairs(modules.list())do listed[module.name]=module end
     local p=assert(io.popen('ls -1 Modules'));local count=0
     for entry in p:lines()do
-        if readable('Modules/'..entry..'/'..entry..'.toc')then count=count+1;assert(listed[entry],entry..' is not a name the loader produces')end
+        -- RotationMaster_WowSims is the WowSims converter (docs/quality/wowsims-transport.md), not a Built In module.
+        if entry~='RotationMaster_WowSims' and readable('Modules/'..entry..'/'..entry..'.toc')then count=count+1;assert(listed[entry],entry..' is not a name the loader produces')end
     end
     p:close()
     local n=0;for _ in pairs(listed)do n=n+1 end;assert(count==n and n==13,count..' module folders, '..n..' named')

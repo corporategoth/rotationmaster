@@ -144,7 +144,7 @@ function addon:AttachTransferFormatControls(dialog,state,options)
             -- Loading the converter happens here, the first time it is wanted.
             text,message=state:ExportFor('wowsims',boxLimit())
             if not text and replace then
-                dialog.status:SetText(message or L['The rotation could not be converted to WowSims.'])
+                dialog.status:SetText(message or string.format(L['The rotation could not be converted to WowSims: %s'],'unknown'))
                 return
             end
         end

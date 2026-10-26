@@ -180,6 +180,7 @@ test('the choice is remembered in the profile: the window opens in it, and it re
 end)
 
 test('the remembered format is a profile setting that travels with the profile and is checked', function()
+    if not pcall(require, 'bit') then return end    -- the codec fixture needs LuaJIT's bit library
     local f = F.new(5)
     local a = f.addon
     local data = dofile('tests/fixtures/codec.lua')()

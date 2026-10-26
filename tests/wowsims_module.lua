@@ -370,14 +370,14 @@ end
 -- What the window and the host say besides the reports (UI/transfer_format.lua, UI/transfer.lua, Core/transfer_formats.lua).
 local WINDOW_WORDS = {'WowSims', 'Format', 'Check export', 'WowSims has no simulator for this game version, so only the Rotation Master format is available here.',
     'The WowSims converter could not be loaded (%s). Rotation Master keeps working; use the Rotation Master format.', 'The WowSims text could not be converted: %s',
-    'WowSims: {name}', 'WowSims import: {label}',
+    'WowSims import: {label}', 'That JSON is outside what Rotation Master reads ({detail}).',
     'Imported from a WowSims rotation (APL). Steps: {steps}, disabled: {disabled}, items not imported: {skipped}. Review the disabled steps before enabling them.',
-    'There is nothing to export.', 'The rotation could not be converted to WowSims: %s',
+    'The rotation could not be converted to WowSims: %s',
     'Converted from WowSims: %d steps, %d disabled. Choose Check import for the full report.',
     'This looks like a Rotation Master export. Set Format to Rotation Master to import it.', 'The converted rotation is too large to import (%s).',
     'This looks like WowSims JSON. Set Format to WowSims to import it.',
     "Choose the format of the text this window shows and reads. Rotation Master is the default; WowSims is the simulator's Action Priority List (JSON).",
-    'Some detail may be lost converting to WowSims.', 'Some detail may be lost converting from WowSims.', 'The rotation could not be converted to WowSims.',
+    'Some detail may be lost converting to WowSims.', 'Some detail may be lost converting from WowSims.',
     'Copy this text to use it in WowSims, or paste WowSims JSON here to import it.', 'Format changed. Preview the pasted text again before importing.',
     'WowSims export report', 'WowSims import report', 'Rotation Master has no such condition', 'Help.Transfers.rotation_format',
     'The Format choice could not be shown: %s', 'The WowSims export is too long for this box (%d characters), so it cannot be shown here.'}
@@ -443,7 +443,7 @@ test('the reports read as plain text with the counts, the sources and what needs
     assert(words:find('Items in the rotation: 9 (6 exact, 2 approximate, 1 lossy, 0 not representable).', 1, true), words)
     assert(words:find('Steps created: 8, disabled: 3. Items not imported: 1.', 1, true))
     assert(words:find('Confirmed by: the game client', 1, true) or words:find('WowSims simulator data', 1, true))
-    assert(words:find('priorityList[1] - Approximate - Imported disabled', 1, true) and words:find('Became: spell 10438 (disabled)', 1, true))
+    assert(words:find('priorityList[1] - Approximate - Imported disabled', 1, true) and words:find('Became: spell 10438 (Disabled)', 1, true))
     local x = export({rotation = {spell(403, {type = 'AND', value = {{type = 'SPELL_AVAIL', spell = 403}, {type = 'EQUIPPED', slot = 16}}})}, cooldowns = {}}, 'tbc')
     local out = ns.api.renderExportReport(x.report, L, {classLabel = function() return 'Shaman' end, editionLabel = function() return 'TBC' end})
     assert(out:find('WowSims export report', 1, true) and out:find('Steps that need attention: 1', 1, true) and out:find('EQUIPPED', 1, true) and out:find('Readable by: wowsims/tbc-new.', 1, true), out)

@@ -63,7 +63,7 @@ for module in modules:
     if not fallback.is_file():
         errors.append(f'Module lacks its fallback TOC: {fallback.relative_to(root)}')
         continue
-    if toc_files(fallback):
+    if toc_files(fallback) and tocs == [fallback]:
         # A conversion module (RotationMaster_WowSims) is not a Built In pack: one TOC, the same for every client,
         # lists every file it loads, and the add-on has no flavour TOCs and no bind.lua.
         text = fallback.read_text()

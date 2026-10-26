@@ -187,7 +187,7 @@ function addon:ConvertRotationFromFormat(id,text,spec)
     local label=className(target.cls)
     local name=report.detected and report.detected.name
     local body={
-        name=name and name~='' and format(L['WowSims: {name}'],{name=name}):sub(1,256) or format(L['WowSims import: {label}'],{label=label}),
+        name=format(L['WowSims import: {label}'],{label=name and name~='' and name or label}):sub(1,256),
         description=format(L['Imported from a WowSims rotation (APL). Steps: {steps}, disabled: {disabled}, items not imported: {skipped}. Review the disabled steps before enabling them.'],
             {steps=summary.steps,disabled=summary.disabled,skipped=summary.skipped}),
         tags=result.body.tags,rotation=result.body.rotation,cooldowns=result.body.cooldowns,
@@ -204,7 +204,7 @@ function addon:ConvertRotationToFormat(id,source,spec)
     if not api then return nil,describeLoadFailure(why) end
     local edition,class=self:GetTransferFormatTarget(spec)
     if not api.supportsEdition(edition) then return nil,self:GetTransferFormatUnavailableReason() end
-    if type(source)~='table' then return nil,L['There is nothing to export.'] end
+    if type(source)~='table' then return nil,string.format(L['Export unavailable: %s'],'no-rotation') end
     local body=type(source.body)=='table' and source.body or source
     local ok,result=pcall(api.export,body,{edition=edition,cls=class})
     if not ok then return nil,string.format(L['The rotation could not be converted to WowSims: %s'],tostring(result)) end

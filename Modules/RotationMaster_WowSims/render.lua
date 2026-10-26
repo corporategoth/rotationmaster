@@ -10,13 +10,7 @@ local ERROR = {
     ['empty'] = 'Paste a WowSims rotation first.',
     ['not-text'] = 'That is not text.',
     ['too-large'] = 'That is larger than the limit of {limit} characters.',
-    ['too-deep'] = 'The JSON is nested more than {limit} levels deep.',
-    ['too-many-values'] = 'The JSON has too many values (more than {limit}).',
-    ['string-too-long'] = 'The JSON has a text longer than {limit} characters.',
-    ['array-too-long'] = 'The JSON has a list longer than {limit} entries.',
-    ['too-many-keys'] = 'The JSON has an object with more than {limit} keys.',
-    ['not-finite'] = 'The JSON has a number that is not finite.',
-    ['forbidden-key'] = 'The JSON uses the key {key}, which is not allowed.',
+    ['json-limit'] = 'That JSON is outside what Rotation Master reads ({detail}).',
     ['invalid-json'] = 'That is not valid JSON ({detail}).',
     ['not-json'] = "That does not look like JSON. Paste the rotation's JSON: an .apl.json file, or the simulator's exported settings.",
     ['share-link'] = 'That is a WowSims share link. It holds a compressed binary form that cannot be read here. In the simulator, export the settings as JSON and paste that instead.',
@@ -28,13 +22,7 @@ local ERROR = {
     ['edition-mismatch'] = 'The file cannot be for {chosen}: what it contains fits only {candidates}.',
     ['edition-ids-mismatch'] = "The file's spells look like {looksLike}, not {chosen}.",
     ['class-ids-mismatch'] = "The file's spells look like {looksLike}, not {chosen}.",
-    ['class-edition'] = '{cls} does not exist on {edition}.',
-    ['edition-unsupported'] = 'WowSims import is not available for that edition.',
-    ['edition-required'] = 'Rotation Master could not tell which game version this is.',
-    ['class-required'] = 'Rotation Master could not tell which class this character is.',
-    ['class-unknown'] = 'That class is not one Rotation Master knows.',
     ['nothing-imported'] = 'Nothing in that rotation could be imported. Choose Check import to see why.',
-    ['not-rotation'] = 'Only rotations can be exported to WowSims.',
 }
 ERROR['not-an-apl'] = ERROR['not-apl']
 
@@ -78,7 +66,6 @@ local REASON = {
 local WARNING = {
     ['class-unreadable'] = 'The class {text} in the file is not one Rotation Master knows.',
     ['spec-unreadable'] = 'The specialization in the file could not be matched, so none is recorded.',
-    ['spec-not-in-edition'] = 'The specialization {spec} does not exist on {edition}, so none is recorded.',
 }
 local WHY = {
     ['fight-length'] = 'Rotation Master does not know how long the fight lasts',
@@ -207,7 +194,7 @@ local TEXT = {
     xclean = 'Steps exported exactly: {count}',
     xskipped = 'Steps skipped: {count}',
     truncated = 'The list is cut here: {count} more.',
-    disabledMark = ' (disabled)',
+    convertFailed = 'The WowSims text could not be converted: %s',
 }
 render.TEXT, render.ERROR, render.REASON, render.WARNING, render.WHY, render.NOTE = TEXT, ERROR, REASON, WARNING, WHY, NOTE
 render.RESTRICTED, render.XREASON, render.XWHY, render.XNOTE = RESTRICTED, XREASON, XWHY, XNOTE
@@ -271,8 +258,15 @@ function render.describeError(result, L, opts)
         -- "chosen" is this character's class: say it as a class.
         params.chosen = classLabel(err.chosen)
     end
+    local LIMIT = {['too-deep'] = true, ['too-many-values'] = true, ['string-too-long'] = true, ['array-too-long'] = true,
+        ['too-many-keys'] = true, ['not-finite'] = true, ['forbidden-key'] = true}
+    if LIMIT[code] then
+        params.detail = code .. (err.limit and (' ' .. err.limit) or '') .. (err.key and (' ' .. err.key) or '')
+        code = 'json-limit'
+    end
     local text = ERROR[code]
-    if not text then text = ERROR['not-apl'] end
+    -- A code the game never meets (the client says the class and the edition) is worded by its name.
+    if not text then return string.format(L[TEXT.convertFailed] or TEXT.convertFailed, code) end
     return say(L, text, params)
 end
 
@@ -317,7 +311,7 @@ local MAX_ITEMS = 300
 
 local function describeStep(L, b)
     local action = type(b.action) == 'table' and table.concat(b.action, '+') or tostring(b.action)
-    local text = b.type .. ' ' .. action .. (b.disabled and say(L, TEXT.disabledMark, {}) or '')
+    local text = b.type .. ' ' .. action .. (b.disabled and (' (' .. (L['Disabled'] or 'Disabled') .. ')') or '')
     if b.conditions and b.conditions ~= '' then text = text .. ': ' .. b.conditions end
     return text
 end
