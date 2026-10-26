@@ -356,15 +356,18 @@ local function editor(f,value,spec)
 end
 local function treeButton(parent)
     for _,w in ipairs(parent.children) do
-        if w.layout=='Table' and w.children[2] and w.children[2].text=='Show talent tree' then return w.children[2],w end
+        if w.layout=='RM-IconRows' then
+            local last=w.children[#w.children]
+            if last and last.text=='Show talent tree' then return last,w end
+        end
     end
 end
 
 test('the button sits beside the Talent list on Retail and Forever and is absent where no provider can show a tree',function()
     local f=client({spec=FIRE})
     local parent=editor(f,{},FIRE)
-    local button,row=treeButton(parent);assert(button and row.children[1]==child(parent,'Talent'),'beside the list')
-    assert(button.frame.tooltip:find('talent tree',1,true) and row.layout=='Table')
+    local button,box=treeButton(parent);assert(button and box.children[3]==child(parent,'Talent'),'beside the list')
+    assert(button.frame.tooltip:find('talent tree',1,true) and button:GetUserData('side')==true and button.disabled==false)
     f=client({spec=FIRE},{product=18});parent=editor(f,{},FIRE);assert(treeButton(parent))
     f=client({spec=FIRE},{product=2});parent=editor(f,{},FIRE);assert(not treeButton(parent),'no provider on Classic Era')
     f=client({spec=FIRE},{ui=false});parent=editor(f,{},FIRE);assert(not treeButton(parent) and child(parent,'Talent'),'without the popup code the editor is unchanged')

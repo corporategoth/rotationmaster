@@ -55,6 +55,12 @@ test('malformed rank and grid fields cannot call native APIs and metadata printe
     local unknown=tree();unknown.tree=9;text=definition.print(0,unknown);assert(text:find('<talent>',1,true) and text:find('<talent tree>',1,true))
     local help=f.widget('help');definition.help(help);assert(#F.text(help)>20)
 end)
+local function find(parent,label)
+    for _,w in ipairs(parent.children) do
+        if (w.caption and w.caption:GetText() or w.label)==label then return w end
+        if w.children then local inner=find(w,label);if inner then return inner end end
+    end
+end
 local function fields(f,value,spec)
     local parent,top=f.widget('parent'),f.widget('top')
     top:SetUserData('root',value);top:SetUserData('funcs',{print=function() return 'Updated condition' end})
@@ -71,9 +77,10 @@ test('talent icons and unsupported-layout messages use native primitives without
 end)
 test('tree editor names native trees and clears former talent only on an explicit tree change',function()
     local f=fixture();local value=tree();local parent=fields(f,value)
-    local trees
-    for _,w in ipairs(parent.children) do if (w.caption and w.caption:GetText() or w.label)=='Talent Tree' then trees=w end end
+    local trees=find(parent,'Talent Tree')
     assert(trees);trees.configure();assert(trees.list[1]=='Elemental' and value.talent==1 and value.layout==nil)
+    -- The talents of a tree are listed by name with their icon.
+    local talents=find(parent,'Talent');talents.configure();assert(talents.list[1].text=='Convection' and talents.list[1].icon==1,'talent list lacks name or icon')
     trees:Fire('OnValueChanged',2)
     assert(value.tree==2 and value.talent==nil and value.layout=='tree')
     f.env.GetNumTalentTabs=nil;f.env.GetNumTalents=nil;f.env.C_SpecializationInfo=nil
@@ -82,11 +89,19 @@ end)
 test('Mists picker does not silently convert historical references and writes grid identity only on explicit choice',function()
     local f=fixture(19,4);local value=tree();local parent=fields(f,value,2)
     assert(value.tree==1 and value.talent==1 and value.value==2 and value.layout==nil)
-    local picker
-    for _,w in ipairs(parent.children) do if (w.caption and w.caption:GetText() or w.label)=='Talent' then picker=w end end
-    assert(picker);picker.configure();assert(picker.value==nil and #picker.order==18)
-    picker:Fire('OnValueChanged',3)
-    assert(value.layout=='grid' and value.value==3 and value.tree==nil and value.talent==nil and value.operator==nil)
+    local picker=find(parent,'Talent');local tier=find(parent,'Tier')
+    assert(picker and tier);picker.configure();tier.configure()
+    -- Six tiers of three: the tier above, its three talents below, the tier's own level in its name.
+    assert(#tier.order==6 and tier.list[1]=='Tier 1 (level 15)' and tier.list[6]=='Tier 6 (level 90)' and tier.value==1)
+    assert(picker.value==nil and #picker.order==3 and picker.list[1].text=='Convection' and picker.list[1].icon==1)
+    assert(value.layout==nil and value.value==2,'viewing a tier converted the historical reference')
+    tier:Fire('OnValueChanged',3);picker.configure();assert(#picker.order==3 and picker.value==nil and value.layout==nil)
+    picker:Fire('OnValueChanged',2)
+    assert(value.layout=='grid' and value.value==8 and value.tree==nil and value.talent==nil and value.operator==nil,'tier 3, talent 2 is slot 8')
+    -- The saved slot reopens on its own tier and talent.
+    local again=fields(f,{type='TALENT',layout='grid',value=8},2);local savedTier,savedPicker=find(again,'Tier'),find(again,'Talent')
+    savedTier.configure();savedPicker.configure();assert(savedTier.value==3 and savedPicker.value==2,'the saved Mists talent was not shown')
+    picker:Fire('OnValueChanged',3);assert(value.value==9)
     assert(f.addon.conditionDefinitions.TALENT.valid(2,value))
     f=fixture(1,12);value={type='TALENT',value=1};assert(fields(f,value) and value.value==1 and value.layout==nil)
 end)

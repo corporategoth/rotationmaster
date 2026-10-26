@@ -170,6 +170,7 @@ Core/active_runtime_plan.lua
 main.lua
 buttons.lua
 Diagnostics/glow.lua
+Diagnostics/talents.lua
 Core/unit_state_conditions.lua
 Core/assisted_highlight.lua
 Core/tooltips.lua

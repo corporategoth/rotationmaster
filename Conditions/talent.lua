@@ -60,9 +60,18 @@ local function dropdown(parent,title,changed)
     widget:SetCallback("OnValueChanged",function(_,_,value) changed(value) end);parent:AddChild(widget)
     return widget
 end
+-- Every talent picker is one block: the talent's icon on the left, spanning two
+-- rows, and a list on each row to its right (what the talent belongs to, then
+-- the talent). The icon shows the chosen talent, a question mark before one is
+-- chosen. UI/condition_layout.lua lays the block out.
+local PLACEHOLDER="Interface\\Icons\\INV_Misc_QuestionMark"
+local function block(parent)
+    local widget=addon:CreateConditionGroup();widget:SetFullWidth(true);widget:SetLayout("RM-IconRows");parent:AddChild(widget)
+    return widget
+end
 local function icon(parent,value,spec)
-    local widget=addon:CreateConditionIcon();widget:SetWidth(44);widget:SetHeight(44);widget:SetImageSize(36,36)
-    local current=info(value,spec);widget:SetImage(current and current.icon)
+    local widget=addon:CreateConditionIcon();widget:SetWidth(64);widget:SetImageSize(60,60)
+    local current=info(value,spec);widget:SetImage(current and current.icon or PLACEHOLDER)
     widget:SetCallback("OnEnter",function()
         local observed=info(value,spec)
         if observed then
@@ -88,47 +97,68 @@ local function treeWidget(parent,spec,value,update)
         if value.tree and ownTrees() then
             for index=1,platform:GetTreeTalentCount(value.tree) or 0 do
                 local talent=platform:GetTreeTalentInfo(value.tree,index,group(spec))
-                if talent then talents[index]=talent.name;talentOrder[#talentOrder+1]=index end
+                if talent then talents[index]={text=talent.name,icon=talent.icon};talentOrder[#talentOrder+1]=index end
             end
         end
     end
     choices()
-    treePicker=dropdown(parent,L["Talent Tree"],function(selected)
+    local box=block(parent)
+    talentIcon=icon(box,value,spec)
+    treePicker=dropdown(box,L["Talent Tree"],function(selected)
         if selected==value.tree then return end
         local wasTree=value.layout=="tree" or value.layout==nil and value.tree~=nil
         value.tree,value.talent,value.layout=selected,nil,"tree"
         if not wasTree then value.value,value.operator=nil,nil end
         choices();talentPicker:SetList(talents,talentOrder);talentPicker:SetValue(nil)
-        talentPicker:SetDisabled(#talentOrder==0);talentIcon:SetImage("Interface\\Icons\\INV_Misc_QuestionMark");update()
+        talentPicker:SetDisabled(#talentOrder==0);talentIcon:SetImage(PLACEHOLDER);update()
     end)
     treePicker.configure=function() treePicker:SetList(trees,treeOrder);treePicker:SetValue(value.tree) end
-    talentIcon=icon(parent,value,spec)
-    talentPicker=dropdown(parent,L["Talent"],function(selected)
+    talentPicker=dropdown(box,L["Talent"],function(selected)
         value.talent,value.layout=selected,"tree"
-        local talent=info(value,spec);talentIcon:SetImage(talent and talent.icon);update()
+        local talent=info(value,spec);talentIcon:SetImage(talent and talent.icon or PLACEHOLDER);update()
     end)
     talentPicker:SetDisabled(#talentOrder==0)
     talentPicker.configure=function() talentPicker:SetList(talents,talentOrder);talentPicker:SetValue(value.talent) end
     parent:AddChild(addon:Widget_OperatorWidget(value,L["Points"],update))
 end
+-- Mists of Pandaria: six tiers, one of three talents in each. The tier is the
+-- upper list, the three talents of that tier the lower; the reference stays
+-- the slot, 1-18.
+local GRID_TIER_LEVELS={15,30,45,60,75,90}
 local function gridWidget(parent,spec,value,update)
+    local tiers,tierOrder={},{}
+    for tier,level in ipairs(GRID_TIER_LEVELS) do tiers[tier]=string.format(L["Tier %d (level %d)"],tier,level);tierOrder[tier]=tier end
+    local chosen=value.layout=="grid" and integer(value.value,1,18) and value.value or nil
+    local shownTier=chosen and math.ceil(chosen/3) or 1
     local choices,order={},{}
-    for index=1,18 do
-        local talent=platform:GetGridTalentInfo(index,group(spec))
-        if talent then choices[index]=talent.name;order[#order+1]=index end
+    local function load()
+        choices,order={},{}
+        for column=1,3 do
+            local talent=platform:GetGridTalentInfo((shownTier-1)*3+column,group(spec))
+            if talent then choices[column]={text=talent.name,icon=talent.icon};order[#order+1]=column end
+        end
     end
+    load()
     if value.layout~="grid" and (value.tree~=nil or value.value~=nil) then
         text(parent,L["This reference belongs to another talent layout. Selecting a talent explicitly replaces it; viewing does not convert it."])
     end
-    local talentIcon=icon(parent,value,spec)
-    local picker
-    picker=dropdown(parent,L["Talent"],function(selected)
-        value.layout,value.value="grid",selected
+    local box=block(parent)
+    local talentIcon=icon(box,value,spec)
+    local tierPicker,picker
+    tierPicker=dropdown(box,L["Tier"],function(selected)
+        if selected==shownTier then return end
+        shownTier=selected;load();picker:SetList(choices,order)
+        picker:SetValue(chosen and math.ceil(chosen/3)==shownTier and (chosen-1)%3+1 or nil);picker:SetDisabled(#order==0)
+    end)
+    tierPicker.configure=function() tierPicker:SetList(tiers,tierOrder);tierPicker:SetValue(shownTier) end
+    picker=dropdown(box,L["Talent"],function(selected)
+        chosen=(shownTier-1)*3+selected
+        value.layout,value.value="grid",chosen
         value.tree,value.talent,value.operator=nil,nil,nil
-        local talent=info(value,spec);talentIcon:SetImage(talent and talent.icon);update()
+        local talent=info(value,spec);talentIcon:SetImage(talent and talent.icon or PLACEHOLDER);update()
     end)
     picker:SetDisabled(#order==0)
-    picker.configure=function() picker:SetList(choices,order);picker:SetValue(value.layout=="grid" and value.value or nil) end
+    picker.configure=function() picker:SetList(choices,order);picker:SetValue(chosen and math.ceil(chosen/3)==shownTier and (chosen-1)%3+1 or nil) end
 end
 -- The specializations of the player's class (Retail), for the list of talents
 -- to show; nil where the client has one talent tree per class.
@@ -138,6 +168,14 @@ local function classSpecs()
     if not ok or not platform:CanReadValue(classID) then return nil end
     local choices=platform:GetClassSpecializationChoices(classID)
     return choices and #choices>1 and choices or nil
+end
+-- What a group of the talent list is called.
+local function groupLabel(candidate)
+    if candidate.kind=="class" then return L["Class talents"] end
+    if candidate.kind=="spec" then return L["Specialization talents"] end
+    if candidate.kind=="talents" then return L["Class and specialization talents"] end
+    if candidate.kind=="hero" then return candidate.name and string.format(L["Hero talents: %s"],candidate.name) or L["Hero Talents"] end
+    return candidate.name or L["Talents"]
 end
 local function traitsWidget(parent,spec,value,update)
     -- Retail: the talents of the rotation's specialization, which need not be
@@ -151,67 +189,91 @@ local function traitsWidget(parent,spec,value,update)
     if not traitShape(value) and (value.tree~=nil or value.value~=nil) then
         text(parent,L["This reference belongs to another talent layout. Selecting a talent explicitly replaces it; viewing does not convert it."])
     end
+    local box=block(parent)
     local note=addon:CreateConditionLabel();note:SetFullWidth(true);parent:AddChild(note)
     local groups,selectedGroup,selectedTalent={},nil,nil
-    local names,order={},{}
-    local talents,talentOrder={},{}
-    local talentIcon,talentPicker,groupPicker,nodeBox,entryBox,operators,specPicker
+    local groupNames,groupOrder={},{}
+    -- The talent list: with a specialization list, every group under its own
+    -- heading; without one (Forever's three trees), the chosen tree's talents.
+    local list,order,positions={},{},{}
+    local talentIcon,talentPicker,groupPicker,nodeBox,entryBox,operators,specPicker,treeButton
     local treeOwner={}
-    local function choices()
-        talents,talentOrder={},{}
-        local current=selectedGroup and groups[selectedGroup]
-        for index,talent in ipairs(current and current.talents or {}) do
-            talents[index]={text=talent.entry and string.format(L["%s (choice)"],talent.name) or talent.name,icon=talent.icon}
-            talentOrder[#talentOrder+1]=index
-        end
-    end
-    local function reload()
-        local listed,reason=platform:GetTraitTalents(shown)
-        groups=listed or {}
-        if listed then note:SetText("")
-        elseif reason=="in-combat" then note:SetText(L["Talents of another specialization cannot be loaded during combat. A node ID entered below is kept and evaluated."])
-        else note:SetText(L["Your talents cannot be listed right now. A node ID entered below is kept and evaluated."]) end
-        selectedGroup,selectedTalent=nil,nil
-        if traitShape(value) then
-            for groupIndex,candidate in ipairs(groups) do
+    local function rebuild()
+        list,order,positions={},{},{}
+        for groupIndex,candidate in ipairs(groups) do
+            if specs or groupIndex==selectedGroup then
+                if specs and #groups>1 then
+                    list[#list+1]={text=groupLabel(candidate),header=true,disabled=true};order[#order+1]=#list
+                end
                 for talentIndex,talent in ipairs(candidate.talents) do
-                    if talent.node==value.node and talent.entry==value.entry then selectedGroup,selectedTalent=groupIndex,talentIndex end
+                    list[#list+1]={text=talent.entry and string.format(L["%s (choice)"],talent.name) or talent.name,icon=talent.icon}
+                    order[#order+1]=#list;positions[#list]={group=groupIndex,talent=talentIndex}
                 end
             end
         end
-        selectedGroup=selectedGroup or (#groups>0 and 1 or nil)
-        names,order={},{}
-        for index,candidate in ipairs(groups) do names[index]=candidate.name or L["Talents"];order[#order+1]=index end
-        choices()
+    end
+    local function flatIndex(groupIndex,talentIndex)
+        for index,position in pairs(positions) do
+            if position.group==groupIndex and position.talent==talentIndex then return index end
+        end
+    end
+    local function reload()
+        -- The game names the talents of the class being played: another class's
+        -- rotation (a Built In, a shared one) gets no list.
+        local own=ownTrees()
+        local listed,reason
+        if own then listed,reason=platform:GetTraitTalents(shown) end
+        groups=listed or {}
+        if not own then note:SetText(L["Talents can be listed only for your own class. A node ID entered below is kept and evaluated."])
+        elseif listed then note:SetText("")
+        elseif reason=="in-combat" then note:SetText(L["Talents of another specialization cannot be loaded during combat. A node ID entered below is kept and evaluated."])
+        else note:SetText(string.format(L["Your talents cannot be listed right now (%s). A node ID entered below is kept and evaluated."],tostring(reason))) end
+        selectedGroup,selectedTalent=nil,nil
+        local matchedGroup,matchedTalent
+        if traitShape(value) then
+            for groupIndex,candidate in ipairs(groups) do
+                for talentIndex,talent in ipairs(candidate.talents) do
+                    if talent.node==value.node and talent.entry==value.entry then matchedGroup,matchedTalent=groupIndex,talentIndex end
+                end
+            end
+        end
+        selectedGroup=matchedGroup or (#groups>0 and 1 or nil)
+        groupNames,groupOrder={},{}
+        for index,candidate in ipairs(groups) do groupNames[index]=groupLabel(candidate);groupOrder[#groupOrder+1]=index end
+        rebuild()
+        if matchedGroup then selectedTalent=flatIndex(matchedGroup,matchedTalent) end
     end
     local function show()
-        groupPicker:SetList(names,order);groupPicker:SetValue(selectedGroup);groupPicker:SetDisabled(#order<2)
-        talentPicker:SetList(talents,talentOrder);talentPicker:SetValue(selectedTalent);talentPicker:SetDisabled(#talentOrder==0)
+        if groupPicker then groupPicker:SetList(groupNames,groupOrder);groupPicker:SetValue(selectedGroup);groupPicker:SetDisabled(#groupOrder<2) end
+        talentPicker:SetList(list,order);talentPicker:SetValue(selectedTalent);talentPicker:SetDisabled(#order==0)
+        if treeButton then treeButton:SetDisabled(value.disabled==true or #groups==0) end
     end
     local function adopt()
         if not traitShape(value) then value.operator,value.value="GREATERTHANOREQUALS",1 end
         value.layout,value.tree,value.talent="traits",nil,nil
         if operators and operators.Refresh then operators.Refresh() end
     end
+    talentIcon=icon(box,value,spec)
     if specs then
         local specNames,specOrder={},{}
         for index,choice in ipairs(specs) do
             specNames[choice.id]={text=choice.name,icon=choice.icon};specOrder[index]=choice.id
         end
-        specPicker=dropdown(parent,L["Specialization"],function(selected)
+        specPicker=dropdown(box,L["Specialization"],function(selected)
             if selected==shown then return end
             shown=selected;reload();show()
         end)
         specPicker.configure=function() specPicker:SetList(specNames,specOrder);specPicker:SetValue(shown) end
     end
     reload()
-    groupPicker=dropdown(parent,L["Talent Tree"],function(selected)
-        if selected==selectedGroup then return end
-        selectedGroup,selectedTalent=selected,nil;choices()
-        talentPicker:SetList(talents,talentOrder);talentPicker:SetValue(nil);talentPicker:SetDisabled(#talentOrder==0)
-    end)
-    groupPicker.configure=show
-    talentIcon=icon(parent,value,spec)
+    if not specs then
+        groupPicker=dropdown(box,L["Talent Tree"],function(selected)
+            if selected==selectedGroup then return end
+            selectedGroup,selectedTalent=selected,nil;rebuild()
+            talentPicker:SetList(list,order);talentPicker:SetValue(nil);talentPicker:SetDisabled(#order==0)
+        end)
+        groupPicker.configure=show
+    end
     local function currentSelection()
         if traitShape(value) and value.node then return {node=value.node,entry=value.entry,spell=value.spell} end
     end
@@ -225,26 +287,24 @@ local function traitsWidget(parent,spec,value,update)
         adopt()
         value.node,value.entry,value.spell=talent.node,talent.entry,talent.spellID
         nodeBox:SetText(tostring(talent.node));entryBox:SetText(talent.entry and tostring(talent.entry) or "")
-        talentIcon:SetImage(talent.icon);update()
+        talentIcon:SetImage(talent.icon or PLACEHOLDER);update()
     end
-    -- The talent list and, where the client can show the tree, a button beside it.
-    local row
-    if platform.HasTalentTreeProvider and addon.OpenTalentTree and platform:HasTalentTreeProvider() then
-        row=addon:CreateConditionGroup();row:SetFullWidth(true);row:SetLayout("Table");row:SetUserData("table",{columns={1,0}})
-        parent:AddChild(row)
-    end
-    talentPicker=dropdown(row or parent,L["Talent"],function(selected)
-        local talent=selectedGroup and groups[selectedGroup].talents[selected]
+    talentPicker=dropdown(box,L["Talent"],function(selected)
+        local position=positions[selected]
+        local talent=position and groups[position.group] and groups[position.group].talents[position.talent]
         if not talent then return end
         selectedTalent=selected;apply(talent);refreshTree()
     end)
     talentPicker.configure=show
-    if row then
-        local button=addon:CreateConditionButton();button:SetText(L["Show talent tree"]);button:SetAutoWidth(true)
-        button:SetUserData("cell",{alignV="bottom"})
-        button.frame.tooltip=L["Opens the talent tree of the rotation's specialization. Click a talent to choose it for this condition."]
-        button:SetDisabled(value.disabled)
-        button:SetCallback("OnClick",function()
+    -- A button for the drawn tree sits beside the talent list when the client
+    -- can show one. It reads the same tree the lists do, so it is off while the
+    -- lists could not be filled.
+    if platform.HasTalentTreeProvider and addon.OpenTalentTree and platform:HasTalentTreeProvider() then
+        treeButton=addon:CreateConditionButton();treeButton:SetText(L["Show talent tree"]);treeButton:SetAutoWidth(true)
+        treeButton:SetUserData("side",true)
+        treeButton.frame.tooltip=L["Opens the talent tree of the rotation's specialization. Click a talent to choose it for this condition."]
+        treeButton:SetDisabled(value.disabled==true or #groups==0)
+        treeButton:SetCallback("OnClick",function()
             local current=info(value,spec)
             addon:OpenTalentTree({owner=treeOwner,spec=shown,selection=currentSelection(),selectionName=current and current.name,
                 specs=specs,
@@ -252,19 +312,20 @@ local function traitsWidget(parent,spec,value,update)
                     -- Clicking the chosen talent again clears the choice.
                     if not selection then
                         value.node,value.entry,value.spell=nil,nil,nil
-                        selectedTalent=nil;choices()
+                        selectedTalent=nil
                         nodeBox:SetText("");entryBox:SetText("")
-                        talentIcon:SetImage("Interface\\Icons\\INV_Misc_QuestionMark");update();show()
+                        talentIcon:SetImage(PLACEHOLDER);update();show()
                         return
                     end
-                    local found
+                    local found,foundGroup,foundTalent
                     for groupIndex,candidate in ipairs(groups) do
                         for talentIndex,talent in ipairs(candidate.talents) do
-                            if talent.node==selection.node and talent.entry==selection.entry then selectedGroup,selectedTalent,found=groupIndex,talentIndex,talent end
+                            if talent.node==selection.node and talent.entry==selection.entry then foundGroup,foundTalent,found=groupIndex,talentIndex,talent end
                         end
                     end
-                    if not found then selectedTalent=nil end
-                    choices()
+                    if found then selectedGroup=foundGroup end
+                    rebuild()
+                    selectedTalent=found and flatIndex(foundGroup,foundTalent) or nil
                     apply({node=selection.node,entry=selection.entry,spellID=selection.spell,icon=found and found.icon or selection.icon})
                     show()
                 end,
@@ -275,8 +336,8 @@ local function traitsWidget(parent,spec,value,update)
                     if specPicker then specPicker:SetValue(shown) end
                 end})
         end)
-        button:SetCallback("OnRelease",function() addon:CloseTalentTree(treeOwner) end)
-        row:AddChild(button)
+        treeButton:SetCallback("OnRelease",function() addon:CloseTalentTree(treeOwner) end)
+        box:AddChild(treeButton)
     end
     local function identifier(entered)
         local number=tonumber(entered)
@@ -289,7 +350,7 @@ local function traitsWidget(parent,spec,value,update)
         if not number then nodeBox:SetText(traitShape(value) and value.node and tostring(value.node) or "");return end
         -- A node typed by hand no longer goes with the spell of the talent picked before.
         adopt();value.node,value.spell=number,nil;selectedTalent=nil;talentPicker:SetValue(nil)
-        local current=info(value,spec);talentIcon:SetImage(current and current.icon);update();refreshTree()
+        local current=info(value,spec);talentIcon:SetImage(current and current.icon or PLACEHOLDER);update();refreshTree()
     end)
     parent:AddChild(nodeBox)
     entryBox=addon:CreateConditionEditBox();entryBox:SetLabel(L["Choice Entry ID"])
@@ -299,10 +360,11 @@ local function traitsWidget(parent,spec,value,update)
         if entered~="" and entered~=nil and not number then entryBox:SetText(value.entry and tostring(value.entry) or "");return end
         if not traitShape(value) then return end
         value.entry,value.spell=number,nil;selectedTalent=nil;talentPicker:SetValue(nil)
-        local current=info(value,spec);talentIcon:SetImage(current and current.icon);update();refreshTree()
+        local current=info(value,spec);talentIcon:SetImage(current and current.icon or PLACEHOLDER);update();refreshTree()
     end)
     parent:AddChild(entryBox)
     operators=addon:Widget_OperatorWidget(value,L["Rank"],update);parent:AddChild(operators)
+    show()
 end
 addon:RegisterCondition("TALENT",{
     description=L["Talent"],icon = addon.Artwork.condition["TALENT"],
@@ -449,10 +511,14 @@ addon:RegisterCondition('PRIMARY_TALENT_TREE',{
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do
     local function sourceGetter(name)
+        if name=="GRID_TIER_LEVELS" then return GRID_TIER_LEVELS end
+        if name=="PLACEHOLDER" then return PLACEHOLDER end
+        if name=="block" then return block end
         if name=="classSpecs" then return classSpecs end
         if name=="dropdown" then return dropdown end
         if name=="gridWidget" then return gridWidget end
         if name=="group" then return group end
+        if name=="groupLabel" then return groupLabel end
         if name=="icon" then return icon end
         if name=="info" then return info end
         if name=="integer" then return integer end

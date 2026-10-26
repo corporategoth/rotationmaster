@@ -54,6 +54,9 @@ function addon:CreateWorkbenchSelector()
             end end)
         elseif row.colorButton then row.colorButton:Hide();addon:SetUIScript(row.colorButton,'OnClick',nil) end
         if entry.disabled then row:Disable() else row:Enable() end
+        -- A section heading in a long list is a row that cannot be picked.
+        local text=row:GetFontString()
+        if entry.header then row:SetAlpha(1);text:SetTextColor(1,.82,0) else text:SetTextColor(1,1,1) end
         local anchor,inline,changed=self.anchor,self.inline,self.changed
         addon:SetUIScript(row,'OnClick',function() if alive() then
             menu:Hide();if not inline and anchor.SetText and anchor.GetFontString then addon:PaintSelectorSelection(anchor,entry,entry.text) end;changed(entry.value,entry.text,entry.icon)
@@ -149,7 +152,7 @@ local function selectorWidget()
     addon:SetUIScript(button,'OnClick',function()
         if not w.alive or w.disabled then return end
         if popup.frame:IsShown() then popup:Hide();return end
-        local entries={};for _,id in ipairs(w.order) do local item=w.list[id];entries[#entries+1]={value=id,text=type(item)=='table' and item.text or item,icon=type(item)=='table' and item.icon or nil} end
+        local entries={};for _,id in ipairs(w.order) do local item=w.list[id];local record=type(item)=='table' and item or nil;entries[#entries+1]={value=id,text=record and record.text or item,icon=record and record.icon or nil,disabled=record and record.disabled or nil,header=record and record.header or nil} end
         local lifetime=w.userdata
         popup:Open(button,entries,w.value,function(value) if value~=w.value then w:SetValue(value);w:Fire('OnValueChanged',value) end end,function() return w.alive and w.userdata==lifetime and not w.disabled end)
     end)

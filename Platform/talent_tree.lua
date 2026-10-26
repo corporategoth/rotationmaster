@@ -133,7 +133,7 @@ function platform:GetTraitView(specID,options)
             if okShown and okInspecting and shown and inspecting then return nil,'talent-window-inspecting' end
         end
     end
-    local config,tree,source=self:GetTraitSpecTree(specID)
+    local config,tree,source=self:GetTraitSpecTree(specID,{ignoreInspect=true})
     if not config then return nil,tree end
     -- Only a loadout string needs the specialization; the tree can be read without it.
     local header,headerWhy=self:GetTraitViewSpec(source=='view' and specID or nil)

@@ -37,7 +37,17 @@ local function names(group) local out={};for index,t in ipairs(group.talents) do
 local function has(list,name) for _,v in ipairs(list) do if v==name then return true end end return false end
 local function groupNamed(groups,name) for _,g in ipairs(groups) do if g.name==name then return g end end end
 local function child(parent,label)
-    for _,w in ipairs(parent.children) do if (w.caption and w.caption:GetText() or w.label)==label then return w end end
+    for _,w in ipairs(parent.children) do
+        if (w.caption and w.caption:GetText() or w.label)==label then return w end
+        if w.children then local inner=child(w,label);if inner then return inner end end
+    end
+end
+-- The block the pickers sit in: the icon first, then the two lists, then the tree button.
+local function block(parent)
+    for _,w in ipairs(parent.children) do if w.layout=='RM-IconRows' then return w end end
+end
+local function entryNamed(picker,name)
+    for index,entry in ipairs(picker.list) do if entry.text==name then return index end end
 end
 local function editor(f,value,spec)
     local parent,top=f.widget('parent'),f.widget('top')
@@ -192,18 +202,24 @@ test('stored references: old node/entry values stay valid and evaluate as before
     text=d.print(0,{layout='traits',node=777777,operator='EQUALS',value=1});assert(text:find('777777',1,true),text)
 end)
 
-test('editing a rotation for another specialization shows that specialization\'s talents with icons, and the played one\'s on request',function()
+test('editing a rotation for another specialization shows that specialization\'s talents, grouped under headings, with icons, and the played one\'s on request',function()
     local state={spec=FIRE};local f,a,e=client(state)
     local value={};local parent,top=editor(f,value,FROST)
     assert(state.viewSpec==FROST,'the rotation\'s specialization was not loaded')
     local specs=assert(child(parent,'Specialization'));specs.configure()
     assert(specs.value==FROST and #specs.order==3 and specs.list[FIRE].text=='Fire' and specs.list[FIRE].icon,'specialization list')
-    local trees=assert(child(parent,'Talent Tree'));trees.configure()
-    assert(trees.value==1 and trees.list[1]=='Talents' and trees.list[2]=='Frostfire' and trees.list[3]=='Spellslinger',tostring(trees.list[3]))
+    assert(child(parent,'Talent Tree')==nil,'the hero trees are headings of the one list, not another list')
     local picker=assert(child(parent,'Talent'));picker.configure();assert(not picker.disabled,'the talent list starts disabled')
-    local frostOrb
-    for index,entry in ipairs(picker.list) do assert(entry.text and entry.icon,'list entry without icon') if entry.text=='Frozen Orb' then frostOrb=index end end
-    assert(frostOrb and #picker.order==#picker.list)
+    local headings={}
+    for index,entry in ipairs(picker.list) do
+        assert(entry.text,'list entry without a name')
+        if entry.header then assert(entry.disabled and entry.icon==nil,'a heading can be picked');headings[#headings+1]=entry.text
+        else assert(entry.icon,'list entry without icon: '..entry.text) end
+    end
+    assert(table.concat(headings,'|')=='Class and specialization talents|Hero talents: Frostfire|Hero talents: Spellslinger',table.concat(headings,'|'))
+    assert(picker.list[1].header and picker.list[2].header==nil,'the first heading is not first')
+    local frostOrb=assert(entryNamed(picker,'Frozen Orb'))
+    assert(#picker.order==#picker.list)
     picker:Fire('OnValueChanged',frostOrb)
     assert(value.layout=='traits' and value.node==2301 and value.entry==nil and value.spell==84714 and value.tree==nil and value.talent==nil)
     assert(value.operator=='GREATERTHANOREQUALS' and value.value==1 and a.definitions.TALENT.valid(0,value) and top.statusText=='Updated condition')
@@ -212,15 +228,13 @@ test('editing a rotation for another specialization shows that specialization\'s
     operator.configure();assert(operator.value=='GREATERTHANOREQUALS' and tostring(rank.text)=='1','defaults picked for the talent are not displayed: '..tostring(operator.value)..' '..tostring(rank.text))
     -- Switching to the played specialization reloads the list.
     specs:Fire('OnValueChanged',FIRE);picker.configure()
-    local combustion;for index,entry in ipairs(picker.list) do if entry.text=='Combustion' then combustion=index end end
+    local combustion=entryNamed(picker,'Combustion')
     assert(combustion and picker.value==nil)
     assert(value.node==2301,'viewing another list changed the saved talent')
-    -- A hero talent is reached through its tree; a choice is written with its entry.
-    trees:Fire('OnValueChanged',1);picker.configure()
+    -- A hero talent is under its own heading; a choice is written with its entry.
     local kindling;for index,entry in ipairs(picker.list) do if entry.text:find('Kindling',1,true) then kindling=index end end
     picker:Fire('OnValueChanged',kindling);assert(value.node==2204 and value.entry and value.spell==155148)
-    trees:Fire('OnValueChanged',2);picker.configure();assert(picker.list[1].text=='Frostfire Bolt')
-    picker:Fire('OnValueChanged',1);assert(value.node==2411 and value.spell==431044 and value.entry==nil)
+    picker:Fire('OnValueChanged',assert(entryNamed(picker,'Frostfire Bolt')));assert(value.node==2411 and value.spell==431044 and value.entry==nil)
     -- A hand-typed node no longer goes with the spell of the picked talent.
     local nodeBox=assert(child(parent,'Talent Node ID'));nodeBox:Fire('OnEnterPressed','2202');assert(value.node==2202 and value.spell==nil)
     local entryBox=assert(child(parent,'Choice Entry ID'));entryBox:Fire('OnEnterPressed','77');assert(value.entry==77 and value.spell==nil)
@@ -229,8 +243,8 @@ end)
 test('reopening a saved talent selects it; a talent of another specialization still opens, named, and the list follows the rotation',function()
     local state={spec=FIRE};local f,a=client(state)
     local value={layout='traits',node=2203,spell=257541,operator='EQUALS',value=2}
-    local parent=editor(f,value,FIRE);local trees,picker=child(parent,'Talent Tree'),child(parent,'Talent')
-    trees.configure();picker.configure();assert(trees.value==1 and picker.list[picker.value].text=='Phoenix Flames')
+    local parent=editor(f,value,FIRE);local picker=child(parent,'Talent')
+    picker.configure();assert(picker.list[picker.value].text=='Phoenix Flames' and not picker.list[picker.value].header)
     parent=editor(f,{layout='traits',node=2301,spell=84714,operator='EQUALS',value=1},FIRE)
     picker=child(parent,'Talent');picker.configure();assert(picker.value==nil and #picker.order>0,'a talent of another specialization broke the list')
     assert(picker.disabled==false)
@@ -239,7 +253,7 @@ test('reopening a saved talent selects it; a talent of another specialization st
     assert(a.definitions.TALENT.print(FIRE,{layout='traits',node=2301,spell=84714,operator='EQUALS',value=1}):find('Frozen Orb',1,true))
 end)
 
-test('the picker says why another specialization cannot be listed and keeps node IDs usable',function()
+test('the picker says why the talents cannot be listed, with the reason, and keeps node IDs usable',function()
     local state={spec=FIRE,combat=true};local f,a=client(state)
     local value={};local parent=editor(f,value,FROST)
     assert(F.text(parent):find('during combat',1,true),F.text(parent))
@@ -247,7 +261,128 @@ test('the picker says why another specialization cannot be listed and keeps node
     local nodeBox=assert(child(parent,'Talent Node ID'));nodeBox:Fire('OnEnterPressed','2301')
     assert(value.node==2301 and a.definitions.TALENT.valid(0,value))
     state.combat=false;f=client({spec=FIRE,errors={GetTreeNodes=true}})
-    parent=editor(f,{},FIRE);assert(F.text(parent):find('cannot be listed right now',1,true))
+    parent=editor(f,{},FIRE);assert(F.text(parent):find('cannot be listed right now (api-error)',1,true),F.text(parent))
+    f=client({spec=FIRE,errors={GetConfigInfo=true}});parent=editor(f,{},FIRE)
+    assert(F.text(parent):find('(api-error)',1,true),F.text(parent))
+    -- With no active config yet (right after login) the played specialization is read like another one.
+    f=client({spec=FIRE,noConfig=true});parent=editor(f,{},FIRE)
+    assert(F.text(parent):find('right now',1,true)==nil,'the played specialization could not be listed without an active config')
+end)
+
+test('a rotation for another class gets no list of your talents, only the node IDs',function()
+    local f,a=client({spec=FIRE})
+    a.activeRotationEditor={workspace={RotationClass=function() return 'WARRIOR' end}}
+    local value={}
+    local parent=editor(f,value,FIRE)
+    assert(F.text(parent):find('only for your own class',1,true),F.text(parent))
+    local picker=child(parent,'Talent');picker.configure();assert(picker.disabled==true and #picker.order==0)
+    local nodeBox=assert(child(parent,'Talent Node ID'));nodeBox:Fire('OnEnterPressed','2301')
+    assert(value.node==2301 and a.definitions.TALENT.valid(0,value))
+    a.activeRotationEditor={workspace={RotationClass=function() return 'MAGE' end}}
+    picker=child(editor(f,{},FIRE),'Talent');picker.configure();assert(not picker.disabled and #picker.order>0,'the player\'s own class lost its list')
+end)
+
+test('the icon is the left column of a two-row block: specialization above, talent below, then the rest',function()
+    local state={spec=FIRE};local f,a=client(state)
+    local value={layout='traits',node=2203,spell=257541,operator='EQUALS',value=2}
+    local parent=editor(f,value,FIRE);local box=assert(block(parent))
+    local kinds={};for index,w in ipairs(box.children) do kinds[index]=w.type end
+    assert(kinds[1]=='RM-ConditionIcon' and kinds[2]=='RM-Selector' and kinds[3]=='RM-Selector',table.concat(kinds,','))
+    assert(box.children[2].caption:GetText()=='Specialization' and box.children[3].caption:GetText()=='Talent')
+    local icon=box.children[1];assert(icon.image:GetTexture()==257541+100000,'the icon does not show the saved talent: '..tostring(icon.image:GetTexture()))
+    -- Nothing chosen: a placeholder, not an empty box; choosing fills it.
+    local empty={};parent=editor(f,empty,FIRE);box=assert(block(parent));icon=box.children[1]
+    assert(icon.image:GetTexture()=='Interface\\Icons\\INV_Misc_QuestionMark',tostring(icon.image:GetTexture()))
+    local picker=child(parent,'Talent');picker.configure()
+    picker:Fire('OnValueChanged',assert(entryNamed(picker,'Pyroblast')))
+    assert(icon.image:GetTexture()==11366+100000,'choosing a talent did not fill the icon')
+    -- Nothing else sits between the specialization and the talent lists.
+    for index,w in ipairs(parent.children) do if w==box then assert(parent.children[index+1].label==nil or parent.children[index+1].type=='RM-ConditionLabel') end end
+end)
+
+test('class and specialization talents are told apart by the talent window\'s columns, with a gap, else kept together',function()
+    local f,a=client({spec=FIRE,scale=100})
+    local groups=assert(a.Platform:GetTraitTalents())
+    assert(groups[1].kind=='class' and groups[2].kind=='spec' and groups[3].kind=='hero' and groups[4].kind=='hero',groups[1].kind..'/'..tostring(groups[2].kind))
+    assert(has(names(groups[1]),'Blink') and not has(names(groups[1]),'Pyroblast'),'a specialization talent listed as a class talent')
+    assert(has(names(groups[2]),'Pyroblast') and has(names(groups[2]),'Combustion') and not has(names(groups[2]),'Blink'))
+    local parent=editor(f,{},FIRE);local picker=child(parent,'Talent');picker.configure()
+    local headings={};for _,entry in ipairs(picker.list) do if entry.header then headings[#headings+1]=entry.text end end
+    assert(table.concat(headings,'|')=='Class talents|Specialization talents|Hero talents: Frostfire|Hero talents: Sunfury',table.concat(headings,'|'))
+    -- No gap between the two (overlapping columns): one group, not a guess.
+    f,a=client({spec=FIRE})
+    groups=assert(a.Platform:GetTraitTalents());assert(groups[1].kind=='talents' and has(names(groups[1]),'Blink') and has(names(groups[1]),'Pyroblast'))
+end)
+
+test('a hero subtree the client does not name keeps its talents together, apart from the class and specialization talents',function()
+    local f,a,e=client({spec=FIRE,scale=100})
+    local info=e.C_Traits.GetSubTreeInfo
+    e.C_Traits.GetSubTreeInfo=function(config,sub) local record=info(config,sub);if record and sub==41 then record.name=nil end;return record end
+    local groups=assert(a.Platform:GetTraitTalents())
+    assert(groups[1].kind=='class' and groups[2].kind=='spec' and groups[3].kind=='hero' and groups[3].name==nil and groups[3].talents[1].name=='Frostfire Bolt',groups[3].kind)
+    assert(not has(names(groups[1]),'Frostfire Bolt') and not has(names(groups[2]),'Frostfire Bolt'),'hero talents leaked into the plain groups')
+    local parent=editor(f,{},FIRE);local picker=child(parent,'Talent');picker.configure()
+    local headings={};for _,entry in ipairs(picker.list) do if entry.header then headings[#headings+1]=entry.text end end
+    assert(headings[3]=='Hero Talents' and headings[4]=='Hero talents: Sunfury',table.concat(headings,'|'))
+end)
+
+test('the hero trees follow the specialization even when the client names none; icons are the talent window\'s',function()
+    local state={spec=FIRE};local f,a,e=client(state)
+    -- "Returns nothing if none available" (GetHeroTalentSpecsForClassSpec is MayReturnNothing).
+    e.C_ClassTalents.GetHeroTalentSpecsForClassSpec=function() end
+    local groups=assert(a.Platform:GetTraitTalents())
+    assert(groupNamed(groups,'Frostfire') and groupNamed(groups,'Sunfury'),'hero trees lost')
+    -- Each specialization has its own selection node, visible only to it (TalentFrameUtil.GetFirstAvailableSubTreeSelectionNode):
+    -- the fixture's one node answers with the entries of the specialization shown.
+    local nodeInfo=e.C_Traits.GetNodeInfo
+    e.C_Traits.GetNodeInfo=function(config,id)
+        local info=nodeInfo(config,id)
+        if id==2400 and info.ID==2400 then
+            local own,keep={},{}
+            for _,sub in ipairs(Tree.heroOf[FIRE]) do own[sub]=true end
+            for position,sub in ipairs({41,42,43}) do if own[sub] then keep[#keep+1]=Tree.entryID({id=2400},position) end end
+            info.entryIDs=keep
+        end
+        return info
+    end
+    e.C_Traits.GetHeroTalentSpecsForClassSpec=function() end
+    groups=assert(a.Platform:GetTraitTalents())
+    assert(groupNamed(groups,'Frostfire') and groupNamed(groups,'Sunfury') and not groupNamed(groups,'Spellslinger'),'hero trees not taken from the selection node')
+    e.C_Traits.GetNodeInfo=nodeInfo
+    -- The talent window shows the spell's original icon (TalentButtonUtil.CalculateIconTexture), the override first.
+    e.C_Spell.GetSpellInfo=function(id) local s=Tree.spells[id];if s then return {spellID=id,name=s.name,iconID=s.icon+1,originalIconID=s.icon} end end
+    local pyroblast
+    for _,t in ipairs(assert(a.Platform:GetTraitTalents())[1].talents) do if t.name=='Pyroblast' then pyroblast=t end end
+    assert(pyroblast and pyroblast.icon==11366+100000,'the original icon is the talent window\'s: '..tostring(pyroblast and pyroblast.icon))
+    local definition=e.C_Traits.GetDefinitionInfo
+    e.C_Traits.GetDefinitionInfo=function(id) local info=definition(id);if info and info.spellID==11366 then info.overrideIcon=777;info.overrideName='Hot Rock' end;return info end
+    for _,t in ipairs(assert(a.Platform:GetTraitTalents())[1].talents) do if t.spellID==11366 then pyroblast=t end end
+    assert(pyroblast.icon==777 and pyroblast.name=='Hot Rock','a definition\'s override must win')
+    -- A spell nobody can name: nothing is listed and the reason says so.
+    e.C_Spell.GetSpellInfo=function() return nil end;e.C_Traits.GetDefinitionInfo=definition
+    local value,why=a.Platform:GetTraitTalents();assert(value==nil and why=='talent-entry-unavailable',tostring(why))
+end)
+
+test('another specialization is never read while the talent window shows someone else\'s build',function()
+    local state={spec=FIRE};local f,a,e=client(state);local p=a.Platform
+    e.PlayerSpellsFrame={IsShown=function() return true end,IsInspecting=function() return true end}
+    local value,why=p:GetTraitTalents(FROST);assert(value==nil and why=='talent-window-inspecting' and not state.calls.InitializeViewLoadout,tostring(why))
+    assert(p:GetTraitTalents(),'the played specialization needs no view')
+    e.PlayerSpellsFrame={IsShown=function() return true end,IsInspecting=function() return false end}
+    assert(p:GetTraitTalents(FROST) and state.calls.InitializeViewLoadout==1)
+    e.PlayerSpellsFrame=nil
+    assert(p:GetTraitTalents(ARCANE) and state.calls.InitializeViewLoadout==2,'the lists need no Blizzard window')
+end)
+
+test('the tree button is off while the lists could not be filled, and on once they can',function()
+    local f,a=client({spec=FIRE,errors={GetTreeNodes=true}});local e=f.env
+    a.OpenTalentTree=function() end
+    a.Platform.HasTalentTreeProvider=function() return true end
+    local parent=editor(f,{},FIRE);local box=assert(block(parent));local button=box.children[#box.children]
+    assert(button.type=='RM-ConditionButton' and button.disabled==true,'the tree button is on although nothing is listed')
+    f,a=client({spec=FIRE});a.OpenTalentTree=function() end;a.Platform.HasTalentTreeProvider=function() return true end
+    parent=editor(f,{},FIRE);box=assert(block(parent));button=box.children[#box.children]
+    assert(button.type=='RM-ConditionButton' and not button.disabled and button:GetUserData('side')==true)
 end)
 
 test('Forever and the classic clients keep their pickers: one tree per class, no specialization list',function()
