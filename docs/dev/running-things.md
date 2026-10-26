@@ -108,3 +108,29 @@ python3 tools/locales.py check
 | `/rm check`, `/rm repair` | Validate the saved data; repair what internal validation can |
 | `/rm debug glow [seconds\|show]`, `/rm debug talents [views]`, `/rm debug editor` | See `docs/dev/debugging.md` |
 | `/rm perf cpu\|runtime\|memory [seconds\|stop\|report]`, `/rm perf probe`, `/rm perf engine [lean\|standard]` | Capture performance observations; choose the evaluation engine |
+
+## Tool reference
+
+| Script | Purpose |
+| --- | --- |
+| `tools/check`, `tools/check_all.py` | The command list of every check; fail-fast and run-everything runners |
+| `tools/fast_tests.py` | Suites named after changed Lua files |
+| `tools/test_devtools.py` | Tests of the tools in this table |
+| `tools/setup_lint.py`, `tools/lint.py`, `tools/lint-tool.json`, `tools/lint-baseline.json` | Pinned wowlua-ls: download once, run against the baseline |
+| `tools/catalog_check.py` | Literal `L["key"]` definitions and reads; raw-prose inventory (`docs/quality/localization-inventory.json`) |
+| `tools/locales.py` | Export, missing, build, check, rebuild locale files (the translation tools wrap it) |
+| `tools/translation_status.py`, `translation_todo.py`, `translation_apply.py`, `translation_glossary.py`, `translation_lib.py`, `translation_exempt.json` | Translator workflow (`docs/translators/README.md`) |
+| `tools/generate_artwork_catalog.py` | `Data/artwork.lua` and `.pkgmeta` |
+| `tools/generate_builtin_sources.py`, `tools/collect_builtin_sources.lua`, `tools/public_helpers.lua` | `Data/builtin_sources.lua` and the public helper documentation |
+| `tools/generate_integration_projects.py`, `tools/integration_projects.json` | The supported-addon link catalog |
+| `tools/export_wowsims_mapping.py`, `tools/wowsims_test_data.py` | WowSims transport data and its test inputs |
+| `tools/export_talent_trees.py` | Talent tree names for the website |
+| `tools/builtin_names.py`, `tools/builtin_names_overrides.py`, `tools/builtin_modules.lua` | Built In names; the offline view of the load-on-demand modules |
+| `tools/generate_client_api.py` | Per-client API manifests for the fixtures |
+| `tools/generate_control_icons.py` | Control textures (rsvg-convert and ImageMagick) |
+| `tools/sync_luaworkbench.py` | Rebuild the embedded LuaWorkbench from a pinned checkout |
+| `tools/install_hooks.py` | Plain git hook running `tools/check --static` |
+| `tools/precommit_hygiene.py`, `.pre-commit-config.yaml` | Repository guards and the hook list |
+| `tools/package_release.py`, `tools/release_notes.py`, `tools/release_plan.py`, `tools/gitea_release.py`, `tools/vendor/bigwigs-packager/` | Release package, notes, plan, Gitea release, pinned packager |
+| `tools/lint_workflows.py` | Checks `.gitea/` workflows and actions |
+| `tools/known_failures.txt`, `tools/slow_tests.txt` | Lists `tools/check_all.py` reads |

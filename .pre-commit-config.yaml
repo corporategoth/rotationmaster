@@ -91,7 +91,7 @@ repos:
       # American English in the enUS table, help text and Markdown docs (tests/test_us_spelling.py).
       - id: us-spelling
         name: American English spelling
-        entry: python3 tests/test_us_spelling.py
+        entry: python3 tools/check_all.py --only 'python3 tests/test_us_spelling.py' --baseline tools/known_failures.txt
         language: system
         pass_filenames: false
         files: '\.(lua|md)$'

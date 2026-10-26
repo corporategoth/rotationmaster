@@ -94,7 +94,9 @@ Two engines evaluate (`main.lua`, `BEGIN LEAN EVALUATION`; `/rm perf engine lean
   item set and effect writer), the *context epoch* (events that change eligibility: level, talents, spells, form,
   combat...) and a 60 second age cap. Conditions, readiness, range and cooldowns are still read fresh every poll.
 
-The runtime also gates idle polls (no target, focus or combat: evaluate on events or about once a second). Any code that
+The poll runs every `poll` seconds (default 0.15). The *idle gate* skips ticks out of combat with no target, no focus and
+the configuration window closed: a tick evaluates only after one of the unit, cooldown or bag notifications listed in
+`main.lua`, or once per `idle_poll` seconds (default 1.0) as a floor for time and position (`idle_poll = 0` turns the gate off). Any code that
 writes a rotation, condition, function, item set or effect in place must notify
 (`addon:InvalidateRotationDependencies`, `docs/architecture/runtime-revisions.md`) or the lean plan goes stale.
 

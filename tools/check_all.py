@@ -14,8 +14,9 @@ red rather than only what is first. The command list stays in one place.
   python3 tools/check_all.py --list                print the selected commands and exit
   python3 tools/check_all.py --baseline FILE       fail only on suites not listed in FILE (known red)
   python3 tools/check_all.py --skip-slow FILE      leave out the commands listed in FILE (tools/slow_tests.txt)
+  python3 tools/check_all.py --only 'python3 tests/test_us_spelling.py'   run just that command (repeatable); hooks use this
 
-Output of a passing command is dropped; a failing command's output is printed in full after it.
+Output of a passing or known-failing command is dropped; any other failing command's output is printed in full after it.
 Exit status is 0 when nothing outside the baseline failed. Commands run serially.
 """
 import argparse
@@ -82,6 +83,8 @@ def main(argv=None):
     parser.add_argument('--list', action='store_true', help='Print the selected commands and exit.')
     parser.add_argument('--timeout', type=int, default=3600, help='Seconds one command may run (default 3600).')
     parser.add_argument('--baseline', help='File of command labels (one per line) known to fail; they do not fail the run.')
+    parser.add_argument('--only', action='append', default=[], metavar='COMMAND',
+                        help='Run only the command(s) with exactly this label, as printed by --list; repeatable.')
     parser.add_argument('--skip-slow', metavar='FILE', help='File of command labels to leave out (the slow ones; see tools/slow_tests.txt).')
     parser.add_argument('--json', dest='json_path', help='Write a machine-readable summary here.')
     parser.add_argument('--verbose', action='store_true', help='Print the output of passing commands too.')
@@ -97,7 +100,8 @@ def main(argv=None):
     started = time.time()
 
     def selected(command):
-        return (args.runtime == 'all' or runtime_of(command) == args.runtime) and label(command) not in slow
+        return ((args.runtime == 'all' or runtime_of(command) == args.runtime) and label(command) not in slow
+                and (not args.only or label(command) in args.only))
 
     def recording_run(command, **kwargs):
         if args.list:
@@ -119,7 +123,7 @@ def main(argv=None):
         results.append({'command': label(command), 'runtime': runtime_of(command), 'code': code, 'seconds': round(elapsed, 2)})
         status = 'ok  ' if code == 0 else ('known' if label(command) in baseline else 'FAIL')
         print(f'{status} {elapsed:6.1f}s  {label(command)}', file=out_stream, flush=True)
-        if code != 0 or args.verbose:
+        if (code != 0 and label(command) not in baseline) or args.verbose:
             out_stream.write(text if text.endswith('\n') or not text else text + '\n')
             out_stream.flush()
         return subprocess.CompletedProcess(command, 0)
