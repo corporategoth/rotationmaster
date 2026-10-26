@@ -620,12 +620,14 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         else self.specButton:Hide() end
         self.name:ClearAllPoints();self.name:SetPoint('TOPLEFT',frame,'TOPLEFT',x,-4)
         self.name:SetWidth(math.max(60,width-x-HEADER_GAP-self.info:GetWidth()-8-reserve))
-        -- Row 2 is three groups, kept whole: the kind slot (the Read-Only pill on
-        -- a Built In; Undo and Redo, in the same space, on your own), then ID with Priority, then
-        -- Enabled with Delete (and Reset to default). They run left to right
-        -- in that order; a group that does not fit moves down to the next
-        -- line, so nothing ever sits on another control. Enabled and Delete
-        -- keep to the right edge of their line.
+        -- Row 2 is a slot at the left and a cluster at the right. The slot
+        -- holds the Read-Only pill on a Built In and, in the same space, Undo
+        -- and Redo on your own rotation. The cluster is flush right and in
+        -- one order: ID, Priority, Enabled, Delete; it never moves, whether or
+        -- not Reset to default shows. Reset (a Built In whose settings you
+        -- changed) goes left of ID, in the free space, or on the line below
+        -- when there is none. The cluster is kept whole: when it cannot share
+        -- the slot's line it moves down to the next line, still flush right.
         local function place(control,left,top)
             control:ClearAllPoints();control:SetPoint('TOPLEFT',frame,'TOPLEFT',left,-(top+(20-control:GetHeight())/2))
         end
@@ -633,7 +635,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
             label:ClearAllPoints();label:SetPoint('LEFT',frame,'TOPLEFT',left,-(top+10))
         end
         local function sized(label) local w=math.max(1,math.ceil(label:GetStringWidth() or 0));label:SetWidth(w);label:SetHeight(12);return w end
-        local kind,kindWidth={},0
+        local kind={}
         if readOnly then
             self.readOnlyPill:Show();kind[1]=self.readOnlyPill
         else
@@ -641,41 +643,43 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
             for _,control in ipairs(self.tools) do control:Show();kind[#kind+1]=control end
         end
         for _,control in ipairs(self.tools) do if readOnly then control:Hide() end end
-        kindWidth=KIND_WIDTH -- one slot, whichever of the two shows
         local idLabelWidth=sized(self.identifierLabel);local priorityLabelWidth=sized(self.priorityLabel)
         local idWidth=idLabelWidth+4+self.identifier:GetWidth()
         local priorityWidth=priorityLabelWidth+4+18+2+self.priority:GetWidth()+2+18
-        local middleWidth=idWidth+(showPriority and HEADER_GAP+2+priorityWidth or 0)
-        local endWidth=self.enable:GetWidth()+4+self.delete:GetWidth()+(showReset and self.overrideReset:GetWidth()+4 or 0)
+        local idPriorityWidth=idWidth+(showPriority and HEADER_GAP+2+priorityWidth or 0)
+        local enabledWidth=self.enable:GetWidth()+4+self.delete:GetWidth()
+        local clusterWidth=idPriorityWidth+HEADER_GAP+enabledWidth
+        local resetWidth=showReset and self.overrideReset:GetWidth() or 0
         for _,control in ipairs({self.priorityLabel,self.priority,self.priorityDown,self.priorityUp}) do if showPriority then control:Show() else control:Hide() end end
         if showReset then self.overrideReset:Show() else self.overrideReset:Hide() end
         self.enable:Show();self.delete:Show();self.identifier:Show();self.identifierLabel:Show()
-        local right,y=width-8,34
-        local cursor=8
-        if #kind>0 then
-            local at=cursor
-            for _,control in ipairs(kind) do place(control,at,y);at=at+control:GetWidth()+4 end
-            cursor=8+kindWidth
-        end
-        -- ID and Priority stay together.
-        if cursor>8 and cursor+HEADER_GAP+middleWidth>right then y=y+24;cursor=8 end
-        local at=cursor>8 and cursor+HEADER_GAP or 8
-        placeLabel(self.identifierLabel,at,y);at=at+idLabelWidth+4
-        place(self.identifier,at,y);at=at+self.identifier:GetWidth()
+        local right,first=width-8,34
+        local at=8
+        for _,control in ipairs(kind) do place(control,at,first);at=at+control:GetWidth()+4 end
+        local slotEnd=8+KIND_WIDTH
+        local clusterLeft=right-clusterWidth
+        local clusterLine=first
+        if slotEnd+HEADER_GAP+clusterWidth>right then clusterLine=first+24 end
+        local function resetFits(line) return clusterLeft-HEADER_GAP-resetWidth>=(line==first and slotEnd+HEADER_GAP or 8) end
+        -- Reset never moves the cluster (it appears when you change a setting):
+        -- with no room beside ID it takes the line below, flush right.
+        local resetLine=clusterLine
+        if showReset and not resetFits(clusterLine) then resetLine=clusterLine+24 end
+        local y=math.max(clusterLine,resetLine)
+        at=clusterLeft
+        placeLabel(self.identifierLabel,at,clusterLine);at=at+idLabelWidth+4
+        place(self.identifier,at,clusterLine);at=at+self.identifier:GetWidth()
         if showPriority then
             at=at+HEADER_GAP+2
-            placeLabel(self.priorityLabel,at,y);at=at+priorityLabelWidth+4
-            place(self.priorityDown,at,y);at=at+18+2
-            place(self.priority,at,y);at=at+self.priority:GetWidth()+2
-            place(self.priorityUp,at,y);at=at+18
+            placeLabel(self.priorityLabel,at,clusterLine);at=at+priorityLabelWidth+4
+            place(self.priorityDown,at,clusterLine);at=at+18+2
+            place(self.priority,at,clusterLine);at=at+self.priority:GetWidth()+2
+            place(self.priorityUp,at,clusterLine);at=at+18
         end
-        cursor=at
-        -- Enabled and Delete stay together, at the right edge.
-        if cursor+HEADER_GAP+endWidth>right then y=y+24 end
-        at=right-endWidth
-        if showReset then place(self.overrideReset,at,y);at=at+self.overrideReset:GetWidth()+4 end
-        place(self.enable,at,y);at=at+self.enable:GetWidth()+4
-        place(self.delete,at,y)
+        at=right-enabledWidth
+        place(self.enable,at,clusterLine);at=at+self.enable:GetWidth()+4
+        place(self.delete,at,clusterLine)
+        if showReset then place(self.overrideReset,resetLine==clusterLine and clusterLeft-HEADER_GAP-resetWidth or right-resetWidth,resetLine) end
         local available=self.validation and self.validation.valid and self.validation.supported and self.validation.resolved and not self:HasInvalidPendingFields()
         self.validationButton:ClearAllPoints();self.validationButton:SetPoint('TOPLEFT',8,-y-26);self.validationButton:SetWidth(math.max(100,width-16))
         self:RefreshSectionMarkers()

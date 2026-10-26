@@ -1,6 +1,6 @@
 -- The rotation editor's header, two rows:
 --   row 1  [specialization] [name ........................] [Metadata]
---   row 2  [kind] [ID  Priority] [Enabled  Delete]       (wraps by group)
+--   row 2  [kind] ................ [Reset*] [ID  Priority] [Enabled  Delete]   (flush right)
 -- where the kind slot holds the Read-Only pill on a Built In and, in the very
 -- same space, Undo + Redo on your own rotation (the Default is editable, so it
 -- carries Undo and Redo too); nothing else moves between the two. For the Default, a Built In (with and without a Reset to
@@ -8,7 +8,7 @@
 -- the narrowest window (800 px) and a normal one, every visible control
 -- sits inside the pane and on none of the others; the specialization
 -- picker is the first control of row 1; the name field has no label; and
--- when row 2 does not fit it wraps whole groups in a fixed order.
+-- when row 2 does not fit, the right cluster drops whole to the next line, still flush right.
 -- Geometry is resolved from the real anchors (tests/fixtures/layout_audit.lua);
 -- text is measured per character (7 px, wider than the client's font).
 local T=dofile('tests/fixtures/toc_addon.lua')
@@ -83,23 +83,35 @@ local function check(pane,label,case,nameMinimum)
         assert(byName.redo and line(byName.redo)==line(k) and k.right<=byName.redo.left+.5,label..': Undo and Redo are not together')
         assert(not byName['read-only pill'],label..': a Read-Only pill on your own rotation')
     else assert(not byName.undo and not byName.redo,label..': Undo/Redo on a read-only rotation') end
+    -- The cluster is flush right in one order: ID, Priority, Enabled, Delete; it is one line, whole.
     local idLine=line(byName.id)
     assert(line(byName['id label'])==idLine,label..': the ID label is on another line')
     assert(byName['id label'].right<=byName.id.left+.5)
     if case~='default' then
         for _,n in ipairs({'priority label','priority down','priority','priority up'}) do assert(line(byName[n])==idLine,label..': '..n..' is not with ID') end
         assert(byName.id.right<=byName['priority label'].left+.5 and byName['priority label'].right<=byName['priority down'].left+.5 and byName['priority down'].right<=byName.priority.left+.5 and byName.priority.right<=byName['priority up'].left+.5,label..': Priority is out of order')
-    else assert(not byName.priority and not byName['priority label'],label..': the Default shows a priority') end
-    local endLine=line(byName.enabled)
-    assert(line(byName.delete)==endLine and byName.enabled.right<=byName.delete.left+.5,label..': Enabled and Delete are not together')
-    if byName.reset then assert(line(byName.reset)==endLine and byName.reset.right<=byName.enabled.left+.5,label..': Reset is not with Enabled') end
-    assert(line(k)<=idLine and idLine<=endLine,label..': the groups are out of order')
-    if line(k)==idLine then assert(k.right<=byName['id label'].left+.5,label..': the kind is not left of ID') end
-    if idLine==endLine then assert(byName.id.right<=byName.enabled.left+.5 and (byName.priority or byName.id).right<=byName.enabled.left+.5,label..': ID is not left of Enabled') end
+        assert(byName['priority up'].right<=byName.enabled.left+.5,label..': Priority is not left of Enabled')
+    else
+        assert(not byName.priority and not byName['priority label'],label..': the Default shows a priority')
+        assert(byName.id.right<=byName.enabled.left+.5,label..': ID is not left of Enabled')
+    end
+    assert(line(byName.enabled)==idLine and line(byName.delete)==idLine,label..': Enabled and Delete are not with ID')
+    assert(byName.enabled.right<=byName.delete.left+.5,label..': Enabled is not left of Delete')
+    assert(math.abs(byName.delete.right-(root.width-8))<.5,label..': Delete is not flush right: '..byName.delete.right)
+    assert(line(k)<=idLine,label..': the cluster is above the slot')
+    if line(k)==idLine then assert(k.right<=byName['id label'].left+.5,label..': the slot is not left of ID') end
+    local resetLine
+    if byName.reset then
+        resetLine=line(byName.reset)
+        if resetLine==idLine then
+            assert(byName.reset.right<=byName['id label'].left+.5,label..': Reset is not left of ID')
+            assert(line(k)~=idLine or k.right<=byName.reset.left+.5,label..': Reset sits on the slot')
+        else assert(resetLine>idLine and math.abs(byName.reset.right-(root.width-8))<.5,label..': Reset is not flush right on the line below') end
+    end
     -- The switch heading begins below the last header line.
     local lowest=-math.huge;for _,item in ipairs(seen) do if item[1]~='switch heading' then lowest=math.max(lowest,-item[2].bottom) end end
     assert(-byName['switch heading'].top>=lowest-.5,label..': the switch heading is inside the header')
-    return byName,line(k),idLine,endLine
+    return byName,line(k),idLine,resetLine
 end
 
 for _,language in ipairs({'enUS','deDE','ruRU'}) do
@@ -112,9 +124,10 @@ for _,language in ipairs({'enUS','deDE','ruRU'}) do
                 for k,v in pairs(pane) do
                     if type(v)=='table' and v.kind=='FontString' and v:IsShown() then assert(v.text~=pane.name.tooltip,label..': '..tostring(k)..' is a Name label') end
                 end
-                local _,kind,id,finish_=check(pane,label,case=='builtin overridden' and 'builtin' or case)
-                -- One line, except where Reset to default (116 px) also shows at the minimum width.
-                if size=='normal' or case~='builtin overridden' then assert(kind==id and id==finish_,label..': row 2 wraps') end
+                local _,kind,id,resetLine=check(pane,label,case=='builtin overridden' and 'builtin' or case)
+                -- One line; Reset to default (116 px) takes the line below only where it has no room beside ID.
+                assert(kind==id,label..': the cluster wraps')
+                if size=='normal' then assert(resetLine==nil or resetLine==id,label..': Reset wraps at a normal width') end
                 -- The picker keeps the Built In and Default read-only, your own editable.
                 assert(pane.specButton:IsShown() and (case=='mine')==pane.specButton:IsEnabled(),label..': picker state')
                 pane:Release()
@@ -133,11 +146,31 @@ test('the kind slot is one rectangle: the Read-Only pill and Undo + Redo fill th
             assert(undo.left==pill.left and redo.right==pill.right and undo.right<=redo.left,label..': Undo+Redo do not span the pill\'s slot')
             assert(own.undo:GetText()=='' and own.redo:GetText()=='',label..': Undo/Redo are not icon-only')
             assert(own.undo.tooltip and own.redo.tooltip,label..': Undo/Redo lost their tooltips')
-            -- ID, Priority, Enabled and Delete sit where they sit with the pill.
+            -- ID, Priority, Enabled and Delete sit where they sit with the pill (flush right).
             for _,name in ipairs({'identifierLabel','identifier','priorityLabel','priorityDown','priority','priorityUp','enable','delete'}) do
                 local a,b=rb(builtin[name]),ro(own[name])
                 assert(a.left==b.left and a.right==b.right and a.top==b.top,label..': '..name..' moves between Built In and own rotation')
             end
+        end
+    end
+end)
+
+test('the right cluster (ID, Priority, Enabled, Delete) is flush right and does not move when Reset to default appears',function()
+    for _,language in ipairs({'enUS','deDE','ruRU'}) do
+        for _,size in ipairs({'min','normal'}) do
+            local label=language..' '..size
+            local _,plain=open(language,'builtin',WIDTHS[size]);local _,reset=open(language,'builtin overridden',WIDTHS[size]);local _,own=open(language,'mine',WIDTHS[size])
+            assert(reset.overrideReset:IsShown() and not plain.overrideReset:IsShown(),label..': Reset visibility')
+            local rp,rr,ro=audit.resolver(plain.frame),audit.resolver(reset.frame),audit.resolver(own.frame)
+            for _,name in ipairs({'identifierLabel','identifier','priorityLabel','priorityDown','priority','priorityUp','enable','delete'}) do
+                local a,b,c=rp(plain[name]),rr(reset[name]),ro(own[name])
+                for _,other in ipairs({b,c}) do assert(a.left==other.left and a.right==other.right and a.top==other.top,label..': '..name..' moves') end
+            end
+            assert(math.abs(rp(plain.delete).right-(plain.frame.width-8))<.5,label..': Delete is not flush right')
+            -- Reset sits left of ID when there is room, else on the line below, flush right.
+            local r,id=rr(reset.overrideReset),rr(reset.identifierLabel)
+            assert(r.right<=id.left+.5 or (r.top<id.bottom and math.abs(r.right-(reset.frame.width-8))<.5),label..': Reset is misplaced')
+            if size=='normal' then assert(r.right<=id.left+.5,label..': Reset wraps at a normal width') end
         end
     end
 end)
@@ -155,15 +188,15 @@ test('the picker holds the longest specialization wording at its fixed width, an
         for _,text in ipairs(texts) do assert(characters(text)*6<=width-30,language..': "'..text..'" does not fit the picker') end
     end
 end)
-test('row 2 wraps whole groups in order when they cannot share a line: kind, then ID with Priority, then Enabled with Delete',function()
-    -- Forced: a pane too narrow for the three groups on one line.
+test('row 2 wraps in a pane too narrow for the slot and the cluster together: the cluster drops flush right below the slot',function()
+    -- Forced: a pane too narrow for the slot and the cluster on one line.
     local _,pane=open('ruRU','mine',WIDTHS.min)
     pane.frame:SetWidth(430);pane:Layout()
     local resolve2=audit.resolver(pane.frame)
     local rows={}
     for _,control in ipairs({pane.undo,pane.identifier,pane.priority,pane.enable,pane.delete}) do local r=resolve2(control);rows[#rows+1]=-(r.top+r.bottom)/2 end
-    assert(rows[1]<=rows[2] and rows[2]==rows[3] and rows[3]<=rows[4] and rows[4]==rows[5],'groups did not keep together in order')
-    assert(rows[4]>rows[1],'nothing wrapped in a narrow pane')
+    assert(rows[2]==rows[3] and rows[3]==rows[4] and rows[4]==rows[5],'the cluster did not stay whole')
+    assert(rows[2]>rows[1],'nothing wrapped in a narrow pane')
     check(pane,'narrow','mine',60)
 end)
 finish()
