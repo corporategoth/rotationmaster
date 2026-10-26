@@ -95,10 +95,16 @@ source=source:sub(1,hitStart-1).." local tracking=false;local observed={}\n loca
 source=source.." return {a=a,e=e,tick=tick,load=load,reset=function(track)native={};observed={};tracking=track end,snapshot=function()return native,observed end}\nend\nreturn make"
 local factory=assert(loadstring('local persistent=...\nlocal function fixture()local e,a,_,load=persistent(nil,nil,true);a.currentSpec=0;e.GetTime=function()return 100 end;a.lastCacheReport=100;return e,a,nil,nil,nil,nil,load end\n'..source,'@external-normalized-shaman-factory'))(makePersistent)
 local restore=dofile('tests/fixtures/restore_rotation_execution_index.lua')
-local frozen={};for _,path in ipairs({'Core/rotation_sequence.lua','main.lua','Data/plain.lua','Data/rotation_tree.lua'})do local text=dofile('tests/fixtures/parser_string_history.lua')(read(path),path);if path=='Data/rotation_tree.lua'then text=dofile('tests/fixtures/restore_index_unsupported_binding.lua')(text)end;if path=='main.lua'then text=dofile('tests/fixtures/restore_cache_mode_initialization.lua')(text)end;frozen[path]=restore(dofile('tests/fixtures/restore_rotation_execution_diagnostics.lua')(text,path),path)end
+-- The predecessor sources are rebuilt only for a caller that asks for the old engine (the second argument below): a suite that
+-- runs the current code must not depend on the byte-exact text of the files it never compares against a predecessor.
+local frozen;local function predecessors()
+if frozen then return frozen end
+frozen={};for _,path in ipairs({'Core/rotation_sequence.lua','main.lua','Data/plain.lua','Data/rotation_tree.lua'})do local text=dofile('tests/fixtures/parser_string_history.lua')(read(path),path);if path=='Data/rotation_tree.lua'then text=dofile('tests/fixtures/restore_index_unsupported_binding.lua')(text)end;if path=='main.lua'then text=dofile('tests/fixtures/restore_cache_mode_initialization.lua')(text)end;frozen[path]=restore(dofile('tests/fixtures/restore_rotation_execution_diagnostics.lua')(text,path),path)end
+return frozen
+end
 return function(options,old)
  local original=loadfile
- if old then _G.loadfile=function(path)if frozen[path]then return assert(loadstring(frozen[path],'@'..path))end;return original(path)end end
+ if old then local frozen=predecessors();_G.loadfile=function(path)if frozen[path]then return assert(loadstring(frozen[path],'@'..path))end;return original(path)end end
  local ok,c=pcall(factory,options or {});_G.loadfile=original;assert(ok,c)
  assert(type(getmetatable(c.a).__tostring)=='function'and tostring(c.a)=='rotationmaster')
  assert(getfenv(c.a.EvaluateRotationSequence)==c.e,'wrong sequence owner environment')
