@@ -1,9 +1,136 @@
+# Pre-commit hooks for Rotation Master.
+#
+# Install (once per clone; re-run after editing this file):
+#   pre-commit install --install-hooks
+#   pre-commit install --hook-type pre-push
+#
+# Run by hand:
+#   pre-commit run --all-files                           everything at the commit stage
+#   pre-commit run --all-files --hook-stage pre-push     the full suite and the package check as well
+#
+# Split by stage on purpose. The commit stage holds checks that finish in seconds, apart from the static
+# gate (about 20 s, and what the repository's installed git hook already runs on every commit), because a
+# hook slow enough to be worth skipping gets skipped. The full test suite runs at push time and again in CI.
+# Prerequisites: python3, lua5.1 (luac5.1), luajit, and `python3 tools/setup_lint.py` once for the pinned
+# WoW static checker. A global core.hooksPath makes `pre-commit install` refuse; see CONTRIBUTING.md.
+
+default_install_hook_types: [pre-commit, pre-push]
+
+# Vendored libraries, fonts, art and the large frozen fixtures are not reformatted or re-scanned: their bytes
+# are pinned (Libs/UPSTREAM.json, tests/fixtures) and changing them is its own decision.
+exclude: '^(Libs/|LibsAugment/|Fonts/|Assets/.*\.(tga|blp|png)$|textures/|tools/vendor/|tests/fixtures/)'
+
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-xml
+      - id: check-added-large-files
+        # The locale tables (about 1.5 MB each) and Data/builtin_sources.lua are the largest legitimate files.
+        args: ['--maxkb=2048']
+      - id: check-merge-conflict
+      - id: detect-private-key
+      - id: check-case-conflict
+      - id: check-symlinks
+      - id: mixed-line-ending
+        args: [--fix=no]
+
   - repo: local
     hooks:
+      # Parse every changed Lua file with the Lua 5.1 compiler first, so a syntax error fails in a
+      # fraction of a second instead of after the static gate below.
+      - id: lua-syntax
+        name: Lua 5.1 syntax
+        entry: python3 tools/precommit_hygiene.py lua-syntax
+        language: system
+        files: '\.lua$'
+
+      - id: no-carriage-returns
+        name: LF line endings, no byte order mark
+        entry: python3 tools/precommit_hygiene.py endings
+        language: system
+        files: '\.(lua|toc|xml|py|md|ya?ml|txt|json)$'
+
+      # Planning documents never go in the repository; neither does machine-local Claude config,
+      # build output, key material or a generated CHANGELOG.md.
+      - id: forbidden-files
+        name: No planning docs, local settings or build output
+        entry: python3 tools/precommit_hygiene.py forbidden
+        language: system
+        always_run: true
+
+      - id: no-secrets
+        name: No credentials in files
+        entry: python3 tools/precommit_hygiene.py secrets
+        language: system
+
+      # The commit gate: tests/verify.py (Lua 5.1 parse of every source, the real TOC/XML load graph,
+      # vendor hashes, packaged-runtime files), tools/catalog_check.py, tools/locales.py check,
+      # tools/lint.py (pinned wowlua-ls static analysis against its baseline), tools/builtin_names.py check,
+      # and the freshness of every generated file (generate_builtin_sources, generate_artwork_catalog
+      # including .pkgmeta, generate_integration_projects, export_wowsims_mapping --check).
       - id: rotationmaster-check
-        name: Rotation Master offline checks
-        entry: python3 tools/check
+        name: Rotation Master static checks
+        entry: python3 tools/check --static
         language: system
         pass_filenames: false
         always_run: true
+
+      # American English in the enUS table, help text and Markdown docs (tests/test_us_spelling.py).
+      - id: us-spelling
+        name: American English spelling
+        entry: python3 tests/test_us_spelling.py
+        language: system
+        pass_filenames: false
+        files: '\.(lua|md)$'
+
+      # The development tools' own tests: package builder and checker, release notes, translation tools,
+      # the guards above. Seconds.
+      - id: devtools-tests
+        name: Development tool tests
+        entry: python3 tools/test_devtools.py
+        language: system
+        pass_filenames: false
+        files: '^(tools/|\.pkgmeta$|\.pre-commit-config\.yaml$|\.gitea/)'
+
+      # The Gitea workflows: structure, SHA-pinned actions, shell syntax, secrets only in env. Needs PyYAML
+      # (pre-commit installs it; on a bare machine the check says so and skips).
+      - id: workflow-lint
+        name: Gitea workflows are well formed
+        entry: python3 tools/lint_workflows.py
+        language: system
+        pass_filenames: false
+        files: '^\.gitea/'
+
+      # The suites that exercise the changed files, in seconds: tests/<name>*.lua for each changed
+      # <name>.lua, and any changed test itself, on Lua 5.1. Nothing runs when no suite matches.
+      - id: fast-tests
+        name: Tests for the changed files
+        entry: python3 tools/fast_tests.py
+        language: system
+        files: '\.lua$'
+
+      # The real gate, at push time: every test on Lua 5.1 and LuaJIT and every Python test, not stopping
+      # at the first failure (tools/check_all.py runs tools/check's own command list). CI runs the same.
+      - id: full-suite
+        name: Full test suite (Lua 5.1 and LuaJIT)
+        entry: python3 tools/check_all.py --baseline tools/known_failures.txt
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
+
+      # Build the release package offline and check it: nothing for the game missing, nothing for
+      # development in it, every TOC consistent. A few seconds.
+      - id: package-check
+        name: Release package builds and checks out
+        entry: python3 tools/package_release.py --check --out .release
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]

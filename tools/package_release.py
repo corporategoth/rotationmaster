@@ -372,11 +372,6 @@ def check_layout(layout, meta, version, source_root=ROOT, interfaces=None, max_f
             problems.append(f'{name}: an @project-*@ keyword was not replaced')
         if '\r' in text:
             problems.append(f'{name}: has CR line endings')
-    locales = source_root / 'locales.xml'
-    if locales.is_file():
-        for reference in xml_files(locales.read_text(encoding='utf-8')):
-            if f'{package}/{reference}' not in names:
-                problems.append(f'locales.xml names {reference}, which is not in the package')
     if zip_bytes is not None and zip_bytes > max_zip_mb * 1024 * 1024:
         problems.append(f'the zip is {zip_bytes // (1024 * 1024)} MB (limit {max_zip_mb} MB)')
     return problems

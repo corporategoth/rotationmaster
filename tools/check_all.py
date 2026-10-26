@@ -43,6 +43,30 @@ def label(command):
     return ' '.join([os.path.basename(command[0]) if command[0] == sys.executable else command[0]] + list(command[1:]))
 
 
+def collect(static=False):
+    """Every command tools/check would run, in order, without running any."""
+    namespace = runpy.run_path(str(ROOT / 'tools' / 'check'), run_name='rotationmaster_tools_check')
+    commands, real_run, saved_argv, saved_out = [], subprocess.run, sys.argv, sys.stdout
+
+    class Sink:
+        def write(self, text):
+            return len(text)
+
+        def flush(self):
+            pass
+
+    def record(command, **kwargs):
+        commands.append(list(command))
+        return subprocess.CompletedProcess(command, 0)
+
+    sys.argv, subprocess.run, sys.stdout = ['check'] + (['--static'] if static else []), record, Sink()
+    try:
+        namespace['main']()
+    finally:
+        sys.argv, subprocess.run, sys.stdout = saved_argv, real_run, saved_out
+    return commands
+
+
 def load_baseline(path):
     if not path:
         return set()

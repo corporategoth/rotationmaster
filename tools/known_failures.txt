@@ -1,0 +1,7 @@
+# Test commands that are known to fail, one per line exactly as tools/check_all.py prints them
+# ("lua5.1 tests/x.lua", "python3 tests/y.py"). tools/check_all.py --baseline tools/known_failures.txt lets
+# these fail without failing the run; any other failure still does. CI's push and pull-request workflow uses this
+# file, the release workflow does not (a release must be green unless allow_known_failures is chosen by hand).
+#
+# Keep it short and temporary: remove a line the moment its suite is green again, and never add a line to hide a
+# regression you just made. An empty list (only comments) is the goal.
