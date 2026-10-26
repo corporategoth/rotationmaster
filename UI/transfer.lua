@@ -141,7 +141,7 @@ function addon:ShowRotationTransfer(spec,id)
         if not valid() or not candidate then return end;local object=candidate.kind=='envelope' and candidate.value or {body=candidate.value};local report=self.RotationData.DiffRotations({},object)
         for _,diagnostic in ipairs(candidate.validation.diagnostics) do report.diagnostics[#report.diagnostics+1]=diagnostic end;return self:ShowComparisonReport(self:FormatRotationComparison(report))
     end
-    options.onClose=function() active=false;formats:Forget();session:Clear();if p.active and p.generation==generation then p:Release() end end
+    options.onClose=function() active=false;formats:Release();session:Clear();if p.active and p.generation==generation then p:Release() end end
     dialog=self:ShowSettingsTextTransfer(p,L['Import/Export Rotation'],exported or '',function(_,settings)
         if not candidate then return false,L['Preview a pasted rotation before importing it.'] end
         local target=settings.mode=='replace' and reference or nil
@@ -169,7 +169,9 @@ function addon:ShowRotationTransfer(spec,id)
     dialog.frame:SetHeight(470)
     dialog.scroll:ClearAllPoints();dialog.scroll:SetPoint('TOPLEFT',12,-190);dialog.scroll:SetHeight(188);dialog.input:SetHeight(188);scopeState()
     dialog.status:ClearAllPoints();dialog.status:SetPoint('TOPLEFT',12,-384)
-    self:AttachTransferFormatControls(dialog,formats,options)
+    -- The Format choice is an addition to the window: if it cannot be built, the window is the Rotation Master one.
+    local attached,problem=pcall(self.AttachTransferFormatControls,self,dialog,formats,options)
+    if not attached then formats.format='rm';dialog.status:SetText(string.format(L['The Format choice could not be shown: %s'],tostring(problem))) end
     if exportError and formats.format=='rm' then dialog.status:SetText(string.format(L['Export unavailable: %s'],exportError)) end
     return dialog
 end

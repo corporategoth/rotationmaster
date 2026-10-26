@@ -153,6 +153,7 @@ function api.export(body, context)
         if r.ok then
             r.text = export.stringify(r.wrapper) .. '\n'
             r.aplText = export.stringify(r.apl) .. '\n'
+            r.compactText = json.encode(r.wrapper) .. '\n'
         end
         return r
     end)

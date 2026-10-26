@@ -99,6 +99,8 @@ local function stubApis(env, requirements, absent)
     end
 end
 
+M.stubApis = stubApis
+
 --- The game's own condition-support check on a simulated client of the edition: tree -> {ok, reason, code}.
 function M.supports(F, edition)
     local product = M.PRODUCT[edition]
@@ -114,6 +116,33 @@ function M.supports(F, edition)
         if reason then return {ok = false, reason = reason, code = reason} end
         return {ok = true}
     end, f
+end
+
+-- Condition definitions that accept every field the converter writes (a stand-in for the game's real schemas, which
+-- tests/wowsims_real_catalog.lua uses): one per condition type the rule table can produce.
+function M.permissiveConditions(ns)
+    local union = {'string', 'number', 'boolean', 'number[]'}
+    local fields = {}
+    local function visit(tree)
+        if type(tree) ~= 'table' then return end
+        if type(tree.type) == 'string' and tree.type ~= 'NOT' and tree.type ~= 'AND' and tree.type ~= 'OR' then
+            local entry = fields[tree.type] or {}
+            fields[tree.type] = entry
+            for key in pairs(tree) do if key ~= 'type' then entry[key] = union end end
+            entry.operator = union
+            entry.value = union
+        end
+        for _, child in pairs(tree) do visit(child) end
+    end
+    for _, value in pairs(ns.mapping.values) do
+        visit(value.rm); visit(value.itemRm)
+        if value.byUnit then visit(value.byUnit.friendly); visit(value.byUnit.hostile) end
+    end
+    for _, action in pairs(ns.mapping.actions) do visit(action.guard) end
+    visit({type = 'COMBAT', unit = 'player'})
+    local definitions = {}
+    for tag, set in pairs(fields) do definitions[tag] = {fields = set, requiredFields = {}} end
+    return definitions
 end
 
 local function sorted(t)

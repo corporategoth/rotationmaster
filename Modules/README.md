@@ -19,6 +19,8 @@ Adding a pack: put the file in `Modules/RotationMaster_<Class>/<edition>/` and a
 
 A development install (a checkout linked into `Interface/AddOns`) needs one more link per module, since the client only scans top-level AddOns folders: `Interface/AddOns/RotationMaster_Shaman -> <checkout>/Modules/RotationMaster_Shaman`, and so on for all 13 (each carries every edition).
 
+`Modules/RotationMaster_WowSims/` is the one module that is not a class: it holds the WowSims converters (`docs/quality/wowsims-transport.md`) as a load-on-demand add-on with a single TOC for every client, loaded by `Core/transfer_formats.lua` the first time a rotation transfer window needs it. `tests/verify.py` treats a module whose fallback TOC lists files that way (one TOC, every Lua file listed exactly once, no flavour TOCs, no `bind.lua`); `.pkgmeta` moves it out like the others. A development install links it too: `Interface/AddOns/RotationMaster_WowSims -> <checkout>/Modules/RotationMaster_WowSims`.
+
 ## Authoring
 
 Definitions in this folder are addon data and read-only in game. They appear in the declared class’s list, including disabled and otherwise inapplicable definitions for that class. Explicit Universal definitions are shared. Enable preferences live in the profile's `rotationLibrary.preferences`. Clone creates an independent per-spec custom body in the existing SavedVariables rotation store; `rotationLibrary.origins` keeps its manifest, source revision, baseline and step origins. The default is never copied into that editable store automatically. Editing a clone cannot alter its source. Changing profiles rebinds preferences; no source pack overwrites saved rotations or the user's existing fallback.

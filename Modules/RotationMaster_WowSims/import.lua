@@ -1216,7 +1216,7 @@ end
 --- Text a person pasted -> {ok=true, body, target, report} or {ok=false, error={code,...}, detected=}.
 --- options: see convertApl, plus edition/cls/spec (the destination chosen, each optional), classEditions
 --- ({CLASS={edition,...}}), pick (which saved rotation of several), supportsFor(edition, cls) or supports.
-function import.importWowsims(input, options)
+local function importText(input, options)
     local mapping = options.mapping
     local lim = mapping.limits
     local pasted = json.pastedText(input, lim)
@@ -1378,4 +1378,25 @@ function import.importWowsims(input, options)
     if #converted.steps == 0 then return fail('nothing-imported', {}, {detected = detected, report = report}) end
     return {ok = true, body = {tags = {'wowsims'}, rotation = converted.steps, cooldowns = {}},
         target = {edition = edition, cls = cls, spec = spec, specSource = specSource}, report = report}
+end
+
+-- The vote counts are computed when asked for (an edition's id lists are decoded on demand); what a result keeps is the
+-- numbers, not the closures that would keep every decoded list alive.
+local function snapshot(lazy, mapping)
+    if type(lazy) ~= 'table' or getmetatable(lazy) == nil then return lazy end
+    local out = {}
+    for _, edition in ipairs(mapping.editionOrder) do
+        local value = rawget(lazy, edition)
+        if value ~= nil then out[edition] = value end
+    end
+    return out
+end
+function import.importWowsims(input, options)
+    local result = importText(input, options)
+    local detected = result.detected or (result.report and result.report.detected)
+    if detected then
+        detected.votes = snapshot(detected.votes, options.mapping)
+        detected.exclusive = snapshot(detected.exclusive, options.mapping)
+    end
+    return result
 end

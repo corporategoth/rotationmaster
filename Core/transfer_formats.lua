@@ -169,6 +169,7 @@ end
 --   {body=<rotation body>,report=<the converter's report>,warnings=...,text=<the report, worded>,target=...}
 -- or nil and a message in words (and, as a third value, the converter's failure for the window to inspect).
 function addon:ConvertRotationFromFormat(id,text,spec)
+    if not self:IsTransferFormatAvailable(id) then return nil,self:GetTransferFormatUnavailableReason() or describeLoadFailure('unavailable') end
     local api,why=self:LoadTransferFormat(id)
     if not api then return nil,describeLoadFailure(why) end
     local edition,class=self:GetTransferFormatTarget(spec)
@@ -198,6 +199,7 @@ end
 --   {text=<the settings JSON>,aplText=<the rotation only>,report=,reportText=<the report, worded>}
 -- or nil and a message in words.
 function addon:ConvertRotationToFormat(id,source,spec)
+    if not self:IsTransferFormatAvailable(id) then return nil,self:GetTransferFormatUnavailableReason() or describeLoadFailure('unavailable') end
     local api,why=self:LoadTransferFormat(id)
     if not api then return nil,describeLoadFailure(why) end
     local edition,class=self:GetTransferFormatTarget(spec)

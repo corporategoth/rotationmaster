@@ -4178,6 +4178,8 @@ L["Rotation Master is advising this step now."] = true
 L["This cooldown is showing now."] = true
 L["This rotation is advising now."] = true
 -- WowSims transport (Core/transfer_formats.lua, UI/transfer_format.lua, Modules/RotationMaster_WowSims)
+L["The Format choice could not be shown: %s"] = true
+L["The WowSims export is too long for this box (%d characters), so it cannot be shown here."] = true
 L["Check export"] = true
 L["Choose the format of the text this window shows and reads. Rotation Master is the default; WowSims is the simulator's Action Priority List (JSON)."] = true
 L["Converted from WowSims: %d steps, %d disabled. Choose Check import for the full report."] = true

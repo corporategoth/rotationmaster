@@ -96,6 +96,7 @@ return function(env)
         function frame:SetAutoFocus(value) self.autoFocus=value end
         function frame:SetMultiLine(value) self.multiLine=value end
         function frame:SetMaxLetters(value) self.maxLetters=value end
+        function frame:GetMaxLetters() return self.maxLetters or 0 end
         function frame:SetTextInsets(...) self.textInsets={...} end
         function frame:SetFocus() self.focused=true end
         function frame:SetCursorPosition(value) self.cursor=value end

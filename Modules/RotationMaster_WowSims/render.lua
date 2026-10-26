@@ -403,8 +403,13 @@ function render.exportReport(report, L, opts)
     add(say(L, TEXT.target, {class = classLabel(target.cls), edition = editionLabel(target.edition)}))
     add(say(L, TEXT.xsummary, summary))
     add(say(L, TEXT.xactions, {actions = summary.actions, prepull = summary.prepull, dropped = summary.dropped}))
-    if #target.sims > 0 then add(say(L, TEXT.xreaders, {list = target.sims}))
-    else add(say(L, TEXT.xnoReader, {list = target.candidates})) end
+    local function named(list)
+        local out = {}
+        for _, name in ipairs(list) do out[#out + 1] = 'wowsims/' .. name end
+        return out
+    end
+    if #target.sims > 0 then add(say(L, TEXT.xreaders, {list = named(target.sims)}))
+    else add(say(L, TEXT.xnoReader, {list = named(target.candidates)})) end
     add(say(L, TEXT.xstructure, {}))
     local tables = {reason = XREASON, why = XWHY, note = XNOTE}
     local clean, attention = 0, {}

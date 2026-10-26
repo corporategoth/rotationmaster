@@ -50,7 +50,8 @@ function addon:NewTransferFormatState(codec,source,spec,exported)
         end,
     }
     -- The text the window shows for export in the chosen format, and the report on how it was made.
-    function state:ExportFor(format)
+    -- limit: how many characters the box takes. The pretty JSON is shown when it fits, the compact form when only that does.
+    function state:ExportFor(format,limit)
         if format=='rm' then return self.exportText.rm end
         local conversion=self.conversions[format]
         if conversion==nil then
@@ -59,9 +60,16 @@ function addon:NewTransferFormatState(codec,source,spec,exported)
             self.conversions[format]=conversion
         end
         if conversion.failed then return nil,conversion.failed end
-        return conversion.text,nil,conversion
+        local text=conversion.text
+        if limit and limit>0 and #text>limit then
+            if conversion.compactText and #conversion.compactText<=limit then text=conversion.compactText
+            else return nil,string.format(L['The WowSims export is too long for this box (%d characters), so it cannot be shown here.'],#text),conversion end
+        end
+        return text,nil,conversion
     end
     function state:Forget() cache=nil;self.lastImport=nil;self.failure=nil end
+    -- The window closed: nothing of what was converted for it is kept.
+    function state:Release() self:Forget();self.conversions={};self.exportText={};self.source=nil end
     return state
 end
 
@@ -102,11 +110,14 @@ function addon:AttachTransferFormatControls(dialog,state,options)
         dialog.scroll.workbenchBar:SetValue(0)
     end
     local function labelText() return self:GetTransferFormatLabel(state.format) end
+    local function boxLimit() local input=dialog.input;if type(input.GetMaxLetters)=='function' then local value=input:GetMaxLetters();if type(value)=='number' and value>0 then return value end end end
     local function refresh()
         if not live() then return end
         local wowsims=state.format=='wowsims'
         local label=labelText()
         controls.button:SetText(label);self:AlignWorkbenchTextLeft(controls.button,26)
+        local caption=controls.check:GetFontString()
+        if caption and caption.GetStringWidth then controls.check:SetWidth(math.max(100,math.ceil(caption:GetStringWidth() or 0)+16)) end
         local reason=self:GetTransferFormatUnavailableReason()
         if reason then
             controls.button:Disable();controls.button.tooltip=reason
@@ -131,7 +142,7 @@ function addon:AttachTransferFormatControls(dialog,state,options)
         local text,message
         if format=='wowsims' then
             -- Loading the converter happens here, the first time it is wanted.
-            text,message=state:ExportFor('wowsims')
+            text,message=state:ExportFor('wowsims',boxLimit())
             if not text and replace then
                 dialog.status:SetText(message or L['The rotation could not be converted to WowSims.'])
                 return
@@ -149,6 +160,7 @@ function addon:AttachTransferFormatControls(dialog,state,options)
         end
         refresh()
     end
+    controls.Choose=choose
     self:SetUIScript(controls.button,'OnClick',function()
         if not live() or self:GetTransferFormatUnavailableReason() then return end
         local entries={}
@@ -163,7 +175,7 @@ function addon:AttachTransferFormatControls(dialog,state,options)
     end)
     -- The first text in the box: the export in the remembered format.
     if state.format=='wowsims' then
-        local text,message=state:ExportFor('wowsims')
+        local text,message=state:ExportFor('wowsims',boxLimit())
         if text then showExport(text,false)
         else
             -- The converter cannot be used (not loadable, nothing to convert): fall back to Rotation Master and say why.
