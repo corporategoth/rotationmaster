@@ -19,11 +19,13 @@ local function acquired(target)
  assert(h and b and full()and notified(),'real scoped saved-copy plan did not admit')
  return c,a,get,b,full,t,notified
 end
-test('warm acquisition uses two full selected Store proofs and keeps returned publication proof',function()
+-- b55cca0e: a cached completed plan skips the preliminary prior-plan authority check, so a warm acquisition performs only the
+-- fresh full Scope entry proof (docs/architecture/runtime-revisions.md); it used to perform that one and the preliminary one.
+test('warm acquisition uses one full selected Store proof and keeps returned publication proof',function()
  for _,target in ipairs({false,true})do
   local _,a,get,body,full,token=acquired(target);local guard=assert(find(full,'guard'));local nextFull
   local count=calls(guard,function()local b,f,t,h=get(a,0,a.currentRotation);assert(h and b==body and t==token);nextFull=f end)
-  assert(count==2,'warm acquisition full selected Store proofs='..count..', expected 2')
+  assert(count==1,'warm acquisition full selected Store proofs='..count..', expected 1')
   assert(calls(guard,function()assert(nextFull())end)==1,'returned publication guard lost full Store proof')
  end
 end)

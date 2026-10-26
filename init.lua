@@ -610,14 +610,17 @@ function addon:InstallAnnouncementConditionPreferences()
 end
 
 function addon:init()
+    -- Before anything else touches db.profile: AceDB creates a new character's profile (and fires OnNewProfile) the first
+    -- time it is read, and the seeders below read it, so a later registration never saw the first profile of a new
+    -- character and its pickers lacked the tree conditions and auto-repeat.
+    self.db.RegisterCallback(self,'OnNewProfile','InitializeTalentTreeConditions')
+    self.db.RegisterCallback(self,'OnProfileReset','InitializeTalentTreeConditions')
     self:InstallUnitStateConditions(self.db)
     if self.InstallBossModConditions then self:InstallBossModConditions(self.db) end
     if self.InstallLoadoutConditions then self:InstallLoadoutConditions(self.db) end
     if self.InstallWorldConditions then self:InstallWorldConditions(self.db) end
     if self.InstallCastProgressConditions then self:InstallCastProgressConditions(self.db) end
     self:InstallAnnouncementConditionPreferences()
-    self.db.RegisterCallback(self,'OnNewProfile','InitializeTalentTreeConditions')
-    self.db.RegisterCallback(self,'OnProfileReset','InitializeTalentTreeConditions')
     moveProfileItems()
 
     for k,v in pairs(default_itemsets) do

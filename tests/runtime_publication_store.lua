@@ -80,7 +80,8 @@ end)
 test('mutable owned pass IsCurrent replacement remains the publication authority',function()
  for _,throws in ipairs({false,true})do
   local c=make();local calls=0;local spell=mutate(c,function()local p=assert(currentPass());p.IsCurrent=function()calls=calls+1;if throws then error('custom pass failure')end;return nil,'custom retirement'end end)
-  assert(spell==nil and calls==1 and (not not c.a.adviceErrorReport)==throws,'owned guard bypassed replaced public method')
+  -- The replaced method is consulted at each publication fence (b55cca0e added the cheap continuation, so more than once).
+  assert(spell==nil and calls>=1 and (not not c.a.adviceErrorReport)==throws,'owned guard bypassed replaced public method')
  end
 end)
 test('owned pass function environment replacement retains its throwing public route',function()

@@ -140,7 +140,7 @@ test('native configuration reuses browser frames and releases fields across tabs
     local f,_,_,create=fixture();local a=f.addon
     a.pretty_name='Rotation Master';a.name='rotationmaster';a.SetupOptions=function() end
     a.BuildConfigurationPane=function() error('native shell revived legacy fields') end
-    f.load('UI/window.lua');f.load('UI/config.lua')
+    f.load('UI/window.lua');f.load('UI/help.lua');f.load('UI/config.lua')
     local shell=a:ShowConfig('Rotations',{spec=0,id='one'});local browser=shell.pane
     assert(shell.nativePane and browser.selected=='one','native config still embeds the rotation dropdown')
     browser:SelectRotation(0,'two');local pane=browser.pane

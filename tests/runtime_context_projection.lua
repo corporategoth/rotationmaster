@@ -20,9 +20,12 @@ check('public override cannot assert freshness by returning true and nil holes r
 end)
 check('live and inherited ipairs preserve fresh projection callback at each check',function()
  for _,inherited in ipairs({false,true})do
-  local c=make({target=false});local a,e=c.a,c.e;local calls=0;local native=ipairs;local p=assert(a:AcquireRotationRuntimePass(0))
+  local c=make({target=false});local a,e=c.a,c.e;local calls=0;local native=ipairs
   local fn=function(t)if t[1]=='family'and t[7]=='combatDataPolicy'then calls=calls+1 end;return native(t)end
+  -- The override is in place before the pass exists: a pass whose private context proof was taken with the native iterator
+  -- cannot be checked again through a replaced one (it fails closed), so the public path is the one under test.
   if inherited then local mt=getmetatable(e);local old=mt and mt.__index;rawset(e,'ipairs',nil);setmetatable(e,{__index=function(t,k)if k=='ipairs'then return fn end;if type(old)=='function'then return old(t,k)elseif type(old)=='table'then return old[k]end end})else e.ipairs=fn end
+  local p=assert(a:AcquireRotationRuntimePass(0));calls=0
   assert(p:IsCurrent());assert(p:IsCurrent());assert(calls==2,'fresh projection iterator callback skipped')
  end
 end)
@@ -42,7 +45,9 @@ check('projection and dispatch environment overrides retain their existing callb
   local c=make({target=false});local a=c.a;local p=assert(a:AcquireRotationRuntimePass(0));local helper=assert(up(p.IsCurrent,which));local env=getfenv(helper);local calls=0
   if which=='eligibilityContext'then setfenv(helper,setmetatable({ipairs=function(t)calls=calls+1;return ipairs(t)end},{__index=env}))
   else setfenv(helper,setmetatable({type=function(v)calls=calls+1;return type(v)end},{__index=env}))end
-  assert(p:IsCurrent());assert(calls>0,'helper environment callbacks skipped')
+  -- A helper whose environment was replaced after the pass forfeits the private context proof: the pass fails closed, but the
+  -- replaced environment is still the one the helper runs in.
+  p:IsCurrent();assert(calls>0,'helper environment callbacks skipped')
  end
 end)
 check('owned fresh eligibility observations avoid a duplicate projection allocation without caching facts',function()
