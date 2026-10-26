@@ -4008,7 +4008,10 @@ L["Click a talent to choose it for this condition."] = true
 L["Selected: %s"] = true
 L["Ranks: %d"] = true
 L["Choose one of the talents on this node."] = true
-L["Show talent tree opens the talent tree of the specialization shown: Blizzard's own talent window in view mode where the game lets Rotation Master drive it (it goes back to how it was when you pick a talent or close it), otherwise a tree Rotation Master draws. Click a talent to choose it; the Talent list follows. It cannot open during combat."] = true
+L["Click to choose this talent."] = true
+L["Click to clear this talent."] = true
+L["Close the build shown in your own talent window first."] = true
+L["Show talent tree draws the talent tree of the specialization shown, with every talent open to choose. Click a talent to choose it, or click the chosen one again to clear it; the Talent list follows. It cannot open during combat."] = true
 L["Forever is the exception: Talent tree is one of the three talent trees of your active loadout (in the order the talent window shows them); their points are read again after any talent change. Retail has no such trees."] = true
 
 -- Specialization and weapon type conditions (Conditions/specialization.lua, Conditions/equipment.lua).

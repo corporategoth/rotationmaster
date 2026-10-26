@@ -238,6 +238,14 @@ local function traitsWidget(parent,spec,value,update)
             addon:OpenTalentTree({owner=treeOwner,spec=shown,selection=currentSelection(),selectionName=current and current.name,
                 specs=specs,
                 onSelect=function(selection)
+                    -- Clicking the chosen talent again clears the choice.
+                    if not selection then
+                        value.node,value.entry,value.spell=nil,nil,nil
+                        selectedTalent=nil;choices()
+                        nodeBox:SetText("");entryBox:SetText("")
+                        talentIcon:SetImage("Interface\\Icons\\INV_Misc_QuestionMark");update();show()
+                        return
+                    end
                     local found
                     for groupIndex,candidate in ipairs(groups) do
                         for talentIndex,talent in ipairs(candidate.talents) do
@@ -347,7 +355,7 @@ addon:RegisterCondition("TALENT",{
         frame:AddChild(addon.help_funcs.CreateText(L["Retail and Forever compare the rank of a talent in your active loadout. Pick it from the talents of the rotation's specialization (the Specialization list shows another specialization's, outside combat), or enter the node ID (and, for a choice node, the entry ID of the choice) to share a rotation. A choice node's entry has rank zero unless it is the chosen one, a hero talent outside your chosen hero tree has rank zero, and so does a talent of a specialization you are not playing. A talent picked from the list also remembers its spell, and is found again by it if Blizzard renumbers the talent tree. Ranks are read again after any talent change; an unreadable node is unavailable, including under NOT."]))
         if platform.HasTalentTreeProvider and platform:HasTalentTreeProvider() then
             frame:AddChild(addon.help_funcs.Gap())
-            frame:AddChild(addon.help_funcs.CreateText(L["Show talent tree opens the talent tree of the specialization shown: Blizzard's own talent window in view mode where the game lets Rotation Master drive it (it goes back to how it was when you pick a talent or close it), otherwise a tree Rotation Master draws. Click a talent to choose it; the Talent list follows. It cannot open during combat."]))
+            frame:AddChild(addon.help_funcs.CreateText(L["Show talent tree draws the talent tree of the specialization shown, with every talent open to choose. Click a talent to choose it, or click the chosen one again to clear it; the Talent list follows. It cannot open during combat."]))
         end
     end,
 })

@@ -19,8 +19,19 @@ local function client(state,options)
     options=options or {}
     local f=F.new(options.product or 1,12,'MAGE');local e=f.env
     local native=e.CreateFrame
+    local atlases={}
+    e.C_Texture={GetAtlasInfo=function(name) if options.atlases and (name:find('^talents%-node%-') or name:find('^talents%-background%-')) then return {width=40,height=40} end end}
     e.CreateFrame=function(...)
         local frame=native(...)
+        local createTexture=frame.CreateTexture
+        local function decorate(texture)
+            function texture:SetAtlas(name) self.atlas=name end
+            function texture:AddMaskTexture(mask) self.maskedBy=mask end
+            function texture:RemoveMaskTexture() self.maskedBy=nil end
+            return texture
+        end
+        function frame:CreateTexture(...) return decorate(createTexture(self,...)) end
+        function frame:CreateMaskTexture() return decorate(createTexture(self)) end
         f.frames=f.frames or {};f.frames[#f.frames+1]=frame
         function frame:RegisterEvent(event) self.events=self.events or {};self.events[event]=true end
         function frame:UnregisterEvent(event) if self.events then self.events[event]=nil end end
@@ -47,6 +58,7 @@ local function client(state,options)
     function tip:Show() self.shown=true end
     function tip:Hide() self.shown=false;self.owner=nil end
     e.GameTooltip=tip
+    if options.provider~=false then f.addon.db.global.talent_popup_provider=options.provider or 'blizzard' end
     local model=Tree.install(e,state)
     local window
     if options.blizzard~=false then window=Window.install(e,Tree,state,options.window) end
@@ -422,6 +434,100 @@ test('nothing runs while the tree is closed: no OnUpdate of its own, no callback
     -- The window's only script is the close hook; nothing polls.
     assert(d.frame.scripts.OnUpdate==nil and d.canvas.scripts.OnUpdate==nil)
     for _,slot in ipairs(d.slots) do assert(slot.scripts.OnUpdate==nil) end
+end)
+
+test('the default is the drawn tree: Blizzard\'s window is an opt-in setting and is never touched otherwise',function()
+    local f,a=client({spec=FIRE},{provider=false})
+    local p=a.Platform
+    assert(table.concat(names(p:GetTalentTreeProviders()),',')=='drawn','default chain: '..table.concat(names(p:GetTalentTreeProviders()),','))
+    local d=open(a,{spec=FIRE,selection={node=2203,spell=257541}})
+    assert(d.mode=='drawn' and f.window.SetInspectString==nil and f.window.registry:Count()==0 and not f.window.frame.shown)
+    d.frame:Hide()
+    assert(f.window.SetInspectString==nil and (f.window.HideUIPanel or 0)==0 and (f.window.ShowUIPanel or 0)==0)
+    f.addon.db.global.talent_popup_provider='drawn'
+    assert(table.concat(names(p:GetTalentTreeProviders()),',')=='drawn')
+    f.addon.db.global.talent_popup_provider='nonsense'
+    assert(table.concat(names(p:GetTalentTreeProviders()),',')=='drawn')
+    f.addon.db.global.talent_popup_provider='blizzard'
+    assert(table.concat(names(p:GetTalentTreeProviders()),',')=='blizzard,drawn')
+end)
+
+test('the drawn tree is Blizzard\'s look with every talent choosable: green frames, the chosen one gold, no locked greying, pane titles',function()
+    local state={spec=FIRE,scale=600};local f,a,e=client(state,{blizzard=false,atlases=true,provider=false})
+    e.ClassTalentUtil={GetVisualsForSpecID=function(spec) if spec==FIRE then return {background='talents-background-mage-fire'} end end}
+    e.UnitClass=function() return 'Mage','MAGE',8 end
+    local request={spec=FIRE,hero=41,selection={node=2203,spell=257541},specs={{id=ARCANE,name='Arcane'},{id=FIRE,name='Fire'},{id=FROST,name='Frost'}}}
+    local d=open(a,request)
+    assert(d.mode=='drawn')
+    local selected,others=0,0
+    for _,slot in ipairs(d.slots) do
+        if slot:IsShown() then
+            assert(slot.art.atlas and slot.art.atlas:find('^talents%-node%-'),'every node wears Blizzard\'s frame')
+            if slot.selected then
+                selected=selected+1
+                assert(slot.art.atlas:find('%-yellow$') and slot.glow:IsShown(),'the chosen talent is gold with a glow: '..slot.art.atlas)
+            else
+                others=others+1
+                assert(slot.art.atlas:find('%-green$'),'the others read as choosable, never grey or locked: '..slot.art.atlas)
+                assert(not slot.art.atlas:find('gray') and not slot.art.atlas:find('locked'))
+            end
+        end
+    end
+    assert(selected==1 and others>=8)
+    -- Hovering adds the green glow; leaving removes it.
+    local hovered
+    for _,slot in ipairs(d.slots) do if slot:IsShown() and not slot.selected then hovered=slot;break end end
+    hovered.scripts.OnEnter(hovered);assert(hovered.hover:IsShown() and hovered.hover.atlas:find('greenglow'))
+    hovered.scripts.OnLeave(hovered);assert(not hovered.hover:IsShown())
+    -- Circles for passives are masked; squares are not.
+    local circle,square
+    for _,slot in ipairs(d.slots) do if slot:IsShown() then if slot.shape=='circle' then circle=slot else square=slot end end end
+    assert(circle and circle.mask and circle.icon.maskedBy==circle.mask and circle.mask.atlas=='talents-node-circle-mask')
+    -- Titles over the panes and the spec's backdrop.
+    local titles={}
+    for _,text in ipairs(d.paneLabels) do if text:IsShown() then titles[#titles+1]=text.text end end
+    table.sort(titles)
+    assert(table.concat(titles,',')=='Fire,Frostfire,Mage','pane titles: '..table.concat(titles,','))
+    assert(d.background:IsShown() and d.background.atlas=='talents-background-mage-fire')
+    -- Another specialization: its own backdrop is absent (plain), its trees drawn, Blizzard's window not touched.
+    d.OnSpec(FROST)
+    assert(not d.background:IsShown() and d.handle.spec==FROST)
+    -- Choice entries are both drawn at half size.
+    d.OnSpec(FIRE)
+    local halves=0
+    for _,slot in ipairs(d.slots) do if slot:IsShown() and slot.data.choice then halves=halves+1;assert(slot:GetWidth()<34) end end
+    assert(halves>=4,'two choice nodes of two entries each: '..halves)
+    d.frame:Hide()
+end)
+
+test('clicking the chosen talent again clears the condition\'s talent; clicking another replaces it',function()
+    local state={spec=FIRE,scale=600};local f,a=client(state,{blizzard=false,provider=false})
+    local value={layout='traits',node=2203,spell=257541,operator='EQUALS',value=2}
+    local parent=editor(f,value,FIRE)
+    treeButton(parent):Fire('OnClick')
+    local d=a.talentTreeWindow
+    local chosen,other
+    for _,slot in ipairs(d.slots) do if slot:IsShown() then if slot.selected then chosen=slot elseif slot.data.node==2202 then other=slot end end end
+    chosen.scripts.OnClick(chosen)
+    assert(not d.frame:IsShown() and value.node==nil and value.entry==nil and value.spell==nil)
+    assert(child(parent,'Talent Node ID').text=='' and value.operator=='EQUALS')
+    treeButton(parent):Fire('OnClick')
+    for _,slot in ipairs(d.slots) do if slot:IsShown() and slot.data.node==2202 then other=slot end end
+    other.scripts.OnClick(other)
+    assert(value.node==2202 and value.spell==190319 and a.definitions.TALENT.valid(0,value))
+end)
+
+test('reading another specialization leaves a linked build in Blizzard\'s window alone, and the played one is always readable',function()
+    local state={spec=FIRE};local f,a=client(state,{provider=false,window={shown=true,inspecting=true}})
+    local p=a.Platform
+    local view,why=p:GetTraitView(FROST)
+    assert(view==nil and why=='talent-window-inspecting',tostring(why))
+    assert((state.calls.InitializeViewLoadout or 0)==0,'the shared view config was not touched')
+    assert(p:GetTraitView(FIRE),'the played specialization reads the active config')
+    local d=open(a,{spec=FROST})
+    assert(d.handle==nil and d.status.text:find('Close the build shown',1,true),d.status.text)
+    f.window.frame.inspecting=false
+    assert(p:GetTraitView(FROST) and state.calls.InitializeViewLoadout==1)
 end)
 
 finish()

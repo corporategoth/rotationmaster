@@ -338,7 +338,8 @@ function platform:GetTraitEntryIdentity(config,entry)
         if spellInfo then name=name or spellInfo.name;icon=icon or spellInfo.iconID end
     end
     if not name then return nil,'talent-entry-unavailable' end
-    return {name=name,icon=icon,spellID=spell,maxRanks=integer(info.maxRanks,0,64) and info.maxRanks or nil}
+    return {name=name,icon=icon,spellID=spell,maxRanks=integer(info.maxRanks,0,64) and info.maxRanks or nil,
+        entryType=platform:CanReadValue(info.type) and type(info.type)=='number' and info.type or nil}
 end
 
 -- A node's display identity (its chosen entry, else the given or first one).

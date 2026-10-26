@@ -148,7 +148,7 @@ function M.install(env,state)
         else for position=1,#node.entries do entries[position]=entryID(node,position) end end
         local rank,position=purchasedRank(node,config)
         local scale=state.scale or 1
-        local info={ID=id,posX=node.x*scale,posY=node.y*scale,flags=0,entryIDs=entries,isVisible=visible(node,spec),isAvailable=true,
+        local info={ID=id,posX=(node.x+(state.scale and node.spec and 20 or 0))*scale,posY=node.y*scale,flags=0,entryIDs=entries,isVisible=visible(node,spec),isAvailable=true,
             ranksPurchased=node.granted and 0 or rank,activeRank=rank,currentRank=rank,maxRanks=node.ranks,totalMaxRanks=node.ranks,
             type=({single=0,tiered=1,selection=2,subtree=3})[node.kind or 'single'],groupIDs={},conditionIDs={},visibleEdges={}}
         for _,target in ipairs(node.edges or {}) do info.visibleEdges[#info.visibleEdges+1]={targetNode=target,type=0,visualStyle=0,isActive=false} end
