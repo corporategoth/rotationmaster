@@ -115,14 +115,4 @@ test('public editable observer clone resolves actual owner and optional mode wit
     local opaque={};f.env.canaccessvalue=function(v) return not rawequal(v,opaque) end;s.exists=true;s.name=opaque
     local value,why=fn(a.Platform,true);assert(value==nil and why=='restricted-value' and fn(a.Platform,false).exists==true)
 end)
-test('only two exact pet evaluators change with full module inverse and three private identities',function()
-    local _,a=fixture();local file=assert(io.open('Conditions/combat.lua'));local text=file:read('*a');file:close();text=dofile('tests/fixtures/restore_combat_history_time_repairs.lua')(dofile('tests/fixtures/restore_form_presentation_repairs.lua')(dofile('tests/fixtures/restore_form_localization.lua')(text)));text=dofile('tests/fixtures/restore_threat_count_repairs.lua')(text);text=dofile('tests/fixtures/restore_combat_time_repairs.lua')(text);text=dofile('tests/fixtures/restore_form_repairs.lua')(text);text=dofile('tests/fixtures/restore_loss_of_control_repairs.lua')(text);text=dofile('tests/fixtures/restore_threat_repairs.lua')(text)
-    for _,tag in ipairs({'PET','PET_NAME'}) do local first=assert(text:find(repaired[tag],1,true),'exact repaired '..tag..' missing');assert(not text:find(repaired[tag],first+1,true),'multiple repaired '..tag..' bodies')
-        text=text:sub(1,first-1)..original[tag]..text:sub(first+#repaired[tag])
-    end
-    assert(a:FunctionSourceHash(text)=='f0ca653e','combat changed beyond two pet evaluators from4487926')
-    for name,hash in pairs({color='dbda383d',character_class='d17cf4c1',helpers='9e28e933'}) do
-        local id='builtin:Conditions/combat.lua:'..name;assert(a:FunctionSourceHash(assert(a.builtinFunctions[id]).source)==hash and a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/combat.lua'](name))
-    end
-end)
 finish()

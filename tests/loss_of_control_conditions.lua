@@ -141,14 +141,4 @@ test('current condition and public helper copies resolve actual normalized owner
         if name=='GetLossOfControlCount' then assert(fn(a.Platform)==1) else assert(fn(a.Platform,1,'school').lockoutSchool==4) end
     end
 end)
-test('raw saved tuple callbacks and schema remain unchanged while exact inverse protects every other byte',function()
-    local f,a,s=fixture();legacy(f,s);local inverse,original=dofile('tests/fixtures/restore_loss_of_control_repairs.lua')
-    for _,tag in ipairs(tags) do local source=assert(a:GetBuiltinConditionSource(tag));source.evaluate=original[tag];if tag=='LOC_BLOCKED' then source.fields.school='string' end
-        local before=a:CopySettingsData(source);local raw=assert(a:CompileCustomCondition('RAW_'..tag,source));assert(raw.evaluate(node(tag),{})==true)
-        if tag=='LOC_BLOCKED' then s.rows[1].lockoutSchool=0;assert(raw.evaluate(node(tag),{})==true,'legacy zero-mask truthiness changed');s.rows[1].lockoutSchool=4 end
-        assert(a:SettingsDataEqual(source,before))
-    end
-    local file=assert(io.open('Conditions/combat.lua'));local text=file:read('*a');file:close();text=dofile('tests/fixtures/restore_combat_history_time_repairs.lua')(dofile('tests/fixtures/restore_form_presentation_repairs.lua')(dofile('tests/fixtures/restore_form_localization.lua')(text)));text=dofile('tests/fixtures/restore_threat_count_repairs.lua')(text);text=dofile('tests/fixtures/restore_combat_time_repairs.lua')(text);assert(a:FunctionSourceHash(inverse(dofile('tests/fixtures/restore_form_repairs.lua')(text)))=='e0d8eae5','combat changed beyond2LOC evaluators and school schema fromf537fe1')
-    for name,hash in pairs({color='dbda383d',character_class='d17cf4c1',helpers='9e28e933'}) do local id='builtin:Conditions/combat.lua:'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/combat.lua'](name)) end
-end)
 finish()

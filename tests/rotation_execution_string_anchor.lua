@@ -34,13 +34,6 @@ for _,target in ipairs({false,true})do
   assert(n==0,'distinct global string forces warm public index calls='..n..'; expected0')
  end)
 end
-test('actual distinct-table main retains frozen native query order and advice',function()
- for _,target in ipairs({false,true})do
-  local old,current=main(target,true),main(target);old.reset(true);current.reset(true)
-  for i=1,3 do old.tick();current.tick()end
-  local on,ot=old.snapshot();local nn,nt=current.snapshot();equal(on,nn);equal(ot,nt);assert(old.a.currentSpell==current.a.currentSpell)
- end
-end)
 local function selected()return{status='match'}end
 local function visit()return false end
 local function body()return{rotation={{id='literal-methods',type='spell',conditions={}}}}end

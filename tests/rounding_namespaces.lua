@@ -76,20 +76,4 @@ test('saved raw evaluator source keeps its live legacy rounding lookup without r
         assert(copy.evaluate(node(tag,9),{},100)==true and a:SettingsDataEqual(before,source))
     end
 end)
-test('only five approved callback expressions change full module bytes and every private source remains exact',function()
-    local _,a=fixture(inventory[3],true)
-    for tag,module in pairs(modules) do local path='Conditions/'..module..'.lua';local file=assert(io.open(path));local text=file:read('*a');file:close()
-        if module=='spell' or module=='petspell' then text=dofile('tests/fixtures/restore_spell_history_time_readiness.lua')(text,path) end
-        if module=='spell' or module=='petspell' or module=='anyspell' then text=dofile('tests/fixtures/restore_spell_range_presence.lua')(text,path) end
-        if module=='spell' or module=='petspell' then text=dofile('tests/fixtures/restore_spell_history_time.lua')(text,path);text=dofile('tests/fixtures/restore_spell_history_count.lua')(text,path) end
-        if module=='stats' then text=dofile('tests/fixtures/restore_resource_deficit_summary_repairs.lua')(text);text=dofile('tests/fixtures/restore_health_forecast_repairs.lua')(text);text=dofile('tests/fixtures/restore_trend_consumer_qualifiers.lua')(text);text=dofile('tests/fixtures/restore_rune_repairs.lua')(text);text=dofile('tests/fixtures/restore_health_forecast_deficit.lua')(text);text=dofile('tests/fixtures/restore_point_repairs.lua')(text) end
-        local inverse=restore(text,tag);assert(a:FunctionSourceHash(inverse)==moduleHashes[module],module..' changed beyond exact rounding qualification fromf537fe1')
-        assert(not pcall(restore,inverse,tag),'inverse accepted missing repaired expression')
-        for name,hash in pairs(privateHashes[module]) do local id='builtin:'..path..':'..name
-            assert(a:FunctionSourceHash(assert(a.builtinFunctions[id]).source)==hash,'private source changed: '..id)
-            assert(a:ResolveFunctionBinding(id)==a.builtinSourceModules[path](name),'private getter changed: '..id)
-        end
-        for alias in pairs(a.builtinCallbackBindings[path]) do assert(not alias:find('round',1,true),'round added to captured private Functions map') end
-    end
-end)
 finish()

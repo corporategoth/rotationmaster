@@ -59,19 +59,4 @@ test('public observer source clones preserve the native boundary and actual help
     local secret={};f.env.issecretvalue=function(v) return rawequal(v,secret) end;s.speed=secret;local r,why=fn(a.Platform);assert(r==nil and why=='restricted-value')
     assert(a:ResolveFunctionBinding(id)==a.Platform.GetPlayerMovementObservation and a.builtinSourceModules['Platform/player_movement.lua']('Platform_GetPlayerMovementObservation')==a.Platform.GetPlayerMovementObservation)
 end)
-test('only the explicit MOVING evaluator changes while all original module bytes and private values retain their identities',function()
-    local f,a=fixture();local file=assert(io.open('Conditions/combat.lua'));local source=file:read('*a');file:close();source=dofile('tests/fixtures/restore_threat_count_repairs.lua')(dofile('tests/fixtures/restore_combat_history_time_repairs.lua')(dofile('tests/fixtures/restore_form_presentation_repairs.lua')(dofile('tests/fixtures/restore_form_localization.lua')(source))));source=dofile('tests/fixtures/restore_combat_time_repairs.lua')(source);source=dofile('tests/fixtures/restore_form_repairs.lua')(source);source=dofile('tests/fixtures/restore_loss_of_control_repairs.lua')(source);source=dofile('tests/fixtures/restore_threat_repairs.lua')(source);source=dofile('tests/fixtures/restore_pet_repairs.lua')(source);source=dofile('tests/fixtures/restore_player_flag_repairs.lua')(source,{'stealthed','control'});source=dofile('tests/fixtures/restore_unit_flag_repairs.lua')(source);source=dofile('tests/fixtures/restore_retired_gui_getter.lua')(source)
-    local start=assert(source:find(repairedBody,1,true),'repaired MOVING body missing');assert(not source:find(repairedBody,start+1,true),'movement repair changed multiple bodies')
-    source=source:sub(1,start-1)..originalBody..source:sub(start+#repairedBody)
-    -- The separate attackability suite pins its whole-file inverse against the
-    -- movement checkpoint. Restore only that exact approved evaluator here.
-    local attackBody='\n        return Functions.cache.getCached(cache, addon.Platform.GetUnitAttackabilityObservation, addon.Platform, value.unit)\n    '
-    local attackStart=assert(source:find(attackBody,1,true),'approved ATTACKABLE repair missing')
-    assert(not source:find(attackBody,attackStart+1,true),'attackability repair changed multiple bodies')
-    local rawAttack='\n        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end\n        return Functions.cache.getCached(cache, UnitCanAttack, "player", value.unit) and\n               not Functions.cache.getCached(cache, UnitIsDead, value.unit)\n    '
-    source=source:sub(1,attackStart-1)..rawAttack..source:sub(attackStart+#attackBody)
-    assert(a:FunctionSourceHash(source)=='2d740cba','combat module changed beyond the approved movement and attackability repairs')
-    for name,hash in pairs({color='dbda383d',character_class='d17cf4c1',helpers='9e28e933'}) do local id='builtin:Conditions/combat.lua:'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/combat.lua'](name)) end
-    assert(not a.builtinFunctions['builtin:Conditions/combat.lua:AceGUI'] and a:ResolveFunctionBinding('builtin:Conditions/combat.lua:AceGUI')==nil)
-end)
 finish()

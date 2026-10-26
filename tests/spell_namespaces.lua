@@ -37,7 +37,6 @@ local function copies(a)
     for _,tag in ipairs(tags) do
         local source=assert(a:GetBuiltinConditionSource(tag));clones[tag]=assert(a:CompileCustomCondition('COPY_'..tag,source));a:RegisterCondition('COPY_'..tag,clones[tag])
         local old=a:CopySettingsData(source)
-        if tag=='SPELL_HISTORY_TIME' then old.evaluate=dofile('tests/fixtures/restore_spell_history_time_readiness.lua')(old.evaluate,tag,true) end
         for _,callback in ipairs({'valid','evaluate','print'}) do for name,group in pairs(groups) do old[callback]=old[callback]:gsub('Functions%.'..group..'%.'..name..'%(','addon.'..name..'(') end end
         baseline[tag]=assert(a:CompileCustomCondition('LEGACY_'..tag,old));a:RegisterCondition('LEGACY_'..tag,baseline[tag])
     end
@@ -45,19 +44,22 @@ local function copies(a)
 end
 local function count(text,pattern) local _,n=text:gsub(pattern,'');return n end
 
-test('spell callbacks select exactly thirty-seven direct calls with the eight existing cache expressions',function()
+test('spell callbacks select exactly forty qualified references with the eight existing cache expressions',function()
     local f,a=fixture(true);local selected=assert(a.builtinCallbackBindings and a.builtinCallbackBindings['Conditions/spell.lua'],'spell canonical leaf metadata missing');local leaves=0
     for _ in pairs(selected) do leaves=leaves+1 end;assert(leaves==5)
     for name,group in pairs(groups) do assert(selected['Functions.'..group..'.'..name]=='builtin:utils.lua:'..name and a:ResolveFunctionBinding(selected['Functions.'..group..'.'..name])==a.Functions[group][name]) end
     local totals={isin=0,compare=0,nullable=0,compareString=0,getCached=0}
     for _,tag in ipairs(tags) do local source=assert(a:GetBuiltinConditionSource(tag));assert(not source.bindings.Functions)
         for _,callback in ipairs({'valid','evaluate','print'}) do for name,group in pairs(groups) do
-            local code=source[callback];if tag=='SPELL_HISTORY_TIME' and callback=='evaluate' then code=dofile('tests/fixtures/restore_spell_history_time_readiness.lua')(code,tag,true) end
-            local n=count(code,'Functions%.'..group..'%.'..name..'%(');local expected=callback=='valid' and name=='isin' and compared[tag] and 1 or callback=='evaluate' and name=='compare' and compared[tag] and 1 or callback=='print' and name=='nullable' and (compared[tag] and 2 or 1) or callback=='print' and name=='compareString' and compared[tag] and 1 or callback=='evaluate' and name=='getCached' and (tag=='SPELL_RANGE' and 2 or (tag~='SPELL_HISTORY' and tag~='SPELL_HISTORY_TIME') and 1 or 0) or 0
+            local code=source[callback]
+            -- A history evaluator holds Functions.values.compare in a local (naming the leaf, not calling it): count both.
+            local n=count(code,'Functions%.'..group..'%.'..name..'[%(,]');-- The history summaries were reworded (43c459d5): four nullable fields and no compareString; the count evaluator names compare twice.
+            local history=tag:find('_HISTORY',1,true)~=nil
+            local expected=callback=='valid' and name=='isin' and compared[tag] and 1 or callback=='evaluate' and name=='compare' and compared[tag] and (tag=='SPELL_HISTORY' and 2 or 1) or callback=='print' and name=='nullable' and (history and 4 or compared[tag] and 2 or 1) or callback=='print' and name=='compareString' and compared[tag] and not history and 1 or callback=='evaluate' and name=='getCached' and (tag=='SPELL_RANGE' and 2 or (tag~='SPELL_HISTORY' and tag~='SPELL_HISTORY_TIME') and 1 or 0) or 0
             assert(n==expected,tag..'.'..callback..' '..name..' count changed');totals[name]=totals[name]+n;assert(not source[callback]:find('addon.'..name..'(',1,true))
         end end
     end
-    assert(totals.isin==5 and totals.compare==5 and totals.nullable==14 and totals.compareString==5 and totals.getCached==8 and not f.env.Functions)
+    assert(totals.isin==5 and totals.compare==6 and totals.nullable==18 and totals.compareString==3 and totals.getCached==8 and not f.env.Functions)
 end)
 test('original private captures retain exact source hashes stable IDs and getter identities',function()
     local _,a=fixture(true)

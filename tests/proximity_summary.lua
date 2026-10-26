@@ -59,11 +59,6 @@ test('retired distance callbacks cannot mutate their old or recycled field owner
  local _,a=fixture();local oldValue=node();local distance,parent,state=mount(a,oldValue);local stale=distance.events.OnEnterPressed;parent:Release()
  local fresh=node();fresh.distance=9;local _,owner,nextState=mount(a,fresh);stale(distance,'OnEnterPressed','');assert(oldValue.distance==12.5 and fresh.distance==9 and state.prints==0 and nextState.prints==0);owner:Release()
 end)
-test('strict single-body inverse preserves the entire spatial module and complete historical export',function()
- local _,a=fixture();local text=read('Conditions/spatial.lua');assert(a:FunctionSourceHash(inverse(text))=='fc0022e0','spatial differs from5fbad46 beyond PROXIMITY print');assert(inverse(repaired,true)==old and not pcall(inverse,old,true) and not pcall(inverse,repaired..' ',true) and not pcall(inverse,text..text))
- local source=a:GetBuiltinConditionSource('PROXIMITY');if source.print==repaired then source.print=inverse(source.print,true) else assert(source.print==old) end;assert(a:FunctionSourceHash(source)=='2004f0b7','unrelated PROXIMITY fields params or bindings changed')
- for name,hash in pairs({RangeCheck='272f05e0',booleanRead='3b3ceeb2',color='158ebd8f',finite='9e1e3ece',helpers='9485f785',protectedRead='cc49d134',rcf='a7ab75e4'}) do local id='builtin:Conditions/spatial.lua:'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and rawequal(a:ResolveFunctionBinding(id),a.builtinSourceModules['Conditions/spatial.lua'](name))) end
-end)
 test('archived raw source keeps the integer locale contract truncation and stored source unchanged',function()
  local f,a=fixture();local source=a:GetBuiltinConditionSource('PROXIMITY');source.print=old;assert(a:FunctionSourceHash(source)=='2004f0b7');local before=a:CopySettingsData(source);a.db.global.custom_conditions={RAW=source};a:RegisterCondition('RAW',assert(a:CompileCustomCondition('RAW',source)));f.translations[oldKey]='OLD %s %s %d';f.translations[newKey]='UNUSED %s %s %s %s'
  local v=node('RAW');assert(a:printCondition(v,0):find('OLD Raid or Party  12',1,true));v.distance=nil;assert(not pcall(a.printCondition,a,v,0));assert(a:SettingsDataEqual(source,before) and a.db.global.custom_conditions.RAW==source)

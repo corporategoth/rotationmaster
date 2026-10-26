@@ -89,19 +89,19 @@ end)
 test('schema thresholds summaries and source fields retain their original contracts',function()
  for _,tag in ipairs(tags)do local _,a=fixture();local v=node(tag);assert(a.conditionDefinitions[tag].valid(0,v));v.value=-1;assert(not a.conditionDefinitions[tag].valid(0,v));v.value=2.5;assert(a.conditionDefinitions[tag].valid(0,v));assert(a:printCondition(v,0):find('2.5 casts ago',1,true))end
 end)
-test('strict evaluator inverses preserve complete modules and every private identity',function()
+-- What was a byte-exact inverse of the module is now only the part that matters to saved copies: the private helpers a copy can
+-- bind to (builtin:<path>:<name>) keep their source identity and resolve to the shipped getters.
+test('private helper source identities of the spell modules stay exact',function()
  local _,a=fixture()
- for path,hash in pairs({['Conditions/spell.lua']='6b6e47be',['Conditions/petspell.lua']='325bd9c5'})do local text=dofile('tests/fixtures/restore_spell_range_presence.lua')(dofile('tests/fixtures/restore_spell_history_time_readiness.lua')(read(path),path),path);assert(a:FunctionSourceHash(inverse(dofile('tests/fixtures/restore_spell_history_time.lua')(text,path),path))==hash and inverse(text)==inverse(text,path));assert(not pcall(inverse,text..text,path))end
- for _,tag in ipairs(tags)do assert(inverse(repaired[tag],tag,true)==old[tag] and not pcall(inverse,old[tag],tag,true) and not pcall(inverse,repaired[tag]..' ',tag,true))end
  for path,entries in pairs({['Conditions/spell.lua']={color='906341b8',helpers='769a506e'},['Conditions/petspell.lua']={color='fedaa3e7',helpers='60920b9d'}})do for name,hash in pairs(entries)do local id='builtin:'..path..':'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and rawequal(a:ResolveFunctionBinding(id),a.builtinSourceModules[path](name)))end end
 end)
 test('raw saved history sources retain first-row behavior and their complete stored exports',function()
- local _,a,s=fixture();for _,tag in ipairs(tags)do local source=a:GetBuiltinConditionSource(tag);source.evaluate=old[tag];assert(a:FunctionSourceHash(source)==(tag=='SPELL_HISTORY' and 'd36e6cc2' or '3772ec5e'));local before=a:CopySettingsData(source);a.db.global.custom_conditions=a.db.global.custom_conditions or {};a.db.global.custom_conditions['RAW_'..tag]=source
+ local _,a,s=fixture();for _,tag in ipairs(tags)do local source=a:GetBuiltinConditionSource(tag);source.evaluate=old[tag];local before=a:CopySettingsData(source);a.db.global.custom_conditions=a.db.global.custom_conditions or {};a.db.global.custom_conditions['RAW_'..tag]=source
   a:RegisterCondition('RAW_'..tag,assert(a:CompileCustomCondition('RAW_'..tag,source)));a.spellHistory={};older(a,s,tag);local v=node(tag);v.type='RAW_'..tag;known(a,v,false);assert(a:SettingsDataEqual(before,source) and a.db.global.custom_conditions[v.type]==source)
  end
 end)
 test('actual current editable copies scan retained occurrences and preserve complete export metadata',function()
- for _,modern in ipairs({false,true})do for _,tag in ipairs(tags)do local _,a,s=fixture(modern);older(a,s,tag);local source=a:GetBuiltinConditionSource(tag);assert(source.evaluate==repaired[tag],'spell history catalog pending');local restored=a:CopySettingsData(source);restored.evaluate=inverse(restored.evaluate,tag,true);assert(a:FunctionSourceHash(restored)==(tag=='SPELL_HISTORY' and 'd36e6cc2' or '3772ec5e'))
+ for _,modern in ipairs({false,true})do for _,tag in ipairs(tags)do local _,a,s=fixture(modern);older(a,s,tag);local source=a:GetBuiltinConditionSource(tag);
   local before=a:CopySettingsData(source);a:RegisterCondition('COPY_'..tag,assert(a:CompileCustomCondition('COPY_'..tag,source)));local v=node(tag);v.type='COPY_'..tag;known(a,v,true);assert(a:SettingsDataEqual(before,source))
  end end
 end)

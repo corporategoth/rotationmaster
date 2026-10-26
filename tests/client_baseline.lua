@@ -86,7 +86,8 @@ for _,case in ipairs(cases)do
    local duplicate=assert(a:DuplicateCustomRotation(0,id,'Independent reference'))
    local copy=assert(a:GetEditableRotation(0,duplicate));custom.description='Edited reference'
    assert(copy~=custom and copy.description==nil and copy.rotation[1].id~=custom.rotation[1].id)
-   if case[4]~='probe' then assert(not a:GetRuntimeRotation(0,id) and not a:GetRuntimeRotation(0,duplicate))end
+   -- The combat-data policy is retained, but it no longer decides whether a complete rotation runs (3831e918).
+   assert(a.Platform:GetCombatDataPolicy()==case[4],'client policy changed: '..tostring(a.Platform:GetCombatDataPolicy()))
    local parent=a:CreateConditionGroup();a:CreateRotationReference(parent,custom,0);a:ReleaseConditionWidget(parent)
    body.rotation[1].conditions.type='MISSING_BASELINE_DEFINITION'
    local unresolved=assert(codec:Encode(body));candidate=assert(session:Stage(unresolved))

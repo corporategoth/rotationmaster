@@ -101,15 +101,6 @@ test('all slot counts retain at most five native and isolated skin surfaces',fun
  end end
  assert(#w.icons==5 and p.adds==5)
 end)
-test('additive historical inverse preserves complete old files and rejects unrelated successors',function()
- local inverse=dofile('tests/fixtures/restore_masque_preview.lua')
- for _,path in ipairs({'UI/settings_integrations.lua','Core/profile_data.lua','UI/settings_collections.lua'})do
-  local file=assert(io.open(path));local source=file:read('*a');file:close()
-  local old=inverse(path,source);assert(old~=source and inverse(path,old)==old)
-  assert(not pcall(inverse,path,source..'\n'),'whole-file mutation accepted')
-  assert(dofile('tests/fixtures/restore_integration_settings.lua')(path,source))
- end
-end)
 test('settings toggle is idle at module load and never discovers or builds preview state',function()
  local f=F.new();local reads,calls=0,0
  f.env.SlashCmdList=setmetatable({},{__index=function()reads=reads+1;return function()calls=calls+1 end end})

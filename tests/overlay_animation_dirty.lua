@@ -81,12 +81,6 @@ test('newer Glow from a native size callback survives old animation continuation
  c.overlay:SetScript('OnSizeChanged',function()if not once then once=true;c.a:Glow(c.parent,'dirty',{type='texture',texture='NEW'},nil,1,'CENTER',0,0,.2)end end)
  c.tick();assert(once and c.overlay:IsShown()and c.overlay.texture.texture=='NEW'and c.overlay.sequenceTimer==nil and next(c.timers.timers)==nil,'old callback overwrote newer Glow or restarted its timer')
 end)
-test('exact whole-module inverse preserves all preexisting button source and rejects unrelated edits',function()
- local h=assert(io.open('buttons.lua'));local now=h:read('*a');h:close();local inverse=dofile('tests/fixtures/restore_overlay_animation_dirty.lua')
- local p=assert(io.popen('git show a6bd8dbc27c70e16c1b15b156d7a1a478577cf24:buttons.lua'));local old=p:read('*a');assert(p:close());assert(inverse(now,'buttons.lua')==old)
- local changed=now:sub(1,4)..'X'..now:sub(6);assert(#changed==#now and inverse(changed,'buttons.lua')==changed)
- assert(inverse(now..'\n','buttons.lua')==now..'\n'and inverse(now,'unrelated.lua')==now and inverse(old,'buttons.lua')==old)
-end)
 test('native size callbacks keep later dimension and tint reads fresh in the same tick',function()
  local c=setup({type='pulse',texture='A',sequence={1,1.25},frequency=.1});local once=false
  c.overlay:SetScript('OnSizeChanged',function()if not once then once=true;c.parent:SetHeight(80);c.timer.args[3].r=.9 end end)

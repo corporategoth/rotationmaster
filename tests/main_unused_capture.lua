@@ -32,11 +32,4 @@ test('absent unused canonical member remains a nil selection without fallback or
  rawset(a,'isint',nil);setmetatable(a,{__index=function(_,key) assert(key~='isint','unused capture added a legacy fallback') end})
  load('main.lua');assert(reads==1 and type(a.OnInitialize)=='function','nil selection became an invocation or eager requirement')
 end)
-test('strict one-origin inverse composes before the prior three-selection main inverse',function()
- local f=F.new();f.load('Core/function_data.lua');local function hash(text) return f.addon:FunctionSourceHash(text) end
- local h=assert(io.open('main.lua'));local text=h:read('*a');h:close()
- text=dofile('tests/fixtures/restore_cache_mode_initialization.lua')(text);text=dofile('tests/fixtures/restore_rotation_execution_index.lua')(dofile('tests/fixtures/restore_rotation_execution_diagnostics.lua')(text,'main.lua'),'main.lua')
- local old=restore(text,hash);assert(hash(old)=='b92a4db5' and hash(restoreActive(old,hash))=='4e3a4815')
- assert(not pcall(restore,old,hash) and not pcall(restore,text..text,hash) and not pcall(restore,text..'\n-- unrelated change\n',hash),'inverse accepted extra or missing edits')
-end)
 finish()

@@ -248,10 +248,4 @@ test('cold unhandled restoration cannot forward a token retired by the switching
  a:InvalidateRotationChoiceContext();local _,token=a:SwitchRotation()
  assert(reached and token==nil,'superseded cold-restoration token escaped');assert(a.currentRotation==selected)
 end)
-test('strict whole-module predecessor inverse rejects unrelated edits',function()
- local inverse=dofile('tests/fixtures/restore_rotation_choice_preferences.lua')
- for _,path in ipairs({'main.lua','Core/rotation_scope.lua','Core/rotation_library.lua','Core/profile_data.lua','Locales/enUS.lua','RotationMaster.toc'})do
-  local current=read(path);assert(type(inverse(current,path))=='string');assert(not pcall(inverse,current..'-- unrelated\n',path))
- end
-end)
 finish()

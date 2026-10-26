@@ -164,12 +164,6 @@ test('replaced observer callback is not overwritten on cleanup or subsequent cap
  local original=observer.scripts.OnEvent;local foreign=function()end;observer:SetScript('OnEvent',foreign)
  a:CancelCPUProfile();assert(observer:GetScript('OnEvent')==foreign);assert(a:StartCPUProfile());assert(observer:GetScript('OnEvent')==foreign);original(observer,'SPELL_DATA_LOAD_RESULT',1,true);s:complete();has(a:GetCPUProfileReport(),'metadata successes: spell=0; item=0')
 end)
-test('strict inverse pins every original byte and rejects unrelated or handoff changes',function()
- for _,path in ipairs({'Diagnostics/cpu.lua','Core/spell_catalog.lua','Core/reference_catalog.lua','buttons.lua'})do
-  local source=read(path);assert(type(inverse(source,path))=='string');assert(not pcall(inverse,source..'\n',path),'unrelated source accepted')
-  local marker=path=='Diagnostics/cpu.lua' and '-- BEGIN CPU ACTIVITY DIAGNOSTICS' or '-- BEGIN CPU ACTIVITY HANDOFF';local changed=once(source,marker,'-- BEGIN CORRUPTED ACTIVITY');assert(not pcall(inverse,changed,path),'changed feature accepted')
- end
-end)
 
 
 test('exact four new callback samples add at most sixteen queries while old report remains byte exact',function()

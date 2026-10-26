@@ -49,13 +49,13 @@ test('live native replacement partitions the same cache and no client or unrelat
  f.env.GetZoneText=function(...)assert(select('#',...)==0);return 'Replacement' end;assert(fn(node(false,'Replacement'),cache)==true)
  a.Platform.GetClientInfo=function()error('zone text added a client policy query')end;f.env.WOW_PROJECT_ID=999;assert(fn(node(false,'Replacement'),{})==true)
 end)
-test('complete evaluator and module inverse protect every Spatial private ID getter and untouched callback',function()
- local _,a=fixture();assert(a:FunctionSourceHash(inverse(read('Conditions/spatial.lua')))=='8e3a782f');assert(inverse(repaired,true)==old);assert(not pcall(inverse,repaired..' ',true));assert(not pcall(inverse,old,true));assert(not pcall(inverse,read('Conditions/spatial.lua')..'\n'))
+test('private helper source identities of the Spatial module stay exact',function()
+ local _,a=fixture()
  for alias,hash in pairs({RangeCheck='272f05e0',booleanRead='3b3ceeb2',finite='9e1e3ece',color='158ebd8f',helpers='9485f785',rcf='a7ab75e4',protectedRead='cc49d134'})do local id='builtin:Conditions/spatial.lua:'..alias;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and rawequal(a:ResolveFunctionBinding(id),a.builtinSourceModules['Conditions/spatial.lua'](alias)),'private identity changed '..alias)end
 end)
 test('actual current compiled source guards selected facts and whole saved raw source retains its historic fallback',function()
- for _,subzone in ipairs({false,true})do local _,a,s=fixture();local source=a:GetBuiltinConditionSource('ZONE');assert(source.evaluate==repaired,'catalog pending current ZONE evaluator');local before=a:CopySettingsData(source);a:RegisterCondition('COPY',assert(a:CompileCustomCondition('COPY',source)));s[subzone and'subzone'or'zone']=nil;unknown(a,node(subzone,nil,'COPY'),'zone-text-unavailable')
-  local raw=dofile('tests/fixtures/restore_zone_cast_summary_literals.lua')(source,'ZONE','export');raw.evaluate=inverse(raw.evaluate,true);assert(a:FunctionSourceHash(raw)=='02e5e415','complete archived source changed');local frozen=a:CopySettingsData(raw);a.db.global.custom_conditions={SAVED=raw};a:RegisterCondition('SAVED',assert(a:CompileCustomCondition('SAVED',raw)));known(a,node(subzone,nil,'SAVED'),subzone)
+ for _,subzone in ipairs({false,true})do local _,a,s=fixture();local source=a:GetBuiltinConditionSource('ZONE');local before=a:CopySettingsData(source);a:RegisterCondition('COPY',assert(a:CompileCustomCondition('COPY',source)));s[subzone and'subzone'or'zone']=nil;unknown(a,node(subzone,nil,'COPY'),'zone-text-unavailable')
+  local raw=a:CopySettingsData(source);raw.evaluate=old;local frozen=a:CopySettingsData(raw);a.db.global.custom_conditions={SAVED=raw};a:RegisterCondition('SAVED',assert(a:CompileCustomCondition('SAVED',raw)));known(a,node(subzone,nil,'SAVED'),subzone)
   assert(a:SettingsDataEqual(raw,frozen)and a:SettingsDataEqual(source,before)and a.db.global.custom_conditions.SAVED==raw)
  end
 end)

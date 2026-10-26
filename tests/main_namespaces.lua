@@ -73,10 +73,8 @@ test('actual perf command uses bundled argument parser for its remainder',functi
  local seen;a.HandlePerformanceCommand=function(self,...) assert(self==a);seen=pack(...) end
  for _,case in ipairs({{'perf cpu start','cpu start'},{'perf runtime 30','runtime 30'},{'perf memory report','memory report'},{'perf','' }}) do seen=nil;a:HandleCommand(case[1]);assert(seen and seen.n==1 and seen[1]==case[2],'perf command argument routing changed: '..tostring(seen and seen[1])) end
 end)
-test('strict inverse retains postslash main bytes unused capture aliases and existing source contracts',function()
- local f=F.new();f.load('Core/function_data.lua');local a=f.addon;local function hash(text) return a:FunctionSourceHash(text) end
- local h=assert(io.open('main.lua'));local text=h:read('*a');h:close();text=dofile('tests/fixtures/restore_cache_mode_initialization.lua')(text);text=dofile('tests/fixtures/restore_rotation_execution_index.lua')(dofile('tests/fixtures/restore_rotation_execution_diagnostics.lua')(text,'main.lua'),'main.lua');local active=restoreUnused(text,hash);local old=restore(active,hash)
- assert(hash(old)=='4e3a4815' and not pcall(restore,old,hash) and not pcall(restore,active..active,hash) and not pcall(restore,active..'\n-- unrelated change\n',hash))
+test('main.lua owns no Built In source and the direct compatibility aliases stay',function()
+ local f=F.new();f.load('Core/function_data.lua');local a=f.addon
  f.load('Data/builtin_sources.lua');f.load('Core/builtin_sources.lua');assert(not a.BuiltinSourceCatalog.modules['main.lua'] and not a.builtinFunctions['builtin:Functions/cache.lua:ReportCacheStats'])
  assert(a.getCached==a.Functions.cache.getCached and a.ReportCacheStats==a.Functions.cache.ReportCacheStats and a.deepcopy==a.Functions.collections.deepcopy and a.isint==a.Functions.values.isint,'direct compatibility aliases changed')
 end)

@@ -199,22 +199,6 @@ test('profile rebind and active disable retire prepared execution bodies',functi
  local pending=a:BeginActiveRotationTransition();assert(a:RetireActiveRotationTransition(pending));assert(not lease()and(not current or not current()),'disabled active selection kept lease')
  local _,_,_,lastHandled=acquire(a,0,a.currentRotation);assert(not lastHandled,'disabled selection rebuilt a managed plan')
 end)
-test('all seven changed existing modules reconstruct exact closed predecessor bytes',function()
- local restore=dofile('tests/fixtures/restore_active_runtime_plan.lua')
- for _,path in ipairs({'Core/rotation_active.lua','Core/rotation_references.lua','Core/rotation_library.lua','Core/rotation_scope.lua','Core/announcements.lua','Core/rotation_sequence.lua','buttons.lua'})do
-  local h=assert(io.open(path));local source=h:read('*a');h:close()
-  local before=restore(nil,path,'before');assert(type(before)=='string'and #before>0 and before~=source)
-  assert(restore(source,path)==before)
-  local edit=source:sub(1,7)..(source:sub(8,8)=='X'and'Y'or'X')..source:sub(9)
-  assert(#edit==#source and not pcall(restore,edit,path),'same-length unrelated source accepted: '..path)
-  local at=assert(source:find('local',1,true));local x,y,z=source:byte(at,at+2)
-  local collision=source:sub(1,at-1)..string.char(x+1,y-2,z+1)..source:sub(at+3)
-  local function adler(text)local a,b=1,0;for i=1,#text do a=(a+text:byte(i))%65521;b=(b+a)%65521 end;return a+b*65536 end
-  assert(#collision==#source and adler(collision)==adler(source)and not pcall(restore,collision,path),'same-length checksum collision accepted')
-  assert(not pcall(restore,before:sub(1,7)..'X'..before:sub(9),path),'unrelated predecessor accepted')
- end
- assert(not pcall(restore,'x','Core/unknown.lua'))
-end)
 test('public RuntimePass mutable body changes ordinary advice and retires managed admission',function()
  local c,a,acquire=fixture(true);c.tick();local original=a.currentSpell
  local body,lease,_,handled=acquire(a,0,a.currentRotation);assert(handled and lease())

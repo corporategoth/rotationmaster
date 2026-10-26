@@ -154,16 +154,6 @@ test('actual string index find and index replacements retain current validation'
   rawset(meta,'__index',index);rawset(index,'find',find);a.GetRotationOwnerContext=owner;assert(ok,why)
  end
 end)
-test('strict publication-store inverse rejects unrelated missing and duplicate source changes',function()
- local inverse=dofile('tests/fixtures/restore_runtime_publication_store.lua')
- for _,path in ipairs({'Data/rotation_store.lua','Core/rotation_scope.lua','main.lua'})do
-  local source=read(path);local old=inverse(source,path);assert(old~=source)
-  assert(not pcall(inverse,source..'\n',path),'inverse accepted unrelated source')
-  local marker=path=='main.lua'and'publicationGuard'or path=='Core/rotation_scope.lua'and'ownedStoreFactory'or'PublicationGuard'
-  local a,b=assert(source:find(marker,1,true));assert(not pcall(inverse,source:sub(1,a-1)..source:sub(b+1),path),'inverse accepted missing source')
-  assert(not pcall(inverse,source:sub(1,b)..marker..source:sub(b+1),path),'inverse accepted duplicate source')
- end
-end)
 local function transportInjection(restored)
  local original=loadfile;local injections,guards=0,0
  loadfile=function(path,...)

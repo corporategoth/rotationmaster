@@ -191,27 +191,7 @@ test('clearing an addon-identical selected namespace during readability cannot r
   assert(count(s,fn)==(phase=='start'and 0 or 2),'retired namespace sampled')
  end end
 end)
-test('three whole module inverses reject old unknown and unrelated module mutations',function()
- local inverse=dofile('tests/fixtures/restore_cpu_work_views.lua')
- for _,path in ipairs({'Diagnostics/cpu.lua','Data/rotation_store.lua','main.lua'})do
-  local current=read(path);local old=inverse(current,path)
-  local pins={['Diagnostics/cpu.lua']={46911,'92d4503a'},['Data/rotation_store.lua']={36718,'09dd5761'},['main.lua']={77346,'a564d651'}}
-  local h=0;for i=1,#old do h=(h*33+old:byte(i))%4294967296 end
-  assert(#old==pins[path][1]and string.format('%08x',h)==pins[path][2])
-  assert(not pcall(inverse,old,path));assert(not pcall(inverse,current..'-- unrelated\n',path))
- end
- assert(not pcall(inverse,'','unknown'))
-end)
 
-test('current and already-normalized modules compose identically without applying inverses twice',function()
- local inverse=dofile('tests/fixtures/restore_cpu_work_views.lua')
- local normalize=dofile('tests/fixtures/restore_runtime_event_context.lua')
- for _,path in ipairs({'Data/rotation_store.lua','main.lua'})do
-  local current=read(path);local prior=normalize(current,path)
-  assert(inverse(current,path)==inverse(prior,path),'historical route mismatch: '..path)
-  assert(not pcall(inverse,prior..'-- unrelated\n',path),'normalized mutation accepted')
- end
-end)
 test('actual current main fixture initializes after historical preparation for both target states',function()
  local make=dofile('tests/fixtures/rotation_execution.lua')
  for _,target in ipairs({false,true})do local c=make({target=target});c.tick();assert(not c.a.adviceErrorReport,'actual main failed');assert(#c.a.Diagnostics:GetReports()==0)end

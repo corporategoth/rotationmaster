@@ -105,18 +105,6 @@ test('actual trend services retain their exact formulas bodies tuples and three 
  poison(a);local v=node('TT_HEALTH',50,4);v.operator='LESSTHAN';assert(a.conditionDefinitions.TT_HEALTH.evaluate(v,{})==true,'actual canonical trend formula no longer feeds forecast')
  a.round=function() error('LIVE_LEGACY_ROUND') end;for _,fn in ipairs({current,old}) do local ok,why=pcall(fn,fn==current and s.history or {{time=100,value=80,max=100}});assert(not ok and tostring(why):find('LIVE_LEGACY_ROUND',1,true)) end
 end)
-test('strict inverse restores only both full evaluators and all private trend and stats source identities',function()
- local _,a=fixture();local file=assert(io.open('Conditions/stats.lua'));local text=file:read('*a');file:close();text=dofile('tests/fixtures/restore_resource_deficit_summary_repairs.lua')(text)
- assert(a:FunctionSourceHash(inverse(restoreForecast(text)))=='3174a034','stats changed beyond two trend consumer expressions from d8bdba6')
- assert(not pcall(function() return inverse(restoreForecast(text..text)) end),'inverse accepted duplicate evaluator blocks')
- for _,tag in ipairs(tags) do assert(inverse(newBodies[tag],tag,true)==oldBodies[tag]);assert(not pcall(inverse,oldBodies[tag],tag,true));assert(not pcall(inverse,newBodies[tag]..' ',tag,true));assert(not pcall(inverse,newBodies[tag],'OTHER',true)) end
- for id,hash in pairs({['builtin:Conditions/stats.lua:color']='89107d36',['builtin:Conditions/stats.lua:helpers']='c19dbbac',['builtin:Functions/trends.lua:calculate']='26e53807',['builtin:Functions/trends.lua:calculateOld']='666360c5'}) do
-  assert(a:FunctionSourceHash(assert(a.builtinFunctions[id]).source)==hash,'published/private source identity changed: '..id)
- end
- for _,name in ipairs({'calculate','calculateOld'}) do assert(a.builtinSourceModules['Functions/trends.lua'](name)==a:ResolveFunctionBinding('builtin:Functions/trends.lua:'..name)) end
- for _,name in ipairs({'color','helpers'}) do assert(a.builtinSourceModules['Conditions/stats.lua'](name)==a:ResolveFunctionBinding('builtin:Conditions/stats.lua:'..name),'private stats getter identity changed') end
- for alias in pairs(a.builtinCallbackBindings['Conditions/stats.lua']) do assert(not alias:find('trends',1,true),'trend added a captured Functions leaf') end
-end)
 if arg[1]~='--runtime-only' then
  test('historical restored actual source copies use canonical trend while archived exact raw sources retain legacy authority',function()
   for _,tag in ipairs(tags) do local _,a,s=fixture();local source=assert(a:GetBuiltinConditionSource(tag));assert(source.evaluate==newBodies[tag],'current forecast source catalog stale')

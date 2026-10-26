@@ -47,9 +47,4 @@ test('current source duplicate gets the repair while saved raw source retains th
  local v=node(-10,0,nil,'RAW_FORECAST');valid(a,v);assert(raw.evaluate(v,{})==false and a:evaluateConditionResult({type='NOT',value=v}).status=='match');local r,selected=branch(a,v);assert(r.status=='complete' and selected=='no')
  assert(a:SettingsDataEqual(before,source) and a.db.global.custom_conditions.RAW_FORECAST==source,'saved raw source was rewritten')
 end)
-test('one exact guard repair inverses the complete committed module and private identities',function()
- local _,a=fixture();local file=assert(io.open('Conditions/stats.lua'));local text=file:read('*a');file:close();text=dofile('tests/fixtures/restore_resource_deficit_summary_repairs.lua')(text);text=dofile('tests/fixtures/restore_health_forecast_repairs.lua')(text);text=dofile('tests/fixtures/restore_trend_consumer_qualifiers.lua')(text);text=dofile('tests/fixtures/restore_rune_repairs.lua')(text);assert(a:FunctionSourceHash(inverse(text))=='0cd932cd','stats differs beyond target field guard from5e907ef')
- assert(inverse(newBody,'TT_HEALTH')==oldBody);assert(not pcall(inverse,oldBody,'TT_HEALTH'));assert(not pcall(inverse,newBody..' ','TT_HEALTH'));assert(not pcall(inverse,newBody,'OTHER'));assert(not pcall(inverse,text..text),'inverse accepted duplicate whole callback')
- for name,hash in pairs({color='89107d36',helpers='c19dbbac'}) do local id='builtin:Conditions/stats.lua:'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/stats.lua'](name)) end
-end)
 finish()

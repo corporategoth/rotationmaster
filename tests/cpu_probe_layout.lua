@@ -67,14 +67,15 @@ test('the probe has neither a General button nor a page Help row and keeps its c
  for _,row in ipairs(a:GetGeneralOptionHelp())do assert(row.id~='cpu_probe' and row.id~='cpu_cancel' and row.id~='memory_stop','retired control still has page help: '..tostring(row.id))end
  assert(type(a.HandlePerformanceCommand)=='function' and type(f.translations['Help.General.cpu_probe'])=='string','probe command lost')
 end)
-test('probe report states and both command usage keys have explicit locale entries',function()
+test('probe report states and the perf command usage have explicit locale entries',function()
  local f=fixture();local L=f.libraries['AceLocale-3.0']:GetLocale('rotationmaster')
  for _,key in ipairs({'Callback arguments','Callback calls','Callback returns','Capability probe only; no evaluator or gameplay was measured.',
   'Native profiler probe','Native profiler probe is already running.','Native profiler probe is unavailable while CPU capture is running.',
-  'Native profiler probe is unavailable.','Usage: /rm cpu [start|report|cancel|probe]','call completed','call failed','disabled','enabled','exact',
+  'Native profiler probe is unavailable.','Usage: /rm perf cpu|runtime|memory [seconds|start|stop|report], or /rm perf probe','call completed','call failed','disabled','enabled','exact',
   'malformed','mismatch','more than one','not run','present','restricted','unavailable (context changed)','absent','unavailable','Native acceptance: unverified'})do
   assert(type(f.translations[key])=='string'and #f.translations[key]>0,'missing explicit locale '..key)
  end
- assert(L['Usage: /rm cpu [start|report|cancel]']=='Usage: /rm cpu [start|report|cancel|probe]','legacy command help omits probe')
+ -- /rm cpu is gone (48d591d1); the one usage line names probe.
+ assert(L['Usage: /rm perf cpu|runtime|memory [seconds|start|stop|report], or /rm perf probe']:find('/rm perf probe',1,true),'perf usage omits probe')
 end)
 finish()

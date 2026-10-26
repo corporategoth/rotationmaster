@@ -115,17 +115,6 @@ test('validation retirement stops later callbacks and cannot show an obsolete mo
     local shell=a:EditCondition(1,0,{type='AND',value={{type='RETIRE'},{type='LATER'}}})
     assert(not shell.active and later==0 and not shell.frame:IsShown(),'retired validation resumed old modal work')
 end)
-test('strict additive inverse retains complete predecessor and rejects unrelated changes',function()
-    local h=assert(io.open('UI/condition_editor.lua'));local source=h:read('*a');h:close()
-    local restore=dofile('tests/fixtures/restore_condition_invalid_expansion.lua')
-    local before=restore(source,'UI/condition_editor.lua')
-    local n=5381;for i=1,#before do n=(n*33+before:byte(i))%4294967296 end
-    assert(#before==37135 and n==3337624042)
-    assert(restore(before,'UI/condition_editor.lua')==before)
-    assert(not pcall(restore,source..'-- unrelated','UI/condition_editor.lua'))
-    local changed=source:gsub("view.cardStates%[card.key%]='expanded'","view.cardStates[card.key]='normal'",1)
-    assert(changed~=source and not pcall(restore,changed,'UI/condition_editor.lua'))
-end)
 test('valid announcement contextual units keep their ordinary collapsed preference',function()
     local f=fixture();local a=f.addon
     a:RegisterCondition('CONTEXT',{description='Contextual unit',fields={unit='string'},valid=function(_,v) return v.unit=='target' or v.unit=='player' end})

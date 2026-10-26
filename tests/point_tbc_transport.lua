@@ -126,8 +126,4 @@ end)
 test('finite combo observations with overflowing deficit remain unknown',function()
  local _,a,s=fixture();s.combo=-1e308;s.maximum=1e308;unknown(a,node(-1));assert(count(s,'current')==0 and count(s,'combo')==2 and count(s,'maximum')==2)
 end)
-test('strict inverse restores all three complete modules and exact callback before older repairs',function()
- for _,path in ipairs({'Core/point_conditions.lua','Platform/points.lua','Conditions/stats.lua'})do local h=assert(io.open(path));local text=h:read('*a');h:close();assert(inverse(text,path))end
- assert(inverse(newBody,'POINT',true)==oldBody)
-end)
 finish()

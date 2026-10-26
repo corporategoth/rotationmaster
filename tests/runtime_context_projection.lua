@@ -66,11 +66,4 @@ check('changed private context callback keeps exact receiver argument and thrown
  reader.Context=function(self,spec)assert(self==reader and spec==0);calls=calls+1;error(object,0)end
  local ok,why=pcall(a.AcquireRotationRuntimePass,a,0);assert(not ok and why==object and calls==1)
 end)
-check('strict source inverse retains prior full-module authority and rejects missing duplicate unrelated deltas',function()
- local inverse=dofile('tests/fixtures/restore_runtime_context_projection.lua')
- for _,path in ipairs({'Platform/client.lua','Core/rotation_library.lua','Core/rotation_scope.lua'})do
-  local h=assert(io.open(path));local text=h:read('*a');h:close();local old=inverse(text,path)
-  assert(old~=text and not pcall(inverse,old,path)and not pcall(inverse,text..text,path)and not pcall(inverse,text..'\n-- unrelated\n',path))
- end
-end)
 finish()

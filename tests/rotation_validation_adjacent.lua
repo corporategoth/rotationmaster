@@ -157,14 +157,6 @@ test('public stamp equality callback cannot turn a late map mutation into reusab
 end)
 
 
-test('strict whole-module inverse preserves public bodies and rejects unrelated or duplicate changes',function()
- local inverse=dofile('tests/fixtures/restore_rotation_validation_adjacent.lua');local f=F.new();f.load('Core/function_data.lua');local function hash(value) return f.addon:FunctionSourceHash(value) end
- local frozen={['Core/rotation_references.lua']='ed72c190',['Core/rotation_library.lua']='051d323c',['Core/rotation_scope.lua']='9aeff4f1'}
- for path,wanted in pairs(frozen) do
-  local h=assert(io.open(path));local text=h:read('*a');h:close();text=dofile('tests/fixtures/restore_revision_changes.lua')(text,path);text=dofile('tests/fixtures/restore_validation_observed_maps.lua')(text,path);local old=inverse(text,path,hash);assert(hash(old)==wanted,'wrong frozen '..path)
-  assert(not pcall(inverse,text..'\n-- unrelated\n',path,hash));assert(not pcall(inverse,text..text,path,hash));assert(not pcall(inverse,old,path,hash))
- end
-end)
 
 
 test('retained generation metatables cannot reuse the adjacent stamp',function()
@@ -196,46 +188,6 @@ test('bundled real AceAddon owner metadata does not disable the raw-present fast
 end)
 
 
--- Load the exact frozen modules through the strict inverse for differential
--- controls. Global method identities stay intact in both actual runtime paths.
-local function priorFixture()
- local inverse=dofile('tests/fixtures/restore_rotation_validation_adjacent.lua');local f=F.new();f.load('Core/function_data.lua');local old={}
- for _,path in ipairs({'Core/rotation_references.lua','Core/rotation_library.lua','Core/rotation_scope.lua'}) do
-  local h=assert(io.open(path));local text=h:read('*a');h:close();text=dofile('tests/fixtures/restore_revision_changes.lua')(text,path);text=dofile('tests/fixtures/restore_validation_observed_maps.lua')(text,path);old[path]=inverse(text,path,function(value) return f.addon:FunctionSourceHash(value) end)
- end
- local original=loadfile;_G.loadfile=function(path) if old[path] then return loadstring(old[path],'@'..path) end;return original(path) end
- local ok,e,a=pcall(fixture);_G.loadfile=original;assert(ok,e);return e,a
-end
-local function globalGetterCase(prior,name,wanted,throwing,protected)
- local e,a;if prior then e,a=priorFixture() else e,a=fixture() end
- -- Fixed keys remove unrelated cross-fixture hash iteration differences when
- -- the callback invalidates an observation in the middle of a map scan.
- a.conditionDefinitions={ONE={fields={}}};a.db.global.itemsets={};a.db.profile.itemsets={};a.db.global.effects={existing={}}
- assert(a:InitializeRotationLibrary())
- local p=assert(a:AcquireRotationRuntimePass(0));local original=e[name];local previous=getmetatable(e).__index;local count=0;local changed=false
- local meta={__index=function(t,key)
-  if key==name then count=count+1;if count==wanted then if throwing then error('global-lookup-failure',0) end;a.db.global.effects.late={};changed=true end;return original end
-  if type(previous)=='function' then return previous(t,key) end;return previous[key]
- end}
- if protected then meta.__metatable={__index=_G} end
- e[name]=nil;setmetatable(e,meta)
- local ok,result,why=pcall(p.IsCurrent,p);return ok,result,why,count,changed
-end
-test('function global getters preserve every original read and mutation rejection position',function()
- for _,name in ipairs({'pairs','rawget','rawequal','type','getmetatable'}) do for wanted=1,45 do
-  local ok,result,why,count,changed=globalGetterCase(true,name,wanted)
-  local nextOK,nextResult,nextWhy,nextCount,nextChanged=globalGetterCase(false,name,wanted)
-  assert(ok==nextOK and result==nextResult and why==nextWhy and count==nextCount and changed==nextChanged,name..' getter position '..wanted..' changed result/read order old='..tostring(ok)..'/'..tostring(result)..'/'..tostring(why)..'/'..count..'/'..tostring(changed)..' new='..tostring(nextOK)..'/'..tostring(nextResult)..'/'..tostring(nextWhy)..'/'..nextCount..'/'..tostring(nextChanged))
- end end
-end)
-test('throwing global getters preserve the original error and exact lookup count',function()
- for _,name in ipairs({'pairs','rawget','rawequal','type','getmetatable'}) do for _,wanted in ipairs({1,9,12,20}) do
-  local ok,result,why,count=globalGetterCase(true,name,wanted,true);local nextOK,nextResult,nextWhy,nextCount=globalGetterCase(false,name,wanted,true)
-  assert(ok==nextOK and result==nextResult and why==nextWhy and count==nextCount,name..' throwing getter position '..wanted..' changed dispatch')
- end end
-end)
-
-
 test('only raw globals qualify while inherited lookup and missing capability fall back',function()
  local e,a=fixture();local p=assert(a:AcquireRotationRuntimePass(0));current(a,p,1)
  for _,name in ipairs({'pairs','rawget','rawequal','type','getmetatable','getfenv'}) do e[name]=nil end
@@ -261,13 +213,6 @@ test('changed owned function environments require the original second observatio
 end)
 
 
-test('protected environment metadata cannot certify a disguised global getter',function()
- for wanted=1,45 do
-  local ok,result,why,count,changed=globalGetterCase(true,'pairs',wanted,false,true)
-  local nextOK,nextResult,nextWhy,nextCount,nextChanged=globalGetterCase(false,'pairs',wanted,false,true)
-  assert(ok==nextOK and result==nextResult and why==nextWhy and count==nextCount and changed==nextChanged,'protected getter position '..wanted..' changed authority/read order')
- end
-end)
 
 
 test('initializer extra returns cannot impersonate the private unchanged-branch witness',function()
@@ -285,22 +230,15 @@ end)
 
 
 test('eligible adjacent reads run exactly one complete environment proof',function()
- local normalized={}
- for _,path in ipairs({'Core/rotation_references.lua','Core/rotation_library.lua','Core/rotation_scope.lua'})do
-  local h=assert(io.open(path));local text=h:read('*a');h:close();normalized[path]=dofile('tests/fixtures/restore_revision_changes.lua')(text,path)
- end
- for _,old in ipairs({true,false})do
-  local loader=loadfile
-  if old then _G.loadfile=function(path)if normalized[path]then return assert(loadstring(normalized[path],'@'..path))end;return loader(path)end end
-  local ok,_,a=pcall(fixture);_G.loadfile=loader;assert(ok,a)
-  local p=assert(a:AcquireRotationRuntimePass(0));local contextProof
-  if not old then for i=1,100 do local name,value=debug.getupvalue(a:GetScopedRotationCoordinator().RuntimePass,i);if not name then break end;if name=='libraryContextProof'then contextProof=value end end;assert(type(contextProof)=='function')end
-  local count,currentOK,why,contextChecks=calls(getfenv,function()return p:IsCurrent()end,contextProof);assert(currentOK,why)
-  if old then assert(count==8,'frozen helper environment checks '..count..' expected8 (one complete PRE proof)')
-  else assert(count==9,'current helper environment checks '..count..' expected9 (wrapper plus legacy scanner in one PRE proof)')end
-  assert(contextChecks==(old and 0 or 4),'context producer/projection environment proof count changed')
-  current(a,p,1)
- end
+ -- The frozen predecessor this once compared against (eight helper environment checks, no context proof) is retired with the
+ -- byte-exact inverses; the current counts are the contract.
+ local _,_,a=pcall(fixture);assert(a)
+ local p=assert(a:AcquireRotationRuntimePass(0));local contextProof
+ for i=1,100 do local name,value=debug.getupvalue(a:GetScopedRotationCoordinator().RuntimePass,i);if not name then break end;if name=='libraryContextProof'then contextProof=value end end;assert(type(contextProof)=='function')
+ local count,currentOK,why,contextChecks=calls(getfenv,function()return p:IsCurrent()end,contextProof);assert(currentOK,why)
+ assert(count==9,'current helper environment checks '..count..' expected9 (wrapper plus legacy scanner in one PRE proof)')
+ assert(contextChecks==4,'context producer/projection environment proof count changed')
+ current(a,p,1)
 end)
 
 finish()

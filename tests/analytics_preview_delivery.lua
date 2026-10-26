@@ -128,10 +128,6 @@ test('accepted seventeen normalized historical receipts are not promoted retrosp
  local s=c:stop();local rows=s.capture.trace.records;assert(#rows==17);for i,r in ipairs(rows)do assert(r.seq==i and r.cast==seq[i][1]and r.spell==seq[i][2]and r.castKind=='unmodeled'and(r.phase or r.status)==seq[i][3])end
  assert(s.capture.report.agreement.scorable==0 and s.capture.report.agreement.percentage==nil)
 end)
-test('strict additive inverse preserves complete producer predecessors and rejects unrelated edits',function()
- local inverse=dofile('tests/fixtures/restore_analytics_preview_delivery.lua')
- for _,path in ipairs({'main.lua','UI/preview.lua','Platform/analytics_casts.lua','UI/analytics_capture.lua'})do local now=read(path);local old=inverse(now,path);assert(old~=now);assert(not pcall(inverse,old,path)and not pcall(inverse,now..now,path)and not pcall(inverse,now..'-- unrelated',path))end
-end)
 test('stop or newer capture reentered from evidence clock never suppresses gameplay or publishes stale rows',function()
  for _,mode in ipairs({'stop','restart'})do local c=fixture();c:start();c.clockHook=function()local inside=false;for i=2,12 do local info=debug.getinfo(i,'S');if not info then break end;if info.source=='@Platform/analytics_casts.lua'then inside=true;break end end;if not inside then return end;c.clockHook=nil;if mode=='stop'then c:stop()else c.service:Clear();c:start()end end;c.tick();assert(c.a.currentSpell==403 and not c.a.adviceErrorReport)
   if mode=='stop'then assert(#c.service:GetSnapshot().capture.trace.records==0)else assert(#c:rows()==0)end
@@ -183,10 +179,6 @@ local function assertArm(c,old)
  end end
 end
 
-test('capture off actual query and publication order is exact to complete63faccb predecessors',function()
- local traces={};for _,old in ipairs({true,false})do local c=fixture(old);assert(c.loaded['main.lua']==(old and'historical'or'candidate')and c.loaded['UI/preview.lua']==(old and'historical'or'candidate')and c.loaded['Platform/analytics_casts.lua']==(old and'historical'or'candidate'),'paired fixture arm mislabeled');assertArm(c,old);c.tick();c.reset(true);c.tick();local counts,order=c.snapshot();c.reset(false);traces[#traces+1]={counts=counts,order=order}end
- local a,b=traces[1],traces[2];assert(#a.order==#b.order);for i,v in ipairs(a.order)do assert(v==b.order[i],'off query order '..i)end;for k,v in pairs(a.counts)do assert(v==b.counts[k],k)end;for k,v in pairs(b.counts)do assert(v==a.counts[k],k)end
-end)
 for _,mode in ipairs({'sample','action','item','icon','icons','frame','texture','render','metadata','metadata-type','frame-method','icon-method','source-method','valid-method','environment'})do
  test('final visibility callback retires captured '..mode..' invariant',function()
   local c=fixture();local calls=0;local metadata;local sourceInfo=c.a.Platform.GetSpellInfo

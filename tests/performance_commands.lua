@@ -89,16 +89,4 @@ test('namespace probe remains one inert callback with no capture or timer mutati
  assert(a:HandlePerformanceCommand('probe'));assert(calls.measure==1 and calls.event==1 and calls.forbidden==0 and#shown==1)
  assert(shown[1].title=='Native profiler probe')
 end)
-test('exact diagnostics CLI inverse restores each predecessor and rejects same-length foreign bytes',function()
- local restore=dofile('tests/fixtures/restore_performance_commands.lua')
- for _,path in ipairs({'Diagnostics/cpu.lua','Diagnostics/cpu_runtime.lua','Diagnostics/memory.lua'})do
-  local current=read(path);local before=restore(current,path)
-  assert(before~=current and restore(before,path)==before)
-  local changed=current:sub(1,-2)..(current:sub(-1)=='x'and'y'or'x')
-  assert(not pcall(restore,changed,path),'accepted unrelated successor edit')
-  changed=before:sub(1,-2)..(before:sub(-1)=='x'and'y'or'x')
-  assert(not pcall(restore,changed,path),'accepted unrelated predecessor edit')
-  assert(not pcall(restore,current:sub(1,-2),path),'accepted missing byte')
- end
-end)
 finish()

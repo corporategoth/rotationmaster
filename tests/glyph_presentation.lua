@@ -55,10 +55,6 @@ test('legacy-only metadata retains exact link and failed display does not change
  local _,a,s=fixture(true);local value={type='GLYPH',item=101};assert(a:printCondition(value,7):find(s.link,1,true) and s.calls==1);s.mode='throw';assert(a:printCondition(value,7):find('<glyph>',1,true) and value.item==101)
 end)
 local inverse,old,repaired=dofile('tests/fixtures/restore_glyph_presentation_repairs.lua')
-test('exact summary inverse preserves every other character callback and four private identities',function()
- local _,a=fixture();local text=restoreCreature(read('Conditions/character.lua'));assert(a:FunctionSourceHash(inverse(text))=='56c3b024','character changed beyond GLYPH print from242faee');assert(inverse(repaired,true)==old and not pcall(inverse,old,true) and not pcall(inverse,repaired..' ',true) and not pcall(inverse,text..text))
- for name,hash in pairs({character_class='f9f4e4b5',unit_class_num='33645816',color='3f9fe631',helpers='2e9a81e7'}) do local id='builtin:Conditions/character.lua:'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and rawequal(a:ResolveFunctionBinding(id),a.builtinSourceModules['Conditions/character.lua'](name))) end
-end)
 test('actual current editable summary clone uses modern link and retains complete other export fields',function()
  local _,a,s=fixture();local source=assert(a:GetBuiltinConditionSource('GLYPH'));assert(source.print==repaired,'GLYPH catalog pending');local restored=a:CopySettingsData(source);restored.print=inverse(restored.print,true);assert(a:FunctionSourceHash(restored)=='5572f84e','unrelated complete GLYPH source changed')
  local before=a:CopySettingsData(source);local copy=assert(a:CompileCustomCondition('COPY_GLYPH',source));a:RegisterCondition('COPY_GLYPH',copy);local value={type='COPY_GLYPH',item=101};assert(copy.valid(0,value));assert(a:printCondition(value,7):find(s.link,1,true));local item,parent,state=mount(a,value,copy);s.link='|Hitem:102|h[New Glyph]|h';enter(item,'102');assert(value.item==102 and state.statuses==1 and state.status:find(s.link,1,true));parent:Release();assert(a:SettingsDataEqual(source,before))

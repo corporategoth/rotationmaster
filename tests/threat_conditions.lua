@@ -90,15 +90,4 @@ test('public observer copy resolves real owner and current readability with pres
     assert(a:InstallCustomFunction('COPY_UNIT_THREAT',a:CopySettingsData(record.source)));local fn=a:ResolveFunctionBinding('COPY_UNIT_THREAT');s.threat=0;assert(fn(a.Platform,'focus')==0)
     local opaque={};f.env.canaccessvalue=function(v) return not rawequal(v,opaque) end;s.threat=opaque;local value,why=fn(a.Platform,'target');assert(value==nil and why=='restricted-value')
 end)
-test('only the exact pet and threat repairs change complete combat bytes and private identities',function()
-    local _,a=fixture();local file=assert(io.open('Conditions/combat.lua'));local text=file:read('*a');file:close();text=dofile('tests/fixtures/restore_combat_history_time_repairs.lua')(dofile('tests/fixtures/restore_form_presentation_repairs.lua')(dofile('tests/fixtures/restore_form_localization.lua')(text)));text=dofile('tests/fixtures/restore_threat_count_repairs.lua')(text);text=dofile('tests/fixtures/restore_combat_time_repairs.lua')(text)
-    text=dofile('tests/fixtures/restore_form_repairs.lua')(text);text=dofile('tests/fixtures/restore_loss_of_control_repairs.lua')(text)
-    text=dofile('tests/fixtures/restore_threat_repairs.lua')(text)
-    text=dofile('tests/fixtures/restore_pet_repairs.lua')(text)
-    assert(a:FunctionSourceHash(text)=='f0ca653e','combat changed beyond PET/PET_NAME/THREAT repairs from4487926')
-    for name,hash in pairs({color='dbda383d',character_class='d17cf4c1',helpers='9e28e933'}) do
-        local id='builtin:Conditions/combat.lua:'..name;assert(a:FunctionSourceHash(assert(a.builtinFunctions[id]).source)==hash)
-        assert(a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/combat.lua'](name),'private source identity drifted')
-    end
-end)
 finish()

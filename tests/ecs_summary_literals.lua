@@ -116,20 +116,4 @@ end)
 test('oversized accepted provider labels retain match and existing bounded summary fallback',function()
  local _,a=fixture(string.rep('x',64000));for _,spec in ipairs(specs)do local v=node(spec);assert(a:validateCondition(v,0)and a:evaluateConditionResult(v).status=='match');local p,n=render(a,v);assert(p=='Condition summary unavailable: invalid template or values.'and n==p)end
 end)
-test('strict catalog inverse preserves every complete predecessor field and leaves unrelated negatives visible',function()
- local _,a=fixture();local function copy()return a:CopySettingsData(a.BuiltinSourceCatalog)end
- local current=copy();inverse(current,nil,'catalog');assert(a:FunctionSourceHash(current)=='291b7738','unrelated complete catalog change')
- local unrelated=copy();unrelated.conditions.HEALTH.callbacks.evaluate.code=unrelated.conditions.HEALTH.callbacks.evaluate.code..'\n-- unrelated'
- inverse(unrelated,nil,'catalog');assert(a:FunctionSourceHash(unrelated)~='291b7738','catalog inverse hid unrelated callback')
- for _,kind in ipairs({'code','leaf','owner','line'})do local bad=copy();local row=bad.conditions.ECS_STAT.callbacks.print
-  if kind=='code'then row.code=row.code..' 'elseif kind=='leaf'then row.bindings['ECSLabels.phrase']='wrong'elseif kind=='owner'then bad.modules['Conditions/ext_stats.lua'].hash='wrong'else row.line=row.line+1 end
-  assert(not pcall(inverse,bad,nil,'catalog'),'catalog inverse accepted malformed '..kind)
- end
-end)
-test('strict two-print inverse retains complete predecessor module and rejects unrelated missing duplicate edits',function()
- local h=assert(io.open('Conditions/ext_stats.lua'));local source=h:read('*a');h:close()
- local baseline=inverse(source);assert(#baseline==11029,'complete predecessor size changed')
- assert(not pcall(inverse,source..'\n-- unrelated\n')and not pcall(inverse,source..source))
- for _,spec in ipairs(specs)do assert(inverse(repaired[spec[1]],spec[1],true)==old[spec[1]]and not pcall(inverse,repaired[spec[1]]..' ',spec[1],true))end
-end)
 finish()

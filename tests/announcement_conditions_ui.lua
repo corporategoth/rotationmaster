@@ -11,10 +11,11 @@ local function fixture()
  a.db.profile.announces={{id='a',type='spell',spell=547,event='START',announce='local',value='Saved'}}
  return f,a,parent,function()return kind end
 end
-test('announcement child uses Switch choices and keeps child Apply staged until parent Apply',function()
+-- Announcements pick from their own condition list (ANNOUNCEMENT), independent of the Switch list (2a8a75e9).
+test('announcement child uses the announcement choices and keeps child Apply staged until parent Apply',function()
  local _,a,parent,kind=fixture();local p=a:OpenNativeSettings(parent,'Announces')
  p.fields.entry1conditions:Click();local shell=assert(a.compactConditionEditor)
- shell.canvas.cards[1].typeButton:Click();assert(shell:GetUserData('announcement')==true and shell.active.persistentOwner and kind()=='SWITCH');shell.openPicker:Dismiss()
+ shell.canvas.cards[1].typeButton:Click();assert(shell:GetUserData('announcement')==true and shell.active.persistentOwner and kind()=='ANNOUNCEMENT');shell.openPicker:Dismiss()
  assert(shell.active.session:Command('Replace',{}, {type='FLAG',match=true}));shell.active.working=shell.active.session:Snapshot();shell:Render();shell.apply:Click()
  assert(not shell.active and a.db.profile.announces[1].conditions==nil and p:IsSettingsDraftDirty())
  p.fields.apply:Click();assert(a.db.profile.announces[1].conditions.type=='FLAG')
