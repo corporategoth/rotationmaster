@@ -242,7 +242,7 @@ function addon:PrepareImportedRotationSpecs(specs,chosen,replacement)
     end
     return normalized
 end
-function addon:GetRotationExportData(spec,id)
+local function exportData(self,spec,id)
     local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator();if scoped then
         local record,why=scoped:Snapshot(spec,id);if not record then return nil,why end
         local result
@@ -268,4 +268,16 @@ function addon:GetRotationExportData(spec,id)
     if imported then return currentTags(imported.envelope) end
     if reason~="not-imported" then return nil,reason end
     return stripSlotSpecs(self,data.CopyData(self:GetEditableRotation(spec,id)))
+end
+-- A Built In's envelope carries its name as a locale key (nameKey), and every importer shows that as the name. The
+-- export names the rotation in the exporting client's language (body.name); nameKey stays, it is what the envelope is.
+local function exportName(self,exported)
+    if type(exported)~='table' then return exported end
+    local body=type(exported.body)=='table' and exported.body or exported;local name=self:RotationDisplayName(exported)
+    if not name or name==body.name or name==exported.nameKey then return exported end
+    local copy=data.CopyData(exported);if not copy then return exported end
+    local target=type(copy.body)=='table' and copy.body or copy;target.name=name;return copy
+end
+function addon:GetRotationExportData(spec,id)
+    local exported,why=exportData(self,spec,id);return exportName(self,exported),why
 end

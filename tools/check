@@ -765,6 +765,8 @@ def main():
             ['lua5.1', 'tests/help_combined_predecessor.lua'],
             ['luajit', 'tests/help_combined_predecessor.lua'],
             ['lua5.1', 'tests/transfer_ui.lua'],
+            ['lua5.1', 'tests/rotation_name_transfer.lua'],
+            ['luajit', 'tests/rotation_name_transfer.lua'],
             ['lua5.1', 'tests/spell_presentation.lua'],
             ['lua5.1', 'tests/platform_range.lua'],
             ['lua5.1', 'tests/beyond_melee_presence.lua'],

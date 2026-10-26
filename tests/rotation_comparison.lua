@@ -4,7 +4,7 @@ local test,finish=F.suite()
 local function fixture()
     local f=F.new();local a=f.addon
     local data,envelope=make();a.RotationData=data
-    f.load('UI/settings_transfer.lua');f.load('Data/diff.lua');f.load('Data/visual_comparison.lua');f.load('UI/rotation_reference.lua');f.load('UI/rotation_comparison.lua')
+    f.load('UI/settings_transfer.lua');f.load('Data/diff.lua');f.load('Data/visual_comparison.lua');f.load('Core/rotation_library.lua');f.load('UI/rotation_reference.lua');f.load('UI/rotation_comparison.lua')
     -- Pure report tests inject the detached scoped service boundary. Actual
     -- store authority and ownership are covered by rotation_scope_ui.lua.
     dofile('tests/fixtures/rotation_header_backend.lua')(a,f.env.DEFAULT,f.env.NEW)

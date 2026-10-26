@@ -51,9 +51,9 @@ function addon:ShowRotationTransfer(spec,id)
         return not recordToken or coordinator:TokenCurrent(recordToken)
     end
     local canReplace=reference and reference.kind=='custom' and recordToken~=nil
-    local options={valid=valid,canReplace=canReplace,selectedName=original and original.name or source and (source.body and source.body.name or source.nameKey or source.name),fallbackName=L['Imported rotation'],requirePreview=true,
+    local options={valid=valid,canReplace=canReplace,selectedName=original and original.name or source and self:RotationDisplayName(source),fallbackName=L['Imported rotation'],requirePreview=true,
         help={heading=L['Import/Export Rotation'],brief=L['Help.Transfers.rotation_brief'],briefs=self:TransferHelpBriefs(),sections={{title=L['Import/Export'],text=L['Help.Transfers.rotation']},{title=L['Preview import'],text=L['Help.Transfers.rotation_preview']},{title=L['Applies to'],text=L['Copies belong to your Class unless This character is selected. Replacement keeps its original owner.']}}}}
-    options.originalName=function(text) local decoded=codec:Decode(text);local value=decoded and decoded.value;if type(value)=='table' then return value.body and value.body.name or value.nameKey or value.name end end
+    options.originalName=function(text) local decoded=codec:Decode(text);local value=decoded and decoded.value;if type(value)=='table' then return self:RotationDisplayName(value) end end
     options.invalidate=function(d) if not valid() or dialog and (d~=dialog or d.options~=options) then return end;candidate=nil;session:Clear();d.apply:Disable();d.inspect:Disable();d.status:SetText(L['Text changed. Preview again before importing.']);if p.importPreview then p.importPreview.frame:Hide() end end
     options.preview=function(d)
         if not valid() then return end

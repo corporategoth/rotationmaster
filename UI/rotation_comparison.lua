@@ -112,7 +112,7 @@ local function renderComparison(self,parent,view,spec,showUnchanged)
     if model.namesChanged then
         label(parent,L["Rotation names"],"Heading")
         pair({name=model.leftName,nameKey=model.leftNameKey},{name=model.rightName,nameKey=model.rightNameKey},function(column,entry)
-            label(column,entry.name or entry.nameKey and L[entry.nameKey] or DEFAULT)
+            label(column,addon:RotationDisplayName(entry) or DEFAULT)
         end)
     end
     if model.tagsChanged then
