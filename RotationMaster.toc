@@ -169,6 +169,7 @@ buttons.lua
 Diagnostics/glow.lua
 Core/unit_state_conditions.lua
 Core/assisted_highlight.lua
+Core/tooltips.lua
 init.lua
 validate.lua
 UI/controls.lua
