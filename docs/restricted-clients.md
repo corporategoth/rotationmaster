@@ -141,29 +141,43 @@ Combat, ranged slot, Season of Discovery runes) are listed in
 | `DISPELLABLE` | aura `dispelName` (dispellable filter) | C | C | `SecretWhenUnitAuraRestricted` | unavailable |
 | `DISTANCE` | LibRangeCheck (item/interact/spell range) | N | N | no annotation on the range APIs | n/a |
 | `DISTANCE_COUNT` | `NAME_PLATE_UNIT_ADDED/REMOVED` tokens, `UnitExists`, `UnitIsEnemy`, LibRangeCheck, `nameplateMaxDistance` | C (nameplate tokens; an NPC GUID is secret, so no GUID is read) | C | events carry no annotation; `UnitGUID` `SecretWhenUnitIdentityRestricted` | unavailable |
+| `ECLIPSE_DIRECTION` | `GetEclipseDirection`, `UnitClass` | n/a (edition gate) | n/a (edition gate) | `no-eclipse`: Wrath through Mists only | n/a |
+| `ECLIPSE_ENERGY` | `UnitPower("player", Enum.PowerType.Balance)`, `UnitClass` | n/a (edition gate) | n/a (edition gate) | `no-eclipse`: Wrath through Mists only | n/a |
+| `ENCOUNTER` | `C_InstanceEncounter.IsEncounterInProgress` | N | N | no annotation; returns a non-nilable bool | n/a |
 | `ENEMY` | `UnitIsEnemy` | N | N | no annotation | n/a |
 | `EQUIPPED` | `C_Item.IsEquippedItem` | N | N | no annotation | n/a |
+| `FALLING` | `IsFalling` | N | N | `SecretArguments` only; no secret return | n/a |
+| `FLYING` | `IsFlying` | N | N | `SecretArguments` only; no secret return | n/a |
 | `FORM` | `GetShapeshiftForm`, `GetShapeshiftFormInfo`/`GetShapeshiftFormID` | C (undocumented; checked) | C | not in the generated documentation | unavailable |
 | `FRIENDLY` | `UnitIsFriend` | N | N | no annotation | n/a |
 | `GLYPH` | glyph socket APIs | n/a (glyph layout gate) | n/a | `glyphLayout` | n/a |
 | `GROUP` | `IsInGroup`, `IsInRaid` | N | N | undocumented, group state | n/a |
+| `GROUP_DEAD_COUNT` | `GetNumGroupMembers`, `IsInRaid`, `UnitIsDeadOrGhost` of `party1-4` / `raid1-40` | N (group members) | N | no annotation on `UnitIsDeadOrGhost`; group tokens are not compound | an unreadable member makes the count unavailable |
+| `GROUP_ROLE_COUNT` | `UnitGroupRolesAssigned` of `player` / `party1-4` / `raid1-40` | C (identity; a group member is readable) | C | `SecretWhenUnitIdentityRestricted`; not Classic Era or Burning Crusade (`no-group-roles`) | an unreadable member makes the count unavailable |
+| `GROUP_SIZE` | `GetNumGroupMembers`, `IsInRaid` | N | N | undocumented, group state | n/a |
 | `HEALTH` | `UnitHealth` | A (`secret-health`) | A (`secret-health`) | `SecretReturns`; in game | unsupported |
 | `HEALTHPCT` | `UnitHealth`, `UnitHealthMax` | A (`secret-health`) | A (`secret-health`) | `SecretReturns`, `SecretWhenUnitHealthMaxRestricted`; in game | unsupported |
+| `HERO_TALENT` | `C_ClassTalents.GetActiveHeroTalentSpec` | N (Retail only: `retail-only`) | n/a (`retail-only`) | no annotation | n/a |
 | `IMMUNE` | MobInfo2 data by `UnitName`, `UnitLevel` | C (name identity: secret for an NPC) | C | `SecretWhenUnitNameIdentityRestricted` | unavailable |
 | `INCONTROL` | `HasFullControl` | N | N | no annotation | n/a |
 | `INSTANCE` | `IsInInstance` | N | N | no annotation | n/a |
+| `INSTANCE_DIFFICULTY` | `GetInstanceInfo` `difficultyID` | N | N | no annotation | a malformed value: unavailable |
+| `INSTANCE_ID` | `GetInstanceInfo` `instanceID` | N | N | no annotation | a malformed value: unavailable |
 | `ISSAME` | `UnitIsUnit` | C (compound tokens; restricted maps) | C | `SecretWhenUnitComparisonRestricted`, `RequiresComparableUnitTokens` | unavailable |
 | `ITEM` | `C_Item.GetItemCount` | N | N | no annotation | n/a |
 | `ITEM_COOLDOWN` | `C_Item.GetItemCooldown` / `C_Container.GetItemCooldown` | N | N | no annotation | n/a |
 | `ITEM_RANGE` | `C_Item.IsItemInRange` | N | N | no annotation | n/a |
+| `KEYSTONE_LEVEL` | `C_ChallengeMode.IsChallengeModeActive`, `GetActiveKeystoneInfo` | N (Retail only: `retail-only`) | n/a (`retail-only`) | no annotation | unavailable |
 | `LEVEL` | `UnitLevel` | N | N | no annotation | n/a |
 | `LOC_BLOCKED` | `C_LossOfControl.GetActiveLossOfControlData` `lockoutSchool` | N (player) | N | no annotation (only `...ByUnit` is restricted) | n/a |
 | `LOC_TYPE` | `C_LossOfControl.GetActiveLossOfControlData` `locType`/`timeRemaining` | N (player) | N | no annotation | n/a |
 | `MANA` | `UnitPower(unit, Mana)` | A unless Mana is flagged never secret (`secret-power`) | A unless flagged | `SecretWhenUnitPowerRestricted` | unsupported; if supported, unavailable |
 | `MANAPCT` | `UnitPower`, `UnitPowerMax` (Mana) | A unless flagged (`secret-power`) | A unless flagged | `SecretWhenUnitPowerRestricted`, `SecretWhenUnitPowerMaxRestricted` | unsupported; if supported, unavailable |
+| `MOUNTED` | `IsMounted` | N | N | no annotation | n/a |
 | `MOVING` | `GetUnitSpeed("player")` | C (stats restricted) | C | `SecretWhenUnitStatsRestricted` | unavailable |
 | `OUTDOORS` | `IsOutdoors` | N | N | no annotation | n/a |
 | `PET` | `UnitExists("pet")` | N | N | no annotation | n/a |
+| `PET_HAPPINESS` | `GetPetHappiness` | n/a (edition gate) | n/a (edition gate) | `no-pet-happiness`: Classic Era, Burning Crusade and Wrath only | n/a |
 | `PET_NAME` | `GetUnitName("pet")` (`UnitName`) | C (your pet is player-controlled: readable) | C | `SecretWhenUnitNameIdentityRestricted` | unavailable |
 | `PETSPELL_ACTIVE` | `C_Spell.IsCurrentSpell` | N | N | no annotation | n/a |
 | `PETSPELL_AVAIL` | cooldown flags (pet bank) | N (flags) | N (flags) | field `NeverSecret` | unavailable |
@@ -187,7 +201,9 @@ Combat, ranged slot, Season of Discovery runes) are listed in
 | `PROXIMITY_MANAPCT` | + `UnitPower`/`UnitPowerMax` (Mana) | A unless flagged | A unless flagged | `SecretWhenUnitPowerRestricted` | unsupported |
 | `PROXIMITY_MANAPCT_COUNT` | + `UnitPower`/`UnitPowerMax` (Mana) | A unless flagged | A unless flagged | `SecretWhenUnitPowerRestricted` | unsupported |
 | `PVP` | `UnitIsPVP` | C (identity) | C | `SecretWhenUnitIdentityRestricted` | unavailable |
+| `RANGED_SWING_REMAIN` | `UnitRangedDamage`; Auto Shot / wand timestamps from the combat log | A (`combat-log-unavailable`) | A | `SecureOnly` combat log, as SWING_TIME_REMAIN | unsupported |
 | `RESIST` | MobInfo2 data by `UnitName`, `UnitLevel` | C (name identity) | C | `SecretWhenUnitNameIdentityRestricted` | unavailable |
+| `RESTING` | `IsResting` | N | N | no annotation | n/a |
 | `ROLE` | `C_SpecializationInfo.GetInspectSpecialization` / `GetTalentGroupRole` | C (identity; group members readable) | C | `SecretWhenUnitIdentityRestricted` | unavailable |
 | `RUNE` | `GetRuneType`, `GetRuneCooldown` | N (`GetRuneType` is undocumented; missing API is reported as such) | N | no annotation on `GetRuneCooldown`; Runes are never secret | n/a |
 | `RUNE_COOLDOWN` | `GetRuneCooldown` | N | N | no annotation | n/a |
@@ -201,14 +217,17 @@ Combat, ranged slot, Season of Discovery runes) are listed in
 | `SPELL_AVAIL` | cooldown flags `isEnabled`/`isActive`/`isOnGCD` | N (flags) | N (flags) | field `NeverSecret`; in game | unreadable flags: unavailable |
 | `SPELL_CHARGES` | `C_Spell.GetSpellCharges` `currentCharges` | C | C | `SecretWhenCooldownsRestricted` (`maxCharges`, `isActive` `NeverSecret`) | unavailable |
 | `SPELL_COOLDOWN` | `C_Spell.GetSpellCooldown` times | C (per spell; the GCD is readable) | C | `SecretWhenCooldownsRestricted`; in game | unavailable |
+| `SPELL_GLOW` | `C_SpellActivationOverlay.IsSpellOverlayed` (the spell and its base and override IDs) | N | N | `SecretArguments` only; the proc glow is plain even where the aura behind it is not | an unreadable relative leaves "not glowing" unproven: unavailable |
 | `SPELL_HISTORY` | `UNIT_SPELLCAST_SUCCEEDED` (player) | C (event recorded; secret spell recorded as unknown) | C | `SecretWhenUnitSpellCastRestricted`: the player is readable unless the spell is flagged | unavailable at that position |
 | `SPELL_HISTORY_TIME` | `UNIT_SPELLCAST_SUCCEEDED` (player), `GetTime` | C | C | as above | unavailable within the window |
 | `SPELL_KNOWN` | `C_SpellBook.IsSpellKnown` | N | N | no annotation | n/a |
 | `SPELL_RANGE` | `C_Spell.IsSpellInRange` | N | N | no annotation | n/a |
 | `SPELL_REMAIN` | `C_Spell.GetSpellCharges` times | C | C | `SecretWhenCooldownsRestricted` | unavailable |
+| `STAGGER` | `UnitStagger`, `UnitHealthMax` (percent form) | C (`ConditionalSecret`; maximum health is secret, so the percent form is unavailable) | C | field `ConditionalSecret`; `SecretWhenUnitHealthMaxRestricted` | unavailable |
 | `STAT` | `UnitStat`, `UnitArmor` | C (stats restricted) | C | `SecretWhenUnitStatsRestricted` | unavailable |
 | `STEALABLE` | aura `isStealable` | C | C | `SecretWhenUnitAuraRestricted` | unavailable |
 | `STEALTHED` | `IsStealthed` | N | N | no annotation | n/a |
+| `SWIMMING` | `IsSwimming` | N | N | `SecretArguments` only; no secret return | n/a |
 | `SWING_TIME` | `UnitAttackSpeed` | C (stats restricted) | C | `SecretWhenUnitStatsRestricted` | unavailable |
 | `SWING_TIME_REMAIN` | swing timestamps from the combat log | A (`combat-log-unavailable`) | A | `SecureOnly` combat log | unsupported |
 | `TALENT` | talent / trait APIs | N (layout gate) | N (layout gate) | no annotation | n/a |
@@ -220,6 +239,7 @@ Combat, ranged slot, Season of Discovery runes) are listed in
 | `TOTEM_REMAIN` | `GetTotemInfo` times | C | C | `SecretWhenTotemSlotSecret` | unavailable |
 | `TOTEM_SPELL` | `GetNumTotemSlots`, `GetTotemInfo` | C | C | `SecretWhenTotemSlotSecret` | unavailable |
 | `TOTEM_SPELL_REMAIN` | `GetTotemInfo` times | C | C | `SecretWhenTotemSlotSecret` | unavailable |
+| `TRINKET_COOLDOWN` | equipped item from the build context (`GetInventoryItemID`), `C_Item.GetItemCooldown` / `C_Container.GetItemCooldown` | N | N | no annotation (as ITEM_COOLDOWN) | unavailable |
 | `TT_HEALTH` | `UnitHealth`, damage history from the combat log | A (`secret-health`, and `combat-log-unavailable`) | A | `SecretReturns`; `SecureOnly` combat log | unsupported |
 | `TT_HEALTHPCT` | `UnitHealth`, `UnitHealthMax`, combat log | A (`secret-health`, and `combat-log-unavailable`) | A | as TT_HEALTH | unsupported |
 | `WEAPON` | `GetWeaponEnchantInfo` | N | N | undocumented (Forever documents `C_Item.GetWeaponEnchantInfo` without annotation) | n/a |
@@ -263,6 +283,12 @@ unit now on that plate.
   threshold. A display-only highlight (for example "target below 20% health")
   could be built that way without RM ever reading the value. It could never
   feed a rotation decision. Not built.
+- **Encounter timeline (`C_EncounterTimeline`).** Blizzard's generated
+  documentation marks an event's spell, icon and severity `SecretWhenEncounterEvent`
+  and its ID, source and duration `NeverSecret`; `GetEventState` and
+  `GetEventTimeRemaining` carry no annotation. A condition for "a boss ability
+  is due in N seconds" depends on which of those a real encounter reveals, so
+  `/rm debug timeline [seconds]` records it first. Not built.
 - **Per-spell static support.** `C_Secrets.GetSpellCooldownSecrecy`,
   `GetSpellAuraSecrecy` and `GetSpellCastSecrecy` return a spell's
   `Enum.SecrecyLevel`. A condition naming a spell flagged `AlwaysSecret` could

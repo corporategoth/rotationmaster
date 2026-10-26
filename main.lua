@@ -498,6 +498,7 @@ function addon:HandleCommand(str)
         addon:print(L["/rm debug glow [seconds] - Explain why a recommendation does or does not light a button."])
         addon:print(L['/rm debug editor        - Copy native Lua input diagnostics.'])
         addon:print(L['/rm debug talents [views] - Report why the Retail and Forever talent lists are short or empty.'])
+        addon:print(L['/rm debug timeline [seconds] - Report what the Retail and Forever encounter timeline offers to addons.'])
         addon:print(L["/rm check               - Check the database integrity."])
         addon:print(L["/rm repair              - Fix any DB errors found in the data with internal validation."])
         addon:print(L["/rm errors              - View and copy Rotation Master errors."])
@@ -731,6 +732,7 @@ function addon:OnInitializeInternal()
     self.damageHistory = {}
     self.lastMainSwing = nil
     self.lastOffSwing = nil
+    self.lastRangedShot = nil
 
     self.spellHistory = {}
     self.combatHistory = {}
@@ -1365,7 +1367,8 @@ local idleEvents = {
     'UPDATE_SHAPESHIFT_FORM', 'UPDATE_STEALTH', 'SPELLS_CHANGED', 'UNIT_PET', 'PET_BAR_UPDATE',
     'UNIT_ENTERED_VEHICLE', 'UNIT_EXITED_VEHICLE', 'UPDATE_MOUSEOVER_UNIT', 'GROUP_ROSTER_UPDATE',
     'ZONE_CHANGED', 'ZONE_CHANGED_INDOORS', 'ZONE_CHANGED_NEW_AREA', 'RUNE_POWER_UPDATE',
-    'UNIT_COMBO_POINTS', 'UPDATE_SHAPESHIFT_COOLDOWN',
+    'UNIT_COMBO_POINTS', 'UPDATE_SHAPESHIFT_COOLDOWN', 'ENCOUNTER_START', 'ENCOUNTER_END',
+    'SPELL_ACTIVATION_OVERLAY_GLOW_SHOW', 'SPELL_ACTIVATION_OVERLAY_GLOW_HIDE', 'ECLIPSE_DIRECTION_CHANGE',
 }
 local idleGate = { dirty = true, nextEval = 0, evaluated = 0, skipped = 0 }
 addon.idleGate = idleGate
@@ -2765,6 +2768,7 @@ addon.PLAYER_REGEN_ENABLED = wrapEvent(function(self)
     self.inCombat = false
     self.lastMainSwing = nil
     self.lastOffSwing = nil
+    self.lastRangedShot = nil
     self.combatCache = {}
     self.combatStart = nil
 
@@ -3390,6 +3394,12 @@ local function handle_combat_log(_, event, _, sourceGUID, _, _, _, destGUID, _, 
             if select(10, ...) then addon.lastOffSwing = GetTime() else addon.lastMainSwing = GetTime() end
         elseif event == "SWING_MISSED" then
             if select(2, ...) then addon.lastOffSwing = GetTime() else addon.lastMainSwing = GetTime() end
+        elseif event == "RANGE_DAMAGE" or event == "RANGE_MISSED" then
+            -- Auto Shot and wand shots, the ranged spells that repeat on their
+            -- own (RANGED_SWING_REMAIN). Throw and other single ranged casts
+            -- do not start the timer.
+            local spellId = ...
+            if spellId == 75 or addon.Platform:IsAutoRepeatActive(spellId) == true then addon.lastRangedShot = GetTime() end
         end
     end
     local wanted = addon.historyWanted

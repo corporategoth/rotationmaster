@@ -154,9 +154,6 @@ addon:RegisterCondition("CASTING_REMAIN", {
 
 -- Share of the cast done (0..1, shown as a percentage), from the same cached
 -- observation as CASTING_REMAIN: haste-proof, so a tick threshold is N/K.
-if addon.Artwork and addon.Artwork.condition and addon.Artwork.condition["CASTING_PROGRESS"] == nil then
-    addon.Artwork.condition["CASTING_PROGRESS"] = addon.Artwork.condition["CASTING_REMAIN"]
-end
 addon:RegisterCondition("CASTING_PROGRESS", {
     description = L["Cast Progress"],
     icon = addon.Artwork.condition["CASTING_PROGRESS"],

@@ -57,7 +57,9 @@ local function sample(a,tag,definition)
     elseif tag=='SET_PIECES' then v.set=500 elseif tag=='ACTION_CONTEXT' then v.context='vehicle'
     elseif tag=='WEAPON_IMBUE' then v.enchant=283 elseif tag=='RUNE_ENGRAVED' then v.rune=nil
     elseif tag=='SPECIALIZATION' then v.spec=263
-    elseif tag=='WEAPON_TYPE' then v.slot='offhand';v.value=nil;v.kind='shield' end
+    elseif tag=='WEAPON_TYPE' then v.slot='offhand';v.value=nil;v.kind='shield'
+    elseif tag=='GROUP_ROLE_COUNT' then v.role='TANK' elseif tag=='TRINKET_COOLDOWN' then v.slot=13
+    elseif tag=='ECLIPSE_DIRECTION' then v.value='sun' end
     return v
 end
 local function tree(a,definition,value,callback)
@@ -108,7 +110,7 @@ test('every actual branch source compiles current duplicates without an Ace bind
         end
         assert(#lookups==0,'current source clone queried forbidden GUI')
     end
-    local count=0;for _ in pairs(seen) do count=count+1 end;assert(count==132,'current source inventory unexpectedly narrowed: '..count)
+    local count=0;for _ in pairs(seen) do count=count+1 end;assert(count==152,'current source inventory unexpectedly narrowed: '..count)
 end)
 test('all BuiltIn and compiled duplicate Fields UI and Help execute native trees using valid samples across branches',function()
     local failures,seen={},{};local rendered=0
@@ -128,7 +130,7 @@ test('all BuiltIn and compiled duplicate Fields UI and Help execute native trees
         end
         assert(#lookups==0,'Fields UI/Help attempted forbidden GUI lookup')
     end
-    assert(#failures==0,table.concat(failures,'\n'));local count=0;for _ in pairs(seen) do count=count+1 end;assert(count==132 and rendered>1000,'native render inventory narrowed')
+    assert(#failures==0,table.concat(failures,'\n'));local count=0;for _ in pairs(seen) do count=count+1 end;assert(count==152 and rendered>1000,'native render inventory narrowed')
 end)
 test('saved source bound to retired GUI values stays unchanged and is controlled unavailable before execution',function()
     local _,a,lookups=fixture();a.db.global.custom_conditions={};a.marker=0

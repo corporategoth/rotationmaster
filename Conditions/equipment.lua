@@ -84,12 +84,6 @@ local function matches(value, record)
     return nil, "invalid-weapon-type"
 end
 
-if addon.Artwork and addon.Artwork.condition and addon.Artwork.condition["WEAPON_TYPE"] == nil then
-    -- No original artwork yet: reuses the Have Item Equipped icon
-    -- (tests/condition_icons.lua lists it as pending).
-    addon.Artwork.condition["WEAPON_TYPE"] = addon.Artwork.condition["EQUIPPED"]
-end
-
 addon:RegisterCondition("WEAPON_TYPE", {
     description = L["Weapon Type"],
     icon = addon.Artwork.condition["WEAPON_TYPE"],

@@ -99,12 +99,6 @@ end
 function addon:GetSpecializationName(id) return (specName(id)) end
 function addon:GetSpecializationClassToken(id) if specID(id) then return specClass(id) end end
 
-if addon.Artwork and addon.Artwork.condition and addon.Artwork.condition["SPECIALIZATION"]==nil then
-    -- No original artwork yet: reuses the Primary Talent Tree icon
-    -- (tests/condition_icons.lua lists it as pending).
-    addon.Artwork.condition["SPECIALIZATION"]=addon.Artwork.condition["PRIMARY_TALENT_TREE"]
-end
-
 addon:RegisterCondition("SPECIALIZATION", {
     description = L["Specialization"],
     icon = addon.Artwork.condition["SPECIALIZATION"],
