@@ -50,7 +50,9 @@ test('malformed rank and grid fields cannot call native APIs and metadata printe
     assert(s.calls==0)
     local text=definition.print(0,tree());assert(text:find('Convection',1,true) and text:find('Elemental',1,true))
     f.env.C_SpecializationInfo=nil;f.env.GetTalentInfo=nil;f.env.GetTalentTabInfo=nil
-    text=definition.print(0,tree());assert(text:find('<talent>',1,true) and text:find('<talent tree>',1,true))
+    -- The game no longer answers: the talent is a placeholder, the tree is still named (by the shipped table).
+    text=definition.print(0,tree());assert(text:find('<talent>',1,true) and text:find('Elemental',1,true) and not text:find('<talent tree>',1,true))
+    local unknown=tree();unknown.tree=9;text=definition.print(0,unknown);assert(text:find('<talent>',1,true) and text:find('<talent tree>',1,true))
     local help=f.widget('help');definition.help(help);assert(#F.text(help)>20)
 end)
 local function fields(f,value,spec)

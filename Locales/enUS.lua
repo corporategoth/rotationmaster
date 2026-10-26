@@ -2054,10 +2054,40 @@ L["points spent in %s"] = true
 L["the number of points spent in %s"] = true
 L["Talent tree selects the Classic tree whose spent points are compared. Public points are read again on the next evaluation; missing or restricted points are unavailable, including under NOT. Grids and trait trees are unsupported."] = true
 L["Compare whole points spent from zero to 512. An explicit comparison with zero can describe an unspent tree."] = true
+L["Talent trees are named, never numbered: the list shows each tree by name, in the order the talent window shows them, for the class the rotation is for. Your own class takes the names the game gives its trees; another class's rotation uses Rotation Master's own list of that class's trees. The rotation saves the tree's position in that order, so it keeps its meaning when you share it."] = true
 L["Primary Talent Tree"] = true
 L["your primary talent tree is %s"] = true
 L["Talent tree selects the unique Classic tree with the most positive spent points. Equal maxima, no spent points, missing records and restricted points are unavailable, including under NOT."] = true
 L["The primary tree is derived from readable points, not the saved rotation slot. Hybrid builds may need tree-point or individual-talent conditions instead; the primary tree does not assign a tank or healer role. Grids and trait trees are unsupported."] = true
+-- Talent tree names (Data/talent_trees.lua): what a tree is called when the game cannot say,
+-- for a class you are not playing or before the talent data has loaded. Own keys, because a
+-- plain "Elemental" or "Fire" also names a creature type and a spell school.
+L["TalentTree.Arms"] = "Arms"
+L["TalentTree.Fury"] = "Fury"
+L["TalentTree.Protection"] = "Protection"
+L["TalentTree.Holy"] = "Holy"
+L["TalentTree.Retribution"] = "Retribution"
+L["TalentTree.Beast Mastery"] = "Beast Mastery"
+L["TalentTree.Marksmanship"] = "Marksmanship"
+L["TalentTree.Survival"] = "Survival"
+L["TalentTree.Assassination"] = "Assassination"
+L["TalentTree.Combat"] = "Combat"
+L["TalentTree.Subtlety"] = "Subtlety"
+L["TalentTree.Discipline"] = "Discipline"
+L["TalentTree.Shadow"] = "Shadow"
+L["TalentTree.Blood"] = "Blood"
+L["TalentTree.Frost"] = "Frost"
+L["TalentTree.Unholy"] = "Unholy"
+L["TalentTree.Elemental"] = "Elemental"
+L["TalentTree.Enhancement"] = "Enhancement"
+L["TalentTree.Restoration"] = "Restoration"
+L["TalentTree.Arcane"] = "Arcane"
+L["TalentTree.Fire"] = "Fire"
+L["TalentTree.Affliction"] = "Affliction"
+L["TalentTree.Demonology"] = "Demonology"
+L["TalentTree.Destruction"] = "Destruction"
+L["TalentTree.Balance"] = "Balance"
+L["TalentTree.Feral Combat"] = "Feral Combat"
 
 -- Protected item observations
 L["Item sets are checked in priority order. Bag counts use the first carried candidate, not the sum. Availability, range and cooldown checks use the first carried or equipped candidate. Missing or restricted observations stay unavailable, including under NOT."] = true

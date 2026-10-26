@@ -1,0 +1,278 @@
+{
+  "families": {
+    "cata": {
+      "basis": "Cataclysm keeps three trees per class in the Wrath order. No Built In premades yet, so the order is the game's, not the premades'.",
+      "classes": {
+        "DEATHKNIGHT": [
+          "Blood",
+          "Frost",
+          "Unholy"
+        ],
+        "DRUID": [
+          "Balance",
+          "Feral Combat",
+          "Restoration"
+        ],
+        "HUNTER": [
+          "Beast Mastery",
+          "Marksmanship",
+          "Survival"
+        ],
+        "MAGE": [
+          "Arcane",
+          "Fire",
+          "Frost"
+        ],
+        "PALADIN": [
+          "Holy",
+          "Protection",
+          "Retribution"
+        ],
+        "PRIEST": [
+          "Discipline",
+          "Holy",
+          "Shadow"
+        ],
+        "ROGUE": [
+          "Assassination",
+          "Combat",
+          "Subtlety"
+        ],
+        "SHAMAN": [
+          "Elemental",
+          "Enhancement",
+          "Restoration"
+        ],
+        "WARLOCK": [
+          "Affliction",
+          "Demonology",
+          "Destruction"
+        ],
+        "WARRIOR": [
+          "Arms",
+          "Fury",
+          "Protection"
+        ]
+      },
+      "label": "Cataclysm Classic"
+    },
+    "era": {
+      "basis": "Classic talent window order, the same on every Classic client; confirmed by the Built In Era and Season of Discovery premades.",
+      "classes": {
+        "DRUID": [
+          "Balance",
+          "Feral Combat",
+          "Restoration"
+        ],
+        "HUNTER": [
+          "Beast Mastery",
+          "Marksmanship",
+          "Survival"
+        ],
+        "MAGE": [
+          "Arcane",
+          "Fire",
+          "Frost"
+        ],
+        "PALADIN": [
+          "Holy",
+          "Protection",
+          "Retribution"
+        ],
+        "PRIEST": [
+          "Discipline",
+          "Holy",
+          "Shadow"
+        ],
+        "ROGUE": [
+          "Assassination",
+          "Combat",
+          "Subtlety"
+        ],
+        "SHAMAN": [
+          "Elemental",
+          "Enhancement",
+          "Restoration"
+        ],
+        "WARLOCK": [
+          "Affliction",
+          "Demonology",
+          "Destruction"
+        ],
+        "WARRIOR": [
+          "Arms",
+          "Fury",
+          "Protection"
+        ]
+      },
+      "label": "Classic Era and Season of Discovery"
+    },
+    "forever": {
+      "basis": "Assumed to follow the classic talent window order (three trait node groups per class); the Built In Forever premades use it, but it has not been read from a Forever client. Verify in game. The classes are those the Built In Forever premades cover.",
+      "classes": {
+        "DRUID": [
+          "Balance",
+          "Feral Combat",
+          "Restoration"
+        ],
+        "HUNTER": [
+          "Beast Mastery",
+          "Marksmanship",
+          "Survival"
+        ],
+        "MAGE": [
+          "Arcane",
+          "Fire",
+          "Frost"
+        ],
+        "PALADIN": [
+          "Holy",
+          "Protection",
+          "Retribution"
+        ],
+        "PRIEST": [
+          "Discipline",
+          "Holy",
+          "Shadow"
+        ],
+        "ROGUE": [
+          "Assassination",
+          "Combat",
+          "Subtlety"
+        ],
+        "SHAMAN": [
+          "Elemental",
+          "Enhancement",
+          "Restoration"
+        ],
+        "WARLOCK": [
+          "Affliction",
+          "Demonology",
+          "Destruction"
+        ],
+        "WARRIOR": [
+          "Arms",
+          "Fury",
+          "Protection"
+        ]
+      },
+      "label": "WoW Forever"
+    },
+    "tbc": {
+      "basis": "Classic talent window order, unchanged in The Burning Crusade; confirmed by the Built In TBC premades.",
+      "classes": {
+        "DRUID": [
+          "Balance",
+          "Feral Combat",
+          "Restoration"
+        ],
+        "HUNTER": [
+          "Beast Mastery",
+          "Marksmanship",
+          "Survival"
+        ],
+        "MAGE": [
+          "Arcane",
+          "Fire",
+          "Frost"
+        ],
+        "PALADIN": [
+          "Holy",
+          "Protection",
+          "Retribution"
+        ],
+        "PRIEST": [
+          "Discipline",
+          "Holy",
+          "Shadow"
+        ],
+        "ROGUE": [
+          "Assassination",
+          "Combat",
+          "Subtlety"
+        ],
+        "SHAMAN": [
+          "Elemental",
+          "Enhancement",
+          "Restoration"
+        ],
+        "WARLOCK": [
+          "Affliction",
+          "Demonology",
+          "Destruction"
+        ],
+        "WARRIOR": [
+          "Arms",
+          "Fury",
+          "Protection"
+        ]
+      },
+      "label": "Burning Crusade Classic (TBC Anniversary)"
+    },
+    "wrath": {
+      "basis": "Classic talent window order, unchanged in Wrath of the Lich King, which adds the Death Knight. No Built In premades yet, so the order is the game's, not the premades'.",
+      "classes": {
+        "DEATHKNIGHT": [
+          "Blood",
+          "Frost",
+          "Unholy"
+        ],
+        "DRUID": [
+          "Balance",
+          "Feral Combat",
+          "Restoration"
+        ],
+        "HUNTER": [
+          "Beast Mastery",
+          "Marksmanship",
+          "Survival"
+        ],
+        "MAGE": [
+          "Arcane",
+          "Fire",
+          "Frost"
+        ],
+        "PALADIN": [
+          "Holy",
+          "Protection",
+          "Retribution"
+        ],
+        "PRIEST": [
+          "Discipline",
+          "Holy",
+          "Shadow"
+        ],
+        "ROGUE": [
+          "Assassination",
+          "Combat",
+          "Subtlety"
+        ],
+        "SHAMAN": [
+          "Elemental",
+          "Enhancement",
+          "Restoration"
+        ],
+        "WARLOCK": [
+          "Affliction",
+          "Demonology",
+          "Destruction"
+        ],
+        "WARRIOR": [
+          "Arms",
+          "Fury",
+          "Protection"
+        ]
+      },
+      "label": "Wrath of the Lich King Classic"
+    }
+  },
+  "familyOrder": [
+    "era",
+    "tbc",
+    "wrath",
+    "cata",
+    "forever"
+  ],
+  "order": "Position in the talent window, 1-based; this is the value the tree conditions save.",
+  "version": 1
+}
