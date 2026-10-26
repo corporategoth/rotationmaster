@@ -1,6 +1,6 @@
 # Universal talent selector: design
 
-Status: phase 1 (Retail and Forever) is built on branch `claude/talent-popup`; the classic clients (phase 2) are designed below and not built. Sections 2 and 4-7 say what exists; section 3 is the long-term data model, of which phase 1 ships the trait half (`Platform:GetTraitView`).
+Status: phase 1 (Retail and Forever) is built on branch `claude/talent-popup`; the dropdown pickers and their shared layout (section 2.1) on `claude/talent-dropdown`; the classic clients (phase 2) are designed below and not built. Sections 2 and 4-7 say what exists; section 3 is the long-term data model, of which phase 1 ships the trait half (`Platform:GetTraitView`).
 Written against the pinned Blizzard UI source (`docs/quality/client-api-sources.json`: live 12.1.5.70575, forever 1.60.1.70532, classic 5.5.4.70579, classic_era 1.15.9.70003, classic_anniversary 2.5.6.70006) and the committed client API manifests. No real client was available; every in-game claim below is marked as modeled or unverified.
 
 ## 1. Where we start
@@ -28,6 +28,28 @@ Facts the design relies on, each read from the pinned source:
 * Node geometry: `posX`, `posY` in tenths of a pixel (`TalentButtonUtil.TranslateNodePositionsToAnchorPositions`: `x = posX/10`, `y = -posY/10`); edges are `nodeInfo.visibleEdges[].targetNode`; node kinds are `Enum.TraitNodeType` Single 0, Tiered 1, Selection 2 (choice), SubTreeSelection 3 (hero chooser, entries have `subTreeID` and no definition).
 * Blizzard filters hero nodes with `GetHeroTalentSpecsForClassSpec` even though they are already `isVisible` (`HeroTalentsContainer:IsNodeInAvailableSubTree`).
 * No Retail return in the talent APIs is documented secret; every value is still read through `CanReadValue`.
+
+### 2.1 The dropdown picker (claude/talent-dropdown)
+
+The lists are the picker; the tree popup is an optional extra. Every client with a TALENT picker uses one layout (`Conditions/talent.lua` `block`, laid out by `UI/condition_layout.lua` `layoutIconRows`, tested by `tests/talent_picker_layout.lua`): the talent's icon is the left column and spans two rows (a question mark until a talent is chosen), the upper list and the talent list sit to its right, and the "Show talent tree" button sits beside the talent list when the pane has room, else under the rows.
+
+| Client | Upper list | Talent list |
+| --- | --- | --- |
+| Retail | Specialization (the rotation's, any of the class's) | one list, grouped under headings: class, specialization, then one heading per hero tree; a choice node lists each choice |
+| Forever | Talent Tree (the three trees of the loadout) | that tree's talents |
+| Era, SoD, TBC, Wrath, Cataclysm | Talent Tree | that tree's talents, with icons |
+| Mists | Tier (1 to 6, with its level) | the tier's three talents |
+
+What is read, and what is not (`Platform/talents.lua`):
+
+* The played specialization (and Retail's own specialization whenever the active config is not yet known) is read from the **active config**: `C_ClassTalents.GetActiveConfigID`, `C_Traits.GetConfigInfo/GetTreeNodes/GetNodeInfo/GetEntryInfo/GetDefinitionInfo`, the same reads Blizzard's talent window makes, with the same visibility rule (`isVisible`, `HeroTalentsContainer:IsNodeInAvailableSubTree`). Nothing is loaded or opened for it; Blizzard's talent window is never needed.
+* Another specialization is read from Blizzard's **view config** (`GetTraitTreeForSpec`, `InitializeViewLoadout`), only out of combat and never while the talent window is showing someone else's build (`talent-window-inspecting`). That path is the one part not proven in a real client.
+* The hero subtrees offered are `GetHeroTalentSpecsForClassSpec`'s; that call is documented "MayReturnNothing", so when it answers nothing the subtrees named by the visible hero selection node's entries are used instead.
+* Names and icons are the talent window's own (`overrideName`, else the spell's name; `overrideIcon`, else the spell's original icon). A spell record the game refuses or has not loaded falls back to `C_Spell.GetSpellName/GetSpellTexture` before an entry is given up on.
+* Class and specialization talents are split by the talent window's own columns (class tree left, specialization tree right, a gap between); with no clean gap they stay one group, "Class and specialization talents", rather than guess.
+* When nothing can be listed the editor says why, with the reason code, and the tree button is disabled; node and entry IDs stay editable.
+
+`/rm debug talents [views]` writes a report of each call and what it answered (raw error text included) into a copyable window and `RotationMasterDB.diagnostics.talents`; `views` also reads every other specialization of the class. It is the way to find out what a real client says (`Diagnostics/talents.lua`).
 
 ## 3. One data model
 

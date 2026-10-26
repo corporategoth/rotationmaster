@@ -549,7 +549,8 @@ function addon:ShowGlowDiagnostic()
     if self.ShowConditionText then self:ShowConditionText(table.concat(entry.lines,'\n'),L['Glow diagnostic']) end
 end
 
--- /rm debug editor copies the Lua editor input report (UI/lua_input_diagnostics.lua).
+-- /rm debug editor copies the Lua editor input report (UI/lua_input_diagnostics.lua);
+-- /rm debug talents reports the trait talent reads (Diagnostics/talents.lua).
 function addon:HandleDebugCommand(args)
     local what,rest=(args or ''):match('^%s*(%S*)%s*(.-)%s*$')
     if what=='glow' then
@@ -557,5 +558,6 @@ function addon:HandleDebugCommand(args)
         return self:RunGlowDiagnostic(rest~='' and rest or nil)
     end
     if what=='editor' and self.ShowLuaEditorInputReport then return self:ShowLuaEditorInputReport() end
-    self:print(L['Usage: /rm debug glow [seconds|show] or /rm debug editor'])
+    if what=='talents' and self.RunTalentDiagnostic then return self:RunTalentDiagnostic(rest) end
+    self:print(L['Usage: /rm debug glow [seconds|show], /rm debug talents [views] or /rm debug editor'])
 end

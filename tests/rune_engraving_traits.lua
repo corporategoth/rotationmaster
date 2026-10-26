@@ -152,7 +152,10 @@ local function editor(f,tag,value)
     return parent,top
 end
 local function child(parent,label)
-    for _,w in ipairs(parent.children) do if (w.caption and w.caption:GetText() or w.label)==label then return w end end
+    for _,w in ipairs(parent.children) do
+        if (w.caption and w.caption:GetText() or w.label)==label then return w end
+        if w.children then local inner=child(w,label);if inner then return inner end end
+    end
 end
 
 test('rune editor picks a known rune by slot, saves its spell, and accepts manual IDs for shared rotations',function()
@@ -306,7 +309,7 @@ test('trait editor groups talents by tree, writes node, entry and a rank on an e
     local a,e,s,fire,state,f=traitsClient(18)
     local value={tree=1,talent=2,operator='EQUALS',value=2};local parent,top=editor(f,'TALENT',value)
     assert(F.text(parent):find('another talent layout',1,true) and value.tree==1,'viewing converted an old reference')
-    local trees=assert(child(parent,'Talent Tree'));trees.configure();assert(trees.list[1]=='Arcane' and trees.list[2]=='Fire' and trees.list[3]=='Frost' and trees.list[4]=='Hero 90')
+    local trees=assert(child(parent,'Talent Tree'));trees.configure();assert(trees.list[1]=='Arcane' and trees.list[2]=='Fire' and trees.list[3]=='Frost' and trees.list[4]=='Hero talents: Hero 90')
     local picker=assert(child(parent,'Talent'))
     trees:Fire('OnValueChanged',3);picker.configure();assert(picker.list[1].text=='Spell 8021 (choice)' and picker.list[2].text=='Spell 8022 (choice)' and picker.list[1].icon,'talent list shows name and icon')
     picker:Fire('OnValueChanged',2)
@@ -320,7 +323,7 @@ test('trait editor groups talents by tree, writes node, entry and a rank on an e
     -- Reopening selects the saved talent; hero talents group by subtree on Retail.
     parent=editor(f,'TALENT',{layout='traits',node=101,operator='EQUALS',value=1});trees=child(parent,'Talent Tree');trees.configure();assert(trees.value==2)
     local r,_,_,_,_,g=traitsClient(1,{groups=false});parent=editor(g,'TALENT',{})
-    trees=assert(child(parent,'Talent Tree'));trees.configure();assert(trees.list[1]=='Talents' and trees.list[2]=='Hero 90')
+    trees=assert(child(parent,'Talent Tree'));trees.configure();assert(trees.list[1]=='Class and specialization talents' and trees.list[2]=='Hero talents: Hero 90',tostring(trees.list[1])..'/'..tostring(trees.list[2]))
 end)
 
 test('RUNE_ENGRAVED joins the Character category and Switch picker once per profile',function()

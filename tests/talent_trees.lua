@@ -131,7 +131,10 @@ local function inRotationFor(f,class)
     f.addon.activeRotationEditor=class and {workspace={RotationClass=function() return class end}} or nil
 end
 local function field(parent,label)
-    for _,w in ipairs(parent.children) do if (w.caption and w.caption:GetText() or w.label)==label then return w end end
+    for _,w in ipairs(parent.children) do
+        if (w.caption and w.caption:GetText() or w.label)==label then return w end
+        if w.children then local inner=field(w,label);if inner then return inner end end
+    end
 end
 local function widget(f,tag,value)
     local parent,top=f.widget('parent'),f.widget('top')
