@@ -150,19 +150,18 @@ function addon:BuildIntegrationSettings(p)
             action=row.available and function(anchor)editorAction(row.id,anchor)end or nil,
             entry=entry,help=row.id=='native'and'Help.Integrations.native_highlighting'or nil,native=row.id=='native'}
     end
-    local editorRows={editorRow(native)};local found={}
-    for _,row in ipairs(rows)do editorRows[#editorRows+1]=editorRow(row);found[row.id]=true end
+    local editorRows={editorRow(native)}
+    for _,row in ipairs(rows)do editorRows[#editorRows+1]=editorRow(row)end
     local function readonly(entry)
         return{id=entry.id,name=entry.name,version=versionFor(entry),description=entry.detail or'',state=(entry.state=='missing'or entry.state=='unknown')and'missing'or'supported',entry=entry}
     end
-    if metadata.WowLua and not found.WowLua then editorRows[#editorRows+1]=readonly(metadata.WowLua)end
     local groups={{key='integrations_editors',title=L['Lua editor integrations'],rows=editorRows,editorSettings=true}}
     local function group(key,title,ids)
         local list={};for _,id in ipairs(ids)do if metadata[id]then list[#list+1]=readonly(metadata[id])end end
         groups[#groups+1]={key=key,title=title,rows=list}
     end
     group('integrations_conditions',L['Condition data'],{'ExtendedCharacterStats','MobInfo2'})
-    group('integrations_notifications',L['Recommendation notifications'],{'WeakAuras'})
+    group('integrations_notifications',L['Recommendation notifications'],{'WeakAuras','ForeverAuras'})
     local questieAllowed=supported('Questie');if not current()then return end
     if questieAllowed then
         local questie=metadata.Questie or{id='Questie',name=L['Questie'],state='missing'}
@@ -218,7 +217,7 @@ function addon:BuildIntegrationSettings(p)
         groups[#groups+1]={key='integrations_themes',title=L['Button skins'],rows={row}}
     end
     group('integrations_panels',L['Top panels'],{'Titan'})
-    group('integrations_actionbars',L['Action bars'],{'ElvUI','Bartender4','ButtonForge','G15Buttons','SyncUI','LUI','Dominos','DiabolicUI','AzeriteUI','Neuron','FarmingBar','TotemTimers','SamyTotemTimers'})
+    group('integrations_actionbars',L['Action bars'],{'ElvUI','Bartender4','ButtonForge','LUI','Dominos','AzeriteUI','AzeriteUI6','EllesmereUIActionBars','FarmingBar','TotemTimers'})
     -- Measure shared columns once per drawing; description receives the remainder.
     p.width=math.max(340,p.frame:GetWidth()-40);p.child:SetWidth(p.width)
     local measure=p:Acquire('integrationMeasure',function()return p.child:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall')end)

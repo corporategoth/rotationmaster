@@ -118,7 +118,7 @@ local function integrationFixture(options)
  local calls={sync=0,refresh=0,created=0,preview=0};a.db.profile.lua_editor=options.selected or'auto'
  a.LuaSyntax={enable=function()end,disable=function()end,decode=function(s)return s end}
  a.ListIntegrationStatus=function()
-  local rows={};for _,row in ipairs({{'!!!LuaWorkbench','LuaWorkbench','Lua editor integration.'},{'WowLua','WowLua','Optional editor addon.'},{'ExtendedCharacterStats','ExtendedCharacterStats','Optional character statistics conditions.'},{'MobInfo2','MobInfo2','Recorded creature history conditions.'},{'WeakAuras','WeakAuras','Recommendation event bridge.'},{'Questie','Questie','Quest update receipts only.'},{'Masque','Masque','Optional preview-button skins.'},{'Dominos','Dominos','Optional action-bar glow support.'}})do
+  local rows={};for _,row in ipairs({{'!!!LuaWorkbench','LuaWorkbench','Lua editor integration.'},{'ExtendedCharacterStats','ExtendedCharacterStats','Optional character statistics conditions.'},{'MobInfo2','MobInfo2','Recorded creature history conditions.'},{'WeakAuras','WeakAuras','Recommendation event bridge.'},{'Questie','Questie','Quest update receipts only.'},{'Masque','Masque','Optional preview-button skins.'},{'Dominos','Dominos','Optional action-bar glow support.'}})do
    rows[#rows+1]={id=row[1],name=row[2],version=loaded[row[2]]and'1.2.3'or nil,state=loaded[row[2]]and'loaded'or'missing',detail=row[3]}
   end;return rows
  end

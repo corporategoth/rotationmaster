@@ -20,7 +20,7 @@ local function fixture(options)
  local calls={sync=0,refresh=0,created=0,preview=0};a.db.profile.lua_editor=options.selected or'auto'
  a.LuaSyntax={enable=function()end,disable=function()end,decode=function(s)return s end}
  a.ListIntegrationStatus=function()
-  local rows={};for _,row in ipairs({{'!!!LuaWorkbench','LuaWorkbench','Lua editor integration.'},{'WowLua','WowLua','Optional editor addon.'},{'ExtendedCharacterStats','ExtendedCharacterStats','Optional character statistics conditions.'},{'MobInfo2','MobInfo2','Recorded creature history conditions.'},{'WeakAuras','WeakAuras','Recommendation event bridge.'},{'Questie','Questie','Quest update receipts only.'},{'Masque','Masque','Optional preview-button skins.'},{'Dominos','Dominos','Optional action-bar glow support.'},{'DBM-Core','DBM','Boss-mod timers.'},{'BigWigs','BigWigs','Boss-mod timers.'},{'Titan','Titan Panel','LibDataBroker feed.'}})do
+  local rows={};for _,row in ipairs({{'!!!LuaWorkbench','LuaWorkbench','Lua editor integration.'},{'ExtendedCharacterStats','ExtendedCharacterStats','Optional character statistics conditions.'},{'MobInfo2','MobInfo2','Recorded creature history conditions.'},{'WeakAuras','WeakAuras','Recommendation event bridge.'},{'Questie','Questie','Quest update receipts only.'},{'Masque','Masque','Optional preview-button skins.'},{'Dominos','Dominos','Optional action-bar glow support.'},{'DBM-Core','DBM','Boss-mod timers.'},{'BigWigs','BigWigs','Boss-mod timers.'},{'Titan','Titan Panel','LibDataBroker feed.'}})do
    rows[#rows+1]={id=row[1],name=row[2],version=loaded[row[2]]and'1.2.3'or nil,state=loaded[row[2]]and'loaded'or'missing',detail=row[3]}
   end;return rows
  end
@@ -225,7 +225,7 @@ test('not loaded versions remain empty even when installed metadata includes a v
  local _,a,p=fixture({workbench=false,questie=false});local original=a.ListIntegrationStatus
  a.ListIntegrationStatus=function(self)local rows=original(self);for _,row in ipairs(rows)do if row.state=='missing'then row.version='99.88.installed-not-loaded'end end;return rows end
  p:Draw()
- for _,id in ipairs({'editor_LuaWorkbench','WowLua','MobInfo2','Questie'})do
+ for _,id in ipairs({'editor_LuaWorkbench','MobInfo2','Questie'})do
   local card=assert(p.fields['integration_card_'..id]);local empty=0
   for _,label in ipairs(p.pool.integrationLabels)do if label:GetParent()==card then assert(label:GetText()~='99.88.installed-not-loaded'and label:GetText()~='Unknown');if label:GetText()==''then empty=empty+1 end end end
   assert(empty>=1,'missing addon version cell not empty')
@@ -260,7 +260,7 @@ end)
 test('shared integration help stays at page level; option help is beneath the status pill',function()
  local f,a,p=fixture();f.load('UI/help.lua');local shown={};local L=f.env.LibStub('AceLocale-3.0'):GetLocale('rotationmaster')
  a.ShowWorkbenchHelp=function(_,name,sections)shown={name=name,sections=sections}end
- for _,id in ipairs({'editor_LuaWorkbench','ExtendedCharacterStats','MobInfo2','WeakAuras','Dominos','WowLua','Questie','Masque'})do
+ for _,id in ipairs({'editor_LuaWorkbench','ExtendedCharacterStats','MobInfo2','WeakAuras','Dominos','Questie','Masque'})do
   assert(not p.fields['integration_help_'..id],'generic Help repeated on addon '..id)
  end
  for _,id in ipairs({'editor_native'})do
