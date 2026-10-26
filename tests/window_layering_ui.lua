@@ -135,6 +135,17 @@ each('settings prompts, transfer windows, pickers and comparisons open above the
     a:ShowSettingsTextTransfer(p,'Transfer','Data',function() return true end)
     check('text transfer, again',transfer.frame)
     transfer.frame:Hide()
+    local left,right={name='Same',type='pixel',lines=8},{name='Same',type='pixel',lines=9}
+    local compare=a:ShowCollectionComparison(p,'effect',left,right)
+    check('collection comparison',compare.frame)
+    compare.frame:Hide()
+    local picker=a:CreateWorkbenchColorPicker(parent)
+    picker:Open({r=1,g=0,b=0,a=1},function() end,function() return true end,parent)
+    check('color picker',picker.frame)
+    model.click(window)
+    picker:Open({r=0,g=1,b=0,a=1},function() end,function() return true end,parent)
+    check('color picker, again',picker.frame)
+    picker:Close(false)
     if a.ShowWorkbenchIconPicker then
         local picker=a:ShowWorkbenchIconPicker(nil,function() end,function() return true end)
         check('icon picker',picker.frame)
@@ -142,6 +153,53 @@ each('settings prompts, transfer windows, pickers and comparisons open above the
         a:ShowWorkbenchIconPicker(nil,function() end,function() return true end)
         check('icon picker, again',picker.frame)
     end
+end)
+
+each('the embedded editor\'s stand-alone panels (library strata DIALOG) open above the window that embeds the editor',function(raise)
+    local f,a=dofile('tests/fixtures/lua_workbench.lua')();local model=layered(f,raise)
+    -- The library builds these panels itself, in DIALOG; only their opening matters here.
+    local real=a.LuaWorkbenchModules.Inspector
+    a.LuaWorkbenchModules.Inspector=function(name,engine)
+        real(name,engine)
+        function engine.Inspector:Show()
+            local panel=self.panel or f.env.CreateFrame('Frame',nil,f.env.UIParent);self.panel=panel
+            panel:SetFrameStrata('DIALOG');panel:Show()
+        end
+    end
+    local host=model.create('Frame','host',f.env.UIParent)
+    a:OpenPopup({frame=host},nil,{kind='window'});host:SetFrameLevel(400)
+    local deep=model.create('Frame',nil,host);deep:SetFrameLevel(host:GetFrameLevel()+300)
+    local code=a:CreateLuaWorkbenchControl(host,function() end,function() return true end)
+    code.engine.Inspector:Show({},'value')
+    local panel=code.engine.Inspector.panel
+    assert(panel:GetFrameStrata()=='FULLSCREEN_DIALOG' and model.over(panel,host) and model.over(panel,deep),'the Inspector opened beneath the window that embeds the editor')
+    model.click(host);a:SyncWindowLayers()
+    assert(model.over(panel,host),'the Inspector fell beneath its window after the window was clicked')
+end)
+
+-- No window creator sets its own strata, level or click-raise any more: that is the registry's job.
+test('window creators leave strata, frame level and click-raise to the registry',function()
+    local allowed={
+        ['UI/window.lua']=true,
+        ['UI/spell_search.lua']='suggestion list in the tooltip strata',
+        ['UI/controls.lua']='drag ghost in the tooltip strata',
+        ['UI/drag_presentation.lua']='drag ghost restore',
+        ['UI/preview.lua']='in-game preview overlay, not a window',
+        ['UI/talent_popup.lua']='ring on a Blizzard talent button; restore of Blizzard strata and level',
+    }
+    local files=io.popen('ls UI/*.lua Integrations/*.lua');local offenders={}
+    for path in files:lines() do
+        if not allowed[path] then
+            local h=assert(io.open(path));local source=h:read('*a');h:close()
+            for line in source:gmatch('[^\n]+') do
+                if line:find('SetFrameStrata',1,true) or line:find(':SetToplevel',1,true) or line:find(':Raise()',1,true) or line:find('RegisterWindowForEscape',1,true) then
+                    offenders[#offenders+1]=path..': '..line:sub(1,120)
+                end
+            end
+        end
+    end
+    files:close()
+    assert(#offenders==0,'ad-hoc window layering outside UI/window.lua:\n'..table.concat(offenders,'\n'))
 end)
 
 finish()

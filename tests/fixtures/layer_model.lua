@@ -34,6 +34,7 @@ return function(env,options)
             descendants(self,function(node) node.layer.level=math.max(0,math.min(10000,node.layer.level+delta)) end)
         end
         function frame:SetToplevel(value) self.layer.toplevel=value==true end
+        function frame:IsVisible() local node=self;while node do if node.visible==false then return false end;node=node.parent end;return true end
         function frame:GetChildren() return unpack(self.layer.children) end
         function frame:SetParent(owner)
             if self.parent then

@@ -92,6 +92,12 @@ local function entryFor(value)
     end
 end
 local function isShown(entry) return entry.frame:IsShown() end
+-- Drawn right now (the frame and every ancestor shown). Windows that only look shown, inside a hidden pane, do not take part.
+local function isVisible(entry)
+    local frame=entry.frame
+    if type(frame.IsVisible)=='function' then return frame:IsVisible() and true or false end
+    return frame:IsShown()
+end
 -- Never move a protected Blizzard frame in combat; RM's own frames are not protected.
 local function touchable(frame)
     local locked=rawget(_G,'InCombatLockdown')
@@ -147,7 +153,7 @@ end
 local function liveOpener(entry)
     local current,hops=entry.opener,0
     while current and hops<24 do
-        if isShown(current) then return current end
+        if isVisible(current) then return current end
         current,hops=current.opener,hops+1
     end
 end
@@ -167,7 +173,7 @@ local updateEscapeTarget
 local function compact()
     needCompact=false
     local order={}
-    for _,entry in ipairs(dialogs) do if entry.layered and isShown(entry) then order[#order+1]=entry end end
+    for _,entry in ipairs(dialogs) do if entry.layered and isVisible(entry) then order[#order+1]=entry end end
     table.sort(order,function(a,b)
         local first,second=levelOf(a.frame),levelOf(b.frame)
         if first~=second then return first<second end
@@ -184,7 +190,7 @@ local function settle()
     if settling then return end
     settling=true
     local order={}
-    for _,entry in ipairs(dialogs) do if entry.layered and isShown(entry) then order[#order+1]=entry end end
+    for _,entry in ipairs(dialogs) do if entry.layered and isVisible(entry) then order[#order+1]=entry end end
     table.sort(order,function(a,b)
         local first,second=levelOf(a.frame),levelOf(b.frame)
         if first~=second then return first<second end
@@ -218,7 +224,7 @@ end
 local function frontLevel(entry)
     local top=0
     for _,other in ipairs(dialogs) do
-        if other~=entry and other.layered and isShown(other) and not belongsTo(other,entry) and strataOf(other.frame)==strataOf(entry.frame) then
+        if other~=entry and other.layered and isVisible(other) and not belongsTo(other,entry) and strataOf(other.frame)==strataOf(entry.frame) then
             local value=extentOf(other)
             if value>top then top=value end
         end
@@ -231,24 +237,34 @@ local function frontLevel(entry)
 end
 -- Who opened this window: an explicit opener, the window it is nested in, or
 -- (only when it is first shown, and never for a peer window) the frontmost
--- window that was open. An implicit choice is remembered only as ordering:
--- peers never constrain each other, so clicking either raises it.
+-- window that was open. The first two are firm. The last is a guess (the
+-- window the user was in), so it holds only until that window is itself opened
+-- again: showing a window again brings it in front of the popups guessed
+-- to belong to it. Peers never constrain each other.
 local function resolveOpener(entry,opening)
     local opener=entry.hint and entryFor(entry.hint)
     if not opener then
         local parent=type(entry.frame.GetParent)=='function' and entry.frame:GetParent() or nil
         opener=parent and entryFor(parent)
     end
+    local guessed=false
     if not opener and opening and entry.kind~='window' then
+        guessed=true
         local best
         for _,other in ipairs(dialogs) do
-            if other~=entry and other.layered and isShown(other) and not belongsTo(other,entry)
+            if other~=entry and other.layered and isVisible(other) and not belongsTo(other,entry)
                 and (not best or levelOf(other.frame)>=levelOf(best.frame)) then best=other end
         end
         opener=best
     end
     if opener==entry or opener and belongsTo(opener,entry) then opener=nil end
-    if opener or opening or entry.hint then entry.opener=opener end
+    if opener or opening or entry.hint then entry.opener=opener;entry.guessed=opener~=nil and guessed end
+end
+-- Opening a window again releases the popups that were only guessed to belong to it.
+local function releaseGuessed(entry)
+    for _,other in ipairs(dialogs) do
+        if other.guessed and other.opener==entry then other.opener=nil;other.guessed=false end
+    end
 end
 -- Bring one window to the front of everything open and keep its own popups,
 -- and its opener's chain, in order.
@@ -338,7 +354,8 @@ local function register(widget,options)
     local frame=widget and (widget.frame or widget)
     if type(frame)~='table' or not frame.GetScript or not frame.IsShown then return nil end
     local wantEscape=options.escape~=false
-    local entry=widget.rmLayerEntry
+    -- A frame is one entry however many throwaway widget tables name it.
+    local entry=widget.rmLayerEntry or entryOf[frame]
     if entry then
         if wantEscape and not entry.escape and ensureEscape() then entry.escape=true;frame.rmEscapeOwner=widget end
         return entry
@@ -358,7 +375,7 @@ local function register(widget,options)
     local show=function(self,...)
         addon:ApplyWorkbenchScale(self)
         if onShow then onShow(self,...) end
-        if widget.rmLayerEntry==entry then present(entry,true) end
+        if widget.rmLayerEntry==entry then releaseGuessed(entry);present(entry,true) end
     end
     local hide=function(self,...)
         if onHide then onHide(self,...) end
@@ -390,6 +407,7 @@ function addon:OpenPopup(widget,opener,options)
     local entry=register(widget,options)
     if not entry then return false end
     if opener then entry.hint=opener end
+    releaseGuessed(entry)
     if options.over then
         entry.over={}
         for _,foreign in ipairs(type(options.over)=='table' and not options.over.GetFrameLevel and options.over or {options.over}) do entry.over[#entry.over+1]=foreign end
@@ -418,7 +436,7 @@ function addon:RaiseForeignWindow(frame,except)
     local excluded=entryFor(except)
     local top=0
     for _,entry in ipairs(dialogs) do
-        if entry~=excluded and entry.layered and isShown(entry) and not (excluded and belongsTo(entry,excluded)) then
+        if entry~=excluded and entry.layered and isVisible(entry) and not (excluded and belongsTo(entry,excluded)) then
             local value=extentOf(entry);if value>top then top=value end
         end
     end

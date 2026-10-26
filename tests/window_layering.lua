@@ -270,4 +270,29 @@ test('reopening a pooled window re-resolves its opener rather than keeping a sta
     covers(model,popup,b)
 end)
 
+test('opening a frame again through a new widget table does not register it twice',function()
+    local f,model,sync,open=world('siblings')
+    local config,panel=window(f,model,'config'),window(f,model,'panel')
+    config.rmLayerKind='window'
+    open(config)
+    for _=1,3 do panel.frame:Show();f.addon:OpenPopup({frame=panel.frame},config.frame,{escape=false}) end
+    local count=0;for _,layer in ipairs(f.addon:GetWindowLayers()) do if layer.frame==panel.frame then count=count+1 end end
+    assert(count==1,'registered '..count..' times')
+    panel.frame:Hide();model.click(config.button);panel.frame:Show()
+    assert(model.over(panel.frame,config.frame),'a re-shown frame was not placed')
+end)
+
+test('a popup guessed to belong to the frontmost window yields when that window is opened again',function()
+    local f,model,sync,open=world('siblings')
+    local links,report=window(f,model,'links'),window(f,model,'report')
+    open(links);open(report)
+    assert(model.over(report.frame,links.frame))
+    model.click(links.button);sync()
+    covers(model,report,links)   -- clicking the window it was opened over cannot bury it
+    open(links)                  -- but opening the other popup again is a request to see it
+    assert(model.over(links.frame,report.frame),'a reopened popup stayed behind a guessed sibling')
+    model.click(report.button);sync()
+    assert(model.over(report.frame,links.frame) and not model.over(links.frame,report.frame),'the reopened popup is still pinned')
+end)
+
 finish()
