@@ -48,7 +48,7 @@ Open the settings and rotation editor with `/rm config`. `/rm help` lists the co
 ```sh
 python3 tools/setup_lint.py        # once: the pinned static checker
 python3 tools/check --static       # about 20 seconds
-python3 tools/check_all.py         # the whole suite, Lua 5.1 and LuaJIT (many minutes)
+python3 tools/check_all.py --baseline tools/known_failures.txt   # the whole suite, Lua 5.1 and LuaJIT (tens of minutes)
 python3 tools/package_release.py --check
 ```
 
