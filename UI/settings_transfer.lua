@@ -93,7 +93,7 @@ end
 function addon:CreateWorkbenchTransferShell(width,height)
     width,height=width or 570,height or 430
     local d={frame=CreateFrame('Frame',nil,UIParent),sharedTransferShell=true}
-    d.frame:SetSize(width,height);d.frame:SetPoint('CENTER');d.frame:SetFrameStrata('FULLSCREEN_DIALOG');d.frame:EnableMouse(true);d.frame:SetToplevel(true);self:MakeWindowOpaque(d.frame)
+    d.frame:SetSize(width,height);d.frame:SetPoint('CENTER');d.frame:EnableMouse(true);self:MakeWindowOpaque(d.frame)
     d.title=d.frame:CreateFontString(nil,'OVERLAY','GameFontNormal');d.chrome=self:CreateWorkbenchDialogChrome(d.frame,d.title);d.chromeUpdate=d.frame:GetScript('OnUpdate')
     d.scroll=self:CreateWorkbenchScrollFrame(d.frame);d.scroll:SetPoint('TOPLEFT',12,-40);d.scroll:SetSize(width-50,height-130)
     d.input=CreateFrame('EditBox',nil,d.scroll);d.input:SetFontObject('GameFontHighlightSmall');d.input:SetMultiLine(true);d.input:SetAutoFocus(false);d.input:SetMaxLetters(self:ExportTextLimit(131072));d.input:SetSize(width-60,height-130);d.input:SetPoint('TOPLEFT');d.scroll:SetScrollChild(d.input)
@@ -133,7 +133,7 @@ function addon:CreateWorkbenchTextReport(width,height)
         self.setting=false;if not current() then return end
         self:Layout();if not current() then return end
         self.frame:Show();displayed=true;if not current() then return end
-        addon:RegisterWindowForEscape(self);if not current() then return end
+        addon:OpenPopup(self);if not current() then return end
         self.input:SetFocus();if not current() then return end
         self.input:SetCursorPosition(0);if not current() then return end
         self.input:HighlightText(0,-1);if not current() then return end
@@ -231,6 +231,6 @@ function addon:ShowSettingsTextTransfer(p,title,text,apply,options)
         local result=p:WithSettingsHistory(function() local ok,why=apply(d.input:GetText(),settings);return {ok,why} end);if not valid()then return end;local ok,why=result[1],result[2];if not ok then d.status:SetText(why or L['Invalid import.']);return end
         d.frame:Hide();p:Draw()
     end)
-    d.frame:SetFrameLevel(p.frame:GetFrameLevel()+250);d.frame:Show();d.scroll.workbenchBar:SetValue(0);d.scroll:UpdateWorkbenchScroll();addon:RegisterWindowForEscape(d);if options then destination();preview() end
+    d.frame:Show();d.scroll.workbenchBar:SetValue(0);d.scroll:UpdateWorkbenchScroll();addon:OpenPopup(d,p);if options then destination();preview() end
     self:BindTransferHelp(d,options and options.help,valid);return d
 end

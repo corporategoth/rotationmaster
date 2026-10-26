@@ -58,6 +58,11 @@ test('error window opens without AceGUI and explains empty state',function()
     assert(addon.errorsWindow.visible)
     assert(addon.errorsWindow.report:GetText():find('No Rotation Master errors',1,true))
 end)
+test('the errors report joins the shared window layering as a peer window and keeps its own Escape entry',function()
+    local seen;addon.OpenPopup=function(_,window,opener,options) seen={window=window,opener=opener,options=options} end
+    addon:ShowErrors();addon.OpenPopup=nil
+    assert(seen and seen.window==addon.errorsWindow and seen.options.kind=='window' and seen.options.escape==false,'the report is not laid out with the other RM windows')
+end)
 test('error report navigation copy and clear use only RM records',function()
     addon.Diagnostics:Call({},function() error('first problem',0) end)
     addon.Diagnostics:Call({},function() error('second problem',0) end)

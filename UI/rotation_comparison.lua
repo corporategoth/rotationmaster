@@ -165,7 +165,7 @@ function addon:ShowRotationComparison(spec,id)
     local d=self.rotationComparisonWindow
     if not d then
         d={frame=CreateFrame('Frame',nil,UIParent),children={}};self.rotationComparisonWindow=d
-        d.frame:SetSize(1080,700);d.frame:SetPoint('CENTER');d.frame:SetFrameStrata('FULLSCREEN_DIALOG');d.frame:SetToplevel(true);d.frame:SetClampedToScreen(true);d.frame:EnableMouse(true);self:MakeWindowOpaque(d.frame)
+        d.frame:SetSize(1080,700);d.frame:SetPoint('CENTER');d.frame:SetClampedToScreen(true);d.frame:EnableMouse(true);self:MakeWindowOpaque(d.frame)
         d.title=d.frame:CreateFontString(nil,'OVERLAY','GameFontNormal');d.chrome=self:CreateWorkbenchDialogChrome(d.frame,d.title)
         d.summary=d.frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');d.summary:SetPoint('TOPLEFT',12,-38);d.summary:SetSize(1030,20);d.summary:SetJustifyH('LEFT');d.summary:SetWordWrap(false);d.summary:SetMaxLines(1)
         d.close=self:CreateWorkbenchIconButton(d.frame,'close',L['Close']);d.close:SetPoint('TOPRIGHT',-5,-5)
@@ -225,7 +225,7 @@ function addon:ShowRotationComparison(spec,id)
     end
     copy:SetCallback('OnClick',function() if valid() then return addon:ShowComparisonReport(report) end end)
     direction:SetCallback('OnValueChanged',function(_,_,index) show(index) end);chooser:SetCallback('OnValueChanged',function(_,_,index) refresh(index) end)
-    d.frame:Show();self:RegisterWindowForEscape(d)
+    d.frame:Show();self:OpenPopup(d)
     if #targets>0 then refresh(selected) else chooser:SetDisabled(true);direction:SetDisabled(true);copy:SetDisabled(true);label(graph,L['No other rotations to compare.']) end
     addon:SetUIScript(d.frame,'OnUpdate',function() if d.active and d.serial==serial and not valid() then d:Hide() end end)
     return d

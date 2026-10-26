@@ -62,10 +62,11 @@ test('standard Escape closes the frontmost RM dialog and pooled release restores
     assert(not escape())
     base.frame:Show();assert(escape() and not base.frame.visible,'persistent shell did not re-register on Show')
 end)
-test('Escape follows a mouse-raised underlying native window without closing a background dialog',function()
+test('Escape follows a mouse-raised peer window without closing a background dialog',function()
     local f=F.new();f.env.UISpecialFrames={}
     local frames,create=dofile('tests/fixtures/native_ui.lua')(f.env);f.load('UI/window.lua')
-    local base={frame=create('Frame')};local dialog={frame=create('Frame')}
+    -- Two independent windows (for example the settings window and a stand-alone report), neither opened by the other.
+    local base={frame=create('Frame'),rmLayerKind='window'};local dialog={frame=create('Frame'),rmLayerKind='window'}
     f.addon.HideOnEscape(base);f.addon.HideOnEscape(dialog)
     -- Native SetToplevel raises a clicked root without firing OnShow.
     base.frame:SetFrameLevel(dialog.frame:GetFrameLevel()+1);base.frame:Raise()
@@ -74,6 +75,17 @@ test('Escape follows a mouse-raised underlying native window without closing a b
     assert(f.env.RotationMasterFrontmostDialog==base.frame,'Escape alias still targets the background comparison')
     target:Hide();assert(not base.frame.visible and dialog.frame.visible)
     assert(f.env.RotationMasterFrontmostDialog==dialog.frame)
+end)
+test('a popup opened by a window stays the Escape target and the front window when its opener is clicked',function()
+    local f=F.new();f.env.UISpecialFrames={}
+    local frames,create=dofile('tests/fixtures/native_ui.lua')(f.env);f.load('UI/window.lua')
+    local base={frame=create('Frame'),rmLayerKind='window'};local dialog={frame=create('Frame')}
+    f.addon.HideOnEscape(base);f.addon.HideOnEscape(dialog)
+    -- Native SetToplevel raises the clicked opener over its popup without firing OnShow.
+    base.frame:SetFrameLevel(dialog.frame:GetFrameLevel()+1);base.frame:Raise()
+    for _,frame in ipairs(frames) do if frame.visible and frame.scripts.OnUpdate then frame.scripts.OnUpdate(frame) end end
+    assert(f.env.RotationMasterFrontmostDialog==dialog.frame,'Escape would close the opener under its own popup')
+    assert(dialog.frame:GetFrameLevel()>base.frame:GetFrameLevel(),'the popup stayed under the clicked opener')
 end)
 test('workbench scale reaches independent dialogs but is inherited only once by child popovers',function()
     local f=F.new();local _,create=dofile('tests/fixtures/native_ui.lua')(f.env);f.load('UI/window.lua')

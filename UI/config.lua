@@ -56,7 +56,7 @@ local descriptions={Rotations=L["Browse, view and edit rotations."],General=L["C
 local function newShell()
     local window=addon:TrackWorkbenchSize(CreateFrame("Frame",nil,UIParent))
     window:SetSize(1120,760);window:SetPoint("CENTER")
-    window:SetFrameStrata("FULLSCREEN_DIALOG");window:SetToplevel(true);window:SetClampedToScreen(true)
+    window:SetClampedToScreen(true)
     window:SetMovable(true);window:SetResizable(true);window:EnableMouse(true)
     local layout=addon.WorkbenchLayout;local minimumWidth,minimumHeight=layout.windowMinWidth,layout.windowMinHeight
     local shell={frame=window,tabs={},buttons={},settingsPanes={}}
@@ -86,7 +86,9 @@ local function newShell()
         if wantedWidth==width and wantedHeight==height then return false end
         window:SetSize(wantedWidth,wantedHeight);return true
     end
-    function shell:Show() self.frame:Show() end
+    -- The main window is a peer window: opening it (or opening it again) brings it, and anything it opened, to the front.
+    shell.rmLayerKind="window"
+    function shell:Show() self.frame:Show();addon:RaiseWindow(self) end
     function shell:Hide(approved)
         local pane=self.pane
         if not approved and pane and pane.isSettingsForm then return pane:RequestLeave(function() if self.pane==pane then self:Hide(true) end end) end
@@ -169,11 +171,11 @@ local function newShell()
         if shell.scaleDragging then shell.pendingScale=selected;shell.scaleValue:SetText(tostring(math.floor(selected*100+.5)))
         else shell:ApplyScale(selected,true) end
     end)
-    local linkPane=CreateFrame("Frame",nil,window);shell.linkPane=linkPane;linkPane:SetSize(520,72);linkPane:SetPoint("BOTTOM",0,28);linkPane:SetFrameLevel(window:GetFrameLevel()+90);fill(linkPane,.07,.08,.09)
+    local linkPane=CreateFrame("Frame",nil,window);shell.linkPane=linkPane;linkPane:SetSize(520,72);linkPane:SetPoint("BOTTOM",0,28);fill(linkPane,.07,.08,.09)
     shell.linkInput=addon:CreateWorkbenchEditBox(linkPane);shell.linkInput:SetPoint("TOPLEFT",12,-12);shell.linkInput:SetSize(496,24)
     addon:SetUIScript(shell.linkInput,"OnEscapePressed",function() linkPane:Hide() end)
     local linkClose=flatButton(linkPane,L["Close"],70);linkClose:SetPoint("BOTTOMRIGHT",-12,4);addon:SetUIScript(linkClose,"OnClick",function() linkPane:Hide() end);addon:SetUIScript(linkPane,"OnHide",function() shell.linkInput:ClearFocus() end);linkPane:Hide()
-    addon:RegisterWindowForEscape({frame=linkPane})
+    addon:OpenPopup({frame=linkPane},window)
     function shell:ShowLink(url)
         linkPane:Show();self.linkInput:SetText(url);self.linkInput:SetFocus();self.linkInput:SetCursorPosition(0);self.linkInput:HighlightText(0,-1)
     end

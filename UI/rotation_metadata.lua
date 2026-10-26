@@ -7,7 +7,7 @@ local function label(parent,value,y)
 end
 function addon:InstallRotationMetadata(pane)
     local dialog={fields={},labels={}}
-    local frame=CreateFrame('Frame',nil,UIParent);dialog.frame=frame;frame:SetSize(530,540);frame:SetPoint('CENTER');frame:SetFrameStrata('FULLSCREEN_DIALOG');frame:SetToplevel(true);frame:EnableMouse(true);frame:SetClampedToScreen(true)
+    local frame=CreateFrame('Frame',nil,UIParent);dialog.frame=frame;frame:SetSize(530,540);frame:SetPoint('CENTER');frame:EnableMouse(true);frame:SetClampedToScreen(true)
     addon:MakeWindowOpaque(frame)
     dialog.title=frame:CreateFontString(nil,'OVERLAY','GameFontNormal');dialog.chrome=addon:CreateWorkbenchDialogChrome(frame,dialog.title)
     local drag=CreateFrame('Frame',nil,frame);drag:SetPoint('TOPLEFT',8,-1);drag:SetPoint('TOPRIGHT',-150,-1);drag:SetHeight(28);drag:EnableMouse(true);drag:RegisterForDrag('LeftButton')
@@ -104,7 +104,7 @@ function addon:InstallRotationMetadata(pane)
         self.scopeMenu:Hide();self.closing=true;frame:Hide();self.closing=false;self.opened=false
     end
     function dialog:Open()
-        if self:Valid() then addon:RegisterWindowForEscape(self);frame:Raise();return end
+        if self:Valid() then addon:OpenPopup(self,pane);return end
         self.openToken=(self.openToken or 0)+1
         self.workspace=pane.workspace;self.generation=pane.generation
         if not pane.metadataDirty and not pane.tagsDirty and not pane.scopeDirty then self:Sync() end
@@ -161,7 +161,7 @@ function addon:InstallRotationMetadata(pane)
             self:Close(false)
         end
         addon:SetUIScript(self.cancel,'OnClick',cancel);addon:SetUIScript(self.close,'OnClick',cancel)
-        self.opened=true;frame:SetFrameLevel(pane.frame:GetFrameLevel()+100);frame:Show();addon:RegisterWindowForEscape(self)
+        self.opened=true;frame:Show();addon:OpenPopup(self,pane)
         scroll:UpdateWorkbenchScroll();pane:UpdateHistory()
     end
     addon:SetUIScript(frame,'OnHide',function() if dialog.opened and not dialog.closing then dialog:Restore() end;dialog.opened=false;dialog.tagPicker.menu:Hide();dialog.scopeMenu:Hide();for _,input in pairs(dialog.fields) do if input.ClearFocus then input:ClearFocus() end end end)

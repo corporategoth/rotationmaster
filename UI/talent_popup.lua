@@ -48,7 +48,7 @@ local function getWindow()
     addon.talentTreeWindow=d
     local frame=d.frame
     frame:SetSize(760,150);frame:SetPoint('TOP',UIParent,'TOP',0,-40)
-    frame:SetFrameStrata('FULLSCREEN_DIALOG');frame:SetToplevel(true);frame:SetClampedToScreen(true);frame:EnableMouse(true)
+    frame:SetClampedToScreen(true);frame:EnableMouse(true)
     addon:MakeWindowOpaque(frame)
     d.title=frame:CreateFontString(nil,'OVERLAY','GameFontNormal')
     d.chrome=addon:CreateWorkbenchDialogChrome(frame,d.title)
@@ -203,7 +203,7 @@ function addon:OpenTalentTree(request)
         d.hero=hero;reload(d)
     end
     d.chrome:SetContext(L['Talent Tree'],L['Talent'],request.name or '')
-    d.frame:Show();self:RegisterWindowForEscape(d)
+    d.frame:Show();self:OpenPopup(d,request.owner)
     start(d)
     return d
 end
@@ -345,14 +345,14 @@ local function showBlizzard(ctx)
         local show=rawget(_G,'ShowUIPanel')
         if type(show)=='function' then pcall(show,frame) else pcall(frame.Show,frame) end
     end
-    -- Above the RM windows, which are full-screen dialogs.
-    pcall(frame.SetFrameStrata,frame,'FULLSCREEN_DIALOG')
+    -- Above the RM windows (full-screen dialogs), with the control strip above Blizzard's window.
+    local d=ctx.window
+    addon:RaiseForeignWindow(frame,d)
     A.view,A.selection,A.heroID,A.ctx=view,selection,hero and hero.id or nil,ctx
     placeRing()
-    local d=ctx.window
     if d and d.frame then
         d.frame:ClearAllPoints();d.frame:SetPoint('BOTTOM',frame,'TOP',0,6)
-        d.frame:SetFrameLevel(math.min(9000,(field(frame,'GetFrameLevel') or 0)+200))
+        addon:OpenPopup(d,nil,{over=frame})
     end
     return true
 end
@@ -375,6 +375,7 @@ function closeBlizzard()
     -- shown or hidden as before.
     if field(frame,'IsInspecting') then pcall(frame.ClearInspectUnit,frame) end
     pcall(frame.SetFrameStrata,frame,session.strata or 'MEDIUM')
+    if session.level and type(frame.SetFrameLevel)=='function' then pcall(frame.SetFrameLevel,frame,session.level) end
     if session.external then
         -- Already closing by itself.
     elseif session.wasShown then
@@ -408,7 +409,7 @@ function blizzard.open(ctx)
     if field(frame,'IsInspecting') then return nil,'talent-window-busy' end
     local wasShown=field(frame,'IsShown')
     if wasShown and field(talents,'HasAnyConfigChanges') then return nil,'talent-window-busy' end
-    A={frame=frame,talents=talents,wasShown=wasShown and true or false,tab=field(frame,'GetTab'),strata=field(frame,'GetFrameStrata')}
+    A={frame=frame,talents=talents,wasShown=wasShown and true or false,tab=field(frame,'GetTab'),strata=field(frame,'GetFrameStrata'),level=field(frame,'GetFrameLevel')}
     local events=registry()
     events:RegisterCallback('TalentButton.OnClick',onTalentClick,A)
     events:RegisterCallback('TalentFrameBase.ButtonsUpdated',placeRing,A)

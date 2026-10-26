@@ -10,7 +10,7 @@ end
 for _,phase in ipairs({'context','text','layout','show','escape','focus','cursor','selection','scroll'})do
  test('newer report wins reentry from '..phase,function()
   local _,a=setup();local d=a:CreateWorkbenchTextReport();local target,key
-  if phase=='context'then target,key=d.chrome,'SetContext'elseif phase=='text'then target,key=d.input,'SetText'elseif phase=='layout'then target,key=d,'Layout'elseif phase=='show'then target,key=d.frame,'Show'elseif phase=='escape'then target,key=a,'RegisterWindowForEscape'elseif phase=='focus'then target,key=d.input,'SetFocus'elseif phase=='cursor'then target,key=d.input,'SetCursorPosition'elseif phase=='selection'then target,key=d.input,'HighlightText'else target,key=d.scroll.workbenchBar,'SetValue'end
+  if phase=='context'then target,key=d.chrome,'SetContext'elseif phase=='text'then target,key=d.input,'SetText'elseif phase=='layout'then target,key=d,'Layout'elseif phase=='show'then target,key=d.frame,'Show'elseif phase=='escape'then target,key=a,'OpenPopup'elseif phase=='focus'then target,key=d.input,'SetFocus'elseif phase=='cursor'then target,key=d.input,'SetCursorPosition'elseif phase=='selection'then target,key=d.input,'HighlightText'else target,key=d.scroll.workbenchBar,'SetValue'end
   local original=target[key];local entered=false
   target[key]=function(self,...)
    local result=original(self,...)

@@ -12,7 +12,7 @@ end
 function addon:ShowNativeImportPreview(p,view,spec)
     local d=p.importPreview
     if not d then
-        d={frame=CreateFrame('Frame',nil,UIParent)};p.importPreview=d;d.frame:SetSize(940,620);d.frame:SetPoint('CENTER');d.frame:SetFrameStrata('FULLSCREEN_DIALOG');d.frame:SetToplevel(true);d.frame:SetClampedToScreen(true);d.frame:EnableMouse(true);self:MakeWindowOpaque(d.frame)
+        d={frame=CreateFrame('Frame',nil,UIParent)};p.importPreview=d;d.frame:SetSize(940,620);d.frame:SetPoint('CENTER');d.frame:SetClampedToScreen(true);d.frame:EnableMouse(true);self:MakeWindowOpaque(d.frame)
         d.title=d.frame:CreateFontString(nil,'OVERLAY','GameFontNormal');d.chrome=self:CreateWorkbenchDialogChrome(d.frame,d.title);d.close=self:CreateWorkbenchIconButton(d.frame,'close',L['Close']);d.close:SetPoint('TOPRIGHT',-5,-5);self:SetUIScript(d.close,'OnClick',function() d.frame:Hide() end)
         d.scroll=self:CreateWorkbenchGroupViewport(d.frame);d.scroll:SetPoint('TOPLEFT',12,-34);d.scroll:SetSize(898,560)
         function d:Clear() self.scroll:ReleaseConditionContent();self.graph=nil end
@@ -23,7 +23,7 @@ function addon:ShowNativeImportPreview(p,view,spec)
     d.chrome:SetContext(L['Import comparison'],L['Read-only'],self.pretty_name)
     local ok,why=pcall(self.RenderRotationComparison,self,graph,view,spec)
     if not ok then d:Clear();error(why,0) end
-    p.cleanups[#p.cleanups+1]=function() if d.serial==serial then d.frame:Hide() end end;d.frame:Show();self:RegisterWindowForEscape(d)
+    p.cleanups[#p.cleanups+1]=function() if d.serial==serial then d.frame:Hide() end end;d.frame:Show();self:OpenPopup(d,p)
     if self.BindTransferHelp then
         local generation=p.generation;local graphLease=graph.rmLease;local evidence=self:CopySettingsData(view)
         self:BindTransferHelp(d,{heading=L['Import comparison'],brief=L['Help.Transfers.comparison_brief'],sections={{title=L['Read-only'],text=L['Help.Transfers.comparison']}},briefs={close=L['Help.Transfers.cancel']}},function()
@@ -41,7 +41,7 @@ end
 function addon:ShowNativeImportContent(p,preview,spec)
     local d=p.importContent
     if not d then
-        d={frame=CreateFrame('Frame',nil,UIParent)};p.importContent=d;d.frame:SetSize(940,620);d.frame:SetPoint('CENTER');d.frame:SetFrameStrata('FULLSCREEN_DIALOG');d.frame:SetToplevel(true);d.frame:SetClampedToScreen(true);d.frame:EnableMouse(true);self:MakeWindowOpaque(d.frame)
+        d={frame=CreateFrame('Frame',nil,UIParent)};p.importContent=d;d.frame:SetSize(940,620);d.frame:SetPoint('CENTER');d.frame:SetClampedToScreen(true);d.frame:EnableMouse(true);self:MakeWindowOpaque(d.frame)
         d.title=d.frame:CreateFontString(nil,'OVERLAY','GameFontNormal');d.chrome=self:CreateWorkbenchDialogChrome(d.frame,d.title);d.close=self:CreateWorkbenchIconButton(d.frame,'close',L['Close']);d.close:SetPoint('TOPRIGHT',-5,-5);self:SetUIScript(d.close,'OnClick',function() d.frame:Hide() end)
         d.host=CreateFrame('Frame',nil,d.frame);d.host:SetPoint('TOPLEFT',12,-34);d.host:SetSize(916,562)
         function d:Clear()
@@ -56,7 +56,7 @@ function addon:ShowNativeImportContent(p,preview,spec)
     local pane,problem=self:CreateRotationEditor(d.host,spec,workspace.id,nil,workspace);if not pane then workspace:Close();return nil,problem end
     d.workspace=workspace;d.pane=pane
     d.chrome:SetContext(L['Import preview'],L['Read-only'],self.pretty_name)
-    p.cleanups[#p.cleanups+1]=function() if d.serial==serial then d.frame:Hide() end end;d.frame:Show();self:RegisterWindowForEscape(d)
+    p.cleanups[#p.cleanups+1]=function() if d.serial==serial then d.frame:Hide() end end;d.frame:Show();self:OpenPopup(d,p)
     if self.BindTransferHelp then
         local generation=p.generation
         self:BindTransferHelp(d,{heading=L['Import preview'],brief=L['Help.Transfers.preview_view_brief'],sections={{title=L['Read-only'],text=L['Help.Transfers.preview_view']}},briefs={close=L['Help.Transfers.cancel']}},function()

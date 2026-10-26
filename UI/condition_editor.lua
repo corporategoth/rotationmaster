@@ -57,8 +57,8 @@ local messages={
 }
 local function createShell()
     local window=addon:TrackWorkbenchSize(CreateFrame("Frame",nil,UIParent))
-    window:SetSize(760,620);window:SetPoint("CENTER");window:SetFrameStrata("FULLSCREEN_DIALOG")
-    window:SetToplevel(true);window:SetClampedToScreen(true);window:SetMovable(true);window:SetResizable(true);window:EnableMouse(true)
+    window:SetSize(760,620);window:SetPoint("CENTER")
+    window:SetClampedToScreen(true);window:SetMovable(true);window:SetResizable(true);window:EnableMouse(true)
     if window.SetResizeBounds then window:SetResizeBounds(660,460) end
     local shell={frame=window,tools={},userdata={}}
     shell.title=window:CreateFontString(nil,"OVERLAY","GameFontNormal");shell.title:SetPoint("TOPLEFT",16,-10)
@@ -617,7 +617,8 @@ function addon:ShowConditionEditor(index,spec,value,callback,targetValid,options
     options=options or {}
     local shell=self.compactConditionEditor
     if shell and shell.active then
-        shell:Show();shell.status:SetText(L["Apply or cancel the open condition before editing another."]);return shell
+        -- It may be hidden behind the window that was clicked since: bring it forward again.
+        shell:Show();addon:OpenPopup(shell,addon.configWindow);shell.status:SetText(L["Apply or cancel the open condition before editing another."]);return shell
     end
     local session,why=self:NewConditionEditSession(spec,value,targetValid,options)
     if not session then return nil,why end
@@ -637,6 +638,6 @@ function addon:ShowConditionEditor(index,spec,value,callback,targetValid,options
     shell.cancel:SetText(shell.active.readOnly and L["Close"] or L["Cancel"])
     if shell.active.readOnly then shell.status:SetText(L["Read-only condition"]) end
     if not shell:ExpandInvalid({{}}) then return shell end
-    shell:Show();shell:Layout();shell:Render()
+    shell:Show();addon:OpenPopup(shell,addon.configWindow);shell:Layout();shell:Render()
     return shell
 end

@@ -16,7 +16,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
     if embedded then
         frame:SetParent(embedded.parent);frame:SetSize(embedded.width,embedded.height);frame:SetPoint('TOPLEFT',embedded.x or 0,0)
     else
-        frame:SetSize(960,740);frame:SetPoint('CENTER');frame:SetToplevel(true);frame:SetClampedToScreen(true);self:MakeWindowOpaque(frame)
+        frame:SetSize(960,740);frame:SetPoint('CENTER');frame:SetClampedToScreen(true);self:MakeWindowOpaque(frame)
         d.title=d.title or frame:CreateFontString(nil,'OVERLAY','GameFontNormal');d.chrome=d.chrome or self:CreateWorkbenchDialogChrome(frame,d.title)
     end
     d.close=d.close or self:CreateWorkbenchIconButton(frame,'close',L['Close']);d.close:SetPoint('TOPRIGHT',-5,-5)
@@ -37,7 +37,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
     function d:ShowFooter(shown)
         for _,button in ipairs({self.apply,self.cancel,self.viewChanges,self.test,self.form.message}) do if shown then button:Show() else button:Hide() end end
     end
-    function d:Show() if valid() then self.suspended=nil;self.frame:Show();self:ShowFooter(true);if not self.embedded then addon:RegisterWindowForEscape(self) end end end
+    function d:Show() if valid() then self.suspended=nil;self.frame:Show();self:ShowFooter(true);if not self.embedded then addon:OpenPopup(self) end end end
     function d:HideForChild() self.suspended=true;self:ShowFooter(false);self.frame:Hide() end
     function d:CodeState()
         local state=self.codeHistory[self.selected]
@@ -193,7 +193,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
         if self.closed then return end
         if not valid() then self:Close();return end
         if not self:IsDirty() then self:Close();return end
-        p:ConfirmPending(function() self:Apply() end,function() self:Close() end);p.prompt.frame:SetParent(UIParent);addon:RegisterWindowForEscape(p.prompt)
+        p:ConfirmPending(function() self:Apply() end,function() self:Close() end);p.prompt.frame:SetParent(UIParent);addon:OpenPopup(p.prompt,d)
     end
     function d:SelectFunction(name)
         if not valid() or not addon.CustomConditionCallbacks[name] then return end
@@ -362,7 +362,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
         d.viewChanges:ClearAllPoints();d.viewChanges:SetPoint('RIGHT',d.apply,'LEFT',-6,0)
     else
         d.apply:ClearAllPoints();d.apply:SetPoint('BOTTOMRIGHT',-120,4);d.cancel:ClearAllPoints();d.cancel:SetPoint('BOTTOMRIGHT',-12,4)
-        d.transfer:ClearAllPoints();d.transfer:SetPoint('BOTTOMLEFT',12,4);d.transfer:Show();d.cancel:SetText(L['Cancel']);addon:RegisterWindowForEscape(d)
+        d.transfer:ClearAllPoints();d.transfer:SetPoint('BOTTOMLEFT',12,4);d.transfer:Show();d.cancel:SetText(L['Cancel']);addon:OpenPopup(d)
     end
     local footer=embedded and embedded.footer or frame
     d.test:SetParent(footer);d.test:ClearAllPoints();d.test:SetPoint('RIGHT',d.viewChanges,'LEFT',-6,0)
