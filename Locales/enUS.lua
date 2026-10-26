@@ -1306,6 +1306,7 @@ L["Incoming rotation"] = true
 L["Always"] = true
 L["Condition reference (code is not run)."] = true
 L["Check import"] = true
+L["This import window is out of date. Close it and open it again."] = true
 L["Incoming"] = true
 L["Problems"] = true
 L["Notes"] = true
