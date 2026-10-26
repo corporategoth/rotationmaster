@@ -1,7 +1,7 @@
 # Original condition artwork, version 2
 
-`provenance.json` selects 128 independent original bitmap designs: every one of
-the 116 Built In condition tags, nine condition category selectors, and AND,
+`provenance.json` selects 164 independent original bitmap designs: every one of
+the 152 Built In condition tags, nine condition category selectors, and AND,
 OR, and NOT. The six packaged category UUIDs and All/Switch/Other selector
 identities are recorded in the manifest. The original sixteen family icons in
 the parent directory remain available for existing saved selections.
@@ -50,3 +50,15 @@ and timer halves; logic uses merging, alternative, and blocked paths. These are
 offline visual and format checks. In-game rendering, color settings, filtering,
 and placement still require native acceptance; file existence alone does not
 prove that a consuming UI uses the selected mapping.
+
+## World-state and edition conditions
+
+The twenty conditions of `docs/world-and-edition-conditions.md` and the eight
+Assisted Combat, rune, specialization, weapon type and progress conditions that
+reused another condition's icon until now each have a design of their own. They
+came from one built-in image generation call per design (run through
+`codex exec`, prompts recorded in `provenance.json` unchanged except for the
+subject), recorded with `export_icons.py --record KEY <generated.png>`. The
+Mythic+ keystone design was generated twice: the first result read as a
+recognizable game icon (a spiral rune), so the shipped design replaces it with
+an engraved chevron on a plain obelisk. Offline checks only, as above.

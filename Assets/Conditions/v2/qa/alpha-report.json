@@ -12102,5 +12102,2497 @@
         "sha256": "280e28c3705437beb9657f0253a2fbddfcd6354a3a553ee2410f8270c303fa64"
       }
     }
+  },
+  {
+    "key": "MOUNTED",
+    "name": "mounted",
+    "source_sha256": "bac2c78071ce7491204b3ae0839d4ceeced8e2b1afaf7800ab2b07a7d23cabad",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 652386,
+      "opaque": 999,
+      "partial": 919131,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        14,
+        1246,
+        1240
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 1423,
+        "opaque": 214,
+        "partial": 2459,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          1,
+          1,
+          63,
+          63
+        ],
+        "path": "mounted-64.tga",
+        "sha256": "452d21f142183258987ea231d6510db2d4b5ba20b145b4e5b996c16babd7a192"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 6544,
+        "opaque": 537,
+        "partial": 9303,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          2,
+          2,
+          126,
+          126
+        ],
+        "path": "mounted.tga",
+        "sha256": "112c9ba5aec354e5c751212d47f6205cd6417d40911303451fbe3ba14bc6b55e"
+      }
+    }
+  },
+  {
+    "key": "SWIMMING",
+    "name": "swimming",
+    "source_sha256": "1b0685beac32c1f997233eac37a73ed230b59b32d2242f02199b318a146ec774",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 554091,
+      "opaque": 1249,
+      "partial": 1017176,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        9,
+        1236,
+        1224
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 1268,
+        "opaque": 198,
+        "partial": 2630,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          1,
+          1,
+          63,
+          63
+        ],
+        "path": "swimming-64.tga",
+        "sha256": "cfbd3e45b2168b6c0de90177e852a6368c14e95f61c6c06b84e1df5d54ff7453"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 5672,
+        "opaque": 474,
+        "partial": 10238,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          2,
+          4,
+          126,
+          125
+        ],
+        "path": "swimming.tga",
+        "sha256": "3a3d2cafb228687f5e32f43b3901aa9426ae7c4a23bdc4595e0ffb572b8382e8"
+      }
+    }
+  },
+  {
+    "key": "FALLING",
+    "name": "falling",
+    "source_sha256": "cc6dc81ecc3298afd6c6eb16e148910c716e85ac13c99707a294fa26929b0495",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 732459,
+      "opaque": 542,
+      "partial": 839515,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        0,
+        1230,
+        1254
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 1655,
+        "opaque": 186,
+        "partial": 2255,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          1,
+          1,
+          63,
+          63
+        ],
+        "path": "falling-64.tga",
+        "sha256": "087f0b6013566384d179d9fe7a95aa85287b317c631a9cbef0e3084e9c2fc733"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 7444,
+        "opaque": 429,
+        "partial": 8511,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          5,
+          2,
+          126,
+          126
+        ],
+        "path": "falling.tga",
+        "sha256": "2d4db705d46eecd58a86fb23edc6111c090012c4ca59049db1ac002f1832993b"
+      }
+    }
+  },
+  {
+    "key": "FLYING",
+    "name": "flying",
+    "source_sha256": "67bcf90c18c0b403dbb1c34a3aa4e4496cbcb6a82b26086eda747124817cc673",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 503158,
+      "opaque": 404,
+      "partial": 1068954,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        9,
+        1254,
+        1254
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 1164,
+        "opaque": 213,
+        "partial": 2719,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          1,
+          1,
+          63,
+          63
+        ],
+        "path": "flying-64.tga",
+        "sha256": "c13e8c1e5bbc3d5eff6a5964183eec269f5ab6d70554e4c7e6a4064dba6111ec"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 5339,
+        "opaque": 519,
+        "partial": 10526,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          2,
+          2,
+          126,
+          126
+        ],
+        "path": "flying.tga",
+        "sha256": "c0928f210d9d15a226d2d35bd82c9a02899650a00718e9057b8a2d6e61628823"
+      }
+    }
+  },
+  {
+    "key": "RESTING",
+    "name": "resting",
+    "source_sha256": "acdf6f09ed7902c88f7285a100bc5f400b99cdbf64e6c89083b4513da02d33a9",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 611373,
+      "opaque": 1149,
+      "partial": 959994,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        15,
+        1233,
+        1254
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 1412,
+        "opaque": 228,
+        "partial": 2456,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          1,
+          1,
+          63,
+          63
+        ],
+        "path": "resting-64.tga",
+        "sha256": "cfab438e4d094991227572ad4726e434c0d105c27a469bc81bd6ab2d80b2befc"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 6271,
+        "opaque": 506,
+        "partial": 9607,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          4,
+          2,
+          126,
+          126
+        ],
+        "path": "resting.tga",
+        "sha256": "4d3450c7a8cc35e2074d39550d4651547f257cbcedac48b9af1722957a3b01a1"
+      }
+    }
+  },
+  {
+    "key": "ENCOUNTER",
+    "name": "encounter",
+    "source_sha256": "373f651fbc12062b7be22ce816c9b34901e349d2f1306247faa133c71181da04",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 301194,
+      "opaque": 643,
+      "partial": 1270679,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        0,
+        1254,
+        1254
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 729,
+        "opaque": 162,
+        "partial": 3205,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          1,
+          1,
+          63,
+          63
+        ],
+        "path": "encounter-64.tga",
+        "sha256": "21ea895894eefdd41aabf92ba54758268257dc2cedadcced2b253fbf26fe3cf3"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 3415,
+        "opaque": 346,
+        "partial": 12623,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          2,
+          2,
+          126,
+          126
+        ],
+        "path": "encounter.tga",
+        "sha256": "6ede722c1d31ffd76ee686b48ebbe71bb2ee26a4d0042f51fa501a3c11fa08cb"
+      }
+    }
+  },
+  {
+    "key": "INSTANCE_DIFFICULTY",
+    "name": "instance-difficulty",
+    "source_sha256": "707a91afab22cc2e2a2fe824d0a5ab4d8b41d3b63932da3a599dfe34b7860ff5",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 625206,
+      "opaque": 539,
+      "partial": 946771,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        0,
+        1220,
+        1254
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 1608,
+        "opaque": 120,
+        "partial": 2368,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          3,
+          1,
+          61,
+          63
+        ],
+        "path": "instance-difficulty-64.tga",
+        "sha256": "cb9e75c10e36f8593f260ba50918fd01b32e3b2d2980a813fbd24aca67cb2909"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 6904,
+        "opaque": 256,
+        "partial": 9224,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          9,
+          2,
+          119,
+          126
+        ],
+        "path": "instance-difficulty.tga",
+        "sha256": "f6d2c5ade37ff7aa58a4dbf7ba0c0a4778d9103aa391814bf1ffdb0ff1c7de8e"
+      }
+    }
+  },
+  {
+    "key": "INSTANCE_ID",
+    "name": "instance-id",
+    "source_sha256": "dbde350c2144d7209ef152d5b90d0cd5ab2deaf422805f1886c56a13ce7aa944",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 497345,
+      "opaque": 1084,
+      "partial": 1074087,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        9,
+        1242,
+        1238
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 1143,
+        "opaque": 186,
+        "partial": 2767,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          1,
+          1,
+          63,
+          63
+        ],
+        "path": "instance-id-64.tga",
+        "sha256": "d314cf52c31b1cebce264362e310e7a999d3fa056b80674cf22d883a7623a7a4"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 5181,
+        "opaque": 411,
+        "partial": 10792,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          2,
+          2,
+          126,
+          126
+        ],
+        "path": "instance-id.tga",
+        "sha256": "b697d49a4a8d5890ad2cf3462524751dba766f47757e1c6b0179f8aeb796f6d8"
+      }
+    }
+  },
+  {
+    "key": "HERO_TALENT",
+    "name": "hero-talent",
+    "source_sha256": "b99b15b3d045e139763a63557d6f29a8bd0bf663580cc111df1cc9478e73d94b",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 608667,
+      "opaque": 140,
+      "partial": 963709,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        0,
+        1248,
+        1254
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 1610,
+        "opaque": 240,
+        "partial": 2246,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          1,
+          1,
+          63,
+          63
+        ],
+        "path": "hero-talent-64.tga",
+        "sha256": "93f9a1460f19606b51d4be059421afccfb70c607b1c810cebfb9b7524065f1bc"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 6909,
+        "opaque": 461,
+        "partial": 9014,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          6,
+          2,
+          125,
+          126
+        ],
+        "path": "hero-talent.tga",
+        "sha256": "3a5ab833242ae91bf4a83744443c46450fca56ab9adc5312fe9f9cd6c73ca08d"
+      }
+    }
+  },
+  {
+    "key": "SPELL_GLOW",
+    "name": "spell-glow",
+    "source_sha256": "e1790ea067ff2a0fafa4a48e4f5dca762221e300300edc7881663f01576bddd8",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 695800,
+      "opaque": 68,
+      "partial": 876648,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        0,
+        1253,
+        1254
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 1757,
+        "opaque": 181,
+        "partial": 2158,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          1,
+          1,
+          63,
+          62
+        ],
+        "path": "spell-glow-64.tga",
+        "sha256": "596b22b5fe2d863e06699b4564d2d5c5269ff0fbd17b2b27be64ddf5f6619d82"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 7713,
+        "opaque": 325,
+        "partial": 8346,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          2,
+          2,
+          126,
+          125
+        ],
+        "path": "spell-glow.tga",
+        "sha256": "2a84d7ff1273cd6ca3061a8c73ab660adf807b886b34bdb5bf40714c8076fae1"
+      }
+    }
+  },
+  {
+    "key": "TRINKET_COOLDOWN",
+    "name": "trinket-cooldown",
+    "source_sha256": "2fe3c755a1e00577536b5e18cb729dab5b6669a8897e4c61e47ece8f9cf0b4d9",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 649517,
+      "opaque": 1113,
+      "partial": 921886,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        7,
+        1230,
+        1254
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 1532,
+        "opaque": 173,
+        "partial": 2391,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          2,
+          1,
+          63,
+          63
+        ],
+        "path": "trinket-cooldown-64.tga",
+        "sha256": "261b466b9b3eeffcfe59529c25c6b3964d8d0b475779ff872dd9dd3e35fe7834"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 6769,
+        "opaque": 372,
+        "partial": 9243,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          7,
+          4,
+          123,
+          125
+        ],
+        "path": "trinket-cooldown.tga",
+        "sha256": "aa6796402019735b1f496d402c961b45b5d37d683a39efa6be9bf438f2a03d56"
+      }
+    }
+  },
+  {
+    "key": "GROUP_SIZE",
+    "name": "group-size",
+    "source_sha256": "040f86c4803a537e58ad4a339f345dfe4234de8dbfd71d9279f0ca6282d77449",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 532306,
+      "opaque": 1265,
+      "partial": 1038945,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        10,
+        0,
+        1254,
+        1254
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 1149,
+        "opaque": 220,
+        "partial": 2727,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          1,
+          1,
+          63,
+          63
+        ],
+        "path": "group-size-64.tga",
+        "sha256": "66e2796fa1d6802430b3f8f5296175fa8b4a1d820bb04aba0a16c43c602148e5"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 5481,
+        "opaque": 566,
+        "partial": 10337,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          2,
+          2,
+          126,
+          126
+        ],
+        "path": "group-size.tga",
+        "sha256": "0740fded9bec8c06f5963128876439b2ca144a7dc37645f38eb1be06a9693247"
+      }
+    }
+  },
+  {
+    "key": "GROUP_ROLE_COUNT",
+    "name": "group-role-count",
+    "source_sha256": "61d9c0aec280f5889a807e5eb983aa0cb41ef1e3183624c7e69f161984deb511",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 642846,
+      "opaque": 1838,
+      "partial": 927832,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        23,
+        1242,
+        1236
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 1409,
+        "opaque": 249,
+        "partial": 2438,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          1,
+          1,
+          63,
+          61
+        ],
+        "path": "group-role-count-64.tga",
+        "sha256": "7049c4ba440bde3925c6eb47ba8578f034cb0be7a1d139bfc814b980eeea1492"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 6430,
+        "opaque": 543,
+        "partial": 9411,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          2,
+          3,
+          126,
+          119
+        ],
+        "path": "group-role-count.tga",
+        "sha256": "80b3e788664fca4f09a13e24213f9c24b63bb53076a70d92352a1e1929ea76e4"
+      }
+    }
+  },
+  {
+    "key": "GROUP_DEAD_COUNT",
+    "name": "group-dead-count",
+    "source_sha256": "ab4130ea4a72ed9fec25fb7e605a583eb0a8e8ad92613078d38de523ec873179",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 635238,
+      "opaque": 472,
+      "partial": 936806,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        0,
+        1250,
+        1254
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 1590,
+        "opaque": 181,
+        "partial": 2325,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          1,
+          1,
+          63,
+          63
+        ],
+        "path": "group-dead-count-64.tga",
+        "sha256": "57f1f69802980e811fe1abb09e26e62744a6869f2de561354afdc626dca1e7be"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 6833,
+        "opaque": 364,
+        "partial": 9187,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          2,
+          2,
+          126,
+          126
+        ],
+        "path": "group-dead-count.tga",
+        "sha256": "fa9d54c865b23c28504efea199c10da6bff28327e0f749bdbaafae6432801cbf"
+      }
+    }
+  },
+  {
+    "key": "STAGGER",
+    "name": "stagger",
+    "source_sha256": "1ef768df2e5fb3c8ddac6447033946ae5639b7fecf89d4085e00b3ee0567f13d",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 509274,
+      "opaque": 1181,
+      "partial": 1062061,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        25,
+        1254,
+        1231
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 1183,
+        "opaque": 179,
+        "partial": 2734,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          1,
+          1,
+          63,
+          63
+        ],
+        "path": "stagger-64.tga",
+        "sha256": "d26157161837caaa8b86498d06b3466e6e93a76b9f4f5c163508cd367a57ff5b"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 5409,
+        "opaque": 406,
+        "partial": 10569,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          2,
+          4,
+          126,
+          124
+        ],
+        "path": "stagger.tga",
+        "sha256": "02189dda735b4af7b3b497bfe373b514b72d9c4f5aa1d76f65ad6de145245892"
+      }
+    }
+  },
+  {
+    "key": "ECLIPSE_DIRECTION",
+    "name": "eclipse-direction",
+    "source_sha256": "1353ac235b7f63a6b792e31e848a4a104ddfcc72d54b0b12b76b8cac58e980dd",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 810114,
+      "opaque": 1203,
+      "partial": 761199,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        19,
+        1254,
+        1254
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 1757,
+        "opaque": 249,
+        "partial": 2090,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          1,
+          1,
+          63,
+          59
+        ],
+        "path": "eclipse-direction-64.tga",
+        "sha256": "38691fd51977f8db9a3d3fc03a051993533739fdb6f6e96a5c09d3d729d10fd2"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 7914,
+        "opaque": 604,
+        "partial": 7866,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          2,
+          2,
+          126,
+          115
+        ],
+        "path": "eclipse-direction.tga",
+        "sha256": "3139c421c8d737a4af24766a739dbfc2e6dba662d7fda0c1437fa24d2bc00ae7"
+      }
+    }
+  },
+  {
+    "key": "ECLIPSE_ENERGY",
+    "name": "eclipse-energy",
+    "source_sha256": "2d607787061363abcdac68400d99014e5baeb3cd31f6d7fc222fbaf1b072ff04",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 794387,
+      "opaque": 1829,
+      "partial": 776300,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        83,
+        0,
+        1218,
+        1254
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 1796,
+        "opaque": 223,
+        "partial": 2077,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          3,
+          1,
+          62,
+          63
+        ],
+        "path": "eclipse-energy-64.tga",
+        "sha256": "355d844d12ecd6c7c2e45b26edd157bb083a7c2412b4c68c2581d21eb4281f6b"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 7960,
+        "opaque": 521,
+        "partial": 7903,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          8,
+          2,
+          121,
+          126
+        ],
+        "path": "eclipse-energy.tga",
+        "sha256": "b3eb43714bdf6b9182a4960e0d47eadd6361d4f06fe6a0a5b76c5ca35df7f3f5"
+      }
+    }
+  },
+  {
+    "key": "RANGED_SWING_REMAIN",
+    "name": "ranged-swing-remain",
+    "source_sha256": "34079fcfb338696fa35370d126c81cbd1238d27d9caae5ad5a6259c076015d49",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 771678,
+      "opaque": 1469,
+      "partial": 799369,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        0,
+        1254,
+        1254
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 1618,
+        "opaque": 251,
+        "partial": 2227,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          1,
+          1,
+          63,
+          63
+        ],
+        "path": "ranged-swing-remain-64.tga",
+        "sha256": "4fc1823137c3403854330bf0fc7d0a6da5742b3b836047586e5a65f18b215a40"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 7522,
+        "opaque": 638,
+        "partial": 8224,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          2,
+          2,
+          126,
+          126
+        ],
+        "path": "ranged-swing-remain.tga",
+        "sha256": "362ab449581f1712d6492e7b45c779c25a4cdddfa0edc2dd7fd8135307bf4b8c"
+      }
+    }
+  },
+  {
+    "key": "PET_HAPPINESS",
+    "name": "pet-happiness",
+    "source_sha256": "94a9f275021206cd842e0d3e7edfb4a2d901211f0b1706050378f153a5b459b6",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 464093,
+      "opaque": 558,
+      "partial": 1107865,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        0,
+        1232,
+        1254
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 1043,
+        "opaque": 165,
+        "partial": 2888,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          1,
+          1,
+          63,
+          63
+        ],
+        "path": "pet-happiness-64.tga",
+        "sha256": "51c481b8867e4691b65cda1939b45eb4ba2dab30ee5d8e6be8959e2e90ab8949"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 4878,
+        "opaque": 372,
+        "partial": 11134,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          2,
+          2,
+          126,
+          126
+        ],
+        "path": "pet-happiness.tga",
+        "sha256": "543a8d7114dc9162b52803df7d9f23daf28f5bfe51e303e7af4650ccb0541e56"
+      }
+    }
+  },
+  {
+    "key": "ASSISTED_SUGGESTION",
+    "name": "assisted-suggestion",
+    "source_sha256": "5137e0037cc14b4246f114274a863bb56cd684d3e7a2b218e3f6e2a7440ef07e",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 649602,
+      "opaque": 742,
+      "partial": 922172,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        16,
+        1250,
+        1254
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 1527,
+        "opaque": 226,
+        "partial": 2343,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          1,
+          1,
+          63,
+          63
+        ],
+        "path": "assisted-suggestion-64.tga",
+        "sha256": "98ec1f39471f97f0f7f66fd324931f604309bf2f185ca8eaa14a397845bd8e14"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 6746,
+        "opaque": 615,
+        "partial": 9023,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          2,
+          2,
+          126,
+          126
+        ],
+        "path": "assisted-suggestion.tga",
+        "sha256": "83d97b3d8ecaddf5f6ada3d1e53556a88e8291bb4043b9ca7f6144f39be3d98c"
+      }
+    }
+  },
+  {
+    "key": "ASSISTED_ROTATION_SPELL",
+    "name": "assisted-rotation-spell",
+    "source_sha256": "ac0bcc2b5847c979673be57097cc743c836ebcf55e07ac03799ffb6bac266230",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 666607,
+      "opaque": 434,
+      "partial": 905475,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        56,
+        1254,
+        1254
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 1606,
+        "opaque": 199,
+        "partial": 2291,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          1,
+          2,
+          63,
+          63
+        ],
+        "path": "assisted-rotation-spell-64.tga",
+        "sha256": "9e4da2dca6172effda0acb381f5de477645dc1d8b116c70d543ffb5b63cf9c64"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 7076,
+        "opaque": 416,
+        "partial": 8892,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          2,
+          6,
+          126,
+          125
+        ],
+        "path": "assisted-rotation-spell.tga",
+        "sha256": "ff86db7290e6ef05b49e4454ff0f8514b10932bf57aecc0213b45f7695cb321c"
+      }
+    }
+  },
+  {
+    "key": "ASSISTED_AVAILABLE",
+    "name": "assisted-available",
+    "source_sha256": "bf2af03c0bba9f81de7d20179902e66b3534d26790474a87b606b3b9b1c2ede8",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 757631,
+      "opaque": 750,
+      "partial": 814135,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        0,
+        1254,
+        1254
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 1777,
+        "opaque": 202,
+        "partial": 2117,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          1,
+          1,
+          63,
+          63
+        ],
+        "path": "assisted-available-64.tga",
+        "sha256": "7bfafc38d1e26d2d3968fb471da060e07966cf7737323ee5840fb3470a2d1c90"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 7737,
+        "opaque": 497,
+        "partial": 8150,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          2,
+          2,
+          126,
+          126
+        ],
+        "path": "assisted-available.tga",
+        "sha256": "98100bb8cb86906a92efff592ae061cfafb9001d2f70c0f2009b9b8bddb23d14"
+      }
+    }
+  },
+  {
+    "key": "RUNE_ENGRAVED",
+    "name": "rune-engraved",
+    "source_sha256": "59378a4043a863639ba02821f9372af5016728625539bc877a0f28fb94fc2825",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 553818,
+      "opaque": 1052,
+      "partial": 1017646,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        29,
+        1254,
+        1254
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 1305,
+        "opaque": 141,
+        "partial": 2650,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          1,
+          1,
+          63,
+          63
+        ],
+        "path": "rune-engraved-64.tga",
+        "sha256": "eeb2cb46cd79eec6f8454753947a30696a50a2d62a4a210c1fbdd8304ebbc0b5"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 5889,
+        "opaque": 277,
+        "partial": 10218,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          2,
+          4,
+          126,
+          126
+        ],
+        "path": "rune-engraved.tga",
+        "sha256": "28f710e4f1b3f118cd0fa600a1c448acfe15c8a67eedbaf707605d0f18ea531b"
+      }
+    }
+  },
+  {
+    "key": "SPECIALIZATION",
+    "name": "specialization",
+    "source_sha256": "e5fb305b113fc24026c4affe12f9d49473869f02b626cd381dbc49d10e63d399",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 731304,
+      "opaque": 1860,
+      "partial": 839352,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        6,
+        1254,
+        1254
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 1647,
+        "opaque": 282,
+        "partial": 2167,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          1,
+          1,
+          63,
+          63
+        ],
+        "path": "specialization-64.tga",
+        "sha256": "0870e1534dc6aaf7ba4fe14ce2ceb361dac56746507e98fd09d65a3d8ea86460"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 7454,
+        "opaque": 628,
+        "partial": 8302,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          2,
+          2,
+          126,
+          125
+        ],
+        "path": "specialization.tga",
+        "sha256": "04dec1d4b93209335b642033dc0d9414975f52b888a8f86a03a20facfecbf133"
+      }
+    }
+  },
+  {
+    "key": "WEAPON_TYPE",
+    "name": "weapon-type",
+    "source_sha256": "e82139313a5e4d01ea819637a94fab6d497860a642ab72a57e2505d8df2501ac",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 935124,
+      "opaque": 1935,
+      "partial": 635457,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        51,
+        14,
+        1254,
+        1254
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 2022,
+        "opaque": 320,
+        "partial": 1754,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          1,
+          1,
+          63,
+          63
+        ],
+        "path": "weapon-type-64.tga",
+        "sha256": "79b8354db30b15f88e14dfb148c678cd79c1a133f3e4a1d23e8d1d09867f6c41"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 9084,
+        "opaque": 729,
+        "partial": 6571,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          5,
+          2,
+          126,
+          126
+        ],
+        "path": "weapon-type.tga",
+        "sha256": "32b1846ef2418acef1f84bf7467f753b040ab3e85559f5721719ef975f878571"
+      }
+    }
+  },
+  {
+    "key": "CASTING_PROGRESS",
+    "name": "casting-progress",
+    "source_sha256": "a7ea0e1c424a270d280a0a2d7cf2658d7be8f1e7d8d8cf00b47285c6c601d589",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 586983,
+      "opaque": 1173,
+      "partial": 984360,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        23,
+        1240,
+        1236
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 1300,
+        "opaque": 309,
+        "partial": 2487,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          1,
+          1,
+          63,
+          63
+        ],
+        "path": "casting-progress-64.tga",
+        "sha256": "a74afb457fb81e41557317a4eea135442faf11804bc773624914f74eb98daae4"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 5883,
+        "opaque": 648,
+        "partial": 9853,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          2,
+          2,
+          126,
+          125
+        ],
+        "path": "casting-progress.tga",
+        "sha256": "e62bbda2e67d1d2cc1100f71ee060ef6be3c13c12f1d1ccf4d8b580755f6d8d3"
+      }
+    }
+  },
+  {
+    "key": "CHANNELING_PROGRESS",
+    "name": "channeling-progress",
+    "source_sha256": "97521089c58035980c896c9e59f56f849296fbbbe99df9349f098c56b09432ef",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 637990,
+      "opaque": 1008,
+      "partial": 933518,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        0,
+        1254,
+        1254
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 1430,
+        "opaque": 278,
+        "partial": 2388,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          1,
+          1,
+          63,
+          63
+        ],
+        "path": "channeling-progress-64.tga",
+        "sha256": "f4b1afe03f4712963c378ce0ef41d1bf1ea4359c72478e8a18e8aaf19139ecfd"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 6526,
+        "opaque": 628,
+        "partial": 9230,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          2,
+          2,
+          126,
+          126
+        ],
+        "path": "channeling-progress.tga",
+        "sha256": "3ef0c995426f254463f44dfb6779336216868b48eb40cc364f4d9a810e84ebcb"
+      }
+    }
+  },
+  {
+    "key": "KEYSTONE_LEVEL",
+    "name": "keystone-level",
+    "source_sha256": "657121a1e2b6515b6c7d91c6ab77721b2cce1e6f5a3dbc20c45a69f7ea078d5f",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 913220,
+      "opaque": 485,
+      "partial": 658811,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        24,
+        7,
+        1230,
+        1244
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 2266,
+        "opaque": 128,
+        "partial": 1702,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          7,
+          1,
+          57,
+          63
+        ],
+        "path": "keystone-level-64.tga",
+        "sha256": "43667921129637d58fe81f7a4927d3948992c5b38e8c71049908300c590b771e"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 9491,
+        "opaque": 264,
+        "partial": 6629,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          17,
+          2,
+          111,
+          126
+        ],
+        "path": "keystone-level.tga",
+        "sha256": "75f20bdc51cf5b97789e47f3d2b8232420b6b8b29e62e228c52c9d6b9e9d7192"
+      }
+    }
   }
 ]
