@@ -285,7 +285,7 @@ class Guards(unittest.TestCase):
         for name in bad:
             self.assertTrue(H.check_forbidden([name]), name)
         good = ['docs/dev/architecture.md', 'docs/release/RELEASING.md', 'docs/architecture/tooltips.md', 'Libs/X/CHANGELOG.md',
-                '.claude/CLAUDE.md', 'TODO', 'docs/translators/README.md', 'docs/talent-selector-design.md']
+                '.claude/CLAUDE.md', 'TODO', 'docs/translators/README.md', 'docs/talent-selector.md']
         for name in good:
             self.assertEqual(H.check_forbidden([name]), [], name)
 

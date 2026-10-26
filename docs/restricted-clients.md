@@ -275,22 +275,22 @@ enable and kept by the nameplate events. Each token is read live when a
 condition runs, so a vanished token reads absent and a reused one is simply the
 unit now on that plate.
 
-## Possible future work
+## Not built
 
 - **Display-only highlights from secret values.** A secret value cannot be
   compared, but it visibly drives a frame: in game, a secret passed through a
   `C_CurveUtil` curve to `SetAlpha` made a fill appear and disappear at the
-  threshold. A display-only highlight (for example "target below 20% health")
-  could be built that way without RM ever reading the value. It could never
-  feed a rotation decision. Not built.
+  threshold. That would give a highlight such as "target below 20% health"
+  without RM reading the value, but it could never feed a rotation decision, and
+  RM has none.
 - **Encounter timeline (`C_EncounterTimeline`).** Blizzard's generated
   documentation marks an event's spell, icon and severity `SecretWhenEncounterEvent`
   and its ID, source and duration `NeverSecret`; `GetEventState` and
   `GetEventTimeRemaining` carry no annotation. A condition for "a boss ability
   is due in N seconds" depends on which of those a real encounter reveals, so
-  `/rm debug timeline [seconds]` records it first. Not built.
+  there is none; `/rm debug timeline [seconds]` records what a real encounter hands an addon.
 - **Per-spell static support.** `C_Secrets.GetSpellCooldownSecrecy`,
   `GetSpellAuraSecrecy` and `GetSpellCastSecrecy` return a spell's
-  `Enum.SecrecyLevel`. A condition naming a spell flagged `AlwaysSecret` could
-  be declared unsupported for that saved value instead of being unavailable at
-  every poll. Not built; it needs in-game confirmation of what those report.
+  `Enum.SecrecyLevel`. RM does not call them: a condition naming a spell flagged
+  `AlwaysSecret` is unavailable at every poll rather than declared unsupported for
+  that saved value, and what those calls report in a real client is unconfirmed.

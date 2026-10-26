@@ -19,7 +19,7 @@ Adding a pack: put the file in `Modules/RotationMaster_<Class>/<edition>/` and a
 
 A development install (a checkout linked into `Interface/AddOns`) needs one more link per module, since the client only scans top-level AddOns folders: `Interface/AddOns/RotationMaster_Shaman -> <checkout>/Modules/RotationMaster_Shaman`, and so on for all 13 (each carries every edition).
 
-`Modules/RotationMaster_WowSims/` is the one module that is not a class: it holds the WowSims converters (`docs/quality/wowsims-transport.md`) as a load-on-demand add-on with a single TOC for every client, loaded by `Core/transfer_formats.lua` the first time a rotation transfer window needs it. `tests/verify.py` treats a module whose fallback TOC lists files that way (one TOC, every Lua file listed exactly once, no flavour TOCs, no `bind.lua`); `.pkgmeta` moves it out like the others. A development install links it too: `Interface/AddOns/RotationMaster_WowSims -> <checkout>/Modules/RotationMaster_WowSims`.
+`Modules/RotationMaster_WowSims/` is the one module that is not a class: it holds the WowSims converters (`docs/quality/wowsims-transport.md`) as a load-on-demand add-on with a single TOC for every client, loaded by `Core/transfer_formats.lua` the first time a rotation transfer window needs it. `tests/verify.py` treats a module whose fallback TOC lists files that way (one TOC, every Lua file listed exactly once, no flavor TOCs, no `bind.lua`); `.pkgmeta` moves it out like the others. A development install links it too: `Interface/AddOns/RotationMaster_WowSims -> <checkout>/Modules/RotationMaster_WowSims`.
 
 ## Authoring
 

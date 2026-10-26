@@ -1,6 +1,6 @@
 # Rotation transport contract
 
-`Data/codec.lua` is a data-only boundary with injected trusted serializer/compressor functions. Runtime wiring/import staging is the next step; the old editor import path is not upgraded merely by loading this module.
+`Data/codec.lua` is a data-only boundary with injected trusted serializer/compressor functions. Every rotation, custom condition, function bundle and item set transfer window reaches it through `addon:NewRotationCodec()`; loading the module alone changes no saved data.
 
 Legacy data uses standard Base64 of a LibCompress stream containing AceSerializer protocol1. Accepted compression bytes are exactly1 (stored),2 (LZW),3 (Huffman), without modern prefilters. New envelopes use the same payload with `RM1:` before the Base64; this is a transport version, distinct from the envelope's `schemaVersion`. Unknown content schema versions remain decoded data for validation/reference. Native Deflate/Zlib/Gzip and filtered streams are explicitly unsupported here because their output limits have not been established. Exports request LibCompress capability1. No vendor code or hashes were changed.
 
