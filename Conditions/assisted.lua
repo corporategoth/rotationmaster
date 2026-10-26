@@ -17,13 +17,6 @@ addon.builtinCallbackBindings["Conditions/assisted.lua"]={
     ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
 }
 
--- No original artwork yet: this placeholder reuses the Spell Available icon
--- until a semantic Assisted Combat icon is generated (tests/condition_icons.lua
--- lists it as pending). A generated catalog entry takes precedence.
-if addon.Artwork and addon.Artwork.condition and addon.Artwork.condition["ASSISTED_SUGGESTION"] == nil then
-    addon.Artwork.condition["ASSISTED_SUGGESTION"] = addon.Artwork.condition["SPELL_AVAIL"]
-end
-
 addon:RegisterCondition("ASSISTED_SUGGESTION", {
     description = L["Assisted Combat Suggestion"],
     icon = addon.Artwork.condition["ASSISTED_SUGGESTION"],
@@ -67,18 +60,6 @@ addon:RegisterCondition("ASSISTED_SUGGESTION", {
         addon.layout_condition_spellwidget_help(frame)
     end
 })
-
--- Placeholders until original artwork exists (tests/condition_icons.lua lists
--- both as pending): rotation membership reuses Spell Known, availability
--- reuses In Control.
-if addon.Artwork and addon.Artwork.condition then
-    if addon.Artwork.condition["ASSISTED_ROTATION_SPELL"] == nil then
-        addon.Artwork.condition["ASSISTED_ROTATION_SPELL"] = addon.Artwork.condition["SPELL_KNOWN"]
-    end
-    if addon.Artwork.condition["ASSISTED_AVAILABLE"] == nil then
-        addon.Artwork.condition["ASSISTED_AVAILABLE"] = addon.Artwork.condition["INCONTROL"]
-    end
-end
 
 -- Whether a spell is in this specialization's Assisted Combat rotation set
 -- (C_AssistedCombat.GetRotationSpells, refreshed on SPELLS_CHANGED as

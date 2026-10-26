@@ -550,7 +550,8 @@ function addon:ShowGlowDiagnostic()
 end
 
 -- /rm debug editor copies the Lua editor input report (UI/lua_input_diagnostics.lua);
--- /rm debug talents reports the trait talent reads (Diagnostics/talents.lua).
+-- /rm debug talents reports the trait talent reads (Diagnostics/talents.lua);
+-- /rm debug timeline probes Blizzard's encounter timeline (Diagnostics/timeline.lua).
 function addon:HandleDebugCommand(args)
     local what,rest=(args or ''):match('^%s*(%S*)%s*(.-)%s*$')
     if what=='glow' then
@@ -559,5 +560,6 @@ function addon:HandleDebugCommand(args)
     end
     if what=='editor' and self.ShowLuaEditorInputReport then return self:ShowLuaEditorInputReport() end
     if what=='talents' and self.RunTalentDiagnostic then return self:RunTalentDiagnostic(rest) end
+    if what=='timeline' and self.RunTimelineDiagnostic then return self:RunTimelineDiagnostic(rest) end
     self:print(L['Usage: /rm debug glow [seconds|show], /rm debug talents [views] or /rm debug editor'])
 end

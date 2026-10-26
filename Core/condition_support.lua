@@ -142,6 +142,31 @@ local function glyphLayout()
     if not platform:IsGlyphLayoutSupported() then return 'unsupported-glyph-layout' end
 end
 
+-- Mechanics that exist only in some editions. `test` receives the client info
+-- (family, and for progression the expansion level: 2 Wrath, 3 Cataclysm,
+-- 4 Mists of Pandaria) and answers whether the edition has the mechanic.
+local function editionRule(reason,test)
+    return function()
+        local platform=addon.Platform
+        if not platform or type(platform.GetClientInfo)~='function' then return nil end
+        local info=platform:GetClientInfo()
+        if type(info)~='table' then return nil end
+        if not test(info) then return reason end
+    end
+end
+local function progressionFrom(info,first) return info.family=='progression' and type(info.expansion)=='number' and info.expansion>=first end
+local RETAIL_ONLY=editionRule('retail-only',function(info) return info.family=='retail' end)
+local PET_HAPPINESS_EDITION=editionRule('no-pet-happiness',function(info)
+    return info.family=='era' or info.family=='tbc' or info.family=='progression' and info.expansion==2
+end)
+local STAGGER_EDITION=editionRule('no-stagger',function(info)
+    return info.family=='retail' or info.family=='forever' or progressionFrom(info,4)
+end)
+local ECLIPSE_EDITION=editionRule('no-eclipse',function(info) return progressionFrom(info,2) end)
+local GROUP_ROLE_EDITION=editionRule('no-group-roles',function(info)
+    return info.family=='retail' or info.family=='forever' or info.family=='progression'
+end)
+
 local UNIT={'UnitExists'}
 local CASTING={POLICY,UNIT,{'UnitCastingInfo'}}
 local CHANNELING={POLICY,UNIT,{'UnitChannelInfo'}}
@@ -255,6 +280,22 @@ local requirements={
     DISTANCE_COUNT={POLICY,UNIT,{'UnitIsEnemy'},{'UnitGUID'},{'C_CVar.GetCVar','GetCVar'}},
     RUNE_ENGRAVED={{'C_Engraving.IsEngravingEnabled'}},
     WEAPON_TYPE={weaponSlot},
+    MOUNTED={POLICY,{'IsMounted'}},SWIMMING={POLICY,{'IsSwimming'}},FALLING={POLICY,{'IsFalling'}},
+    FLYING={POLICY,{'IsFlying'}},RESTING={POLICY,{'IsResting'}},
+    ENCOUNTER={POLICY,{'C_InstanceEncounter.IsEncounterInProgress','IsEncounterInProgress'}},
+    INSTANCE_DIFFICULTY={POLICY,{'GetInstanceInfo'}},INSTANCE_ID={POLICY,{'GetInstanceInfo'}},
+    KEYSTONE_LEVEL={POLICY,RETAIL_ONLY,{'C_ChallengeMode.IsChallengeModeActive'},{'C_ChallengeMode.GetActiveKeystoneInfo'}},
+    HERO_TALENT={POLICY,RETAIL_ONLY,{'C_ClassTalents.GetActiveHeroTalentSpec'}},
+    SPELL_GLOW={POLICY,{'C_SpellActivationOverlay.IsSpellOverlayed'}},
+    TRINKET_COOLDOWN={POLICY,{'GetInventoryItemID'},{'C_Item.GetItemCooldown','C_Container.GetItemCooldown','GetItemCooldown'}},
+    GROUP_SIZE={POLICY,{'GetNumGroupMembers'},{'IsInRaid'}},
+    GROUP_ROLE_COUNT={POLICY,GROUP_ROLE_EDITION,{'GetNumGroupMembers'},{'IsInRaid'},{'UnitGroupRolesAssigned'}},
+    GROUP_DEAD_COUNT={POLICY,{'GetNumGroupMembers'},{'IsInRaid'},{'UnitIsDeadOrGhost'}},
+    PET_HAPPINESS={POLICY,PET_HAPPINESS_EDITION,{'GetPetHappiness'}},
+    STAGGER={POLICY,STAGGER_EDITION,{'UnitStagger'}},
+    ECLIPSE_DIRECTION={POLICY,ECLIPSE_EDITION,{'UnitClass'},{'GetEclipseDirection'}},
+    ECLIPSE_ENERGY={POLICY,ECLIPSE_EDITION,{'UnitClass'},{'UnitPower'},{'Enum.PowerType'}},
+    RANGED_SWING_REMAIN={{'UnitRangedDamage'},LOG},
     ZONE={{'GetZoneText'},{'GetSubZoneText'}},
 }
 addon.conditionRequirements=requirements
@@ -327,6 +368,11 @@ local reasonText={
     ['unsupported-talent-layout']=L['this client uses a different talent system'],
     ['unsupported-glyph-layout']=L['glyphs are not supported on this client build'],
     ['unsupported-point-expansion']=L['this edition has no point resource'],
+    ['retail-only']=L['only Retail has this'],
+    ['no-pet-happiness']=L['this edition has no pet happiness'],
+    ['no-stagger']=L['this edition has no Stagger'],
+    ['no-eclipse']=L['this edition has no Eclipse'],
+    ['no-group-roles']=L['this client has no assigned group roles'],
 }
 -- "X is not supported on this client (reason)." for an unsupported-condition
 -- validation issue; nil for any other issue.

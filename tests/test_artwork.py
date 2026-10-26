@@ -15,7 +15,7 @@ SPEC.loader.exec_module(GENERATOR)
 
 class ArtworkTests(unittest.TestCase):
     def manifests(self):
-        for directory, count, sizes in [('Assets/Conditions/v2', 136, (64, 128)),
+        for directory, count, sizes in [('Assets/Conditions/v2', 164, (64, 128)),
                                          ('Assets/Overlays/v1', 9, (128, 256))]:
             yield directory, count, sizes, json.loads((ROOT / directory / 'provenance.json').read_text())['entries']
 

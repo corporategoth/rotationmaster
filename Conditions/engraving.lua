@@ -22,13 +22,6 @@ addon.builtinCallbackBindings["Conditions/engraving.lua"]={
     ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
 }
 
--- No original artwork yet: this placeholder reuses the Equipped icon until a
--- semantic engraving icon is generated (tests/condition_icons.lua lists it as
--- pending). A generated catalog entry takes precedence.
-if addon.Artwork and addon.Artwork.condition and addon.Artwork.condition["RUNE_ENGRAVED"] == nil then
-    addon.Artwork.condition["RUNE_ENGRAVED"] = addon.Artwork.condition["EQUIPPED"]
-end
-
 local function identifier(value)
     return type(value) == "number" and value > 0 and value < 2147483648 and value % 1 == 0
 end

@@ -170,7 +170,7 @@ local default_condition_groups = {
             "COMBAT", "STEALTHED", "INCONTROL", "LOC_TYPE", "LOC_BLOCKED",
             "RUNNER", "RESIST", "IMMUNE", "MOVING", "THREAT", "THREAT_COUNT",
             "ATTACKABLE", "ENEMY", "COMBAT_HISTORY", "COMBAT_HISTORY_TIME", "TIME_IN_COMBAT",
-            "BOSSMOD_ENCOUNTER", "BOSSMOD_STAGE", "BOSSMOD_TIMER",
+            "BOSSMOD_ENCOUNTER", "BOSSMOD_STAGE", "BOSSMOD_TIMER", "ENCOUNTER",
         }
     },
     {
@@ -182,7 +182,9 @@ local default_condition_groups = {
             "HEALTH", "HEALTHPCT", "TT_HEALTH", "TT_HEALTHPCT",
             "MANA", "MANAPCT", "POWER", "POWERPCT", "POINT", "RUNE", "RUNE_COOLDOWN",
             "TOTEM", "TOTEM_SPELL", "TOTEM_REMAIN", "TOTEM_SPELL_REMAIN",
-            "STAT", "ECS_STAT", "ECS_STAT_PCT"
+            "STAT", "ECS_STAT", "ECS_STAT_PCT",
+            "HERO_TALENT", "GROUP_SIZE", "GROUP_ROLE_COUNT", "GROUP_DEAD_COUNT",
+            "PET_HAPPINESS", "STAGGER", "ECLIPSE_DIRECTION", "ECLIPSE_ENERGY",
         }
     },
     {
@@ -194,14 +196,14 @@ local default_condition_groups = {
             "PETSPELL_AVAIL", "PETSPELL_RANGE", "PETSPELL_COOLDOWN", "PETSPELL_REMAIN",
             "PETSPELL_CHARGES", "PETSPELL_ACTIVE", "PETSPELL_HISTORY", "PETSPELL_HISTORY_TIME",
             "ANYSPELL_AVAIL", "ANYSPELL_RANGE", "ANYSPELL_COOLDOWN", "ANYSPELL_REMAIN",
-            "ANYSPELL_CHARGES",
+            "ANYSPELL_CHARGES", "SPELL_GLOW",
         }
     },
     {
         id = "fca4ff75-4085-458a-b5bf-27a6b52f2092",
         name = L["Items"],
         conditions = {
-            "EQUIPPED", "CARRYING", "ITEM", "ITEM_RANGE", "ITEM_COOLDOWN", "GLYPH", "WEAPON_TYPE",
+            "EQUIPPED", "CARRYING", "ITEM", "ITEM_RANGE", "ITEM_COOLDOWN", "GLYPH", "WEAPON_TYPE", "TRINKET_COOLDOWN",
         }
     },
     {
@@ -210,7 +212,7 @@ local default_condition_groups = {
         conditions = {
             "BUFF", "BUFF_REMAIN", "BUFF_STACKS", "STEALABLE",
             "DEBUFF", "DEBUFF_REMAIN", "DEBUFF_STACKS", "DISPELLABLE",
-            "WEAPON", "WEAPON_REMAIN", "WEAPON_STACKS", "SWING_TIME", "SWING_TIME_REMAIN",
+            "WEAPON", "WEAPON_REMAIN", "WEAPON_STACKS", "SWING_TIME", "SWING_TIME_REMAIN", "RANGED_SWING_REMAIN",
         }
     },
     {
@@ -220,6 +222,8 @@ local default_condition_groups = {
             "ZONE", "OUTDOORS", "DISTANCE", "BEYOND_MELEE", "DISTANCE_COUNT", "PROXIMITY",
             "PROXIMITY_HEALTH", "PROXIMITY_HEALTH_COUNT", "PROXIMITY_HEALTHPCT", "PROXIMITY_HEALTHPCT_COUNT",
             "PROXIMITY_MANA", "PROXIMITY_MANA_COUNT", "PROXIMITY_MANAPCT", "PROXIMITY_MANAPCT_COUNT",
+            "MOUNTED", "SWIMMING", "FALLING", "FLYING", "RESTING",
+            "INSTANCE_DIFFICULTY", "INSTANCE_ID", "KEYSTONE_LEVEL",
         }
     },
 }
@@ -234,7 +238,9 @@ local default_switch_conditions = {
     "DELETE", "AND", "OR", "NOT", "SELF_LEVEL", "PVP", "ZONEPVP", "ZONE", "INSTANCE", "OUTDOORS",
     "STEALTHED", "GROUP", "FORM", "CLASS", "CLASS_GROUP", "CREATURE", "CLASSIFICATION",
     "PET", "PET_NAME", "EQUIPPED", "DISTANCE_COUNT", "THREAT_COUNT", "ROLE", "GLYPH",
-    "BOSSMOD_ENCOUNTER", "BOSSMOD_STAGE", "SPECIALIZATION", "WEAPON_TYPE"
+    "BOSSMOD_ENCOUNTER", "BOSSMOD_STAGE", "SPECIALIZATION", "WEAPON_TYPE",
+    "ENCOUNTER", "INSTANCE_DIFFICULTY", "INSTANCE_ID", "KEYSTONE_LEVEL", "HERO_TALENT",
+    "GROUP_SIZE", "GROUP_ROLE_COUNT", "MOUNTED", "RESTING",
 }
 
 -- Default 'switch only' conditions
@@ -607,6 +613,7 @@ function addon:init()
     self:InstallUnitStateConditions(self.db)
     if self.InstallBossModConditions then self:InstallBossModConditions(self.db) end
     if self.InstallLoadoutConditions then self:InstallLoadoutConditions(self.db) end
+    if self.InstallWorldConditions then self:InstallWorldConditions(self.db) end
     if self.InstallCastProgressConditions then self:InstallCastProgressConditions(self.db) end
     self:InstallAnnouncementConditionPreferences()
     self.db.RegisterCallback(self,'OnNewProfile','InitializeTalentTreeConditions')

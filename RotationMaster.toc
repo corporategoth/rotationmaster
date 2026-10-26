@@ -53,6 +53,8 @@ Platform/unit_presence.lua
 Platform/pet.lua
 Platform/threat.lua
 Platform/instance.lua
+Platform/world_state.lua
+Platform/edition_state.lua
 Platform/zone_pvp.lua
 Platform/loss_of_control.lua
 Platform/specializations.lua
@@ -171,6 +173,7 @@ main.lua
 buttons.lua
 Diagnostics/glow.lua
 Diagnostics/talents.lua
+Diagnostics/timeline.lua
 Core/unit_state_conditions.lua
 Core/assisted_highlight.lua
 Core/tooltips.lua
@@ -315,3 +318,11 @@ Conditions/equipment.lua
 Conditions/build.lua
 Conditions/misc.lua
 Conditions/bossmod.lua
+Conditions/player_state.lua
+Conditions/encounter_state.lua
+Conditions/group_state.lua
+Conditions/hero_talent.lua
+Conditions/proc_glow.lua
+Conditions/trinket.lua
+Conditions/edition_state.lua
+Conditions/world_seed.lua

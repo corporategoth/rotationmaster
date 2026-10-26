@@ -154,9 +154,6 @@ addon:RegisterCondition("CHANNELING_REMAIN", {
 
 -- Share of the channel done (0..1, shown as a percentage), from the same cached
 -- observation as CHANNELING_REMAIN: haste-proof, so a tick threshold is N/K.
-if addon.Artwork and addon.Artwork.condition and addon.Artwork.condition["CHANNELING_PROGRESS"] == nil then
-    addon.Artwork.condition["CHANNELING_PROGRESS"] = addon.Artwork.condition["CHANNELING_REMAIN"]
-end
 addon:RegisterCondition("CHANNELING_PROGRESS", {
     description = L["Channel Progress"],
     icon = addon.Artwork.condition["CHANNELING_PROGRESS"],
