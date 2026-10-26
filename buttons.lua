@@ -943,29 +943,6 @@ function addon:RefreshMacroButtons()
     announceIndexChange()
 end
 
-function FetchNeuron()
-	for x = 1, 12 do
-		for i = 1, 12 do
-			local button = _G['NeuronActionBar' .. x .. '_' .. 'ActionButton' .. i];
-			if button then
-				AddStandardButton(button);
-			end
-		end
-	end
-end
-
-local function FetchDiabolic()
-	local diabolicBars = {'EngineBar1', 'EngineBar2', 'EngineBar3', 'EngineBar4', 'EngineBar5'};
-	for _, bar in pairs(diabolicBars) do
-		for i = 1, 12 do
-			local button = _G[bar .. 'Button' .. i];
-			if button then
-				AddStandardButton(button);
-			end
-		end
-	end
-end
-
 local function FetchBartender4()
     -- Non-pet buttons are done via. LibActionButton
 	for i = 1, 10 do
@@ -981,14 +958,29 @@ local function FetchBartender4()
 	end
 end
 
+-- Dominos creates its own CheckButtons for its action IDs 1-24 and 73-132
+-- (DominosActionButton<id>) and names the rest after the Blizzard bar they
+-- replace, MultiBar<Right|Left|BottomRight|BottomLeft|5|6|7>ActionButton<1-12>
+-- (tullamods/Dominos, Dominos/bars/actionBar/buttons.lua, GetActionButtonName
+-- and GetOrCreateActionButton, commit 3a65bfa). Blizzard's own frames of those
+-- names do not exist (they are ...Button<n>), so those buttons are Dominos'.
+-- The registry is the public route, Dominos.ActionButtons:GetAll(); the name
+-- scan below covers a build whose registry is not reachable.
+local DOMINOS_RANGES={{1,24},{73,132}}
+local DOMINOS_BARS={'MultiBarRight','MultiBarLeft','MultiBarBottomRight','MultiBarBottomLeft','MultiBar5','MultiBar6','MultiBar7'}
 local function FetchDominos()
-	-- Dominos is using half of the blizzard frames so we just fetch the missing one
-
-	for i = 1, 60 do
-		local button = _G['DominosActionButton' .. i]
-		if button then
-			AddStandardButton(button)
-		end
+	local dominos=rawget(_G,'Dominos')
+	local registry=type(dominos)=='table' and rawget(dominos,'ActionButtons') or nil
+	if type(registry)=='table' and type(registry.GetAll)=='function' then
+		pcall(function()
+			for button in registry:GetAll() do AddStandardButton(button) end
+		end)
+	end
+	for _,range in ipairs(DOMINOS_RANGES) do
+		for i=range[1],range[2] do AddStandardButton(_G['DominosActionButton'..i]) end
+	end
+	for _,bar in ipairs(DOMINOS_BARS) do
+		for i=1,12 do AddStandardButton(_G[bar..'ActionButton'..i]) end
 	end
 end
 
@@ -1022,12 +1014,14 @@ local function FetchAzeriteUI()
 	end
 end
 
-local function FetchSamyTotemTimers()
-	for i = 1, 6 do
-		local button = _G['SamyTotemTimers' .. i .. "CastTotemButton"];
-		if button then
-			AddStandardButton(button);
-		end
+-- AzeriteUI6 (folder AzeriteUI6) builds every action button with
+-- LibActionButton-1.0:CreateButton (Components/ActionBars/Prototypes/
+-- ActionButton.lua), so the library scan finds them. Its pet bar creates plain
+-- PetActionButtonTemplate frames named AZUI6_PetActionBarButton<1-10>
+-- (Prototypes/PetButton.lua; PetBar.lua CreateButton), commit 05e2e2e.
+local function FetchAzeriteUI6()
+	for i = 1, 10 do
+		AddPetButton(_G['AZUI6_PetActionBarButton' .. i], i)
 	end
 end
 
@@ -1074,39 +1068,129 @@ local function FetchLUI()
 	end
 end
 
-local function FetchSyncUI()
-	local syncbars = {}
-
-	syncbars[1] = SyncUI_ActionBar
-	syncbars[2] = SyncUI_MultiBar
-	syncbars[3] = SyncUI_SideBar.Bar1
-	syncbars[4] = SyncUI_SideBar.Bar2
-	syncbars[5] = SyncUI_SideBar.Bar3
-	syncbars[6] = SyncUI_PetBar
-
-	for _, bar in pairs(syncbars) do
-		for i = 1, 12 do
-			local button = bar['Button' .. i]
-			if button then
-				AddStandardButton(button)
+-- Every LibActionButton-1.0 variant that is registered, not only the two
+-- known names: bar addons bundle forks under their own major (ElvUI's
+-- LibActionButton-1.0-ElvUI) and LibStub lists them all. A variant is read
+-- once however many names reach it.
+local LAB_PREFIX='LibActionButton-1.0'
+local function LibActionButtonLibraries()
+	local libs,seen={},{}
+	local function take(lib)
+		if type(lib)=='table' and not seen[lib] and type(lib.GetAllButtons)=='function' then
+			seen[lib]=true;libs[#libs+1]=lib
+		end
+	end
+	local stub=LibStub
+	if type(stub)=='table' and type(stub.IterateLibraries)=='function' then
+		pcall(function()
+			for name,lib in stub:IterateLibraries() do
+				if type(name)=='string' and name:sub(1,#LAB_PREFIX)==LAB_PREFIX then take(lib) end
 			end
+		end)
+	end
+	-- The two names RM has always read, for a LibStub that cannot be iterated.
+	take(stub:GetLibrary(LAB_PREFIX,true))
+	take(stub:GetLibrary(LAB_PREFIX..'-ElvUI',true))
+	return libs
+end
+local function FetchLibActionButton()
+	for _,lib in ipairs(LibActionButtonLibraries()) do
+		local ok,buttons=pcall(lib.GetAllButtons,lib)
+		if ok and type(buttons)=='table' then
+			for button in pairs(buttons) do AddStandardButton(button) end
 		end
 	end
 end
 
-local function FetchLibActionButton()
-	local LAB = {
-		original = LibStub:GetLibrary('LibActionButton-1.0', true),
-		elvui = LibStub:GetLibrary('LibActionButton-1.0-ElvUI', true),
-	}
-
-	for _, lib in pairs(LAB) do
-		if lib and lib.GetAllButtons then
-			for button in pairs(lib:GetAllButtons()) do
-                AddStandardButton(button)
+-- EllesmereUI Action Bars (folder EllesmereUIActionBars, EllesmereGaming/
+-- EllesmereUI commit 1fdf4d2): every action button of bars 1-8 and the custom
+-- bars 9-10 is its own CheckButton, EABButton<slot> for slots 1-180, built from
+-- ActionBarButtonTemplate with the slot in the secure "action" attribute
+-- (EUI_ActionBars_Secure.lua, GetOrCreateButton and BAR_SLOT_OFFSETS; the
+-- template's OnLoad sets type="action", Blizzard_ActionBar ActionButton.lua).
+-- The stock bars are reparented to the hidden EABHiddenParent
+-- (EUI_ActionBars_Disposal.lua) but keep their ActionButtonN frames and their
+-- action attributes, so a scan of Blizzard's names alone indexes frames that
+-- are never drawn. Stance and pet bars stay Blizzard's.
+local EUI_SLOTS=180
+local function EllesmereUIActive()
+	return IsAddOnLoaded('EllesmereUIActionBars') or IsAddOnLoaded('EllesmereUI') or rawget(_G,'EABHiddenParent')~=nil
+end
+-- Action slots a replacement bar draws visibly. A stock frame for the same
+-- slot that is hidden is a duplicate nobody sees; it is left out of the index.
+local DrawnSlots={}
+local function VisibleButton(button)
+	if type(button.IsVisible)~='function' then return true end
+	local ok,visible=pcall(button.IsVisible,button)
+	return not ok or visible~=false
+end
+local function FetchEllesmereUI()
+	for slot=1,EUI_SLOTS do
+		local button=_G['EABButton'..slot]
+		if button then
+			AddStandardButton(button)
+			if VisibleButton(button) then
+				local ok,drawn=pcall(GetActionSlot,button)
+				if ok and drawn then DrawnSlots[drawn]=true end
 			end
 		end
 	end
+end
+-- A stock button hidden behind a replacement bar that draws its slot.
+local function HiddenDuplicate(button)
+	if not button or next(DrawnSlots)==nil or VisibleButton(button) then return false end
+	local ok,slot=pcall(GetActionSlot,button)
+	return ok and slot~=nil and DrawnSlots[slot]==true
+end
+
+-- Other addons' buttons: RotationMaster:RegisterButtonProvider(id, fn). fn is
+-- called on every bar scan as fn(addButton, addPetButton) and reports its
+-- buttons through them. addButton(button) reads an action button the way the
+-- built-in scans do (secure type and action attributes, action slot, macro,
+-- item or spell); addPetButton(button, index) maps a pet bar button to its
+-- pet action index (1-10). An error in fn is contained and recorded.
+local ButtonProviders,ProviderState={},{}
+local PROVIDER_LIMIT=512
+local function validProviderButton(button)
+	return type(button)=='table' and type(button.GetAttribute)=='function'
+end
+local function FetchProviders()
+	for id,provider in pairs(ButtonProviders) do
+		local state=ProviderState[id];state.error=nil;state.buttons=0
+		local function count()
+			if state.buttons>=PROVIDER_LIMIT then return false end
+			state.buttons=state.buttons+1;return true
+		end
+		local ok,err=pcall(provider,
+			function(button) if validProviderButton(button) and count() then AddStandardButton(button) end end,
+			function(button,index) if validProviderButton(button) and count() then AddPetButton(button,index) end end)
+		if not ok then state.error=tostring(err) end
+	end
+end
+function addon:RegisterButtonProvider(id,provider)
+	if type(id)~='string' or id=='' or #id>128 then return false,'invalid-id' end
+	if type(provider)~='function' then return false,'invalid-provider' end
+	ButtonProviders[id]=provider
+	ProviderState[id]=ProviderState[id] or {buttons=0}
+	if type(self.ButtonFetch)=='function' then self:ButtonFetch() end
+	return true
+end
+function addon:UnregisterButtonProvider(id)
+	if ButtonProviders[id]==nil then return false end
+	ButtonProviders[id]=nil;ProviderState[id]=nil
+	if type(self.ButtonFetch)=='function' then self:ButtonFetch() end
+	return true
+end
+-- Registered providers and what their last scan did: a sorted list of
+-- {id=, buttons=, error=}.
+function addon:ListButtonProviders()
+	local list={}
+	for id in pairs(ButtonProviders) do
+		local state=ProviderState[id]
+		list[#list+1]={id=id,buttons=state.buttons,error=state.error}
+	end
+	table.sort(list,function(a,b) return a.id<b.id end)
+	return list
 end
 
 local function FetchBlizzard()
@@ -1115,7 +1199,7 @@ local function FetchBlizzard()
 	for _, barName in pairs(BlizzardBars) do
 		for i = 1, 12 do
 			local button = _G[barName .. 'Button' .. i]
-			AddStandardButton(button)
+			if not HiddenDuplicate(button) then AddStandardButton(button) end
 		end
     end
 
@@ -1132,19 +1216,6 @@ end
 local function FetchElvUIPet()
 	for i = 1, 10 do
 		AddPetButton(_G['ElvUI_BarPetButton' .. i], i)
-	end
-end
-
-local function FetchG15Buttons()
-	local i = 2; -- it starts from 2
-	while true do
-		local button = _G['objG15_btn_' .. i]
-		if not button then
-			break
-		end
-		i = i + 1
-
-		AddStandardButton(button)
 	end
 end
 
@@ -1181,6 +1252,7 @@ function addon:Fetch()
     ButtonSpells = {}
     MacroButtons = {}
     PetButtons = {}
+    DrawnSlots = {}
 	Flags = {}
 	SpellsGlowing = {}
 
@@ -1194,6 +1266,11 @@ function addon:Fetch()
 	addon:debug(L["Button Fetch triggered."])
 
 	FetchLibActionButton()
+	-- Before Blizzard's frames: the slots it draws decide which stock buttons
+	-- are hidden duplicates.
+	if EllesmereUIActive() then
+		FetchEllesmereUI()
+	end
 	FetchBlizzard()
 
 	-- It does not alter original button frames so it needs to be fetched too
@@ -1209,14 +1286,6 @@ function addon:Fetch()
 		FetchButtonForge()
 	end
 
-	if IsAddOnLoaded('G15Buttons') then
-		FetchG15Buttons()
-	end
-
-	if IsAddOnLoaded('SyncUI') then
-		FetchSyncUI()
-	end
-
 	if IsAddOnLoaded('LUI') then
 		FetchLUI()
 	end
@@ -1225,16 +1294,12 @@ function addon:Fetch()
 		FetchDominos()
 	end
 
-	if IsAddOnLoaded('DiabolicUI') then
-		FetchDiabolic();
-	end
-
 	if IsAddOnLoaded('AzeriteUI') then
 		FetchAzeriteUI();
     end
 
-	if IsAddOnLoaded('Neuron') then
-		FetchNeuron();
+	if IsAddOnLoaded('AzeriteUI6') then
+		FetchAzeriteUI6();
 	end
 
 	if IsAddOnLoaded('FarmingBar') then
@@ -1245,9 +1310,7 @@ function addon:Fetch()
 		FetchTotemTimers();
 	end
 
-	if IsAddOnLoaded('SamyTotemTimers') then
-		FetchSamyTotemTimers();
-	end
+	FetchProviders()
 
 	if self.currentRotation then
 		self:EnableRotationTimer()

@@ -36,7 +36,7 @@ LUA_STD = set('''assert collectgarbage dofile error getfenv getmetatable ipairs 
 # Optional third-party addons the addon integrates with when present, and
 # globals the addon defines itself (frames, slash handlers, saved variables).
 FOREIGN = set('''LibStub addonName LuaWorkbench MI2_GetMobData RealMobHealth ECSLoader ExtendedCharacterStats WeakAuras
- SyncUI_ActionBar SyncUI_MultiBar SyncUI_PetBar SyncUI_SideBar RotationMasterFrontmostDialog RotationMasterDB'''.split())
+ RotationMasterFrontmostDialog RotationMasterDB'''.split())
 
 
 def addon_files():

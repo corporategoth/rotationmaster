@@ -102,6 +102,8 @@ def main():
             ['lua5.1', 'tests/settings.lua'],
             ['lua5.1', 'tests/rangecheck.lua'],
             ['lua5.1', 'tests/buttons.lua'],
+            ['lua5.1', 'tests/button_providers.lua'],
+            ['luajit', 'tests/button_providers.lua'],
             ['lua5.1', 'tests/buttons_namespaces.lua'],
             ['luajit', 'tests/buttons_namespaces.lua'],
             ['lua5.1', 'tests/proc_glow.lua'],
