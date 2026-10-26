@@ -96,7 +96,11 @@ function addon:BuildEffectSettings(p)
                     for other,record in pairs(effects) do if (settings.mode=='new' or other~=id) and record.name==name then return false,L['This name is already in use.'] end end;value.name=name
                     if settings.mode=='new' then local generated=self:uuid();store.global.effects=store.global.effects or {};store.global.effects[generated]=value;p.selection=generated;p.creating=false;p.newEffect=nil
                     elseif isNew then p.newEffect=value else effects[id]=value end;refresh();return true
-                end,{canReplace=not isNew,selectedName=effect.name,fallbackName=L['Imported effect'],originalName=function(input) local decoded=codec:Decode(input);return decoded and type(decoded.value)=='table' and decoded.value.name end})
+                end,{canReplace=not isNew,selectedName=effect.name,fallbackName=L['Imported effect'],originalName=function(input) local decoded=codec:Decode(input);return decoded and type(decoded.value)=='table' and decoded.value.name end,
+                    review={kind='effect',parse=function(input) local decoded,errorCode=codec:Decode(input);if not decoded or not validEffect(decoded.value) then return nil,errorCode or L['Invalid effect.'] end;return self:CopySettingsData(decoded.value) end,
+                        current=function() return effect end,
+                        problems=function(candidate,dialog) local name=dialog.mode=='new' and dialog.name:GetText() or effect.name;local list={}
+                            for other,record in pairs(effects) do if (dialog.mode=='new' or other~=id) and record.name==name then list[#list+1]=L['This name is already in use.'];break end end;return list end}})
             end},
             {key='delete',text=L['Delete'],icon='trash',action=function()
                 self:ConfirmSettingsDeletion(p,L['Delete this effect? Rotations using it will need another effect.'],function()
@@ -117,7 +121,9 @@ function addon:BuildEffectSettings(p)
         end,function() p.creating=false;p.selection=p.previousSelection;p.newEffect=nil;p.emptyDismissed=true;p:Draw() end)
     elseif not effect then
         self:CollectionFooter(p,'effect',effects,nil,{key='duplicate',text=L['Duplicate'],icon='copy',enabled=false,action=function() end},{key='transfer',text=L['Import/Export'],icon='transfer',action=function()
-            local codec=self:NewRotationCodec();self:ShowSettingsTextTransfer(p,L['Effect'],'',function(input,settings) local decoded,why=codec:Decode(input);if not decoded or not validEffect(decoded.value) then return false,why or L['Invalid effect.'] end;p.newEffect=decoded.value;p.newEffect.name=settings.name;p.creating=true;return true end,{fallbackName=L['Imported effect'],originalName=function(input) local decoded=codec:Decode(input);return decoded and type(decoded.value)=='table' and decoded.value.name end})
+            local codec=self:NewRotationCodec();self:ShowSettingsTextTransfer(p,L['Effect'],'',function(input,settings) local decoded,why=codec:Decode(input);if not decoded or not validEffect(decoded.value) then return false,why or L['Invalid effect.'] end;p.newEffect=decoded.value;p.newEffect.name=settings.name;p.creating=true;return true end,{fallbackName=L['Imported effect'],originalName=function(input) local decoded=codec:Decode(input);return decoded and type(decoded.value)=='table' and decoded.value.name end,
+                review={kind='effect',parse=function(input) local decoded,why=codec:Decode(input);if not decoded or not validEffect(decoded.value) then return nil,why or L['Invalid effect.'] end;return self:CopySettingsData(decoded.value) end,
+                    problems=function(candidate,dialog) local list={};for _,record in pairs(effects) do if record.name==dialog.name:GetText() then list[#list+1]=L['This name is already in use.'];break end end;return list end}})
         end})
     end
 end

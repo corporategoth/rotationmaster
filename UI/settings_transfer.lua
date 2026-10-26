@@ -166,7 +166,7 @@ function addon:ShowSettingsTextTransfer(p,title,text,apply,options)
         d.status=d.frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');d.status:SetPoint('TOPLEFT',12,-346);d.status:SetSize(546,32);d.status:SetWordWrap(true);d.status:SetJustifyH('LEFT')
         d.preview=addon:CreateWorkbenchButton(d.frame,L['Preview import'],90);d.preview:SetPoint('BOTTOMLEFT',152,28);d.inspect=addon:CreateWorkbenchButton(d.frame,L['Check import'],90);d.inspect:SetPoint('BOTTOMLEFT',d.preview,'BOTTOMRIGHT',6,0)
         local function hide() d.frame:Hide() end
-        addon:SetUIScript(d.cancel,'OnClick',hide);addon:SetUIScript(d.close,'OnClick',hide);addon:SetUIScript(d.frame,'OnHide',function() d.input:ClearFocus();if d.options and d.options.onClose then d.options.onClose() end end)
+        addon:SetUIScript(d.cancel,'OnClick',hide);addon:SetUIScript(d.close,'OnClick',hide);addon:SetUIScript(d.frame,'OnHide',function() d.input:ClearFocus();if d.options and d.options.review and addon.CloseTransferReview then addon:CloseTransferReview(p) end;if d.options and d.options.onClose then d.options.onClose() end end)
         addon:SetUIScript(d.input,'OnSizeChanged',function() d.scroll:UpdateWorkbenchScroll() end)
         addon:SetUIScript(d.input,'OnCursorChanged',function(_,_,y,_,height) local top=-y;local bar=d.scroll.workbenchBar;d.scroll:UpdateWorkbenchScroll();if top<bar:GetValue() then bar:SetValue(top) elseif top+height>bar:GetValue()+d.scroll:GetHeight() then bar:SetValue(top+height-d.scroll:GetHeight()) end end)
         d.input:EnableMouseWheel(true);addon:SetUIScript(d.input,'OnMouseWheel',function(_,delta) local bar=d.scroll.workbenchBar;bar:SetValue(bar:GetValue()-delta*40) end)
@@ -184,7 +184,7 @@ function addon:ShowSettingsTextTransfer(p,title,text,apply,options)
     -- import with it, a new copy previews the import in full. The second one
     -- always checks the import for problems. A button grows with its label.
     local function labels()
-        if not options.requirePreview then return end
+        if not (options.requirePreview or options.review) then return end
         local compare=d.mode=='replace' and options.canReplace and true or false
         d.preview:SetText(compare and L['Compare import'] or L['Preview import']);d.preview.tooltip=compare and L['Help.Transfers.compare'] or L['Help.Transfers.preview']
         d.inspect:SetText(L['Check import']);d.inspect.tooltip=L['Help.Transfers.inspect']
@@ -202,15 +202,19 @@ function addon:ShowSettingsTextTransfer(p,title,text,apply,options)
     end
     if options then
         d.original:Show();d.destination:Show();d.nameLabel:Show();d.name:Show();d.newName=options.fallbackName or '';d.scroll:ClearAllPoints();d.scroll:SetPoint('TOPLEFT',12,-98);d.scroll:SetHeight(232);d.input:SetHeight(232)
-        addon:SetUIScript(d.destination,'OnClick',function() if valid() and options.canReplace then d.mode=d.mode=='replace' and 'new' or 'replace';destination() end end)
+        addon:SetUIScript(d.destination,'OnClick',function() if valid() and options.canReplace then d.mode=d.mode=='replace' and 'new' or 'replace';destination();if options.review and addon.CloseTransferReview then addon:CloseTransferReview(p) end end end)
         addon:SetUIScript(d.name,'OnTextChanged',function(_,user) if user and valid() and d.mode=='new' then d.nameDirty=true;d.newName=d.name:GetText() end end)
         addon:SetUIScript(d.name,'OnEscapePressed',function() d.frame:Hide() end)
-        addon:SetUIScript(d.input,'OnTextChanged',function(_,user) if user then preview();if options.invalidate then options.invalidate(d) end end end)
+        addon:SetUIScript(d.input,'OnTextChanged',function(_,user) if user then preview();if options.review and addon.CloseTransferReview then addon:CloseTransferReview(p) end;if options.invalidate then options.invalidate(d) end end end)
         d.status:SetText(L['Choose a new named copy or replace the selected editable entry. Review the destination before importing.'])
     else
         d.original:Hide();d.destination:Hide();d.nameLabel:Hide();d.name:Hide();d.scroll:ClearAllPoints();d.scroll:SetPoint('TOPLEFT',12,-40);d.scroll:SetHeight(300);d.input:SetHeight(300);addon:SetUIScript(d.input,'OnTextChanged',nil);d.status:SetText(L['Copy this text to export. Import replaces the selected settings.'])
     end
-    if options and options.requirePreview then d.preview:Show();d.inspect:Show();d.apply:Disable();d.inspect:Disable();addon:SetUIScript(d.preview,'OnClick',function() if valid() then options.preview(d) end end);addon:SetUIScript(d.inspect,'OnClick',function() if valid() then return options.inspect(d) end end) else d.preview:Hide();d.inspect:Hide();d.apply:Enable() end
+    if options and options.requirePreview then d.preview:Show();d.inspect:Show();d.apply:Disable();d.inspect:Disable();addon:SetUIScript(d.preview,'OnClick',function() if valid() then options.preview(d) end end);addon:SetUIScript(d.inspect,'OnClick',function() if valid() then return options.inspect(d) end end) elseif options and options.review and addon.BuildTransferReview then
+        -- Looking is optional here: Import is never gated, the buttons only show the import.
+        local show,check=addon:BuildTransferReview(p,options.review);d.preview:Show();d.inspect:Show();d.apply:Enable();d.inspect:Enable()
+        addon:SetUIScript(d.preview,'OnClick',function() if valid() then show(d) end end);addon:SetUIScript(d.inspect,'OnClick',function() if valid() then check(d) end end)
+    else d.preview:Hide();d.inspect:Hide();d.apply:Enable() end
     addon:SetUIScript(d.clear,'OnClick',function() if valid() then d.input:SetText('');d.input:SetFocus();d.input:SetCursorPosition(0);d.scroll.workbenchBar:SetValue(0);if options then preview();if options.invalidate then options.invalidate(d) end end end end)
     addon:SetUIScript(d.copy,'OnClick',function() if valid() then d.input:SetFocus();d.input:SetCursorPosition(0);d.input:HighlightText(0,-1) end end)
     addon:SetUIScript(d.apply,'OnClick',function()

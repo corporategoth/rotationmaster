@@ -769,6 +769,7 @@ def main():
             ['luajit', 'tests/rotation_name_transfer.lua'],
             ['lua5.1', 'tests/import_preview.lua'],
             ['luajit', 'tests/import_preview.lua'],
+            ['luajit', 'tests/import_preview_kinds.lua'],
             ['lua5.1', 'tests/spell_presentation.lua'],
             ['lua5.1', 'tests/platform_range.lua'],
             ['lua5.1', 'tests/beyond_melee_presence.lua'],

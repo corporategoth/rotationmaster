@@ -78,7 +78,8 @@ function addon:BuildItemSettings(p)
                     local candidate,errorText=self:ParseItemSetImport(input,codec);if not candidate then return false,errorText end
                     if settings.mode=='replace' then set.items=self:CopySettingsData(candidate.items);update()
                     else local generated=self:uuid();store.profile.itemsets=store.profile.itemsets or {};store.profile.itemsets[generated]={name=settings.name,items=self:CopySettingsData(candidate.items)};p.selection=generated;p.creating=false;p:RunSettingsEffect('items_'..generated,function() if self.UpdateItemSetButtons then self:UpdateItemSetButtons(generated) end end) end;return true
-                end,{canReplace=true,selectedName=set.name,fallbackName=L['Imported item set'],originalName=function(input) local candidate=self:ParseItemSetImport(input,codec);return candidate and candidate.name end})
+                end,{canReplace=true,selectedName=set.name,fallbackName=L['Imported item set'],originalName=function(input) local candidate=self:ParseItemSetImport(input,codec);return candidate and candidate.name end,
+                    review={kind='itemset',parse=function(input) return self:ParseItemSetImport(input,codec) end,current=function() return {name=set.name,items=set.items} end}})
             end},
             {key='reset',text=L['Reset'],icon='undo',enabled=self.getDefaultItemset and self:getDefaultItemset(id)~=nil or false,action=function() local defaults=self:getDefaultItemset(id);if defaults then set.items=self:CopySettingsData(defaults);update();set.modified=false;p:Draw() end end},
             {key='delete',text=L['Delete'],icon='trash',action=function()
@@ -99,7 +100,8 @@ function addon:BuildItemSettings(p)
         local codec=self:NewRotationCodec();self:ShowSettingsTextTransfer(p,L['Item Set'],'',function(text,settings)
             local candidate,why=self:ParseItemSetImport(text,codec);if not candidate then return false,why end
             local id=self:uuid();store.profile.itemsets=store.profile.itemsets or {};store.profile.itemsets[id]={name=settings.name,items=self:CopySettingsData(candidate.items)};p.selection=id;p.creating=false;return true
-        end,{fallbackName=L['Imported item set'],originalName=function(input) local candidate=self:ParseItemSetImport(input,codec);return candidate and candidate.name end})
+        end,{fallbackName=L['Imported item set'],originalName=function(input) local candidate=self:ParseItemSetImport(input,codec);return candidate and candidate.name end,
+            review={kind='itemset',parse=function(input) return self:ParseItemSetImport(input,codec) end}})
     end})
     if not p.creating and not p:CanAutoCreateCollection('profile','itemsets') then return end
     p:Heading(L['Add item set']);p.newItemSetName=p.newItemSetName or '';p:Edit('new_name',L['Name'],p.newItemSetName,nil,function(text) p.newItemSetName=text end)

@@ -16,6 +16,31 @@ local function color(value)
     if type(value)~='table' then return scalar(value) end
     return string.format('R %.3f  G %.3f  B %.3f  A %.3f',value.r or 1,value.g or 1,value.b or 1,value.a or 1)
 end
+-- Structured data as readable indented text, keys in a fixed order, bounded.
+local function structured(value)
+    local lines,count={},0
+    local function walk(current,indent,depth)
+        if type(current)~='table' then lines[#lines+1]=indent..scalar(current);return end
+        local keys={};for key in pairs(current) do keys[#keys+1]=key end
+        table.sort(keys,function(x,y) if type(x)==type(y) and type(x)~='boolean' then return x<y end;return tostring(x)<tostring(y) end)
+        for _,key in ipairs(keys) do
+            count=count+1;if count>200 or depth>8 then lines[#lines+1]=indent..'...';return end
+            local child=current[key]
+            if type(child)=='table' then lines[#lines+1]=indent..tostring(key)..':';walk(child,indent..'  ',depth+1)
+            else lines[#lines+1]=indent..tostring(key)..': '..scalar(child) end
+        end
+    end
+    if value==nil then return L['None'] end
+    walk(value,'',0);if #lines==0 then return L['None'] end;return table.concat(lines,'\n')
+end
+-- Source code is shown as text and never run; very long text is cut, and says so.
+local CODE_LIMIT=20000
+local function code(value)
+    if value==nil then return L['None'] end
+    if type(value)~='string' then return scalar(value) end
+    if #value>CODE_LIMIT then return value:sub(1,CODE_LIMIT)..'\n'..string.format(L['... %d more characters not shown.'],#value-CODE_LIMIT) end
+    return value
+end
 function addon:CollectionComparisonRows(kind,left,right,showSame)
     local rows={};local total=0
     local function add(label,a,b,format,icons)
@@ -61,6 +86,21 @@ function addon:CollectionComparisonRows(kind,left,right,showSame)
         add(L['Spell'],left.spell,right.spell,spell)
         local function items(value) if type(value)~='table' then return scalar(value) end;local parts={};local provider=self:GetReferenceProvider('item');for _,id in ipairs(value) do parts[#parts+1]=(provider.name(tonumber(id) or provider.resolve(id)) or L['Item data loading'])..' ('..tostring(id)..')' end;return table.concat(parts,'\n') end
         add(L['Items'],left.item,right.item,items)
+    elseif kind=='category' then
+        add(L['Icon'],left.icon,right.icon)
+        local function conditions(list)
+            if type(list)~='table' then return scalar(list) end
+            local lines={string.format(L['%d conditions'],#list)}
+            for _,tag in ipairs(list) do local definition=(self.conditionDefinitions or {})[tag] or (self.conditionSpecials or {})[tag];lines[#lines+1]=definition and (definition.description or definition.desc) or tag end
+            return table.concat(lines,'\n')
+        end
+        add(L['Conditions'],left.conditions,right.conditions,conditions)
+    elseif kind=='customcondition' then
+        add(L['Description'],left.description,right.description)
+        add(L['Icon'],left.icon,right.icon)
+        add(L['Disabled'],left.disabled,right.disabled)
+        for _,field in ipairs({{'fields','Fields'},{'fieldOrder','Field order'},{'requiredFields','Required fields'},{'parameters','Parameters'},{'bindings','Function bindings'}}) do add(L[field[2]],left[field[1]],right[field[1]],structured) end
+        for _,key in ipairs({'valid','evaluate','print','widget','help','on_register','on_unregister'}) do if left[key]~=nil or right[key]~=nil then add(string.format(L['Code: %s'],key),left[key],right[key],code) end end
     elseif kind=='itemset' then
         local provider=self:GetReferenceProvider('item')
         local function info(value) return value and provider.info(tonumber(value) or provider.resolve(value)) end
@@ -101,10 +141,15 @@ function addon:ShowCollectionComparison(p,kind,left,right,options)
         frame:Hide()
     end
     d.serial=(d.serial or 0)+1;local serial=d.serial
-    local token=p.generation;local function valid() return p:Valid(token) and d.serial==serial end;local first,second=self:CopySettingsData(left),self:CopySettingsData(right);local showSame=false
+    -- single: one record read-only, every field of it (the import preview); two columns otherwise.
+    local single=options.single==true;d.fromImport=options.fromImport==true
+    if single then d.rightHeading:Hide();d.toggle:Hide() else d.rightHeading:Show();d.toggle:Show() end
+    local token=p.generation;local function valid() return p:Valid(token) and d.serial==serial end;local first,second=self:CopySettingsData(left),single and self:CopySettingsData(left) or self:CopySettingsData(right);local showSame=single
     local function draw()
         if not valid() then return end
         local rows,changes;if options.rows then rows,changes=options.rows(first,second,showSame) else rows,changes=self:CollectionComparisonRows(kind,first,second,showSame) end;d.rows=rows;d.toggle:SetChecked(showSame)
+        local limit=options.maxRows;local hidden=0
+        if limit and #rows>limit then hidden=#rows-limit;local kept={};for i=1,limit do kept[i]=rows[i] end;rows=kept;d.rows=rows end
         local y=0;local n=0
         local function cell(value,x,width,height,tone,icon)
             n=n+1;local c=d.cells[n];if not c then c=CreateFrame('Frame',nil,d.child);c.art=c:CreateTexture(nil,'BACKGROUND');c.art:SetAllPoints(c);c.text=c:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');c.text:SetJustifyH('LEFT');c.text:SetJustifyV('TOP');c.text:SetWordWrap(true);c.icon=c:CreateTexture(nil,'ARTWORK');c.icon:SetPoint('TOPLEFT',5,-4);c.icon:SetSize(24,24);d.cells[n]=c end
@@ -113,10 +158,15 @@ function addon:ShowCollectionComparison(p,kind,left,right,options)
         for _,row in ipairs(rows) do
             cell(row.label,0,132,24,{.18,.18,.18});y=y+24
             local height=math.max(34,16*(1+select(2,row.left:gsub('\n',''))),16*(1+select(2,row.right:gsub('\n',''))))+8
-            local a=cell(row.left,0,346,height,row.changed and {.4,.16,.16} or {.18,.18,.18},row.leftIcon);local b=cell(row.right,354,346,height,row.changed and {.16,.35,.2} or {.18,.18,.18},row.rightIcon);height=math.max(height,a.text:GetStringHeight()+8,b.text:GetStringHeight()+8);a:SetHeight(height);b:SetHeight(height);y=y+height+10
+            if single then
+                local a=cell(row.left,0,700,height,{.18,.18,.18},row.leftIcon);height=math.max(height,a.text:GetStringHeight()+8);a:SetHeight(height);y=y+height+10
+            else
+                local a=cell(row.left,0,346,height,row.changed and {.4,.16,.16} or {.18,.18,.18},row.leftIcon);local b=cell(row.right,354,346,height,row.changed and {.16,.35,.2} or {.18,.18,.18},row.rightIcon);height=math.max(height,a.text:GetStringHeight()+8,b.text:GetStringHeight()+8);a:SetHeight(height);b:SetHeight(height);y=y+height+10
+            end
         end
-        if #rows==0 then cell(L['No differences.'],0,700,30,{.18,.18,.18});y=38 end
-        for i=n+1,#d.cells do d.cells[i]:Hide() end;d.child:SetHeight(math.max(1,y));d.scroll:UpdateWorkbenchScroll();d.chrome.author:SetText(string.format(L['Changed fields: %d'],changes))
+        if hidden>0 then cell(string.format(L['%d more settings are not shown.'],hidden),0,700,30,{.18,.18,.18});y=y+38 end
+        if #rows==0 then cell(single and L['None'] or L['No differences.'],0,700,30,{.18,.18,.18});y=38 end
+        for i=n+1,#d.cells do d.cells[i]:Hide() end;d.child:SetHeight(math.max(1,y));d.scroll:UpdateWorkbenchScroll();d.chrome.author:SetText(single and string.format(L['Fields shown: %d'],#rows) or string.format(L['Changed fields: %d'],changes))
     end
     d.chrome:SetContext(options.title or L['Compare']..': '..(left.name or '')..' / '..(right.name or ''),L['Read-only'],addon.pretty_name);d.leftHeading:SetText(options.leftHeading or left.name or L['Selected entry']);d.rightHeading:SetText(options.rightHeading or right.name or L['Compared entry'])
     self:SetUIScript(d.frame,'OnUpdate',function() if not valid() then d.frame:Hide() end end)

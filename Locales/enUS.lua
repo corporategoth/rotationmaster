@@ -1296,6 +1296,19 @@ L["Incoming rotation"] = true
 L["Always"] = true
 L["Condition reference (code is not run)."] = true
 L["Check import"] = true
+L["Incoming"] = true
+L["Problems"] = true
+L["Notes"] = true
+L["No problems found."] = true
+L["This import can be applied."] = true
+L["Fields shown: %d"] = true
+L["Field order"] = true
+L["Required fields"] = true
+L["Parameters"] = true
+L["Code: %s"] = true
+L["%d more settings are not shown."] = true
+L["... %d more characters not shown."] = true
+L["This is a dependency bundle. Import opens the bundle review."] = true
 
 L["Export Built In"] = true
 
@@ -3242,7 +3255,7 @@ L["Help.Transfers.destination"] = "Choose a new named copy or replacement of the
 
 L["Help.Transfers.name"] = "Set the name for a new copy. Replacement keeps the selected entry as its destination."
 
-L["Help.Transfers.preview"] = "Preview import shows everything this import contains, read-only, in the same view the rotation editor uses. Nothing is saved. Import is enabled only for a ready preview; changing the text requires another one."
+L["Help.Transfers.preview"] = "Preview import shows everything this import contains, read-only, the way the editor shows it. Nothing is saved."
 
 L["Help.Transfers.inspect"] = "Check import lists problems with the text instead of its content: why it cannot be imported and any unsupported data. It does not import or change anything."
 
@@ -3278,7 +3291,7 @@ L["Help.Transfers.comparison_brief"] = "Explain this read-only incoming rotation
 
 L["Help.Transfers.comparison"] = "This view compares the saved or exported rotation with the current incoming preview. It does not apply changes. Close it to choose the destination and import from the transfer dialog. A changed preview, closed owner, or changed profile retires this comparison Help."
 
-L["Help.Transfers.compare"] = "Compare import shows what would change in the rotation you are replacing, side by side with its current content. Nothing is saved. Import is enabled only for a ready comparison; changing the text requires another one."
+L["Help.Transfers.compare"] = "Compare import shows what would change in the entry you are replacing, side by side with its current content. Nothing is saved."
 
 L["Help.Transfers.preview_view_brief"] = "Explain this read-only preview of the incoming rotation."
 

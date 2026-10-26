@@ -209,6 +209,7 @@ UI/settings_general.lua
 UI/settings_integrations.lua
 UI/settings_profiles.lua
 UI/collection_compare.lua
+UI/transfer_review.lua
 UI/draft_changes.lua
 UI/draft_change_controls.lua
 UI/settings_collections.lua

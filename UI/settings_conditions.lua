@@ -154,7 +154,10 @@ function addon:BuildConditionCategorySettings(p)
                 for _,value in ipairs(candidate) do self:SettingsFlag(profile.other_conditions_order or {},value,false) end
                 for _,other in ipairs(groups) do if other~=target then for _,value in ipairs(candidate) do self:SettingsFlag(other.conditions or {},value,false) end end end;target.conditions=candidate;if parsed.metadata then target.icon=parsed.icon end
             end;return true
-        end,{canReplace=true,selectedName=group and group.name or category=='SWITCH' and L['Switch'] or L['Other'],fallbackName=L['Imported category'],originalName=function(input) local parsed=self:ParseConditionCategoryImport(input,codec);return parsed and parsed.name end})
+        end,{canReplace=true,selectedName=group and group.name or category=='SWITCH' and L['Switch'] or L['Other'],fallbackName=L['Imported category'],originalName=function(input) local parsed=self:ParseConditionCategoryImport(input,codec);return parsed and parsed.name end,
+            review={kind='category',
+                parse=function(input) local parsed,why=self:ParseConditionCategoryImport(input,codec);if not parsed then return nil,why end;return {name=parsed.name,icon=parsed.icon,conditions=parsed.conditions} end,
+                current=function() return {name=group and group.name or category=='SWITCH' and L['Switch'] or L['Other'],icon=group and group.icon,conditions=tags} end}})
     end
     if group then p.fields.delete_category=self:SettingsTopDelete(p,function()
         self:ConfirmSettingsDeletion(p,L['Delete this category? Its conditions will remain available under Other.'],function()
