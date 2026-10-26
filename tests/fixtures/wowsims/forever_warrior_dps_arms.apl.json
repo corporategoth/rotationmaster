@@ -1,0 +1,62 @@
+{
+	"type": "TypeAPL",
+	"prepullActions": [
+	{"action":{"castSpell":{"spellId":{"spellId":18499}}},"doAtValue":{"const":{"val":"-4.5s"}}},
+	{"action":{"groupReference":{"groupName":"Pre-pull: Stance"}},"doAtValue":{"const":{"val":"-4s"}}},
+	{"action":{"castSpell":{"spellId":{"spellId":2687}}},"doAtValue":{"const":{"val":"-3s"}}},
+	{"action":{"castSpell":{"spellId":{"spellId":25289}}},"doAtValue":{"const":{"val":"-3s"}}},
+	{"action":{"groupReference":{"groupName":"Pre-pull: Move"}},"doAtValue":{"const":{"val":"-0.9s"}}}
+	],
+	"priorityList": [
+	{"hide":true,"action":{"groupReference":{"groupName":"Recklessness ON/OFF"}}},
+	{"hide":true,"action":{"groupReference":{"groupName":"Stance Dance ON/OFF"}}},
+	{"action":{"groupReference":{"groupName":"Hamstring Weave ON/OFF"}}},
+	{"action":{"groupReference":{"groupName":"Engineering"}}},
+	{"action":{"groupReference":{"groupName":"CD: Trinkets"}}},
+	{"action":{"condition":{"cmp":{"op":"OpEq","lhs":{"numberTargets":{}},"rhs":{"const":{"val":"1"}}}},"groupReference":{"groupName":"Sunder Armor"}}},
+	{"hide":true,"action":{"condition":{"cmp":{"op":"OpEq","lhs":{"numberTargets":{}},"rhs":{"const":{"val":"1"}}}},"groupReference":{"groupName":"Sunder Armor: Refresh"}}},
+	{"action":{"condition":{"multipleCdUsages":{"targetSpellId":{"otherId":"OtherActionOffensivePotion"},"offset":{"const":{"val":"0ms"}},"alignCdEnd":true}},"castSpell":{"spellId":{"otherId":"OtherActionOffensivePotion"}}}},
+	{"action":{"condition":{"or":{"vals":[{"not":{"val":{"or":{"vals":[{"selectedPotion":{"potionId":{"itemId":5631}}},{"selectedPotion":{"potionId":{"itemId":5633}}},{"selectedPotion":{"potionId":{"itemId":13442}}}]}}}},{"cmp":{"op":"OpLe","lhs":{"currentRage":{}},"rhs":{"const":{"val":"15"}}}}]}},"castSpell":{"spellId":{"otherId":"OtherActionResourcePotion"}}}},	{"action":{"groupReference":{"groupName":"CD: Racials"}}},
+	{"action":{"condition":{"multipleCdUsages":{"targetSpellId":{"spellId":12328},"offset":{"const":{"val":"0ms"}},"alignCdEnd":true}},"castSpell":{"spellId":{"spellId":12328}}}},
+	{"action":{"condition":{"and":{"vals":[{"variableRef":{"name":"Recklessness: Used"}},{"multipleCdUsages":{"targetSpellId":{"spellId":1719},"offset":{"const":{"val":"0ms"}},"alignCdEnd":true}}]}},"castSpell":{"spellId":{"spellId":1719}}}},
+	{"action":{"condition":{"and":{"vals":[{"cmp":{"op":"OpGt","lhs":{"numberTargets":{}},"rhs":{"const":{"val":"1"}}}}]}},"castSpell":{"spellId":{"spellId":12723}}}},
+	{"action":{"castSpell":{"spellId":{"spellId":2457}},"condition":{"and":{"vals":[{"not":{"val":{"actionGroupUsed":{"name":"Stance Dance ON/OFF"}}}},{"auraIsInactive":{"auraId":{"spellId":2457}}}]}}}},
+	{"action":{"castSpell":{"spellId":{"spellId":21553}},"condition":{"actionGroupUsed":{"name":"Stance Dance ON/OFF"}}}},
+	{"action":{"castSpell":{"spellId":{"spellId":11585}},"condition":{"auraIsActive":{"auraId":{"spellId":2457}}}}},
+	{"action":{"condition":{"and":{"vals":[{"not":{"val":{"actionGroupUsed":{"name":"Stance Dance ON/OFF"}}}},{"cmp":{"op":"OpGe","lhs":{"numberTargets":{}},"rhs":{"const":{"val":"3"}}}},{"cmp":{"op":"OpGe","lhs":{"currentRage":{}},"rhs":{"const":{"val":"25"}}}},{"gcdIsReady":{}},{"auraIsInactive":{"auraId":{"spellId":2458}}},{"spellIsReady":{"spellId":{"spellId":1680,"tag":1}}}]}},"castSpell":{"spellId":{"spellId":2458}}}},
+	{"action":{"condition":{"and":{"vals":[{"not":{"val":{"actionGroupUsed":{"name":"Stance Dance ON/OFF"}}}},{"cmp":{"op":"OpGe","lhs":{"numberTargets":{}},"rhs":{"const":{"val":"3"}}}}]}},"castSpell":{"spellId":{"spellId":1680,"tag":1}}}},
+	{"action":{"castSpell":{"spellId":{"spellId":21553}},"condition":{"not":{"val":{"actionGroupUsed":{"name":"Stance Dance ON/OFF"}}}}}},
+	{"action":{"castSpell":{"spellId":{"spellId":11605}},"condition":{"and":{"vals":[{"not":{"val":{"isExecutePhase":{"threshold":"E20"}}}},{"cmp":{"op":"OpLt","lhs":{"spellCastTime":{"spellId":{"spellId":11605}}},"rhs":{"spellGcdHastedDuration":{"spellId":{"spellId":21553}}}}}]}}}},
+	{"action":{"castSpell":{"spellId":{"spellId":11574}},"condition":{"and":{"vals":[{"not":{"val":{"isExecutePhase":{"threshold":"E20"}}}},{"auraIsActive":{"auraId":{"spellId":2457}}},{"cmp":{"op":"OpLe","lhs":{"dotRemainingTime":{"spellId":{"spellId":11574}}},"rhs":{"spellGcdHastedDuration":{"spellId":{"spellId":11574}}}}}]}}}},
+	{"action":{"castSpell":{"spellId":{"spellId":11605}},"condition":{"and":{"vals":[{"not":{"val":{"isExecutePhase":{"threshold":"E20"}}}},{"cmp":{"op":"OpGe","lhs":{"spellCastTime":{"spellId":{"spellId":11605}}},"rhs":{"spellGcdHastedDuration":{"spellId":{"spellId":21553}}}}},{"cmp":{"op":"OpLe","lhs":{"autoTimeSinceLast":{"autoType":"MainHandAuto"}},"rhs":{"math":{"op":"OpAdd","lhs":{"inputDelay":{}},"rhs":{"const":{"val":"300ms"}}}}}}]}}}},
+	{"action":{"castSpell":{"spellId":{"spellId":1310222}},"condition":{"and":{"vals":[{"not":{"val":{"isExecutePhase":{"threshold":"E20"}}}},{"auraIsActive":{"auraId":{"spellId":2457}}}]}}}},
+	{"action":{"castSpell":{"spellId":{"spellId":2458}},"condition":{"and":{"vals":[{"actionGroupUsed":{"name":"Stance Dance ON/OFF"}},{"auraIsActive":{"auraId":{"spellId":2457}}},{"auraIsInactive":{"auraId":{"spellId":1282733}}},{"or":{"vals":[{"isExecutePhase":{"threshold":"E20"}},{"cmp":{"op":"OpGt","lhs":{"dotRemainingTime":{"spellId":{"spellId":11574}}},"rhs":{"spellGcdHastedDuration":{"spellId":{"spellId":11574}}}}}]}}]}}}},
+	{"action":{"castSpell":{"spellId":{"spellId":1680,"tag":1}},"condition":{"actionGroupUsed":{"name":"Stance Dance ON/OFF"}}}},
+	{"action":{"castSpell":{"spellId":{"spellId":7373}},"condition":{"and":{"vals":[{"actionGroupUsed":{"name":"Hamstring Weave ON/OFF"}},{"auraIsKnown":{"auraId":{"spellId":10612,"tag":-1}}},{"not":{"val":{"isExecutePhase":{"threshold":"E20"}}}},{"auraIsInactive":{"auraId":{"spellId":10610,"tag":-1}}},{"not":{"val":{"spellIsCasting":{"spellId":{"spellId":11605}}}}}]}}}},
+	{"action":{"castSpell":{"spellId":{"spellId":20662}},"condition":{"isExecutePhase":{"threshold":"E20"}}}},
+	{"action":{"castSpell":{"spellId":{"spellId":2457}},"condition":{"and":{"vals":[{"actionGroupUsed":{"name":"Stance Dance ON/OFF"}},{"not":{"val":{"isExecutePhase":{"threshold":"E20"}}}},{"auraIsActive":{"auraId":{"spellId":2458}}},{"or":{"vals":[{"auraIsActive":{"auraId":{"spellId":1282733},"includeReactionTime":true}},{"cmp":{"op":"OpLe","lhs":{"dotRemainingTime":{"spellId":{"spellId":11574}}},"rhs":{"spellGcdHastedDuration":{"spellId":{"spellId":11574}}}}}]}}]}}}},
+	{"action":{"condition":{"and":{"vals":[{"cmp":{"op":"OpGt","lhs":{"numberTargets":{}},"rhs":{"const":{"val":"1"}}}},{"or":{"vals":[{"cmp":{"op":"OpGe","lhs":{"currentRage":{}},"rhs":{"const":{"val":"40"}}}}]}}]}},"castSpell":{"spellId":{"spellId":20569,"tag":1}}}},
+	{"action":{"castSpell":{"spellId":{"spellId":25286,"tag":1}},"condition":{"and":{"vals":[{"not":{"val":{"isExecutePhase":{"threshold":"E20"}}}},{"cmp":{"op":"OpGe","lhs":{"currentRage":{}},"rhs":{"const":{"val":"90"}}}},{"not":{"val":{"talentIsKnown":{"talentId":{"spellId":12862,"rank":1}}}}}]}}}},
+	{"action":{"condition":{"cmp":{"op":"OpLt","lhs":{"currentRage":{}},"rhs":{"const":{"val":"90"}}}},"castSpell":{"spellId":{"spellId":2687}}}},
+	{"action":{"condition":{"and":{"vals":[{"variableRef":{"name":"Delay Check"}},{"not":{"val":{"auraIsKnown":{"auraId":{"spellId":25289,"tag":-1,"rank":7}}}}},{"cmp":{"op":"OpLe","lhs":{"auraRemainingTime":{"auraId":{"spellId":25289}}},"rhs":{"const":{"val":"10s"}}}}]}},"castSpell":{"spellId":{"spellId":25289}}}},
+	{"hide":true,"action":{"condition":{"const":{"val":"false"}},"castSpell":{"spellId":{"spellId":1719}}}},
+	{"hide":true,"action":{"condition":{"const":{"val":"false"}},"castSpell":{"spellId":{"spellId":20230}}}},
+	{"hide":true,"action":{"condition":{"const":{"val":"false"}},"castSpell":{"spellId":{"spellId":871}}}}
+	],
+	"groups": [
+	{"name":"Pre-pull: Stance","actions":[{"action":{"condition":{"not":{"val":{"actionGroupUsed":{"name":"Stance Dance ON/OFF"}}}},"castSpell":{"spellId":{"spellId":2457}}}}]},
+	{"name":"Pre-pull: Move","actions":[{"action":{"condition":{"auraIsActive":{"auraId":{"spellId":2457}}},"castSpell":{"spellId":{"spellId":11578,"rank":3}}}},{"action":{"condition":{"auraIsActive":{"auraId":{"spellId":2458}}},"castSpell":{"spellId":{"spellId":20617,"rank":3}}}}]},
+	{"name":"Recklessness ON/OFF","actions":[{"action":{}}]},
+	{"name":"Stance Dance ON/OFF","actions":[{"action":{}}]},
+	{"name":"Hamstring Weave ON/OFF","actions":[{"action":{}}]},
+	{"name":"Engineering","actions":[{"action":{"castSpell":{"spellId":{"itemId":10646}}}},{"action":{"castSpell":{"spellId":{"itemId":11566}}}},{"action":{"castSpell":{"spellId":{"itemId":18588}}}}]},
+	{"name":"CD: Racials","actions":[{"action":{"condition":{"multipleCdUsages":{"targetSpellId":{"spellId":20572},"offset":{"const":{"val":"0ms"}},"alignCdEnd":true}},"castSpell":{"spellId":{"spellId":20572}}}},{"action":{"condition":{"multipleCdUsages":{"targetSpellId":{"spellId":20554},"offset":{"const":{"val":"0ms"}},"alignCdEnd":true}},"castSpell":{"spellId":{"spellId":20554}}}},{"action":{"condition":{"multipleCdUsages":{"targetSpellId":{"spellId":1259813},"offset":{"const":{"val":"0ms"}},"alignCdEnd":true}},"castSpell":{"spellId":{"spellId":1259813}}}},{"action":{"condition":{"and":{"vals":[{"not":{"val":{"variableRef":{"name":"Recklessness: Used"}}}},{"multipleCdUsages":{"targetSpellId":{"spellId":1259799},"offset":{"const":{"val":"0ms"}},"alignCdEnd":true}}]}},"castSpell":{"spellId":{"spellId":1259799}}}},{"action":{"condition":{"and":{"vals":[{"variableRef":{"name":"Recklessness: Used"}},{"auraIsInactive":{"auraId":{"spellId":1719}}},{"cmp":{"op":"OpGt","lhs":{"remainingTime":{}},"rhs":{"const":{"val":"15s"}}}},{"or":{"vals":[{"cmp":{"op":"OpGt","lhs":{"remainingTime":{}},"rhs":{"const":{"val":"195s"}}}},{"cmp":{"op":"OpLe","lhs":{"remainingTime":{}},"rhs":{"const":{"val":"30s"}}}}]}}]}},"castSpell":{"spellId":{"spellId":1259799}}}}]},
+	{"name":"Sunder Armor","actions":[{"action":{"condition":{"cmp":{"op":"OpLt","lhs":{"auraNumStacks":{"sourceUnit":{"type":"CurrentTarget"},"auraId":{"spellId":11597},"includeReactionTime":true}},"rhs":{"const":{"val":"5"}}}},"castSpell":{"spellId":{"spellId":11597}}}}]},
+	{"name":"Sunder Armor: Refresh","actions":[{"action":{"condition":{"and":{"vals":[{"variableRef":{"name":"Delay Check"}},{"cmp":{"op":"OpLe","lhs":{"auraRemainingTime":{"sourceUnit":{"type":"CurrentTarget"},"auraId":{"spellId":11597}}},"rhs":{"const":{"val":"10s"}}}}]}},"castSpell":{"spellId":{"spellId":11597}}}}]},
+	{"name":"CD: Trinkets","actions":[{"action":{"castAllStatBuffCooldowns":{"statType1":0,"statType2":14,"statType3":19}}},{"action":{"castAllStatBuffCooldowns":{"statType1":18,"statType2":20,"statType3":-1}}},{"action":{"castSpell":{"spellId":{"itemId":21670}}}},{"action":{"castSpell":{"spellId":{"itemId":23041}}}},{"action":{"castSpell":{"spellId":{"itemId":22954}}}},{"action":{"castSpell":{"spellId":{"spellId":29602}}}},{"action":{"castSpell":{"spellId":{"itemId":21891}}}},{"action":{"castSpell":{"spellId":{"itemId":274759}}}}]}
+	],
+	"valueVariables": [
+	{"name":"Delay Check","value":{"and":{"vals":[{"cmp":{"op":"OpGe","lhs":{"spellTimeToReady":{"spellId":{"spellId":21553}}},"rhs":{"spellGcdHastedDuration":{"spellId":{"spellId":21553}}}}},{"or":{"vals":[{"not":{"val":{"actionGroupUsed":{"name":"Stance Dance ON/OFF"}}}},{"cmp":{"op":"OpGe","lhs":{"spellTimeToReady":{"spellId":{"spellId":1680,"tag":1}}},"rhs":{"spellGcdHastedDuration":{"spellId":{"spellId":1680,"tag":1}}}}}]}}]}}},
+	{"name":"Recklessness: Used","value":{"and":{"vals":[{"actionGroupUsed":{"name":"Recklessness ON/OFF"}},{"actionGroupUsed":{"name":"Stance Dance ON/OFF"}}]}}}
+	]
+}

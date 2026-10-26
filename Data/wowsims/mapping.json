@@ -1,0 +1,1416 @@
+{
+ "format": "RotationMasterWowsimsMapping",
+ "version": 1,
+ "note": "How a WoWSims APL (Action Priority List, proto-JSON) becomes a Rotation Master rotation. Declarative: wowsims/import.mjs interprets it, and a Lua port can read the same table. Template strings: @spell:ARG is the spell id of an ActionID argument, @unit:ARG a UnitReference as an RM unit, @table:NAME:ARG a lookup in a table below, @ranks is true on editions with spell ranks and absent elsewhere. Fidelity: exact (the same behavior), approximate (close, but the sim and the live game differ), lossy (part of the original is dropped), unsupported (no Rotation Master equivalent).",
+ "limits": {
+  "text": 1048576,
+  "base64": 1500000,
+  "depth": 64,
+  "nodes": 100000,
+  "string": 8192,
+  "array": 20000,
+  "keys": 512,
+  "items": 2000,
+  "steps": 2000,
+  "expansion": 20000,
+  "groupDepth": 8,
+  "variableDepth": 16,
+  "snippet": 400,
+  "reports": 2500,
+  "entries": 20000,
+  "total": 400000
+ },
+ "policy": {
+  "exact": "enable",
+  "approximate": "disable",
+  "lossy": "disable",
+  "unknownId": "flag",
+  "otherClassId": "disable",
+  "unsupported": "skip"
+ },
+ "validation": {
+  "foreignClassIds": 3,
+  "foreignEditionIds": 3,
+  "idMax": 2147483647,
+  "exclusiveEditionIds": 2
+ },
+ "editions": {
+  "era": {
+   "wowsims": [
+    "classic",
+    "sod"
+   ],
+   "ranks": true,
+   "tree": true,
+   "maxLevel": 60
+  },
+  "tbc": {
+   "wowsims": [
+    "tbc-new",
+    "tbc"
+   ],
+   "ranks": true,
+   "tree": true,
+   "maxLevel": 70
+  },
+  "progression": {
+   "wowsims": [
+    "wotlk",
+    "cata",
+    "mop"
+   ],
+   "ranks": false,
+   "tree": false,
+   "maxLevel": 90
+  },
+  "forever": {
+   "wowsims": [
+    "forever"
+   ],
+   "ranks": true,
+   "tree": true,
+   "maxLevel": 90
+  }
+ },
+ "simUrls": {
+  "classic": "era",
+  "sod": "era",
+  "tbc": "tbc",
+  "wotlk": "progression",
+  "cata": "progression",
+  "mop": "progression",
+  "forever": "forever"
+ },
+ "classes": {
+  "ClassWarrior": "WARRIOR",
+  "ClassPaladin": "PALADIN",
+  "ClassHunter": "HUNTER",
+  "ClassRogue": "ROGUE",
+  "ClassPriest": "PRIEST",
+  "ClassDeathknight": "DEATHKNIGHT",
+  "ClassDeathKnight": "DEATHKNIGHT",
+  "ClassShaman": "SHAMAN",
+  "ClassMage": "MAGE",
+  "ClassWarlock": "WARLOCK",
+  "ClassMonk": "MONK",
+  "ClassDruid": "DRUID",
+  "warrior": "WARRIOR",
+  "paladin": "PALADIN",
+  "hunter": "HUNTER",
+  "rogue": "ROGUE",
+  "priest": "PRIEST",
+  "deathknight": "DEATHKNIGHT",
+  "shaman": "SHAMAN",
+  "mage": "MAGE",
+  "warlock": "WARLOCK",
+  "monk": "MONK",
+  "druid": "DRUID"
+ },
+ "classSpecs": {
+  "WARRIOR": [
+   "arms",
+   "fury",
+   "protection"
+  ],
+  "PALADIN": [
+   "holy",
+   "protection",
+   "retribution"
+  ],
+  "HUNTER": [
+   "beast-mastery",
+   "marksmanship",
+   "survival"
+  ],
+  "ROGUE": [
+   "assassination",
+   "outlaw",
+   "subtlety"
+  ],
+  "PRIEST": [
+   "discipline",
+   "holy",
+   "shadow"
+  ],
+  "DEATHKNIGHT": [
+   "blood",
+   "frost",
+   "unholy"
+  ],
+  "SHAMAN": [
+   "elemental",
+   "enhancement",
+   "restoration"
+  ],
+  "MAGE": [
+   "arcane",
+   "fire",
+   "frost"
+  ],
+  "WARLOCK": [
+   "affliction",
+   "demonology",
+   "destruction"
+  ],
+  "MONK": [
+   "brewmaster",
+   "windwalker",
+   "mistweaver"
+  ],
+  "DRUID": [
+   "balance",
+   "feral",
+   "guardian",
+   "restoration"
+  ]
+ },
+ "specAliases": {
+  "beastmastery": "beast-mastery",
+  "bm": "beast-mastery",
+  "combat": "outlaw",
+  "feraltank": "guardian",
+  "feralcombat": "feral",
+  "tank": "blood",
+  "healing": null,
+  "smite": null,
+  "dps": null
+ },
+ "ops": [
+  "OpUnknown",
+  "OpEq",
+  "OpNe",
+  "OpLt",
+  "OpLe",
+  "OpGt",
+  "OpGe"
+ ],
+ "opNames": {
+  "OpEq": "EQUALS",
+  "OpNe": "NOTEQUALS",
+  "OpLt": "LESSTHAN",
+  "OpLe": "LESSTHANOREQUALS",
+  "OpGt": "GREATERTHAN",
+  "OpGe": "GREATERTHANOREQUALS"
+ },
+ "opFlip": {
+  "EQUALS": "EQUALS",
+  "NOTEQUALS": "NOTEQUALS",
+  "LESSTHAN": "GREATERTHAN",
+  "LESSTHANOREQUALS": "GREATERTHANOREQUALS",
+  "GREATERTHAN": "LESSTHAN",
+  "GREATERTHANOREQUALS": "LESSTHANOREQUALS"
+ },
+ "unitTypes": [
+  "Unknown",
+  "Player",
+  "Target",
+  "Pet",
+  "Self",
+  "CurrentTarget",
+  "AllPlayers",
+  "AllTargets"
+ ],
+ "units": {
+  "Self": "player",
+  "Pet": "pet",
+  "CurrentTarget": "target",
+  "Target": {
+   "0": "target"
+  },
+  "Player": {
+   "0": "player"
+  }
+ },
+ "tables": {
+  "totems": {
+   "Fire": 1,
+   "Earth": 2,
+   "Water": 3,
+   "Air": 4
+  },
+  "execute": {
+   "E20": 0.2,
+   "E25": 0.25,
+   "E35": 0.35,
+   "E45": 0.45,
+   "E90": 0.9
+  },
+  "runes": {
+   "RuneBlood": 1,
+   "RuneFrost": 2,
+   "RuneUnholy": 3,
+   "RuneDeath": 4
+  },
+  "mobTypes": {
+   "MobTypeBeast": "BEAST",
+   "MobTypeDemon": "DEMON",
+   "MobTypeDragonkin": "DRAGONKIN",
+   "MobTypeElemental": "ELEMENTAL",
+   "MobTypeGiant": "GIANT",
+   "MobTypeHumanoid": "HUMANOID",
+   "MobTypeMechanical": "MECHANICAL",
+   "MobTypeUndead": "UNDEAD",
+   "Beast": "BEAST",
+   "Demon": "DEMON",
+   "Dragonkin": "DRAGONKIN",
+   "Elemental": "ELEMENTAL",
+   "Giant": "GIANT",
+   "Humanoid": "HUMANOID",
+   "Mechanical": "MECHANICAL",
+   "Undead": "UNDEAD"
+  },
+  "swing": {
+   "MainHand": false,
+   "MainHandAuto": false,
+   "MeleeAuto": false,
+   "AnyAuto": false,
+   "OffHand": true,
+   "OffHandAuto": true
+  }
+ },
+ "otherActions": {
+  "OtherActionPotion": "potion"
+ },
+ "values": {
+  "spellIsReady": {
+   "t": "bool",
+   "rm": {
+    "type": "SPELL_AVAIL",
+    "spell": "@spell:spellId"
+   },
+   "itemRm": {
+    "type": "ITEM",
+    "item": "@item"
+   }
+  },
+  "spellCanCast": {
+   "t": "bool",
+   "fidelity": "approximate",
+   "note": "can-cast",
+   "rm": {
+    "type": "SPELL_AVAIL",
+    "spell": "@spell:spellId"
+   },
+   "itemRm": {
+    "type": "ITEM",
+    "item": "@item"
+   }
+  },
+  "spellIsKnown": {
+   "t": "bool",
+   "rm": {
+    "type": "SPELL_KNOWN",
+    "spell": "@spell:spellId"
+   }
+  },
+  "auraIsKnown": {
+   "t": "bool",
+   "fidelity": "approximate",
+   "note": "aura-known",
+   "rm": {
+    "type": "SPELL_KNOWN",
+    "spell": "@spell:auraId"
+   }
+  },
+  "spellTimeToReady": {
+   "t": "num",
+   "unit": "seconds",
+   "rm": {
+    "type": "SPELL_COOLDOWN",
+    "spell": "@spell:spellId"
+   },
+   "itemRm": {
+    "type": "ITEM_COOLDOWN",
+    "item": "@item"
+   }
+  },
+  "spellNumCharges": {
+   "t": "num",
+   "unit": "count",
+   "rm": {
+    "type": "SPELL_CHARGES",
+    "spell": "@spell:spellId"
+   }
+  },
+  "spellIsChanneling": {
+   "t": "bool",
+   "rm": {
+    "type": "CHANNELING_SPELL",
+    "unit": "player",
+    "spell": "@spell:spellId"
+   }
+  },
+  "spellIsCasting": {
+   "t": "bool",
+   "rm": {
+    "type": "CASTING_SPELL",
+    "unit": "player",
+    "spell": "@spell:spellId"
+   }
+  },
+  "auraIsActive": {
+   "t": "bool",
+   "byUnit": {
+    "arg": "sourceUnit",
+    "default": "Self",
+    "friendly": {
+     "type": "BUFF",
+     "unit": "@unit",
+     "spell": "@spell:auraId",
+     "anyrank": "@ranks"
+    },
+    "hostile": {
+     "type": "DEBUFF",
+     "unit": "@unit",
+     "spell": "@spell:auraId",
+     "anyrank": "@ranks"
+    }
+   }
+  },
+  "auraIsInactive": {
+   "t": "bool",
+   "not": true,
+   "byUnit": {
+    "arg": "sourceUnit",
+    "default": "Self",
+    "friendly": {
+     "type": "BUFF",
+     "unit": "@unit",
+     "spell": "@spell:auraId",
+     "anyrank": "@ranks"
+    },
+    "hostile": {
+     "type": "DEBUFF",
+     "unit": "@unit",
+     "spell": "@spell:auraId",
+     "anyrank": "@ranks"
+    }
+   }
+  },
+  "auraIsActiveWithReactionTime": {
+   "t": "bool",
+   "byUnit": {
+    "arg": "sourceUnit",
+    "default": "Self",
+    "friendly": {
+     "type": "BUFF",
+     "unit": "@unit",
+     "spell": "@spell:auraId",
+     "anyrank": "@ranks"
+    },
+    "hostile": {
+     "type": "DEBUFF",
+     "unit": "@unit",
+     "spell": "@spell:auraId",
+     "anyrank": "@ranks"
+    }
+   }
+  },
+  "auraRemainingTime": {
+   "t": "num",
+   "unit": "seconds",
+   "byUnit": {
+    "arg": "sourceUnit",
+    "default": "Self",
+    "friendly": {
+     "type": "BUFF_REMAIN",
+     "unit": "@unit",
+     "spell": "@spell:auraId",
+     "anyrank": "@ranks"
+    },
+    "hostile": {
+     "type": "DEBUFF_REMAIN",
+     "unit": "@unit",
+     "spell": "@spell:auraId",
+     "anyrank": "@ranks"
+    }
+   }
+  },
+  "auraNumStacks": {
+   "t": "num",
+   "unit": "count",
+   "byUnit": {
+    "arg": "sourceUnit",
+    "default": "Self",
+    "friendly": {
+     "type": "BUFF_STACKS",
+     "unit": "@unit",
+     "spell": "@spell:auraId",
+     "anyrank": "@ranks"
+    },
+    "hostile": {
+     "type": "DEBUFF_STACKS",
+     "unit": "@unit",
+     "spell": "@spell:auraId",
+     "anyrank": "@ranks"
+    }
+   }
+  },
+  "dotIsActive": {
+   "t": "bool",
+   "rm": {
+    "type": "DEBUFF",
+    "unit": "@unit:targetUnit:CurrentTarget",
+    "spell": "@spell:spellId",
+    "owndebuff": true,
+    "anyrank": "@ranks"
+   }
+  },
+  "dotRemainingTime": {
+   "t": "num",
+   "unit": "seconds",
+   "rm": {
+    "type": "DEBUFF_REMAIN",
+    "unit": "@unit:targetUnit:CurrentTarget",
+    "spell": "@spell:spellId",
+    "owndebuff": true,
+    "anyrank": "@ranks"
+   }
+  },
+  "currentTime": {
+   "t": "num",
+   "unit": "seconds",
+   "rm": {
+    "type": "TIME_IN_COMBAT"
+   }
+  },
+  "currentManaPercent": {
+   "t": "num",
+   "unit": "fraction",
+   "rm": {
+    "type": "MANAPCT",
+    "unit": "@unit:sourceUnit:Self"
+   }
+  },
+  "currentMana": {
+   "t": "num",
+   "unit": "raw",
+   "rm": {
+    "type": "MANA",
+    "unit": "@unit:sourceUnit:Self"
+   }
+  },
+  "currentHealthPercent": {
+   "t": "num",
+   "unit": "fraction",
+   "rm": {
+    "type": "HEALTHPCT",
+    "unit": "@unit:sourceUnit:Self"
+   }
+  },
+  "currentHealth": {
+   "t": "num",
+   "unit": "raw",
+   "rm": {
+    "type": "HEALTH",
+    "unit": "@unit:sourceUnit:Self"
+   }
+  },
+  "currentRage": {
+   "t": "num",
+   "unit": "raw",
+   "rm": {
+    "type": "POWER",
+    "unit": "player"
+   }
+  },
+  "currentEnergy": {
+   "t": "num",
+   "unit": "raw",
+   "rm": {
+    "type": "POWER",
+    "unit": "player"
+   }
+  },
+  "currentFocus": {
+   "t": "num",
+   "unit": "raw",
+   "rm": {
+    "type": "POWER",
+    "unit": "player"
+   }
+  },
+  "currentRunicPower": {
+   "t": "num",
+   "unit": "raw",
+   "rm": {
+    "type": "POWER",
+    "unit": "player"
+   }
+  },
+  "currentGenericResource": {
+   "t": "num",
+   "unit": "raw",
+   "fidelity": "approximate",
+   "note": "generic-resource",
+   "rm": {
+    "type": "POWER",
+    "unit": "player"
+   }
+  },
+  "currentComboPoints": {
+   "t": "num",
+   "unit": "count",
+   "rm": {
+    "type": "POINT",
+    "unit": "player"
+   }
+  },
+  "monkCurrentChi": {
+   "t": "num",
+   "unit": "count",
+   "rm": {
+    "type": "POINT",
+    "unit": "player"
+   }
+  },
+  "currentRuneCount": {
+   "t": "num",
+   "unit": "count",
+   "fidelity": "approximate",
+   "note": "rune-count",
+   "rm": {
+    "type": "RUNE",
+    "rune": "@table:runes:runeType"
+   }
+  },
+  "numberTargets": {
+   "t": "num",
+   "unit": "count",
+   "fidelity": "approximate",
+   "note": "target-count",
+   "rm": {
+    "type": "THREAT_COUNT",
+    "threat": 1
+   }
+  },
+  "isExecutePhase": {
+   "t": "bool",
+   "fidelity": "approximate",
+   "note": "execute-phase",
+   "rm": {
+    "type": "HEALTHPCT",
+    "unit": "target",
+    "operator": "LESSTHANOREQUALS",
+    "value": "@table:execute:threshold"
+   }
+  },
+  "totemRemainingTime": {
+   "t": "num",
+   "unit": "seconds",
+   "rm": {
+    "type": "TOTEM_REMAIN",
+    "spell": "@table:totems:totemType"
+   }
+  },
+  "unitIsMoving": {
+   "t": "bool",
+   "self": "sourceUnit",
+   "rm": {
+    "type": "MOVING"
+   }
+  },
+  "spellInRange": {
+   "t": "bool",
+   "rm": {
+    "type": "SPELL_RANGE",
+    "spell": "@spell:spellId"
+   }
+  },
+  "talentIsKnown": {
+   "t": "bool",
+   "fidelity": "approximate",
+   "note": "talent-known",
+   "rm": {
+    "type": "SPELL_KNOWN",
+    "spell": "@spell:talentId"
+   }
+  },
+  "runeIsEquipped": {
+   "t": "bool",
+   "rm": {
+    "type": "RUNE_ENGRAVED",
+    "spell": "@spell:runeId"
+   }
+  },
+  "targetIsMobType": {
+   "t": "bool",
+   "rm": {
+    "type": "CREATURE",
+    "unit": "@unit:targetUnit:CurrentTarget",
+    "value": "@table:mobTypes:mobType"
+   }
+  },
+  "autoSwingTime": {
+   "t": "num",
+   "unit": "seconds",
+   "rm": {
+    "type": "SWING_TIME",
+    "offhand": "@table:swing:autoType"
+   }
+  },
+  "autoTimeToNext": {
+   "t": "num",
+   "unit": "seconds",
+   "fidelity": "approximate",
+   "note": "swing-timer",
+   "rm": {
+    "type": "SWING_TIME_REMAIN",
+    "offhand": "@table:swing:autoType"
+   }
+  },
+  "currentHolyPower": {
+   "t": "num",
+   "unit": "count",
+   "rm": {
+    "type": "POINT",
+    "unit": "player"
+   }
+  },
+  "warlockPetIsActive": {
+   "t": "bool",
+   "rm": {
+    "type": "PET"
+   }
+  },
+  "hunterPetIsActive": {
+   "t": "bool",
+   "rm": {
+    "type": "PET"
+   }
+  },
+  "runeCooldown": {
+   "t": "num",
+   "unit": "seconds",
+   "rm": {
+    "type": "RUNE_COOLDOWN",
+    "rune": "@table:runes:runeType"
+   },
+   "fidelity": "approximate",
+   "note": "rune-cooldown"
+  },
+  "remainingTime": {
+   "t": "num",
+   "unit": "seconds",
+   "fidelity": "approximate",
+   "note": "fight-length",
+   "rm": {
+    "type": "TT_HEALTH",
+    "unit": "target",
+    "health": 0,
+    "mode": "both"
+   }
+  },
+  "gcdIsReady": {
+   "t": "bool",
+   "constTrue": true,
+   "fidelity": "approximate",
+   "note": "gcd-ready"
+  }
+ },
+ "unsupportedValues": {
+  "remainingTimePercent": "fight-length",
+  "currentTimePercent": "fight-length",
+  "math": "arithmetic",
+  "max": "arithmetic",
+  "min": "arithmetic",
+  "spellCastTime": "cast-time",
+  "spellTravelTime": "cast-time",
+  "spellCpm": "cast-time",
+  "spellCPM": "cast-time",
+  "gcdTimeToReady": "cast-time",
+  "remainingCastTime": "cast-time",
+  "spellGcdHastedDuration": "cast-time",
+  "spellChanneledTicks": "cast-time",
+  "spellCurrentCost": "cast-time",
+  "spellInFlight": "cast-time",
+  "spellTimeToCharge": "cast-time",
+  "spellFullCooldown": "cast-time",
+  "channelClipDelay": "cast-time",
+  "inputDelay": "cast-time",
+  "frontOfTarget": "cast-time",
+  "allTrinketStatProcsActive": "proc-tracking",
+  "anyTrinketStatProcsActive": "proc-tracking",
+  "anyTrinketStatProcsAvailable": "proc-tracking",
+  "trinketProcsMinRemainingTime": "proc-tracking",
+  "trinketProcsMaxRemainingIcd": "proc-tracking",
+  "numEquippedStatProcTrinkets": "proc-tracking",
+  "numStatBuffCooldowns": "proc-tracking",
+  "anyStatBuffCooldownsActive": "proc-tracking",
+  "anyStatBuffCooldownsMinDuration": "proc-tracking",
+  "auraInternalCooldown": "proc-tracking",
+  "auraIcdIsReady": "proc-tracking",
+  "auraShouldRefresh": "sim-state",
+  "dotPercentIncrease": "sim-state",
+  "dotCritPercentIncrease": "sim-state",
+  "dotTickRatePercentIncrease": "sim-state",
+  "dotTickFrequency": "sim-state",
+  "dotTimeToNextTick": "sim-state",
+  "dotBaseDuration": "sim-state",
+  "dotLowestRemainingTime": "sim-state",
+  "dotIsActiveOnAllTargets": "multi-target",
+  "mageCurrentCombustionDotEstimate": "spec-logic",
+  "shamanFireElementalDuration": "spec-logic",
+  "catExcessEnergy": "spec-logic",
+  "catNewSavageRoarDuration": "spec-logic",
+  "warlockHandOfGuldanInFlight": "spec-logic",
+  "warlockHauntInFlight": "spec-logic",
+  "warlockShouldRecastDrainSoul": "spec-logic",
+  "warlockShouldRefreshCorruption": "spec-logic",
+  "afflictionCurrentSnapshot": "spec-logic",
+  "afflictionExhaleWindow": "spec-logic",
+  "druidCurrentEclipsePhase": "spec-logic",
+  "brewmasterMonkCurrentStaggerPercent": "spec-logic",
+  "protectionPaladinDamageTakenLastGlobal": "spec-logic",
+  "currentSolarEnergy": "spec-logic",
+  "currentLunarEnergy": "spec-logic",
+  "maxHealth": "maximums",
+  "maxComboPoints": "maximums",
+  "maxEnergy": "maximums",
+  "maxFocus": "maximums",
+  "maxRage": "maximums",
+  "maxRunicPower": "maximums",
+  "monkMaxChi": "maximums",
+  "energyRegenPerSecond": "regen",
+  "focusRegenPerSecond": "regen",
+  "energyTimeToTarget": "regen",
+  "focusTimeToTarget": "regen",
+  "bossSpellTimeToReady": "boss",
+  "bossSpellIsCasting": "boss",
+  "bossCurrentTarget": "boss",
+  "bossSpellIsKnown": "boss",
+  "bossSpellCastTimeRemaining": "boss",
+  "currentNonDeathRuneCount": "runes",
+  "currentRuneActive": "runes",
+  "nextRuneCooldown": "runes",
+  "runeSlotCooldown": "runes",
+  "fullRuneCooldown": "runes",
+  "runeGrace": "runes",
+  "runeSlotGrace": "runes",
+  "unitDistance": "distance",
+  "sequenceIsComplete": "sequences",
+  "sequenceIsReady": "sequences",
+  "sequenceTimeToReady": "sequences",
+  "actionGroupUsed": "sequences",
+  "activeItemSwapSet": "sim-state",
+  "const": "constant",
+  "uuid": "metadata",
+  "multipleCdUsages": "sim-state",
+  "energyThreshold": "regen",
+  "timeToEnergyTick": "regen",
+  "timeToNextEnergyTick": "regen",
+  "currentManaRegen": "regen",
+  "maxMana": "maximums",
+  "selectedPotion": "consumables",
+  "selectedConjured": "consumables",
+  "unitMovementSpeed": "movement",
+  "auraDuration": "sim-state",
+  "autoTimeSinceLast": "cast-time",
+  "currentSealRemainingTime": "spec-logic",
+  "warlockIsAssignedCurse": "spec-logic",
+  "warlockAssignedCurseIsActive": "spec-logic",
+  "warlockCurrentPetMana": "spec-logic",
+  "shamanCanSnapshotStrongerFireElemental": "spec-logic",
+  "targetMobType": "spec-logic",
+  "talentRank": "spec-logic",
+  "currentRuneDeath": "runes"
+ },
+ "actions": {
+  "castSpell": {
+   "handler": "cast"
+  },
+  "castFriendlySpell": {
+   "handler": "cast",
+   "fidelity": "approximate",
+   "note": "friendly-spell"
+  },
+  "channelSpell": {
+   "handler": "cast",
+   "lossyIf": [
+    "interruptIf",
+    "allowRecast"
+   ],
+   "note": "channel"
+  },
+  "multidot": {
+   "handler": "cast",
+   "fidelity": "lossy",
+   "note": "multidot",
+   "guard": {
+    "type": "NOT",
+    "value": {
+     "type": "DEBUFF",
+     "unit": "target",
+     "spell": "@spell:spellId",
+     "owndebuff": true,
+     "anyrank": "@ranks"
+    }
+   }
+  },
+  "strictMultidot": {
+   "handler": "cast",
+   "fidelity": "lossy",
+   "note": "multidot",
+   "guard": {
+    "type": "NOT",
+    "value": {
+     "type": "DEBUFF",
+     "unit": "target",
+     "spell": "@spell:spellId",
+     "owndebuff": true,
+     "anyrank": "@ranks"
+    }
+   }
+  },
+  "sequence": {
+   "handler": "sequence",
+   "fidelity": "lossy",
+   "note": "sequence"
+  },
+  "strictSequence": {
+   "handler": "sequence",
+   "fidelity": "lossy",
+   "note": "sequence"
+  },
+  "groupReference": {
+   "handler": "group"
+  },
+  "autocastOtherCooldowns": {
+   "handler": "noop",
+   "fidelity": "exact",
+   "note": "autocast-cooldowns"
+  },
+  "castAllStatBuffCooldowns": {
+   "handler": "noop",
+   "fidelity": "exact",
+   "note": "autocast-cooldowns"
+  },
+  "startAttack": {
+   "handler": "noop",
+   "fidelity": "exact",
+   "note": "auto-attack"
+  }
+ },
+ "unsupportedActions": {
+  "activateAllStatBuffProcAuras": "sim-only",
+  "wait": "timing",
+  "waitUntil": "timing",
+  "schedule": "timing",
+  "resetSequence": "sequences",
+  "changeTarget": "targets",
+  "multishield": "targets",
+  "activateAura": "sim-only",
+  "activateAuraWithStacks": "sim-only",
+  "cancelAura": "sim-only",
+  "triggerIcd": "sim-only",
+  "itemSwap": "sim-only",
+  "move": "sim-only",
+  "moveDuration": "sim-only",
+  "damageAmplifier": "sim-only",
+  "cancelSpellCast": "sim-only",
+  "customRotation": "sim-only",
+  "catOptimalRotationAction": "spec-logic",
+  "guardianHotwDpsRotation": "spec-logic",
+  "warlockNextExhaleTarget": "spec-logic",
+  "castPaladinPrimarySeal": "spec-logic",
+  "paladinCastWithMacro": "spec-logic",
+  "castWarlockAssignedCurse": "spec-logic",
+  "addComboPoints": "sim-only",
+  "hunterNextShot": "spec-logic"
+ },
+ "tableOrder": {
+  "execute": [
+   "Unknown",
+   "E20",
+   "E25",
+   "E35",
+   "E45",
+   "E90"
+  ],
+  "totems": [
+   "Earth",
+   "Air",
+   "Fire",
+   "Water"
+  ],
+  "runes": [
+   "RuneUnknown",
+   "RuneBlood",
+   "RuneFrost",
+   "RuneUnholy",
+   "RuneDeath"
+  ],
+  "mobTypes": [
+   "MobTypeUnknown",
+   "MobTypeBeast",
+   "MobTypeDemon",
+   "MobTypeDragonkin",
+   "MobTypeElemental",
+   "MobTypeGiant",
+   "MobTypeHumanoid",
+   "MobTypeMechanical",
+   "MobTypeUndead"
+  ],
+  "swing": [
+   "Unknown",
+   null,
+   null,
+   "MainHand",
+   "OffHand"
+  ]
+ },
+ "races": {
+  "era": [
+   "human",
+   "dwarf",
+   "nightelf",
+   "gnome",
+   "orc",
+   "undead",
+   "scourge",
+   "tauren",
+   "troll"
+  ],
+  "tbc": [
+   "human",
+   "dwarf",
+   "nightelf",
+   "gnome",
+   "orc",
+   "undead",
+   "scourge",
+   "tauren",
+   "troll",
+   "bloodelf",
+   "draenei"
+  ]
+ },
+ "restricted": {
+  "secret-power": true,
+  "secret-health": true,
+  "combat-log-unavailable": true,
+  "unsupported-policy": true
+ },
+ "export": {
+  "note": "The reverse direction: a Rotation Master rotation as a WowSims APL. conditions.<RM type> says which APL value kind it becomes (t: bool or num; a num kind is compared with the condition's operator and value, in unit seconds, fraction, count or raw). Args: @id:FIELD is an ActionID made from the RM spell field, @unit:FIELD a UnitReference made from the RM unit, @table:NAME:FIELD a reverse lookup in tables. variants pick by the RM fields in when; byClass picks the kind by the player's class. fidelity approximate with a note marks a substitute; what is not listed is left out and reported.",
+  "classEnum": {
+   "WARRIOR": "ClassWarrior",
+   "PALADIN": "ClassPaladin",
+   "HUNTER": "ClassHunter",
+   "ROGUE": "ClassRogue",
+   "PRIEST": "ClassPriest",
+   "DEATHKNIGHT": "ClassDeathknight",
+   "SHAMAN": "ClassShaman",
+   "MAGE": "ClassMage",
+   "WARLOCK": "ClassWarlock",
+   "MONK": "ClassMonk",
+   "DRUID": "ClassDruid"
+  },
+  "ops": {
+   "EQUALS": "OpEq",
+   "NOTEQUALS": "OpNe",
+   "LESSTHAN": "OpLt",
+   "LESSTHANOREQUALS": "OpLe",
+   "GREATERTHAN": "OpGt",
+   "GREATERTHANOREQUALS": "OpGe"
+  },
+  "units": {
+   "player": null,
+   "pet": {
+    "type": "Pet",
+    "owner": {
+     "type": "Self"
+    }
+   },
+   "target": {
+    "type": "CurrentTarget"
+   }
+  },
+  "tables": {
+   "totems": {
+    "1": "Fire",
+    "2": "Earth",
+    "3": "Water",
+    "4": "Air"
+   },
+   "runes": {
+    "1": "RuneBlood",
+    "2": "RuneFrost",
+    "3": "RuneUnholy",
+    "4": "RuneDeath"
+   },
+   "swingTime": {
+    "false": "MainHand",
+    "true": "OffHand"
+   },
+   "swingNext": {
+    "false": "MainHandAuto",
+    "true": "OffHandAuto"
+   },
+   "mobTypes": {
+    "BEAST": "MobTypeBeast",
+    "DEMON": "MobTypeDemon",
+    "DRAGONKIN": "MobTypeDragonkin",
+    "ELEMENTAL": "MobTypeElemental",
+    "GIANT": "MobTypeGiant",
+    "HUMANOID": "MobTypeHumanoid",
+    "MECHANICAL": "MobTypeMechanical",
+    "UNDEAD": "MobTypeUndead"
+   }
+  },
+  "power": {
+   "WARRIOR": "currentRage",
+   "ROGUE": "currentEnergy",
+   "HUNTER": "currentFocus",
+   "DEATHKNIGHT": "currentRunicPower",
+   "MONK": "currentEnergy",
+   "DRUID": "currentEnergy"
+  },
+  "powerApprox": {
+   "DRUID": "power-form"
+  },
+  "points": {
+   "ROGUE": "currentComboPoints",
+   "DRUID": "currentComboPoints",
+   "PALADIN": "currentHolyPower",
+   "MONK": "monkCurrentChi"
+  },
+  "trueIf": {
+   "COMBAT": "sim-combat",
+   "ATTACKABLE": "sim-target"
+  },
+  "conditions": {
+   "SPELL_AVAIL": {
+    "t": "bool",
+    "kind": "spellIsReady",
+    "args": {
+     "spellId": "@id:spell"
+    }
+   },
+   "SPELL_KNOWN": {
+    "t": "bool",
+    "kind": "spellIsKnown",
+    "args": {
+     "spellId": "@id:spell"
+    },
+    "not": {
+     "pet": true
+    }
+   },
+   "SPELL_RANGE": {
+    "t": "bool",
+    "kind": "spellInRange",
+    "args": {
+     "spellId": "@id:spell"
+    }
+   },
+   "SPELL_COOLDOWN": {
+    "t": "num",
+    "unit": "seconds",
+    "kind": "spellTimeToReady",
+    "args": {
+     "spellId": "@id:spell"
+    }
+   },
+   "SPELL_CHARGES": {
+    "t": "num",
+    "unit": "count",
+    "kind": "spellNumCharges",
+    "args": {
+     "spellId": "@id:spell"
+    }
+   },
+   "CASTING_SPELL": {
+    "t": "bool",
+    "kind": "spellIsCasting",
+    "self": true,
+    "args": {
+     "spellId": "@id:spell"
+    }
+   },
+   "CHANNELING_SPELL": {
+    "t": "bool",
+    "kind": "spellIsChanneling",
+    "self": true,
+    "args": {
+     "spellId": "@id:spell"
+    }
+   },
+   "BUFF": {
+    "t": "bool",
+    "kind": "auraIsActive",
+    "args": {
+     "sourceUnit": "@unit:unit",
+     "auraId": "@id:spell"
+    }
+   },
+   "DEBUFF": {
+    "t": "bool",
+    "variants": [
+     {
+      "when": {
+       "owndebuff": true
+      },
+      "kind": "dotIsActive",
+      "args": {
+       "targetUnit": "@target:unit",
+       "spellId": "@id:spell"
+      }
+     },
+     {
+      "kind": "auraIsActive",
+      "args": {
+       "sourceUnit": "@unit:unit",
+       "auraId": "@id:spell"
+      }
+     }
+    ]
+   },
+   "BUFF_REMAIN": {
+    "t": "num",
+    "unit": "seconds",
+    "kind": "auraRemainingTime",
+    "args": {
+     "sourceUnit": "@unit:unit",
+     "auraId": "@id:spell"
+    }
+   },
+   "DEBUFF_REMAIN": {
+    "t": "num",
+    "unit": "seconds",
+    "variants": [
+     {
+      "when": {
+       "owndebuff": true
+      },
+      "kind": "dotRemainingTime",
+      "args": {
+       "targetUnit": "@target:unit",
+       "spellId": "@id:spell"
+      }
+     },
+     {
+      "kind": "auraRemainingTime",
+      "args": {
+       "sourceUnit": "@unit:unit",
+       "auraId": "@id:spell"
+      }
+     }
+    ]
+   },
+   "BUFF_STACKS": {
+    "t": "num",
+    "unit": "count",
+    "kind": "auraNumStacks",
+    "args": {
+     "sourceUnit": "@unit:unit",
+     "auraId": "@id:spell"
+    }
+   },
+   "DEBUFF_STACKS": {
+    "t": "num",
+    "unit": "count",
+    "kind": "auraNumStacks",
+    "args": {
+     "sourceUnit": "@unit:unit",
+     "auraId": "@id:spell"
+    }
+   },
+   "MANAPCT": {
+    "t": "num",
+    "unit": "fraction",
+    "kind": "currentManaPercent",
+    "args": {
+     "sourceUnit": "@unit:unit"
+    }
+   },
+   "MANA": {
+    "t": "num",
+    "unit": "raw",
+    "kind": "currentMana",
+    "args": {
+     "sourceUnit": "@unit:unit"
+    }
+   },
+   "HEALTHPCT": {
+    "t": "num",
+    "unit": "fraction",
+    "kind": "currentHealthPercent",
+    "args": {
+     "sourceUnit": "@unit:unit"
+    }
+   },
+   "HEALTH": {
+    "t": "num",
+    "unit": "raw",
+    "kind": "currentHealth",
+    "args": {
+     "sourceUnit": "@unit:unit"
+    }
+   },
+   "POWER": {
+    "t": "num",
+    "unit": "raw",
+    "handler": "power"
+   },
+   "POINT": {
+    "t": "num",
+    "unit": "count",
+    "handler": "points"
+   },
+   "TIME_IN_COMBAT": {
+    "t": "num",
+    "unit": "seconds",
+    "kind": "currentTime",
+    "args": {}
+   },
+   "THREAT_COUNT": {
+    "t": "num",
+    "unit": "count",
+    "kind": "numberTargets",
+    "args": {},
+    "fidelity": "approximate",
+    "note": "target-count"
+   },
+   "TT_HEALTH": {
+    "t": "num",
+    "unit": "seconds",
+    "kind": "remainingTime",
+    "args": {},
+    "fidelity": "approximate",
+    "note": "fight-length",
+    "only": {
+     "health": 0,
+     "unit": "target"
+    }
+   },
+   "TOTEM_REMAIN": {
+    "t": "num",
+    "unit": "seconds",
+    "kind": "totemRemainingTime",
+    "args": {
+     "totemType": "@table:totems:spell"
+    }
+   },
+   "RUNE_COOLDOWN": {
+    "t": "num",
+    "unit": "seconds",
+    "kind": "runeCooldown",
+    "args": {
+     "runeType": "@table:runes:rune"
+    },
+    "fidelity": "approximate",
+    "note": "rune-cooldown"
+   },
+   "RUNE": {
+    "t": "num",
+    "unit": "count",
+    "kind": "currentRuneCount",
+    "args": {
+     "runeType": "@table:runes:rune"
+    },
+    "fidelity": "approximate",
+    "note": "rune-count"
+   },
+   "RUNE_ENGRAVED": {
+    "t": "bool",
+    "kind": "runeIsEquipped",
+    "args": {
+     "runeId": "@id:spell"
+    }
+   },
+   "CREATURE": {
+    "t": "bool",
+    "kind": "targetIsMobType",
+    "args": {
+     "targetUnit": "@target:unit",
+     "mobType": "@table:mobTypes:value"
+    }
+   },
+   "SWING_TIME": {
+    "t": "num",
+    "unit": "seconds",
+    "kind": "autoSwingTime",
+    "args": {
+     "autoType": "@table:swingTime:offhand"
+    }
+   },
+   "SWING_TIME_REMAIN": {
+    "t": "num",
+    "unit": "seconds",
+    "kind": "autoTimeToNext",
+    "args": {
+     "autoType": "@table:swingNext:offhand"
+    },
+    "fidelity": "approximate",
+    "note": "swing-timer"
+   },
+   "MOVING": {
+    "t": "bool",
+    "kind": "unitIsMoving",
+    "args": {}
+   },
+   "PET": {
+    "t": "bool",
+    "handler": "pet"
+   },
+   "TOTEM": {
+    "t": "bool",
+    "kind": "totemRemainingTime",
+    "args": {
+     "totemType": "@table:totems:spell"
+    },
+    "cmp": {
+     "op": "OpGt",
+     "val": "0s"
+    }
+   }
+  },
+  "petKinds": {
+   "WARLOCK": "warlockPetIsActive",
+   "HUNTER": "hunterPetIsActive"
+  },
+  "resourcePotion": "OtherActionResourcePotion",
+  "falseIf": {
+   "CASTING": "sim-idle",
+   "CHANNELING": "sim-idle"
+  },
+  "classification": {
+   "boss": [
+    "worldboss",
+    "elite",
+    "rareelite"
+   ],
+   "other": [
+    "normal",
+    "trivial",
+    "minus",
+    "rare"
+   ]
+  }
+ },
+ "noManaClasses": [
+  "WARRIOR",
+  "ROGUE",
+  "DEATHKNIGHT"
+ ],
+ "consumablesKeys": {
+  "consumes": [
+   "era",
+   "progression"
+  ],
+  "consumables": [
+   "tbc",
+   "progression",
+   "forever"
+  ]
+ },
+ "maxKinds": {
+  "maxRage": "currentRage",
+  "maxEnergy": "currentEnergy",
+  "maxFocus": "currentFocus",
+  "maxRunicPower": "currentRunicPower",
+  "maxMana": "currentMana",
+  "maxHealth": "currentHealth"
+ }
+}

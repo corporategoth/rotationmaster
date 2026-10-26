@@ -1,0 +1,143 @@
+{
+  "apiVersion": 2,
+  "raidBuffs": {
+    "arcaneBrilliance": true,
+    "giftOfTheWild": true,
+    "prayerOfFortitude": true,
+    "graceOfAirTotem": true,
+    "flametongueTotem": true,
+    "battleShout": "TristateEffectRegular",
+    "leaderOfThePack": true
+  },
+  "debuffs": {
+    "huntersMark": true,
+    "judgementOfWisdom": true,
+    "curseOfElements": true,
+    "curseOfRecklessness": true,
+    "faerieFire": true,
+    "exposeArmor": true,
+    "sunderArmor": true,
+    "giftOfArthas": true
+  },
+  "partyBuffs": {
+  },
+  "player": {
+    "apiVersion": 2,
+    "name": "Player",
+    "race": "RaceOrc",
+    "class": "ClassShaman",
+    "equipment": {
+      "items": [
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {}
+      ]
+    },
+    "consumables": {
+      "flaskId": 13512,
+      "foodId": 20452,
+      "conjuredId": 12662,
+      "explosiveId": 260817,
+      "extraIds": [
+        10646
+      ],
+      "elixirIds": [
+        250337,
+        250338,
+        250341,
+        250343,
+        13454,
+        12820,
+        250328,
+        250350
+      ],
+      "resourcePotId": 13444
+    },
+    "bonusStats": {
+      "apiVersion": 2,
+      "stats": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "pseudoStats": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    },
+    "itemSwap": {"items":[{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}],"prepullBonusStats":{"apiVersion":2,"stats":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"pseudoStats":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}},
+    "buffs": {
+      "greaterBlessingOfKings": true,
+      "greaterBlessingOfMight": true,
+      "greaterBlessingOfSalvation": true
+    },
+    "enhancementShaman": {
+      "options": {
+        "classOptions": {
+          "imbueMh": "WindfuryWeapon"
+        }
+      }
+    },
+    "talentsString": "053503102-053030031005112251",
+    "profession1": "Engineering",
+    "profession2": "Leatherworking",
+    "cooldowns": {
+    },
+    "rotation": {
+      "type": "TypeAPL",
+      "prepullActions": [
+        {"action":{"castSpell":{"spellId":{"spellId":25359}}},"doAtValue":{"const":{"val":"-8s"}}},
+        {"action":{"castSpell":{"spellId":{"spellId":16387}}},"doAtValue":{"const":{"val":"-7s"}}},
+        {"action":{"castSpell":{"spellId":{"spellId":25361}}},"doAtValue":{"const":{"val":"-6s"}}},
+        {"action":{"castSpell":{"spellId":{"spellId":10497}}},"doAtValue":{"const":{"val":"-5s"}}}
+      ],
+      "priorityList": [
+        {"action":{"condition":{"cmp":{"op":"OpLt","lhs":{"currentManaPercent":{}},"rhs":{"const":{"val":"80%"}}}},"castSpell":{"spellId":{"otherId":"OtherActionResourcePotion"}}}},
+        {"action":{"condition":{"cmp":{"op":"OpLt","lhs":{"currentManaPercent":{}},"rhs":{"const":{"val":"70%"}}}},"castSpell":{"spellId":{"itemId":12662}}}},
+        {"action":{"autocastOtherCooldowns":{}}},
+        {"action":{"condition":{"cmp":{"op":"OpLe","lhs":{"totemRemainingTime":{"totemType":"Air"}},"rhs":{"const":{"val":"0s"}}}},"castSpell":{"spellId":{"spellId":25359}}}},
+        {"action":{"condition":{"cmp":{"op":"OpLe","lhs":{"totemRemainingTime":{"totemType":"Earth"}},"rhs":{"const":{"val":"0s"}}}},"castSpell":{"spellId":{"spellId":25361}}}},
+        {"action":{"condition":{"auraIsActive":{"auraId":{"spellId":16246},"includeReactionTime":true}},"castSpell":{"spellId":{"spellId":408345}}}},
+        {"action":{"condition":{"not":{"val":{"auraIsActive":{"auraId":{"spellId":10432}}}}},"castSpell":{"spellId":{"spellId":10432}}}},
+        {"action":{"condition":{"cmp":{"op":"OpLe","lhs":{"totemRemainingTime":{"totemType":"Fire"}},"rhs":{"const":{"val":"0s"}}}},"castSpell":{"spellId":{"spellId":10438}}}},
+        {"action":{"castSpell":{"spellId":{"spellId":17364}}}},
+        {"action":{"condition":{"and":{"vals":[{"talentIsKnown":{"talentId":{"spellId":408498,"rank":1}}},{"cmp":{"op":"OpGe","lhs":{"auraNumStacks":{"auraId":{"spellId":408505}}},"rhs":{"const":{"val":"5"}}}}]}},"castSpell":{"spellId":{"spellId":15208}}}},
+        {"action":{"condition":{"not":{"val":{"dotIsActive":{"spellId":{"spellId":29228}}}}},"castSpell":{"spellId":{"spellId":29228}}}},
+        {"action":{"castSpell":{"spellId":{"spellId":10414}}}},
+        {"action":{"condition":{"cmp":{"op":"OpGt","lhs":{"currentManaPercent":{}},"rhs":{"const":{"val":"10%"}}}},"castSpell":{"spellId":{"spellId":408345}}}}
+      ]
+    },
+    "reactionTimeMs": 100,
+    "distanceFromTarget": 5,
+    "healingModel": {
+    }
+  },
+  "encounter": {
+    "apiVersion": 2,
+    "duration": 180,
+    "durationVariation": 5,
+    "executeProportion20": 0.2,
+    "executeProportion35": 0.35,
+    "targets": [
+      {
+        "id": 31146,
+        "name": "Raid Target",
+        "level": 63,
+        "mobType": "MobTypeMechanical",
+        "stats": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,320,0,0,0,0,0,0,0,0,0,54,0,0,3731,0,1428900,0,0,0,0,0,0,0,0],
+        "minBaseDamage": 2601,
+        "damageSpread": 0.5,
+        "swingSpeed": 2,
+        "parryHaste": true,
+        "canCrush": true
+      }
+    ]
+  }
+}

@@ -252,6 +252,7 @@ local defaults = {
         tooltip_conditions = false,
         tooltip_limit = 3,
         rotation_view = "diagram",
+        transfer_format = "rm",
         lua_editor = "auto",
         lua_line_numbers = true,
         questie_enabled = false,

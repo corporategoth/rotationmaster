@@ -1,0 +1,23 @@
+{
+ "note": "Two complete exports (the simulator's Export JSON with a custom APL chosen) that Preston A. Elder produced on wowsims.com on 2026-10-26 and gave to this project. They are user-provided exports, not files copied from a repository: the rotation in each is a WowSims preset the sim offered, the rest is the person's own character settings (name, gear, buffs). Used as real input for the converter's golden tests.",
+ "files": {
+  "classic-era-shaman-ele.export.json": {
+   "site": "https://www.wowsims.com/classic/",
+   "edition": "era",
+   "class": "SHAMAN",
+   "spec": "elemental",
+   "provided": "2026-10-26",
+   "by": "user",
+   "note": "Classic Era, Elemental Shaman, the simulator's default rotation as an APL"
+  },
+  "forever-shaman-ele.export.json": {
+   "site": "https://www.wowsims.com/forever/",
+   "edition": "forever",
+   "class": "SHAMAN",
+   "spec": "enhancement (the settings carry an enhancementShaman block)",
+   "provided": "2026-10-26",
+   "by": "user",
+   "note": "WoW Forever, a Shaman APL with prepull actions, totemRemainingTime, mana percent and a resource potion"
+  }
+ }
+}
