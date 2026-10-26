@@ -1,0 +1,204 @@
+{
+ "note": "Where each fixture came from: the wowsims repository (https://github.com/wowsims/<repo>), the file's path on its default branch (master) when it was copied on 2026-10-25, the git blob sha of the file (git hash-object gives the same sha for the copy here) and the sha of the repository's tree at that time.",
+ "license": "MIT, see LICENSE-wowsims-MIT.txt",
+ "files": {
+  "era_ele.apl.json": {
+   "repo": "classic",
+   "path": "ui/elemental_shaman/apls/default.apl.json",
+   "blob": "f07aa60c8fe48f3a465e605be27f791e3046d291",
+   "tree": "7779ebbf79dc7f1341e6ab939b28a3402c9a730a",
+   "edition": "era",
+   "class": "SHAMAN",
+   "spec": "elemental"
+  },
+  "era_mage_p1.apl.json": {
+   "repo": "classic",
+   "path": "ui/mage/apls/p1.apl.json",
+   "blob": "88e3be316752f5791ef30b0f80be6b227071531e",
+   "tree": "7779ebbf79dc7f1341e6ab939b28a3402c9a730a",
+   "edition": "era",
+   "class": "MAGE",
+   "spec": "fire"
+  },
+  "era_hunter_p1.apl.json": {
+   "repo": "classic",
+   "path": "ui/hunter/apls/p1.apl.json",
+   "blob": "785d6f4b1b84635197e866f065ade35cf4fa31f6",
+   "tree": "7779ebbf79dc7f1341e6ab939b28a3402c9a730a",
+   "edition": "era",
+   "class": "HUNTER",
+   "spec": "marksmanship"
+  },
+  "era_warrior_dps_reck.apl.json": {
+   "repo": "classic",
+   "path": "ui/warrior/apls/dps_reck.apl.json",
+   "blob": "95210b56b7a6fab5f55c9ce8859f4aa71a7e160b",
+   "tree": "7779ebbf79dc7f1341e6ab939b28a3402c9a730a",
+   "edition": "era",
+   "class": "WARRIOR",
+   "spec": "fury"
+  },
+  "sod_elemental_shaman_phase_6.apl.json": {
+   "repo": "sod",
+   "path": "ui/elemental_shaman/apls/phase_6.apl.json",
+   "blob": "5230e316275440e2aa236f173fbff6ba8aa34dbd",
+   "tree": "0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e",
+   "edition": "era",
+   "class": "SHAMAN",
+   "spec": "elemental"
+  },
+  "sod_mage_p5_fire.apl.json": {
+   "repo": "sod",
+   "path": "ui/mage/apls/p5_fire.apl.json",
+   "blob": "cc1d3478b2a2c65f08a44b3696c5c772ce273741",
+   "tree": "0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e",
+   "edition": "era",
+   "class": "MAGE",
+   "spec": "fire"
+  },
+  "sod_hunter_p6_ranged_killshot.apl.json": {
+   "repo": "sod",
+   "path": "ui/hunter/apls/p6_ranged_killshot.apl.json",
+   "blob": "0e12662e15cb8776ebfd0d90a9226b6c3b0d899d",
+   "tree": "0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e",
+   "edition": "era",
+   "class": "HUNTER",
+   "spec": "marksmanship"
+  },
+  "tbcnew_ele.apl.json": {
+   "repo": "tbc-new",
+   "path": "ui/specs/shaman/elemental/apls/default.apl.json",
+   "blob": "061791146a3e73e0a769beb92d2ae407bc983913",
+   "tree": "cec2a7b687f985c7dcbb94b3620e9cf7885f0323",
+   "edition": "tbc",
+   "class": "SHAMAN",
+   "spec": "elemental"
+  },
+  "tbcnew_druid_balance_default.apl.json": {
+   "repo": "tbc-new",
+   "path": "ui/specs/druid/balance/apls/default.apl.json",
+   "blob": "83e9d9e70fb3da712c6c0b85a5acbbdd52c0f00c",
+   "tree": "cec2a7b687f985c7dcbb94b3620e9cf7885f0323",
+   "edition": "tbc",
+   "class": "DRUID",
+   "spec": "balance"
+  },
+  "tbcnew_shaman_enhancement_default.apl.json": {
+   "repo": "tbc-new",
+   "path": "ui/specs/shaman/enhancement/apls/default.apl.json",
+   "blob": "cb4d6a683776cb2ae341b7c36ab93af142150f45",
+   "tree": "cec2a7b687f985c7dcbb94b3620e9cf7885f0323",
+   "edition": "tbc",
+   "class": "SHAMAN",
+   "spec": "enhancement"
+  },
+  "tbcnew_warrior_dps_fury.apl.json": {
+   "repo": "tbc-new",
+   "path": "ui/specs/warrior/dps/apls/fury.apl.json",
+   "blob": "57d5641d73ce0451d0fb97a3a4941857006acf43",
+   "tree": "cec2a7b687f985c7dcbb94b3620e9cf7885f0323",
+   "edition": "tbc",
+   "class": "WARRIOR",
+   "spec": "fury"
+  },
+  "wotlk_ele_default.apl.json": {
+   "repo": "wotlk",
+   "path": "ui/elemental_shaman/apls/default.apl.json",
+   "blob": "0ba0caf5025ced26382cee0d1e38cd948814e722",
+   "tree": "563e4a08cb15729f1fdcbcf68e6d68224553bfef",
+   "edition": "progression",
+   "class": "SHAMAN",
+   "spec": "elemental"
+  },
+  "wotlk_arms.apl.json": {
+   "repo": "wotlk",
+   "path": "ui/warrior/apls/arms.apl.json",
+   "blob": "3f0490d6278b555cabbafe93c186b3ec28e0fb27",
+   "tree": "563e4a08cb15729f1fdcbcf68e6d68224553bfef",
+   "edition": "progression",
+   "class": "WARRIOR",
+   "spec": "arms"
+  },
+  "cata_shaman_elemental_default.apl.json": {
+   "repo": "cata",
+   "path": "ui/shaman/elemental/apls/default.apl.json",
+   "blob": "41ab4c2a5bc92c05ba658ce31ffde03d88de0668",
+   "tree": "79c0988027a3db09590a1dad8ed87da7293b7599",
+   "edition": "progression",
+   "class": "SHAMAN",
+   "spec": "elemental"
+  },
+  "cata_warrior_arms_arms.apl.json": {
+   "repo": "cata",
+   "path": "ui/warrior/arms/apls/arms.apl.json",
+   "blob": "72ab657528cbcf629b13052560b74aa2ff4c8378",
+   "tree": "79c0988027a3db09590a1dad8ed87da7293b7599",
+   "edition": "progression",
+   "class": "WARRIOR",
+   "spec": "arms"
+  },
+  "mop_ele.apl.json": {
+   "repo": "mop",
+   "path": "ui/specs/shaman/elemental/apls/default.apl.json",
+   "blob": "a0279bda2a93fa071f373d4ff82281f7d1aa46e7",
+   "tree": "ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9",
+   "edition": "progression",
+   "class": "SHAMAN",
+   "spec": "elemental"
+  },
+  "mop_feral.apl.json": {
+   "repo": "mop",
+   "path": "ui/specs/druid/feral/apls/monocat.apl.json",
+   "blob": "6b4afda72bd2eb3876404488f3f5b455b17872b9",
+   "tree": "ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9",
+   "edition": "progression",
+   "class": "DRUID",
+   "spec": "feral"
+  },
+  "mop_monk_brewmaster_default.apl.json": {
+   "repo": "mop",
+   "path": "ui/specs/monk/brewmaster/apls/default.apl.json",
+   "blob": "7e95008ccff030bb3ddfc6bd4b7a6ca1e34ae6eb",
+   "tree": "ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9",
+   "edition": "progression",
+   "class": "MONK",
+   "spec": "brewmaster"
+  },
+  "forever_mage_dps_frost.apl.json": {
+   "repo": "forever",
+   "path": "ui/specs/mage/dps/apls/frost.apl.json",
+   "blob": "b7c05e7ad34c2ed9463428bd0eafb241d76b5ec1",
+   "tree": "75e8a44b980db928bc18b04d837ec19404139f89",
+   "edition": "forever",
+   "class": "MAGE",
+   "spec": "frost"
+  },
+  "forever_shaman_enhancement_default.apl.json": {
+   "repo": "forever",
+   "path": "ui/specs/shaman/enhancement/apls/default.apl.json",
+   "blob": "41b5d3086da2e4eb261d30bc5879c6f0a9c40552",
+   "tree": "75e8a44b980db928bc18b04d837ec19404139f89",
+   "edition": "forever",
+   "class": "SHAMAN",
+   "spec": "enhancement"
+  },
+  "forever_warrior_dps_arms.apl.json": {
+   "repo": "forever",
+   "path": "ui/specs/warrior/dps/apls/arms.apl.json",
+   "blob": "4abe49267e9ae51c0fc5530692fbbe57b018ab06",
+   "tree": "75e8a44b980db928bc18b04d837ec19404139f89",
+   "edition": "forever",
+   "class": "WARRIOR",
+   "spec": "arms"
+  },
+  "forever_rogue_dps_default.apl.json": {
+   "repo": "forever",
+   "path": "ui/specs/rogue/dps/apls/default.apl.json",
+   "blob": "9103c35a35fb7260416fb01d79956e0bee1a898b",
+   "tree": "75e8a44b980db928bc18b04d837ec19404139f89",
+   "edition": "forever",
+   "class": "ROGUE",
+   "spec": "combat"
+  }
+ }
+}

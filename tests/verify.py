@@ -63,6 +63,24 @@ for module in modules:
     if not fallback.is_file():
         errors.append(f'Module lacks its fallback TOC: {fallback.relative_to(root)}')
         continue
+    if toc_files(fallback) and tocs == [fallback]:
+        # A conversion module (RotationMaster_WowSims) is not a Built In pack: one TOC, the same for every client,
+        # lists every file it loads, and the add-on has no flavour TOCs and no bind.lua.
+        text = fallback.read_text()
+        for header in ('## LoadOnDemand: 1', '## Dependencies: RotationMaster'):
+            if header not in text.splitlines():
+                errors.append(f'Module TOC lacks "{header}": {fallback.relative_to(root)}')
+        if not re.search(r'^## Interface: \d', text, re.M):
+            errors.append(f'Module TOC lacks an Interface: {fallback.relative_to(root)}')
+        entries.append(fallback)
+        for toc in tocs:
+            if toc != fallback:
+                errors.append(f'A conversion module has one TOC; extra TOC: {toc.relative_to(root)}')
+        for line in toc_files(fallback):
+            path = module / line.replace('\\', '/')
+            walk(path)
+            listings.setdefault(path.resolve(), []).append(fallback)
+        continue
     editions = {}
     for toc in tocs:
         text = toc.read_text()

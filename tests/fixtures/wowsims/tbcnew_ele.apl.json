@@ -1,0 +1,128 @@
+{
+	"type": "TypeAPL",
+	"prepullActions": [
+		{ "action": { "castSpell": { "spellId": { "spellId": 33736 } } }, "doAtValue": { "const": { "val": "-8s" } } },
+		{ "action": { "castSpell": { "spellId": { "spellId": 25528 } } }, "doAtValue": { "const": { "val": "-5s" } } },
+		{ "action": { "castSpell": { "spellId": { "spellId": 25570 } } }, "doAtValue": { "const": { "val": "-4s" } } },
+		{ "action": { "castSpell": { "spellId": { "spellId": 30706, "rank": 1 } } }, "doAtValue": { "const": { "val": "-3s" } } },
+		{ "action": { "castSpell": { "spellId": { "spellId": 3738, "rank": 1 } } }, "doAtValue": { "const": { "val": "-2s" } } }
+	],
+	"priorityList": [
+		{ "action": { "groupReference": { "groupName": "Totems" } } },
+		{ "action": { "condition": { "variableRef": { "name": "Use Earth Elemental" } }, "castSpell": { "spellId": { "spellId": 2062, "rank": 1 } } } },
+		{
+			"action": {
+				"condition": { "variableRef": { "name": "Use Fire Elemental" } },
+				"strictSequence": {
+					"actions": [
+						{ "castAllStatBuffCooldowns": { "statType1": 5, "statType2": -1, "statType3": -1 } },
+						{ "castSpell": { "spellId": { "spellId": 2894, "rank": 1 } } }
+					]
+				}
+			}
+		},
+		{ "action": { "castAllStatBuffCooldowns": { "statType1": 5, "statType2": 10, "statType3": -1 } } },
+		{ "action": { "autocastOtherCooldowns": {} } },
+		{
+			"action": {
+				"condition": {
+					"and": {
+						"vals": [
+							{ "cmp": { "op": "OpGe", "lhs": { "currentManaPercent": {} }, "rhs": { "const": { "val": "30%" } } } },
+							{
+								"cmp": {
+									"op": "OpGe",
+									"lhs": { "spellCastTime": { "spellId": { "spellId": 25442, "rank": 6 } } },
+									"rhs": { "const": { "val": "1s" } }
+								}
+							}
+						]
+					}
+				},
+				"castSpell": { "spellId": { "spellId": 25442 } }
+			}
+		},
+		{ "action": { "castSpell": { "spellId": { "spellId": 25449 } } } }
+	],
+	"groups": [
+		{
+			"name": "Totems",
+			"actions": [
+				{
+					"action": {
+						"condition": {
+							"and": {
+								"vals": [
+									{ "auraIsKnown": { "auraId": { "spellId": 38437 } } },
+									{
+										"cmp": {
+											"op": "OpLe",
+											"lhs": { "totemRemainingTime": { "totemType": "Earth", "includeReactionTime": true } },
+											"rhs": { "const": { "val": "5s" } }
+										}
+									},
+									{ "not": { "val": { "auraIsActive": { "auraId": { "spellId": 2062, "rank": 1 }, "includeReactionTime": true } } } }
+								]
+							}
+						},
+						"castSpell": { "spellId": { "spellId": 25528 } }
+					}
+				},
+				{
+					"action": {
+						"condition": {
+							"and": {
+								"vals": [
+									{ "auraIsKnown": { "auraId": { "spellId": 38437 } } },
+									{
+										"cmp": {
+											"op": "OpLe",
+											"lhs": { "totemRemainingTime": { "totemType": "Water", "includeReactionTime": true } },
+											"rhs": { "const": { "val": "5s" } }
+										}
+									}
+								]
+							}
+						},
+						"castSpell": { "spellId": { "spellId": 25570 } }
+					}
+				},
+				{
+					"action": {
+						"condition": {
+							"and": {
+								"vals": [
+									{
+										"cmp": {
+											"op": "OpLe",
+											"lhs": { "totemRemainingTime": { "totemType": "Fire", "includeReactionTime": true } },
+											"rhs": { "const": { "val": "5s" } }
+										}
+									},
+									{ "not": { "val": { "auraIsActive": { "auraId": { "spellId": 2894 }, "includeReactionTime": true } } } }
+								]
+							}
+						},
+						"castSpell": { "spellId": { "spellId": 30706, "rank": 1 } }
+					}
+				},
+				{
+					"action": {
+						"condition": {
+							"cmp": {
+								"op": "OpLe",
+								"lhs": { "totemRemainingTime": { "totemType": "Air", "includeReactionTime": true } },
+								"rhs": { "const": { "val": "5s" } }
+							}
+						},
+						"castSpell": { "spellId": { "spellId": 3738, "rank": 1 } }
+					}
+				}
+			]
+		}
+	],
+	"valueVariables": [
+		{ "name": "Use Earth Elemental", "value": { "const": { "val": "false" } } },
+		{ "name": "Use Fire Elemental", "value": { "const": { "val": "false" } } }
+	]
+}

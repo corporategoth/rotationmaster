@@ -51,7 +51,8 @@ def generate():
 
 
 def release_metadata():
-    ignored = ['tests', 'tools', 'docs', 'Assets/Conditions/source', 'Assets/Conditions/qa',
+    # Data/wowsims is the pinned JSON the WowSims module's Lua data is generated from; it is not loaded by the game.
+    ignored = ['tests', 'tools', 'docs', 'Data/wowsims', 'Assets/Conditions/source', 'Assets/Conditions/qa',
                'Assets/Conditions/export_icons.py', 'Assets/Conditions/v2/source',
                'Assets/Conditions/v2/qa', 'Assets/Conditions/v2/export_icons.py',
                'Assets/Conditions/v2/verify_assets.py', 'Assets/Overlays/v1/source',

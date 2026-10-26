@@ -67,8 +67,11 @@ function addon:ShowNativeImportContent(p,preview,spec)
     return d
 end
 function addon:ShowRotationTransfer(spec,id)
-    local codec=self:NewRotationCodec();local session=self.RotationData.NewImportSession(codec,self:GetImportValidationOptions())
+    local codec=self:NewRotationCodec()
     local source,exportError=self:GetRotationExportData(spec,id);local exported;if source then exported,exportError=codec:Encode(source) end
+    -- The Format choice (Rotation Master or WowSims): the session reads what is pasted through the chosen format.
+    local formats=self:NewTransferFormatState(codec,source,spec,exported)
+    local session=self.RotationData.NewImportSession(formats.codec,self:GetImportValidationOptions())
     local p=self.rotationTransferForm
     if p then p:Release() else local host=CreateFrame('Frame',nil,UIParent);host:SetSize(1,1);host:Hide();p=self:CreateSettingsForm(host);self.rotationTransferForm=p end
     p:Open(function() end)
@@ -91,15 +94,24 @@ function addon:ShowRotationTransfer(spec,id)
     -- never saved. canReplace is the one answer; the dialog's mode starts from it and everything below reads the mode.
     local canReplace=reference~=nil and reference.kind=='custom' and record~=nil and recordToken~=nil
     local options={valid=valid,canReplace=canReplace,selectedName=original and original.name or source and self:RotationDisplayName(source),fallbackName=L['Imported rotation'],requirePreview=true,
-        help={heading=L['Import/Export Rotation'],brief=L['Help.Transfers.rotation_brief'],briefs=self:TransferHelpBriefs(),sections={{title=L['Import/Export'],text=L['Help.Transfers.rotation']},{title=L['Preview import'],text=L['Help.Transfers.rotation_preview']},{title=L['Applies to'],text=L['Copies belong to your Class unless This character is selected. Replacement keeps its original owner.']}}}}
-    options.originalName=function(text) local decoded=codec:Decode(text);local value=decoded and decoded.value;if type(value)=='table' then return self:RotationDisplayName(value) end end
+        help={heading=L['Import/Export Rotation'],brief=L['Help.Transfers.rotation_brief'],briefs=self:TransferHelpBriefs(),sections={{title=L['Import/Export'],text=L['Help.Transfers.rotation']},{title=L['Preview import'],text=L['Help.Transfers.rotation_preview']},{title=L['Applies to'],text=L['Copies belong to your Class unless This character is selected. Replacement keeps its original owner.']},{title=L['Format'],text=L['Help.Transfers.rotation_format']}}}}
+    options.originalName=function(text) local decoded=formats.codec:Decode(text);local value=decoded and decoded.value;if type(value)=='table' then return self:RotationDisplayName(value) end end
     options.invalidate=function(d) if not valid() or dialog and (d~=dialog or d.options~=options) then return end;candidate=nil;session:Clear();d.apply:Disable();d.inspect:Disable();d.status:SetText(d.mode=='replace' and L['Text changed. Compare again before importing.'] or L['Text changed. Preview again before importing.']);if p.importPreview then p.importPreview.frame:Hide() end;if p.importContent then p.importContent.frame:Hide() end end
     options.preview=function(d)
         if not valid() then return end
         local why;candidate,why=session:Stage(d.input:GetText());d.apply:Disable();d.inspect:Disable()
-        if not candidate then d.status:SetText(string.format(L['Import preview unavailable: %s'],why));return end
+        if not candidate then
+            d.status:SetText(string.format(L['Import preview unavailable: %s'],tostring(why)))
+            -- A WowSims rotation with nothing to import still has a report that says why.
+            if formats.format=='wowsims' and formats.failure and formats.failure.report then d.inspect:Enable() end
+            return
+        end
         d.inspect:Enable();local ready,reason=session:GetReady(candidate.token)
         d.status:SetText(ready and L['Ready to import. Choose replacement or a named copy.'] or string.format(L['This import cannot be applied: %s'],reason));if ready then d.apply:Enable() end
+        if formats.format=='wowsims' and formats.lastImport then
+            local summary=formats.lastImport.report.summary
+            d.status:SetText((d.status:GetText() or '')..'\n'..string.format(L['Converted from WowSims: %d steps, %d disabled. Choose Check import for the full report.'],summary.steps,summary.disabled))
+        end
         if p.importPreview then p.importPreview.frame:Hide() end;if p.importContent then p.importContent.frame:Hide() end
         if d.mode=='replace' and canReplace then
             -- Replacing: what would change in the selected rotation.
@@ -113,10 +125,23 @@ function addon:ShowRotationTransfer(spec,id)
         end
     end
     options.inspect=function()
+        if formats.format=='wowsims' and valid() then
+            local conversion=formats.lastImport
+            local text=conversion and conversion.text
+            if not text and formats.failure and formats.failure.report then
+                text=self:RenderTransferFormatReport('wowsims',formats.failure.report,'import')
+            end
+            if text and not candidate then return self:ShowTransferReport(L['WowSims import report'],text) end
+            if text then
+                local object=candidate.kind=='envelope' and candidate.value or {body=candidate.value};local report=self.RotationData.DiffRotations({},object)
+                for _,diagnostic in ipairs(candidate.validation.diagnostics) do report.diagnostics[#report.diagnostics+1]=diagnostic end
+                return self:ShowTransferReport(L['WowSims import report'],text..'\n\n'..self:FormatRotationComparison(report))
+            end
+        end
         if not valid() or not candidate then return end;local object=candidate.kind=='envelope' and candidate.value or {body=candidate.value};local report=self.RotationData.DiffRotations({},object)
         for _,diagnostic in ipairs(candidate.validation.diagnostics) do report.diagnostics[#report.diagnostics+1]=diagnostic end;return self:ShowComparisonReport(self:FormatRotationComparison(report))
     end
-    options.onClose=function() active=false;session:Clear();if p.active and p.generation==generation then p:Release() end end
+    options.onClose=function() active=false;formats:Release();session:Clear();if p.active and p.generation==generation then p:Release() end end
     dialog=self:ShowSettingsTextTransfer(p,L['Import/Export Rotation'],exported or '',function(_,settings)
         if not candidate then return false,L['Preview a pasted rotation before importing it.'] end
         local target=settings.mode=='replace' and reference or nil
@@ -140,7 +165,13 @@ function addon:ShowRotationTransfer(spec,id)
     self:SetUIScript(dialog.scope,'OnClick',function() if valid() and dialog.options==options and dialog.mode=='new' and context.character then dialog.scope:SetChecked(true);scopeState() end end)
     self:SetUIScript(dialog.classScope,'OnClick',function() if valid() and dialog.options==options and dialog.mode=='new' then dialog.scope:SetChecked(false);scopeState() end end)
     dialog.scope.tooltip=L['Copies belong to your Class unless This character is selected. Replacement keeps its original owner.']
-    dialog.scroll:ClearAllPoints();dialog.scroll:SetPoint('TOPLEFT',12,-130);dialog.scroll:SetHeight(200);dialog.input:SetHeight(200);scopeState()
-    if exportError then dialog.status:SetText(string.format(L['Export unavailable: %s'],exportError)) end
+    -- The Format row sits under the scope row; the text box and the status line move down to make room.
+    dialog.frame:SetHeight(470)
+    dialog.scroll:ClearAllPoints();dialog.scroll:SetPoint('TOPLEFT',12,-190);dialog.scroll:SetHeight(188);dialog.input:SetHeight(188);scopeState()
+    dialog.status:ClearAllPoints();dialog.status:SetPoint('TOPLEFT',12,-384)
+    -- The Format choice is an addition to the window: if it cannot be built, the window is the Rotation Master one.
+    local attached,problem=pcall(self.AttachTransferFormatControls,self,dialog,formats,options)
+    if not attached then formats.format='rm';dialog.status:SetText(string.format(L['The Format choice could not be shown: %s'],tostring(problem))) end
+    if exportError and formats.format=='rm' then dialog.status:SetText(string.format(L['Export unavailable: %s'],exportError)) end
     return dialog
 end

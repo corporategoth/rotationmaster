@@ -15,10 +15,12 @@ move-folders:
   RotationMaster/Modules/RotationMaster_Shaman: RotationMaster_Shaman
   RotationMaster/Modules/RotationMaster_Warlock: RotationMaster_Warlock
   RotationMaster/Modules/RotationMaster_Warrior: RotationMaster_Warrior
+  RotationMaster/Modules/RotationMaster_WowSims: RotationMaster_WowSims
 ignore:
   - tests
   - tools
   - docs
+  - Data/wowsims
   - Assets/Conditions/source
   - Assets/Conditions/qa
   - Assets/Conditions/export_icons.py
