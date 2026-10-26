@@ -17,6 +17,37 @@ local beginActive=addon.BeginActiveRotationTransition
 local retireActive=addon.RetireActiveRotationTransition
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local definitions, definitionVersion = {}, 0
+-- A Built In names itself by a locale key (nameKey, "Default.<Edition>.<Class>.<Variant>.Name"), never by text, and
+-- an export carries that key beside the body. The key must never be shown as a name. The locale table is read
+-- with rawget: AceLocale reports a missing key to the error handler, and a user's own rotation name is not a key.
+-- Only a Default.*.Name key that the locale registers is resolved; anything else a user typed stays as typed.
+local BUILTIN_NAME_KEY="^Default%.[%w%.]+%.Name$"
+local function registeredBuiltinName(key)
+    if type(key)~="string" or not key:find(BUILTIN_NAME_KEY) then return nil end
+    local text=rawget(L,key)
+    if type(text)=="string" and text~="" and text~=key then return text end
+end
+-- "Default.Era.Druid.Feral.WarcraftTavern.Name" with no translation (a Built In from another version): the
+-- variant after the edition and the class, split at its capitals: "Feral Warcraft Tavern".
+local function readableBuiltinKey(key)
+    local parts={};for part in key:gsub("^Default%.",""):gsub("%.Name$",""):gmatch("[^%.]+") do parts[#parts+1]=part end
+    if #parts>=3 then table.remove(parts,1);table.remove(parts,1) end
+    local words={};for _,part in ipairs(parts) do words[#words+1]=part:gsub("(%l)(%u)","%1 %2") end
+    return table.concat(words," ")
+end
+---The name to show for a rotation, in the client's language. Takes a name (string), or an envelope, body or
+---legacy export (table). A body.name wins; an envelope's nameKey stands in for a name only when there is none.
+---@param rotation string|table|nil
+---@return string|nil
+function addon:RotationDisplayName(rotation)
+    if type(rotation)=="string" then return registeredBuiltinName(rotation) or rotation end
+    if type(rotation)~="table" then return nil end
+    local body=type(rotation.body)=="table" and rotation.body or rotation
+    local name=body.name;if type(name)=="string" and name~="" then return registeredBuiltinName(name) or name end
+    local key=rotation.nameKey;if type(key)~="string" or key=="" then key=rotation.name end
+    if type(key)~="string" or key=="" then return nil end
+    return registeredBuiltinName(key) or key:find(BUILTIN_NAME_KEY) and readableBuiltinKey(key) or key
+end
 local active
 local readValidationStamp,checkValidationLayout,validationRawget,validationRawequal,validationType,validationGetmetatable
 local runtimeAuthority,ownedOptions,ownedDisabledDependency

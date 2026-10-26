@@ -252,7 +252,7 @@ end)
 
 -- Talent groups stay on the character.
 local function exporter(project,expansion,body)
-    local f=platform(project,expansion);f.load('Data/plain.lua');f.load('Data/validation.lua');f.load('Core/rotation_selection.lua');f.load('Core/imports.lua')
+    local f=platform(project,expansion);f.load('Data/plain.lua');f.load('Data/validation.lua');f.load('Core/rotation_selection.lua');f.load('Core/rotation_library.lua');f.load('Core/imports.lua')
     local a=f.addon
     a.GetScopedRotationCoordinator=function() return {Snapshot=function() return {body=a.RotationData.CopyData(body)} end} end
     return a
