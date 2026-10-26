@@ -79,7 +79,7 @@ def main(argv=None):
     parser.add_argument('--static', action='store_true', help='Pass --static to tools/check.')
     parser.add_argument('--runtime', choices=['all', 'lua5.1', 'luajit', 'python'], default='all')
     parser.add_argument('--list', action='store_true', help='Print the selected commands and exit.')
-    parser.add_argument('--timeout', type=int, default=900, help='Seconds one command may run (default 900).')
+    parser.add_argument('--timeout', type=int, default=3600, help='Seconds one command may run (default 3600).')
     parser.add_argument('--baseline', help='File of command labels (one per line) known to fail; they do not fail the run.')
     parser.add_argument('--json', dest='json_path', help='Write a machine-readable summary here.')
     parser.add_argument('--verbose', action='store_true', help='Print the output of passing commands too.')

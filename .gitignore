@@ -7,3 +7,4 @@ __pycache__/
 .release/
 dist/
 /CHANGELOG.md
+.claude/settings.local.json
