@@ -183,16 +183,16 @@ jobs:
       - name: Check the package
         run: |
           set -euo pipefail
-          zips=(.release/RotationMaster-*.zip)
-          [ "${#zips[@]}" -eq 1 ] || { echo "::error::expected one zip in .release, found ${#zips[@]}"; exit 1; }
-          echo "ZIP=${zips[0]}" >> "${GITHUB_ENV}"
-          python3 tools/package_release.py --check-zip "${zips[0]}" --version "${TAG}"
+          zip=".release/RotationMaster-${TAG}.zip"
+          [ -f "${zip}" ] || { echo "::error::the packager did not build ${zip}"; ls -l .release; exit 1; }
+          echo "ZIP=${zip}" >> "${GITHUB_ENV}"
+          python3 tools/package_release.py --check-zip "${zip}" --version "${TAG}"
 
       - name: Keep the package
         uses: christopherhx/gitea-upload-artifact@62ac910c5d3dfa85c7cb2df15afe2e342b2407c2 # untagged head
         with:
           name: RotationMaster-${{ github.event.inputs.tag || github.ref_name }}
-          path: .release/RotationMaster-*.zip
+          path: ${{ env.ZIP }}
           if-no-files-found: error
 
       - name: Gitea release
