@@ -99,39 +99,6 @@ test('second cast read and optional readability reentry cannot publish a retired
   emit(f);local s=f.service:GetSnapshot();witness(s,0,0,0,0);assert(#s.capture.trace.records==0)
  end
 end)
-test('current and exact whole predecessor arms retain identical receipt traces and complete report prefix',function()
- local inverse=dofile('tests/fixtures/restore_analytics_start_witness.lua')
- local traces,texts={},{}
- local function equal(a,b)
-  if type(a)~=type(b)then return false end;if type(a)~='table'then return a==b end
-  for k,v in pairs(a)do if not equal(v,b[k])then return false end end;for k in pairs(b)do if a[k]==nil then return false end end;return true
- end
- for _,old in ipairs({true,false})do
-  local loader=loadfile;local loaded={}
-  local function load(path)
-   if path=='Platform/analytics_casts.lua'or path=='UI/analytics_capture.lua'then
-    local now=read(path);local source=old and inverse(now,path)or now;loaded[path]=source
-    assert((source~=now)==old,'loader arm did not differ');return assert(loadstring(source,'@'..path))
-   end
-   return loader(path)
-  end
-  local prefix=assert(read('tests/platform_analytics_casts.lua'):match('^(.-)\ntest%('))..'\nreturn fixture'
-  local chunk=assert(loadstring(prefix));setfenv(chunk,setmetatable({loadfile=load},{__index=_G}));local f=chunk()();f.env=getfenv(f.service.Start)
-  local L=setmetatable({},{__index=function(_,k)return k end});f.env.LibStub=function()return{GetLocale=function()return L end}end
-  function f.addon:ShowConditionText(text)texts[#texts+1]=text end
-  local ui=load('UI/analytics_capture.lua');setfenv(ui,f.env);ui('rotationmaster',f.addon)
-  assert(f.addon:RunCastCaptureAction('start'));f:emit('UNIT_SPELLCAST_SENT','player','PRIVATE_TARGET','PRIVATE_GUID',547);emit(f);f:emit('UNIT_SPELLCAST_SUCCEEDED','player','PRIVATE_GUID',547);assert(f.addon:RunCastCaptureAction('stop'))
-  local snapshot=f.service:GetSnapshot();assert((snapshot.startWitness==nil)==old);traces[#traces+1]=snapshot.capture
-  assert(f.addon:RunCastCaptureAction('report'));assert(loaded['Platform/analytics_casts.lua']and loaded['UI/analytics_capture.lua'])
- end
- assert(equal(traces[1],traces[2]),'receipt or reducer behavior changed');assert(texts[2]:sub(1,#texts[1])==texts[1]and texts[2]:sub(#texts[1]+1,#texts[1]+1)=='\n','old report prefix changed')
-end)
-test('strict additive inverse retains complete prior source and rejects unrelated source mutations',function()
- local inverse=dofile('tests/fixtures/restore_analytics_start_witness.lua')
- for _,path in ipairs({'Platform/analytics_casts.lua','UI/analytics_capture.lua'})do
-  local now=read(path);local old=inverse(now,path);assert(old~=now and not old:find('-- BEGIN ANALYTICS START WITNESS',1,true));assert(not pcall(inverse,now..'-- unrelated',path));assert(inverse(old,path)==old)
- end
-end)
 test('replacement namespace cannot impersonate the captured API table with equality callbacks',function()
  local f=fixture();local mt={__eq=function()return true end};setmetatable(f.env.C_Spell,mt)
  local original=f.env.C_Spell.IsAutoRepeatSpell

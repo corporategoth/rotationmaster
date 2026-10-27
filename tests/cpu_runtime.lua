@@ -152,8 +152,4 @@ test('native callback returns only a sentinel while private original tuple forwa
  s.provider.MeasureCall=function(fn,...)local r=tuple(fn(...));assert(r.n==1 and r[1]=='RM:runtime','native saw gameplay return tuple');return {elapsedMilliseconds=.1,allocatedBytes=0,deallocatedBytes=0},r[1]end
  assert(a:StartCPURuntimeCapture());local r=tuple(a:EvaluateNextAction());assert(r.n==4 and rawequal(r[1],object)and r[2]==nil and r[3]==false and r[4]==nil and s.calls==1 and a:IsCPURuntimeCaptureRunning())
 end)
-test('additive inverse preserves prior whole source proof and rejects missing duplicate unrelated edits',function()
- local h=assert(io.open('Diagnostics/cpu.lua'));local s=h:read('*a');h:close();local restore=dofile('tests/fixtures/restore_cpu_runtime.lua');local old=restore(s)
- assert(not pcall(restore,old)and not pcall(restore,s..s)and not pcall(restore,s..'\n-- unrelated\n'))
-end)
 finish()

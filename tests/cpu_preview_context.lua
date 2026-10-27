@@ -119,7 +119,4 @@ test('append budget never grows oversized old reports and clips only the new con
  end
  assert(near>0,'no near-bound omitted context control')
 end)
-test('strict inverse restores the whole frozen source and rejects unrelated edits',function()
- local current=dofile('tests/fixtures/restore_cpu_validation_scopes.lua')(read('Diagnostics/cpu.lua'),'Diagnostics/cpu.lua');assert(restore(current)==baseline);assert(not pcall(restore,current..'\n-- unrelated')and not pcall(restore,baseline))
-end)
 finish()

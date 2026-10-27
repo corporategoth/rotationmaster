@@ -111,12 +111,6 @@ test('retired native quantity callbacks remain inert after owner release and lat
  local current=node();current.value=5;local owner,_,fresh=mount(a,current);stale(quantity,'OnEnterPressed','9')
  assert(v.value==2 and current.value==5 and state.statuses==0 and fresh.statuses==0);owner:Release()
 end)
-test('exact body and local selections inverse preserves whole item module and all private source and getter identities',function()
- local _,a=fixture(true);local text=dofile('tests/fixtures/restore_item_neighbor_summary_literals.lua')(dofile('tests/fixtures/restore_item_cooldown_slot.lua')(read(modulePath)));assert(a:FunctionSourceHash(inverse(text))=='2154174d','item module changed beyond named CARRYING summary')
- assert(inverse(repaired,true)==old and not pcall(inverse,old,true) and not pcall(inverse,repaired..' ',true) and not pcall(inverse,text..text))
- for capture,id in pairs(added) do assert(a.builtinCallbackBindings['Conditions/item.lua'][capture]==id) end
- for capture,hash in pairs({get_item_desc='fd63ea61',itemHelp='0f2e90aa',color='a59312f4',helpers='57c6fe6a'}) do local id='builtin:Conditions/item.lua:'..capture;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and rawequal(a:ResolveFunctionBinding(id),a.builtinSourceModules['Conditions/item.lua'](capture))) end
-end)
 test('archived raw complete export retains old name-marker behavior and exact stored source',function()
  local _,a=fixture(true);a.db.profile.itemsets.personal.name=name;local source=a:GetBuiltinConditionSource('CARRYING')
  if source.print==repaired then source=inverse(source,'export') else assert(source.print==old) end

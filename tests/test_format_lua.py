@@ -43,6 +43,13 @@ class Layout(unittest.TestCase):
         self.assertEqual(format_lua.same_program(source, fmt(source)), (True, ''))
 
 
+class GeneratedRegions(unittest.TestCase):
+    def test_a_generated_region_is_kept_byte_for_byte(self):
+        region = "-- BEGIN GENERATED X\nlocal t={a=1,b=2}\n-- END GENERATED X"
+        out = fmt("local a=1\n" + region + "\nlocal b=2\n")
+        self.assertEqual(out, "local a = 1\n\n" + region + "\n\nlocal b = 2\n")
+
+
 class Safety(unittest.TestCase):
     def test_a_changed_program_is_detected(self):
         self.assertFalse(format_lua.same_program("local a = 1\n", "local a = 2\n")[0])

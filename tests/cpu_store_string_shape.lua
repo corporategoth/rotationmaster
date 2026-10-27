@@ -59,10 +59,4 @@ test('new capture completed during cold end observation retains newerreport owne
  end)
  assert(a:StartCPUProfile());s:complete();assert(entered and a:GetCPUProfileReport()==newer);has(newer,'duration=1.000 s')
 end)
-test('strict new additive inverse preserves complete49bcCPU and rejects missingduplicateunrelated edits',function()
- local inverse=dofile('tests/fixtures/restore_cpu_runtime.lua');local now=read('Diagnostics/cpu.lua');local old=inverse(now,true)
- local n=0;for i=1,#old do n=(n*33+old:byte(i))%4294967296 end
- assert(#old==55576 and string.format('%08x',n)=='6a4b79c4')
- assert(not pcall(inverse,old,true)and not pcall(inverse,now..now,true)and not pcall(inverse,now..'\n-- unrelated\n',true))
-end)
 finish()

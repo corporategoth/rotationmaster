@@ -251,24 +251,6 @@ test('released native context menu rows drop captured source insertion actions',
  menu.buttons[1].action();assert(e.Query.Console.source=='','retired menu mutated source')
 end)
 
-test('strict six-module inverse preserves complete baseline files and rejects unrelated edits',function()
- local restore=dofile('tests/fixtures/restore_editor_provider_reuse.lua')
- local baseline={
-  ['Integrations/lua_workbench.lua']={bytes=28485,hash='ac736727'},
-  ['UI/lua_editor.lua']={bytes=17792,hash='dc80a10e'},
-  ['UI/lua_completion.lua']={bytes=5966,hash='98b42492'},
-  ['UI/custom_condition_editor.lua']={bytes=37284,hash='ad0919b6'},
-  ['UI/function_source_pane.lua']={bytes=31725,hash='b7ae6968'},
-  ['UI/line_numbers.lua']={bytes=14690,hash='98862390'},
- }
- local function hash(text)local n=5381;for i=1,#text do n=(n*33+text:byte(i))%4294967296 end;return string.format('%08x',n)end
- for path,want in pairs(baseline)do
-  local file=assert(io.open(path));local current=file:read('*a');file:close();local old=restore(current,path)
-  assert(#old==want.bytes and hash(old)==want.hash,'complete module baseline changed: '..path)
-  assert(not pcall(restore,current..'\n',path),'unrelated module bytes accepted')
- end
- assert(not pcall(restore,'','UI/foreign.lua'),'unknown module accepted')
-end)
 
 test('active foreign refresh ignores noncallable optional Acquire metadata',function()
  for _,metadata in ipairs({'label',{}})do

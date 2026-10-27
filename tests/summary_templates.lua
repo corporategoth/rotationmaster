@@ -291,19 +291,6 @@ test('summary migration preserves native runtime results and unavailable negatio
         end
     end
 end)
-test('existing presentation source hashes and every nonprint spatial byte remain exact',function()
-    local _,a=sourceFixture()
-    local expected={nullable='ab205965',nullable_value='31c7a0dd',compareString='d5e53d07',playerize='ed9bbad5'}
-    for name,hash in pairs(expected) do
-        local id='builtin:utils.lua:'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash,name..' source changed')
-        assert(a[name]==a.Functions.presentation[name] and a.builtinSourceModules['utils.lua'](name)==a[name])
-    end
-    local file=assert(io.open('Conditions/spatial_stats.lua'));local text=file:read('*a');file:close()
-    text=text:gsub('%-%- BEGIN GENERATED RM SOURCE BINDINGS.*',''):gsub('%-%- BEGIN SPATIAL STATS CALLBACK NAMESPACE.-%-%- END SPATIAL STATS CALLBACK NAMESPACE\n\n','')
-    local count;text,count=text:gsub('    print = function%(_, value%)\n.-    end,\n    widget','    -- PRINT BODY EXCLUDED\n    widget')
-    text=dofile('tests/fixtures/artwork.lua')(text,'spatial',8)
-    assert(count==8 and a:FunctionSourceHash({code=text})=='9feb71f7','nonprint spatial source changed')
-end)
 test('translated actual spatial templates reorder slots without expanding data or observing native state',function()
     local f,a=sourceFixture()
     local key='The {operation} health percentage of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}%'

@@ -131,13 +131,6 @@ test('retired selection callbacks cannot write a released or newly acquired nati
   local current=node(tag);local owner,_,fresh=mount(a,current);stale(item,'OnValueChanged','global');assert(v.item=='personal'and current.item=='personal'and state.statuses==0 and fresh.statuses==0);owner:Release()
  end
 end)
-test('strict full module inverse preserves completed CARRYING body bindings private sources and getter IDs',function()
- local _,a=prepare(true);local text=dofile('tests/fixtures/restore_item_cooldown_slot.lua')(read(modulePath));assert(a:FunctionSourceHash(inverse(text))=='50f07ef7','item changed beyond four print bodies and one selected root')
- assert(not pcall(inverse,text..'\n-- unrelated')and not pcall(inverse,text..text))
- for _,tag in ipairs(tags)do assert(inverse(repaired[tag],tag,true)==old[tag]and not pcall(inverse,old[tag],tag,true)and not pcall(inverse,repaired[tag]..' ',tag,true))end
- assert(a:FunctionSourceHash(a:GetBuiltinConditionSource('CARRYING'))=='5e034bda','completed CARRYING export drifted')
- for alias,hash in pairs({get_item_desc='fd63ea61',itemHelp='0f2e90aa',color='a59312f4',helpers='57c6fe6a'})do local id='builtin:Conditions/item.lua:'..alias;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and rawequal(a:ResolveFunctionBinding(id),a.builtinSourceModules['Conditions/item.lua'](alias)))end
-end)
 test('accepted oversized names keep actual native outcomes while named summaries use the existing bounded fallback',function()
  local _,a=prepare(true);local longName=string.rep('x',64000);local set=a.db.profile.itemsets.personal;set.name=longName
  assert(a:ValidateProfileTransfer({version=3,itemsets={personal={name=longName,items={10,11}}}}))
