@@ -29,7 +29,7 @@ local KINDS = {
     groupleader = 'leader',
 }
 
-local ROSTER_ROLE = { maintank = 'maintank', mainassist = 'mainassist' }
+local ROSTER_ROLE = { maintank = 'MAINTANK', mainassist = 'MAINASSIST' }
 local ASSIGNED_ROLE = { assignedtank = 'TANK', assignedhealer = 'HEALER' }
 
 -- Packs varargs with their count, so a trailing nil is not lost.
@@ -116,7 +116,8 @@ function platform:ResolveGroupUnit(kind)
             if not result then return nil, reason end
             local role = result[11]
             if role ~= nil and type(role) ~= 'string' then return nil, 'invalid-api-result' end
-            if role == ROSTER_ROLE[kind] then return tokens[index] end
+            -- GetRaidRosterInfo spells the role in capitals; tolerate any case.
+            if role ~= nil and role:upper() == ROSTER_ROLE[kind] then return tokens[index] end
         end
 
         return nil, 'no-assigned-unit'

@@ -216,7 +216,7 @@ function addon:BuildTalentDiagnostic(options)
     local lines, add = newReport()
     local client = platform and platform.GetClientInfo and platform:GetClientInfo() or {}
     local okBuild, version, build = call(rawget(_G, 'GetBuildInfo'))
-    add('Rotation Master talent diagnostic %s', type(date) == 'function' and date('%Y-%m-%s %H:%M:%S') or '?')
+    add('Rotation Master talent diagnostic %s', type(date) == 'function' and date('%Y-%m-%d %H:%M:%S') or '?')
 
     add(
         'client %s build %s family=%s traits-layout=%s',
@@ -521,7 +521,7 @@ function addon:RunTalentDiagnostic(argument)
     local reports = store()
 
     if reports then
-        reports[#reports + 1] = { at = type(date) == 'function' and date('%Y-%m-%s %H:%M:%S') or nil, lines = lines }
+        reports[#reports + 1] = { at = type(date) == 'function' and date('%Y-%m-%d %H:%M:%S') or nil, lines = lines }
 
         while #reports > MAX_REPORTS do
             table.remove(reports, 1)

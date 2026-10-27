@@ -12,6 +12,13 @@ local data = addon.RotationData
 -- Tag validation
 -- ============================================================================
 
+-- Linear trim. A '^%s*(.-)%s*$' (or '%s+$') pattern is quadratic on a long run of spaces inside pasted text.
+local function trim(s)
+    local a = s:find('%S')
+    if not a then return '' end
+    return s:sub(a, s:match('^.*()%S'))
+end
+
 -- Returns the number of UTF-8 characters in the text, or nil when it is not well-formed UTF-8 (overlong forms,
 -- surrogates, code points above U+10FFFF and C1 control characters are rejected).
 local function characters(text)
@@ -66,7 +73,8 @@ function data.NormalizeRotationTags(tags)
 
     for _, tag in ipairs(tags) do
         if type(tag) ~= 'string' or tag:find('%c') then return nil, 'invalid-tag' end
-        local text = tag:match('^%s*(.-)%s*$')
+        if #tag > 1024 then return nil, 'tag-length' end
+        local text = trim(tag)
         local length = characters(text)
         if not length or length == 0 or length > 64 then return nil, 'tag-length' end
         local key = text:lower()
@@ -95,7 +103,7 @@ function data.ParseRotationTags(text)
 
     -- Ends the current entry: trims it, keeps it when non-empty and resets the scanner for the next one.
     local function finish()
-        local value = table.concat(parts):match('^%s*(.-)%s*$')
+        local value = trim(table.concat(parts))
         if value ~= '' then tags[#tags + 1] = value end
         parts = {}
         closed = false

@@ -13,6 +13,7 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- Parses one item field: a positive whole number is an item id, any other non-blank text is kept as a name or link, and
 -- blank or an invalid number returns nil.
 local function itemValue(text)
+    if text:find('[%z\1-\31\127]') then return end
     local value = text:match('^%s*(.-)%s*$')
     if value == '' then return end
     local number = tonumber(value)

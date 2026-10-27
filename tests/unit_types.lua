@@ -73,14 +73,15 @@ local function raid(s,members,roles) s.raid=true;s.members=members;s.roster={};f
 test('maintank and mainassist read the raid roster role and resolve to the first holder',function()
     for _,name in ipairs(C.order) do
         local _,a,_,s=client(name)
-        raid(s,10,{[3]='maintank',[4]='mainassist',[7]='maintank'})
+        raid(s,10,{[3]='MAINTANK',[4]='MAINASSIST',[7]='MAINTANK'})
         assert(a.Platform:ResolveGroupUnit('maintank')=='raid3',name);assert(a.Platform:ResolveGroupUnit('mainassist')=='raid4',name)
+        raid(s,10,{[5]='maintank',[6]='MainAssist'});assert(a.Platform:ResolveGroupUnit('maintank')=='raid5' and a.Platform:ResolveGroupUnit('mainassist')=='raid6',name..' the role case must not matter')
         raid(s,10);local token,why=a.Platform:ResolveGroupUnit('maintank');assert(token==nil and why=='no-assigned-unit',name..' nobody is main tank')
         s.raid=false;s.members=5;token,why=a.Platform:ResolveGroupUnit('mainassist');assert(token==nil and why=='no-assigned-unit',name..' a party has no main assist')
         raid(s,3,{[2]=SECRET});token,why=a.Platform:ResolveGroupUnit('maintank');assert(token==nil and why=='restricted-value',name..' an unreadable role')
         raid(s,3,{[2]=7});token,why=a.Platform:ResolveGroupUnit('maintank');assert(token==nil and why=='invalid-api-result',name..' a malformed role')
     end
-    local _,a,e,s=client('retail');raid(s,3,{[1]='maintank'});e.GetRaidRosterInfo=function() error('boom') end
+    local _,a,e,s=client('retail');raid(s,3,{[1]='MAINTANK'});e.GetRaidRosterInfo=function() error('boom') end
     local token,why=a.Platform:ResolveGroupUnit('maintank');assert(token==nil and why=='api-error')
 end)
 
@@ -116,12 +117,12 @@ end)
 test('a condition on a group unit type evaluates its resolved token, once per kind per evaluation',function()
     for _,name in ipairs({'retail','mists'}) do
         local _,a,_,s=client(name)
-        raid(s,10,{[3]='maintank'});s.combat.raid3=true
+        raid(s,10,{[3]='MAINTANK'});s.combat.raid3=true
         local tank={type='COMBAT',unit='maintank'}
         expect(a,tank,'match',name);assert(s.asked=='raid3','the condition asked about '..tostring(s.asked))
         s.combat.raid3=false;expect(a,tank,'no-match',name)
         raid(s,10);expect(a,tank,'unavailable',name..' nobody is main tank: unavailable, also under NOT')
-        raid(s,10,{[2]='maintank'});s.combat.raid2=true;s.calls={}
+        raid(s,10,{[2]='MAINTANK'});s.combat.raid2=true;s.calls={}
         local both=a:evaluateConditionResult({type='AND',value={tank,{type='COMBAT',unit='maintank'}}})
         assert(both.status=='match' and s.calls.GetRaidRosterInfo<=2 and s.calls.UnitAffectingCombat==1,name..' resolved more than once: '..tostring(s.calls.GetRaidRosterInfo))
         assert(a.conditionDefinitions.COMBAT.valid(0,tank),'the saved unit is a valid choice')
@@ -130,11 +131,11 @@ test('a condition on a group unit type evaluates its resolved token, once per ki
 end)
 
 test('the original condition value is never changed by resolution',function()
-    local _,a,_,s=client('retail');raid(s,4,{[4]='mainassist'});s.combat.raid4=true
+    local _,a,_,s=client('retail');raid(s,4,{[4]='MAINASSIST'});s.combat.raid4=true
     local value={type='COMBAT',unit='mainassist'};local before=a:CopySettingsData(value)
     expect(a,value,'match');assert(a:SettingsDataEqual(before,value) and value.unit=='mainassist')
     local resolved,why=a:ResolveConditionUnits({type='ISSAME',unit='maintank',otherunit='player'},{});assert(resolved==nil and why=='no-assigned-unit')
-    raid(s,4,{[1]='maintank',[4]='mainassist'})
+    raid(s,4,{[1]='MAINTANK',[4]='MAINASSIST'})
     resolved=a:ResolveConditionUnits({type='ISSAME',unit='maintank',otherunit='mainassist'},{});assert(resolved.unit=='raid1' and resolved.otherunit=='raid4' and resolved.type=='ISSAME')
     local plain={type='COMBAT',unit='target'};assert(a:ResolveConditionUnits(plain,{})==plain,'an ordinary unit is passed through untouched')
 end)
@@ -161,7 +162,7 @@ test('a switch condition on a group unit type is present when someone holds it',
     local switch=a:ConsumeSwitchConditionEvaluator()
     if not switch then return end
     a.Platform.GetUnitPresenceObservation=function(_,unit) return unit=='raid3' end
-    raid(s,5,{[3]='maintank'});s.combat.raid3=true
+    raid(s,5,{[3]='MAINTANK'});s.combat.raid3=true
     assert(switch(a,{type='COMBAT',unit='maintank'})==true,'the main tank was not found')
     raid(s,5);assert(switch(a,{type='COMBAT',unit='maintank'})==false,'nobody holding it must not match')
 end)

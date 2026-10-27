@@ -351,7 +351,8 @@ function addon:ValidateProfileTransfer(value)
                     or not fields(set, { name = 'string', items = 'table', modified = 'boolean' })
                     or type(set.name) ~= 'string'
                     or not dense(set.items, function(v)
-                        return type(v) == 'string' and #v > 0 or type(v) == 'number' and v > 0 and v % 1 == 0
+                        return type(v) == 'string' and #v > 0 and not v:find('[%z\1-\31\127]')
+                            or type(v) == 'number' and v > 0 and v % 1 == 0
                     end)
                 then
                     return false

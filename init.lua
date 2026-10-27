@@ -1,10 +1,3 @@
--- Saved-variable defaults and in-place migrations. augmentDefaults adds the packaged item sets, effects, condition
--- categories and version numbers to the AceDB defaults; addon:init (called from main.lua's OnInitializeInternal right
--- after AceDB opens) installs the per-profile condition seeders and runs the upgrade passes over saved rotations.
--- Loaded from RotationMaster.toc after main.lua and buttons.lua, before validate.lua, which checks what this leaves.
--- Migrations edit the saved tables in place and are not reversible; they must tolerate every older shape and must
--- never throw, because a failure here would stop the addon loading. Anything that rewrites rotations has to tell the
--- lean engine through InvalidateRotationDependencies.
 local addon_name, addon = ...
 local invalidateDependencies = addon.InvalidateRotationDependencies
 if type(invalidateDependencies) ~= 'function' then invalidateDependencies = nil end
@@ -12,10 +5,6 @@ if type(invalidateDependencies) ~= 'function' then invalidateDependencies = nil 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
 local multiinsert, deepcopy = addon.Functions.collections.multiinsert, addon.Functions.collections.deepcopy
-
--- ============================================================================
--- Packaged defaults
--- ============================================================================
 
 local CHAR_VERSION = 1
 local PROFILE_VERSION = 2
@@ -83,8 +72,6 @@ else
     end
 end
 
--- Item sets every profile starts with, keyed by a fixed id so saved bindings and rotations keep resolving them.
--- Item lists above are built per client, so the contents differ between Retail, Wrath and earlier clients.
 local default_itemsets = {
     ["e8d1525c-0412-40c1-95a4-00da22bc169e"] = {
         name = "Combination Food",
@@ -120,8 +107,6 @@ local default_itemsets = {
     },
 }
 
--- Highlight effects every installation starts with, keyed by fixed ids. upgradeEffectsToGUID matches old saved
--- effects to these by name.
 local default_effects = {
     ["61b36ed1-fa31-4656-ad71-f3d50f193a85"] = {
         type = "texture",
@@ -183,8 +168,6 @@ local default_effects = {
     },
 }
 
--- The condition picker categories every profile starts with. The ids are referenced by the seeders in
--- InitializeTalentTreeConditions and Conditions/world_seed.lua, so they must not change.
 local default_condition_groups = {
     {
         id = "b3d7df2c-f257-4a2d-961e-66e49336d109",
@@ -250,7 +233,7 @@ local default_condition_groups = {
     },
 }
 
--- Order of the logical/utility conditions shown outside the categories.
+-- Order of other conditions
 local default_other_conditions_order = {
     "DELETE",
     "AND",
@@ -275,17 +258,13 @@ local default_disabled_conditions = {
     "INSTANCE",
 }
 
--- ============================================================================
--- Saved-data walkers
--- ============================================================================
-
 -- Every body the old formats can still be in. Before the scoped store, that
--- was the active profile's rotations. Under it the player's rotations are in
--- the archive (profile.rotationStore.legacy.rotations, of every profile),
--- in a character's own pre-2.0 roots (sv.char[*].rotations) and, for anyone
--- who adopted before these upgrades ran on archives, in owned records. Each
--- body is visited; the upgrade functions below only touch the old shapes.
--- visit receives each body (the table of steps, not its owning record) and must tolerate malformed data.
+-- was the active profile's rotations. Under it they are the archive
+-- (profile.rotationStore.legacy.rotations, of every profile) and a
+-- character's own pre-2.0 roots (sv.char[*].rotations). Owned records
+-- (rotationStore.classes / .characters) are 2.0 data and are NEVER visited:
+-- the old-format passes below are not no-ops on current data ('pet' is a
+-- current step type, PETSPELL_* current conditions).
 local function eachSavedBody(visit)
     local function bodies(map)
         if type(map) ~= "table" then return end
@@ -294,18 +273,6 @@ local function eachSavedBody(visit)
             if type(rows) == "table" then
                 for _, body in pairs(rows) do
                     visit(body)
-                end
-            end
-        end
-    end
-
-    local function records(map)
-        if type(map) ~= "table" then return end
-
-        for _, rows in pairs(map) do
-            if type(rows) == "table" then
-                for _, record in pairs(rows) do
-                    if type(record) == "table" then visit(record.body) end
                 end
             end
         end
@@ -320,18 +287,6 @@ local function eachSavedBody(visit)
         local store = p.rotationStore
         if type(store) ~= "table" then return bodies(p.rotations) end
         if type(store.legacy) == "table" then bodies(store.legacy.rotations) end
-
-        if type(store.classes) == "table" then
-            for _, map in pairs(store.classes) do
-                records(map)
-            end
-        end
-
-        if type(store.characters) == "table" then
-            for _, bucket in pairs(store.characters) do
-                if type(bucket) == "table" then records(bucket.specs) end
-            end
-        end
     end
 
     for _, p in pairs(sv and sv.profiles or {}) do
@@ -345,10 +300,50 @@ local function eachSavedBody(visit)
     end
 end
 
--- Runs rot_func(step, isCooldown) on every non-branch step and cond_func(cond) on every leaf condition (descending
--- through NOT/AND/OR, depth-limited to 64) of the saved rotations; either may be nil. Without the scoped store it
--- walks the active profile's rotations; with it, it walks every archived body, but opts.activeOnly makes it do
--- nothing there, since prefetching data for archived bodies is work nobody asked for.
+local function updateConditionData(cond, func, depth)
+    depth = depth or 0
+    if type(cond) ~= "table" or depth > 64 then return end
+
+    if cond.type == "NOT" and type(cond.value) == "table" then
+        updateConditionData(cond.value, func, depth + 1)
+    elseif (cond.type == "AND" or cond.type == "OR") and type(cond.value) == "table" then
+        for _, subcond in pairs(cond.value) do
+            updateConditionData(subcond, func, depth + 1)
+        end
+    else
+        func(cond)
+    end
+end
+
+-- One index of the body, every pass applied to each step.
+local function upgradeBody(rotation, passes)
+    local tree = addon.RotationData.IndexRotationSteps(rotation, { allowMissingIds = true })
+
+    -- Malformed data is retained for inspection, never flattened or
+    -- partially upgraded by a best-effort walk over unknown structure.
+    if tree then
+        for _, row in ipairs(tree.rows) do
+            local step = row.step
+
+            for _, pass in ipairs(passes) do
+                if pass[1] and step.type ~= "branch" then pass[1](step, row.section == "cooldowns") end
+                if pass[2] and step.conditions then updateConditionData(step.conditions, pass[2]) end
+            end
+        end
+    end
+end
+
+-- Under scoped storage the passes are collected here and run by
+-- upgradeSavedBodies, in ONE walk over the archive: a body is indexed once
+-- however many passes there are, and the walk is skipped while the archive
+-- is exactly what the last successful walk left (the marker below holds the
+-- upgrade version and the number of bodies; adopting one, or a profile or
+-- character with old bodies arriving, changes the count and walks again).
+local LEGACY_BODY_UPGRADE = 1
+local pendingPasses = {}
+
+-- opts.activeOnly: the rotations the player runs now (prefetching item data
+-- for archived bodies would be work nobody asked for).
 local function updateRotationData(rot_func, cond_func, opts)
     local scoped = addon.InitializeScopedRotationStorage ~= nil
 
@@ -356,53 +351,33 @@ local function updateRotationData(rot_func, cond_func, opts)
         return
     end
 
-    local function updateConditionData(cond, func, depth)
-        depth = depth or 0
-        if type(cond) ~= "table" or depth > 64 then return end
-
-        if cond.type == "NOT" and type(cond.value) == "table" then
-            updateConditionData(cond.value, func, depth + 1)
-        elseif (cond.type == "AND" or cond.type == "OR") and type(cond.value) == "table" then
-            for _, subcond in pairs(cond.value) do
-                updateConditionData(subcond, func, depth + 1)
-            end
-        else
-            func(cond)
-        end
-    end
-
-    local function upgradeBody(rotation)
-        local tree = addon.RotationData.IndexRotationSteps(rotation, { allowMissingIds = true })
-
-        -- Malformed data is retained for inspection, never flattened or
-        -- partially upgraded by a best-effort walk over unknown structure.
-        if tree then
-            for _, row in ipairs(tree.rows) do
-                local step = row.step
-                if rot_func and step.type ~= "branch" then rot_func(step, row.section == "cooldowns") end
-                if cond_func and step.conditions then updateConditionData(step.conditions, cond_func) end
-            end
-        end
-    end
-
     if scoped then
         if opts and opts.activeOnly then return end
-        eachSavedBody(upgradeBody)
+        pendingPasses[#pendingPasses + 1] = { rot_func, cond_func }
         return
     end
 
+    local passes = { { rot_func, cond_func } }
+
     for _, rotations in pairs(addon.db.profile.rotations) do
         for _, rotation in pairs(rotations) do
-            upgradeBody(rotation)
+            upgradeBody(rotation, passes)
         end
     end
 end
 
--- ============================================================================
--- Upgrade passes
--- ============================================================================
+local function upgradeSavedBodies()
+    local passes = pendingPasses
+    pendingPasses = {}
+    if #passes == 0 then return end
+    local count = 0
+    eachSavedBody(function() count = count + 1 end)
+    local mark = LEGACY_BODY_UPGRADE .. ":" .. count
+    if addon.db.global.legacyBodyUpgrade == mark then return end
+    eachSavedBody(function(body) upgradeBody(body, passes) end)
+    addon.db.global.legacyBodyUpgrade = mark
+end
 
--- Moves the old global textures list to effects (typed "texture") and the profile's overlay choice to effect.
 local function upgradeTexturesToEffects()
     if addon.db.global.textures ~= nil then
         addon.db.global.effects = addon.db.global.textures
@@ -420,8 +395,6 @@ local function upgradeTexturesToEffects()
     end
 end
 
--- Before the scoped store: Wrath moved the first expansion-level slot of rotations from index 0 to 1. Does nothing
--- once the scoped store exists.
 local function upgradeGlobalRotationstoPlayer()
     if addon.InitializeScopedRotationStorage or addon.db.profile.rotationStore ~= nil then return end
 
@@ -439,8 +412,6 @@ local function upgradeGlobalRotationstoPlayer()
     end
 end
 
--- Wraps bare item ids and names in rotation steps and item conditions into a one-element list, the shape that item
--- sets use; a value that already looks like an item set GUID is left alone.
 local function upgradeItemsToItemSets()
     updateRotationData(
         function(rot)
@@ -479,8 +450,6 @@ local function upgradeItemsToItemSets()
     )
 end
 
--- Asks the client for display info of every item the active rotations, item sets and conditions mention, so the
--- client has them cached before the UI needs names and icons. Archived bodies are skipped on purpose.
 local function cacheItems()
     updateRotationData(
         function(rot)
@@ -529,7 +498,6 @@ local function cacheItems()
     end
 end
 
--- Gives announcements saved before they had ids a fresh uuid.
 local function upgradeAddIDToAnnounce()
     for _, announce in pairs(addon.db.profile.announces) do
         if announce.id == nil then
@@ -538,7 +506,6 @@ local function upgradeAddIDToAnnounce()
     end
 end
 
--- Folds the old debug/verbose booleans into the numeric loglevel (3 for debug, 4 for verbose) and removes them.
 local function upgradeLogLevel()
     if addon.db.profile.debug then
         if addon.db.profile.verbose then
@@ -552,9 +519,6 @@ local function upgradeLogLevel()
     addon.db.profile.verbose = nil
 end
 
--- Converts the effects list from an array to a table keyed by id (reusing a packaged id when the name matches),
--- re-points the profile's effect and every cooldown step's effect from a name to an id, and, for installations
--- that predate global.version, offers to reset the effect list to the new packaged defaults.
 local function upgradeEffectsToGUID()
     local global = addon.db.global
     local name2idx = {}
@@ -618,7 +582,6 @@ local function upgradeEffectsToGUID()
     end
 end
 
--- Turns pet-book steps into "any" steps and PETSPELL_* conditions into their ANYSPELL_* equivalents.
 local function upgradePetSpellToAnySpell()
     -- The profile version is no evidence for an archive: the archive step
     -- sets it before this runs. Archived bodies are always converted; the
@@ -647,7 +610,6 @@ local function upgradePetSpellToAnySpell()
     end
 end
 
--- Replaces the old rune name strings in RUNE and RUNE_COOLDOWN conditions with the rune numbers 1 to 4.
 local function upgradeRuneTypes()
     updateRotationData(nil, function(cond)
         if cond.type == "RUNE" or cond.type == "RUNE_COOLDOWN" then
@@ -664,7 +626,6 @@ local function upgradeRuneTypes()
     end)
 end
 
--- Turns each character's single-number action bar bindings into a one-element list.
 local function upgradeBindingSlots()
     -- Upgrade the exact store AceDB opened; folder casing is not persistence identity.
     local DB = addon.db.sv
@@ -682,17 +643,12 @@ local function upgradeBindingSlots()
     end
 end
 
--- Returns the packaged item list for a default item set id (for the Reset button in the item set editor), or nil if
--- the id is not a packaged set.
 function addon:getDefaultItemset(id)
     if default_itemsets[id] ~= nil then
         return default_itemsets[id].items
     end
 end
 
--- Moves per-character itemsets and announces (and, before the scoped store, rotations) into the profile. In the
--- scoped-store path it only copies into an empty profile destination and keeps the character data otherwise; in the
--- old path it may switch the character to a class or character profile and copy the default profile into it first.
 local function moveProfileItems()
     if addon.InitializeScopedRotationStorage or addon.db.profile.rotationStore ~= nil then
         -- Rotation ownership migration never chooses a different profile or
@@ -767,9 +723,6 @@ local function moveProfileItems()
 end
 
 function addon:augmentDefaults(defaults)
-    -- (tests/rotation_scope_init.lua cuts init.lua's text up to this function, so its comment lives here, not above it.)
-    -- Adds the packaged item sets, effects, condition categories, version numbers and condition orderings to the AceDB
-    -- defaults table before AceDB opens; each is deep-copied so the packaged tables are never shared.
     defaults.char.version = CHAR_VERSION
 
     defaults.global.itemsets = deepcopy(default_itemsets)
@@ -783,7 +736,6 @@ function addon:augmentDefaults(defaults)
     defaults.profile.version = PROFILE_VERSION
 end
 
--- Seeds the talent-tree conditions (and SPELL_AUTOREPEAT) into a new or reset profile's picker lists.
 -- Keep indexed AceDB defaults stable: extending them recursively fills numeric
 -- holes in existing customized/reordered lists. Seed new predicates only when
 -- a profile is created or explicitly reset; copying a profile keeps its lists.
@@ -820,16 +772,12 @@ local defaultAnnouncementConditions = {
     'PET_NAME', 'ROLE'
 }
 
--- Gives a profile that has no announcement_conditions field a copy of the default list; rawget so AceDB defaults
--- cannot make an absent field look present.
 local function seedAnnouncementPreferences(profile)
     if type(profile) == 'table' and rawget(profile, 'announcement_conditions') == nil then
         profile.announcement_conditions = deepcopy(defaultAnnouncementConditions)
     end
 end
 
--- Seeds every saved profile now and registers (once per db) callbacks that seed profiles that are created, reset,
--- switched to or copied later.
 function addon:InstallAnnouncementConditionPreferences()
     local db = self.db
     if not db then return end
@@ -855,12 +803,6 @@ function addon:InstallAnnouncementConditionPreferences()
     seedAnnouncementPreferences(db.profile)
 end
 
--- ============================================================================
--- Startup
--- ============================================================================
-
--- Startup entry point called once by main.lua right after the database is opened and before validation: registers the
--- per-profile seeders, applies the migrations in dependency order and stamps the current data versions.
 function addon:init()
     -- Before anything else touches db.profile: AceDB creates a new character's profile (and fires OnNewProfile) the first
     -- time it is read, and the seeders below read it, so a later registration never saw the first profile of a new
@@ -893,6 +835,7 @@ function addon:init()
     upgradeEffectsToGUID()
     upgradePetSpellToAnySpell()
     upgradeRuneTypes()
+    upgradeSavedBodies()
     upgradeBindingSlots()
 
     addon.db.char.version = CHAR_VERSION
