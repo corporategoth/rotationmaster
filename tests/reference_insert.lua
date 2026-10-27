@@ -65,8 +65,66 @@ test('settings reference fields offer the same entries and stage the choice',fun
     p:Open(function(form) form:Spell('spell','Spell',403,nil,function(id) value=id end) end)
     local input=p.fields.spell;input.scripts.OnMouseDown(input,'RightButton')
     assert(p.menu and p.menu.frame:IsShown(),'settings spell field has no insert menu')
+    assert(input.rmOwnsRightClick,'a settings reference field does not keep its right click from closing the window')
     local row;for _,r in ipairs(p.menu.rows) do if r:IsShown() and (r:GetText() or ''):find('Target casting: Earth Shield',1,true) then row=r end end
     assert(row,'target cast missing from the settings insert menu');row:Click()
     assert(value==974 and p.fields.spell:GetText():find('Earth Shield',1,true),'settings insert did not stage the spell')
 end)
+
+-- The close pollers (UI/config.lua for the main window, UI/window.lua for every dialog) fire on any new right-button press
+-- whose mouse focus has the window as an ancestor. A field whose right click opens the insert menu, and the spell icon
+-- whose right click clears the id, flag themselves `rmOwnsRightClick`, and both pollers leave those clicks to them.
+local function pointer(f)
+    local state={down=false,focus=nil}
+    f.env.IsMouseButtonDown=function() return state.down end
+    rawset(f.env,'GetMouseFoci',function() return {state.focus} end)
+    return state
+end
+
+test('right-clicking a reference field or spell icon in the main window keeps the window open',function()
+    local f=fixture();local a=f.addon;game(f,{target={cast=974}})
+    local mouse=pointer(f)
+    local _,create=dofile('tests/fixtures/native_ui.lua')(f.env)
+    a.pretty_name='Rotation Master';a.name='rotationmaster';a.SetupOptions=function() end;a.BuildConfigurationPane=function() end
+    a.OpenNativeSettings=function(_,parent) local p={frame=create('Frame',nil,parent)};function p:SetWidth(v) self.frame:SetWidth(v) end;function p:SetHeight(v) self.frame:SetHeight(v) end;function p:Release() self.frame:Hide() end;p.frame:Show();return p end
+    f.load('UI/help.lua');if not a.CreateConditionIcon then f.load('UI/condition_icon.lua') end;f.load('UI/spell_icon.lua');f.load('UI/config.lua')
+    local shell=a:ShowConfig('General');local content=shell.content
+    local field=a:CreateSpellEditBox('Spell_EditBox');field.frame:SetParent(content)
+    local icon=a:CreateSpellActionIcon('spell',403);icon.frame:SetParent(content)
+    local cleared;icon:SetCallback('OnEnterPressed',function(_,_,id) cleared=id end)
+    local function press(target,button)
+        mouse.focus=target;content.scripts.OnUpdate();mouse.down=true
+        if target.scripts.OnMouseDown then target.scripts.OnMouseDown(target,button) end
+        content.scripts.OnUpdate();mouse.down=false;content.scripts.OnUpdate()
+    end
+    press(field.editbox,'RightButton')
+    assert(field.rmSpellPopup:IsShown(),'the insert menu did not open')
+    assert(shell.frame:IsShown(),'right-clicking a reference field closed the window')
+    press(icon.frame,'RightButton');icon.frame.scripts.OnClick(icon.frame,'RightButton')
+    assert(shell.frame:IsShown() and cleared=='','right-clicking the spell icon closed the window or did not clear it')
+    press(content,'RightButton')
+    assert(not shell.frame:IsShown(),'right-clicking plain content no longer closes the window')
+    a:ReleaseConditionWidget(field);a:ReleaseConditionWidget(icon)
+    assert(not field.editbox.rmOwnsRightClick and not icon.frame.rmOwnsRightClick,'a released control keeps the right-click flag')
+end)
+
+test('right-clicking a reference field inside a dialog does not close the dialog; its plain body still does',function()
+    local f=fixture();local a=f.addon;game(f,{target={cast=974}})
+    local mouse=pointer(f)
+    local dialog=f.env.CreateFrame('Frame',nil,f.env.UIParent);dialog:SetSize(400,300);dialog:Show()
+    a:EnableWorkbenchRightClickClose(dialog)
+    local watcher=dialog.rmRightClickWatcher
+    local field=a:CreateSpellEditBox('Spell_EditBox');field.frame:SetParent(dialog)
+    local function press(target)
+        mouse.focus=target;watcher.scripts.OnUpdate();mouse.down=true
+        if target.scripts and target.scripts.OnMouseDown then target.scripts.OnMouseDown(target,'RightButton') end
+        watcher.scripts.OnUpdate();mouse.down=false;watcher.scripts.OnUpdate()
+    end
+    press(field.editbox)
+    assert(field.rmSpellPopup:IsShown() and dialog:IsShown(),'right-clicking a reference field closed its dialog')
+    press(dialog)
+    assert(not dialog:IsShown(),'right-clicking the dialog body no longer closes it')
+    a:ReleaseConditionWidget(field)
+end)
+
 finish()

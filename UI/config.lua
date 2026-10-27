@@ -54,7 +54,8 @@ end
 -- Geometry alone includes windows underneath other addons. Only a focused descendant can originate a content click when
 -- the client exposes focus. True when the pointer is over `content` itself (or a descendant of it) rather than a window
 -- stacked above it. Uses the mouse-focus API of whichever client generation is running, falling back to a plain
--- geometry test.
+-- geometry test. False when the pointer is over a control flagged `rmOwnsRightClick` (a reference field, the spell icon):
+-- that control gives the right click its own meaning, and UI/window.lua's dialog close honors the same flag.
 local function contentHasFocus(content)
     local focus
 
@@ -70,6 +71,7 @@ local function contentHasFocus(content)
     for _ = 1, 100 do
         if focus == content then return true end
         if not focus or type(focus.GetParent) ~= "function" then return false end
+        if focus.rmOwnsRightClick then return false end
         focus = focus:GetParent()
     end
 

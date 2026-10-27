@@ -813,7 +813,8 @@ end
 
 -- Child editors share the main workbench chrome without navigation tabs.
 -- Closes the window on a right click inside it, when it is the frontmost registered window; also closes it when its
--- owner-bound Help has gone away. Installs a polling watcher (one per frame, idempotent).
+-- owner-bound Help has gone away. A click whose pointer is over a control flagged `rmOwnsRightClick` (reference fields,
+-- the spell icon) is left to that control. Installs a polling watcher (one per frame, idempotent).
 function addon:EnableWorkbenchRightClickClose(frame)
     if frame.rmRightClickWatcher then return end
     local watcher = CreateFrame('Frame', nil, frame)
@@ -861,6 +862,9 @@ function addon:EnableWorkbenchRightClickClose(frame)
                 end
 
                 if not focus or type(focus.GetParent) ~= 'function' then break end
+
+                -- A control that gives a right click its own meaning keeps it (the main window honors the same flag).
+                if focus.rmOwnsRightClick then break end
                 focus = focus:GetParent()
             end
 

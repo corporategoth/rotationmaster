@@ -168,6 +168,9 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
     local selected, navigated = 1, false
     local matches = {}
     widget.rmSpellSearchActive = true
+
+    -- A right click opens the insert menu; it must not also close the window (UI/window.lua, UI/config.lua).
+    field.rmOwnsRightClick = true
     widget:SetMaxLetters(256)
 
     local originalText, originalRelease, originalReferenceID, originalCommit =
@@ -620,6 +623,7 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
         hide()
         dropHint:Hide()
         self.rmSpellSearchActive = nil
+        field.rmOwnsRightClick = nil
         field.HasStickyFocus = originalSticky
 
         for _, binding in ipairs(scripts) do
