@@ -14,15 +14,21 @@ end
 -- constant. Retail and Forever, and clients without the secret API, keep the
 -- ordinary check.
 local secretsUnrestricted
+
 do
     local secretApi = type(issecretvalue) == "function" or type(canaccessvalue) == "function"
-    local classic = type(WOW_PROJECT_ID) == "number" and WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
+
+    local classic = type(WOW_PROJECT_ID) == "number"
+        and WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
         and (WOW_PROJECT_CAMELOT == nil or WOW_PROJECT_ID ~= WOW_PROJECT_CAMELOT)
+
     local unrestricted = false
+
     if classic and type(C_Secrets) == "table" and type(C_Secrets.HasSecretRestrictions) == "function" then
         local ok, restricted = pcall(C_Secrets.HasSecretRestrictions)
         unrestricted = ok and restricted == false
     end
+
     secretsUnrestricted = secretApi and unrestricted
     if secretsUnrestricted then readable = function() return true end end
     platform.secretsUnrestricted = secretsUnrestricted
@@ -42,54 +48,91 @@ end
 
 function platform:GetClientInfo()
     local project = primitive(WOW_PROJECT_ID)
+
     local function isProject(constant)
         return type(project) == "number" and type(constant) == "number" and project == constant
     end
-    local family = "unknown"
-    if isProject(WOW_PROJECT_CAMELOT) then family = "forever"
-    elseif isProject(WOW_PROJECT_MAINLINE) then family = "retail"
-    elseif isProject(WOW_PROJECT_CLASSIC) then family = "era"
-    elseif isProject(WOW_PROJECT_BURNING_CRUSADE_CLASSIC) then family = "tbc"
-    elseif isProject(WOW_PROJECT_MISTS_CLASSIC) or isProject(WOW_PROJECT_CATACLYSM_CLASSIC)
-        or isProject(WOW_PROJECT_WRATH_CLASSIC) then family = "progression" end
 
-    local info = {family=family, projectId=project, expansion=primitive(LE_EXPANSION_LEVEL_CURRENT),
-                  classicExpansionLevel=probe(GetClassicExpansionLevel), locale=probe(GetLocale),
-                  runtimeVerified=false}
+    local family = "unknown"
+
+    if isProject(WOW_PROJECT_CAMELOT) then
+        family = "forever"
+    elseif isProject(WOW_PROJECT_MAINLINE) then
+        family = "retail"
+    elseif isProject(WOW_PROJECT_CLASSIC) then
+        family = "era"
+    elseif isProject(WOW_PROJECT_BURNING_CRUSADE_CLASSIC) then
+        family = "tbc"
+    elseif isProject(WOW_PROJECT_MISTS_CLASSIC) or isProject(WOW_PROJECT_CATACLYSM_CLASSIC) or isProject(
+        WOW_PROJECT_WRATH_CLASSIC
+    ) then
+        family = "progression"
+    end
+
+    local info = {
+        family = family,
+        projectId = project,
+        expansion = primitive(LE_EXPANSION_LEVEL_CURRENT),
+        classicExpansionLevel = probe(GetClassicExpansionLevel),
+        locale = probe(GetLocale),
+        runtimeVerified = false,
+    }
+
     if type(GetBuildInfo) == "function" then
         local ok, version, build, _, interface = pcall(GetBuildInfo)
-        if ok then info.version, info.build, info.interface = primitive(version), primitive(build), primitive(interface) end
+
+        if ok then
+            info.version, info.build, info.interface = primitive(version), primitive(build), primitive(interface)
+        end
     end
+
     if C_Seasons then info.seasonId = probe(C_Seasons.GetActiveSeason) end
+
     if C_GameRules then
         info.gameModeId = probe(C_GameRules.GetCurrentGameModeRecordID)
         info.hardcore = probe(C_GameRules.IsHardcoreActive)
         info.selfFoundAllowed = probe(C_GameRules.IsSelfFoundAllowed)
     end
-    if family == "retail" or family == "forever" then info.combatDataPolicy = "restricted"
-    elseif family == "unknown" then info.combatDataPolicy = "unsupported"
-    else info.combatDataPolicy = "probe" end
+
+    if family == "retail" or family == "forever" then
+        info.combatDataPolicy = "restricted"
+    elseif family == "unknown" then
+        info.combatDataPolicy = "unsupported"
+    else
+        info.combatDataPolicy = "probe"
+    end
+
     return info
 end
 
-local ownedClientInfo=platform.GetClientInfo
+local ownedClientInfo = platform.GetClientInfo
 
 -- Project, family and combat policy are fixed for a client session, but
 -- GetClientInfo builds fresh metadata (a table and several API reads) on
 -- every call. Runtime checks read these two facts here instead; they are
 -- recomputed if GetClientInfo is replaced or the project they derive from
 -- changes (only test harnesses do either).
-local factsFrom,factsProject,factsFamily,factsPolicy
+local factsFrom, factsProject, factsFamily, factsPolicy
+
 local function clientFacts(self)
-    local getter,project=self.GetClientInfo,WOW_PROJECT_ID
-    if getter~=factsFrom or project~=factsProject then
-        local info=getter(self)
-        factsFrom,factsProject,factsFamily,factsPolicy=getter,project,info.family,info.combatDataPolicy
+    local getter, project = self.GetClientInfo, WOW_PROJECT_ID
+
+    if getter ~= factsFrom or project ~= factsProject then
+        local info = getter(self)
+        factsFrom, factsProject, factsFamily, factsPolicy = getter, project, info.family, info.combatDataPolicy
     end
-    return factsFamily,factsPolicy
+
+    return factsFamily, factsPolicy
 end
-function platform:GetClientFamily() return (clientFacts(self)) end
-function platform:GetCombatDataPolicy() local _,policy=clientFacts(self);return policy end
+
+function platform:GetClientFamily()
+    return (clientFacts(self))
+end
+
+function platform:GetCombatDataPolicy()
+    local _, policy = clientFacts(self)
+    return policy
+end
 
 -- Spell ranks exist on Classic Era, TBC Anniversary, Wrath Classic and Forever
 -- (its spellbook documents IsSpellBookItemLowRank). Retail, Mists and Cataclysm
@@ -97,80 +140,131 @@ function platform:GetCombatDataPolicy() local _,policy=clientFacts(self);return 
 -- values and evaluation do not depend on it. Read live, never cached: only
 -- test harnesses change the project.
 function addon:ClientHasSpellRanks()
-    local project=primitive(WOW_PROJECT_ID)
-    if type(project)~='number' then return false end
-    local constant=WOW_PROJECT_CLASSIC;if type(constant)=='number' and project==constant then return true end
-    constant=WOW_PROJECT_BURNING_CRUSADE_CLASSIC;if type(constant)=='number' and project==constant then return true end
-    constant=WOW_PROJECT_WRATH_CLASSIC;if type(constant)=='number' and project==constant then return true end
-    constant=WOW_PROJECT_CAMELOT;if type(constant)=='number' and project==constant then return true end
+    local project = primitive(WOW_PROJECT_ID)
+    if type(project) ~= 'number' then return false end
+    local constant = WOW_PROJECT_CLASSIC
+    if type(constant) == 'number' and project == constant then return true end
+    constant = WOW_PROJECT_BURNING_CRUSADE_CLASSIC
+    if type(constant) == 'number' and project == constant then return true end
+    constant = WOW_PROJECT_WRATH_CLASSIC
+    if type(constant) == 'number' and project == constant then return true end
+    constant = WOW_PROJECT_CAMELOT
+    if type(constant) == 'number' and project == constant then return true end
     return false
 end
+
 -- Private policy consumers need no locale/build/season/rules snapshot. The
 -- public getter above keeps its complete fresh result and callback behavior.
-local policyType,policyRawget,policyEqual,policyProtect=type,rawget,rawequal,pcall
-local policySecret,policyAccess=issecretvalue,canaccessvalue
+local policyType, policyRawget, policyEqual, policyProtect = type, rawget, rawequal, pcall
+local policySecret, policyAccess = issecretvalue, canaccessvalue
 ---@type fun(f:number|function):table
-local policyGetfenv=getfenv
+local policyGetfenv = getfenv
 local policyEnvironment
-if policyType(policyGetfenv)=='function' then
-    local ok,value=policyProtect(policyGetfenv,ownedClientInfo)
-    if ok and policyType(value)=='table' then policyEnvironment=value end
+
+if policyType(policyGetfenv) == 'function' then
+    local ok, value = policyProtect(policyGetfenv, ownedClientInfo)
+    if ok and policyType(value) == 'table' then policyEnvironment = value end
 end
+
 local function readCombatPolicy(current)
     -- Preserve the predecessor's one public method lookup, including accessors.
-    local method=current.GetClientInfo
-    if not policyEqual(current,platform) or method~=ownedClientInfo or policyRawget(current,'GetClientInfo')~=ownedClientInfo
+    local method = current.GetClientInfo
+
+    if
+        not policyEqual(current, platform)
+        or method ~= ownedClientInfo
+        or policyRawget(current, 'GetClientInfo') ~= ownedClientInfo
         or not policyEnvironment
-        or type~=policyType or not policyEqual(issecretvalue,policySecret) or not policyEqual(canaccessvalue,policyAccess) then
+        or type ~= policyType
+        or not policyEqual(issecretvalue, policySecret)
+        or not policyEqual(canaccessvalue, policyAccess)
+    then
         return method(current).combatDataPolicy
     end
-    local ok,value=policyProtect(policyGetfenv,ownedClientInfo)
-    if not ok or policyType(value)~='table' or not policyEqual(value,policyEnvironment) then
+
+    local ok, value = policyProtect(policyGetfenv, ownedClientInfo)
+
+    if not ok or policyType(value) ~= 'table' or not policyEqual(value, policyEnvironment) then
         return method(current).combatDataPolicy
     end
-    local project=primitive(WOW_PROJECT_ID)
-    if type(project)~='number' then return 'unsupported' end
+
+    local project = primitive(WOW_PROJECT_ID)
+    if type(project) ~= 'number' then return 'unsupported' end
     local constant
-    constant=WOW_PROJECT_CAMELOT;if type(constant)=='number' and project==constant then return 'restricted' end
-    constant=WOW_PROJECT_MAINLINE;if type(constant)=='number' and project==constant then return 'restricted' end
-    constant=WOW_PROJECT_CLASSIC;if type(constant)=='number' and project==constant then return 'probe' end
-    constant=WOW_PROJECT_BURNING_CRUSADE_CLASSIC;if type(constant)=='number' and project==constant then return 'probe' end
-    constant=WOW_PROJECT_MISTS_CLASSIC;if type(constant)=='number' and project==constant then return 'probe' end
-    constant=WOW_PROJECT_CATACLYSM_CLASSIC;if type(constant)=='number' and project==constant then return 'probe' end
-    constant=WOW_PROJECT_WRATH_CLASSIC;if type(constant)=='number' and project==constant then return 'probe' end
+    constant = WOW_PROJECT_CAMELOT
+    if type(constant) == 'number' and project == constant then return 'restricted' end
+    constant = WOW_PROJECT_MAINLINE
+    if type(constant) == 'number' and project == constant then return 'restricted' end
+    constant = WOW_PROJECT_CLASSIC
+    if type(constant) == 'number' and project == constant then return 'probe' end
+    constant = WOW_PROJECT_BURNING_CRUSADE_CLASSIC
+    if type(constant) == 'number' and project == constant then return 'probe' end
+    constant = WOW_PROJECT_MISTS_CLASSIC
+    if type(constant) == 'number' and project == constant then return 'probe' end
+    constant = WOW_PROJECT_CATACLYSM_CLASSIC
+    if type(constant) == 'number' and project == constant then return 'probe' end
+    constant = WOW_PROJECT_WRATH_CLASSIC
+    if type(constant) == 'number' and project == constant then return 'probe' end
     return 'unsupported'
 end
+
 function addon:ConsumeClientPolicyReader()
-    if self==addon then return readCombatPolicy end
+    if self == addon then return readCombatPolicy end
 end
+
 -- One-time private handoff. Public client metadata keeps its complete shape.
 function addon:BindRotationClientReader(bind)
-    if type(bind)~='function' then return nil,'invalid-client-reader-binder' end
+    if type(bind) ~= 'function' then return nil, 'invalid-client-reader-binder' end
+
     bind(function(current)
-        local method=current.GetClientInfo
-        if method~=ownedClientInfo then local value=method(current);return value,false end
-        local project=primitive(WOW_PROJECT_ID)
+        local method = current.GetClientInfo
+
+        if method ~= ownedClientInfo then
+            local value = method(current)
+            return value, false
+        end
+
+        local project = primitive(WOW_PROJECT_ID)
+
         local function isProject(constant)
-            return type(project)=='number' and type(constant)=='number' and project==constant
+            return type(project) == 'number' and type(constant) == 'number' and project == constant
         end
-        local family='unknown'
-        if isProject(WOW_PROJECT_CAMELOT) then family='forever'
-        elseif isProject(WOW_PROJECT_MAINLINE) then family='retail'
-        elseif isProject(WOW_PROJECT_CLASSIC) then family='era'
-        elseif isProject(WOW_PROJECT_BURNING_CRUSADE_CLASSIC) then family='tbc'
-        elseif isProject(WOW_PROJECT_MISTS_CLASSIC) or isProject(WOW_PROJECT_CATACLYSM_CLASSIC)
-            or isProject(WOW_PROJECT_WRATH_CLASSIC) then family='progression' end
+
+        local family = 'unknown'
+
+        if isProject(WOW_PROJECT_CAMELOT) then
+            family = 'forever'
+        elseif isProject(WOW_PROJECT_MAINLINE) then
+            family = 'retail'
+        elseif isProject(WOW_PROJECT_CLASSIC) then
+            family = 'era'
+        elseif isProject(WOW_PROJECT_BURNING_CRUSADE_CLASSIC) then
+            family = 'tbc'
+        elseif isProject(WOW_PROJECT_MISTS_CLASSIC) or isProject(WOW_PROJECT_CATACLYSM_CLASSIC) or isProject(
+            WOW_PROJECT_WRATH_CLASSIC
+        ) then
+            family = 'progression'
+        end
+
         -- Pack selection's expansion selector (LE_EXPANSION_LEVEL_CURRENT).
-        local context={family=family,expansion=primitive(LE_EXPANSION_LEVEL_CURRENT)}
-        if type(GetBuildInfo)=='function' then
-            local ok,_,build=pcall(GetBuildInfo)
-            if ok then context.build=primitive(build) end
+        local context = { family = family, expansion = primitive(LE_EXPANSION_LEVEL_CURRENT) }
+
+        if type(GetBuildInfo) == 'function' then
+            local ok, _, build = pcall(GetBuildInfo)
+            if ok then context.build = primitive(build) end
         end
-        if family=='retail' or family=='forever' then context.combatDataPolicy='restricted'
-        elseif family=='unknown' then context.combatDataPolicy='unsupported'
-        else context.combatDataPolicy='probe' end
-        return context,true
+
+        if family == 'retail' or family == 'forever' then
+            context.combatDataPolicy = 'restricted'
+        elseif family == 'unknown' then
+            context.combatDataPolicy = 'unsupported'
+        else
+            context.combatDataPolicy = 'probe'
+        end
+
+        return context, true
     end)
+
     return true
 end
 
@@ -178,39 +272,49 @@ function platform:CanReadValue(value)
     if not readable(value) then return false, "restricted-value" end
     return true
 end
-if secretsUnrestricted then function platform:CanReadValue() return true end end
+
+if secretsUnrestricted then
+    function platform:CanReadValue()
+        return true
+    end
+end
 
 local function declaration(namespace, method, label, legacy)
     if type(namespace) == "table" and type(namespace[method]) == "function" then
-        return {status="present", source=label.."."..method, readability="unverified"}
+        return { status = "present", source = label .. "." .. method, readability = "unverified" }
     end
+
     if legacy and type(_G[legacy]) == "function" then
-        return {status="present", source=legacy, readability="unverified"}
+        return { status = "present", source = legacy, readability = "unverified" }
     end
-    return {status="missing", readability="unverified"}
+
+    return { status = "missing", readability = "unverified" }
 end
 
 function platform:GetAPISurface()
     return {
-        spellMetadata=declaration(C_Spell, "GetSpellInfo", "C_Spell", "GetSpellInfo"),
-        spellbook=declaration(C_SpellBook, "GetSpellBookItemInfo", "C_SpellBook", "GetSpellBookItemInfo"),
-        knownSpell=declaration(C_SpellBook, "IsSpellKnown", "C_SpellBook", "IsSpellKnown"),
-        aura=declaration(C_UnitAuras, "GetAuraDataByIndex", "C_UnitAuras", "UnitAura"),
-        cooldown=declaration(C_Spell, "GetSpellCooldown", "C_Spell", "GetSpellCooldown"),
-        assisted=declaration(C_AssistedCombat, "GetNextCastSpell", "C_AssistedCombat"),
-        eventValidation=declaration(C_EventUtils, "IsEventValid", "C_EventUtils"),
+        spellMetadata = declaration(C_Spell, "GetSpellInfo", "C_Spell", "GetSpellInfo"),
+        spellbook = declaration(C_SpellBook, "GetSpellBookItemInfo", "C_SpellBook", "GetSpellBookItemInfo"),
+        knownSpell = declaration(C_SpellBook, "IsSpellKnown", "C_SpellBook", "IsSpellKnown"),
+        aura = declaration(C_UnitAuras, "GetAuraDataByIndex", "C_UnitAuras", "UnitAura"),
+        cooldown = declaration(C_Spell, "GetSpellCooldown", "C_Spell", "GetSpellCooldown"),
+        assisted = declaration(C_AssistedCombat, "GetNextCastSpell", "C_AssistedCombat"),
+        eventValidation = declaration(C_EventUtils, "IsEventValid", "C_EventUtils"),
     }
 end
 
 function platform:GetAssistedAvailability()
     if type(C_AssistedCombat) ~= "table" or type(C_AssistedCombat.IsAvailable) ~= "function" then
-        return {available=false, reason="missing-api"}
+        return { available = false, reason = "missing-api" }
     end
+
     local ok, available, reason = pcall(C_AssistedCombat.IsAvailable)
-    if not ok then return {available=false, reason="availability-probe-error"} end
+    if not ok then return { available = false, reason = "availability-probe-error" } end
+
     if not readable(available) or not readable(reason) then
-        return {available=false, reason="restricted-availability"}
+        return { available = false, reason = "restricted-availability" }
     end
-    if type(available) ~= "boolean" then return {available=false, reason="invalid-availability-result"} end
-    return {available=available, reason=type(reason) == "string" and reason or nil}
+
+    if type(available) ~= "boolean" then return { available = false, reason = "invalid-availability-result" } end
+    return { available = available, reason = type(reason) == "string" and reason or nil }
 end

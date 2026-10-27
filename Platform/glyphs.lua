@@ -1,9 +1,11 @@
-local _,addon=...
-local platform=addon.Platform
-local function integer(value,minimum)
+local _, addon = ...
+local platform = addon.Platform
+
+local function integer(value, minimum)
     return type(value)=='number' and value==value and value>=minimum and value<math.huge and value%1==0
 end
-function platform:GetGlyphItemInfo(itemID,classID)
+
+function platform:GetGlyphItemInfo(itemID, classID)
     if not self:CanReadValue(itemID) or not self:CanReadValue(classID) then return nil,'restricted-value' end
     if not integer(itemID,1) then return nil,'invalid-item' end
     if classID==nil then
@@ -36,7 +38,8 @@ local function layout(info)
         if info.version==edition.prefix..patch and info.interface==edition.base+patch then return edition.position end
     end
 end
-local function socket(self,fn,index,position)
+
+local function socket(self, fn, index, position)
     local ok,tuple=pcall(function() return {fn(index)} end)
     if not ok then return {slot=index,reason='api-error'} end
     local enabled,kind,spell=tuple[1],tuple[2],tuple[position]
@@ -49,11 +52,13 @@ local function socket(self,fn,index,position)
     if not integer(spell,1) then return {slot=index,reason='invalid-api-result'} end
     return {slot=index,active=true,spellID=spell}
 end
+
 -- Whether this client build has a verified glyph layout; a fact of the
 -- client, read by condition support without observing sockets.
 function platform:IsGlyphLayoutSupported()
-    return layout(self:GetClientInfo())~=nil
+    return layout(self:GetClientInfo()) ~= nil
 end
+
 function platform:GetGlyphSocketSnapshot()
     local position=layout(self:GetClientInfo())
     if not position then return nil,'unsupported-glyph-layout' end

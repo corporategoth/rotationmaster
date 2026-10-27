@@ -1,11 +1,11 @@
-local _,addon=...
-local platform=addon.Platform
+local _, addon = ...
+local platform = addon.Platform
 
 local function finite(value)
     return type(value)=='number' and value==value and value<math.huge and value>-math.huge
 end
 
-local function readField(self,object,key)
+local function readField(self, object, key)
     if not self:CanReadValue(object) then return nil,'restricted-value' end
     if type(object)~='table' then return nil,'invalid-api-result' end
     local ok,value=pcall(function() return object[key] end)
@@ -14,7 +14,7 @@ local function readField(self,object,key)
     return value
 end
 
-local function providerValue(self,value)
+local function providerValue(self, value)
     if not self:CanReadValue(value) then return nil,'restricted-value' end
     if canaccessvalue and not canaccessvalue(value) then return nil,'restricted-value' end
     if value==nil or value==false then return nil end
@@ -44,7 +44,7 @@ function platform:GetHealthForecastIdentityObservation(unit)
     return guid
 end
 
-function platform:GetHealthForecastValueObservation(unit,kind)
+function platform:GetHealthForecastValueObservation(unit, kind)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(kind) then return nil,'restricted-value' end

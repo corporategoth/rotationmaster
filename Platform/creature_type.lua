@@ -1,5 +1,5 @@
-local _,addon=...
-local platform=addon.Platform
+local _, addon = ...
+local platform = addon.Platform
 
 -- Identity is native return two, independent of the localized caption in one.
 function platform:GetUnitCreatureTypeID(unit)

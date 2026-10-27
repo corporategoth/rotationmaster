@@ -1,5 +1,5 @@
-local _,addon=...
-local platform=addon.Platform
+local _, addon = ...
+local platform = addon.Platform
 
 -- Public roster membership is readable state, independent of enemy-combat
 -- observation policy. A false selected result must not invoke another query.
@@ -19,7 +19,7 @@ function platform:GetGroupMembership(raidOnly)
 end
 
 -- Explicit unit/name observation is separate from the legacy player query.
-function platform:GetUnitGroupMembership(unit,raidOnly)
+function platform:GetUnitGroupMembership(unit, raidOnly)
     if not self:CanReadValue(unit) or not self:CanReadValue(raidOnly) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' or #unit>512 or unit:find('[%z\1-\31\127]') then return nil,'invalid-unit' end
     if raidOnly~=nil and type(raidOnly)~='boolean' then return nil,'invalid-group-query' end

@@ -1,9 +1,10 @@
-local _,addon=...
-local platform=addon.Platform
+local _, addon = ...
+local platform = addon.Platform
 
 local function finite(value)
     return type(value)=='number' and value==value and value<math.huge and value>-math.huge
 end
+
 local function remainingSeconds(ending)
     if not platform:CanReadValue(ending) then return nil,'restricted-value' end
     if ending==nil then return nil,'cast-time-unavailable' end
@@ -15,20 +16,23 @@ local function remainingSeconds(ending)
     if not finite(now) or now<0 then return nil,'invalid-api-result' end
     return math.max(0,ending/1000-now)
 end
+
 -- Full length of the cast, from its own start and end; with the remaining
 -- seconds it gives the share done without a second clock read.
-local function durationSeconds(starting,ending)
+local function durationSeconds(starting, ending)
     if not platform:CanReadValue(starting) or not platform:CanReadValue(ending) then return nil,'restricted-value' end
     if starting==nil or ending==nil then return nil,'cast-time-unavailable' end
     if not finite(starting) or not finite(ending) or starting<0 or ending<=starting then return nil,'invalid-api-result' end
     return (ending-starting)/1000
 end
+
 local function spellIdentity(id)
     if not platform:CanReadValue(id) then return nil,'restricted-value' end
     if id==nil then return nil,'cast-spell-unavailable' end
     if type(id)~='number' or id~=id or id<=0 or id==math.huge or id%1~=0 then return nil,'invalid-api-result' end
     return id
 end
+
 local function interruptibility(flag)
     if not platform:CanReadValue(flag) then return nil,'restricted-value' end
     if flag==nil then return nil,'interruptibility-unavailable' end
@@ -40,7 +44,7 @@ end
 -- A readable name can still establish presence when the timer, duration,
 -- interruptibility or spell ID is unavailable; so can a secret one, though
 -- the record then has no name (nameReason says why).
-function platform:GetUnitCastObservation(unit,kind)
+function platform:GetUnitCastObservation(unit, kind)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(kind) then return nil,'restricted-value' end

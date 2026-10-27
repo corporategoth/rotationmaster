@@ -1,5 +1,5 @@
-local _,addon=...
-local platform=addon.Platform
+local _, addon = ...
+local platform = addon.Platform
 
 -- One public world-state tuple; membership and type have independent readiness.
 function platform:GetInstanceObservation()
