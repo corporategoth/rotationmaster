@@ -1,3 +1,8 @@
+-- Group unit resolution: turns the group unit kinds (main tank, assigned healer, leader, ...) in a condition value into
+-- real unit tokens for one evaluation. It reads who holds an assignment through platform:ResolveGroupUnit and must not
+-- cache across evaluations. Loaded from the TOC before rotation_lifecycle.lua; called by Core/conditions.lua for every
+-- condition evaluation. The group member lookup is a restricted-client concern that lives in the Platform adapter.
+
 local _, addon = ...
 
 -- Conditions name a unit by a token the game understands, or by one of the

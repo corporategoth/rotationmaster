@@ -1,3 +1,9 @@
+-- Rotation import and export services: validates and stores an imported rotation (with its manifest and step origins),
+-- applies a prepared import to a new or an existing custom rotation and refreshes the engine afterwards, and builds the
+-- envelope that export serializes. It does not parse or encode text (Core/transfer_formats.lua and UI/transfer.lua do),
+-- and it writes saved data only after every check has passed. Loaded after Core/rotation_tags.lua. When the scoped
+-- coordinator exists it does the storage work; the profile-library branches below are the legacy path.
+
 local _, addon = ...
 local data = addon.RotationData
 local activeCurrent = addon.IsActiveRotationTransitionCurrent
@@ -10,19 +16,28 @@ if type(addon.BindActiveRotationPublication) == 'function' then
     end)
 end
 
+-- True for a plain table with no metatable; saved state that is anything else is treated as invalid.
 local function plain(value)
     return type(value) == "table" and getmetatable(value) == nil
 end
 
+-- Returns the validation options an import runs under (the same ones the rest of the addon validates rotations with).
 local function settings(self)
     local options = self:GetRotationValidationOptions()
     return options
 end
 
+-- Public alias of the import validation options, for the editors that validate a body the way an import would.
 function addon:GetImportValidationOptions()
     return settings(self)
 end
 
+-- ============================================================================
+-- Reading imported rotations
+-- ============================================================================
+
+-- Returns a view { envelope, applicability, validation, sourceId, sourceRevision, stepOrigins } of an imported
+-- rotation, rebuilt from its retained manifest and current body, or nil and 'not-imported' / 'invalid-import-state'.
 function addon:GetImportedRotationView(spec, id)
     local scoped = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
     if scoped then return scoped:SourceView(spec, id, true) end
@@ -64,6 +79,13 @@ function addon:GetImportedRotationView(spec, id)
     }
 end
 
+-- ============================================================================
+-- Creating and applying imports
+-- ============================================================================
+
+-- Stores a prepared import as a custom rotation under `spec` and returns its new (or replaced) id, nil, nil and the
+-- active transition. `replacement` ({ id, valid }) overwrites that rotation instead. Returns nil and a reason when
+-- validation or any ownership re-check fails; nothing is written until every id is allocated and every check passed.
 function addon:CreateImportedRotation(prepared, spec, name, replacement, options)
     local scoped = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
     if scoped then return scoped:Import(prepared, spec, name, replacement, options) end
@@ -104,6 +126,7 @@ function addon:CreateImportedRotation(prepared, spec, name, replacement, options
 
     -- Reserve identities in live bodies and retained provenance; never discard
     -- malformed unrelated saved data while allocating a new rotation.
+    -- Marks every string in the value as an identity already in use, so a fresh id cannot collide with any of them.
     local function reserve(value)
         if type(value) == "string" then
             used[value] = true
@@ -144,6 +167,7 @@ function addon:CreateImportedRotation(prepared, spec, name, replacement, options
     reserve(body)
     reserve(manifest)
 
+    -- Allocates a new unused id from the id provider. Returns the id, or nil and a reason code.
     local function fresh()
         local success, id = pcall(self.uuid)
 
@@ -236,6 +260,7 @@ function addon:CreateImportedRotation(prepared, spec, name, replacement, options
     return id, nil, nil, transition
 end
 
+-- Deep equality of two plain data trees, used to detect that a rotation changed since the import was previewed.
 local function equal(a, b)
     if type(a) ~= type(b) then return false end
     if type(a) ~= 'table' then return a == b end
@@ -251,13 +276,21 @@ local function equal(a, b)
     return true
 end
 
+-- Applies the import held by `session` (identified by `token`) as a new rotation, or over `target` when given.
+-- `expected` is what the caller saw when it previewed the replacement; if the rotation, its profile or its record
+-- changed, or it has unsaved edits open, nothing is written. Returns the id, or nil and a reason ('rotation-changed-
+-- externally', 'rotation-has-unsaved-changes', ...). Afterwards it refreshes autoswitch, the active rotation and glows.
 function addon:ApplyRotationImport(session, token, spec, name, target, expected, options)
     local change = beginActive(self)
 
+    -- True while no newer rotation transition has superseded this import's. Checked after every step that can call
+    -- out.
     local function current()
         return activeCurrent(self, change)
     end
 
+    -- Calls a method that may not be loaded yet, re-reading it after the first check. Returns whether this import is
+    -- still current.
     local function optional(name, ...)
         local available = self[name]
         if not current() then return false end
@@ -271,6 +304,8 @@ function addon:ApplyRotationImport(session, token, spec, name, target, expected,
         return current()
     end
 
+    -- Re-selects the rotation through SwitchRotation and adopts the transition it returns. Returns whether this import
+    -- is still current.
     local function switch()
         local available = self.SwitchRotation
         if not current() then return false end
@@ -342,6 +377,7 @@ function addon:ApplyRotationImport(session, token, spec, name, target, expected,
     local profile = self.db.profile
     local original = self:GetEditableRotation(spec, target)
 
+    -- True while the rotation being replaced is still the exact record and profile the caller previewed.
     local function valid()
         return self.db.profile == profile
             and type(expected) == 'table'
@@ -404,6 +440,8 @@ end
 -- replacement keeps the replaced rotation's own specs. Where it holds
 -- specialization IDs they travel as they are, and a rotation only for
 -- another class's specializations is refused like any other class mismatch.
+-- Removes the body's specs when this client keeps talent groups (slot kind), since slot numbers do not travel between
+-- characters. Returns the body.
 local function stripSlotSpecs(self, body)
     if
         type(body) == 'table'
@@ -417,6 +455,9 @@ local function stripSlotSpecs(self, body)
     return body
 end
 
+-- Decides which specs an imported rotation gets on this client. Returns the spec list (possibly nil), or nil and
+-- 'invalid-import' / 'class-mismatch'. Talent-group clients use the caller's choice or the current group; other
+-- clients keep the incoming specs and refuse ones that belong only to another class.
 function addon:PrepareImportedRotationSpecs(specs, chosen, replacement)
     local kind = self.GetRotationSpecKind and self:GetRotationSpecKind()
 
@@ -436,6 +477,7 @@ function addon:PrepareImportedRotationSpecs(specs, chosen, replacement)
 
         if type(UnitClass) == 'function' then
             local ok, _, token = pcall(UnitClass, 'player')
+            -- UnitClass is a game value: use it only after Platform:CanReadValue accepts it (restricted clients).
             if ok and self.Platform:CanReadValue(token) and type(token) == 'string' then class = token end
         end
 
@@ -456,6 +498,13 @@ function addon:PrepareImportedRotationSpecs(specs, chosen, replacement)
     return normalized
 end
 
+-- ============================================================================
+-- Export
+-- ============================================================================
+
+-- Builds the export envelope for a rotation: its Built In, sourced or imported envelope when it has one, else the
+-- bare body, with talent-group specs removed and body tags mirrored onto the envelope. Returns nil and a reason on
+-- failure.
 local function exportData(self, spec, id)
     local scoped = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
 
@@ -479,6 +528,7 @@ local function exportData(self, spec, id)
         return result
     end
 
+    -- Returns a copy of the envelope whose tags match the body's current tags (the body is where edits land).
     local function currentTags(envelope)
         if type(envelope) == 'table' and type(envelope.body) == 'table' and envelope.body.tags ~= nil then
             local copy, why = data.CopyData(envelope)
@@ -515,6 +565,7 @@ local function exportName(self, exported)
     return copy
 end
 
+-- Returns the export envelope or body for a rotation, named for the exporting client's language; or nil and a reason.
 function addon:GetRotationExportData(spec, id)
     local exported, why = exportData(self, spec, id)
     return exportName(self, exported), why

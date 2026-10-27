@@ -1,3 +1,9 @@
+-- Assisted highlight manager: owns the one character CVar that turns Blizzard's Assisted Highlight on, so it is on only
+-- while the active rotation has a "Blizzard's suggestion" step, and always restored. The design is described below.
+-- It must not run per poll and never touches the CVar in combat. Loaded late in the TOC (after
+-- Core/unit_state_conditions.lua) and driven by its own event frame, AceDB profile callbacks and the
+-- ROTATIONMASTER_ROTATION message. Retail only.
+
 local _, addon = ...
 
 -- Who highlights a "Blizzard's suggestion" step: Rotation Master's own glow,
@@ -27,28 +33,36 @@ local _, addon = ...
 -- Cost: nothing per poll. The engines read one boolean field
 -- (addon.assistedGlowHidden) only for an assisted step.
 
+-- ============================================================================
+-- State and helpers
+-- ============================================================================
+
 local CVAR_ON = '1'
 local MODES = { rm = true, blizzard = true, both = true }
 local manager = { ready = false, userOverride = false, applying = false, loggingOut = false, pending = false }
 addon.AssistedHighlight = manager
 addon.assistedGlowHidden = false
 
+-- Returns the active profile table, or nil before the database exists.
 local function profile()
     local db = addon.db
     return type(db) == 'table' and type(db.profile) == 'table' and db.profile or nil
 end
 
+-- Returns the per-character saved table (where the restore record lives), or nil before the database exists.
 local function characterStore()
     local db = addon.db
     return type(db) == 'table' and type(db.char) == 'table' and db.char or nil
 end
 
+-- True in combat lockdown. An unreadable or unknown answer counts as combat, because the CVar must not be written then.
 local function inCombat()
     if type(InCombatLockdown) ~= 'function' then return false end
     local ok, locked = pcall(InCombatLockdown)
     return not ok or (locked ~= false and locked ~= nil)
 end
 
+-- Returns the configured mode, 'rm', 'blizzard' or 'both'; anything else (unset or corrupt) reads as 'rm'.
 function addon:GetAssistedHighlightMode(settings)
     local source = settings or profile()
     local mode = type(source) == 'table' and source.assisted_highlight or nil
@@ -68,7 +82,7 @@ function addon:GetAssistedHighlightSupport()
 end
 
 -- Whether the active rotation has an enabled, reachable "Blizzard's
--- suggestion" step in its rotation list.
+-- suggestion" step in its rotation list. Every lookup is guarded, so a missing service reads as false.
 local function rotationUsesAssisted(self)
     local id, spec = self.currentRotation, self.currentSpec
     if id == nil or spec == nil or type(self.GetRotationForCleanup) ~= 'function' then return false end
@@ -96,6 +110,8 @@ local function rotationUsesAssisted(self)
     return false
 end
 
+-- True when the CVar should be on now: a mode that uses Blizzard's highlight, a client that supports it, and an active
+-- rotation that has an assisted step.
 local function wanted(self)
     if self:GetAssistedHighlightMode() == 'rm' or self.currentRotation == nil then return false end
     if not self:GetAssistedHighlightSupport() then return false end
@@ -103,10 +119,13 @@ local function wanted(self)
     return rotationUsesAssisted(self)
 end
 
+-- True for a well-formed restore record { previous, applied }; a corrupt saved record is dropped by the caller.
 local function validRecord(record)
     return type(record) == 'table' and type(record.previous) == 'string' and type(record.applied) == 'string'
 end
 
+-- Writes the CVar through the Platform adapter. The applying flag makes the resulting CVAR_UPDATE event ignore our own
+-- write. Returns the value now in effect, or nil and a reason.
 local function write(value)
     manager.applying = true
     local ok, now, why = pcall(addon.Platform.SetAssistedHighlightCVar, addon.Platform, value)
@@ -115,6 +134,12 @@ local function write(value)
     return now, why
 end
 
+-- ============================================================================
+-- Reconciliation
+-- ============================================================================
+
+-- Brings the CVar and addon.assistedGlowHidden in line with what the rotation wants. Called on every relevant event,
+-- not per poll. In combat it only marks the work pending; PLAYER_REGEN_ENABLED finishes it.
 function manager:Reconcile()
     if not self.ready or self.loggingOut or self.applying then return end
     local platform = addon.Platform
@@ -204,13 +229,20 @@ function manager:Logout()
 end
 
 -- A mode chosen in settings also ends a user override from this session.
+-- Public entry for settings changes and rotation switches; clearOverride is true when the user picked a mode.
 function addon:RefreshAssistedHighlight(clearOverride)
     if clearOverride then manager.userOverride = false end
     manager:Reconcile()
 end
 
+-- ============================================================================
+-- Events
+-- ============================================================================
+
 local profileEvents = { 'OnProfileChanged', 'OnProfileCopied', 'OnProfileReset' }
 
+-- Single event handler for the frame events, the AceDB profile callbacks and the rotation message. The first
+-- PLAYER_ENTERING_WORLD marks the manager ready and registers the profile callbacks; nothing reconciles before that.
 function manager:OnEvent(event, ...)
     if event == 'PLAYER_LOGOUT' then return self:Logout() end
 

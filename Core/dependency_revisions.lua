@@ -1,14 +1,23 @@
+-- Dependency revision service: the private execution generation (a table stamp that is replaced on every managed
+-- dependency write) and the aggregate dependency stamp and epoch that rotation_references.lua reads. It owns that state
+-- and hands it out only through bind callbacks at startup; it must not scan or copy any dependency map itself.
+-- Loaded straight after globals.lua (before Platform/ and every dependency writer) so writers can capture
+-- InvalidateRotationDependencies; see docs/architecture/runtime-revisions.md.
+
 local _, addon = ...
 local owner = addon
 local identity = rawequal
+-- The dependency epoch counts writes; the stamp is an opaque table so a stale reader can never match a new one.
 local epoch, stamp = 0, {}
 local bound = false
 local executionStamp = {}
 
+-- Returns the current execution generation stamp; callers compare it by identity only.
 local function readExecutionGeneration()
     return executionStamp
 end
 
+-- Retires every in-flight execution by replacing the stamp with a fresh table, and returns the new one.
 local function advanceExecutionGeneration()
     executionStamp = {}
     return executionStamp

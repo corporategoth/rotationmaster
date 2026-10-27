@@ -1,3 +1,8 @@
+-- Tooltip integration (details below): adds Rotation Master lines to spell and item tooltips. It only appends lines,
+-- never reads or changes anything else on the tooltip, and builds its indexes lazily and never in combat. Loaded last
+-- of the Core files, after Core/assisted_highlight.lua; it installs itself at the first PLAYER_ENTERING_WORLD.
+-- Reads settings from the profile (tooltip_* keys) and the rotation roster through addon:ListRotationHeaders.
+
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
@@ -30,6 +35,10 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local manager = { installed = false, mode = nil, failed = false, itemData = 0, spellData = 0 }
 addon.TooltipIntegration = manager
 
+-- ============================================================================
+-- Settings and helpers
+-- ============================================================================
+
 local DEFAULT_LIMIT, MIN_LIMIT, MAX_LIMIT = 3, 1, 20
 -- A rotation edit does not move the dependency stamp, so the rotation roster
 -- stamp is re-read at most this often (seconds) while tooltips keep coming.
@@ -55,11 +64,14 @@ local HIDDEN_BUILTIN = {
 -- Conditions whose spell/item field is not something a player hovers.
 local SKIP_CONDITION = { GLYPH = true, TALENT = true, RUNE_ENGRAVED = true, BOSSMOD_TIMER = true }
 
+-- Returns the active profile table, or nil before the database exists.
 local function profile()
     local db = addon.db
     return type(db) == 'table' and type(db.profile) == 'table' and db.profile or nil
 end
 
+-- True when the value may be used: a secret value (restricted clients) is refused, through Platform:CanReadValue when
+-- it exists.
 local function readable(value)
     local platform = addon.Platform
 
@@ -70,12 +82,14 @@ local function readable(value)
     return platform:CanReadValue(value) == true
 end
 
+-- True in combat lockdown; an unreadable answer counts as combat so nothing is rebuilt then.
 local function inCombat()
     if type(InCombatLockdown) ~= 'function' then return false end
     local ok, locked = pcall(InCombatLockdown)
     return not ok or (locked ~= false and locked ~= nil)
 end
 
+-- Returns the game time in seconds, or 0 where GetTime is missing.
 local function now()
     return type(GetTime) == 'function' and GetTime() or 0
 end
@@ -96,11 +110,13 @@ local function readSettings(source)
         limit
 end
 
+-- Returns the tooltip settings as a table { enabled, itemsets, rotations, conditions, limit } for the settings page.
 function addon:GetTooltipSettings(source)
     local master, itemsets, rotations, conditions, limit = readSettings(source)
     return { enabled = master, itemsets = itemsets, rotations = rotations, conditions = conditions, limit = limit }
 end
 
+-- Returns the value as a positive whole number (a numeric string is accepted), or nil.
 local function wholeNumber(value)
     if type(value) == 'string' then value = tonumber(value) end
 
@@ -109,6 +125,7 @@ local function wholeNumber(value)
     end
 end
 
+-- Returns the rotation validation stamp that tells when indexes are stale, or nil when it cannot be read.
 local function validationStamp()
     local read = addon.GetRotationValidationStamp
     if type(read) ~= 'function' then return nil end
@@ -116,10 +133,14 @@ local function validationStamp()
     return ok and stamp or nil
 end
 
--- Items -------------------------------------------------------------------
+-- ============================================================================
+-- Item set index
+-- ============================================================================
+
 -- An item set or condition lists item IDs, links, "item:N" strings and, when
 -- the player typed one, names. Names resolve only once the client has the
 -- item cached; until then the index is marked incomplete and retried.
+-- Returns the item ID for one entry, or nil (and marks state.incomplete when a name is not cached yet).
 local function entryItemId(entry, state)
     if type(entry) == 'number' then return wholeNumber(entry) end
     if type(entry) ~= 'string' or entry == '' then return nil end
@@ -137,6 +158,7 @@ local function entryItemId(entry, state)
     state.incomplete = true
 end
 
+-- Returns the per-profile and the shared item set tables (either may be nil).
 local function setMaps()
     local db = addon.db
     if type(db) ~= 'table' then return nil, nil end
@@ -145,7 +167,7 @@ local function setMaps()
     return type(profileSets) == 'table' and profileSets or nil, type(globalSets) == 'table' and globalSets or nil
 end
 
--- id -> item set (personal sets shadow shared sets with the same key).
+-- Calls callback(key, set) for every item set. Personal sets shadow shared sets with the same key.
 local function eachSet(callback)
     local personal, shared = setMaps()
 
@@ -162,6 +184,7 @@ local function eachSet(callback)
     end
 end
 
+-- Returns the item set stored under key, personal first, then shared.
 local function resolveSet(key)
     local personal, shared = setMaps()
     local set = personal and rawget(personal, key)
@@ -169,11 +192,13 @@ local function resolveSet(key)
     return set
 end
 
+-- True for a usable item set: a table with a non-empty name and an item list.
 local function validSet(set)
     return type(set) == 'table' and type(set.name) == 'string' and set.name ~= '' and type(set.items) == 'table'
 end
 
 -- item ID -> sorted list of set names.
+-- Returns { byItem, incomplete, text }; text is a cache of the formatted lines, filled by manager:Lines.
 local function buildSets()
     local byItem, state = {}, { incomplete = false }
     local seen = {}
@@ -212,7 +237,11 @@ local function buildSets()
     return { byItem = byItem, incomplete = state.incomplete, text = {} }
 end
 
--- Rotations -----------------------------------------------------------------
+-- ============================================================================
+-- Rotation use index
+-- ============================================================================
+
+-- Appends an entry to the list stored under id, creating the list when needed.
 local function addEntry(map, id, entry)
     local list = map[id]
 
@@ -224,7 +253,7 @@ local function addEntry(map, id, entry)
     list[#list + 1] = entry
 end
 
--- The item IDs an item reference stands for: an item set key or a list.
+-- The item IDs an item reference stands for: an item set key or a list. Returns a list, or nil when there are none.
 local function referenceItems(reference, state)
     local list = reference
 
@@ -253,6 +282,7 @@ local function referenceItems(reference, state)
 end
 
 -- Add the rotation's references. includeConditions: also those inside conditions.
+-- Only steps that can run (reachable and enabled) count. The condition walk is bounded in depth and node count.
 local function indexBody(body, ref, index, includeConditions, state)
     local data = addon.RotationData
     if type(data) ~= 'table' or type(data.IndexRotationSteps) ~= 'function' or type(body) ~= 'table' then return end
@@ -261,6 +291,7 @@ local function indexBody(body, ref, index, includeConditions, state)
     local budget = MAX_CONDITION_NODES
     local walk
 
+    -- Collects the spells and items a condition tree names, skipping condition types whose field is not hoverable.
     walk = function(node, depth)
         if type(node) ~= 'table' or depth > MAX_CONDITION_DEPTH or budget <= 0 then return end
         budget = budget - 1
@@ -314,6 +345,7 @@ local function indexBody(body, ref, index, includeConditions, state)
     end
 end
 
+-- Returns the rotation name as shown elsewhere (Built In names are localized); never empty.
 local function displayName(name)
     local shown = type(addon.RotationDisplayName) == 'function' and addon:RotationDisplayName(name) or name
     if type(shown) ~= 'string' or shown == '' then shown = name end
@@ -326,6 +358,7 @@ local function buildUses(rows, includeConditions, spec)
     local state = { incomplete = false }
     local seen = {}
 
+    -- Adds one rotation body to the index under a reference carrying its name, enabled state and priority.
     local function refer(name, enabled, priority, body)
         if type(body) ~= 'table' then return end
 
@@ -381,7 +414,10 @@ local function buildUses(rows, includeConditions, spec)
     return index
 end
 
--- Index lifetime -----------------------------------------------------------
+-- ============================================================================
+-- Index lifetime
+-- ============================================================================
+
 -- Sets: rebuilt when the dependency stamp (the existing item set / condition
 -- invalidation) or the profile changes.
 function manager:Sets()
@@ -406,6 +442,8 @@ end
 
 -- Uses: the same, plus the current specialization, the condition setting and
 -- the rotation roster stamp (a rotation edit moves neither of the others).
+-- Returns the current index, rebuilt when stale, or the previous one (possibly nil) in combat or when the rotation
+-- list is not ready.
 function manager:Uses(includeConditions)
     local current = self.uses
     local spec = addon.currentSpec
@@ -453,7 +491,11 @@ function manager:Uses(includeConditions)
     return built
 end
 
--- Lookups -------------------------------------------------------------------
+-- ============================================================================
+-- Lookups and lines
+-- ============================================================================
+
+-- Sort order for the rotations listed on a tooltip: enabled first, then higher priority, then name.
 local function byWeight(a, b)
     if a.enabled ~= b.enabled then return a.enabled end
     if a.priority ~= b.priority then return a.priority > b.priority end
@@ -462,6 +504,8 @@ local function byWeight(a, b)
     return a.name < b.name
 end
 
+-- Returns the rotations (each once, in tooltip order) that use any candidate ID, or nil when none do. Condition-only
+-- uses count only when includeConditions is set, and a ranked step is not matched through another rank.
 local function collect(index, candidates, includeConditions)
     local found, seen
 
@@ -528,6 +572,7 @@ local function spellCandidates(id)
     return list
 end
 
+-- Doubles pipe characters so a rotation or set name cannot inject a color code or hyperlink into the tooltip.
 local function escape(name)
     return (name:gsub('|', '||'))
 end
@@ -539,6 +584,7 @@ local function line(label, names, total)
     return CYAN .. label .. ':' .. RESET .. ' ' .. text
 end
 
+-- Formats the "Rotation Master rotations" line; disabled rotations are grayed and marked.
 local function rotationLine(found, limit)
     local names = {}
 
@@ -551,6 +597,7 @@ local function rotationLine(found, limit)
     return line(L['Rotation Master rotations'], names, #found)
 end
 
+-- Formats the "Rotation Master item sets" line.
 local function setLine(found, limit)
     local names = {}
 
@@ -562,6 +609,7 @@ local function setLine(found, limit)
 end
 
 -- The lines for one hovered spell or item (cached per index until it is replaced).
+-- `kind` is 'item' or 'spell'. Returns a list of lines, or nil when there is nothing to add.
 function manager:Lines(kind, id)
     local master, wantSets, wantRotations, includeConditions, limit = readSettings()
     if not master or not (wantSets or wantRotations) then return nil end
@@ -613,7 +661,11 @@ function manager:Lines(kind, id)
     return lines
 end
 
--- Appending -------------------------------------------------------------------
+-- ============================================================================
+-- Appending to tooltips
+-- ============================================================================
+
+-- Adds this module's lines for the hovered thing to the tooltip. Returns how many lines were added.
 local function append(tooltip, kind, id)
     local lines = manager:Lines(kind, id)
     if not lines then return 0 end
@@ -625,6 +677,8 @@ local function append(tooltip, kind, id)
     return #lines
 end
 
+-- Runs fn through the diagnostics collector (else pcall). An error retires the feature for the session so a broken
+-- tooltip hook cannot repeat. Returns the number of lines fn added.
 local function guarded(fn, ...)
     if manager.failed then return 0 end
     local diagnostics = addon.Diagnostics
@@ -644,10 +698,12 @@ local function guarded(fn, ...)
     return added or 0
 end
 
+-- True for the two tooltips this module decorates (GameTooltip and ItemRefTooltip).
 local function watched(tooltip)
     return tooltip ~= nil and (tooltip == GameTooltip or tooltip == ItemRefTooltip)
 end
 
+-- True when the tooltip is forbidden to addons (or the check fails); such a tooltip must not be touched.
 local function forbidden(tooltip)
     if type(tooltip) ~= 'table' or type(tooltip.IsForbidden) ~= 'function' then return false end
     local ok, value = pcall(tooltip.IsForbidden, tooltip)
@@ -655,6 +711,7 @@ local function forbidden(tooltip)
 end
 
 -- Structured path (mainline GameTooltip): the processor hands over the data.
+-- `data.id` is a game value, so it is checked readable before use.
 function manager:OnProcessed(tooltip, kind, data)
     local master, wantSets, wantRotations = readSettings()
     if not master or not (wantSets or wantRotations) or self.failed then return end
@@ -666,8 +723,11 @@ function manager:OnProcessed(tooltip, kind, data)
 end
 
 -- Script path (Classic): the tooltip knows what it shows.
+-- Tooltips already decorated since they were last cleared; weak keys so a discarded tooltip is not retained.
 local shown = setmetatable({}, { __mode = 'k' })
 
+-- Handler for the Classic OnTooltipSetItem/Spell scripts. Reads the ID from the tooltip itself, appends once per
+-- display (the shown flag), and re-shows the tooltip so it resizes to fit the new line.
 function manager:OnScript(tooltip, kind)
     local master, wantSets, wantRotations = readSettings()
     if not master or not (wantSets or wantRotations) or self.failed then return end
@@ -693,6 +753,12 @@ function manager:OnScript(tooltip, kind)
     if guarded(append, tooltip, kind, id) > 0 and type(tooltip.Show) == 'function' then tooltip:Show() end
 end
 
+-- ============================================================================
+-- Installation
+-- ============================================================================
+
+-- Chooses how to hook tooltips: 'processor' (with the processor and tooltip type tables) when GameTooltip is built on
+-- the data processor, 'scripts' when it only has HookScript, or nil when neither exists.
 local function processorMode()
     local processor = TooltipDataProcessor
     local types = type(Enum) == 'table' and Enum.TooltipDataType or nil
@@ -712,6 +778,7 @@ local function processorMode()
     if type(GameTooltip) == 'table' and type(GameTooltip.HookScript) == 'function' then return 'scripts' end
 end
 
+-- Registers the hooks once for the mode processorMode chose. Returns true, or false and a reason.
 function manager:Install()
     if self.installed then return true end
     local mode, processor, types = processorMode()
@@ -747,9 +814,13 @@ function manager:Install()
     return true
 end
 
--- Settings and events ------------------------------------------------------------
+-- ============================================================================
+-- Settings and events
+-- ============================================================================
+
 local eventNames = { 'SPELLS_CHANGED', 'GET_ITEM_INFO_RECEIVED' }
 
+-- Registers or unregisters the events that invalidate the indexes, only when the state changes.
 function manager:SetEvents(active)
     local frame = self.frame
     if not frame or self.eventsActive == active then return end
@@ -761,6 +832,7 @@ function manager:SetEvents(active)
     self.eventsActive = active
 end
 
+-- Drops both indexes; they are rebuilt on the next relevant tooltip.
 function manager:Invalidate()
     self.sets, self.uses = nil, nil
 end
@@ -782,12 +854,15 @@ function manager:Refresh()
     return active == true
 end
 
+-- Public entry for the settings page: re-applies the settings. Returns true when the feature is active.
 function addon:RefreshTooltipIntegration()
     return manager:Refresh()
 end
 
 local profileEvents = { 'OnProfileChanged', 'OnProfileCopied', 'OnProfileReset' }
 
+-- Event handler: the first PLAYER_ENTERING_WORLD registers the profile callbacks and applies the settings; the
+-- other events only mark cached data stale.
 function manager:OnEvent(event)
     if event == 'PLAYER_ENTERING_WORLD' then
         if not self.ready then

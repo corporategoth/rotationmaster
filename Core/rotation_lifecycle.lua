@@ -1,3 +1,9 @@
+-- Rotation profile lifecycle: reacts to AceDB profile change, copy and reset by retiring the active rotation,
+-- rebuilding the scoped rotation storage and library, and re-enabling the engine. It owns the guard that drops events
+-- from a replaced database, and must re-check the active transition after every step that can call out. Loaded after
+-- Core/group_unit_resolution.lua; installed by main.lua once self.db exists. Every optional collaborator is read at
+-- call time because several of them load later.
+
 local addon_name, addon = ...
 local activeCurrent = addon.IsActiveRotationTransitionCurrent
 local beginActive = addon.BeginActiveRotationTransition
@@ -8,6 +14,8 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
 -- Also called after import overlays: AceDB emits Reset/Copy before the
 -- importer publishes its final roots, so its event alone cannot authorize them.
+-- Re-syncs integrations, notifies dependency freshness and rebuilds scoped storage and the library. Returns true, or
+-- nil and the recovery reason (also kept in rotationStorageError).
 function addon:RefreshRotationProfileStorage()
     if self.SyncQuestieIntegration then self:SyncQuestieIntegration() end
     if self.SyncEncounterIntegration then self:SyncEncounterIntegration() end
@@ -20,6 +28,9 @@ function addon:RefreshRotationProfileStorage()
     return ok, why
 end
 
+-- Handles a profile change, copy or reset. Returns true, or nil and a reason ('rotation-transition-superseded' when a
+-- newer switch took over mid-way). The method reads are repeated after each step on purpose: any of them can run
+-- foreign code that starts a newer transition, and the check must catch that before the next step.
 function addon:RotationProfileChanged()
     local change = beginActive(self)
     if not activeCurrent(self, change) then return nil, 'rotation-transition-superseded' end
@@ -76,6 +87,7 @@ function addon:RotationProfileChanged()
     return ok, why
 end
 
+-- Registers the profile callbacks on the current AceDB, replacing a previous registration. Safe to call repeatedly.
 function addon:InstallRotationProfileLifecycle()
     local db = self.db
     local previous = self.rotationProfileLifecycleDB
@@ -96,6 +108,7 @@ function addon:InstallRotationProfileLifecycle()
     -- Give lifecycle callbacks a distinct binding owner so both can coexist.
     local owner = {}
 
+    -- Ignores an event delivered to a callback that belongs to a database or owner that has since been replaced.
     local function changed(...)
         if self.db ~= db or self.rotationProfileLifecycleDB ~= db or self.rotationProfileLifecycleOwner ~= owner then
             return

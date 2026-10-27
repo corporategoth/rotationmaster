@@ -1,6 +1,14 @@
+-- Item set import parsing: validates pasted text for the item set importer and returns a candidate set. It only
+-- parses and validates; it never writes the saved item sets (the item set settings page does that after the user
+-- confirms). Loaded after Core/profile_data.lua; the codec is passed in by the caller, so this file has no codec load
+-- order to respect.
+
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- Parses the text a user pasted into the item set importer. Accepts either an encoded RM-ItemSet envelope or a plain
+-- list of item ids and names separated by commas or newlines. Returns { name = ..., items = ... } (name is nil for a
+-- plain list), or nil and the localized "Invalid item list." message when the size, shape or any item is out of bounds.
 function addon:ParseItemSetImport(text, codec)
     if type(text) ~= 'string' or #text > 131072 then return nil, L['Invalid item list.'] end
     local decoded = codec:Decode(text)

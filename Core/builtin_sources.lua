@@ -1,6 +1,14 @@
+-- Built In source browser support: registers the packaged helper modules as read-only Built In functions and rebuilds a
+-- Built In condition's callback source for display and cloning. The tables come from the generated
+-- Data/builtin_sources.lua (addon.BuiltinSourceCatalog); this file only reads them and must never edit or reformat the
+-- recorded code, because saved custom copies bind to its exact text. Loaded after Core/functions.lua.
+
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- Registers one Built In module's helpers (path is the module's file path, getter(alias) returns a live function).
+-- The getter is always remembered; the registration itself is skipped when the catalog has no entry for the path.
+-- Registers one Built In function per binding recorded for the module in the catalog.
 function addon:RegisterBuiltinSourceModule(path, getter)
     self.builtinSourceModules = self.builtinSourceModules or {}
     self.builtinSourceModules[path] = getter
@@ -59,6 +67,8 @@ for path, getter in pairs(addon.builtinSourceModules or {}) do
     addon:RegisterBuiltinSourceModule(path, getter)
 end
 
+-- Returns a source table (callback code, bindings, parameters, fields) for the Built In condition id, or nil and a
+-- reason when the catalog has no record, the condition is not registered or its source variant is unavailable.
 function addon:GetBuiltinConditionSource(id)
     local record = self.BuiltinSourceCatalog and self.BuiltinSourceCatalog.conditions[id]
     local definition = (self.conditionDefinitions or self.definitions or {})[id]
@@ -101,6 +111,7 @@ function addon:GetBuiltinConditionSource(id)
     return source
 end
 
+-- Returns the source with leading and trailing blank lines and the common indentation removed.
 -- Display only: never canonicalize Lua string contents or change a clone's
 -- executable source merely to remove the containing Lua table's indentation.
 function addon:FormatLuaSourceDisplay(source)

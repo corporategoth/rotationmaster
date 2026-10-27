@@ -1,9 +1,20 @@
+-- Scene model for the field schema canvas (the card editor for a custom condition's field schema). It indexes a schema
+-- model, lays its nodes out as rows and insertion gaps in canvas coordinates, and picks the rows that intersect a
+-- viewport; it creates no widgets and never edits the model. Loaded after Core/schema_authoring.lua; drawn by
+-- UI/schema_cards.lua. Paths are lists of child positions from the root, and a node's key is its path joined by '/'.
+
 local _, addon = ...
 
+-- ============================================================================
+-- Index
+-- ============================================================================
+
+-- Returns the string key for a path of child positions ('' is the root).
 local function key(path)
     return table.concat(path, '/')
 end
 
+-- Returns a new path that is the given path extended by one child position; the argument is not modified.
 local function childPath(path, index)
     local result = {}
 
@@ -17,6 +28,9 @@ end
 
 -- Validation and baseline comparisons belong to a model revision, never a
 -- viewport lease. Each node and each sibling name is processed once.
+-- Returns the cached index for model.revision and baseline: nodes in pre-order, byKey, per-node `changed` and `invalid`
+-- (propagated to ancestors) and the overall `dirty` flag. The index is stored on the model and rebuilt only when the
+-- revision or the baseline changes.
 function addon:GetFieldSchemaIndex(model, baseline)
     local cached = model.canvasIndex
     if cached and cached.revision == model.revision and cached.baseline == baseline then return cached end
@@ -81,12 +95,20 @@ function addon:GetFieldSchemaIndex(model, baseline)
     return index
 end
 
+-- ============================================================================
+-- Scene layout
+-- ============================================================================
+
+-- Lays the schema out top to bottom: one row per visible node (children of a folded node are skipped), the add-field
+-- slots of each container, and a list of insertion gaps sorted by y. Returns the scene with its total height. `folded`
+-- maps a node key to true. The walk is iterative so a deep schema cannot overflow the stack.
 function addon:BuildFieldSchemaScene(model, folded, width, baseline)
     local index = self:GetFieldSchemaIndex(model, baseline)
     local scene = { rows = {}, byKey = {}, gaps = {}, width = math.max(340, width or 700), index = index }
     local y = 4
     local stack = { { entry = index.byKey[''], next = 1, x = 0, width = scene.width, start = true } }
 
+    -- Records the drop target before child number `number` of the container being walked.
     local function gap(state, number)
         scene.gaps[#scene.gaps + 1] = {
             path = state.entry.path,
@@ -172,6 +194,12 @@ function addon:BuildFieldSchemaScene(model, folded, width, baseline)
     return scene
 end
 
+-- ============================================================================
+-- Viewport query
+-- ============================================================================
+
+-- Returns the scene rows that intersect the vertical range top..bottom, in row order, together with their ancestors so
+-- a container stays drawable when only a child is visible. Uses a binary search on row y, so it suits per-frame calls.
 function addon:GetFieldSchemaViewport(scene, top, bottom)
     local rows = scene.rows
     local low, high = 1, #rows

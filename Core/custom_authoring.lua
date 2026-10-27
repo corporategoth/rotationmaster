@@ -1,8 +1,21 @@
+-- Custom condition authoring: the typed callback contract (names, parameters, help text), the field schema grammar
+-- (format and parse), validation and compilation of a saved custom condition source, installation into the condition
+-- registry, and the undoable draft the source editor works on. User code is compiled here but never run except
+-- through CompileCustomCondition's one-time binding step, and nothing here evaluates a condition. Loaded after
+-- Core/builtin_sources.lua; Core/custom_condition_services.lua and the UI source pane build on it. Saved shape:
+-- db.global.custom_conditions[key] = { description, icon, fields, <one code string per callback>, ... }.
+
 local addon_name, addon = ...
 local invalidateDependencies = addon.InvalidateRotationDependencies
 if type(invalidateDependencies) ~= 'function' then invalidateDependencies = nil end
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- ============================================================================
+-- Callback contract and documentation
+-- ============================================================================
+
+-- Typed documentation of every custom condition callback: its description, argument names, types and meanings, and
+-- its return. The argument names also define the public parameter list the callbacks are compiled with.
 local docs = {
     evaluate = {
         description = L['Decide whether this condition currently matches.'],
@@ -73,6 +86,7 @@ end
 addon.CustomConditionCallbacks = callbacks
 addon.CustomConditionCallbackDocs = docs
 
+-- Returns the colored help text (description, arguments, return) for one callback, or '' for an unknown name.
 function addon:CustomConditionDocumentation(name)
     local doc = docs[name]
     if not doc then return '' end
@@ -86,12 +100,20 @@ function addon:CustomConditionDocumentation(name)
     return table.concat(lines, '\n')
 end
 
+-- ============================================================================
+-- Field schema grammar
+-- ============================================================================
+
+-- The leaf types a field schema may name.
 local kinds = { string = true, number = true, boolean = true, condition = true, ['condition[]'] = true }
 
+-- Writes a field schema as the text the schema editor shows, e.g. { spell = { string, number }, unit = string }.
+-- Returns nil and a reason when the schema does not normalize. Parsing the result gives back an equal schema.
 function addon:FormatCustomFieldSchema(fields)
     local normalized, why = self:NormalizeCustomFieldSchema(fields, true)
     if not normalized then return nil, why end
 
+    -- Writes one schema node: a leaf type name, or a braced list of (optionally named) children in sorted key order.
     local function format(value)
         if type(value) == 'string' then return value end
         local keys = {}
@@ -116,17 +138,22 @@ function addon:FormatCustomFieldSchema(fields)
     return format(normalized)
 end
 
+-- Parses schema text (the inverse of FormatCustomFieldSchema) into a normalized schema. Returns it, or nil and a
+-- reason code such as 'schema-limit', 'duplicate-field' or 'unknown-field-type'. The parser is a bounded hand-written
+-- reader (65536 bytes, 512 nodes, 16 levels): the text is user input and is never executed.
 function addon:ParseCustomFieldSchema(text)
     -- 512 nodes with valid 64-byte field names can exceed 32 KiB. Keep
     -- byte work bounded while allowing every newly supported graph to roundtrip.
     if type(text) ~= 'string' or #text > 65536 then return nil, 'schema-limit' end
     local cursor, nodes = 1, 0
 
+    -- Moves the cursor past whitespace.
     local function skip()
         local _, last = text:find('^%s*', cursor)
         cursor = (last or cursor - 1) + 1
     end
 
+    -- Consumes and returns the text matching the anchored pattern at the cursor, or returns nil and stays put.
     local function token(pattern)
         skip()
         local first, last = text:find('^' .. pattern, cursor)
@@ -140,6 +167,8 @@ function addon:ParseCustomFieldSchema(text)
 
     local parse
 
+    -- Reads one schema node at the cursor: a braced list (record or union entries) or a leaf type. Raises an error
+    -- carrying the reason code.
     parse = function(depth)
         nodes = nodes + 1
         if depth > 16 or nodes > 512 then error('schema-limit', 0) end
@@ -208,6 +237,12 @@ function addon:ParseCustomFieldSchema(text)
     return self:NormalizeCustomFieldSchema(value, true)
 end
 
+-- ============================================================================
+-- Normalizing saved source
+-- ============================================================================
+
+-- Validates the per-callback parameter name lists of a source and returns a detached copy ({} when absent), or nil and
+-- 'invalid-callback-parameters'. Names must be identifiers; '...' is allowed only as the last one.
 function addon:NormalizeCustomConditionParameters(parameters)
     if parameters == nil then return {} end
     if type(parameters) ~= 'table' or getmetatable(parameters) then return nil, 'invalid-callback-parameters' end
@@ -245,6 +280,8 @@ function addon:NormalizeCustomConditionParameters(parameters)
     return result
 end
 
+-- Returns a clean list of required field names, or nil when it is not a dense list of distinct names that the schema
+-- declares.
 function addon:NormalizeCustomConditionRequiredFields(required, fields)
     if type(required) ~= 'table' or getmetatable(required) or #required > 128 then return nil end
     local result, seen = {}, {}
@@ -266,10 +303,12 @@ function addon:NormalizeCustomConditionRequiredFields(required, fields)
     return result
 end
 
+-- Returns the public signature text of a callback, e.g. 'function(value, cache, evalStart)'. `source` is unused.
 function addon:CustomConditionSignature(source, name)
     return 'function(' .. callbacks[name] .. ')'
 end
 
+-- Maps the parameter names a source declared for a callback to the public names, for the names that differ.
 function addon:CustomConditionParameterAliases(source, name)
     local aliases = {}
     local doc = docs[name]
@@ -282,6 +321,13 @@ function addon:CustomConditionParameterAliases(source, name)
     return aliases
 end
 
+-- ============================================================================
+-- Validation, compilation and installation
+-- ============================================================================
+
+-- Compiles one callback's code into a chunk (it does not run it). Declared parameter names that differ from the public
+-- ones are aliased at the top of the body. Returns the chunk, or nil and the compiler message. The chunk name carries
+-- the condition key and callback so error reports can say where the code came from.
 function addon:CompileCustomConditionCallback(key, name, code, bindings, parameters)
     local params = callbacks[name]
     if not params or type(code) ~= 'string' then return nil, 'invalid-callback' end
@@ -305,6 +351,11 @@ function addon:CompileCustomConditionCallback(key, name, code, bindings, paramet
     )
 end
 
+-- Checks a whole custom condition source: identifier, description and icon, known fields only, the schema, the
+-- parameter lists, function bindings, required fields and that every callback compiles within the size limits.
+-- Returns { valid, compiled, fields, bindings, parameters, requiredFields, unavailable }, or nil and a table naming the
+-- failing field or callback and a reason. `compatibility` relaxes limits for already-saved sources; `allowUnavailable`
+-- accepts bindings that cannot be resolved right now and reports them in `unavailable`.
 function addon:ValidateCustomConditionSource(key, source, compatibility, allowUnavailable)
     if type(loadstring) ~= 'function' then return nil, { field = 'compiler', reason = 'compiler-unavailable' } end
 
@@ -417,6 +468,9 @@ function addon:ValidateCustomConditionSource(key, source, compatibility, allowUn
     }
 end
 
+-- Builds a registrable condition definition from a source: validates, then runs each compiled chunk once to bind the
+-- callback functions. A disabled source yields an inert definition without compiling. Returns the definition, or nil
+-- and a failure table. User code runs only in the binding step, under pcall.
 function addon:CompileCustomCondition(key, source, compatibility)
     if type(source) == 'table' and source.disabled == true then
         if not self:IsCustomConditionIdentifier(key, true) then
@@ -457,6 +511,9 @@ function addon:CompileCustomCondition(key, source, compatibility)
     return definition
 end
 
+-- Registers the compiled source under `key` and saves it. `expected` and `expectedSource` are the registry entry and
+-- saved source the caller saw when it started; if either changed meanwhile nothing is written. Returns true, or false
+-- and a failure table. If registration fails the previous definition is put back and dependents are notified.
 function addon:InstallCustomCondition(key, source, expected, expectedSource)
     local registry = self.conditionDefinitions or self.definitions
     local previous = registry and registry[key]
@@ -507,10 +564,18 @@ function addon:InstallCustomCondition(key, source, expected, expectedSource)
     return true
 end
 
+-- ============================================================================
+-- Editing draft
+-- ============================================================================
+
+-- Creates the detached draft the source editor works on: key, value (a copy of the source), a baseline for dirty
+-- detection and undo/redo history limited to 100 steps and 4 MiB. The draft never touches the saved source or the
+-- registry; installing it is InstallCustomCondition's job.
 function addon:NewCustomConditionDraft(key, source)
     local d = { key = key or '', value = self:CopySettingsData(source), undo = {}, redo = {}, bytes = 0 }
     d.baseline = { key = d.key, value = self:CopySettingsData(d.value) }
 
+    -- Rough memory cost of a value, used only to bound the undo history.
     local function weight(v)
         if type(v) == 'string' then
             return #v + 24
@@ -527,14 +592,18 @@ function addon:NewCustomConditionDraft(key, source)
         return n
     end
 
+    -- Returns a detached copy of the draft's key, value and context.
     function d:Snapshot()
         return addon:CopySettingsData({ key = self.key, value = self.value, context = self.context })
     end
 
+    -- True when the draft differs from the last saved baseline.
     function d:IsDirty()
         return not addon:SettingsDataEqual(self:Snapshot(), self.baseline)
     end
 
+    -- Applies `change(draft)` and records an undo step when it altered the draft. Returns true when something changed.
+    -- A change clears redo and trims the oldest undo steps beyond the history limits.
     function d:Change(change)
         local before = self:Snapshot()
         change(self)
@@ -554,11 +623,13 @@ function addon:NewCustomConditionDraft(key, source)
         return true
     end
 
+    -- Sets one callback's source text as an undoable change; unknown callback names are refused.
     function d:SetFunction(name, code)
         if not callbacks[name] then return false end
         return self:Change(function(state) state.value[name] = code end)
     end
 
+    -- Moves one step through history (undo, or redo when `redo` is true). Returns true when a step was taken.
     function d:Travel(redo)
         local from = redo and self.redo or self.undo
         local to = redo and self.undo or self.redo
@@ -571,14 +642,17 @@ function addon:NewCustomConditionDraft(key, source)
         return true
     end
 
+    -- Steps back one change.
     function d:Undo()
         return self:Travel(false)
     end
 
+    -- Re-applies one undone change.
     function d:Redo()
         return self:Travel(true)
     end
 
+    -- Makes the current state the new baseline and clears the history, after a successful save.
     function d:MarkSaved()
         self.baseline = self:Snapshot()
         self.undo = {}

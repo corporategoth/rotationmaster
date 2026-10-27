@@ -1,10 +1,23 @@
+-- Spell search and selection for the reference catalog: turns what the user typed or pasted (a spell ID, a spell
+-- link, a name or "Name (Rank 2)") into a spell ID, and lists matching indexed spells for pickers. It reads only the
+-- spell index of addon.SpellCatalog and the spellbook status that Core/spell_catalog.lua records; it never writes
+-- either and reports an unreadable spellbook as a reason instead of guessing. Loaded straight after
+-- Core/spell_catalog.lua and wired into the reference catalog by Core/reference_catalog.lua.
+
 local _, addon = ...
 local catalog = addon.SpellCatalog
 
+-- ============================================================================
+-- Query and filter helpers
+-- ============================================================================
+
+-- Strips color codes and surrounding whitespace so pasted link text compares like a typed name.
 local function plain(text)
     return (text:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):match("^%s*(.-)%s*$"))
 end
 
+-- Validates the caller's search settings and returns a normalized copy, or nil when anything is out of range. A nil
+-- value means the defaults (limit 30). The checks are strict because settings can come from saved or imported data.
 local function options(value)
     if value == nil then return { limit = 30 } end
     if type(value) ~= "table" then return nil end
@@ -32,6 +45,8 @@ local function options(value)
     return { spec = spec, norank = value.norank, limit = limit, nameContains = value.nameContains }
 end
 
+-- Returns the set of spell IDs in the given spellbook (a spec number or the pet book), or nil when spec is nil.
+-- Returns nil and a reason when that book has not finished loading, so callers never treat a partial book as complete.
 local function book(spec)
     if spec == nil then return nil end
     local state = addon.spellBookStatus and addon.spellBookStatus[spec == (BOOKTYPE_PET or "pet") and "pet" or "player"]
@@ -39,15 +54,18 @@ local function book(spec)
     return addon.specSpells and addon.specSpells[spec] or {}
 end
 
+-- True when the optional case-insensitive nameContains filter accepts the name (plain substring, not a pattern).
 local function nameAllowed(name, opts)
     return not opts.nameContains
         or type(name) == "string" and string.find(string.lower(name), string.lower(opts.nameContains), 1, true) ~= nil
 end
 
+-- Returns the numeric rank of an index entry, or 0 when it has none.
 local function rank(entry)
     return tonumber((entry.rank or ""):match("%d+")) or 0
 end
 
+-- Sort order for index entries: by name ignoring case, then higher rank first, then higher spell ID first.
 local function ordered(a, b)
     local left, right = string.lower(a.name), string.lower(b.name)
     if left ~= right then return left < right end
@@ -55,10 +73,18 @@ local function ordered(a, b)
     return a.id > b.id
 end
 
+-- Returns the entry's name with its rank in parentheses when it has one.
 local function label(entry)
     return entry.name .. (entry.rank and entry.rank ~= "" and " (" .. entry.rank .. ")" or "")
 end
 
+-- ============================================================================
+-- Resolving and searching
+-- ============================================================================
+
+-- Resolves typed text, a spell ID or a spell link to one spell ID under the optional spellbook and name filters.
+-- Returns the ID, or nil and a reason code such as "spell-not-in-book" or "spell-data-unavailable". A name that several
+-- spells share resolves to the highest rank (or the first by sort order) rather than failing.
 function catalog:ResolveSelection(input, settings)
     local opts = options(settings)
     if not opts then return nil, "invalid-search-options" end
@@ -107,6 +133,9 @@ function catalog:ResolveSelection(input, settings)
     return nil, why or "spell-data-unavailable"
 end
 
+-- Lists indexed spells matching the text (or the exact spell that an ID or link names), at most settings.limit rows.
+-- Returns rows and a status table (coverage, scope, bookComplete, reason, more); on a bad query or an incomplete
+-- spellbook the rows are empty and status.reason says why. Rows are the shared index entries with `display` set.
 function catalog:Search(input, settings)
     local opts = options(settings)
     if not opts then return nil, "invalid-search-options" end

@@ -1,9 +1,21 @@
+-- Rotation selection support: the automatic switch candidate order, the plain-words explanations of why a rotation
+-- cannot be selected (/rm why), the specialization naming helpers, switch overlap analysis and the stable rotation
+-- identifiers behind /rm set and /rm list. It reads rotations and validation results and never writes them; the
+-- selection itself is made elsewhere (main.lua, Core/rotation_active.lua). The explanation and report functions run
+-- on a refusal, a command or a hover, never while polling. Loaded after Core/rotation_canvas.lua and
+-- Core/rotation_sequence.lua; the BEGIN/END comments below mark the three self-contained regions of this file.
+
 local addon_name, addon = ...
 local data = addon.RotationData
+
+-- ============================================================================
+-- Automatic switch ordering
+-- ============================================================================
 
 -- Build the candidate order without evaluating switch conditions: by
 -- priority (higher first), then name, then identity. Your rotations and Built
 -- Ins compete on priority alone. Missing priorities are zero.
+-- `rotations` maps id to body. Returns the ids of the enabled, valid rotations in that order (never the fallback).
 function addon:GetOrderedAutoSwitchRotations(spec, rotations)
     local candidates = {}
 
@@ -19,6 +31,8 @@ function addon:GetOrderedAutoSwitchRotations(spec, rotations)
             and self:validateCondition(body.switch, spec)
             and self:rotationValidConditions(body, spec)
         then
+            -- When the scoped coordinator can resolve the rotation, its full address is the last tie-break, so equal
+            -- priority and name still order the same way every time.
             local tie = id
             local scoped = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
 
@@ -59,6 +73,10 @@ function addon:GetOrderedAutoSwitchRotations(spec, rotations)
     return ordered
 end
 
+-- ============================================================================
+-- Eligibility explanations
+-- ============================================================================
+
 -- BEGIN ROTATION ELIGIBILITY EXPLANATIONS
 -- Plain words for why a rotation cannot be selected. Validation already
 -- records every blocking issue (each diagnostic is an error, or an
@@ -69,6 +87,8 @@ end
 -- while polling.
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- Sentence fragments by validation diagnostic code, read after the rotation's location; %s receives the field or
+-- condition involved.
 local issueText = {
     ['unknown-condition'] = L['uses a condition this client does not have (%s)'],
     ['disabled-condition'] = L['uses a condition that is disabled in Settings (%s)'],
@@ -89,6 +109,7 @@ local issueText = {
     ['invalid-specs'] = L['has an invalid specialization list'],
 }
 
+-- Reasons by runtime refusal code, read as the end of "cannot be selected, ...".
 local refusalText = {
     ['disabled'] = L['it is disabled'],
     ['disabled-dependency'] = L['it uses a condition, item set or function that is disabled'],
@@ -107,6 +128,7 @@ local refusalText = {
 }
 
 -- Walk a validation path ("$.body.rotation[2].onTrue[1].conditions.type").
+-- Returns the names and numeric indexes in order ('rotation', 2, 'onTrue', 1, ...), or nil for a path outside the body.
 local function tokens(path)
     local list = {}
     local rest = type(path) == 'string' and path:match('^%$%.body(.*)$')
@@ -120,6 +142,8 @@ local function tokens(path)
     return list
 end
 
+-- Returns a display name for a step: its own name, else one by step type (a spell step reads as the spell name or
+-- "Spell <id>"); nil when the step has no usable name.
 local function stepName(step)
     if type(step) ~= 'table' then return nil end
     if type(step.name) == 'string' and step.name:find('%S') then return step.name end
@@ -173,6 +197,7 @@ function addon:DescribeRotationIssueLocation(path, body)
     return text
 end
 
+-- Returns the node of `body` that a validation path points at, or nil.
 local function valueAt(body, path)
     local list = tokens(path)
     if not list then return nil end
@@ -186,7 +211,8 @@ local function valueAt(body, path)
     return node
 end
 
--- One diagnostic in plain words; body (optional) names the step.
+-- One diagnostic in plain words; body (optional) names the step. Returns nil for a non-table. The text is "where: what"
+-- with the trailing period dropped so callers can add their own.
 function addon:DescribeRotationIssue(problem, body)
     if type(problem) ~= 'table' then return nil end
     local where = self:DescribeRotationIssueLocation(problem.path, body)
@@ -225,7 +251,8 @@ function addon:DescribeRotationIssue(problem, body)
     return string.format('%s: %s', where, (what:gsub('%.$', '')))
 end
 
--- The first issue that stops a body being selected, and its description.
+-- The first issue that stops a body being selected, and its description. Validates the body itself when no validation
+-- result is passed. Returns the diagnostic and its text, or nil when there is none.
 function addon:FirstRotationIssue(body, validation)
     if validation == nil and type(body) == 'table' then
         validation = data.ValidateBody(body, self:GetRotationValidationOptions())
@@ -239,6 +266,10 @@ function addon:FirstRotationIssue(body, validation)
     if not problem then return nil end
     return problem, self:DescribeRotationIssue(problem, body)
 end
+
+-- ============================================================================
+-- Rotation specializations
+-- ============================================================================
 
 -- Rotation specializations (body.specs) for the list, the editor and
 -- commands. Values are specialization IDs or talent groups, as
@@ -353,6 +384,7 @@ function addon:GetFallbackSpecName(spec)
     end
 end
 
+-- Names one specialization value (an ID, a talent group or the initial no-specialization state) for display.
 function addon:DescribeRotationSpecValue(value)
     if type(value) ~= 'number' then return L['Unknown specialization'] end
     if self:GetRotationSpecKind() == 'slot' then return slotName(self, value) end
@@ -442,6 +474,11 @@ function addon:GetUnofferedRotationSpec()
     return spec, names
 end
 
+-- ============================================================================
+-- Refusal reasons and reports
+-- ============================================================================
+
+-- Returns the names of the other specializations that have a fallback saved, for the "there is one for ..." hint.
 local function otherFallbacks(self, spec)
     local names = {}
 
@@ -463,6 +500,7 @@ end
 
 -- nil when `value` (a rotation key, or DEFAULT) can be selected now for
 -- `spec`; otherwise a sentence saying why, and the refusal code.
+-- Reads through a runtime pass when the scoped coordinator exists, so it reports what selection itself would see.
 function addon:ExplainRotationRefusal(spec, value)
     if spec == nil then return L['your specialization is not available yet'], 'specialization-unavailable' end
     local coordinator = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
@@ -768,6 +806,8 @@ function addon:GetRotationEligibilityReport()
     return lines
 end
 
+-- Prints the eligibility report to chat, or opens it in a copyable window when it is longer than four lines.
+-- Returns the lines.
 function addon:ShowRotationEligibilityReport()
     local lines = self:GetRotationEligibilityReport()
 
@@ -786,6 +826,10 @@ end
 
 -- END ROTATION ELIGIBILITY EXPLANATIONS
 
+-- ============================================================================
+-- Switch overlap and applicability
+-- ============================================================================
+
 -- BEGIN SWITCH OVERLAP
 -- Rotations (your own and Built Ins alike, which compete on priority) whose
 -- switch conditions can match at the same time, so that priority alone
@@ -802,6 +846,8 @@ end
 -- whenever it applies. Live: both
 -- match right now. Computed on demand (list refresh, editor open), cached on
 -- the auto-switch list identity; never while polling.
+
+-- Returns a deterministic text form of a value (table keys sorted), so equal conditions get equal keys.
 local function canonical(value)
     if type(value) ~= 'table' then return type(value) .. ':' .. tostring(value) end
     local keys = {}
@@ -820,10 +866,12 @@ local function canonical(value)
     return '{' .. table.concat(parts, ',') .. '}'
 end
 
+-- Returns an empty region: an unbounded level range, no specialization or ruleset limit and no other conditions.
 local function newRegion()
     return { lo = -math.huge, hi = math.huge, atoms = {}, count = 0 }
 end
 
+-- Records a condition the analysis cannot reduce to a range, once per distinct condition.
 local function addAtom(region, condition)
     local key = canonical(condition)
 
@@ -833,6 +881,7 @@ local function addAtom(region, condition)
     end
 end
 
+-- Restricts the region's specializations to the list (intersecting with any limit already set).
 local function narrowSpecs(region, list)
     local set = {}
 
@@ -843,6 +892,8 @@ local function narrowSpecs(region, list)
     region.specs = set
 end
 
+-- Folds a switch condition into the region: AND groups are walked, player LEVEL comparisons narrow the level range, a
+-- SPECIALIZATION narrows the specializations where those are IDs, and anything else is kept as an atom.
 local function addCondition(region, condition)
     if type(condition) ~= 'table' or condition.type == nil then return end
 
@@ -889,6 +940,7 @@ local function addCondition(region, condition)
     addAtom(region, condition)
 end
 
+-- True when the two regions can both hold at once: their level ranges, specializations and rulesets intersect.
 local function meets(a, b)
     if math.max(a.lo, b.lo) > math.min(a.hi, b.hi) then return false end
 
@@ -922,6 +974,7 @@ local function meets(a, b)
     return true
 end
 
+-- True when every other condition of `a` is also in `b`, so b matches whenever a does apart from the ranges.
 local function subset(a, b)
     if a.count > b.count then return false end
 
@@ -932,6 +985,7 @@ local function subset(a, b)
     return true
 end
 
+-- True when both regions limit specializations to the same set (or neither limits them).
 local function sameSpecs(a, b)
     if (a.specs == nil) ~= (b.specs == nil) then return false end
     if not a.specs then return true end
@@ -947,6 +1001,8 @@ local function sameSpecs(a, b)
     return true
 end
 
+-- Builds the region of one rotation from its switch condition, optional Built In applicability and body.specs. Returns
+-- { lo, hi, specs, rulesets, atoms, count } for CompareSwitchRegions.
 function addon:GetSwitchRegion(switch, applicability, specs)
     local region = newRegion()
     local platform = self.Platform
@@ -975,6 +1031,7 @@ function addon:GetSwitchRegion(switch, applicability, specs)
     return region
 end
 
+-- True when the inner level range and specialization set lie inside the outer ones.
 local function within(inner, outer)
     if inner.lo < outer.lo or inner.hi > outer.hi then return false end
 
@@ -1002,8 +1059,13 @@ function addon:CompareSwitchRegions(a, b)
     return 'overlaps'
 end
 
+-- Last result of GetSwitchOverlaps, valid while the auto-switch list, the spec and the condition registry are
+-- unchanged.
 local overlapCache = {}
 
+-- Returns, for each rotation key in the live auto-switch list, the list of other rotations whose switch can match at
+-- the same time ({ key, name, priority, kind, live, tie }). Only the current spec is analyzed; other specs return {}.
+-- Pairs that are not proved to overlap statically are still listed when both switches match right now.
 function addon:GetSwitchOverlaps(spec)
     spec = spec or self.currentSpec
     local order = self.autoswitchRotation
@@ -1079,6 +1141,7 @@ function addon:GetSwitchOverlaps(spec)
 end
 
 -- One line naming what a rotation overlaps with, for a tooltip or note; nil when nothing.
+-- Returns the text and whether any overlap is an exact priority tie.
 function addon:DescribeSwitchOverlap(list)
     if type(list) ~= 'table' or #list == 0 then return nil end
     local ties, others = {}, {}
@@ -1116,9 +1179,7 @@ function addon:DescribeSwitchOverlap(list)
     return table.concat(lines, '\n'), #ties > 0
 end
 
--- The load-time scope of a definition, as one line; nil when it has none.
--- Specializations are never listed (you can respec) and only a minimum level
--- is (you only level up); rulesets read as names.
+-- Names of the Classic season ids that a ruleset token can carry (translated through L when shown).
 local SEASONS = {
     [1] = 'Season of Mastery',
     [2] = 'Season of Discovery',
@@ -1127,8 +1188,11 @@ local SEASONS = {
     [12] = 'Anniversary Hardcore',
 }
 
+-- Maps the season words a pack may use to the same ids.
 local SEASON_NAMES = { seasonofmastery = 1, seasonofdiscovery = 2, hardcore = 3, fresh = 11, freshhardcore = 12 }
 
+-- Returns display text for a pack ruleset token ('hardcore', 'season:<id or word>', 'mode:<n>', ...); an unknown token
+-- reads as itself.
 local function rulesetName(token)
     if token == 'hardcore' then
         return L['Hardcore']
@@ -1151,6 +1215,9 @@ local function rulesetName(token)
     return tostring(token)
 end
 
+-- The load-time scope of a definition, as one line; nil when it has none.
+-- Specializations are never listed (you can respec) and only a minimum level
+-- is (you only level up); rulesets read as names.
 function addon:DescribeApplicability(scope)
     if type(scope) ~= 'table' then return nil end
     local parts = {}
@@ -1210,12 +1277,18 @@ end
 
 -- END SWITCH OVERLAP
 
+-- ============================================================================
+-- Rotation identifiers
+-- ============================================================================
+
 -- BEGIN ROTATION IDENTIFIERS
 -- Every rotation for a specialization has an identifier (Data/validation.lua):
 -- a Built In's comes from its pack (GetBuiltinIdentifier), yours is stored in
 -- the rotation (body.identifier) or, until you set one, made from its name. The
 -- fallback is "default". Stored identifiers and Built Ins claim theirs first;
 -- the rest are derived in name order, a clash taking -2, -3...
+
+-- Sorts rows in place by name, then canonical id, so derived identifiers are always handed out in the same order.
 local function sortedUnstored(list)
     table.sort(list, function(a, b)
         if a.name ~= b.name then return a.name < b.name end
@@ -1223,6 +1296,8 @@ local function sortedUnstored(list)
     end)
 end
 
+-- Returns one row per rotation of the spec (key, name, kind, identifier and whether it is stored, derived or a
+-- duplicate of another) and a map from identifier to row. `headers` is the rotation list, read when not passed.
 function addon:ListRotationIdentifiers(spec, headers)
     headers = headers or self.ListRotationHeaders and self:ListRotationHeaders(spec)
     local rows, used, pending = {}, {}, {}
@@ -1276,6 +1351,7 @@ function addon:ListRotationIdentifiers(spec, headers)
     return rows, used
 end
 
+-- Returns the identifier of a rotation key ("default" for the fallback) and its row, or nil when the key is unknown.
 function addon:GetRotationIdentifier(spec, key)
     if key == DEFAULT then return 'default' end
     local rows = self:ListRotationIdentifiers(spec)
@@ -1285,7 +1361,8 @@ function addon:GetRotationIdentifier(spec, key)
     end
 end
 
--- A free identifier made from a name, for a new rotation or a copy.
+-- A free identifier made from a name, for a new rotation or a copy. `except` is the key whose own identifier does not
+-- count as taken.
 function addon:NewRotationIdentifier(spec, name, except)
     local _, used = self:ListRotationIdentifiers(spec)
     local base = data.SlugRotationIdentifier(name)
@@ -1319,7 +1396,8 @@ function addon:CheckRotationIdentifier(spec, key, text)
 end
 
 -- The rotation an identifier names among those selectable now; nil, and the
--- valid identifiers, when none or several do.
+-- valid identifiers, when none or several do. `selectable` maps keys to true (nil allows all). Returns the key and
+-- row, or nil, nil, the sorted valid identifiers and whether several rotations matched.
 function addon:ResolveRotationIdentifier(spec, text, selectable)
     local wanted = type(text) == 'string' and text:lower():match('^%s*(.-)%s*$')
     if not wanted or wanted == '' then return nil end
@@ -1357,6 +1435,7 @@ function addon:FormatRotationLabel(name, key, spec)
     return identifier and string.format('%s [%s]', name, identifier) or name
 end
 
+-- "Name [identifier]" for a rotation key, or nil when the key has no name.
 function addon:GetRotationLabel(key, spec)
     local name = key == DEFAULT and DEFAULT or self:GetRotationName(key)
     if not name then return nil end
@@ -1404,6 +1483,8 @@ function addon:GetRotationIdentifierReport()
     return lines
 end
 
+-- Prints the /rm list report to chat, or opens it in a copyable window when it is longer than six lines.
+-- Returns the lines.
 function addon:ShowRotationIdentifierReport()
     local lines = self:GetRotationIdentifierReport()
 

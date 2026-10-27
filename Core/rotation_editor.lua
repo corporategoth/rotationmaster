@@ -1,3 +1,10 @@
+-- Rotation edit session: the transaction object behind the rotation editor window. A session holds a private draft of
+-- one rotation body, an undo and redo history bounded by count and size, the pending ownership change and the Apply
+-- step that validates the draft and publishes it into the saved record. It must not draw, and nothing outside a
+-- successful Apply (or the caller's commit callback) may write the original record. Loaded after
+-- Core/unsaved_changes.lua; the workspace (Core/rotation_workspace.lua) creates one session per open rotation. Body
+-- shape and drafts: Data/ (addon.RotationData).
+
 local _, addon = ...
 local data = addon.RotationData
 local prepareActivePublication, finishActivePublication
@@ -8,6 +15,8 @@ if type(addon.BindActiveRotationPublication) == 'function' then
     end)
 end
 
+-- Deep equality of two portable data trees (no cycles, no functions). Returns false when either side is not portable
+-- data, so a draft holding a stray function or cycle never compares equal to anything.
 local function equal(left, right)
     if not data.CheckPortable(left) or not data.CheckPortable(right) then return false end
 
@@ -29,6 +38,7 @@ local function equal(left, right)
     return compare(left, right)
 end
 
+-- Rough memory cost in bytes of a value, used only to bound the undo history; it is a budget, not an exact size.
 local function weight(value)
     if type(value) == 'string' then return 32 + #value end
     if type(value) ~= 'table' then return 16 end
@@ -41,6 +51,10 @@ local function weight(value)
     return total
 end
 
+-- Opens an edit session on `original` (the saved rotation body) for the given spec. `options` is a plain table:
+-- targetValid, commit, readOnly, newRecord, ownership, setOwnershipAllowed, newId and reserved. Returns the session
+-- (Snapshot, Baseline, Ownership, IsDirty, HistoryState, Command, Undo, Redo, Cancel, Apply), or nil and a reason.
+-- Only Apply writes `original`, and it does so in place so every holder of the record sees the new body.
 function addon:NewRotationEditSession(spec, original, options)
     options = options or {}
 
@@ -72,18 +86,21 @@ function addon:NewRotationEditSession(spec, original, options)
     local closed, busy = false, false
     local undo, redo, bytes = {}, {}, 0
 
+    -- Pushes a snapshot frame on an undo or redo stack and adds its weight to the shared byte budget.
     local function push(stack, value)
         local size = weight(value)
         stack[#stack + 1] = { value = value, bytes = size }
         bytes = bytes + size
     end
 
+    -- Removes and returns a frame (the top one unless `at` is given) and releases its weight.
     local function pop(stack, at)
         local entry = table.remove(stack, at or #stack)
         if entry then bytes = bytes - entry.bytes end
         return entry
     end
 
+    -- Drops the oldest frames until the history is within 100 entries and 8 MiB.
     local function trim()
         while #undo + #redo > 100 or bytes > 8388608 do
             if #undo > 0 then
@@ -96,6 +113,7 @@ function addon:NewRotationEditSession(spec, original, options)
         end
     end
 
+    -- Returns true when a change may be made now, else nil and why (closed, busy or read-only).
     local function writable()
         if closed then return nil, 'rotation-editor-closed' end
         if busy then return nil, 'rotation-editor-busy' end
@@ -103,12 +121,14 @@ function addon:NewRotationEditSession(spec, original, options)
         return true
     end
 
+    -- True while the record this session edits still exists. A throwing targetValid counts as gone.
     local function owner()
         if not targetValid then return true end
         local ok, valid = pcall(targetValid)
         return ok and valid == true
     end
 
+    -- Ends the session and frees the history; every later change reports 'rotation-editor-closed'.
     local function close()
         closed = true
         undo = {}
@@ -118,26 +138,32 @@ function addon:NewRotationEditSession(spec, original, options)
 
     local session = {}
 
+    -- Returns a detached copy of the draft body as it stands now.
     function session:Snapshot()
         return draft:Snapshot()
     end
 
+    -- Returns a detached copy of the original body that unsaved-change detection compares against.
     function session:Baseline()
         return data.CopyData(dirtyBaseline)
     end
 
+    -- Returns the pending ownership scope ('class' or 'character'), or nil when the caller does not manage it.
     function session:Ownership()
         return ownership
     end
 
+    -- Returns the ownership scope the rotation had when the session opened.
     function session:BaselineOwnership()
         return originalOwnership
     end
 
+    -- True when the draft content or the ownership differs from what was opened.
     function session:IsDirty()
         return ownership ~= originalOwnership or not data.SameRotationContent(dirtyBaseline, draft:Snapshot())
     end
 
+    -- Returns { canUndo, canRedo } for enabling the editor's buttons; both are false while closed, busy or read-only.
     function session:HistoryState()
         return {
             canUndo = not closed and not busy and not readOnly and #undo > 0,
@@ -145,6 +171,8 @@ function addon:NewRotationEditSession(spec, original, options)
         }
     end
 
+    -- Runs one named editing command on the draft (or 'SetOwnership'). Returns changed and the command's result, or
+    -- nil and a reason. A command that changed something is recorded for undo and clears the redo stack.
     function session:Command(name, ...)
         local ok, reason = writable()
         if not ok then return nil, reason end
@@ -176,6 +204,7 @@ function addon:NewRotationEditSession(spec, original, options)
         return changed, result
     end
 
+    -- Moves one history frame from `source` to `destination`, restoring the draft to it. Returns true, or nil and why.
     local function travel(source, destination)
         local ok, reason = writable()
         if not ok then return nil, reason end
@@ -191,25 +220,32 @@ function addon:NewRotationEditSession(spec, original, options)
         return true
     end
 
+    -- Restores the previous draft state, if any.
     function session:Undo()
         return travel(undo, redo)
     end
 
+    -- Re-applies the most recently undone draft state, if any.
     function session:Redo()
         return travel(redo, undo)
     end
 
+    -- Discards the session without touching the original. Refused while an Apply is running.
     function session:Cancel()
         if busy then return nil, 'rotation-editor-busy' end
         close()
         return true
     end
 
+    -- Validates the draft and publishes it. Returns true, or nil, a reason and optional details (a validation report).
+    -- Validation runs condition code that can call back into the addon, so the target and the baseline are re-checked
+    -- afterwards, and a validator that mutated the candidate is rejected rather than saved.
     function session:Apply()
         local writableOk, reason = writable()
         if not writableOk then return nil, reason end
         busy = true
 
+        -- Clears the busy flag on every exit path and passes the result through.
         local function finish(ok, problem, details)
             busy = false
             return ok, problem, details
@@ -225,6 +261,7 @@ function addon:NewRotationEditSession(spec, original, options)
         local candidate = data.CopyData(snapshot)
         local tree = data.IndexRotationSteps(candidate)
 
+        -- Validates the switch and every step's conditions against the spec; true only when all of them are valid.
         local function validate()
             local valid = addon:validateCondition(candidate.switch or {}, spec)
 
@@ -283,6 +320,7 @@ function addon:NewRotationEditSession(spec, original, options)
         if not owner() then return finish(nil, 'rotation-target-missing') end
         if not equal(baseline, original) then return finish(nil, 'rotation-changed-externally') end
 
+        -- Publish in place, after the last check and with no callout between, so the record is never seen half-written.
         for key in pairs(original) do
             original[key] = nil
         end

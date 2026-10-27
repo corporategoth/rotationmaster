@@ -1,3 +1,10 @@
+-- Rotation storage migrations: the one-way move of legacy profile rotation roots into the scoped rotation store, the
+-- two in-place renames that follow it (body.handle to body.identifier, specialization evidence into body.specs), and
+-- the plan/apply pairs for adopting an unassigned rotation into a class or character scope. Planning never writes;
+-- each apply re-checks that nothing moved since its plan and refuses with a 'stale-...' reason otherwise. The scoped
+-- migration is not reversible (docs/dev/architecture.md, "Saved data"). Loaded after Core/rotation_scope.lua; started
+-- by InitializeScopedRotationStorage from Core/rotation_lifecycle.lua once the database exists.
+
 local _, addon = ...
 local data = addon.RotationData
 local prepareRootRebind, runRootRebind
@@ -9,16 +16,24 @@ if type(addon.BindActiveRotationProfileRebind) == 'function' then
     end)
 end
 
+-- Private plan records, keyed weakly by the opaque table a caller holds: only a plan this module made can be applied.
 local migrations, adoptions = setmetatable({}, { __mode = 'k' }), setmetatable({}, { __mode = 'k' })
 
+-- ============================================================================
+-- Helpers
+-- ============================================================================
+
+-- True for a plain table with no metatable; anything else in saved state is treated as invalid.
 local function plain(v)
     return type(v) == 'table' and getmetatable(v) == nil
 end
 
+-- True for a usable identifier string: 1 to 128 characters, not blank, no control characters.
 local function text(v)
     return type(v) == 'string' and #v > 0 and #v <= 128 and v:find('%S') ~= nil and not v:find('[%z\1-\31\127]')
 end
 
+-- Deep copy of a data tree that preserves shared and cyclic references. Unlike data.CopyData it does no validation.
 local function clone(v, seen)
     if type(v) ~= 'table' then return v end
     seen = seen or {}
@@ -33,6 +48,7 @@ local function clone(v, seen)
     return result
 end
 
+-- Deep equality of two data trees.
 local function same(a, b)
     if type(a) ~= type(b) then return false end
     if type(a) ~= 'table' then return a == b end
@@ -48,6 +64,8 @@ local function same(a, b)
     return true
 end
 
+-- Collects the four legacy roots of a profile (rotations, origins, imports, comparisons), each {} when absent. Returns
+-- nil and a reason when the library or any root is not plain data.
 local function legacy(profile)
     local library = profile.rotationLibrary
     if library ~= nil and not plain(library) then return nil, 'invalid-library-state' end
@@ -69,6 +87,8 @@ local function legacy(profile)
     return result
 end
 
+-- Builds the replacement rotationLibrary kept after migration: empty provenance maps plus a detached copy of every
+-- other key. Returns nil and a reason when a value cannot be copied.
 local function retiredLibrary(library)
     if not library then return nil end
     local result = { origins = {}, imports = {}, comparisons = {} }
@@ -84,6 +104,7 @@ local function retiredLibrary(library)
     return result
 end
 
+-- True when a map of per-spec row tables holds any row (or any non-table value).
 local function nonempty(map)
     if type(map) ~= 'table' then return map ~= nil end
 
@@ -94,6 +115,13 @@ local function nonempty(map)
     return false
 end
 
+-- ============================================================================
+-- Legacy roots to the scoped store
+-- ============================================================================
+
+-- Plans the move of a profile's legacy rotation roots into rotationStore. Returns an opaque plan
+-- ({ unchanged = bool }), or nil and a reason ('missing-fallback-configuration', 'conflicting-legacy-rotation-roots',
+-- ...). A profile that already has a store plans as unchanged but must have no legacy rows left over. Writes nothing.
 function addon:PlanRotationProfileMigration(profile, fallbackID)
     if type(profile) ~= 'table' then return nil, 'invalid-profile' end
     local old, legacyReason = legacy(profile)
@@ -132,6 +160,9 @@ function addon:PlanRotationProfileMigration(profile, fallbackID)
     return public
 end
 
+-- Applies a plan from PlanRotationProfileMigration. Returns true, or nil and a reason ('stale-migration-plan' when the
+-- profile changed since planning). The old roots are archived into the store before they are emptied, and the profile
+-- version becomes 3. A plan can be applied once.
 function addon:ApplyRotationProfileMigration(public)
     local plan = migrations[public]
     if not plan then return nil, 'invalid-migration-plan' end
@@ -187,16 +218,22 @@ end
 -- owned records and their source baselines, the preserved legacy map and the
 -- flat pre-scope map. Idempotent and cheap, so it runs on every refresh and
 -- also catches an old profile imported later.
+-- ============================================================================
+-- Handle to identifier rename
+-- ============================================================================
+
 local function moveHandle(body)
     if not plain(body) or body.handle == nil then return end
     if body.identifier == nil then body.identifier = body.handle end
     body.handle = nil
 end
 
+-- Renames the handle on the baseline body that a lineage sidecar (origin or import record) retains.
 local function moveSidecar(sidecar)
     if plain(sidecar) and plain(sidecar.lineage) then moveHandle(sidecar.lineage.baseline) end
 end
 
+-- Calls visit(value) for every value of every per-spec row table in map; non-plain levels are skipped.
 local function eachRow(map, visit)
     if not plain(map) then return end
 
@@ -209,6 +246,7 @@ local function eachRow(map, visit)
     end
 end
 
+-- Renames the handle on a stored record's body and on the baselines of its origin and import sidecars.
 local function moveRecord(record)
     if not plain(record) then return end
     moveHandle(record.body)
@@ -216,6 +254,7 @@ local function moveRecord(record)
     moveSidecar(record.imported)
 end
 
+-- Applies the handle rename to every stored body of a profile (see above). Safe to run repeatedly.
 function addon:MoveRotationHandlesToIdentifiers(profile)
     if not plain(profile) then return end
     local store = profile.rotationStore
@@ -265,6 +304,11 @@ end
 --   * Elsewhere (Era, TBC, Forever, and the talent-group namespaces of Mists
 --     Classic) SPECIALIZATION tests talent trees or is unavailable, and the
 --     namespace is not a specialization, so nothing moves.
+-- ============================================================================
+-- Specializations as a rotation property
+-- ============================================================================
+
+-- True for an enabled SPECIALIZATION condition with a valid numeric spec; these are the only leaves that may move.
 local function specCondition(c)
     return plain(c)
         and c.type == 'SPECIALIZATION'
@@ -274,6 +318,9 @@ local function specCondition(c)
         and c.spec % 1 == 0
 end
 
+-- Splits a switch condition into the specializations it only existed to select and the condition that remains.
+-- Returns specs, remainder (remainder {} when nothing is left), or nil when the switch is not one of the movable
+-- shapes. Works on copies; the switch is not modified.
 function addon:SplitSwitchSpecializations(switch)
     if not plain(switch) or switch.disabled then return nil end
     if specCondition(switch) then return { switch.spec }, {} end
@@ -311,6 +358,9 @@ function addon:SplitSwitchSpecializations(switch)
     end
 end
 
+-- Fills body.specs of one stored body from the namespace key it is saved under (when that key is a specialization
+-- value) or from its switch condition, removing the part of the switch that moved. A body that already has specs is
+-- left alone.
 local function migrateBody(owner, body, key, kind, keyIsValue)
     if not plain(body) or body.specs ~= nil then return end
     local specs, remainder
@@ -337,6 +387,8 @@ local function migrateBody(owner, body, key, kind, keyIsValue)
     end
 end
 
+-- Runs the specialization migration once per profile and marks it (rotationSpecsMigrated). Returns true when it ran,
+-- false when it was already done or the store or client kind is not ready. The fallback rotation is never touched.
 function addon:MoveRotationSpecsToProperty(profile)
     if not plain(profile) or profile.rotationSpecsMigrated then return false end
     local platform = self.Platform
@@ -347,6 +399,7 @@ function addon:MoveRotationSpecsToProperty(profile)
     if not plain(store) then return false end
     local fallback = profile.rotationFallbackID
 
+    -- Migrates every body in a map keyed by numeric specialization namespace, skipping the fallback rotation.
     local function each(map)
         if not plain(map) then return end
 
@@ -377,6 +430,14 @@ end
 
 -- Explicit startup entry point; the caller activates it only when every UI and
 -- runtime route is ready. Profiles migrate independently; char archives stay put.
+-- ============================================================================
+-- Startup entry point
+-- ============================================================================
+
+-- Returns ok, reason and a per-profile list of { profile, ok, reason } results. Order matters: handles are renamed
+-- first, then each profile (all saved ones, then the active one if it was not among them) is migrated to the scoped
+-- store, then specs are moved, and only then is the active profile bound. A profile that fails to migrate does not stop
+-- the others.
 function addon:InitializeScopedRotationStorage()
     for _, profile in pairs(self.db.sv and self.db.sv.profiles or {}) do
         self:MoveRotationHandlesToIdentifiers(profile)
@@ -411,6 +472,12 @@ function addon:InitializeScopedRotationStorage()
     return ok, why, results
 end
 
+-- ============================================================================
+-- Unassigned rotations and adoption
+-- ============================================================================
+
+-- Returns the saved character record for the current character, the owner context and the character root, or nil and a
+-- reason when the owner context is unavailable.
 local function currentCharacter(owner)
     local c, why = owner:GetRotationOwnerContext()
     if not c or not c.character then return nil, why or 'missing-owner-context' end
@@ -419,6 +486,7 @@ local function currentCharacter(owner)
     return char, c, root
 end
 
+-- True for a selection table with exactly kind ('profile' or 'character'), a valid spec number and an id.
 local function validSelection(selection)
     if
         not plain(selection)
@@ -441,6 +509,8 @@ end
 
 -- Inspection is a detached recovery boundary, never an ownership decision or
 -- an adoption. Orphan source components remain available without a body.
+-- Returns a detached record ({ body, ... }) for one unassigned rotation, or nil and a reason such as
+-- 'unknown-rotation'. Read only.
 function addon:GetUnassignedRotationSnapshot(selection)
     if not validSelection(selection) then return nil, 'invalid-legacy-selection' end
     local coordinator = self:GetScopedRotationCoordinator()
@@ -471,6 +541,9 @@ function addon:GetUnassignedRotationSnapshot(selection)
     return nil, 'unknown-rotation'
 end
 
+-- Lists rotations that have no owner yet: those left in the profile after migration and those archived under the
+-- current character. Returns rows { selection, kind, spec, id, name, hasBody, validation } sorted by kind, spec, id; or
+-- nil and a reason. Read only.
 function addon:ListUnassignedRotations()
     local coordinator = self:GetScopedRotationCoordinator()
     if not coordinator then return nil, 'rotation-profile-not-bound' end
@@ -480,6 +553,7 @@ function addon:ListUnassignedRotations()
     if not rows then return nil, why end
     local result = {}
 
+    -- Appends one list row for an unassigned rotation, naming it by its body name or else its id.
     local function add(kind, number, id, record, validation)
         local body = record.body
 
@@ -526,6 +600,9 @@ function addon:ListUnassignedRotations()
     return result
 end
 
+-- Plans adopting an unassigned rotation as a class or character rotation (`scope`, default 'class'). Returns an opaque
+-- plan, or nil and a reason. A profile selection is planned by the coordinator; a character-archive selection is
+-- built here against a copy of the store, so nothing is written until ApplyRotationAdoption.
 function addon:PlanRotationAdoption(selection, scope)
     if not validSelection(selection) then return nil, 'invalid-legacy-selection' end
     scope = scope or 'class'
@@ -600,6 +677,9 @@ function addon:PlanRotationAdoption(selection, scope)
     return public
 end
 
+-- Applies a plan from PlanRotationAdoption and rebinds the active rotation store. Returns true and a reference to the
+-- adopted rotation, or nil and a reason ('stale-adoption-plan' when the profile, the character or the store changed
+-- since planning). The checks are repeated once the rebind is prepared, in case anything moved meanwhile.
 function addon:ApplyRotationAdoption(public)
     local plan = adoptions[public]
     if not plan or self:GetScopedRotationCoordinator() ~= plan.coordinator then return nil, 'invalid-adoption-plan' end

@@ -1,12 +1,24 @@
+-- Condition description service: returns one readable text for a whole condition tree, for the editor's summaries,
+-- the unsaved-changes comparison and draft diffs. It prefers the registered printers, and falls back to a bounded,
+-- data-only description that never runs custom code when the tree could be unsafe to print (custom definitions,
+-- disabled nodes, malformed groups, oversized trees). It reads and never modifies the condition. Loaded after
+-- Core/condition_canvas.lua; the printers themselves are in Core/conditions.lua and the Conditions/ files.
+
 local addon_name, addon = ...
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
+-- ============================================================================
+-- Deciding whether the printers are safe to run
+-- ============================================================================
+
+-- Returns the definition table registered for the node's type tag, or nil. Uses rawget so a metatable cannot intervene.
 local function definitionFor(node, definitions)
     local tag = type(node) == "table" and rawget(node, "type")
     local definition = type(tag) == "string" and type(definitions) == "table" and rawget(definitions, tag)
     return type(definition) == "table" and definition or nil
 end
 
+-- Returns the length of a list whose keys are exactly 1..n, or nil when it has holes or any non-integer key.
 local function denseSize(list)
     local size, maximum = 0, 0
 
@@ -20,9 +32,13 @@ local function denseSize(list)
     return size
 end
 
+-- True when the tree must be described from its data alone instead of through the registered printers: a custom or
+-- unknown definition, a disabled node, a malformed group or NOT, an announcement target, or a tree beyond 4096 nodes
+-- or 32 levels. Printers run user code and assume well-formed input, so any doubt takes the data-only path.
 local function needsDataOnly(value, definitions)
     local count = 0
 
+    -- Returns true as soon as this node or any descendant forces the data-only path.
     local function inspect(node, depth)
         count = count + 1
         if count > 4096 or depth > 32 then return true end
@@ -56,8 +72,14 @@ local function needsDataOnly(value, definitions)
     return inspect(value, 0)
 end
 
+-- ============================================================================
+-- Data-only description
+-- ============================================================================
+
 -- A bounded display-only projection; it never calls condition printers,
 -- validators, providers or evaluators. Literal saved values are not templates.
+-- Returns the text (with | doubled for display), a truncated flag and a reference flag (true when some part could only
+-- be shown as a reference to its definition). Output is capped at 200 nodes, 16 levels and 8000 characters per part.
 local function describeData(value, definitions, units)
     local count, truncated, reference = 0, false, false
 
@@ -78,6 +100,7 @@ local function describeData(value, definitions, units)
         ATTACKABLE = { "%s {{!is|is not}} attackable", "%s {{!are|are not}} attackable", "Attackable" },
     }
 
+    -- Caps a text part at 8000 characters and records the truncation.
     ---@param text string
     local function bounded(text)
         if #text > 8000 then
@@ -88,6 +111,7 @@ local function describeData(value, definitions, units)
         return text
     end
 
+    -- Returns the display name for a unit token, or nil when it has none (the caller then asks for a unit).
     local function label(unit)
         if unit == 'announcementtarget' then return L['Announcement target'] end
         if unit == 'spellrecipient' then return L['Spell recipient'] end
@@ -95,6 +119,8 @@ local function describeData(value, definitions, units)
         if type(text) == 'string' and text ~= '' then return text:sub(1, 512) end
     end
 
+    -- Expands a translated template for the positive or negated reading with the unit label filled in. Returns nil
+    -- when the translation is oversized or still holds an unresolved alternative marker.
     local function phrase(key, unit, negated)
         local text = L[key]
         if type(text) ~= 'string' or #text > 2000 then return nil end
@@ -110,6 +136,9 @@ local function describeData(value, definitions, units)
         if ok then return result end
     end
 
+    -- Describes the few simple unit conditions (friendly, dead, combat, enemy, PVP, attackable, group) from their
+    -- data, but only when the definition is a plain, non-custom table whose description matches the built in text.
+    -- Returns nil for everything else.
     local function projected(node, definition, negated)
         if not definition or getmetatable(definition) ~= nil or rawget(definition, 'customCode') then return nil end
         local fields = rawget(definition, 'fields')
@@ -151,6 +180,7 @@ local function describeData(value, definitions, units)
         return phrase(templates[tag][unit == 'player' and 2 or 1], subject, negated)
     end
 
+    -- Returns the node's keys in a stable order (numbers first, then by value), skipping those in `skip`.
     local function keys(node, skip)
         local result = {}
 
@@ -166,6 +196,7 @@ local function describeData(value, definitions, units)
         return result
     end
 
+    -- Formats a saved value as text without interpreting it: strings are clipped, tables become [a; b; c].
     local function literal(item, depth)
         count = count + 1
 
@@ -199,6 +230,8 @@ local function describeData(value, definitions, units)
         return bounded('[' .. table.concat(parts, '; ') .. ']')
     end
 
+    -- Renders one node and its children. Returns the text and, for an AND/OR group shown positively, its type, so the
+    -- parent can parenthesize a group of the other type. `negated` flips the reading for an enclosing NOT.
     local function render(node, depth, negated)
         count = count + 1
 
@@ -309,6 +342,12 @@ local function describeData(value, definitions, units)
     return text, truncated, reference
 end
 
+-- ============================================================================
+-- Public API
+-- ============================================================================
+
+-- Returns the readable description of a condition tree for the given spec. Always returns a string: "Always" for an
+-- empty tree, a notice for invalid data, otherwise the printed or data-only text capped at 64000 characters.
 function addon:DescribeCondition(condition, spec)
     if self.RotationData and not self.RotationData.CheckPortable(condition) then
         return L["Condition description unavailable: invalid data."]
@@ -345,6 +384,7 @@ function addon:DescribeCardCondition(condition, spec)
     if not self.RotationData.CheckPortable(condition) then return self:DescribeCondition(condition, spec) end
     local value = self.RotationData.CopyData(condition)
 
+    -- Clears the disabled flag on every AND/OR/NOT node of the copy, down to 32 levels.
     local function strip(node, depth)
         if type(node) ~= "table" or depth > 32 then return end
         node.disabled = nil
