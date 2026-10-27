@@ -297,10 +297,10 @@ local function describeData(value, definitions, units)
                 local title = definition and rawget(definition, 'description')
 
                 if type(title) ~= 'string' or title == '' then
-                    title = type(node.type) == 'string' and string.format(
-                        L['Unknown condition: %s'],
-                        node.type:sub(1, 160)
-                    )
+                    title = type(node.type) == 'string' and string.format(L['Unknown condition: %s'], node.type:sub(
+                        1,
+                        160
+                    ))
                         or L['Choose a condition']
                 end
 
@@ -309,9 +309,12 @@ local function describeData(value, definitions, units)
                 if subject then text = text .. ' — ' .. string.format(L['For %s'], subject) end
                 local values = {}
 
-                for _, key in ipairs(
-                    keys(node, { type = true, name = true, disabled = true, unit = subject ~= nil })
-                ) do
+                for _, key in ipairs(keys(node, {
+                    type = true,
+                    name = true,
+                    disabled = true,
+                    unit = subject ~= nil,
+                })) do
                     if count >= 200 then
                         truncated = true
                         values[#values + 1] = '...'

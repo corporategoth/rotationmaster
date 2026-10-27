@@ -545,42 +545,39 @@ function addon:BuildEffectSettings(p)
         p.fields.new_name = p.fields.name
         p.fields.new_type = p.fields.type
 
-        p:CreationActions(
-            function()
-                if not self:SettingsNonempty(p.newEffect.name) then
-                    p:Message(L['Enter a name first.'])
-                    return
-                end
-
-                if not validEffect(p.newEffect) then
-                    p:Message(L['Complete the effect settings before applying.'])
-                    return
-                end
-
-                for _, value in pairs(effects) do
-                    if value.name == p.newEffect.name then
-                        p:Message(L['This name is already in use.'])
-                        return
-                    end
-                end
-
-                local id = self:uuid()
-                store.global.effects = store.global.effects or {}
-                store.global.effects[id] = self:CopySettingsData(p.newEffect)
-                defaults(store.global.effects[id])
-                p.selection = id
-                p.creating = false
-                p.newEffect = nil
-                p:Draw()
-            end,
-            function()
-                p.creating = false
-                p.selection = p.previousSelection
-                p.newEffect = nil
-                p.emptyDismissed = true
-                p:Draw()
+        p:CreationActions(function()
+            if not self:SettingsNonempty(p.newEffect.name) then
+                p:Message(L['Enter a name first.'])
+                return
             end
-        )
+
+            if not validEffect(p.newEffect) then
+                p:Message(L['Complete the effect settings before applying.'])
+                return
+            end
+
+            for _, value in pairs(effects) do
+                if value.name == p.newEffect.name then
+                    p:Message(L['This name is already in use.'])
+                    return
+                end
+            end
+
+            local id = self:uuid()
+            store.global.effects = store.global.effects or {}
+            store.global.effects[id] = self:CopySettingsData(p.newEffect)
+            defaults(store.global.effects[id])
+            p.selection = id
+            p.creating = false
+            p.newEffect = nil
+            p:Draw()
+        end, function()
+            p.creating = false
+            p.selection = p.previousSelection
+            p.newEffect = nil
+            p.emptyDismissed = true
+            p:Draw()
+        end)
     elseif not effect then
         self:CollectionFooter(
             p,

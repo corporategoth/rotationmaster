@@ -336,13 +336,9 @@ function addon:CreateSettingsForm(parent)
         self.fields[key] = c
         c:Enable()
 
-        addon:SetUIScript(
-            c,
-            'OnClick',
-            self:Guard(function()
-                if self:FlushEdits() then action() end
-            end)
-        )
+        addon:SetUIScript(c, 'OnClick', self:Guard(function()
+            if self:FlushEdits() then action() end
+        end))
 
         return c
     end
@@ -375,24 +371,20 @@ function addon:CreateSettingsForm(parent)
             c:Enable()
             self.fields[entry[1]] = c
 
-            addon:SetUIScript(
-                c,
-                'OnClick',
-                self:Guard(function()
-                    if entry[1] == 'cancel' then
-                        cancel()
+            addon:SetUIScript(c, 'OnClick', self:Guard(function()
+                if entry[1] == 'cancel' then
+                    cancel()
 
-                        if self.transactionKeys then
-                            self:DiscardSettingsDraft()
-                            self:Draw()
-                        end
-                    elseif pageDraft then
-                        if self:FlushEdits() then apply() end
-                    else
-                        self:ApplyCreation()
+                    if self.transactionKeys then
+                        self:DiscardSettingsDraft()
+                        self:Draw()
                     end
-                end)
-            )
+                elseif pageDraft then
+                    if self:FlushEdits() then apply() end
+                else
+                    self:ApplyCreation()
+                end
+            end))
         end
 
         self.fields.add = self.fields.apply
@@ -443,13 +435,9 @@ function addon:CreateSettingsForm(parent)
 
             self.fields[entry.key] = c
 
-            addon:SetUIScript(
-                c,
-                'OnClick',
-                self:Guard(function()
-                    if self:FlushEdits() then entry.action() end
-                end)
-            )
+            addon:SetUIScript(c, 'OnClick', self:Guard(function()
+                if self:FlushEdits() then entry.action() end
+            end))
         end
     end
 
@@ -472,16 +460,12 @@ function addon:CreateSettingsForm(parent)
         c:Enable()
         self.fields['section_' .. key] = c
 
-        addon:SetUIScript(
-            c,
-            'OnClick',
-            self:Guard(function()
-                if self:FlushEdits() then
-                    self.closedSections[key] = not self.closedSections[key]
-                    self:Draw()
-                end
-            end)
-        )
+        addon:SetUIScript(c, 'OnClick', self:Guard(function()
+            if self:FlushEdits() then
+                self.closedSections[key] = not self.closedSections[key]
+                self:Draw()
+            end
+        end))
 
         if not self.closedSections[key] then build() end
     end
@@ -505,16 +489,12 @@ function addon:CreateSettingsForm(parent)
         c:Enable()
         self.fields[key] = c
 
-        addon:SetUIScript(
-            c,
-            'OnClick',
-            self:Guard(function()
-                if self:FlushEdits() then
-                    c:SetChecked(not c:GetChecked())
-                    changed(c:GetChecked())
-                end
-            end)
-        )
+        addon:SetUIScript(c, 'OnClick', self:Guard(function()
+            if self:FlushEdits() then
+                c:SetChecked(not c:GetChecked())
+                changed(c:GetChecked())
+            end
+        end))
 
         return c
     end
@@ -578,38 +558,26 @@ function addon:CreateSettingsForm(parent)
         self.edits[#self.edits + 1] = record
         self.fields[key] = c
 
-        addon:SetUIScript(
-            c,
-            'OnTextChanged',
-            self:Guard(function(_, user)
-                if user then
-                    record.dirty = true
-                    if self.transactionKeys and self.fields.apply then self.fields.apply:Enable() end
-                    local v = record.parse(c:GetText())
-                    c:SetTextColor(1, v ~= nil and 1 or .35, v ~= nil and 1 or .35)
-                end
-            end)
-        )
+        addon:SetUIScript(c, 'OnTextChanged', self:Guard(function(_, user)
+            if user then
+                record.dirty = true
+                if self.transactionKeys and self.fields.apply then self.fields.apply:Enable() end
+                local v = record.parse(c:GetText())
+                c:SetTextColor(1, v ~= nil and 1 or .35, v ~= nil and 1 or .35)
+            end
+        end))
 
-        addon:SetUIScript(
-            c,
-            'OnEnterPressed',
-            self:Guard(function()
-                if self:FlushEdits() then c:ClearFocus() end
-            end)
-        )
+        addon:SetUIScript(c, 'OnEnterPressed', self:Guard(function()
+            if self:FlushEdits() then c:ClearFocus() end
+        end))
 
-        addon:SetUIScript(
-            c,
-            'OnEscapePressed',
-            self:Guard(function()
-                record.dirty = false
-                c:SetText(record.baseline)
-                c:SetTextColor(1, 1, 1)
-                c:ClearFocus()
-                self:Message('')
-            end)
-        )
+        addon:SetUIScript(c, 'OnEscapePressed', self:Guard(function()
+            record.dirty = false
+            c:SetText(record.baseline)
+            c:SetTextColor(1, 1, 1)
+            c:ClearFocus()
+            self:Message('')
+        end))
 
         addon:SetUIScript(c, 'OnEditFocusLost', self:Guard(function() self:FlushEdits() end))
         return c
@@ -652,24 +620,20 @@ function addon:CreateSettingsForm(parent)
         c:SetWidth(math.max(1, c:GetWidth() - 28))
         self.fields[key .. '_catalog'] = catalog
 
-        addon:SetUIScript(
-            catalog,
-            'OnClick',
-            self:Guard(function()
-                if self:FlushEdits() then
-                    self:ShowChoices(
-                        catalog,
-                        addon.Artwork.overlays,
-                        function(texture)
-                            c:SetText(texture)
-                            record.dirty = true
-                            self:FlushEdits()
-                        end,
-                        true
-                    )
-                end
-            end)
-        )
+        addon:SetUIScript(catalog, 'OnClick', self:Guard(function()
+            if self:FlushEdits() then
+                self:ShowChoices(
+                    catalog,
+                    addon.Artwork.overlays,
+                    function(texture)
+                        c:SetText(texture)
+                        record.dirty = true
+                        self:FlushEdits()
+                    end,
+                    true
+                )
+            end
+        end))
 
         return c
     end
@@ -722,65 +686,49 @@ function addon:CreateSettingsForm(parent)
 
         self.edits[#self.edits + 1] = record
 
-        addon:SetUIScript(
-            number,
-            'OnTextChanged',
-            self:Guard(function(_, user)
-                if user then
-                    record.dirty = true
-                    if self.transactionKeys and self.fields.apply then self.fields.apply:Enable() end
-                    local ok = record.parse(number:GetText()) ~= nil
-                    number:SetTextColor(1, ok and 1 or .35, ok and 1 or .35)
-                end
-            end)
-        )
+        addon:SetUIScript(number, 'OnTextChanged', self:Guard(function(_, user)
+            if user then
+                record.dirty = true
+                if self.transactionKeys and self.fields.apply then self.fields.apply:Enable() end
+                local ok = record.parse(number:GetText()) ~= nil
+                number:SetTextColor(1, ok and 1 or .35, ok and 1 or .35)
+            end
+        end))
 
-        addon:SetUIScript(
-            number,
-            'OnEnterPressed',
-            self:Guard(function()
-                if self:FlushEdits() then number:ClearFocus() end
-            end)
-        )
+        addon:SetUIScript(number, 'OnEnterPressed', self:Guard(function()
+            if self:FlushEdits() then number:ClearFocus() end
+        end))
 
         addon:SetUIScript(number, 'OnEditFocusLost', self:Guard(function() self:FlushEdits() end))
 
-        addon:SetUIScript(
-            number,
-            'OnEscapePressed',
-            self:Guard(function()
-                record.dirty = false
-                number:SetText(record.baseline)
-                number:SetTextColor(1, 1, 1)
-                number:ClearFocus()
-                self:Message('')
-            end)
-        )
+        addon:SetUIScript(number, 'OnEscapePressed', self:Guard(function()
+            record.dirty = false
+            number:SetText(record.baseline)
+            number:SetTextColor(1, 1, 1)
+            number:ClearFocus()
+            self:Message('')
+        end))
 
-        addon:SetUIScript(
-            c,
-            'OnValueChanged',
-            self:Guard(function(_, n)
-                if c.setting then return end
+        addon:SetUIScript(c, 'OnValueChanged', self:Guard(function(_, n)
+            if c.setting then return end
 
-                if step >= 1 then
-                    local rounded = math.max(lo, math.min(hi, lo + math.floor((n - lo) / step + .5) * step))
+            if step >= 1 then
+                local rounded = math.max(lo, math.min(hi, lo + math.floor((n - lo) / step + .5) * step))
 
-                    if rounded ~= n then
-                        c.setting = true
-                        c:SetValue(rounded)
-                        c.setting = false
-                        n = rounded
-                    end
+                if rounded ~= n then
+                    c.setting = true
+                    c:SetValue(rounded)
+                    c.setting = false
+                    n = rounded
                 end
+            end
 
-                if self:FlushEdits() then
-                    number:SetText(string.format('%.4g', n))
-                    record.baseline = number:GetText()
-                    changed(n)
-                end
-            end)
-        )
+            if self:FlushEdits() then
+                number:SetText(string.format('%.4g', n))
+                record.baseline = number:GetText()
+                changed(n)
+            end
+        end))
 
         return c
     end
@@ -927,76 +875,60 @@ function addon:CreateSettingsForm(parent)
             self:ShowChoices(c, rows, choose, true)
         end
 
-        addon:SetUIScript(
-            c,
-            'OnTextChanged',
-            self:Guard(function(control, user)
-                textChanged(control, user)
+        addon:SetUIScript(c, 'OnTextChanged', self:Guard(function(control, user)
+            textChanged(control, user)
 
-                if c:GetText() == '' then
-                    c.dropHint:Show()
-                else
-                    c.dropHint:Hide()
-                end
+            if c:GetText() == '' then
+                c.dropHint:Show()
+            else
+                c.dropHint:Hide()
+            end
 
-                if user then query() end
-            end)
-        )
+            if user then query() end
+        end))
 
-        addon:SetUIScript(
-            c,
-            'OnEditFocusGained',
-            self:Guard(function()
-                if selected and not record.dirty then
-                    c:SetText(display(selected))
-                    record.baseline = c:GetText()
-                    paint()
-                end
+        addon:SetUIScript(c, 'OnEditFocusGained', self:Guard(function()
+            if selected and not record.dirty then
+                c:SetText(display(selected))
+                record.baseline = c:GetText()
+                paint()
+            end
 
-                query()
-            end)
-        )
+            query()
+        end))
 
-        addon:SetUIScript(
-            c,
-            'OnEscapePressed',
-            self:Guard(function()
-                if self.menu then self.menu.frame:Hide() end
-                escape(c)
-            end)
-        )
+        addon:SetUIScript(c, 'OnEscapePressed', self:Guard(function()
+            if self.menu then self.menu.frame:Hide() end
+            escape(c)
+        end))
 
-        addon:SetUIScript(
-            c,
-            'OnEnter',
-            self:HelpGuard(function()
-                if selected and GameTooltip then
-                    GameTooltip:SetOwner(c, 'ANCHOR_RIGHT')
-                    GameTooltip:SetHyperlink(provider.kind .. ':' .. selected)
+        addon:SetUIScript(c, 'OnEnter', self:HelpGuard(function()
+            if selected and GameTooltip then
+                GameTooltip:SetOwner(c, 'ANCHOR_RIGHT')
+                GameTooltip:SetHyperlink(provider.kind .. ':' .. selected)
 
-                    GameTooltip:AddLine(
-                        provider.kind == 'item' and L['Search or drag an item here'] or L['Search or drag a spell here']
-                    )
+                GameTooltip:AddLine(
+                    provider.kind == 'item' and L['Search or drag an item here'] or L['Search or drag a spell here']
+                )
 
-                    GameTooltip:AddLine(
-                        provider.kind == 'item' and L['Right-click to insert an equipped trinket.']
-                            or L["Right-click to insert your target's cast or a recent cast."]
-                    )
+                GameTooltip:AddLine(
+                    provider.kind == 'item' and L['Right-click to insert an equipped trinket.']
+                        or L["Right-click to insert your target's cast or a recent cast."]
+                )
 
-                    GameTooltip:Show()
-                elseif GameTooltip then
-                    GameTooltip:SetOwner(c, 'ANCHOR_RIGHT')
-                    GameTooltip:SetText(c.dropHint:GetText())
+                GameTooltip:Show()
+            elseif GameTooltip then
+                GameTooltip:SetOwner(c, 'ANCHOR_RIGHT')
+                GameTooltip:SetText(c.dropHint:GetText())
 
-                    GameTooltip:AddLine(
-                        provider.kind == 'item' and L['Right-click to insert an equipped trinket.']
-                            or L["Right-click to insert your target's cast or a recent cast."]
-                    )
+                GameTooltip:AddLine(
+                    provider.kind == 'item' and L['Right-click to insert an equipped trinket.']
+                        or L["Right-click to insert your target's cast or a recent cast."]
+                )
 
-                    GameTooltip:Show()
-                end
-            end)
-        )
+                GameTooltip:Show()
+            end
+        end))
 
         addon:SetUIScript(c, 'OnLeave', function()
             if GameTooltip and GameTooltip:IsOwned(c) then GameTooltip:Hide() end
@@ -1046,17 +978,13 @@ function addon:CreateSettingsForm(parent)
 
         addon:SetUIScript(c, 'OnReceiveDrag', self:Guard(drop))
 
-        addon:SetUIScript(
-            c,
-            'OnMouseDown',
-            self:Guard(function(_, button)
-                if button == 'RightButton' then
-                    insertMenu()
-                else
-                    drop()
-                end
-            end)
-        )
+        addon:SetUIScript(c, 'OnMouseDown', self:Guard(function(_, button)
+            if button == 'RightButton' then
+                insertMenu()
+            else
+                drop()
+            end
+        end))
 
         return c
     end
@@ -1190,20 +1118,16 @@ function addon:CreateSettingsForm(parent)
         play:SetPoint('LEFT', c, 'RIGHT', 4, 0)
         self.fields[key .. 'play'] = play
 
-        addon:SetUIScript(
-            play,
-            'OnClick',
-            self:Guard(function()
-                local path = selected and sounds[selected]
+        addon:SetUIScript(play, 'OnClick', self:Guard(function()
+            local path = selected and sounds[selected]
 
-                if (type(path) == 'string' or type(path) == 'number') and type(PlaySoundFile) == 'function' then
-                    local played = PlaySoundFile(path, 'Master')
-                    if not played then self:Message(L['Sound preview is unavailable.']) end
-                else
-                    self:Message(L['Choose an available sound to preview.'])
-                end
-            end)
-        )
+            if (type(path) == 'string' or type(path) == 'number') and type(PlaySoundFile) == 'function' then
+                local played = PlaySoundFile(path, 'Master')
+                if not played then self:Message(L['Sound preview is unavailable.']) end
+            else
+                self:Message(L['Choose an available sound to preview.'])
+            end
+        end))
 
         return c
     end
@@ -1316,17 +1240,13 @@ function addon:CreateSettingsForm(parent)
         c:Enable()
         self.fields[key] = c
 
-        addon:SetUIScript(
-            c,
-            'OnClick',
-            self:Guard(function()
-                if self:FlushEdits() then
-                    value = not value
-                    c:SetText(value and trueLabel or falseLabel)
-                    changed(value)
-                end
-            end)
-        )
+        addon:SetUIScript(c, 'OnClick', self:Guard(function()
+            if self:FlushEdits() then
+                value = not value
+                c:SetText(value and trueLabel or falseLabel)
+                changed(value)
+            end
+        end))
 
         return c
     end
@@ -1359,20 +1279,16 @@ function addon:CreateSettingsForm(parent)
 
         addon:PaintSelectorSelection(c, chosen, selected)
 
-        addon:SetUIScript(
-            c,
-            'OnClick',
-            self:Guard(function()
-                if self:FlushEdits() then
-                    self:ShowChoices(c, entries, function(nextValue)
-                        if nextValue ~= value then
-                            value = nextValue
-                            changed(nextValue)
-                        end
-                    end)
-                end
-            end)
-        )
+        addon:SetUIScript(c, 'OnClick', self:Guard(function()
+            if self:FlushEdits() then
+                self:ShowChoices(c, entries, function(nextValue)
+                    if nextValue ~= value then
+                        value = nextValue
+                        changed(nextValue)
+                    end
+                end)
+            end
+        end))
 
         return c
     end
@@ -1449,23 +1365,20 @@ function addon:CreateSettingsForm(parent)
         end
 
         if self:IsCreationDirty() or self.transactionKeys and self:IsSettingsDraftDirty() then
-            self:ConfirmPending(
-                function()
-                    local ok
+            self:ConfirmPending(function()
+                local ok
 
-                    if self.creationUsedForNew then
-                        ok = self:ApplyCreation()
-                    else
-                        ok = self:FlushEdits() and self:SaveSettingsDraft()
-                    end
-
-                    if ok then callback() end
-                end,
-                function()
-                    self:DiscardSettingsDraft()
-                    callback()
+                if self.creationUsedForNew then
+                    ok = self:ApplyCreation()
+                else
+                    ok = self:FlushEdits() and self:SaveSettingsDraft()
                 end
-            )
+
+                if ok then callback() end
+            end, function()
+                self:DiscardSettingsDraft()
+                callback()
+            end)
 
             return false
         end
@@ -1509,14 +1422,10 @@ function addon:CreateSettingsForm(parent)
         prompt.accept:SetPoint('BOTTOMRIGHT', -120, 12)
         prompt.text:SetText(message)
 
-        addon:SetUIScript(
-            prompt.accept,
-            'OnClick',
-            self:Guard(function()
-                prompt.frame:Hide()
-                callback()
-            end)
-        )
+        addon:SetUIScript(prompt.accept, 'OnClick', self:Guard(function()
+            prompt.frame:Hide()
+            callback()
+        end))
 
         prompt.frame:Show()
         addon:OpenPopup(prompt, self)
@@ -1534,14 +1443,10 @@ function addon:CreateSettingsForm(parent)
         d.discard:SetPoint('BOTTOMRIGHT', -120, 12)
         d.discard:Show()
 
-        addon:SetUIScript(
-            d.discard,
-            'OnClick',
-            self:Guard(function()
-                d.frame:Hide()
-                discard()
-            end)
-        )
+        addon:SetUIScript(d.discard, 'OnClick', self:Guard(function()
+            d.frame:Hide()
+            discard()
+        end))
     end
 
     -- Adds a color swatch with four channel boxes (fields key_r, key_g, key_b, key_a) and a picker; changed({r,g,b,a})
@@ -1598,82 +1503,62 @@ function addon:CreateSettingsForm(parent)
             self.edits[#self.edits + 1] = record
             records[channel] = record
 
-            addon:SetUIScript(
-                c,
-                'OnTextChanged',
-                self:Guard(function(_, user)
-                    if user then
-                        record.dirty = true
-                        if self.transactionKeys and self.fields.apply then self.fields.apply:Enable() end
-                        local valid = record.parse(c:GetText()) ~= nil
-                        c:SetTextColor(1, valid and 1 or .35, valid and 1 or .35)
-                    end
-                end)
-            )
+            addon:SetUIScript(c, 'OnTextChanged', self:Guard(function(_, user)
+                if user then
+                    record.dirty = true
+                    if self.transactionKeys and self.fields.apply then self.fields.apply:Enable() end
+                    local valid = record.parse(c:GetText()) ~= nil
+                    c:SetTextColor(1, valid and 1 or .35, valid and 1 or .35)
+                end
+            end))
 
-            addon:SetUIScript(
-                c,
-                'OnEnterPressed',
-                self:Guard(function()
-                    if self:FlushEdits() then c:ClearFocus() end
-                end)
-            )
+            addon:SetUIScript(c, 'OnEnterPressed', self:Guard(function()
+                if self:FlushEdits() then c:ClearFocus() end
+            end))
 
             addon:SetUIScript(c, 'OnEditFocusLost', self:Guard(function() self:FlushEdits() end))
 
-            addon:SetUIScript(
-                c,
-                'OnEscapePressed',
-                self:Guard(function()
-                    record.dirty = false
-                    c:SetText(record.baseline)
-                    c:SetTextColor(1, 1, 1)
-                    c:ClearFocus()
-                    self:Message('')
-                end)
-            )
+            addon:SetUIScript(c, 'OnEscapePressed', self:Guard(function()
+                record.dirty = false
+                c:SetText(record.baseline)
+                c:SetTextColor(1, 1, 1)
+                c:ClearFocus()
+                self:Message('')
+            end))
         end
 
         swatch.picker = swatch.picker or addon:CreateWorkbenchColorPicker(self.frame)
         local token = self.generation
 
-        addon:SetUIScript(
-            swatch,
-            'OnEnter',
-            self:HelpGuard(function() swatch.art:SetColorTexture(values.r, values.g, values.b, values.a) end)
-        )
+        addon:SetUIScript(swatch, 'OnEnter', self:HelpGuard(function()
+            swatch.art:SetColorTexture(values.r, values.g, values.b, values.a)
+        end))
 
-        addon:SetUIScript(
-            swatch,
-            'OnLeave',
-            self:HelpGuard(function() swatch.art:SetColorTexture(values.r, values.g, values.b, values.a) end)
-        )
+        addon:SetUIScript(swatch, 'OnLeave', self:HelpGuard(function()
+            swatch.art:SetColorTexture(values.r, values.g, values.b, values.a)
+        end))
 
-        addon:SetUIScript(
-            swatch,
-            'OnClick',
-            self:Guard(function()
-                if self:FlushEdits() then
-                    swatch.picker:Open(
-                        values,
-                        self:Guard(function(r, g, b, a)
-                            values = { r = r, g = g, b = b, a = a }
+        addon:SetUIScript(swatch, 'OnClick', self:Guard(function()
+            if self:FlushEdits() then
+                swatch.picker:Open(
+                    values,
+                    self:Guard(function(r, g, b, a)
+                        values = { r = r, g = g, b = b, a = a }
 
-                            for channel, c in pairs(controls) do
-                                c:SetText(string.format('%.3f', values[channel]))
-                                records[channel].baseline = c:GetText()
-                                records[channel].dirty = false
-                            end
+                        for channel, c in pairs(controls) do
+                            c:SetText(string.format('%.3f', values[channel]))
+                            records[channel].baseline = c:GetText()
+                            records[channel].dirty = false
+                        end
 
-                            swatch.art:SetColorTexture(r, g, b, a)
-                            changed({ r = r, g = g, b = b, a = a })
-                        end),
-                        function() return self:Valid(token) end,
-                        swatch
-                    )
-                end
-            end)
-        )
+                        swatch.art:SetColorTexture(r, g, b, a)
+                        changed({ r = r, g = g, b = b, a = a })
+                    end),
+                    function() return self:Valid(token) end,
+                    swatch
+                )
+            end
+        end))
 
         self.cleanups[#self.cleanups + 1] = function()
             if swatch.picker.frame:IsShown() then swatch.picker:Close(true) end
@@ -1792,10 +1677,10 @@ function addon:CreateSettingsForm(parent)
 
         addon:ReserveWorkbenchHelpCorner(self.frame, self.scroll, 8)
 
-        self.scroll:SetSize(
-            math.max(1, self.frame:GetWidth() - 34),
-            math.max(1, self.frame:GetHeight() - (self.creationUsed and 66 or 38))
-        )
+        self.scroll:SetSize(math.max(1, self.frame:GetWidth() - 34), math.max(
+            1,
+            self.frame:GetHeight() - (self.creationUsed and 66 or 38)
+        ))
 
         self.message:SetWidth(math.max(1, self.frame:GetWidth() - (self.creationUsed and 340 or 20)))
     end

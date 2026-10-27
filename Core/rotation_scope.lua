@@ -2761,63 +2761,58 @@ end
 function addon:BindRuntimeEvaluationContext(bind)
     if self ~= addon or type(bind) ~= 'function' then return nil end
 
-    bind(
-        function(owner, spec)
-            contextVersion = {}
-            invalidateExecution()
+    bind(function(owner, spec)
+        contextVersion = {}
+        invalidateExecution()
 
-            if
-                owner ~= addon
-                or owner.AcquireRotationRuntimePass ~= ownedAcquireRuntimePass
-                or owner.GetScopedRotationCoordinator ~= ownedScopedCoordinator
-                or not current
-                or current.RuntimePass ~= ownedRuntimePasses[current]
-            then
-                return owner:AcquireRotationRuntimePass(spec)
-            end
-
-            local previous = evaluationRequest
-            local request = {}
-            evaluationRequest = request
-            local ok, pass, reason = protect(ownedAcquireRuntimePass, owner, spec)
-            evaluationRequest = previous
-            if not ok then raise(pass, 0) end
-            return pass, reason, request.pass == pass and request.publication or nil
-        end,
-        function()
-            contextVersion = {}
-            invalidateExecution()
-        end,
-        function(owner, spec)
-            if
-                owner ~= addon
-                or rawget(owner, 'AcquireRotationRuntimePass') ~= ownedAcquireRuntimePass
-                or storeGetfenv(ownedAcquireRuntimePass) ~= storeScopeEnvironment
-                or rawget(owner, 'GetScopedRotationCoordinator') ~= ownedScopedCoordinator
-                or not current
-                or rawget(current, 'RuntimePass') ~= ownedRuntimePasses[current]
-            then
-                return owner:AcquireRotationRuntimePass(spec)
-            end
-
-            return current:RuntimePass(spec, privatePlanPass)
-        end,
-        function(owner, spec, key, capturedMethod)
-            if
-                owner ~= addon
-                or capturedMethod ~= ownedGetCleanup
-                or rawget(owner, 'GetRotationForCleanup') ~= ownedGetCleanup
-                or storeGetfenv(ownedGetCleanup) ~= storeScopeEnvironment
-                or rawget(owner, 'GetScopedRotationCoordinator') ~= ownedScopedCoordinator
-                or not current
-                or rawget(current, 'RuntimePass') ~= ownedRuntimePasses[current]
-            then
-                return capturedMethod(owner, spec, key)
-            end
-
-            return current:Cleanup(spec, key, privatePlanPass)
+        if
+            owner ~= addon
+            or owner.AcquireRotationRuntimePass ~= ownedAcquireRuntimePass
+            or owner.GetScopedRotationCoordinator ~= ownedScopedCoordinator
+            or not current
+            or current.RuntimePass ~= ownedRuntimePasses[current]
+        then
+            return owner:AcquireRotationRuntimePass(spec)
         end
-    )
+
+        local previous = evaluationRequest
+        local request = {}
+        evaluationRequest = request
+        local ok, pass, reason = protect(ownedAcquireRuntimePass, owner, spec)
+        evaluationRequest = previous
+        if not ok then raise(pass, 0) end
+        return pass, reason, request.pass == pass and request.publication or nil
+    end, function()
+        contextVersion = {}
+        invalidateExecution()
+    end, function(owner, spec)
+        if
+            owner ~= addon
+            or rawget(owner, 'AcquireRotationRuntimePass') ~= ownedAcquireRuntimePass
+            or storeGetfenv(ownedAcquireRuntimePass) ~= storeScopeEnvironment
+            or rawget(owner, 'GetScopedRotationCoordinator') ~= ownedScopedCoordinator
+            or not current
+            or rawget(current, 'RuntimePass') ~= ownedRuntimePasses[current]
+        then
+            return owner:AcquireRotationRuntimePass(spec)
+        end
+
+        return current:RuntimePass(spec, privatePlanPass)
+    end, function(owner, spec, key, capturedMethod)
+        if
+            owner ~= addon
+            or capturedMethod ~= ownedGetCleanup
+            or rawget(owner, 'GetRotationForCleanup') ~= ownedGetCleanup
+            or storeGetfenv(ownedGetCleanup) ~= storeScopeEnvironment
+            or rawget(owner, 'GetScopedRotationCoordinator') ~= ownedScopedCoordinator
+            or not current
+            or rawget(current, 'RuntimePass') ~= ownedRuntimePasses[current]
+        then
+            return capturedMethod(owner, spec, key)
+        end
+
+        return current:Cleanup(spec, key, privatePlanPass)
+    end)
 
     return true
 end

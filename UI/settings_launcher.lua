@@ -55,26 +55,22 @@ function addon:CreateSettingsLauncher()
     page.commands = label()
     page.commands:SetPoint("TOPLEFT", 24, -278)
 
-    page.commands:SetText(
-        table.concat({
-            L["/rm config              - Open the config dialog."],
-            L["/rm errors              - View and copy Rotation Master errors."],
-            L["/rm help                - This text."],
-            L["/rm toggle              - Toggle between enabled and disabled."],
-            L["/rm current             - Print out the name of the current rotation."],
-        }, "\n\n")
-    )
+    page.commands:SetText(table.concat({
+        L["/rm config              - Open the config dialog."],
+        L["/rm errors              - View and copy Rotation Master errors."],
+        L["/rm help                - This text."],
+        L["/rm toggle              - Toggle between enabled and disabled."],
+        L["/rm current             - Print out the name of the current rotation."],
+    }, "\n\n"))
 
     page.credits = label('GameFontHighlightSmall')
     page.credits:SetPoint('TOPLEFT', 24, -460)
 
-    page.credits:SetText(
-        table.concat({
-            L['License'] .. ': ' .. metadata('X-License'),
-            L['Credits'] .. ': ' .. metadata('X-Credits'),
-            L['Localizations'] .. ': ' .. metadata('X-Localizations'),
-        }, '\n')
-    )
+    page.credits:SetText(table.concat({
+        L['License'] .. ': ' .. metadata('X-License'),
+        L['Credits'] .. ': ' .. metadata('X-Credits'),
+        L['Localizations'] .. ': ' .. metadata('X-Localizations'),
+    }, '\n'))
 
     page.credits:SetWidth(592)
 

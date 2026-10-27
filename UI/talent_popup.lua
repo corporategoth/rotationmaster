@@ -162,13 +162,10 @@ local function layout(d)
 
     for index, spec in ipairs(specs or {}) do
         if showSpecs then
-            local button = bar(
-                d.specButtons,
-                d,
-                index,
-                spec.name or tostring(spec.id),
-                math.max(70, #(spec.name or '') * 7 + 16)
-            )
+            local button = bar(d.specButtons, d, index, spec.name or tostring(spec.id), math.max(
+                70,
+                #(spec.name or '') * 7 + 16
+            ))
 
             button:ClearAllPoints()
             button:SetPoint('TOPLEFT', x, y)

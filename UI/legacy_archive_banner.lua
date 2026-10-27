@@ -48,12 +48,10 @@ function addon:CreateLegacyArchiveBanner(shell, window)
         self.count = addon.GetLegacyArchiveBanner and addon:GetLegacyArchiveBanner() or nil
 
         if self.count then
-            self.text:SetText(
-                string.format(
-                    L['%d rotations from before version 2 are waiting in an archive and do not run until you adopt them.'],
-                    self.count
-                )
-            )
+            self.text:SetText(string.format(
+                L['%d rotations from before version 2 are waiting in an archive and do not run until you adopt them.'],
+                self.count
+            ))
 
             self.frame:Show()
         else

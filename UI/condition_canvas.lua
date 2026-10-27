@@ -78,7 +78,6 @@ function addon:CreateConditionCanvas(parent, owner)
     canvas.child = CreateFrame("Frame", nil, canvas.frame)
     canvas.frame:SetScrollChild(canvas.child)
 
-
     -- ============================================================================
     -- Selection
     -- ============================================================================
@@ -147,7 +146,6 @@ function addon:CreateConditionCanvas(parent, owner)
             self:Reflow()
         end
     end
-
 
     -- ============================================================================
     -- Drag and drop
@@ -422,7 +420,6 @@ function addon:CreateConditionCanvas(parent, owner)
         self:CancelDrag()
     end
 
-
     -- ============================================================================
     -- Box selection
     -- ============================================================================
@@ -559,7 +556,6 @@ function addon:CreateConditionCanvas(parent, owner)
         horizontal:SetWidth(self.frame:GetWidth())
     end
 
-
     -- ============================================================================
     -- Card binding and rendering
     -- ============================================================================
@@ -653,11 +649,9 @@ function addon:CreateConditionCanvas(parent, owner)
                 card.nameButton:Show()
                 local name = card.name:GetText()
 
-                card.nameButton:SetText(
-                    addon:PlainWorkbenchName(
-                        name ~= '' and name or model.group and L['Click to add group name'] or owner:Caption(model)
-                    )
-                )
+                card.nameButton:SetText(addon:PlainWorkbenchName(
+                    name ~= '' and name or model.group and L['Click to add group name'] or owner:Caption(model)
+                ))
             end
         end)
 
@@ -1069,9 +1063,13 @@ function addon:CreateConditionCanvas(parent, owner)
             local top = self.frame.workbenchBar:GetValue()
 
             if self.scene then
-                for _, model in ipairs(
-                    addon:GetConditionCanvasViewport(self.scene, 0, top, self.scene.width, top + self.frame:GetHeight())
-                ) do
+                for _, model in ipairs(addon:GetConditionCanvasViewport(
+                    self.scene,
+                    0,
+                    top,
+                    self.scene.width,
+                    top + self.frame:GetHeight()
+                )) do
                     if model.y + model.ownHeight >= top then
                         anchor = model.key
                         offset = top - model.y

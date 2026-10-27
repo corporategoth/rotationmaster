@@ -242,10 +242,9 @@ function addon:DescribeRotationIssue(problem, body)
             field = type(kind) == 'string' and kind or field
         end
 
-        what = template and string.format(template, field) or string.format(
-            L['has a problem (%s)'],
-            tostring(problem.code)
-        )
+        what = template and string.format(template, field) or string.format(L['has a problem (%s)'], tostring(
+            problem.code
+        ))
     end
 
     return string.format('%s: %s', where, (what:gsub('%.$', '')))
@@ -773,11 +772,9 @@ function addon:GetRotationEligibilityReport()
             local name = self:GetRotationName(key)
 
             if name then
-                names[#names + 1] = string.format(
-                    '%s (%s)',
-                    name,
-                    tostring(self:GetRotationEffectivePriority(spec, key) or '?')
-                )
+                names[#names + 1] = string.format('%s (%s)', name, tostring(
+                    self:GetRotationEffectivePriority(spec, key) or '?'
+                ))
             end
         end
 
@@ -1250,11 +1247,9 @@ function addon:DescribeApplicability(scope)
     end
 
     if scope.minExpansion or scope.maxExpansion then
-        parts[#parts + 1] = string.format(
-            L['expansions %s–%s'],
-            tostring(scope.minExpansion or '?'),
-            tostring(scope.maxExpansion or '?')
-        )
+        parts[#parts + 1] = string.format(L['expansions %s–%s'], tostring(scope.minExpansion or '?'), tostring(
+            scope.maxExpansion or '?'
+        ))
     end
 
     if type(scope.rulesets) == 'table' then

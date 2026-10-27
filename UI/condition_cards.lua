@@ -149,9 +149,9 @@ function addon:CreateConditionCard(parent)
         end
 
         if model.group or (model.name and model.name ~= '') then
-            self.nameButton:SetText(
-                addon:PlainWorkbenchName(model.name and model.name ~= '' and model.name or L['Click to add group name'])
-            )
+            self.nameButton:SetText(addon:PlainWorkbenchName(
+                model.name and model.name ~= '' and model.name or L['Click to add group name']
+            ))
 
             self.nameButton:Show()
         else
@@ -209,12 +209,10 @@ function addon:CreateConditionCard(parent)
             self.nameButton:SetWidth(model.width - (model.group and 74 or 52))
             nameLabel:SetWidth(self.nameButton:GetWidth() - 6)
 
-            self.nameButton:SetText(
-                addon:PlainWorkbenchName(
-                    model.name and model.name ~= '' and model.name
-                        or (model.group and (model.type == 'AND' and L['All of'] or L['Any of']) or summary or title)
-                )
-            )
+            self.nameButton:SetText(addon:PlainWorkbenchName(
+                model.name and model.name ~= '' and model.name
+                    or (model.group and (model.type == 'AND' and L['All of'] or L['Any of']) or summary or title)
+            ))
 
             self.nameButton:Show()
         else

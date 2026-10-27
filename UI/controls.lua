@@ -488,11 +488,9 @@ function addon:CreateConditionChevron(parent)
     function button:PointState(state)
         self.icon:SetRotation(state == 'compact' and math.pi or 0)
 
-        self.icon:SetTexture(
-            addon:ControlTexture(
-                state == 'compact' and 'chevron-down' or state == 'expanded' and 'chevron-double-down' or 'chevron-down'
-            )
-        )
+        self.icon:SetTexture(addon:ControlTexture(
+            state == 'compact' and 'chevron-down' or state == 'expanded' and 'chevron-double-down' or 'chevron-down'
+        ))
     end
 
     button:PointDown(false)

@@ -220,15 +220,11 @@ function addon:InstallSettingsLayout(p)
         addon:SetWorkbenchUnsaved(row, self.RosterEntryUnsaved and self:RosterEntryUnsaved(entry) or false)
         if entry.disabled then row:GetFontString():SetTextColor(.5, .5, .5) end
 
-        addon:SetUIScript(
-            row,
-            'OnClick',
-            self:Guard(function()
-                if r.active and r.revision == revision and row.rosterLease == lease and self:FlushEdits() then
-                    r.choose(entry.value)
-                end
-            end)
-        )
+        addon:SetUIScript(row, 'OnClick', self:Guard(function()
+            if r.active and r.revision == revision and row.rosterLease == lease and self:FlushEdits() then
+                r.choose(entry.value)
+            end
+        end))
 
         self:BindRosterOrderRow(row, entry, revision)
         row:Show()
@@ -421,13 +417,9 @@ function addon:InstallSettingsLayout(p)
 
             self.fields[entry.key] = button
 
-            addon:SetUIScript(
-                button,
-                'OnClick',
-                self:Guard(function()
-                    if self:FlushEdits() then entry.action() end
-                end)
-            )
+            addon:SetUIScript(button, 'OnClick', self:Guard(function()
+                if self:FlushEdits() then entry.action() end
+            end))
         end
 
         for i = #entries + 1, #r.actionButtons do
@@ -502,16 +494,12 @@ function addon:InstallSettingsLayout(p)
 
         r.search:SetText(self.rosterQuery or '')
 
-        addon:SetUIScript(
-            r.search,
-            'OnTextChanged',
-            self:Guard(function(_, user)
-                if user then
-                    self.rosterQuery = r.search:GetText()
-                    self:RefreshRoster()
-                end
-            end)
-        )
+        addon:SetUIScript(r.search, 'OnTextChanged', self:Guard(function(_, user)
+            if user then
+                self.rosterQuery = r.search:GetText()
+                self:RefreshRoster()
+            end
+        end))
 
         addon:SetUIScript(r.search, 'OnEscapePressed', self:Guard(function() r.search:ClearFocus() end))
         r.sourceButtons = r.sourceButtons or {}
@@ -528,17 +516,13 @@ function addon:InstallSettingsLayout(p)
             control:SetSelected(entry.value == options.source)
             control:Show()
 
-            addon:SetUIScript(
-                control,
-                'OnClick',
-                self:Guard(function()
-                    if options.requestSource then
-                        options.requestSource(entry.value)
-                    elseif self:FlushEdits() then
-                        options.chooseSource(entry.value)
-                    end
-                end)
-            )
+            addon:SetUIScript(control, 'OnClick', self:Guard(function()
+                if options.requestSource then
+                    options.requestSource(entry.value)
+                elseif self:FlushEdits() then
+                    options.chooseSource(entry.value)
+                end
+            end))
         end
 
         for i = #(options.sources or {}) + 1, #r.sourceButtons do
@@ -559,15 +543,11 @@ function addon:InstallSettingsLayout(p)
             addon:PaintSelectorSelection(r.category, selected, caption)
             r.category:Show()
 
-            addon:SetUIScript(
-                r.category,
-                'OnClick',
-                self:Guard(function()
-                    if self:FlushEdits() then
-                        self:ShowChoices(r.category, options.categories, options.chooseCategory)
-                    end
-                end)
-            )
+            addon:SetUIScript(r.category, 'OnClick', self:Guard(function()
+                if self:FlushEdits() then
+                    self:ShowChoices(r.category, options.categories, options.chooseCategory)
+                end
+            end))
         else
             r.category:Hide()
         end
@@ -581,13 +561,9 @@ function addon:InstallSettingsLayout(p)
             r.new:SetText(options.newText or L['New'])
             r.new:Show()
 
-            addon:SetUIScript(
-                r.new,
-                'OnClick',
-                self:Guard(function()
-                    if self:FlushEdits() then options.new() end
-                end)
-            )
+            addon:SetUIScript(r.new, 'OnClick', self:Guard(function()
+                if self:FlushEdits() then options.new() end
+            end))
         else
             r.new:Hide()
         end
@@ -596,13 +572,9 @@ function addon:InstallSettingsLayout(p)
             r.manage:SetText(options.manageText or L['Manage categories'])
             r.manage:Show()
 
-            addon:SetUIScript(
-                r.manage,
-                'OnClick',
-                self:Guard(function()
-                    if self:FlushEdits() then options.manage() end
-                end)
-            )
+            addon:SetUIScript(r.manage, 'OnClick', self:Guard(function()
+                if self:FlushEdits() then options.manage() end
+            end))
         else
             r.manage:Hide()
         end

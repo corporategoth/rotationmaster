@@ -413,69 +413,62 @@ local function upgradeGlobalRotationstoPlayer()
 end
 
 local function upgradeItemsToItemSets()
-    updateRotationData(
-        function(rot)
+    updateRotationData(function(rot)
+        if
+            rot.type == "item"
+            and (type(rot.action) == "number"
+                or (type(rot.action) == "string"
+                    and not string.match(
+                        rot.action,
+                        "%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x"
+                    )))
+        then
+            rot.action = { rot.action }
+        end
+    end, function(cond)
+        if
+            cond.type == "EQUIPPED"
+            or cond.type == "CARRYING"
+            or cond.type == "ITEM"
+            or cond.type == "ITEM_COOLDOWN"
+            or cond.type == "ITEM_RANGE"
+        then
             if
-                rot.type == "item"
-                and (type(rot.action) == "number"
-                    or (type(rot.action) == "string"
-                        and not string.match(
-                            rot.action,
-                            "%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x"
-                        )))
+                type(cond.item) == "number"
+                or (type(cond.item) == "string"
+                    and not string.match(
+                        cond.item,
+                        "%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x"
+                    ))
             then
-                rot.action = { rot.action }
-            end
-        end,
-        function(cond)
-            if
-                cond.type == "EQUIPPED"
-                or cond.type == "CARRYING"
-                or cond.type == "ITEM"
-                or cond.type == "ITEM_COOLDOWN"
-                or cond.type == "ITEM_RANGE"
-            then
-                if
-                    type(cond.item) == "number"
-                    or (type(cond.item) == "string"
-                        and not string.match(
-                            cond.item,
-                            "%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x"
-                        ))
-                then
-                    cond.item = { cond.item }
-                end
+                cond.item = { cond.item }
             end
         end
-    )
+    end)
 end
 
 local function cacheItems()
-    updateRotationData(
-        function(rot)
-            if rot.type == "item" and rot.action ~= nil and type(rot.action) == "table" then
-                for _, item in pairs(rot.action) do
+    updateRotationData(function(rot)
+        if rot.type == "item" and rot.action ~= nil and type(rot.action) == "table" then
+            for _, item in pairs(rot.action) do
+                addon.Platform:GetItemDisplayInfo(item)
+            end
+        end
+    end, function(cond)
+        if
+            cond.type == "EQUIPPED"
+            or cond.type == "CARRYING"
+            or cond.type == "ITEM"
+            or cond.type == "ITEM_COOLDOWN"
+            or cond.type == "ITEM_RANGE"
+        then
+            if cond.item ~= nil and type(cond.item) == "table" then
+                for _, item in pairs(cond.item) do
                     addon.Platform:GetItemDisplayInfo(item)
                 end
             end
-        end,
-        function(cond)
-            if
-                cond.type == "EQUIPPED"
-                or cond.type == "CARRYING"
-                or cond.type == "ITEM"
-                or cond.type == "ITEM_COOLDOWN"
-                or cond.type == "ITEM_RANGE"
-            then
-                if cond.item ~= nil and type(cond.item) == "table" then
-                    for _, item in pairs(cond.item) do
-                        addon.Platform:GetItemDisplayInfo(item)
-                    end
-                end
-            end
-        end,
-        { activeOnly = true }
-    )
+        end
+    end, { activeOnly = true })
 
     if addon.db.global.itemsets then
         for _, itemset in pairs(addon.db.global.itemsets) do
@@ -587,26 +580,23 @@ local function upgradePetSpellToAnySpell()
     -- sets it before this runs. Archived bodies are always converted; the
     -- conversion changes nothing that is already current.
     if addon.InitializeScopedRotationStorage or addon.db.profile.version == nil or addon.db.profile.version < 1 then
-        updateRotationData(
-            function(rot)
-                if rot.type ~= nil and rot.type == (BOOKTYPE_PET or "pet") then
-                    rot.type = "any"
-                end
-            end,
-            function(cond)
-                if cond.type == "PETSPELL_AVAIL" then
-                    cond.type = "ANYSPELL_AVAIL"
-                elseif cond.type == "PETSPELL_RANGE" then
-                    cond.type = "ANYSPELL_RANGE"
-                elseif cond.type == "PETSPELL_COOLDOWN" then
-                    cond.type = "ANYSPELL_COOLDOWN"
-                elseif cond.type == "PETSPELL_REMAIN" then
-                    cond.type = "ANYSPELL_REMAIN"
-                elseif cond.type == "PETSPELL_CHARGES" then
-                    cond.type = "ANYSPELL_CHARGES"
-                end
+        updateRotationData(function(rot)
+            if rot.type ~= nil and rot.type == (BOOKTYPE_PET or "pet") then
+                rot.type = "any"
             end
-        )
+        end, function(cond)
+            if cond.type == "PETSPELL_AVAIL" then
+                cond.type = "ANYSPELL_AVAIL"
+            elseif cond.type == "PETSPELL_RANGE" then
+                cond.type = "ANYSPELL_RANGE"
+            elseif cond.type == "PETSPELL_COOLDOWN" then
+                cond.type = "ANYSPELL_COOLDOWN"
+            elseif cond.type == "PETSPELL_REMAIN" then
+                cond.type = "ANYSPELL_REMAIN"
+            elseif cond.type == "PETSPELL_CHARGES" then
+                cond.type = "ANYSPELL_CHARGES"
+            end
+        end)
     end
 end
 

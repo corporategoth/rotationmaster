@@ -25,11 +25,9 @@ function addon.layout_item_list_help(frame)
     for _, entry in ipairs(addon:GetDocument_layout_item_list_help()) do
         frame:AddChild(Gap())
 
-        frame:AddChild(
-            CreateText(
-                (entry.title ~= '' and color.BLIZ_YELLOW .. entry.title .. color.RESET .. ' - ' or '') .. entry.text
-            )
-        )
+        frame:AddChild(CreateText(
+            (entry.title ~= '' and color.BLIZ_YELLOW .. entry.title .. color.RESET .. ' - ' or '') .. entry.text
+        ))
     end
 end
 
@@ -62,11 +60,9 @@ function addon.layout_itemsets_options_help(frame)
     for _, entry in ipairs(addon:GetDocument_layout_itemsets_options_help()) do
         frame:AddChild(Gap())
 
-        frame:AddChild(
-            CreateText(
-                (entry.title ~= '' and color.BLIZ_YELLOW .. entry.title .. color.RESET .. ' - ' or '') .. entry.text
-            )
-        )
+        frame:AddChild(CreateText(
+            (entry.title ~= '' and color.BLIZ_YELLOW .. entry.title .. color.RESET .. ' - ' or '') .. entry.text
+        ))
     end
 end
 

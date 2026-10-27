@@ -1025,13 +1025,9 @@ function addon:CreateWorkbenchDialogChrome(frame, title, help)
 
     -- Sets the title ("Rotation Master: heading"), the kind label at the top right and the rotation name in the footer.
     function chrome:SetContext(heading, kind, rotationName)
-        title:SetText(
-            string.format(
-                L['%s: %s'],
-                addon.pretty_name or L['Rotation Master'],
-                addon:PlainWorkbenchName(heading or '')
-            )
-        )
+        title:SetText(string.format(L['%s: %s'], addon.pretty_name or L['Rotation Master'], addon:PlainWorkbenchName(
+            heading or ''
+        )))
 
         self.version:SetText(kind or L['Condition'])
         self.contextWidth = math.min(220, math.max(48, self.version:GetStringWidth() + 8))

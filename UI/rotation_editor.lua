@@ -385,11 +385,9 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         end
 
         if not self.nameDirty and self.name:GetText() ~= (snapshot.name or (workspace.fallback and DEFAULT or '')) then
-            self.name:SetText(
-                addon:PlainWorkbenchName(
-                    type(snapshot.name) == 'string' and snapshot.name or (workspace.fallback and DEFAULT or '')
-                )
-            )
+            self.name:SetText(addon:PlainWorkbenchName(
+                type(snapshot.name) == 'string' and snapshot.name or (workspace.fallback and DEFAULT or '')
+            ))
         end
 
         self.origin:SetText('')
@@ -1738,10 +1736,10 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         self.canvas.frame:SetPoint('TOPLEFT', 8, -top)
         self:LayoutFooter()
 
-        self.canvas.frame:SetSize(
-            math.max(1, width - 40),
-            math.max(1, height - top - 48 - (self.footerStacked and 28 or 0))
-        )
+        self.canvas.frame:SetSize(math.max(1, width - 40), math.max(
+            1,
+            height - top - 48 - (self.footerStacked and 28 or 0)
+        ))
 
         self.canvas:LayoutScrollBar()
 

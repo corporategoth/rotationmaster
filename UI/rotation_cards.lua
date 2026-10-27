@@ -152,10 +152,9 @@ function addon:DescribeLiveStatus(state)
     if state.chosen then details[#details + 1] = state.chosen end
 
     if type(state.at) == 'number' and type(GetTime) == 'function' then
-        details[#details + 1] = string.format(
-            L['Checked %d seconds ago.'],
-            math.max(0, math.floor(GetTime() - state.at + .5))
-        )
+        details[#details + 1] = string.format(L['Checked %d seconds ago.'], math.max(0, math.floor(
+            GetTime() - state.at + .5
+        )))
     end
 
     return headline, details
@@ -324,9 +323,9 @@ function addon:CreateRotationCard(parent)
         local suppliedName = model.displayName
         if suppliedName == nil then suppliedName = step.name end
 
-        self.title:SetText(
-            addon:PlainWorkbenchName(suppliedName and suppliedName ~= '' and suppliedName or self.defaultTitle)
-        )
+        self.title:SetText(addon:PlainWorkbenchName(
+            suppliedName and suppliedName ~= '' and suppliedName or self.defaultTitle
+        ))
 
         local pillWidth = branch and 118 or 64
         self.title:ClearAllPoints()
@@ -354,18 +353,17 @@ function addon:CreateRotationCard(parent)
         self.condition:ClearAllPoints()
         self.condition:SetPoint('TOPLEFT', 26, branch and -28 or -46 - shift)
 
-        self.condition:SetText(
-            addon:PlainWorkbenchName(
-                model.pendingProblem and string.format(L['Incomplete input: %s'], model.pendingProblem)
-                    or addon:DescribeCardCondition(step.conditions or {}, self.spec)
-            )
-        )
+        self.condition:SetText(addon:PlainWorkbenchName(
+            model.pendingProblem and string.format(L['Incomplete input: %s'], model.pendingProblem)
+                or addon:DescribeCardCondition(step.conditions or {}, self.spec)
+        ))
 
         local ownHeader = model.headerHeight or 84
 
-        self.condition:SetHeight(
-            math.max(24, ownHeader - shift - (branch and 32 or model.section == 'cooldowns' and 54 or 50))
-        )
+        self.condition:SetHeight(math.max(
+            24,
+            ownHeader - shift - (branch and 32 or model.section == 'cooldowns' and 54 or 50)
+        ))
 
         self.condition:GetFontString():SetTextColor(
             model.invalid and 1 or .7,
@@ -375,12 +373,10 @@ function addon:CreateRotationCard(parent)
 
         local spell = addon.Platform and addon.Platform:GetSpellInfo(step.action)
 
-        self.icon:SetTexture(
-            addon:GetStepIcon(
-                step,
-                spell and spell.iconID or addon:GetConditionIcon(step.conditions and step.conditions.type)
-            )
-        )
+        self.icon:SetTexture(addon:GetStepIcon(
+            step,
+            spell and spell.iconID or addon:GetConditionIcon(step.conditions and step.conditions.type)
+        ))
 
         self.icon:SetAlpha(model.inactive and .4 or 1)
         self.expand:PointState(model.compact and 'compact' or model.expanded and 'expanded' or 'normal')
@@ -403,10 +399,10 @@ function addon:CreateRotationCard(parent)
         self.fields:ClearAllPoints()
         self.fields:SetPoint('TOPLEFT', 28, -28)
 
-        self.fields:SetSize(
-            model.width - 56,
-            math.max(1, model.height - 28 - ((model.conditionHeight or 0) > 0 and model.conditionHeight + 4 or 0))
-        )
+        self.fields:SetSize(model.width - 56, math.max(
+            1,
+            model.height - 28 - ((model.conditionHeight or 0) > 0 and model.conditionHeight + 4 or 0)
+        ))
 
         if model.expanded then
             self.fields:Show()

@@ -59,7 +59,7 @@ function addon:InstallSettingsRosterOrder(p)
         -- (Item Sets: drag a set onto an action bar slot).
         if not index and r.options.dragOut then
             -- Drag-out variant of valid(): the row must still show this entry in this roster build.
-        local function current()
+            local function current()
                 return r.active and r.revision == revision and row.rosterLease == lease and p:Valid(r.generation)
             end
 
@@ -115,29 +115,21 @@ function addon:InstallSettingsRosterOrder(p)
             return r.active and r.revision == revision and row.rosterLease == lease and p:Valid(r.generation)
         end
 
-        addon:SetUIScript(
-            row.up,
-            'OnClick',
-            self:Guard(function()
-                if valid() then
-                    r.orderView.drag = entry.value
-                    r.orderView.tail = false
-                    r.orderView:Drop(index - 1)
-                end
-            end)
-        )
+        addon:SetUIScript(row.up, 'OnClick', self:Guard(function()
+            if valid() then
+                r.orderView.drag = entry.value
+                r.orderView.tail = false
+                r.orderView:Drop(index - 1)
+            end
+        end))
 
-        addon:SetUIScript(
-            row.down,
-            'OnClick',
-            self:Guard(function()
-                if valid() then
-                    r.orderView.drag = entry.value
-                    r.orderView.tail = false
-                    r.orderView:Drop(index + 2)
-                end
-            end)
-        )
+        addon:SetUIScript(row.down, 'OnClick', self:Guard(function()
+            if valid() then
+                r.orderView.drag = entry.value
+                r.orderView.tail = false
+                r.orderView:Drop(index + 2)
+            end
+        end))
 
         addon:BindWorkbenchDragSource(
             row,
@@ -161,7 +153,6 @@ function addon:InstallSettingsRosterOrder(p)
             end
         end
     end
-
 
     -- ============================================================================
     -- Order view
@@ -373,7 +364,6 @@ function addon:InstallSettingsRosterOrder(p)
         self.cleanups[#self.cleanups + 1] = function() view:Cancel() end
     end
 
-
     -- ============================================================================
     -- Drop zones
     -- ============================================================================
@@ -427,15 +417,11 @@ function addon:InstallSettingsRosterOrder(p)
             zone:SetSize(r.child:GetWidth(), 12)
             zone:SetFrameLevel(r.child:GetFrameLevel() + 50)
 
-            addon:SetUIScript(
-                zone,
-                'OnReceiveDrag',
-                self:Guard(function()
-                    if r.orderView == view and zone.rosterLease == lease and zone.target == target then
-                        view:Drop(target.gap)
-                    end
-                end)
-            )
+            addon:SetUIScript(zone, 'OnReceiveDrag', self:Guard(function()
+                if r.orderView == view and zone.rosterLease == lease and zone.target == target then
+                    view:Drop(target.gap)
+                end
+            end))
 
             if view.drag and view:CanDrop(target.gap) then
                 zone:Show()

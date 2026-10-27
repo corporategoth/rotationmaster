@@ -363,51 +363,48 @@ function addon:BuildProfileSettings(p)
             p.newProfileName = text
         end)
 
-        p:CreationActions(
-            function()
-                local name = nonempty(p.newProfileName or '')
+        p:CreationActions(function()
+            local name = nonempty(p.newProfileName or '')
 
-                if not name then
-                    p:Message(L['Enter a profile name first.'])
+            if not name then
+                p:Message(L['Enter a profile name first.'])
+                return
+            end
+
+            for _, existing in ipairs(db:GetProfiles()) do
+                if existing == name then
+                    p:Message(L['This name is already in use.'])
                     return
                 end
+            end
 
-                for _, existing in ipairs(db:GetProfiles()) do
-                    if existing == name then
-                        p:Message(L['This name is already in use.'])
-                        return
-                    end
+            local source = p.profileSource
+            local imported = p.importProfile
+            local previous = db:GetCurrentProfile()
+            p.selectAfterProfileChange = name
+
+            local ok = change('SetProfile', name, function()
+                if source then
+                    db:CopyProfile(source)
+                elseif imported then
+                    overlay(db.profile, imported)
                 end
 
-                local source = p.profileSource
-                local imported = p.importProfile
-                local previous = db:GetCurrentProfile()
-                p.selectAfterProfileChange = name
-
-                local ok = change('SetProfile', name, function()
-                    if source then
-                        db:CopyProfile(source)
-                    elseif imported then
-                        overlay(db.profile, imported)
-                    end
-
-                    db:SetProfile(previous)
-                    p.creating = false
-                    p.importProfile = nil
-                    p.profileSource = nil
-                end)
-
-                if ok then p.newProfileName = nil end
-            end,
-            function()
+                db:SetProfile(previous)
                 p.creating = false
-                p.selection = p.previousSelection or current
-                p.profileSource = nil
                 p.importProfile = nil
-                p.newProfileName = nil
-                p:Draw()
-            end
-        )
+                p.profileSource = nil
+            end)
+
+            if ok then p.newProfileName = nil end
+        end, function()
+            p.creating = false
+            p.selection = p.previousSelection or current
+            p.profileSource = nil
+            p.importProfile = nil
+            p.newProfileName = nil
+            p:Draw()
+        end)
 
         p.fields.new = p.fields.apply
         return
@@ -521,22 +518,14 @@ function addon:BuildAboutSettings(p)
         if value then
             local c = p:Edit(entry[1], L[entry[2]], value, nil, function() end)
 
-            addon:SetUIScript(
-                c,
-                'OnEditFocusGained',
-                p:Guard(function()
-                    c:SetCursorPosition(0)
-                    c:HighlightText(0, -1)
-                end)
-            )
+            addon:SetUIScript(c, 'OnEditFocusGained', p:Guard(function()
+                c:SetCursorPosition(0)
+                c:HighlightText(0, -1)
+            end))
 
-            addon:SetUIScript(
-                c,
-                'OnTextChanged',
-                p:Guard(function(_, user)
-                    if user then c:SetText(value) end
-                end)
-            )
+            addon:SetUIScript(c, 'OnTextChanged', p:Guard(function(_, user)
+                if user then c:SetText(value) end
+            end))
         end
     end
 

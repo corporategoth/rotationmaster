@@ -2199,10 +2199,9 @@ end
 function addon:DescribeUnboundStep(entry)
     local step = entry.step
 
-    local where = entry.section == 'cooldowns' and L['cooldown'] or string.format(
-        L['step %s'],
-        tostring(entry.ordinal or '?')
-    )
+    local where = entry.section == 'cooldowns' and L['cooldown'] or string.format(L['step %s'], tostring(
+        entry.ordinal or '?'
+    ))
 
     local name = type(step.name) == 'string' and step.name:find('%S') and step.name or self:DescribeStepAction(step)
 

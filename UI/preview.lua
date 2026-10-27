@@ -32,7 +32,6 @@ local sampleTextures = {
     'Interface\\Icons\\INV_Misc_QuestionMark',
 }
 
-
 -- ============================================================================
 -- Helpers and sample mode
 -- ============================================================================
@@ -52,7 +51,6 @@ end
 local function sameGeometry(a, b)
     return type(a) == 'number' and type(b) == 'number' and math.abs(a - b) <= .1
 end
-
 
 -- ============================================================================
 -- The preview window
@@ -669,7 +667,6 @@ function addon:MigratePreviewHeaderGeometry(profile, opacity)
 
     profile.previewHeaderlessGeometry = true
 end
-
 
 -- ============================================================================
 -- Settings entry points

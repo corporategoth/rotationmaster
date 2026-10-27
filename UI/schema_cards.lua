@@ -413,14 +413,10 @@ function addon:BuildFieldSchemaCards(form, owner)
         name:EnableKeyboard(parent.kind == 'record')
         local textChanged = name:GetScript('OnTextChanged')
 
-        addon:SetUIScript(
-            name,
-            'OnTextChanged',
-            p:Guard(function(input, user)
-                textChanged(input, user)
-                if user then owner:UpdateActions() end
-            end)
-        )
+        addon:SetUIScript(name, 'OnTextChanged', p:Guard(function(input, user)
+            textChanged(input, user)
+            if user then owner:UpdateActions() end
+        end))
 
         local kind = p:Choice('type_' .. id, nil, child.kind, types, function(value)
             command(function() return model:SetKind(path, value) end)
@@ -459,60 +455,48 @@ function addon:BuildFieldSchemaCards(form, owner)
 
         local parentHere = parentPath(path)
 
-        addon:SetUIScript(
-            row.up,
-            'OnClick',
-            p:Guard(function() command(function() return model:Transfer(path, parentHere, geometry.index - 1) end) end)
-        )
+        addon:SetUIScript(row.up, 'OnClick', p:Guard(function()
+            command(function() return model:Transfer(path, parentHere, geometry.index - 1) end)
+        end))
 
-        addon:SetUIScript(
-            row.down,
-            'OnClick',
-            p:Guard(function() command(function() return model:Transfer(path, parentHere, geometry.index + 2) end) end)
-        )
+        addon:SetUIScript(row.down, 'OnClick', p:Guard(function()
+            command(function() return model:Transfer(path, parentHere, geometry.index + 2) end)
+        end))
 
-        addon:SetUIScript(
-            row.duplicate,
-            'OnClick',
-            p:Guard(function() command(function() return model:Duplicate(path) end) end)
-        )
+        addon:SetUIScript(row.duplicate, 'OnClick', p:Guard(function()
+            command(function() return model:Duplicate(path) end)
+        end))
 
-        addon:SetUIScript(
-            row.remove,
-            'OnClick',
-            p:Guard(function() command(function() return model:Remove(path) end) end)
-        )
+        addon:SetUIScript(row.remove, 'OnClick', p:Guard(function()
+            command(function() return model:Remove(path) end)
+        end))
 
-        addon:SetUIScript(
-            row.help,
-            'OnClick',
-            p:Guard(function()
-                addon:ShowWorkbenchHelp(
-                    tostring(child.name),
+        addon:SetUIScript(row.help, 'OnClick', p:Guard(function()
+            addon:ShowWorkbenchHelp(
+                tostring(child.name),
+                {
                     {
-                        {
-                            title = L['Fields'],
-                            text = L['Field names are Lua identifiers. Choose a field type from its dropdown. Records contain named fields; allowed types contain alternatives, including nested records.'],
-                        },
-                        {
-                            title = L['Move, copy and remove'],
-                            text = L['Drag one entry; Ctrl-drag moves it and all following siblings.']
-                                .. ' '
-                                .. L['A container carries its nested fields. Drop into a highlighted gap. Up / Down moves within the current container; Duplicate copies the complete field; the red trash can deletes it.'],
-                        },
-                        {
-                            title = L['Required'],
-                            text = L['Required root fields must have a value before this condition can run. Rename, reorder and duplicate keep this flag; removing the field removes its requirement. Moving it into a nested structure makes it optional. Undo restores both. Callback code is unchanged.'],
-                        },
-                        {
-                            title = L['Help and saving'],
-                            text = L['The chevron hides or shows nested fields. Add field appends to that container. Undo / Redo affect the draft. Apply validates and stages the schema; Cancel leaves the condition unchanged. Red borders mark invalid names or incomplete types.'],
-                        },
+                        title = L['Fields'],
+                        text = L['Field names are Lua identifiers. Choose a field type from its dropdown. Records contain named fields; allowed types contain alternatives, including nested records.'],
                     },
-                    owner.chrome and owner.chrome.owner or L['Field schema']
-                )
-            end)
-        )
+                    {
+                        title = L['Move, copy and remove'],
+                        text = L['Drag one entry; Ctrl-drag moves it and all following siblings.']
+                            .. ' '
+                            .. L['A container carries its nested fields. Drop into a highlighted gap. Up / Down moves within the current container; Duplicate copies the complete field; the red trash can deletes it.'],
+                    },
+                    {
+                        title = L['Required'],
+                        text = L['Required root fields must have a value before this condition can run. Rename, reorder and duplicate keep this flag; removing the field removes its requirement. Moving it into a nested structure makes it optional. Undo restores both. Callback code is unchanged.'],
+                    },
+                    {
+                        title = L['Help and saving'],
+                        text = L['The chevron hides or shows nested fields. Add field appends to that container. Undo / Redo affect the draft. Apply validates and stages the schema; Cancel leaves the condition unchanged. Red borders mark invalid names or incomplete types.'],
+                    },
+                },
+                owner.chrome and owner.chrome.owner or L['Field schema']
+            )
+        end))
 
         row.fold:PointState(owner.folded[id] and 'compact' or 'normal')
 
@@ -522,22 +506,16 @@ function addon:BuildFieldSchemaCards(form, owner)
             row.fold:Hide()
         end
 
-        addon:SetUIScript(
-            row.fold,
-            'OnClick',
-            p:Guard(function()
-                if form:FlushEdits() then
-                    owner.folded[id] = not owner.folded[id]
-                    form:Draw()
-                end
-            end)
-        )
+        addon:SetUIScript(row.fold, 'OnClick', p:Guard(function()
+            if form:FlushEdits() then
+                owner.folded[id] = not owner.folded[id]
+                form:Draw()
+            end
+        end))
 
-        addon:BindWorkbenchDragSource(
-            row.frame,
-            p:Guard(function() view:BeginDrag(path) end),
-            p:Guard(function() view:EndDrag() end)
-        )
+        addon:BindWorkbenchDragSource(row.frame, p:Guard(function() view:BeginDrag(path) end), p:Guard(function()
+            view:EndDrag()
+        end))
 
         if geometry.addY then
             local add = p:Button(

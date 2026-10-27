@@ -146,11 +146,9 @@ function addon:InstallSettingsHistory(p)
             button.icon:SetTexture(addon:ControlTexture(entry[2]))
             self.fields[entry[1]] = button
 
-            addon:SetUIScript(
-                button,
-                'OnClick',
-                self:Guard(function() self:TravelSettingsHistory(entry[1] == 'redo') end)
-            )
+            addon:SetUIScript(button, 'OnClick', self:Guard(function()
+                self:TravelSettingsHistory(entry[1] == 'redo')
+            end))
         end
 
         self:UpdateHistoryActions()

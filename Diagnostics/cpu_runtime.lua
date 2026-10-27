@@ -748,9 +748,10 @@ local function dispatch(run, self, ...)
     run.elapsed = run.elapsed + elapsed
     run.maximum = math.max(run.maximum, elapsed)
 
-    local allocated, deallocated = bytes(field(native[2], 'allocatedBytes')), bytes(
-        field(native[2], 'deallocatedBytes')
-    )
+    local allocated, deallocated = bytes(field(native[2], 'allocatedBytes')), bytes(field(
+        native[2],
+        'deallocatedBytes'
+    ))
 
     phaseAccumulate(run, native[2], elapsed, allocated, deallocated)
 

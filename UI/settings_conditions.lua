@@ -467,12 +467,10 @@ function addon:BuildConditionSettings(p)
                         if not checked then
                             p:Draw()
 
-                            p:Message(
-                                string.format(
-                                    L['Invalid condition: %s'],
-                                    why and (why.detail or why.reason) or L['Invalid custom condition.']
-                                )
-                            )
+                            p:Message(string.format(
+                                L['Invalid condition: %s'],
+                                why and (why.detail or why.reason) or L['Invalid custom condition.']
+                            ))
 
                             return
                         end
@@ -494,12 +492,10 @@ function addon:BuildConditionSettings(p)
                         if not ok then
                             self.db.global.custom_conditions[tag] = original
 
-                            p:Message(
-                                string.format(
-                                    L['Invalid condition: %s'],
-                                    why and (why.detail or why.reason) or L['Invalid custom condition.']
-                                )
-                            )
+                            p:Message(string.format(
+                                L['Invalid condition: %s'],
+                                why and (why.detail or why.reason) or L['Invalid custom condition.']
+                            ))
                         end
                     end)
 
@@ -613,33 +609,30 @@ function addon:BuildConditionCategorySettings(p)
         p.newGroupName = p.newGroupName or ''
         p:Edit('new_group_name', L['Name'], p.newGroupName, nil, function(text) p.newGroupName = text end)
 
-        p:CreationActions(
-            function()
-                if not self:SettingsNonempty(p.newGroupName) then
-                    p:Message(L['Enter a name first.'])
-                    return
-                end
-
-                local id = self:uuid()
-                profile.condition_groups = profile.condition_groups or {}
-
-                profile.condition_groups[#profile.condition_groups + 1] = {
-                    id = id,
-                    name = p.newGroupName,
-                    conditions = {},
-                }
-
-                p.newGroupName = ''
-                p.categorySelection = id
-                p.creatingCategory = false
-                p:Draw()
-            end,
-            function()
-                p.creatingCategory = false
-                p.newGroupName = nil
-                p:Draw()
+        p:CreationActions(function()
+            if not self:SettingsNonempty(p.newGroupName) then
+                p:Message(L['Enter a name first.'])
+                return
             end
-        )
+
+            local id = self:uuid()
+            profile.condition_groups = profile.condition_groups or {}
+
+            profile.condition_groups[#profile.condition_groups + 1] = {
+                id = id,
+                name = p.newGroupName,
+                conditions = {},
+            }
+
+            p.newGroupName = ''
+            p.categorySelection = id
+            p.creatingCategory = false
+            p:Draw()
+        end, function()
+            p.creatingCategory = false
+            p.newGroupName = nil
+            p:Draw()
+        end)
 
         p.fields.add_group = p.fields.apply
         return
@@ -680,31 +673,27 @@ function addon:BuildConditionCategorySettings(p)
         icon.image:SetTexture(self:GetConditionCategoryIcon(group))
         p.fields.category_icon = icon
 
-        self:SetUIScript(
-            icon,
-            'OnClick',
-            p:Guard(function()
-                if not p:FlushEdits() then return end
-                local token = p.generation
+        self:SetUIScript(icon, 'OnClick', p:Guard(function()
+            if not p:FlushEdits() then return end
+            local token = p.generation
 
-                local picker = self:ShowWorkbenchIconPicker(
-                    group.icon,
-                    p:Guard(function(texture)
-                        if p:FlushEdits() then
-                            group.icon = texture
-                            p:Draw()
-                        end
-                    end),
-                    function() return p:Valid(token) end
-                )
+            local picker = self:ShowWorkbenchIconPicker(
+                group.icon,
+                p:Guard(function(texture)
+                    if p:FlushEdits() then
+                        group.icon = texture
+                        p:Draw()
+                    end
+                end),
+                function() return p:Valid(token) end
+            )
 
-                local serial = picker.serial
+            local serial = picker.serial
 
-                p.cleanups[#p.cleanups + 1] = function()
-                    if picker.serial == serial then picker.frame:Hide() end
-                end
-            end)
-        )
+            p.cleanups[#p.cleanups + 1] = function()
+                if picker.serial == serial then picker.frame:Hide() end
+            end
+        end))
     else
         p:Text(L['Built-in category'])
     end
@@ -740,19 +729,15 @@ function addon:BuildConditionCategorySettings(p)
         cell:GetFontString():SetTextColor(unpack(color))
         p.fields['member_' .. tag] = cell
 
-        self:SetUIScript(
-            cell,
-            'OnClick',
-            p:Guard(function()
-                if p:FlushEdits() then
-                    p.mode = nil
-                    p.category = category
-                    p.conditionSource = 'all'
-                    p.condition = tag
-                    p:Draw()
-                end
-            end)
-        )
+        self:SetUIScript(cell, 'OnClick', p:Guard(function()
+            if p:FlushEdits() then
+                p.mode = nil
+                p.category = category
+                p.conditionSource = 'all'
+                p.condition = tag
+                p:Draw()
+            end
+        end))
     end
 
     p.y = top + math.ceil(#tags / cols) * 32 + 8

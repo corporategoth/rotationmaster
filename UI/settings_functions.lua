@@ -32,25 +32,21 @@ function addon:ConfigureFunctionNameInput(form, input)
     input:SetMaxLetters(128)
     local changed = input:GetScript('OnTextChanged')
 
-    self:SetUIScript(
-        input,
-        'OnTextChanged',
-        form:Guard(function(control, user)
-            if user then
-                local text = control:GetText()
-                local cursor = control:GetCursorPosition()
-                local filtered = text:gsub('[^A-Za-z_0-9]', ''):gsub('^%d+', '')
+    self:SetUIScript(input, 'OnTextChanged', form:Guard(function(control, user)
+        if user then
+            local text = control:GetText()
+            local cursor = control:GetCursorPosition()
+            local filtered = text:gsub('[^A-Za-z_0-9]', ''):gsub('^%d+', '')
 
-                if filtered ~= text then
-                    local before = text:sub(1, cursor):gsub('[^A-Za-z_0-9]', ''):gsub('^%d+', '')
-                    control:SetText(filtered)
-                    control:SetCursorPosition(#before)
-                end
+            if filtered ~= text then
+                local before = text:sub(1, cursor):gsub('[^A-Za-z_0-9]', ''):gsub('^%d+', '')
+                control:SetText(filtered)
+                control:SetCursorPosition(#before)
             end
+        end
 
-            if changed then changed(control, user) end
-        end)
-    )
+        if changed then changed(control, user) end
+    end))
 end
 
 -- Returns an unused name for a copy of function `id`: its editor name with `_copy` (shortened to leave room), then

@@ -275,35 +275,31 @@ function addon:BuildItemSettings(p)
             if slots and self.HighlightSlots then self:HighlightSlots(slots) end
         end
 
-        self:SetUIScript(
-            binding,
-            'OnClick',
-            p:Guard(function()
-                if not p:FlushEdits() then return end
+        self:SetUIScript(binding, 'OnClick', p:Guard(function()
+            if not p:FlushEdits() then return end
 
-                if InCombatLockdown and InCombatLockdown() then
-                    p:Message(L['Leave combat before changing action bar bindings.'])
-                    return
-                end
+            if InCombatLockdown and InCombatLockdown() then
+                p:Message(L['Leave combat before changing action bar bindings.'])
+                return
+            end
 
-                if bindings[id] then
-                    if self.UnbindItemSet then
-                        if self:UnbindItemSet(id) == false then
-                            p:Message(L['Leave combat before changing action bar bindings.'])
-                            return
-                        end
-                    else
-                        bindings[id] = nil
-                        if self.EndHighlightSlot then self:EndHighlightSlot() end
+            if bindings[id] then
+                if self.UnbindItemSet then
+                    if self:UnbindItemSet(id) == false then
+                        p:Message(L['Leave combat before changing action bar bindings.'])
+                        return
                     end
-
-                    refreshBinding()
-                    return
+                else
+                    bindings[id] = nil
+                    if self.EndHighlightSlot then self:EndHighlightSlot() end
                 end
 
-                beginBind(id)
-            end)
-        )
+                refreshBinding()
+                return
+            end
+
+            beginBind(id)
+        end))
 
         binding.tooltip = L['Drag onto any action bar slot (it swaps with what is there), or click Bind and then click an empty slot.']
         self:BindWorkbenchDragSource(binding, p:Guard(function() beginBind(id) end), function() end)
@@ -473,13 +469,9 @@ function addon:BuildItemSettings(p)
             reset:Disable()
         end
 
-        self:SetUIScript(
-            reset,
-            'OnClick',
-            p:Guard(function()
-                if p:FlushEdits() then actionEntries[3].action() end
-            end)
-        )
+        self:SetUIScript(reset, 'OnClick', p:Guard(function()
+            if p:FlushEdits() then actionEntries[3].action() end
+        end))
     end
 
     if p.creating or not set then
@@ -536,29 +528,26 @@ function addon:BuildItemSettings(p)
         p.newItemSetName = p.newItemSetName or ''
         p:Edit('new_name', L['Name'], p.newItemSetName, nil, function(text) p.newItemSetName = text end)
 
-        p:CreationActions(
-            function()
-                if not self:SettingsNonempty(p.newItemSetName) then
-                    p:Message(L['Enter a name first.'])
-                    return
-                end
-
-                local id = self:uuid()
-                store.profile.itemsets = store.profile.itemsets or {}
-                store.profile.itemsets[id] = { name = p.newItemSetName, items = {} }
-                p.selection = id
-                p.creating = false
-                p.newItemSetName = ''
-                p:Draw()
-            end,
-            function()
-                p.creating = false
-                p.selection = p.previousSelection
-                p.emptyDismissed = true
-                p.newEffectName = nil
-                p.newItemSetName = nil
-                p:Draw()
+        p:CreationActions(function()
+            if not self:SettingsNonempty(p.newItemSetName) then
+                p:Message(L['Enter a name first.'])
+                return
             end
-        )
+
+            local id = self:uuid()
+            store.profile.itemsets = store.profile.itemsets or {}
+            store.profile.itemsets[id] = { name = p.newItemSetName, items = {} }
+            p.selection = id
+            p.creating = false
+            p.newItemSetName = ''
+            p:Draw()
+        end, function()
+            p.creating = false
+            p.selection = p.previousSelection
+            p.emptyDismissed = true
+            p.newEffectName = nil
+            p.newItemSetName = nil
+            p:Draw()
+        end)
     end
 end

@@ -218,10 +218,10 @@ local function createShell()
                 addon:SetWorkbenchUnsaved(
                     card.frame,
                     not self.active.readOnly
-                        and (not addon:UnsavedDataEqual(
-                            at(self.active.working, card.model.path),
-                            at(baseline, card.model.path)
-                        )
+                        and (not addon:UnsavedDataEqual(at(self.active.working, card.model.path), at(
+                            baseline,
+                            card.model.path
+                        ))
                             or card.pane and pendingFields(card.pane, false))
                 )
             end
@@ -1253,10 +1253,10 @@ local function createShell()
     function shell:LayoutBody()
         if not self.bodyTop then return end
 
-        self.canvas.frame:SetSize(
-            math.max(1, window:GetWidth() - 52),
-            math.max(40, window:GetHeight() - self.bodyTop - (self.footerHeight or 28) - 58)
-        )
+        self.canvas.frame:SetSize(math.max(1, window:GetWidth() - 52), math.max(
+            40,
+            window:GetHeight() - self.bodyTop - (self.footerHeight or 28) - 58
+        ))
 
         self.canvas:LayoutScrollBar()
     end

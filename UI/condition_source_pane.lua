@@ -65,21 +65,18 @@ function addon:InstallInlineConditionNavigation(p)
         if editor and not editor.closed and editor:IsDirty() then
             local profile, global = self.profile, self.global
 
-            self:ConfirmPending(
-                function()
-                    if self.active and self.profile == profile and self.global == global and editor:Apply() then
-                        callback()
-                    end
-                end,
-                function()
-                    if not self.active or self.profile ~= profile or self.global ~= global then return end
-                    editor:Close()
-                    self.inlineCondition = nil
-                    self:DiscardSettingsDraft()
-                    clearNew(self)
+            self:ConfirmPending(function()
+                if self.active and self.profile == profile and self.global == global and editor:Apply() then
                     callback()
                 end
-            )
+            end, function()
+                if not self.active or self.profile ~= profile or self.global ~= global then return end
+                editor:Close()
+                self.inlineCondition = nil
+                self:DiscardSettingsDraft()
+                clearNew(self)
+                callback()
+            end)
 
             return false
         end

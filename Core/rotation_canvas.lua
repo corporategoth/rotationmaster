@@ -109,10 +109,9 @@ function addon:BuildRotationCanvas(body, view)
             ownHeader = ownHeader + noticeHeight
         end
 
-        local conditionHeight = mode == 'expanded' and step.type ~= 'branch' and math.max(
-            24,
-            height((view.summaryHeights or {})[step.id])
-        )
+        local conditionHeight = mode == 'expanded' and step.type ~= 'branch' and math.max(24, height(
+            (view.summaryHeights or {})[step.id]
+        ))
             or 0
 
         local node = {

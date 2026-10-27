@@ -459,12 +459,10 @@ function addon:InstallRotationMetadata(pane)
         )
 
         if type(pane.workspace:Snapshot().metadata) ~= 'table' and pane.workspace:Snapshot().metadata ~= nil then
-            self.note:SetText(
-                string.format(
-                    L['Saved metadata is invalid (%s). Editing these fields replaces it.'],
-                    tostring(pane.workspace:Snapshot().metadata)
-                )
-            )
+            self.note:SetText(string.format(
+                L['Saved metadata is invalid (%s). Editing these fields replaces it.'],
+                tostring(pane.workspace:Snapshot().metadata)
+            ))
         end
 
         self.chrome:SetContext(pane:RotationDisplayName(), L['Metadata'], pane:RotationDisplayName())

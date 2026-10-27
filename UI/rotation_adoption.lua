@@ -261,14 +261,12 @@ function addon:ShowRotationAdoption(owner, onApplied)
         local selection = addon.RotationData.CopyData(selected.selection)
         p:Heading(selected.name)
 
-        p:Text(
-            string.format(
-                L['Archive: %s; specialization: %s; identifier: %s'],
-                selected.kind == 'character' and L['Character archive'] or L['Profile archive'],
-                selected.spec,
-                selected.id
-            )
-        )
+        p:Text(string.format(
+            L['Archive: %s; specialization: %s; identifier: %s'],
+            selected.kind == 'character' and L['Character archive'] or L['Profile archive'],
+            selected.spec,
+            selected.id
+        ))
 
         local snapshot, snapshotReason = addon:GetUnassignedRotationSnapshot(selection)
 
@@ -390,14 +388,12 @@ function addon:ShowRotationAdoption(owner, onApplied)
 
                         p:Draw()
 
-                        p:Message(
-                            string.format(
-                                L['Adopted %d of %d. These stay in the archive: %s'],
-                                result.adopted,
-                                result.adopted + #result.failed,
-                                table.concat(names, ', ')
-                            )
-                        )
+                        p:Message(string.format(
+                            L['Adopted %d of %d. These stay in the archive: %s'],
+                            result.adopted,
+                            result.adopted + #result.failed,
+                            table.concat(names, ', ')
+                        ))
 
                         if notify and onApplied and last then onApplied(addon.RotationData.CopyData(last)) end
                     end

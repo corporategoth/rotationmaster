@@ -190,11 +190,9 @@ end
 -- Lays out the General page help: an introduction to automatic action requirements, then every field entry as a yellow
 -- title followed by its paragraph.
 function addon.layout_primary_options_help(frame)
-    frame:AddChild(
-        CreateText(
-            L['Actions automatically require a learned spell or carried item, usable resources, cooldown readiness and valid range. Conditions can additionally test other actions.']
-        )
-    )
+    frame:AddChild(CreateText(
+        L['Actions automatically require a learned spell or carried item, usable resources, cooldown readiness and valid range. Conditions can additionally test other actions.']
+    ))
 
     for _, entry in ipairs(addon:GetGeneralOptionHelp()) do
         frame:AddChild(Gap())
@@ -205,91 +203,69 @@ end
 -- Lays out the Rotations page help overview as a series of short paragraphs: cards, drafts and Apply/Discard, the
 -- switch and fallback, cooldowns, branches, dragging, Stop, validation and the list/diagram controls.
 function addon.layout_rotation_options_help(frame)
-    frame:AddChild(
-        CreateText(
-            L["Built In and custom rotations use the same cards. Built In rotations are read-only; enable or disable them, inspect their conditions, or Duplicate to edit."]
-        )
-    )
+    frame:AddChild(CreateText(
+        L["Built In and custom rotations use the same cards. Built In rotations are read-only; enable or disable them, inspect their conditions, or Duplicate to edit."]
+    ))
 
     frame:AddChild(Gap())
 
-    frame:AddChild(
-        CreateText(
-            L["Custom edits stay in a private draft. Apply saves; Discard restores the saved rotation. Undo and Redo include card deletion, movement, fields and conditions. Apply before reloading or logging out."]
-        )
-    )
+    frame:AddChild(CreateText(
+        L["Custom edits stay in a private draft. Apply saves; Discard restores the saved rotation. Undo and Redo include card deletion, movement, fields and conditions. Apply before reloading or logging out."]
+    ))
 
     frame:AddChild(Gap())
 
-    frame:AddChild(
-        CreateText(
-            L["Closing the window retains drafts for this session. Switching rotations or opening comparison or transfer asks whether to Apply, Discard or Cancel when changes are pending."]
-        )
-    )
+    frame:AddChild(CreateText(
+        L["Closing the window retains drafts for this session. Switching rotations or opening comparison or transfer asks whether to Apply, Discard or Cancel when changes are pending."]
+    ))
 
     frame:AddChild(Gap())
 
-    frame:AddChild(
-        CreateText(
-            L["The switch condition selects the rotation automatically; with none, it is selected whenever its specialization and level apply. Edit changes its condition tree. The fallback rotation is selected when no other rotation matches."]
-        )
-    )
+    frame:AddChild(CreateText(
+        L["The switch condition selects the rotation automatically; with none, it is selected whenever its specialization and level apply. Edit changes its condition tree. The fallback rotation is selected when no other rotation matches."]
+    ))
 
     frame:AddChild(Gap())
 
-    frame:AddChild(
-        CreateText(
-            L["Cooldown cards have their own scrolling workspace and highlight independently of the sequence. Add cooldown creates a reminder; clicking its action shows local highlight settings."]
-        )
-    )
+    frame:AddChild(CreateText(
+        L["Cooldown cards have their own scrolling workspace and highlight independently of the sequence. Add cooldown creates a reminder; clicking its action shows local highlight settings."]
+    ))
 
     frame:AddChild(Gap())
 
-    frame:AddChild(
-        CreateText(
-            L["Add action appends a priority action. Drag an Add control into a gap to insert there. Click a card name to rename it, expand for action fields, or click its condition text to edit the guard."]
-        )
-    )
+    frame:AddChild(CreateText(
+        L["Add action appends a priority action. Drag an Add control into a gap to insert there. Click a card name to rename it, expand for action fields, or click its condition text to edit the guard."]
+    ))
 
     frame:AddChild(Gap())
 
-    frame:AddChild(
-        CreateText(
-            L["Adding a branch moves following steps into its True arm. False is on the left in red; True is on the right in green. The mode pill cycles Evaluate condition, Always true and Always false. Unreachable cards are gray."]
-        )
-    )
+    frame:AddChild(CreateText(
+        L["Adding a branch moves following steps into its True arm. False is on the left in red; True is on the right in green. The mode pill cycles Evaluate condition, Always true and Always false. Unreachable cards are gray."]
+    ))
 
     frame:AddChild(Gap())
 
-    frame:AddChild(
-        CreateText(
-            L["Ordinary dragging moves one card and its own subtree. Hold Ctrl when starting a drag to carry that card and every following sibling, including their branch subtrees. Drop into a branch arm gap to move there. Up / Down always moves one card. A group cannot be dropped into itself or a carried descendant."]
-        )
-    )
+    frame:AddChild(CreateText(
+        L["Ordinary dragging moves one card and its own subtree. Hold Ctrl when starting a drag to carry that card and every following sibling, including their branch subtrees. Drop into a branch arm gap to move there. Up / Down always moves one card. A group cannot be dropped into itself or a carried descendant."]
+    ))
 
     frame:AddChild(Gap())
 
-    frame:AddChild(
-        CreateText(
-            L["An evaluated branch follows one arm, then rejoins later siblings. Stop ends the sequence. Independent cooldowns still apply; implicit auto-attack (Attack or Shoot) remains available unless the Stop suppresses it."]
-        )
-    )
+    frame:AddChild(CreateText(
+        L["An evaluated branch follows one arm, then rejoins later siblings. Stop ends the sequence. Independent cooldowns still apply; implicit auto-attack (Attack or Shoot) remains available unless the Stop suppresses it."]
+    ))
 
     frame:AddChild(Gap())
 
-    frame:AddChild(
-        CreateText(
-            L["Invalid or incomplete cards remain editable. Apply validates both branch arms without running custom condition code. Deleting a whole custom rotation requires confirmation and cannot be undone."]
-        )
-    )
+    frame:AddChild(CreateText(
+        L["Invalid or incomplete cards remain editable. Apply validates both branch arms without running custom condition code. Deleting a whole custom rotation requires confirmation and cannot be undone."]
+    ))
 
     frame:AddChild(Gap())
 
-    frame:AddChild(
-        CreateText(
-            L["List and Cooldowns use flat scrollbars or the mouse wheel. Diagram uses wheel zoom and dragging empty space to pan. Window scaling applies when the slider is released and also affects RM child windows."]
-        )
-    )
+    frame:AddChild(CreateText(
+        L["List and Cooldowns use flat scrollbars or the mouse wheel. Diagram uses wheel zoom and dragging empty space to pan. Window scaling applies when the slider is released and also affects RM child windows."]
+    ))
 
     frame:AddChild(Gap())
 end

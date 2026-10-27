@@ -92,11 +92,10 @@ function addon:BuildCustomSourceFields(form, owner)
     scroll.decoration:SetColors(.38, .43, .48, .8, .95)
     local requirementError = graph and graph.requiredFieldsInvalid
 
-    addon:SetWorkbenchInvalid(
-        scroll,
-        not graph or requirementError,
-        string.format(L['Invalid field schema: %s'], why or requirementError and 'invalid-required-fields' or '')
-    )
+    addon:SetWorkbenchInvalid(scroll, not graph or requirementError, string.format(
+        L['Invalid field schema: %s'],
+        why or requirementError and 'invalid-required-fields' or ''
+    ))
 
     local raw = addon:FormatCustomFieldSchema(owner.model.value.fields) or recoveryText(owner.model.value.fields)
 
@@ -193,29 +192,22 @@ function addon:BuildCustomSourceFields(form, owner)
         row:GetFontString():SetWidth(row:GetWidth() * .5 - 4)
         row.tooltip = L['Edit fields']
 
-        addon:SetUIScript(
-            row,
-            'OnClick',
-            form:Guard(function()
-                if not owner:Flush() then return end
+        addon:SetUIScript(row, 'OnClick', form:Guard(function()
+            if not owner:Flush() then return end
 
-                if fieldsGraph then
-                    local child = owner:OpenSchema(
-                        owner.model.value.fields,
-                        graph and owner.model.value.fieldOrder or nil
-                    )
+            if fieldsGraph then
+                local child = owner:OpenSchema(owner.model.value.fields, graph and owner.model.value.fieldOrder or nil)
 
-                    if child and not graph then
-                        child.requiresApply = true
-                        child:UpdateActions()
-                    end
-                else
-                    owner.advancedSchema = true
-                    form:Draw()
-                    owner:UpdateActions()
+                if child and not graph then
+                    child.requiresApply = true
+                    child:UpdateActions()
                 end
-            end)
-        )
+            else
+                owner.advancedSchema = true
+                form:Draw()
+                owner:UpdateActions()
+            end
+        end))
 
         if owner.advancedSchema then
             row:Hide()

@@ -305,10 +305,10 @@ local function layout(group)
                     end
                 end
 
-                widths[index] = math.max(
-                    column.min or column[1] or 0,
-                    math.min(widths[index], column.max or column[2] or widths[index])
-                )
+                widths[index] = math.max(column.min or column[1] or 0, math.min(
+                    widths[index],
+                    column.max or column[2] or widths[index]
+                ))
             else
                 widths[index] = column.width < 1 and column.width * total or column.width
             end

@@ -580,13 +580,10 @@ function addon:ListUnassignedRotations()
 
         for number, map in pairs(proposed.legacy.rotations) do
             for id, body in pairs(map) do
-                add(
-                    'character',
-                    number,
-                    id,
-                    { body = body },
-                    data.ValidateBody(body, self:GetRotationValidationOptions())
-                )
+                add('character', number, id, { body = body }, data.ValidateBody(
+                    body,
+                    self:GetRotationValidationOptions()
+                ))
             end
         end
     end

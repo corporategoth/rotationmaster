@@ -370,20 +370,16 @@ function addon:BuildAnnounceSettings(p)
                         end
                     end
 
-                    self:SetUIScript(
-                        choice,
-                        'OnClick',
-                        p:Guard(function()
-                            if current() and p:FlushEdits() and current() then
-                                p:ShowChoices(choice, allowed, function(v)
-                                    if current() then
-                                        outputChange('announce', v)
-                                        p:Draw()
-                                    end
-                                end)
-                            end
-                        end)
-                    )
+                    self:SetUIScript(choice, 'OnClick', p:Guard(function()
+                        if current() and p:FlushEdits() and current() then
+                            p:ShowChoices(choice, allowed, function(v)
+                                if current() then
+                                    outputChange('announce', v)
+                                    p:Draw()
+                                end
+                            end)
+                        end
+                    end))
                 end
 
                 if output.announce == 'channel' then
@@ -397,63 +393,59 @@ function addon:BuildAnnounceSettings(p)
                         function() end
                     )
 
-                    self:SetUIScript(
-                        selector,
-                        'OnClick',
-                        p:Guard(function()
-                            if not current() or not p:FlushEdits() or not current() then return end
-                            local platform = self.Platform
-                            local query = platform and platform.GetJoinedAnnouncementChannels
-                            if not current() then return end
-                            local ok, found = false, nil
-                            if type(query) == 'function' then ok, found = pcall(query, platform, current) end
+                    self:SetUIScript(selector, 'OnClick', p:Guard(function()
+                        if not current() or not p:FlushEdits() or not current() then return end
+                        local platform = self.Platform
+                        local query = platform and platform.GetJoinedAnnouncementChannels
+                        if not current() then return end
+                        local ok, found = false, nil
+                        if type(query) == 'function' then ok, found = pcall(query, platform, current) end
 
-                            if
-                                not current()
-                                or self.Platform ~= platform
-                                or platform and platform.GetJoinedAnnouncementChannels ~= query
-                                or not current()
-                            then
-                                return
-                            end
+                        if
+                            not current()
+                            or self.Platform ~= platform
+                            or platform and platform.GetJoinedAnnouncementChannels ~= query
+                            or not current()
+                        then
+                            return
+                        end
 
-                            local rows, seen = {}, {}
+                        local rows, seen = {}, {}
 
-                            if ok and type(found) == 'table' and getmetatable(found) == nil then
-                                for i = 1, math.min(#found, 20) do
-                                    local v = rawget(found, i)
-                                    local value = type(v) == 'table' and getmetatable(v) == nil and rawget(v, 'value')
+                        if ok and type(found) == 'table' and getmetatable(found) == nil then
+                            for i = 1, math.min(#found, 20) do
+                                local v = rawget(found, i)
+                                local value = type(v) == 'table' and getmetatable(v) == nil and rawget(v, 'value')
 
-                                    if
-                                        type(value) == 'string'
-                                        and #value > 0
-                                        and #value <= 256
-                                        and not value:find('[%z\1-\31\127]')
-                                        and not seen[value]
-                                    then
-                                        seen[value] = true
-                                        rows[#rows + 1] = { value = value, text = self:PlainWorkbenchName(value) }
-                                    end
+                                if
+                                    type(value) == 'string'
+                                    and #value > 0
+                                    and #value <= 256
+                                    and not value:find('[%z\1-\31\127]')
+                                    and not seen[value]
+                                then
+                                    seen[value] = true
+                                    rows[#rows + 1] = { value = value, text = self:PlainWorkbenchName(value) }
                                 end
                             end
+                        end
 
-                            if name and not seen[name] then
-                                rows[#rows + 1] = {
-                                    value = name,
-                                    text = self:PlainWorkbenchName(name) .. ' (' .. L['Unavailable'] .. ')',
-                                }
+                        if name and not seen[name] then
+                            rows[#rows + 1] = {
+                                value = name,
+                                text = self:PlainWorkbenchName(name) .. ' (' .. L['Unavailable'] .. ')',
+                            }
+                        end
+
+                        if not current() then return end
+
+                        p:ShowChoices(selector, rows, function(v)
+                            if current() and output.announce == 'channel' and output.channel_name == name then
+                                outputChange('channel_name', v)
+                                p:Draw()
                             end
-
-                            if not current() then return end
-
-                            p:ShowChoices(selector, rows, function(v)
-                                if current() and output.announce == 'channel' and output.channel_name == name then
-                                    outputChange('channel_name', v)
-                                    p:Draw()
-                                end
-                            end)
                         end)
-                    )
+                    end))
                 end
 
                 if output.announce == 'gesture' then
@@ -532,31 +524,27 @@ function addon:BuildAnnounceSettings(p)
                 local duplicate = row.duplicate
                 p.fields[prefix .. 'output' .. index .. 'duplicate'] = duplicate
 
-                self:SetUIScript(
-                    duplicate,
-                    'OnClick',
-                    p:Guard(function()
-                        if not current() or #items >= 64 or not p:FlushEdits() or not current() then return end
-                        local copy
+                self:SetUIScript(duplicate, 'OnClick', p:Guard(function()
+                    if not current() or #items >= 64 or not p:FlushEdits() or not current() then return end
+                    local copy
 
-                        if source then
-                            copy = self:CopySettingsData(output)
-                        else
-                            copy = {}
+                    if source then
+                        copy = self:CopySettingsData(output)
+                    else
+                        copy = {}
 
-                            for _, key in ipairs(outputFields) do
-                                copy[key] = self:CopySettingsData(output[key])
-                            end
+                        for _, key in ipairs(outputFields) do
+                            copy[key] = self:CopySettingsData(output[key])
                         end
+                    end
 
-                        copy.id = self:uuid()
-                        if not current() then return end
-                        local outputs = materialize()
-                        if not outputs then return end
-                        table.insert(outputs, index + 1, copy)
-                        p:Draw()
-                    end)
-                )
+                    copy.id = self:uuid()
+                    if not current() then return end
+                    local outputs = materialize()
+                    if not outputs then return end
+                    table.insert(outputs, index + 1, copy)
+                    p:Draw()
+                end))
 
                 local help = row.help
                 p.fields[prefix .. 'output' .. index .. 'help'] = help
@@ -579,15 +567,11 @@ function addon:BuildAnnounceSettings(p)
                 enabled.tooltip = L['Output state']
                 p.fields[field .. 'enabled'] = enabled
 
-                self:SetUIScript(
-                    enabled,
-                    'OnClick',
-                    p:Guard(function()
-                        if not current() or not p:FlushEdits() or not current() then return end
-                        outputChange('disabled', not output.disabled)
-                        if current() then p:Draw() end
-                    end)
-                )
+                self:SetUIScript(enabled, 'OnClick', p:Guard(function()
+                    if not current() or not p:FlushEdits() or not current() then return end
+                    outputChange('disabled', not output.disabled)
+                    if current() then p:Draw() end
+                end))
 
                 local candidate = output
 
@@ -999,16 +983,12 @@ function addon:BuildAnnounceSettings(p)
             enabled:SetSelected(not entry.disabled)
             p.fields['enabled' .. i] = enabled
 
-            self:SetUIScript(
-                enabled,
-                'OnClick',
-                p:Guard(function()
-                    if p:FlushEdits() then
-                        entry.disabled = not entry.disabled
-                        p:Draw()
-                    end
-                end)
-            )
+            self:SetUIScript(enabled, 'OnClick', p:Guard(function()
+                if p:FlushEdits() then
+                    entry.disabled = not entry.disabled
+                    p:Draw()
+                end
+            end))
 
             local identity = entry.id
 

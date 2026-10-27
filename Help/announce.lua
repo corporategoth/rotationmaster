@@ -73,11 +73,9 @@ function addon.layout_announce_options_help(frame)
     for _, entry in ipairs(addon:GetDocument_layout_announce_options_help()) do
         frame:AddChild(Gap())
 
-        frame:AddChild(
-            CreateText(
-                (entry.title ~= '' and color.BLIZ_YELLOW .. entry.title .. color.RESET .. ' - ' or '') .. entry.text
-            )
-        )
+        frame:AddChild(CreateText(
+            (entry.title ~= '' and color.BLIZ_YELLOW .. entry.title .. color.RESET .. ' - ' or '') .. entry.text
+        ))
     end
 end
 

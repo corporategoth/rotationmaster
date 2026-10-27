@@ -64,13 +64,9 @@ local function validate_basic(prefix, data, template, fix, preserved)
             addon:warn("Extra Field %s:%s", prefix, tostring(k))
             mark_for_remove(toremove, k)
         elseif type(v) ~= type(template[k]) then
-            addon:warn(
-                "Incorrect type for %s:%s (was %s, expected %s)",
-                prefix,
-                tostring(k),
-                type(v),
-                type(template[k])
-            )
+            addon:warn("Incorrect type for %s:%s (was %s, expected %s)", prefix, tostring(k), type(v), type(
+                template[k]
+            ))
 
             mark_for_remove(toremove, k)
         elseif type(v) == "table" then
@@ -540,12 +536,9 @@ local function validate_rotation_condition(prefix, condition, fix)
                     local found = handle_array_field(data, field)
 
                     if not found then
-                        addon:warn(
-                            "Condition %s.%s has data of the wrong type (got %s)",
-                            full_id,
-                            newsubtree,
-                            type(data)
-                        )
+                        addon:warn("Condition %s.%s has data of the wrong type (got %s)", full_id, newsubtree, type(
+                            data
+                        ))
 
                         if fix then
                             mark_for_remove(keyremove, key)

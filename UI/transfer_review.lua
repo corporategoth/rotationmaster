@@ -84,12 +84,10 @@ function addon:BuildTransferReview(p, review)
         if not ok then problem = tostring(err) end
 
         if not shown then
-            d.status:SetText(
-                string.format(
-                    L['This import cannot be shown in full (%s). Use Check import for details.'],
-                    tostring(problem or L['Invalid import.'])
-                )
-            )
+            d.status:SetText(string.format(
+                L['This import cannot be shown in full (%s). Use Check import for details.'],
+                tostring(problem or L['Invalid import.'])
+            ))
         end
     end
 

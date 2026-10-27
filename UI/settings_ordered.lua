@@ -329,10 +329,10 @@ function addon:InstallSettingsOrdered(p)
                 button:SetText(add.text or L['Add'])
                 button.icon:SetTexture(addon:ControlTexture(add.icon or 'plus'))
 
-                addWidth = math.min(
-                    math.max(110, button:GetFontString():GetStringWidth() + 40),
-                    math.max(60, math.floor(width * .5))
-                )
+                addWidth = math.min(math.max(110, button:GetFontString():GetStringWidth() + 40), math.max(
+                    60,
+                    math.floor(width * .5)
+                ))
 
                 button:ClearAllPoints()
                 button:SetPoint('TOPLEFT', width - addWidth, -y)
@@ -348,18 +348,14 @@ function addon:InstallSettingsOrdered(p)
                     button:Enable()
                 end
 
-                addon:SetUIScript(
-                    button,
-                    'OnClick',
-                    self:Guard(function()
-                        if blocked then return end
-                        if add.click then return add.click() end
+                addon:SetUIScript(button, 'OnClick', self:Guard(function()
+                    if blocked then return end
+                    if add.click then return add.click() end
 
-                        if self:FlushEdits() and valid() then
-                            add.insert(add.appendGap and add.appendGap() or #items + 1)
-                        end
-                    end)
-                )
+                    if self:FlushEdits() and valid() then
+                        add.insert(add.appendGap and add.appendGap() or #items + 1)
+                    end
+                end))
 
                 addon:BindWorkbenchDragSource(
                     button,
@@ -395,13 +391,9 @@ function addon:InstallSettingsOrdered(p)
                     c.icon:SetTexture(addon:ControlTexture(heading.collapsed and 'chevron-right' or 'chevron-down'))
                     c:Enable()
 
-                    addon:SetUIScript(
-                        c,
-                        'OnClick',
-                        self:Guard(function()
-                            if valid() then heading.toggle() end
-                        end)
-                    )
+                    addon:SetUIScript(c, 'OnClick', self:Guard(function()
+                        if valid() then heading.toggle() end
+                    end))
 
                     if heading.key then self.fields[heading.key] = c end
                     view.heading = c
@@ -489,25 +481,17 @@ function addon:InstallSettingsOrdered(p)
                 row.down:Enable()
             end
 
-            addon:SetUIScript(
-                row.up,
-                'OnClick',
-                self:Guard(function()
-                    view.drag = i
-                    view.tail = false
-                    view:Drop(i - 1)
-                end)
-            )
+            addon:SetUIScript(row.up, 'OnClick', self:Guard(function()
+                view.drag = i
+                view.tail = false
+                view:Drop(i - 1)
+            end))
 
-            addon:SetUIScript(
-                row.down,
-                'OnClick',
-                self:Guard(function()
-                    view.drag = i
-                    view.tail = false
-                    view:Drop(i + 2)
-                end)
-            )
+            addon:SetUIScript(row.down, 'OnClick', self:Guard(function()
+                view.drag = i
+                view.tail = false
+                view:Drop(i + 2)
+            end))
 
             local rail = 0
 
@@ -527,13 +511,9 @@ function addon:InstallSettingsOrdered(p)
                 railSlot(row.help)
 
                 if type(options.help) == 'function' then
-                    addon:SetUIScript(
-                        row.help,
-                        'OnClick',
-                        self:Guard(function()
-                            if valid() then options.help(i, items[i], row) end
-                        end)
-                    )
+                    addon:SetUIScript(row.help, 'OnClick', self:Guard(function()
+                        if valid() then options.help(i, items[i], row) end
+                    end))
                 end
             elseif row.help then
                 row.help:Hide()
@@ -551,13 +531,9 @@ function addon:InstallSettingsOrdered(p)
                 end
 
                 if type(options.duplicate) == 'function' then
-                    addon:SetUIScript(
-                        row.duplicate,
-                        'OnClick',
-                        self:Guard(function()
-                            if allowed and valid() then options.duplicate(i, items[i], row) end
-                        end)
-                    )
+                    addon:SetUIScript(row.duplicate, 'OnClick', self:Guard(function()
+                        if allowed and valid() then options.duplicate(i, items[i], row) end
+                    end))
                 end
             elseif row.duplicate then
                 row.duplicate:Hide()
@@ -571,21 +547,17 @@ function addon:InstallSettingsOrdered(p)
                 row.remove:Enable()
             end
 
-            addon:SetUIScript(
-                row.remove,
-                'OnClick',
-                self:Guard(function()
-                    if not options.readOnly and self:FlushEdits() and valid() then
-                        if options.removeItem then
-                            options.removeItem(i, items[i])
-                        else
-                            table.remove(items, i)
-                            changed()
-                            self:Draw()
-                        end
+            addon:SetUIScript(row.remove, 'OnClick', self:Guard(function()
+                if not options.readOnly and self:FlushEdits() and valid() then
+                    if options.removeItem then
+                        options.removeItem(i, items[i])
+                    else
+                        table.remove(items, i)
+                        changed()
+                        self:Draw()
                     end
-                end)
-            )
+                end
+            end))
 
             row.firstRowReserve = 0
 
@@ -612,13 +584,9 @@ function addon:InstallSettingsOrdered(p)
                         row.enabled:Enable()
                     end
 
-                    addon:SetUIScript(
-                        row.enabled,
-                        'OnClick',
-                        self:Guard(function()
-                            if not options.readOnly and valid() then spec.toggle(i, items[i], row) end
-                        end)
-                    )
+                    addon:SetUIScript(row.enabled, 'OnClick', self:Guard(function()
+                        if not options.readOnly and valid() then spec.toggle(i, items[i], row) end
+                    end))
                 end
 
                 -- Body coordinates kept free on the first row for the pill.
@@ -644,21 +612,13 @@ function addon:InstallSettingsOrdered(p)
             row.body:EnableMouse(true)
 
             for _, surface in ipairs({ row, row.body }) do
-                addon:SetUIScript(
-                    surface,
-                    'OnMouseDown',
-                    self:Guard(function(_, button)
-                        if button == 'LeftButton' then startDrag() end
-                    end)
-                )
+                addon:SetUIScript(surface, 'OnMouseDown', self:Guard(function(_, button)
+                    if button == 'LeftButton' then startDrag() end
+                end))
 
-                addon:SetUIScript(
-                    surface,
-                    'OnMouseUp',
-                    self:Guard(function(_, button)
-                        if button == 'LeftButton' then stopDrag() end
-                    end)
-                )
+                addon:SetUIScript(surface, 'OnMouseUp', self:Guard(function(_, button)
+                    if button == 'LeftButton' then stopDrag() end
+                end))
 
                 addon:BindWorkbenchDragSource(surface, startDrag, stopDrag)
             end

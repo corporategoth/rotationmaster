@@ -695,10 +695,11 @@ function addon:BuildGlowDiagnostic()
     add(
         'rotation=%s (%s) spec=%s timer=%s engine=%s actionContext=%s',
         self.currentRotation,
-        self.currentRotation and self.GetRotationName and select(
-            2,
-            pcall(self.GetRotationName, self, self.currentRotation)
-        )
+        self.currentRotation and self.GetRotationName and select(2, pcall(
+            self.GetRotationName,
+            self,
+            self.currentRotation
+        ))
             or nil,
         self.currentSpec,
         self.rotationTimer ~= nil,

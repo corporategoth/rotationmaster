@@ -544,11 +544,9 @@ local function newShell()
                 and addon.db.char == char
         end
 
-        addon:SetUIScript(
-            self.pageHelp,
-            'OnClick',
-            addon:GuardWorkbenchHelp(current, function() self:ShowHelp(key, current) end)
-        )
+        addon:SetUIScript(self.pageHelp, 'OnClick', addon:GuardWorkbenchHelp(current, function()
+            self:ShowHelp(key, current)
+        end))
 
         addon:BindWorkbenchHelp(self.pageHelp, { brief = L['Help.Brief.page'], valid = current })
         local existing = pane.fields and pane.fields.announce_help

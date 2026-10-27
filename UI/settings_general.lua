@@ -206,14 +206,10 @@ function addon:BuildGeneralSettings(p)
         if p.BindUnsaved then p:BindUnsaved('preview_locked', locked, value, 'Check') end
     end
 
-    self:SetUIScript(
-        locked,
-        'OnClick',
-        p:Guard(function()
-            syncLocked(self.db.profile.preview_locked ~= true)
-            if self.RefreshPreviewWindow then self:RefreshPreviewWindow() end
-        end)
-    )
+    self:SetUIScript(locked, 'OnClick', p:Guard(function()
+        syncLocked(self.db.profile.preview_locked ~= true)
+        if self.RefreshPreviewWindow then self:RefreshPreviewWindow() end
+    end))
 
     -- The preview's right-click menu locks too; keep this page's field and
     -- draft in step so a later Apply cannot write the old value back.
@@ -342,22 +338,18 @@ function addon:BuildGeneralSettings(p)
         if self.previewSkinChanged == skinChanged then self.previewSkinChanged = nil end
     end
 
-    self:SetUIScript(
-        skin,
-        'OnClick',
-        p:Guard(function()
-            local choices = paintSkin()
-            if not choices or not currentSkinPage() or not skin:IsEnabled() then return end
+    self:SetUIScript(skin, 'OnClick', p:Guard(function()
+        local choices = paintSkin()
+        if not choices or not currentSkinPage() or not skin:IsEnabled() then return end
 
-            p:ShowChoices(skin, choices, function(value)
-                local ok = self.SetPreviewSkin and self:SetPreviewSkin(value)
+        p:ShowChoices(skin, choices, function(value)
+            local ok = self.SetPreviewSkin and self:SetPreviewSkin(value)
 
-                if paintSkin() and currentSkinPage() then
-                    p:Message(ok and '' or L['Preview skin is unavailable.'], ok)
-                end
-            end)
+            if paintSkin() and currentSkinPage() then
+                p:Message(ok and '' or L['Preview skin is unavailable.'], ok)
+            end
         end)
-    )
+    end))
 
     local sample = p:Button('preview_sample', L['Preview'], function() end)
     local buttonWidth = math.min((p.width - 8) / 3, math.max(96, sample:GetFontString():GetStringWidth() + 24))
@@ -371,11 +363,9 @@ function addon:BuildGeneralSettings(p)
     p.y = skinY + 28
 
     if type(self.SetPreviewSampleEnabled) == 'function' and type(self.IsPreviewSampleEnabled) == 'function' then
-        self:SetUIScript(
-            sample,
-            'OnClick',
-            p:Guard(function() self:SetPreviewSampleEnabled(not self:IsPreviewSampleEnabled()) end)
-        )
+        self:SetUIScript(sample, 'OnClick', p:Guard(function()
+            self:SetPreviewSampleEnabled(not self:IsPreviewSampleEnabled())
+        end))
     else
         sample:Disable()
     end
@@ -639,17 +629,13 @@ function addon:BuildGeneralSettings(p)
         updateModeCaption()
 
         -- Diagnostic requests persist independently of pending settings edits.
-        self:SetUIScript(
-            control,
-            'OnClick',
-            p:Guard(function()
-                local _, current = self:GetCacheDiagnosticMode()
-                local wanted = current == 'direct' and 'cached' or 'direct'
-                local ok = self:SetCacheDiagnosticMode(wanted)
-                updateModeCaption()
-                p:Message(ok and '' or L['Cache diagnostic is unavailable.'], ok)
-            end)
-        )
+        self:SetUIScript(control, 'OnClick', p:Guard(function()
+            local _, current = self:GetCacheDiagnosticMode()
+            local wanted = current == 'direct' and 'cached' or 'direct'
+            local ok = self:SetCacheDiagnosticMode(wanted)
+            updateModeCaption()
+            p:Message(ok and '' or L['Cache diagnostic is unavailable.'], ok)
+        end))
     end
 
     -- Diagnostics: one column per capture kind, its capture button above its
@@ -807,28 +793,20 @@ function addon:BuildGeneralSettings(p)
                 minimumWidth = math.max(minimumWidth, button:GetFontString():GetStringWidth() + 20)
             end
 
-            self:SetUIScript(
-                button,
-                'OnClick',
-                p:Guard(function()
-                    local action = entry.running() and entry.finish or entry.begin
-                    local ok, message, current = action()
-                    if current == false or not p:Valid(token) then return end
-                    if message and message ~= '' then p:Message(message, ok) end
-                    repaint(true)
-                end)
-            )
+            self:SetUIScript(button, 'OnClick', p:Guard(function()
+                local action = entry.running() and entry.finish or entry.begin
+                local ok, message, current = action()
+                if current == false or not p:Valid(token) then return end
+                if message and message ~= '' then p:Message(message, ok) end
+                repaint(true)
+            end))
 
-            self:SetUIScript(
-                reportButton,
-                'OnClick',
-                p:Guard(function()
-                    local ok, message, current = entry.open()
-                    if current == false or not p:Valid(token) then return end
-                    p:Message(message or '', ok)
-                    repaint(true)
-                end)
-            )
+            self:SetUIScript(reportButton, 'OnClick', p:Guard(function()
+                local ok, message, current = entry.open()
+                if current == false or not p:Valid(token) then return end
+                p:Message(message or '', ok)
+                repaint(true)
+            end))
         end
 
         local gap = 4

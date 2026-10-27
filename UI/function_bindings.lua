@@ -164,7 +164,6 @@ function addon:BindEditorFunction(owner, id, alias)
     return transaction
 end
 
-
 -- ============================================================================
 -- History
 -- ============================================================================
@@ -208,7 +207,6 @@ function addon:PreferFunctionCodeHistory(owner, redo)
 
     return false
 end
-
 
 -- ============================================================================
 -- Dependency rows
@@ -420,13 +418,9 @@ function addon:BuildFunctionBindingFields(form, owner, options)
         target.tooltip = L['View source']
 
         -- Navigation must permit Discard even while a raw alias is invalid.
-        self:SetUIScript(
-            target,
-            'OnClick',
-            form:Guard(function()
-                if self.ShowFunctionSource then self:ShowFunctionSource(id) end
-            end)
-        )
+        self:SetUIScript(target, 'OnClick', form:Guard(function()
+            if self.ShowFunctionSource then self:ShowFunctionSource(id) end
+        end))
 
         if self.FunctionSource and self:FunctionSource(id) and self.ShowFunctionSource then
             target:Enable()
@@ -443,23 +437,19 @@ function addon:BuildFunctionBindingFields(form, owner, options)
         remap:SetSize(24, 24)
         form.fields['binding_remap_' .. index] = remap
 
-        self:SetUIScript(
-            remap,
-            'OnClick',
-            form:Guard(function()
-                if form:FlushEdits() then
-                    form:ShowChoices(
-                        remap,
-                        choices,
-                        function(value)
-                            mutate(function(values) values[alias] = value end)
-                            refresh()
-                        end,
-                        true
-                    )
-                end
-            end)
-        )
+        self:SetUIScript(remap, 'OnClick', form:Guard(function()
+            if form:FlushEdits() then
+                form:ShowChoices(
+                    remap,
+                    choices,
+                    function(value)
+                        mutate(function(values) values[alias] = value end)
+                        refresh()
+                    end,
+                    true
+                )
+            end
+        end))
 
         if owner.readOnly then
             input:Disable()
