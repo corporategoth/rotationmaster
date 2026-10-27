@@ -392,12 +392,29 @@ local defaults = {
         switch_conditions = {},
         other_conditions_order = {},
         disabled_conditions = {},
+        -- One-time markers the migrations and seeders set to true. They are declared so the startup validation knows
+        -- them; false reads like an absent marker, which is what every reader tests (`if not marker`).
+        rotationSpecsMigrated = false,
+        unitStateSwitchSeeded = false,
+        contextConditionsSeeded = false,
+        assistedConditionsSeeded = false,
+        assistedSignalConditionsSeeded = false,
+        engravingConditionsSeeded = false,
+        loadoutConditionsSeeded = false,
+        worldConditionsSeeded = false,
+        bossModConditionsSeeded = false,
+        castProgressConditionsSeeded = false,
+        legacyArchiveNoticed = false,
+        legacyArchiveBannerDismissed = false,
+        previewHeaderlessGeometry = false,
     },
     char = {
         bindings = {},
     },
     global = {
         uiScale = 1,
+        -- "<upgrade version>:<body count>", the marker of the saved-body upgrade walk (init.lua).
+        legacyBodyUpgrade = "",
         itemsets = {},
         effects = {},
         custom_conditions = {},

@@ -105,7 +105,7 @@ test('the player is told once, per profile, and only while something waits',func
     local b,_,_,again=restart(env,scripts)
     assert(b:ShowLegacyArchiveNotice()==false and #again==0,'the notice came back after a restart')
     local empty,_,_,quiet=start({})
-    assert(empty:ShowLegacyArchiveNotice()==false and #quiet==0 and empty.db.profile.legacyArchiveNoticed==nil,'a profile with nothing waiting was told, or marked as told')
+    assert(empty:ShowLegacyArchiveNotice()==false and #quiet==0 and not empty.db.profile.legacyArchiveNoticed,'a profile with nothing waiting was told, or marked as told')
 end)
 
 test('the first world entry shows the notice through the event frame',function()

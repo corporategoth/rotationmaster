@@ -733,6 +733,68 @@ test('real AceDB defaults to diagram and preserves the chosen rotation view on r
     assert(b.db.profile.rotation_view=='list')
 end)
 
+-- validate.lua warns "Extra Field" about every saved key the AceDB defaults do not declare, at every login, so each
+-- one-time marker the code writes has to be declared. This boots the real AceDB with every seeder loaded and collects what
+-- the addon prints.
+local profileMarkers={'rotationSpecsMigrated','unitStateSwitchSeeded','contextConditionsSeeded','assistedConditionsSeeded','assistedSignalConditionsSeeded',
+    'engravingConditionsSeeded','loadoutConditionsSeeded','worldConditionsSeeded','bossModConditionsSeeded','castProgressConditionsSeeded',
+    'legacyArchiveNoticed','legacyArchiveBannerDismissed','previewHeaderlessGeometry'}
+local function bootWithMessages(saved)
+    local messages={}
+    local env,a,scripts=persistentFixture(saved,nil,true,function(_,e,load)
+        e.LibStub('AceConsole-3.0').Printf=function(_,text,...) messages[#messages+1]=string.format(text,...) end
+        for _,file in ipairs({'Conditions/world_seed.lua','Conditions/specialization.lua','Conditions/bossmod.lua','Conditions/channeling.lua','Core/legacy_archive.lua'}) do load(file) end
+    end)
+    assert(not a.initializationErrorReport,'initialization failed')
+    return env,a,scripts,messages
+end
+local function extraFields(messages)
+    local found={};for _,text in ipairs(messages) do if text:find('Extra Field',1,true) then found[#found+1]=text end end
+    return table.concat(found,'\n')
+end
+
+test('boot validation reports no extra field for the markers the code writes, on a new and a restarted profile',function()
+    local env,a,scripts,messages=bootWithMessages()
+    local profile=a.db.sv.profiles.Default
+    for _,name in ipairs({'rotationSpecsMigrated','unitStateSwitchSeeded','contextConditionsSeeded','assistedConditionsSeeded','assistedSignalConditionsSeeded',
+        'engravingConditionsSeeded','loadoutConditionsSeeded','worldConditionsSeeded','bossModConditionsSeeded','castProgressConditionsSeeded'}) do
+        assert(profile[name]==true,name..' was not set by boot, so this test would not see it')
+    end
+    assert(type(a.db.sv.global.legacyBodyUpgrade)=='string','the saved-body upgrade left no marker')
+    assert(extraFields(messages)=='','a new profile was warned about its own markers:\n'..extraFields(messages))
+    scripts.OnEvent(nil,'PLAYER_LOGOUT')
+    local _,b,_,again=bootWithMessages({RotationMasterDB=savedVariablesCopy(env.RotationMasterDB)})
+    assert(b.db.sv.profiles.Default.worldConditionsSeeded==true and b.db.sv.global.legacyBodyUpgrade==a.db.sv.global.legacyBodyUpgrade)
+    assert(extraFields(again)=='','a restarted profile was warned about its own markers:\n'..extraFields(again))
+end)
+
+test('every profile marker declared in the defaults is accepted when saved true',function()
+    local saved={version=1}
+    for _,name in ipairs(profileMarkers) do saved[name]=true end
+    local _,a,_,messages=bootWithMessages({RotationMasterDB={profiles={Default=saved},global={legacyBodyUpgrade='1:0'}}})
+    assert(extraFields(messages)=='','a saved marker was warned about:\n'..extraFields(messages))
+    for _,name in ipairs(profileMarkers) do assert(a.db.sv.profiles.Default[name]==true,name..' was dropped') end
+end)
+
+-- A declared default must read like an absent marker: an old profile without any marker is migrated and seeded once, and a
+-- marker saved true stops the next boot from doing it again.
+test('declaring the markers leaves the migrations and seeds to run once for an old profile',function()
+    local switch,spatial={'DELETE','AND','OR','NOT'},{}
+    for index=1,40 do switch[#switch+1]='OLD_SWITCH_'..index;spatial[#spatial+1]='OLD_SPATIAL_'..index end
+    local old={version=1,switch_conditions=switch,condition_groups={{id='fa10aaf8-bc71-480f-9062-c949fd7c74e9',name='Spatial',conditions=spatial}}}
+    local function contains(list,tag) for _,entry in ipairs(list) do if entry==tag then return true end end end
+    local env,a,scripts,messages=bootWithMessages({RotationMasterDB={profiles={Default=old}}})
+    local raw=a.db.sv.profiles.Default
+    assert(raw.rotationSpecsMigrated==true and raw.worldConditionsSeeded==true and raw.unitStateSwitchSeeded==true,'an old profile was not migrated')
+    assert(contains(a.db.profile.switch_conditions,'PLAYER_STATE') and contains(a.db.profile.switch_conditions,'DEAD'),'an old profile was not seeded')
+    for _,name in ipairs(profileMarkers) do assert(a.db.defaults.profile[name]==false,name..' is declared with a default other than false') end
+    assert(extraFields(messages)=='','an old profile was warned about its markers:\n'..extraFields(messages))
+    for index=#a.db.profile.switch_conditions,1,-1 do if a.db.profile.switch_conditions[index]=='PLAYER_STATE' then table.remove(a.db.profile.switch_conditions,index) end end
+    scripts.OnEvent(nil,'PLAYER_LOGOUT')
+    local _,b=bootWithMessages({RotationMasterDB=savedVariablesCopy(env.RotationMasterDB)})
+    assert(not contains(b.db.profile.switch_conditions,'PLAYER_STATE'),'a seed ran again although its marker was saved')
+end)
+
 -- The boot sequence in init.lua: each condition module installs its seeds from addon:init, with the AceDB object.
 test('boot installs the unit-state, boss mod, loadout, world and cast progress conditions once each, with the database',function()
     local calls={}
