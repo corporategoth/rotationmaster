@@ -1,15 +1,15 @@
-local _,addon=...
-local forecast={}
-addon.Functions=addon.Functions or {}
-addon.Functions.forecast=forecast
+local _, addon = ...
+local forecast = {}
+addon.Functions = addon.Functions or {}
+addon.Functions.forecast = forecast
 
-local function finite(platform,value)
+local function finite(platform, value)
     if not platform:CanReadValue(value) then return false,'restricted-value' end
     if type(value)~='number' or value~=value or value>=math.huge or value<=-math.huge then return false,'invalid-forecast-number' end
     return true
 end
 
-local function readField(platform,object,key)
+local function readField(platform, object, key)
     if not platform:CanReadValue(object) then return nil,'restricted-value' end
     if type(object)~='table' then return nil,'invalid-forecast-history' end
     local ok,value=pcall(function() return object[key] end)
@@ -20,7 +20,7 @@ end
 
 -- A new checked kernel. Published trends.calculate and its aliases remain
 -- untouched for saved source. Work bounds are RM policy, not a native limit.
-function forecast.calculate(platform,history,window,noheals,nodmg,now)
+function forecast.calculate(platform, history, window, noheals, nodmg, now)
     if type(platform)~='table' or type(platform.CanReadValue)~='function' then return nil,nil,'invalid-forecast-platform' end
     if not platform:CanReadValue(history) or not platform:CanReadValue(noheals) or not platform:CanReadValue(nodmg) then return nil,nil,'restricted-value' end
     if type(history)~='table' then return nil,nil,'invalid-forecast-history' end

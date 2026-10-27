@@ -1,18 +1,19 @@
-local addon_name,addon=...
-local L=LibStub("AceLocale-3.0"):GetLocale(addon_name)
+local addon_name, addon = ...
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
+
 -- Preserve the original global type/pcall lookups and live legacy cache dispatch.
-local function protectedRead(cache,method,...)
+local function protectedRead(cache, method, ...)
     if type(method)~="function" then return false,"missing-api" end
     return pcall(addon.getCached,cache,method,...)
 end
 
-local _G,unpack,type,pairs=_G,unpack,type,pairs
+local _G, unpack, type, pairs = _G, unpack, type, pairs
 
 -- One closure owns native cache state; legacy addon APIs remain direct aliases.
-local cache={}
-addon.Functions=addon.Functions or {}
-addon.Functions.cache=cache
-cache.protectedRead=protectedRead
+local cache = {}
+addon.Functions = addon.Functions or {}
+addon.Functions.cache = cache
+cache.protectedRead = protectedRead
 
 local cacheHits = 0
 local cacheMisses = 0
@@ -76,30 +77,35 @@ end
 -- Keep the source-owned implementation above and its generated getter intact.
 -- Both existing public wrappers share this diagnostic-only dispatch cell.
 do
-local getCachedInternal=getCachedInternal
-local bound=false
-function addon:BindCacheDiagnosticDispatcher(bind)
-    if self~=addon or type(bind)~="function" or bound then return end
-    bound=true
-    local selected=false
-    bind(function(direct)
-        if selected or type(direct)~="boolean" then return false end
-        selected=true
-        if direct then
-            getCachedInternal=function(_,_recordnil,func,...)
-                if type(func) == 'string' then func = _G[func] end
-                if type(func) ~= 'function' then return end
-                return func(...)
+    local getCachedInternal = getCachedInternal
+    local bound = false
+
+    function addon:BindCacheDiagnosticDispatcher(bind)
+        if self ~= addon or type(bind) ~= "function" or bound then return end
+        bound = true
+        local selected = false
+
+        bind(function(direct)
+            if selected or type(direct) ~= "boolean" then return false end
+            selected = true
+
+            if direct then
+                getCachedInternal = function(_, _recordnil, func, ...)
+                    if type(func) == 'string' then func = _G[func] end
+                    if type(func) ~= 'function' then return end
+                    return func(...)
+                end
             end
-        end
-        return true
-    end)
-end
-cache.getCached = function(cache, func, ...)
+
+            return true
+        end)
+    end
+
+    cache.getCached = function(cache, func, ...)
     return getCachedInternal(cache, true, func, ...)
 end
 
-cache.getRetryCached = function(cache, func, ...)
+    cache.getRetryCached = function(cache, func, ...)
     return getCachedInternal(cache, false, func, ...)
 end
 end

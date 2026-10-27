@@ -1,10 +1,10 @@
-local _,addon=...
-local pairs,tostring=pairs,tostring
+local _, addon = ...
+local pairs, tostring = pairs, tostring
 
 -- Canonical implementations; original addon APIs remain direct aliases.
-local collections={}
-addon.Functions=addon.Functions or {}
-addon.Functions.collections=collections
+local collections = {}
+addon.Functions = addon.Functions or {}
+addon.Functions.collections = collections
 
 collections.keys = function(array)
     local rv = {}
@@ -16,7 +16,7 @@ collections.keys = function(array)
     return rv
 end
 
-collections.spairs = function (t, order)
+collections.spairs = function(t, order)
     -- collect the keys
     local keys = {}
     for k in pairs(t) do keys[#keys+1] = k end

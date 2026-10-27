@@ -1,10 +1,10 @@
-local _,addon=...
-local type,floor,tonumber,tostring=type,math.floor,tonumber,tostring
+local _, addon = ...
+local type, floor, tonumber, tostring = type, math.floor, tonumber, tostring
 
 -- Canonical implementations. Legacy addon APIs reference these same functions.
-local values={}
-addon.Functions=addon.Functions or {}
-addon.Functions.values=values
+local values = {}
+addon.Functions = addon.Functions or {}
+addon.Functions.values = values
 
 values.compare = function(operator, left, right)
     if operator == "LESSTHAN" then
@@ -30,7 +30,7 @@ values.isin = function(array, value)
     return array[value] ~= nil
 end
 
-values.round = function (num, numDecimalPlaces)
+values.round = function(num, numDecimalPlaces)
     local mult = 10^(numDecimalPlaces or 0)
     return floor(num * mult + 0.5) / mult
 end

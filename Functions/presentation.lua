@@ -1,12 +1,12 @@
-local addon_name,addon=...
-local L=LibStub("AceLocale-3.0"):GetLocale(addon_name)
-local color=color
-local operators=addon.operators
+local addon_name, addon = ...
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
+local color = color
+local operators = addon.operators
 
 -- Preserve the shared colors, captured positive map and live legacy dispatch.
-local presentation={}
-addon.Functions=addon.Functions or {}
-addon.Functions.presentation=presentation
+local presentation = {}
+addon.Functions = addon.Functions or {}
+addon.Functions.presentation = presentation
 
 presentation.nullable = function(value, default)
     if value == nil then

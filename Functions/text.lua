@@ -1,10 +1,10 @@
-local _,addon=...
-local string=string
+local _, addon = ...
+local string = string
 
 -- Canonical text implementations; preserve the original captured string table.
-local text={}
-addon.Functions=addon.Functions or {}
-addon.Functions.text=text
+local text = {}
+addon.Functions = addon.Functions or {}
+addon.Functions.text = text
 
 text.split = function(inputstr, sep)
     if sep == nil then

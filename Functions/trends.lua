@@ -1,7 +1,7 @@
-local _,addon=...
-local trends={}
-addon.Functions=addon.Functions or {}
-addon.Functions.trends=trends
+local _, addon = ...
+local trends = {}
+addon.Functions = addon.Functions or {}
+addon.Functions.trends = trends
 
 -- Runtime history services keep their live addon/profile, clock and legacy
 -- rounding lookups. Canonical ownership does not change those contracts.
