@@ -110,6 +110,8 @@ function addon:UpdateItemSetButtons(id)
         end
 
         for key, _ in pairs(units) do
+          -- Group unit types (maintank ...) are not unit tokens a macro can target.
+          if not (addon.groupUnitKinds and addon.groupUnitKinds[key]) then
             local button = addon.itemSetButtons[id][key]
             if button and button:GetName() ~= prefix .. "_" .. key then
                 button:SetParent(nil)
@@ -129,6 +131,7 @@ function addon:UpdateItemSetButtons(id)
                 macrotext = macrotext .. "/use [@" .. key .. "] item:" .. item .. "\n"
             end
             button:SetAttribute("macrotext", macrotext)
+          end
         end
     end
 end
