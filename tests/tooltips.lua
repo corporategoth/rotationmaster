@@ -454,4 +454,16 @@ test('the defaults are in the shipped profile defaults',function()
     end
 end)
 
+-- Nothing but the game's own event installs the tooltip lines at login (the Settings checkbox only refreshes), so a
+-- wrong event name here would leave the feature silently dead.
+test('the event frame listens for PLAYER_ENTERING_WORLD and the game dispatching it installs the lines',function()
+    local _,a,e=fixture()
+    local registered=installProcessor(e,true)
+    local frame=a.TooltipIntegration.frame
+    assert(frame and frame:IsEventRegistered('PLAYER_ENTERING_WORLD'),'the tooltip frame does not register PLAYER_ENTERING_WORLD')
+    assert(#registered==0,'the lines were installed before the world was entered')
+    frame.scripts.OnEvent(frame,'PLAYER_ENTERING_WORLD')
+    assert(#registered==2 and a.TooltipIntegration.installed,'the frame script does not hand PLAYER_ENTERING_WORLD to the manager')
+end)
+
 print(string.format('%d passed, %d failed',pass,fail));os.exit(fail>0 and 1 or 0)
