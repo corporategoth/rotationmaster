@@ -996,7 +996,7 @@ class Printer:
         broken = Group(cat(text('('), indent(cat(SOFT, join(cat(text(','), LINE), values))), SOFT, text(')')), True)
         broken_soft = Group(cat(text('('), indent(cat(SOFT, join(cat(text(','), LINE), values))), SOFT, text(')')))
         last, first = items[-1].value, items[0].value
-        hug_last = last.kind in ('table', 'func')
+        hug_last = last.kind in ('table', 'func') or (last.kind in ('call', 'method') and huggable(last))
         for item in items[:-1]:
             if item.value.kind in ('func', 'table') and self.is_multiline(values[items.index(item)]):
                 hug_last = False
@@ -1381,7 +1381,34 @@ def split_generated(src):
     return src[:index + 1], src[index + 1:]
 
 
+GENERATED_REGION = re.compile(r'^-- BEGIN GENERATED (?!RM SOURCE BINDINGS)([^\n]*)\n.*?^-- END GENERATED \1[ \t]*$', re.M | re.S)
+
+
 def format_source(src, codes=frozenset()):
+    """Format `src`. A region between `-- BEGIN GENERATED X` and `-- END GENERATED X` is some generator's output; it is
+    set aside as a placeholder statement while the rest is formatted and put back byte for byte."""
+    regions = []
+
+    def hide(match):
+        regions.append(match.group(0))
+        return '__RM_GENERATED_REGION_%d__()' % (len(regions) - 1)
+
+    hidden = GENERATED_REGION.sub(hide, src)
+    out = format_hidden(hidden, codes)
+    for number, region in enumerate(regions):
+        placeholder = '__RM_GENERATED_REGION_%d__()' % number
+        out = out.replace(placeholder, region)
+        # keep the region apart from its neighbors
+        index = out.index(region)
+        if index > 1 and out[index - 2:index] != '\n\n':
+            out = out[:index] + '\n' + out[index:]
+        end = out.index(region) + len(region)
+        if end < len(out) - 1 and out[end:end + 2] != '\n\n':
+            out = out[:end] + '\n' + out[end:]
+    return out
+
+
+def format_hidden(src, codes):
     authored, generated = split_generated(src)
     tokens = lex(authored)
     parser = Parser(tokens, authored, codes)
