@@ -11,10 +11,9 @@ still have some; do not add more). No trailing whitespace, LF endings, a final n
 **Spacing and line shape.** One statement per line, spaces around operators and after commas (`local x = value`,
 `a == b`, `{ key = value }`), lines wrapped at 120 columns, a blank line around every multi-line statement. A single
 plain guard clause (`if x then return end`) may stay on one line. `docs/dev/formatting.md` has the whole standard and
-`python3 tools/format_lua.py` applies it without changing what the file compiles to. Older files still carry the compact
-style (`local x=value`, `;`-joined statements): a handful are pinned to their exact bytes by the byte-freeze suites
-(`docs/dev/architecture.md`, "Byte-pinned files") and keep it; every other file is formatted, so match the file you edit
-and run the formatter on a file you change heavily. Do not hand-reformat a pinned file.
+`python3 tools/format_lua.py` applies it without changing what the file compiles to. Every authored file is formatted except the frozen Built In helper and callback bodies
+(`docs/dev/architecture.md`, "Byte-pinned text"), which keep their older compact style. Match the file you edit and run
+the formatter on code you write.
 
 **File header.** `local addon_name,addon=...` (or `local _,addon=...` when the name is not needed), then
 `local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)` where text is shown. Platform files start

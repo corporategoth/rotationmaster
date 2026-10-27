@@ -41,19 +41,18 @@ Comments say why, not what. The standard:
 
 Do not write change-log comments, do not leave commented-out code, do not add a to-do that is not an issue.
 
-## Files that must keep their exact bytes
-
-Layout changes are never free for these. Run the suite before assuming a file can be reformatted.
+## Text that must keep its exact bytes
 
 - **Built In helper and callback bodies.** The text between a helper's parameter list and its `end` is what saved
-  custom copies and exported bundles hash (`tests/private_helper_identities.lua`, `Core/function_data.lua`). The formatter
-  prints every body recorded in `Data/builtin_sources.lua` verbatim, so those functions keep their old, denser layout; do
-  not reformat or add a comment inside one. After changing a Built In module run
+  custom copies and exported bundles hash (`tests/private_helper_identities.lua`, `Core/function_data.lua`), and the Built In
+  source browser shows the callback text from `Data/builtin_sources.lua`. The formatter prints every body recorded there
+  verbatim, so those functions keep their older, denser layout; do not reformat or add a comment inside one. Comments go
+  above them or between the fields of a condition's registration table. After changing a Built In module run
   `python3 tools/generate_builtin_sources.py --write` and `python3 tools/bytecode_equal.py --catalog`.
-- **Files a predecessor fixture rebuilds.** Suites such as `tests/cpu.lua`, `tests/analytics_start_witness.lua`,
-  `tests/editor_provider_reuse.lua` and the Built In condition suites rebuild an earlier version of a file from its current
-  bytes (`tests/fixtures/restore_*.lua`) and fail on any other change, comments and whitespace included. The files they pin
-  today are listed in `docs/dev/architecture.md`, "Byte-pinned files". Retiring one of these proofs is a decision about a whole suite;
-  until it is made the file keeps its bytes.
-- Generated files (`Data/builtin_sources.lua`, `Data/artwork.lua`, the locale catalogs), vendored libraries, premade
-  rotation data under `Modules/` and pinned simulator data are never reformatted by hand.
+- **Generated regions**: a block between `-- BEGIN GENERATED X` and `-- END GENERATED X` (the integration project
+  catalog), the generated binding block at the end of a Built In module, `Data/builtin_sources.lua`, `Data/artwork.lua` and
+  the locale catalogs are written by their generators; the formatter leaves them alone.
+- Vendored libraries, premade rotation data under `Modules/` and pinned simulator data are never reformatted.
+- The predecessor suites that used to pin whole files were retired (`docs/dev/architecture.md`, "Byte-pinned text"); do not
+  add a test that compares a file's text with an earlier version. A test that slices source by pattern must tolerate the
+  formatter's layout.
