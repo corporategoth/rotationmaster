@@ -306,10 +306,10 @@ function addon:validate_announce(prefix, idx, announce, fix)
     else
         addon:warn("Invalid type for announce %s:%s", prefix, tostring(announce["id"]))
 
-        if fix then
-            addon.Functions.collections.cleanArray(announce)
-            return
-        end
+        -- A record of an unknown type has no template to be checked against: a report-only run stops here too,
+        -- instead of reporting its fields against the spell template (which a repair never does, it clears the record).
+        if fix then addon.Functions.collections.cleanArray(announce) end
+        return
     end
 
     validate_basic(prefix, announce, template, fix, announce.type == "item" and { item = true } or nil)
