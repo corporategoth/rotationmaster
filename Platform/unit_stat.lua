@@ -1,12 +1,13 @@
-local _,addon=...
-local platform=addon.Platform
+local _, addon = ...
+local platform = addon.Platform
+
 local function finite(value)
     return type(value)=='number' and value==value and value~=math.huge and value~=-math.huge
 end
 
 -- The selector range is RM's six authored choices. Only native return two is
 -- consumed; its signed/fractional finite domain is not narrowed by UI display.
-function platform:GetUnitStatObservation(unit,stat)
+function platform:GetUnitStatObservation(unit, stat)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(stat) then return nil,'restricted-value' end

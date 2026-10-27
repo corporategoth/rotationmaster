@@ -1,13 +1,17 @@
-local _,addon=...
-local platform=addon.Platform
-local function readClientPolicy(current)return current:GetClientInfo().combatDataPolicy end
+local _, addon = ...
+local platform = addon.Platform
+
+local function readClientPolicy(current)
+    return current:GetClientInfo().combatDataPolicy
+end
+
 ---@type fun(...): any
-local consumeClientPolicy=addon.ConsumeClientPolicyReader
-if type(consumeClientPolicy)=='function' then readClientPolicy=consumeClientPolicy(addon) end
+local consumeClientPolicy = addon.ConsumeClientPolicyReader
+if type(consumeClientPolicy) == 'function' then readClientPolicy = consumeClientPolicy(addon) end
 
 -- Closed flag kinds preserve the existing native query and selected unit.
 -- Only readable false existence establishes absence; required unknowns do not.
-function platform:GetUnitFlagObservation(unit,kind)
+function platform:GetUnitFlagObservation(unit, kind)
     local policy=readClientPolicy(self)
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(kind) then return nil,'restricted-value' end

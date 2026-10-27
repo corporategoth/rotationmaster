@@ -1,9 +1,9 @@
-local _,addon=...
-local platform=addon.Platform
+local _, addon = ...
+local platform = addon.Platform
 
 -- Unit absence is unavailable, including under NOT: never infer a living or
 -- friendly recipient from a missing mouseover. Observations expire each pass.
-function platform:GetUnitStateObservation(unit,kind)
+function platform:GetUnitStateObservation(unit, kind)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(kind) then return nil,'restricted-value' end

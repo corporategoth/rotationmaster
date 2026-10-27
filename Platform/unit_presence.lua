@@ -1,5 +1,5 @@
-local _,addon=...
-local platform=addon.Platform
+local _, addon = ...
+local platform = addon.Platform
 
 -- Public presence is independent of enemy-combat observation policy. Only a
 -- readable Boolean false establishes absence; no additional unit facts apply.

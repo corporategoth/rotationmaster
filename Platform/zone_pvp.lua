@@ -1,5 +1,5 @@
-local _,addon=...
-local platform=addon.Platform
+local _, addon = ...
+local platform = addon.Platform
 
 -- Successful empty zone classification differs from an unavailable observation.
 function platform:GetZonePVPObservation()

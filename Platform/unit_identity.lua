@@ -1,9 +1,9 @@
-local _,addon=...
-local platform=addon.Platform
+local _, addon = ...
+local platform = addon.Platform
 
 -- Preserve the original first-unit existence check and ordered comparison.
 -- The second token is passed to UnitIsUnit without an extra existence query.
-function platform:GetUnitIdentityObservation(unit,otherunit)
+function platform:GetUnitIdentityObservation(unit, otherunit)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(otherunit) then return nil,'restricted-value' end

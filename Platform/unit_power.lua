@@ -1,5 +1,5 @@
-local _,addon=...
-local platform=addon.Platform
+local _, addon = ...
+local platform = addon.Platform
 
 local function finite(value)
     return type(value)=='number' and value==value and value<math.huge and value>-math.huge
@@ -7,7 +7,7 @@ end
 
 -- Mana is an explicit resource even while another bar is active. Current mode
 -- follows the numeric native type and preserves signed quantities such as Balance.
-function platform:GetUnitPowerObservation(unit,resource,includeMaximum)
+function platform:GetUnitPowerObservation(unit, resource, includeMaximum)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(resource) or not self:CanReadValue(includeMaximum) then return nil,'restricted-value' end

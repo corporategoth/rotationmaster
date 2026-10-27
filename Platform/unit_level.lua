@@ -1,5 +1,5 @@
-local _,addon=...
-local platform=addon.Platform
+local _, addon = ...
+local platform = addon.Platform
 
 local function finite(value)
     return type(value)=='number' and value==value and value<math.huge and value>-math.huge

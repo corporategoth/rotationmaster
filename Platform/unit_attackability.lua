@@ -1,9 +1,13 @@
-local _,addon=...
-local platform=addon.Platform
-local function readClientPolicy(current)return current:GetClientInfo().combatDataPolicy end
+local _, addon = ...
+local platform = addon.Platform
+
+local function readClientPolicy(current)
+    return current:GetClientInfo().combatDataPolicy
+end
+
 ---@type fun(...): any
-local consumeClientPolicy=addon.ConsumeClientPolicyReader
-if type(consumeClientPolicy)=='function' then readClientPolicy=consumeClientPolicy(addon) end
+local consumeClientPolicy = addon.ConsumeClientPolicyReader
+if type(consumeClientPolicy) == 'function' then readClientPolicy = consumeClientPolicy(addon) end
 
 -- Attackability keeps the native player attacker and selected unit. A known
 -- false at either early stage needs no later fact; unknown data cannot match.

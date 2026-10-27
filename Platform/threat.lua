@@ -1,5 +1,5 @@
-local _,addon=...
-local platform=addon.Platform
+local _, addon = ...
+local platform = addon.Platform
 
 -- Preserve the ordered native threat predicate, including optional nil status.
 -- False is known absence/nonenemy/no-threat; unavailable required facts are nil.

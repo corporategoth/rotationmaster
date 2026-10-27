@@ -1,9 +1,9 @@
-local _,addon=...
-local platform=addon.Platform
+local _, addon = ...
+local platform = addon.Platform
 
 -- Keep native metadata identities: class token, localized creature name, or
 -- classification token. Unused tuple fields do not determine availability.
-function platform:GetUnitMetadataObservation(unit,kind)
+function platform:GetUnitMetadataObservation(unit, kind)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(kind) then return nil,'restricted-value' end

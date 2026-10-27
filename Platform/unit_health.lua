@@ -1,5 +1,5 @@
-local _,addon=...
-local platform=addon.Platform
+local _, addon = ...
+local platform = addon.Platform
 
 local function finite(value)
     return type(value)=='number' and value==value and value<math.huge and value>-math.huge
@@ -7,7 +7,7 @@ end
 
 -- Request maximum only for predicates that need it. A readable false existence
 -- is ordinary absence; nil or unreadable data never establishes absence.
-function platform:GetUnitHealthObservation(unit,includeMaximum)
+function platform:GetUnitHealthObservation(unit, includeMaximum)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(includeMaximum) then return nil,'restricted-value' end
