@@ -2,12 +2,15 @@ local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local helpers = addon.help_funcs
-local Functions={
-    presentation={nullable=addon.Functions.presentation.nullable},
+
+local Functions = {
+    presentation = { nullable = addon.Functions.presentation.nullable },
 }
-addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
-addon.builtinCallbackBindings["Conditions/equipment.lua"]={
-    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
+
+addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
+
+addon.builtinCallbackBindings["Conditions/equipment.lua"] = {
+    ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
 }
 
 -- WEAPON_TYPE: what is equipped in the main hand, off hand or ranged slot.
@@ -26,6 +29,7 @@ local slots = {
     offhand = L["Off Hand"],
     ranged = L["Ranged"],
 }
+
 local slotOrder = { "mainhand", "offhand", "ranged" }
 
 -- Categories by equip location token (INVTYPE_*), plus empty and shield.
@@ -38,6 +42,7 @@ local kinds = {
     shield = L["Shield"],
     holdable = L["Held in off hand"],
 }
+
 local kindOrder = { "empty", "weapon", "onehand", "twohand", "ranged", "shield", "holdable" }
 local ONEHAND = { INVTYPE_WEAPON = true, INVTYPE_WEAPONMAINHAND = true, INVTYPE_WEAPONOFFHAND = true }
 local RANGED = { INVTYPE_RANGED = true, INVTYPE_RANGEDRIGHT = true, INVTYPE_THROWN = true }
@@ -45,17 +50,31 @@ local RANGED = { INVTYPE_RANGED = true, INVTYPE_RANGEDRIGHT = true, INVTYPE_THRO
 -- Enum.ItemWeaponSubclass IDs offered in the editor; the client supplies the
 -- names (GetItemSubClassInfo), English is the fallback.
 local subclassNames = {
-    [0] = "One-Handed Axes", [1] = "Two-Handed Axes", [2] = "Bows", [3] = "Guns",
-    [4] = "One-Handed Maces", [5] = "Two-Handed Maces", [6] = "Polearms",
-    [7] = "One-Handed Swords", [8] = "Two-Handed Swords", [9] = "Warglaives", [10] = "Staves",
-    [13] = "Fist Weapons", [15] = "Daggers", [16] = "Thrown", [18] = "Crossbows", [19] = "Wands",
+    [0] = "One-Handed Axes",
+    [1] = "Two-Handed Axes",
+    [2] = "Bows",
+    [3] = "Guns",
+    [4] = "One-Handed Maces",
+    [5] = "Two-Handed Maces",
+    [6] = "Polearms",
+    [7] = "One-Handed Swords",
+    [8] = "Two-Handed Swords",
+    [9] = "Warglaives",
+    [10] = "Staves",
+    [13] = "Fist Weapons",
+    [15] = "Daggers",
+    [16] = "Thrown",
+    [18] = "Crossbows",
+    [19] = "Wands",
     [20] = "Fishing Poles",
 }
-local subclassOrder = { 15, 13, 0, 4, 7, 9, 1, 5, 8, 6, 10, 2, 3, 18, 16, 19, 20 }
+
+local subclassOrder = {15, 13, 0, 4, 7, 9, 1, 5, 8, 6, 10, 2, 3, 18, 16, 19, 20}
 
 local function subclassID(value)
     return type(value) == "number" and value >= 0 and value <= 31 and value % 1 == 0
 end
+
 local function subclassName(id)
     local fn = C_Item and C_Item.GetItemSubClassInfo or GetItemSubClassInfo
     if type(fn) == "function" then
@@ -144,7 +163,7 @@ addon:RegisterCondition("WEAPON_TYPE", {
         frame:AddChild(helpers.CreateText(L["Help.Conditions.WEAPON_TYPE"]))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(L["Help.Conditions.WEAPON_TYPE.examples"]))
-    end
+    end,
 })
 
 -- BEGIN GENERATED RM SOURCE BINDINGS

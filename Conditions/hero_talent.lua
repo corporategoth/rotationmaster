@@ -10,19 +10,22 @@ local helpers = addon.help_funcs
 -- The tree is saved as the game's subtree ID; the editor lists the trees the
 -- rotation's specialization can choose, named by the game, and still accepts
 -- an ID typed in for a tree that cannot be listed (another class, in combat).
-local Functions={
-    cache={getCached=addon.Functions.cache.getCached},
-    presentation={nullable=addon.Functions.presentation.nullable},
+local Functions = {
+    cache = { getCached = addon.Functions.cache.getCached },
+    presentation = { nullable = addon.Functions.presentation.nullable },
 }
-addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
-addon.builtinCallbackBindings["Conditions/hero_talent.lua"]={
-    ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
-    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
+
+addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
+
+addon.builtinCallbackBindings["Conditions/hero_talent.lua"] = {
+    ["Functions.cache.getCached"] = "builtin:utils.lua:getCached",
+    ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
 }
 
 local function validTree(value)
     return type(value) == "number" and value == value and value > 0 and value < 2^31 and value % 1 == 0
 end
+
 local function treeName(id)
     if not validTree(id) then return nil end
     local platform = addon.Platform
@@ -30,6 +33,7 @@ local function treeName(id)
     if name then return name end
     return string.format(L["hero talent tree %d"], id)
 end
+
 -- The specialization whose trees the editor lists: the rotation's, when it is
 -- one of your class's, else the one being played.
 local function listedSpec(spec)

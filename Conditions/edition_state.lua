@@ -14,18 +14,23 @@ local helpers = addon.help_funcs
 -- The Auto Shot and wand timer is the Ranged option of SWING_TIME and
 -- SWING_TIME_REMAIN (Conditions/weapon.lua), which read
 -- Platform:GetRangedSwingSpeed from this adapter.
-local Functions={
-    values={isin=addon.Functions.values.isin,compare=addon.Functions.values.compare},
-    presentation={nullable=addon.Functions.presentation.nullable,compareString=addon.Functions.presentation.compareString},
-    cache={getCached=addon.Functions.cache.getCached},
+local Functions = {
+    values = { isin = addon.Functions.values.isin, compare = addon.Functions.values.compare },
+    presentation = {
+        nullable = addon.Functions.presentation.nullable,
+        compareString = addon.Functions.presentation.compareString,
+    },
+    cache = { getCached = addon.Functions.cache.getCached },
 }
-addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
-addon.builtinCallbackBindings["Conditions/edition_state.lua"]={
-    ["Functions.values.isin"]="builtin:utils.lua:isin",
-    ["Functions.values.compare"]="builtin:utils.lua:compare",
-    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
-    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
-    ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
+
+addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
+
+addon.builtinCallbackBindings["Conditions/edition_state.lua"] = {
+    ["Functions.values.isin"] = "builtin:utils.lua:isin",
+    ["Functions.values.compare"] = "builtin:utils.lua:compare",
+    ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
+    ["Functions.presentation.compareString"] = "builtin:utils.lua:compareString",
+    ["Functions.cache.getCached"] = "builtin:utils.lua:getCached",
 }
 
 local function validCompare(value)
@@ -126,6 +131,7 @@ addon:RegisterCondition("STAGGER", {
 
 -- The two things the Eclipse bar tells you, in the order the editor lists them.
 local ECLIPSE_MEASURES_ORDER = { "direction", "energy" }
+
 local function eclipseMeasures()
     return { direction = L["Direction"], energy = L["Energy"] }
 end

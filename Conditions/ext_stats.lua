@@ -5,25 +5,31 @@ local color, tonumber = color, tonumber
 local helpers = addon.help_funcs
 
 -- Explicit owning leaves; observation and deferred integration contracts stay intact.
-local Functions={
-    cache={getCached=addon.Functions.cache.getCached},
-    collections={deepcopy=addon.Functions.collections.deepcopy,keys=addon.Functions.collections.keys},
-    presentation={compareString=addon.Functions.presentation.compareString,nullable=addon.Functions.presentation.nullable,nullable_value=addon.Functions.presentation.nullable_value},
-    values={compare=addon.Functions.values.compare,isin=addon.Functions.values.isin},
+local Functions = {
+    cache = { getCached = addon.Functions.cache.getCached },
+    collections = { deepcopy = addon.Functions.collections.deepcopy, keys = addon.Functions.collections.keys },
+    presentation = {
+        compareString = addon.Functions.presentation.compareString,
+        nullable = addon.Functions.presentation.nullable,
+        nullable_value = addon.Functions.presentation.nullable_value,
+    },
+    values = { compare = addon.Functions.values.compare, isin = addon.Functions.values.isin },
 }
-local ECSLabels={phrase=addon.Functions.presentation.phrase,predicate=addon.Functions.presentation.predicate}
-addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
-addon.builtinCallbackBindings["Conditions/ext_stats.lua"]={
-    ["ECSLabels.phrase"]="builtin:Functions/presentation.lua:phrase",
-    ["ECSLabels.predicate"]="builtin:Functions/presentation.lua:predicate",
-    ["Functions.values.compare"]="builtin:utils.lua:compare",
-    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
-    ["Functions.collections.deepcopy"]="builtin:Functions/collections.lua:deepcopy",
-    ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
-    ["Functions.values.isin"]="builtin:utils.lua:isin",
-    ["Functions.collections.keys"]="builtin:Functions/collections.lua:keys",
-    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
-    ["Functions.presentation.nullable_value"]="builtin:utils.lua:nullable_value",
+
+local ECSLabels = { phrase = addon.Functions.presentation.phrase, predicate = addon.Functions.presentation.predicate }
+addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
+
+addon.builtinCallbackBindings["Conditions/ext_stats.lua"] = {
+    ["ECSLabels.phrase"] = "builtin:Functions/presentation.lua:phrase",
+    ["ECSLabels.predicate"] = "builtin:Functions/presentation.lua:predicate",
+    ["Functions.values.compare"] = "builtin:utils.lua:compare",
+    ["Functions.presentation.compareString"] = "builtin:utils.lua:compareString",
+    ["Functions.collections.deepcopy"] = "builtin:Functions/collections.lua:deepcopy",
+    ["Functions.cache.getCached"] = "builtin:utils.lua:getCached",
+    ["Functions.values.isin"] = "builtin:utils.lua:isin",
+    ["Functions.collections.keys"] = "builtin:Functions/collections.lua:keys",
+    ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
+    ["Functions.presentation.nullable_value"] = "builtin:utils.lua:nullable_value",
 }
 
 addon:RegisterCondition("STAT", {
@@ -80,7 +86,7 @@ addon:RegisterCondition("STAT", {
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Character Stat"], L["Character Stat"],
                 "The current value of the selected stat for " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ".")
-    end
+    end,
 })
 
 if not addon.delayed_condition["ExtendedCharacterStats"] then
@@ -171,7 +177,7 @@ addon.delayed_condition["ExtendedCharacterStats"]["ECS_STAT"] = {
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Character Stat"], L["Character Stat"],
                 "Your current value of the selected stat, as Extended Character Stats reports it.")
-    end
+    end,
 }
 
 addon.delayed_condition["ExtendedCharacterStats"]["ECS_STAT_PCT"] = {
@@ -227,7 +233,7 @@ addon.delayed_condition["ExtendedCharacterStats"]["ECS_STAT_PCT"] = {
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Extended Character Stat Percentage"], L["Character Stat"],
                 "Your current value of the selected stat, as a percentage, as Extended Character Stats reports it.")
-    end
+    end,
 }
 
 -- BEGIN GENERATED RM SOURCE BINDINGS

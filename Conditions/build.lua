@@ -7,23 +7,26 @@ local helpers = addon.help_funcs
 -- Action context and build context conditions. They read the event-driven
 -- caches (main.lua action context, Core/build_context.lua), never scan per
 -- poll. Missing providers or pending data are unavailable, including under NOT.
-local Functions={
-    cache={getCached=addon.Functions.cache.getCached},
-    values={isin=addon.Functions.values.isin,compare=addon.Functions.values.compare},
-    presentation={nullable=addon.Functions.presentation.nullable},
+local Functions = {
+    cache = { getCached = addon.Functions.cache.getCached },
+    values = { isin = addon.Functions.values.isin, compare = addon.Functions.values.compare },
+    presentation = { nullable = addon.Functions.presentation.nullable },
 }
-local Summary={
-    phrase=addon.Functions.presentation.phrase,
-    predicate=addon.Functions.presentation.predicate,
+
+local Summary = {
+    phrase = addon.Functions.presentation.phrase,
+    predicate = addon.Functions.presentation.predicate,
 }
-addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
-addon.builtinCallbackBindings["Conditions/build.lua"]={
-    ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
-    ["Functions.values.isin"]="builtin:utils.lua:isin",
-    ["Functions.values.compare"]="builtin:utils.lua:compare",
-    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
-    ["Summary.phrase"]="builtin:Functions/presentation.lua:phrase",
-    ["Summary.predicate"]="builtin:Functions/presentation.lua:predicate",
+
+addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
+
+addon.builtinCallbackBindings["Conditions/build.lua"] = {
+    ["Functions.cache.getCached"] = "builtin:utils.lua:getCached",
+    ["Functions.values.isin"] = "builtin:utils.lua:isin",
+    ["Functions.values.compare"] = "builtin:utils.lua:compare",
+    ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
+    ["Summary.phrase"] = "builtin:Functions/presentation.lua:phrase",
+    ["Summary.predicate"] = "builtin:Functions/presentation.lua:predicate",
 }
 
 addon.actionContexts = {
@@ -33,11 +36,13 @@ addon.actionContexts = {
     override = L["an override action bar"],
     petbattle = L["a pet battle"],
 }
+
 local actionContextOrder = { "player", "vehicle", "possession", "override", "petbattle" }
 
 local function wholeNumber(value)
     return type(value)=="number" and value>0 and value<math.huge and value%1==0
 end
+
 local function setLabel(id)
     if not wholeNumber(id) then return nil end
     local name=addon.GetItemSetName and addon:GetItemSetName(id)
@@ -100,7 +105,7 @@ addon:RegisterCondition("ACTION_CONTEXT", {
         frame:AddChild(helpers.CreateText(L["Matches the bar you are acting through: your own, a vehicle, a possessed (mind controlled) unit, an override bar, or a pet battle. Vehicles and override bars exist from Wrath, pet battles only on Retail."]))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(L["A rotation of your own is used only on your own bar unless its switch condition requires another action context with this condition; it is then used, and its buttons found, while that bar is up."]))
-    end
+    end,
 })
 
 addon:RegisterCondition("SET_PIECES", {
@@ -172,7 +177,7 @@ addon:RegisterCondition("SET_PIECES", {
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Item Set Pieces Equipped"], L["Pieces"],
             L["The number of pieces of that set you have equipped."])
-    end
+    end,
 })
 
 -- Every client, Retail included (Shaman imbues); see Conditions/weapon.lua.
@@ -230,7 +235,7 @@ do
         help = function(frame)
             frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Enchant ID"] .. color.RESET .. " - " ..
                 L["The temporary enchant on the weapon: a poison, oil, sharpening stone or weapon imbue. The current enchant ID of the selected hand is shown below the field."]))
-        end
+        end,
     })
 end
 

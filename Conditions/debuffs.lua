@@ -1,5 +1,9 @@
 local addon_name, addon = ...
-local runtimeCondition=addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness('Conditions/debuffs.lua') or function(_,definition)return definition end
+
+local runtimeCondition = addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness(
+    'Conditions/debuffs.lua'
+)
+    or function(_, definition) return definition end
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
@@ -7,29 +11,36 @@ local helpers = addon.help_funcs
 
 -- Canonical pure leaves; aura observations, spell identity and rank stay owned
 -- by the existing aura services and field callbacks.
-local AuraLiteral={phrase=addon.Functions.presentation.phrase}
-local AuraSummary={phrase=addon.Functions.presentation.phrase,predicate=addon.Functions.presentation.predicate}
-local Functions={
-    collections={keys=addon.Functions.collections.keys},
-    values={isin=addon.Functions.values.isin},
-    presentation={nullable=addon.Functions.presentation.nullable,compareString=addon.Functions.presentation.compareString,playerize=addon.Functions.presentation.playerize},
-}
-addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
-addon.builtinCallbackBindings["Conditions/debuffs.lua"]={
-    ["AuraLiteral.phrase"]="builtin:Functions/presentation.lua:phrase",
-    ["AuraSummary.phrase"]="builtin:Functions/presentation.lua:phrase",
-    ["AuraSummary.predicate"]="builtin:Functions/presentation.lua:predicate",
-    ["Functions.collections.keys"]="builtin:Functions/collections.lua:keys",
-    ["Functions.values.isin"]="builtin:utils.lua:isin",
-    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
-    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
-    ["Functions.presentation.playerize"]="builtin:utils.lua:playerize",
+local AuraLiteral = { phrase = addon.Functions.presentation.phrase }
+local AuraSummary = { phrase = addon.Functions.presentation.phrase, predicate = addon.Functions.presentation.predicate }
+
+local Functions = {
+    collections = { keys = addon.Functions.collections.keys },
+    values = { isin = addon.Functions.values.isin },
+    presentation = {
+        nullable = addon.Functions.presentation.nullable,
+        compareString = addon.Functions.presentation.compareString,
+        playerize = addon.Functions.presentation.playerize,
+    },
 }
 
-addon:RegisterCondition("DEBUFF", runtimeCondition('DEBUFF',{
+addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
+
+addon.builtinCallbackBindings["Conditions/debuffs.lua"] = {
+    ["AuraLiteral.phrase"] = "builtin:Functions/presentation.lua:phrase",
+    ["AuraSummary.phrase"] = "builtin:Functions/presentation.lua:phrase",
+    ["AuraSummary.predicate"] = "builtin:Functions/presentation.lua:predicate",
+    ["Functions.collections.keys"] = "builtin:Functions/collections.lua:keys",
+    ["Functions.values.isin"] = "builtin:utils.lua:isin",
+    ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
+    ["Functions.presentation.compareString"] = "builtin:utils.lua:compareString",
+    ["Functions.presentation.playerize"] = "builtin:utils.lua:playerize",
+}
+
+addon:RegisterCondition("DEBUFF", runtimeCondition('DEBUFF', {
     description = L["Debuff Present"],
     icon = addon.Artwork.condition["DEBUFF"],
-    fields = { unit = "string", spell = {"string", "number"}, anyrank = "boolean", owndebuff = "boolean" },
+    fields = { unit = "string", spell = { "string", "number" }, anyrank = "boolean", owndebuff = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and value.spell ~= nil)
     end,
@@ -75,13 +86,20 @@ addon:RegisterCondition("DEBUFF", runtimeCondition('DEBUFF',{
         frame:AddChild(helpers.Gap())
         addon.layout_condition_spellnamewidget_help(frame)
         addon.layout_condition_aurarank_help(frame)
-    end
+    end,
 }))
 
 addon:RegisterCondition("DEBUFF_REMAIN", {
     description = L["Debuff Time Remaining"],
     icon = addon.Artwork.condition["DEBUFF_REMAIN"],
-    fields = { unit = "string", spell = {"string", "number"}, anyrank = "boolean", owndebuff = "boolean", operator = "string", value = "number" },
+    fields = {
+        unit = "string",
+        spell = { "string", "number" },
+        anyrank = "boolean",
+        owndebuff = "boolean",
+        operator = "string",
+        value = "number",
+    },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and value.spell ~= nil and
                 value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
@@ -139,13 +157,20 @@ addon:RegisterCondition("DEBUFF_REMAIN", {
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Debuff Time Remaining"], L["Seconds"],
             L["Remaining aura time is measured in seconds. Permanent auras have no expiration and do not satisfy a finite refresh threshold. An absent aura does not satisfy this condition. Restricted or unknown timing is unavailable, including under NOT."])
-    end
+    end,
 })
 
 addon:RegisterCondition("DEBUFF_STACKS", {
     description = L["Debuff Stacks"],
     icon = addon.Artwork.condition["DEBUFF_STACKS"],
-    fields = { unit = "string", spell = {"string", "number"}, anyrank = "boolean", owndebuff = "boolean", operator = "string", value = "number" },
+    fields = {
+        unit = "string",
+        spell = { "string", "number" },
+        anyrank = "boolean",
+        owndebuff = "boolean",
+        operator = "string",
+        value = "number",
+    },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and value.spell ~= nil and
                 value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
@@ -202,7 +227,7 @@ addon:RegisterCondition("DEBUFF_STACKS", {
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Debuff Stacks"], L["Stacks"],
             L["Compare the application count of a matching aura, including charges such as Earth Shield. An absent aura does not satisfy this condition; an unreadable count is unavailable."])
-    end
+    end,
 })
 
 addon:RegisterCondition("DISPELLABLE", {
@@ -279,12 +304,14 @@ addon:RegisterCondition("DISPELLABLE", {
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Dispellable"] .. color.RESET .. " - " ..
                 L["Only consider debuffs returned by the game's dispellable aura filter. This does not guarantee your dispel is ready or in range."]))
-    end
+    end,
 })
 
 -- Source-owned volatile observations; only configuration-only validators memoize.
 if addon.DeclareOwnedConditionRuntime then
-    addon:DeclareOwnedConditionRuntime('Conditions/debuffs.lua',{ DEBUFF={pure=true,methods={'EvaluateAuraCondition'}} })
+    addon:DeclareOwnedConditionRuntime('Conditions/debuffs.lua', {
+        DEBUFF = { pure = true, methods = { 'EvaluateAuraCondition' } },
+    })
 end
 
 -- BEGIN GENERATED RM SOURCE BINDINGS

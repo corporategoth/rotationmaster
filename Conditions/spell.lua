@@ -1,5 +1,9 @@
 local addon_name, addon = ...
-local runtimeCondition=addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness('Conditions/spell.lua') or function(_,definition)return definition end
+
+local runtimeCondition = addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness(
+    'Conditions/spell.lua'
+)
+    or function(_, definition) return definition end
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
@@ -7,18 +11,23 @@ local helpers = addon.help_funcs
 
 -- Direct callback leaves use their owning modules. Spell observations,
 -- rank resolution and cache call arguments keep their existing contracts.
-local Functions={
-    values={isin=addon.Functions.values.isin,compare=addon.Functions.values.compare},
-    cache={getCached=addon.Functions.cache.getCached},
-    presentation={nullable=addon.Functions.presentation.nullable,compareString=addon.Functions.presentation.compareString},
+local Functions = {
+    values = { isin = addon.Functions.values.isin, compare = addon.Functions.values.compare },
+    cache = { getCached = addon.Functions.cache.getCached },
+    presentation = {
+        nullable = addon.Functions.presentation.nullable,
+        compareString = addon.Functions.presentation.compareString,
+    },
 }
-addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
-addon.builtinCallbackBindings["Conditions/spell.lua"]={
-    ["Functions.values.isin"]="builtin:utils.lua:isin",
-    ["Functions.values.compare"]="builtin:utils.lua:compare",
-    ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
-    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
-    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
+
+addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
+
+addon.builtinCallbackBindings["Conditions/spell.lua"] = {
+    ["Functions.values.isin"] = "builtin:utils.lua:isin",
+    ["Functions.values.compare"] = "builtin:utils.lua:compare",
+    ["Functions.cache.getCached"] = "builtin:utils.lua:getCached",
+    ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
+    ["Functions.presentation.compareString"] = "builtin:utils.lua:compareString",
 }
 
 addon:RegisterCondition("SPELL_AVAIL", {
@@ -55,7 +64,7 @@ addon:RegisterCondition("SPELL_AVAIL", {
     end,
     help = function(frame)
         addon.layout_condition_spellwidget_help(frame)
-    end
+    end,
 })
 
 addon:RegisterCondition("SPELL_RANGE", {
@@ -97,7 +106,7 @@ addon:RegisterCondition("SPELL_RANGE", {
     end,
     help = function(frame)
         addon.layout_condition_spellwidget_help(frame)
-    end
+    end,
 })
 
 addon:RegisterCondition("SPELL_COOLDOWN", {
@@ -148,7 +157,7 @@ addon:RegisterCondition("SPELL_COOLDOWN", {
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Spell Cooldown"], L["Seconds"],
             "The number of seconds before you can cast " .. color.BLIZ_YELLOW .. L["Spell"] .. color.RESET .. ".")
-    end
+    end,
 })
 
 addon:RegisterCondition("SPELL_REMAIN", {
@@ -201,7 +210,7 @@ addon:RegisterCondition("SPELL_REMAIN", {
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Spell Recharge Time"], L["Seconds"],
             L["Seconds until the next spell charge. Full charges and inactive recharge timers report zero. Missing, restricted, or non-charge spell data stays unavailable."])
-    end
+    end,
 })
 
 addon:RegisterCondition("SPELL_CHARGES", {
@@ -249,7 +258,7 @@ addon:RegisterCondition("SPELL_CHARGES", {
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Spell Charges"], L["Charges"],
             "The number of charges of " .. color.BLIZ_YELLOW .. L["Spell"] .. color.RESET .. " currently active.")
-    end
+    end,
 })
 
 addon:RegisterCondition("SPELL_HISTORY", {
@@ -313,7 +322,7 @@ addon:RegisterCondition("SPELL_HISTORY", {
             "Each instance of the same spell cast is treated separately.  Any spell cast more than the setting " ..
             "of " .. color.BLUE .. L["Spell History Memory (seconds)"] .. color.RESET .. " in the primary Rotation " ..
             "Master configuration screen ago will not be available.")
-    end
+    end,
 })
 
 addon:RegisterCondition("SPELL_HISTORY_TIME", {
@@ -385,10 +394,10 @@ addon:RegisterCondition("SPELL_HISTORY_TIME", {
             color.RESET .. " (by time).  Any spell cast more than the setting of " .. color.BLUE ..
             L["Spell History Memory (seconds)"] .. color.RESET .. " in the primary Rotation Master configuration " ..
             "screen ago will not be available.")
-    end
+    end,
 })
 
-addon:RegisterCondition("SPELL_ACTIVE", runtimeCondition('SPELL_ACTIVE',{
+addon:RegisterCondition("SPELL_ACTIVE", runtimeCondition('SPELL_ACTIVE', {
     description = L["Spell Active or Pending"],
     icon = addon.Artwork.condition["SPELL_ACTIVE"],
     fields = { spell = "number", ranked = "boolean" },
@@ -422,10 +431,10 @@ addon:RegisterCondition("SPELL_ACTIVE", runtimeCondition('SPELL_ACTIVE',{
     end,
     help = function(frame)
         addon.layout_condition_spellwidget_help(frame)
-    end
+    end,
 }))
 
-addon:RegisterCondition("SPELL_AUTOREPEAT", runtimeCondition('SPELL_AUTOREPEAT',{
+addon:RegisterCondition("SPELL_AUTOREPEAT", runtimeCondition('SPELL_AUTOREPEAT', {
     description = L["Spell Auto-Repeat Active"],
     icon = addon.Artwork.condition["SPELL_AUTOREPEAT"],
     fields = { spell = "number", ranked = "boolean" },
@@ -455,12 +464,15 @@ addon:RegisterCondition("SPELL_AUTOREPEAT", runtimeCondition('SPELL_AUTOREPEAT',
         frame:AddChild(helpers.CreateText(L["Tests whether the selected spell is currently auto-repeating, such as Shoot or Auto Shot. This is different from a spell being current or queued: a queued cast alone does not satisfy this condition. Unavailable client observations remain unavailable even when negated."]))
         frame:AddChild(helpers.Gap())
         addon.layout_condition_spellwidget_help(frame)
-    end
+    end,
 }))
 
 -- Source-owned volatile observations; only configuration-only validators memoize.
 if addon.DeclareOwnedConditionRuntime then
-    addon:DeclareOwnedConditionRuntime('Conditions/spell.lua',{ SPELL_ACTIVE={pure=false},SPELL_AUTOREPEAT={pure=false} })
+    addon:DeclareOwnedConditionRuntime('Conditions/spell.lua', {
+        SPELL_ACTIVE = { pure = false },
+        SPELL_AUTOREPEAT = { pure = false },
+    })
 end
 
 -- BEGIN GENERATED RM SOURCE BINDINGS

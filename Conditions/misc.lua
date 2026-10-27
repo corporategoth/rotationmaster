@@ -5,22 +5,28 @@ local color = color
 local helpers = addon.help_funcs
 
 -- Explicit callback leaves; retain raw game observations and argument order.
-local Functions={
-    values={isin=addon.Functions.values.isin,compare=addon.Functions.values.compare},
-    presentation={nullable=addon.Functions.presentation.nullable,compareString=addon.Functions.presentation.compareString,playerize=addon.Functions.presentation.playerize},
-    cache={getCached=addon.Functions.cache.getCached},
-    collections={deepcopy=addon.Functions.collections.deepcopy,keys=addon.Functions.collections.keys},
+local Functions = {
+    values = { isin = addon.Functions.values.isin, compare = addon.Functions.values.compare },
+    presentation = {
+        nullable = addon.Functions.presentation.nullable,
+        compareString = addon.Functions.presentation.compareString,
+        playerize = addon.Functions.presentation.playerize,
+    },
+    cache = { getCached = addon.Functions.cache.getCached },
+    collections = { deepcopy = addon.Functions.collections.deepcopy, keys = addon.Functions.collections.keys },
 }
-addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
-addon.builtinCallbackBindings["Conditions/misc.lua"]={
-    ["Functions.values.isin"]="builtin:utils.lua:isin",
-    ["Functions.values.compare"]="builtin:utils.lua:compare",
-    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
-    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
-    ["Functions.presentation.playerize"]="builtin:utils.lua:playerize",
-    ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
-    ["Functions.collections.deepcopy"]="builtin:Functions/collections.lua:deepcopy",
-    ["Functions.collections.keys"]="builtin:Functions/collections.lua:keys",
+
+addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
+
+addon.builtinCallbackBindings["Conditions/misc.lua"] = {
+    ["Functions.values.isin"] = "builtin:utils.lua:isin",
+    ["Functions.values.compare"] = "builtin:utils.lua:compare",
+    ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
+    ["Functions.presentation.compareString"] = "builtin:utils.lua:compareString",
+    ["Functions.presentation.playerize"] = "builtin:utils.lua:playerize",
+    ["Functions.cache.getCached"] = "builtin:utils.lua:getCached",
+    ["Functions.collections.deepcopy"] = "builtin:Functions/collections.lua:deepcopy",
+    ["Functions.collections.keys"] = "builtin:Functions/collections.lua:keys",
 }
 
 addon:RegisterCondition("SELF_LEVEL", {
@@ -52,7 +58,7 @@ addon:RegisterCondition("SELF_LEVEL", {
     help = function(frame)
         addon.layout_condition_operatorwidget_help(frame, L["Level"], L["Level"],
                 "The level you are at.")
-    end
+    end,
 })
 
 addon:RegisterCondition("PVP", {
@@ -81,7 +87,7 @@ addon:RegisterCondition("PVP", {
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
-    end
+    end,
 })
 
 addon:RegisterCondition("ZONEPVP", {
@@ -146,19 +152,21 @@ addon:RegisterCondition("ZONEPVP", {
                 "This is a sanctuary city.  No PVP is possible.")))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Combat (auto-flagged)"] .. color.RESET .. " - " ..
                 "This is a combat zone (eg. a battleground), all players will be automatically flagged as PVP.")))
-    end
+    end,
 })
 
 -- The difficulty IDs the INSTANCE editor offers, in the order they are listed.
 -- The game names each one (GetDifficultyInfo, in the player's language) and an
 -- ID the client does not know is left out. 0 is "not in an instance".
-local DIFFICULTIES = { 0, 1, 2, 23, 8, 24, 205, 3, 4, 5, 6, 7, 9, 14, 15, 16, 17, 33, 208, 11, 12 }
+local DIFFICULTIES = {0, 1, 2, 23, 8, 24, 205, 3, 4, 5, 6, 7, 9, 14, 15, 16, 17, 33, 208, 11, 12}
+
 -- The words after a difficulty name that say what kind of group it is for.
 local function difficultyKind(group)
     if group == "party" then return L["Dungeon"] end
     if group == "raid" then return L["Raid"] end
     if group == "scenario" then return L["Scenario"] end
 end
+
 local function difficultyName(id)
     if id == 0 then return L["Not in an instance"] end
     if type(id) ~= "number" then return nil end
@@ -170,6 +178,7 @@ local function difficultyName(id)
     end
     return nil
 end
+
 local function validWhole(value)
     return type(value) == "number" and value == value and value >= 0 and value < 2^31 and value % 1 == 0
 end
@@ -323,13 +332,13 @@ addon:RegisterCondition("INSTANCE", {
                 "A single-person instance, similar to a dungeon but completed solo.")))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(L["Help.Conditions.INSTANCE_DETAILS"]))
-    end
+    end,
 })
 
 addon:RegisterCondition("OUTDOORS", {
     description = L["Outdoors"],
     icon = addon.Artwork.condition["OUTDOORS"],
-    fields = { },
+    fields = {},
     valid = function()
         return true
     end,

@@ -1,5 +1,9 @@
 local addon_name, addon = ...
-local runtimeCondition=addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness('Conditions/stats.lua') or function(_,definition)return definition end
+
+local runtimeCondition = addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness(
+    'Conditions/stats.lua'
+)
+    or function(_, definition) return definition end
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color, tonumber = color, tonumber
@@ -7,18 +11,23 @@ local helpers = addon.help_funcs
 
 -- Canonical callback leaves preserve the native observations, resource keys,
 -- arithmetic and cache lifetimes of these existing statistic predicates.
-local Functions={
-    values={isin=addon.Functions.values.isin,compare=addon.Functions.values.compare},
-    cache={getCached=addon.Functions.cache.getCached},
-    presentation={nullable=addon.Functions.presentation.nullable,compareString=addon.Functions.presentation.compareString},
+local Functions = {
+    values = { isin = addon.Functions.values.isin, compare = addon.Functions.values.compare },
+    cache = { getCached = addon.Functions.cache.getCached },
+    presentation = {
+        nullable = addon.Functions.presentation.nullable,
+        compareString = addon.Functions.presentation.compareString,
+    },
 }
-addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
-addon.builtinCallbackBindings["Conditions/stats.lua"]={
-    ["Functions.values.isin"]="builtin:utils.lua:isin",
-    ["Functions.values.compare"]="builtin:utils.lua:compare",
-    ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
-    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
-    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
+
+addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
+
+addon.builtinCallbackBindings["Conditions/stats.lua"] = {
+    ["Functions.values.isin"] = "builtin:utils.lua:isin",
+    ["Functions.values.compare"] = "builtin:utils.lua:compare",
+    ["Functions.cache.getCached"] = "builtin:utils.lua:getCached",
+    ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
+    ["Functions.presentation.compareString"] = "builtin:utils.lua:compareString",
 }
 
 addon:RegisterCondition("HEALTH", {
@@ -66,10 +75,10 @@ addon:RegisterCondition("HEALTH", {
         addon.layout_condition_operatorwidget_help(frame, L["Health"], L["Health"],
             "The raw health value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ". " ..
             "If this number is negative, it means the health deficit (from max health).")
-    end
+    end,
 })
 
-addon:RegisterCondition("HEALTHPCT", runtimeCondition('HEALTHPCT',{
+addon:RegisterCondition("HEALTHPCT", runtimeCondition('HEALTHPCT', {
     description = L["Health Percentage"],
     icon = addon.Artwork.condition["HEALTHPCT"],
     fields = { unit = "string", operator = "string", value = "number" },
@@ -113,7 +122,7 @@ addon:RegisterCondition("HEALTHPCT", runtimeCondition('HEALTHPCT',{
         addon.layout_condition_operatorpercentwidget_help(frame, L["Health Percentage"], L["Health"],
             "The health value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " as a percentage of their " ..
             "total health.")
-    end
+    end,
 }))
 
 addon:RegisterCondition("MANA", {
@@ -161,7 +170,7 @@ addon:RegisterCondition("MANA", {
         addon.layout_condition_operatorwidget_help(frame, L["Mana"], L["Mana"],
             "The raw mana value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ". " ..
             "If this number is negative, it means the mana deficit (from max mana).")
-    end
+    end,
 })
 
 addon:RegisterCondition("MANAPCT", {
@@ -208,7 +217,7 @@ addon:RegisterCondition("MANAPCT", {
         addon.layout_condition_operatorpercentwidget_help(frame, L["Mana Percentage"], L["Mana"],
             "The mana value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " as a percentage of their " ..
             "total mana.")
-    end
+    end,
 })
 
 addon:RegisterCondition("POWER", {
@@ -259,7 +268,7 @@ addon:RegisterCondition("POWER", {
             "The raw power value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ".  Power is a statistic " ..
             "that is class (and sometimes spec or form) specific (eg. Warriors have Rage). " ..
             "If this number is negative, it means the power deficit (from max power).")
-    end
+    end,
 })
 
 addon:RegisterCondition("POWERPCT", {
@@ -307,10 +316,10 @@ addon:RegisterCondition("POWERPCT", {
             "The power value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " as a percentage of their " ..
             "total power.  Power is a statistic that is class (and sometimes spec or form) specific (eg. Warriors " ..
             "have Rage.)")
-    end
+    end,
 })
 
-addon:RegisterCondition("POINT", runtimeCondition('POINT',{
+addon:RegisterCondition("POINT", runtimeCondition('POINT', {
     description = L["Points"],
     icon = addon.Artwork.condition["POINT"],
     fields = { unit = "string", operator = "string", value = "number" },
@@ -373,11 +382,12 @@ addon:RegisterCondition("POINT", runtimeCondition('POINT',{
             "Combo points are a statistic that is class (and sometimes spec or form) specific (eg. Mages have " ..
             "Arcane Charges).  " ..
             "If this number is negative, it means the point deficit (from max points).")
-    end
+    end,
 }))
 
-if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 and
-    select(2, UnitClass("player")) == "DEATHKNIGHT") then
+if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
+    and LE_EXPANSION_LEVEL_CURRENT >= 2
+    and select(2, UnitClass("player")) == "DEATHKNIGHT") then
     addon:RegisterCondition("RUNE", {
         description = L["Runes"],
         icon = addon.Artwork.condition["RUNE"],
@@ -437,7 +447,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 a
             frame:AddChild(helpers.Gap())
             addon.layout_condition_operatorwidget_help(frame, L["Runes"], L["Runes"],
                     "The number of runes currently available.")
-        end
+        end,
     })
 
     addon:RegisterCondition("RUNE_COOLDOWN", {
@@ -512,7 +522,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 a
             addon.layout_condition_operatorwidget_help(frame, L["Rune Cooldown"], L["Seconds"],
                     "The number of seconds until a " .. color.BLIZ_YELLOW .. L["Rune Type"] .. color.RESET ..
                     " rune becomes available.")
-        end
+        end,
     })
 end
 
@@ -608,7 +618,7 @@ addon:RegisterCondition("TT_HEALTH", {
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Heals Only"] .. color.RESET .. " - " ..
                 "Only heals on " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " will be factored into the " ..
                 "'burn rate', essentially pretending they are not being hit at all.")))
-    end
+    end,
 })
 
 addon:RegisterCondition("TT_HEALTHPCT", {
@@ -705,12 +715,12 @@ addon:RegisterCondition("TT_HEALTHPCT", {
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Heals Only"] .. color.RESET .. " - " ..
                 "Only heals on " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " will be factored into the " ..
                 "'burn rate', essentially pretending they are not being hit at all.")))
-    end
+    end,
 })
 
 -- Source-owned volatile observations; only configuration-only validators memoize.
 if addon.DeclareOwnedConditionRuntime then
-    addon:DeclareOwnedConditionRuntime('Conditions/stats.lua',{ HEALTHPCT={pure=true},POINT={pure=true} })
+    addon:DeclareOwnedConditionRuntime('Conditions/stats.lua', { HEALTHPCT = { pure = true }, POINT = { pure = true } })
 end
 
 -- BEGIN GENERATED RM SOURCE BINDINGS

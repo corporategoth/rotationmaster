@@ -12,14 +12,16 @@ local helpers = addon.help_funcs
 -- can be an override of the spell you chose, so the spell and its base and
 -- override relatives are each asked. Where the game never glows the spell the
 -- answer is simply false.
-local Functions={
-    cache={getCached=addon.Functions.cache.getCached},
-    presentation={nullable=addon.Functions.presentation.nullable},
+local Functions = {
+    cache = { getCached = addon.Functions.cache.getCached },
+    presentation = { nullable = addon.Functions.presentation.nullable },
 }
-addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
-addon.builtinCallbackBindings["Conditions/proc_glow.lua"]={
-    ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
-    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
+
+addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
+
+addon.builtinCallbackBindings["Conditions/proc_glow.lua"] = {
+    ["Functions.cache.getCached"] = "builtin:utils.lua:getCached",
+    ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
 }
 
 addon:RegisterCondition("SPELL_GLOW", {

@@ -7,27 +7,35 @@ local helpers = addon.help_funcs
 
 -- Selected canonical helpers stay private to these authored callbacks. The
 -- collector verifies these explicit leaves against their stable public IDs.
-local LiteralSummary={phrase=addon.Functions.presentation.phrase}
-local Functions={
-    cache={getCached=addon.Functions.cache.getCached},
-    values={compare=addon.Functions.values.compare,isin=addon.Functions.values.isin},
-    presentation={compareString=addon.Functions.presentation.compareString,nullable=addon.Functions.presentation.nullable,playerize=addon.Functions.presentation.playerize},
+local LiteralSummary = { phrase = addon.Functions.presentation.phrase }
+
+local Functions = {
+    cache = { getCached = addon.Functions.cache.getCached },
+    values = { compare = addon.Functions.values.compare, isin = addon.Functions.values.isin },
+    presentation = {
+        compareString = addon.Functions.presentation.compareString,
+        nullable = addon.Functions.presentation.nullable,
+        playerize = addon.Functions.presentation.playerize,
+    },
 }
-addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
-addon.builtinCallbackBindings["Conditions/spatial.lua"]={
-    ["LiteralSummary.phrase"]="builtin:Functions/presentation.lua:phrase",
-    ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
-    ["Functions.values.compare"]="builtin:utils.lua:compare",
-    ["Functions.values.isin"]="builtin:utils.lua:isin",
-    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
-    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
-    ["Functions.presentation.playerize"]="builtin:utils.lua:playerize",
+
+addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
+
+addon.builtinCallbackBindings["Conditions/spatial.lua"] = {
+    ["LiteralSummary.phrase"] = "builtin:Functions/presentation.lua:phrase",
+    ["Functions.cache.getCached"] = "builtin:utils.lua:getCached",
+    ["Functions.values.compare"] = "builtin:utils.lua:compare",
+    ["Functions.values.isin"] = "builtin:utils.lua:isin",
+    ["Functions.presentation.compareString"] = "builtin:utils.lua:compareString",
+    ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
+    ["Functions.presentation.playerize"] = "builtin:utils.lua:playerize",
 }
 
 local rcf = function(unit) return RangeCheck:GetRange(unit) end
 local protectedRead = addon.Functions.cache.protectedRead
 local function finite(value) return type(value)=="number" and value==value and value>-math.huge and value<math.huge end
-local function booleanRead(cache,method,...)
+
+local function booleanRead(cache, method, ...)
     local ok,result=protectedRead(cache,method,...)
     if not ok then return nil,result=="missing-api" and result or "api-error" end
     if not addon.Platform:CanReadValue(result) then return nil,"restricted-value" end
@@ -35,109 +43,173 @@ local function booleanRead(cache,method,...)
     if result==true or result==1 then return true end
     return nil,"invalid-api-result"
 end
-local function position(cache,unit)
-    local ok,y,x,_,instance=protectedRead(cache,UnitPosition,unit)
-    if not ok then return nil,nil,nil,y=="missing-api" and y or "api-error" end
-    if not addon.Platform:CanReadValue(x) or not addon.Platform:CanReadValue(y) or not addon.Platform:CanReadValue(instance) then return nil,nil,nil,"restricted-value" end
-    if x==nil or y==nil or instance==nil then return nil,nil,nil,"position-unavailable" end
-    if not finite(x) or not finite(y) or not finite(instance) then return nil,nil,nil,"invalid-position-result" end
-    return y,x,instance
-end
-local function inRange(cache,unit,y,x,instance,positionReason,other,radius)
-    if unit==other then return true,0 end
-    if not positionReason then
-        local otherY,otherX,otherInstance,reason=position(cache,other)
-        if reason then return nil,reason end
-        if instance~=otherInstance then return false end
-        local distance=((x-otherX)^2+(y-otherY)^2)^.5
-        if not finite(distance) then return nil,"invalid-position-result" end
-        return distance<=radius,distance
+
+local function position(cache, unit)
+    local ok, y, x, _, instance = protectedRead(cache, UnitPosition, unit)
+    if not ok then return nil, nil, nil, y == "missing-api" and y or "api-error" end
+
+    if
+        not addon.Platform:CanReadValue(x)
+        or not addon.Platform:CanReadValue(y)
+        or not addon.Platform:CanReadValue(instance)
+    then
+        return nil, nil, nil, "restricted-value"
     end
-    if positionReason~="position-unavailable" or unit~="player" then return nil,positionReason end
-    local ok,minimum,maximum=protectedRead(cache,rcf,other)
-    if not ok then return nil,"range-provider-error" end
-    if not addon.Platform:CanReadValue(minimum) or not addon.Platform:CanReadValue(maximum) then return nil,"restricted-value" end
-    if minimum~=nil and (not finite(minimum) or minimum<0) or maximum~=nil and (not finite(maximum) or maximum<0) or minimum and maximum and minimum>maximum then return nil,"invalid-range-result" end
-    if minimum==nil and maximum==nil then return nil,"range-unavailable" end
+
+    if x == nil or y == nil or instance == nil then return nil, nil, nil, "position-unavailable" end
+    if not finite(x) or not finite(y) or not finite(instance) then return nil, nil, nil, "invalid-position-result" end
+    return y, x, instance
+end
+
+local function inRange(cache, unit, y, x, instance, positionReason, other, radius)
+    if unit == other then return true, 0 end
+
+    if not positionReason then
+        local otherY, otherX, otherInstance, reason = position(cache, other)
+        if reason then return nil, reason end
+        if instance ~= otherInstance then return false end
+        local distance = ((x - otherX) ^ 2 + (y - otherY) ^ 2) ^ .5
+        if not finite(distance) then return nil, "invalid-position-result" end
+        return distance <= radius, distance
+    end
+
+    if positionReason ~= "position-unavailable" or unit ~= "player" then return nil, positionReason end
+    local ok, minimum, maximum = protectedRead(cache, rcf, other)
+    if not ok then return nil, "range-provider-error" end
+
+    if not addon.Platform:CanReadValue(minimum) or not addon.Platform:CanReadValue(maximum) then
+        return nil, "restricted-value"
+    end
+
+    if
+        minimum ~= nil and (not finite(minimum) or minimum < 0)
+        or maximum ~= nil and (not finite(maximum) or maximum < 0)
+        or minimum and maximum and minimum > maximum
+    then
+        return nil, "invalid-range-result"
+    end
+
+    if minimum == nil and maximum == nil then return nil, "range-unavailable" end
     -- The shipped range checker's successful upper bound is inclusive. A
     -- positive lower bound comes from a failed checker, so equality is outside;
     -- its synthetic zero floor does not prove a failed zero-yard check.
-    if maximum and maximum<=radius then return true,maximum end
-    if minimum and (minimum>radius or minimum>0 and minimum==radius) then return false end
-    return nil,"range-uncertain"
+    if maximum and maximum <= radius then return true, maximum end
+    if minimum and (minimum > radius or minimum > 0 and minimum == radius) then return false end
+    return nil, "range-uncertain"
 end
-local function raidGroup(cache,index)
-    local ok,_,_,group=protectedRead(cache,GetRaidRosterInfo,index)
-    if not ok then return nil,"raid-roster-unavailable" end
-    if not addon.Platform:CanReadValue(group) then return nil,"restricted-value" end
-    if not finite(group) or group<1 or group%1~=0 then return nil,"raid-roster-unavailable" end
+
+local function raidGroup(cache, index)
+    local ok, _, _, group = protectedRead(cache, GetRaidRosterInfo, index)
+    if not ok then return nil, "raid-roster-unavailable" end
+    if not addon.Platform:CanReadValue(group) then return nil, "restricted-value" end
+    if not finite(group) or group < 1 or group % 1 ~= 0 then return nil, "raid-roster-unavailable" end
     return group
 end
 
 -- Retain the callback(cache,unit,distance) API. A successful estimate supplies
 -- its proven upper bound, never an invented exact distance. Callers must check
 -- completion before using accumulated values; nil+reason invalidates a scan.
-addon.proximity_eval = function(value,cache,func)
-    if not finite(value.distance) or value.distance<0 then return nil,"invalid-proximity-distance" end
-    local exists,reason=booleanRead(cache,UnitExists,value.unit)
-    if exists==nil then return nil,reason end
-    if not exists then return nil,"proximity-anchor-unavailable" end
-    local prefix,size,group
-    local raid,why=booleanRead(cache,IsInRaid)
-    if raid==nil then return nil,why end
+addon.proximity_eval = function(value, cache, func)
+    if not finite(value.distance) or value.distance < 0 then return nil, "invalid-proximity-distance" end
+    local exists, reason = booleanRead(cache, UnitExists, value.unit)
+    if exists == nil then return nil, reason end
+    if not exists then return nil, "proximity-anchor-unavailable" end
+    local prefix, size, group
+    local raid, why = booleanRead(cache, IsInRaid)
+    if raid == nil then return nil, why end
+
     if raid then
-        local belongs,issue=booleanRead(cache,UnitPlayerOrPetInRaid,value.unit)
-        if belongs==nil then return nil,issue end
-        if belongs then prefix,size="raid",40 end
+        local belongs, issue = booleanRead(cache, UnitPlayerOrPetInRaid, value.unit)
+        if belongs == nil then return nil, issue end
+        if belongs then prefix, size = "raid", 40 end
     end
+
     if not prefix then
-        local grouped,issue=booleanRead(cache,IsInGroup)
-        if grouped==nil then return nil,issue end
+        local grouped, issue = booleanRead(cache, IsInGroup)
+        if grouped == nil then return nil, issue end
+
         if grouped then
-            local belongs,problem=booleanRead(cache,UnitPlayerOrPetInParty,value.unit)
-            if belongs==nil then return nil,problem end
-            if belongs then prefix,size="party",4 end
-        elseif value.unit=="player" or value.unit=="pet" then prefix,size="party",0 end
+            local belongs, problem = booleanRead(cache, UnitPlayerOrPetInParty, value.unit)
+            if belongs == nil then return nil, problem end
+            if belongs then prefix, size = "party", 4 end
+        elseif value.unit == "player" or value.unit == "pet" then
+            prefix, size = "party", 0
+        end
     end
-    if not prefix then return nil,"proximity-anchor-unavailable" end
-    if prefix=="raid" and value.samegroup then
-        local ok,index=protectedRead(cache,UnitInRaid,value.unit)
-        if not ok then return nil,"raid-roster-unavailable" end
-        if not addon.Platform:CanReadValue(index) then return nil,"restricted-value" end
-        if index==nil then
-            for i=1,size do
-                local matches,issue=booleanRead(cache,UnitIsUnit,value.unit,"raidpet"..i)
-                if matches==nil then return nil,issue end
-                if matches then index=i;break end
+
+    if not prefix then return nil, "proximity-anchor-unavailable" end
+
+    if prefix == "raid" and value.samegroup then
+        local ok, index = protectedRead(cache, UnitInRaid, value.unit)
+        if not ok then return nil, "raid-roster-unavailable" end
+        if not addon.Platform:CanReadValue(index) then return nil, "restricted-value" end
+
+        if index == nil then
+            for i = 1, size do
+                local matches, issue = booleanRead(cache, UnitIsUnit, value.unit, "raidpet" .. i)
+                if matches == nil then return nil, issue end
+
+                if matches then
+                    index = i
+                    break
+                end
             end
         end
-        if not finite(index) or index<1 or index>size or index%1~=0 then return nil,"raid-roster-unavailable" end
-        group,reason=raidGroup(cache,index);if not group then return nil,reason end
+
+        if not finite(index) or index < 1 or index > size or index % 1 ~= 0 then
+            return nil, "raid-roster-unavailable"
+        end
+
+        group, reason = raidGroup(cache, index)
+        if not group then return nil, reason end
     end
-    local y,x,instance,positionReason=position(cache,value.unit)
-    local function visit(unit,index)
-        local present,issue=booleanRead(cache,UnitExists,unit)
-        if present==nil then return nil,issue end
+
+    local y, x, instance, positionReason = position(cache, value.unit)
+
+    local function visit(unit, index)
+        local present, issue = booleanRead(cache, UnitExists, unit)
+        if present == nil then return nil, issue end
         if not present then return true end
+
         if group then
-            local memberGroup,problem=raidGroup(cache,index)
-            if not memberGroup then return nil,problem end
-            if memberGroup~=group then return true end
+            local memberGroup, problem = raidGroup(cache, index)
+            if not memberGroup then return nil, problem end
+            if memberGroup ~= group then return true end
         end
-        local inside,distance=inRange(cache,value.unit,y,x,instance,positionReason,unit,value.distance)
-        if inside==nil then return nil,distance end
+
+        local inside, distance = inRange(cache, value.unit, y, x, instance, positionReason, unit, value.distance)
+        if inside == nil then return nil, distance end
+
         if inside then
-            local _,problem=func(cache,unit,distance)
-            if problem~=nil then return nil,problem end
+            local _, problem = func(cache, unit, distance)
+            if problem ~= nil then return nil, problem end
         end
+
         return true
     end
-    if prefix=="party" then local complete,issue=visit("player");if not complete then return nil,issue end end
-    for i=1,size do local complete,issue=visit(prefix..i,i);if not complete then return nil,issue end end
-    if value.includepets then
-        if prefix=="party" then local complete,issue=visit("pet");if not complete then return nil,issue end end
-        for i=1,size do local complete,issue=visit(prefix.."pet"..i,i);if not complete then return nil,issue end end
+
+    if prefix == "party" then
+        local complete, issue = visit("player")
+        if not complete then return nil, issue end
     end
+
+    for i = 1, size do
+        local complete, issue = visit(prefix .. i, i)
+        if not complete then return nil, issue end
+    end
+
+    if value.includepets then
+        if prefix == "party" then
+            local complete, issue = visit("pet")
+            if not complete then return nil, issue end
+        end
+
+        for i = 1, size do
+            local complete, issue = visit(prefix .. "pet" .. i, i)
+            if not complete then return nil, issue end
+        end
+    end
+
     return true
 end
 
@@ -146,37 +218,50 @@ addon.proximity_widgets = function(top, root, funcs, parent, spec, value)
     distance:SetWidth(100)
     distance:SetLabel(L["Distance"])
     distance:SetText(value.distance)
+
     distance:SetCallback("OnEnterPressed", function(_, _, v)
         value.distance = tonumber(v)
         top:SetStatusText(funcs:print(root, spec))
     end)
+
     parent:AddChild(distance)
 
     local samegroup = addon:CreateConditionCheckBox()
     samegroup:SetWidth(100)
     samegroup:SetLabel(L["Same Group"])
     samegroup:SetValue(value.samegroup and true or false)
+
     samegroup:SetCallback("OnValueChanged", function(_, _, v)
         value.samegroup = v
         top:SetStatusText(funcs:print(root, spec))
     end)
+
     parent:AddChild(samegroup)
 
     local includepets = addon:CreateConditionCheckBox()
     includepets:SetWidth(100)
     includepets:SetLabel(L["Include Pets"])
     includepets:SetValue(value.includepets and true or false)
+
     includepets:SetCallback("OnValueChanged", function(_, _, v)
         value.includepets = v
         top:SetStatusText(funcs:print(root, spec))
     end)
+
     parent:AddChild(includepets)
 end
 
 addon:RegisterCondition("PROXIMITY", {
     description = L["Allies Within Range"],
     icon = addon.Artwork.condition["PROXIMITY"],
-    fields = { unit = "string", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
+    fields = {
+        unit = "string",
+        operator = "string",
+        value = "number",
+        distance = "number",
+        samegroup = "boolean",
+        includepets = "boolean",
+    },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
@@ -232,7 +317,7 @@ addon:RegisterCondition("PROXIMITY", {
                 "Include pets in the count."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(L["Uses readable positions in the same instance, or player-centered range estimates when positions are unavailable. A unit counts only when its upper range bound is within Distance. Uncertain positions, range, subgroup membership or required health/mana values keep the whole condition unavailable, including under Unless. Percentage checks require a positive maximum; empty aggregates have no result."]))
-    end
+    end,
 })
 
 addon:RegisterCondition("DISTANCE", {
@@ -293,29 +378,31 @@ addon:RegisterCondition("DISTANCE", {
             "There are significant restrictions on how accurately distances can be measured, and all distances " ..
             "are within a range.  This will assume the unit is at the maximum of the measurable range.  Only " ..
             "distances less than or equal to 40 yards can be measured."))
-    end
+    end,
 })
 
-local function rangeMember(cache,unit,distance)
+local function rangeMember(cache, unit, distance)
     local bounds,why=Functions.cache.getCached(cache,addon.Platform.GetRangeCheckBounds,addon.Platform,unit)
     if not bounds then return nil,why end
     if bounds.maximum and bounds.maximum<=distance then return true end
     if bounds.minimum and (bounds.minimum>distance or bounds.minimum>0 and bounds.minimum==distance) then return false end
     return nil,"range-uncertain"
 end
+
 -- With `incombat`, only units that are in combat count (UnitAffectingCombat takes
 -- a token and carries no secret annotation; the answer is still read through
 -- booleanRead). nil, reason when it cannot be read.
-local function combatFilter(value,cache,unit)
+local function combatFilter(value, cache, unit)
     if not value.incombat then return true end
     local fighting,why=booleanRead(cache,UnitAffectingCombat,unit)
     if fighting==nil then return nil,why end
     return fighting
 end
+
 -- Nameplate tokens reported by NAME_PLATE_UNIT_ADDED/REMOVED on restricted
 -- clients (main.lua). UnitExists, UnitIsEnemy and the range provider carry no
 -- secret annotation; every result is still checked before use.
-local function nameplateDistanceCount(value,cache,plates)
+local function nameplateDistanceCount(value, cache, plates)
     if type(plates)~="table" then return nil,"unit-snapshot-unavailable" end
     local count = 0
     for unit in pairs(plates) do
@@ -455,7 +542,7 @@ addon:RegisterCondition("DISTANCE_COUNT", {
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " - " ..
                 L["Counts the addon's observed unit snapshot, including nameplates and tracked unit aliases, rather than every nearby unit. A unit counts only when its upper range bound is within Distance; uncertain membership or unreadable identity, hostility, range or nameplate settings makes the whole count unavailable, including under Unless. Known vanished or reused unit tokens are excluded. Distance cannot exceed the current nameplate distance setting; that setting does not guarantee a complete scan."]))
         frame:AddChild(helpers.Gap())
-    end
+    end,
 })
 
 addon:RegisterCondition("ZONE", {
@@ -509,7 +596,7 @@ addon:RegisterCondition("ZONE", {
                 " - " .. "Use the SubZone text instead of Zone text (eg. Valley of Strength instead of Orgrimmar)"))
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Zone"] .. color.RESET ..
                 " - " .. "The zone you are in."))
-    end
+    end,
 })
 
 -- BEGIN GENERATED RM SOURCE BINDINGS

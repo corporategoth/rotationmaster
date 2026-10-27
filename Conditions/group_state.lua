@@ -12,28 +12,35 @@ local helpers = addon.help_funcs
 -- identity-restricted, so these read on Retail and Forever as well; a member
 -- whose value cannot be read makes the count unavailable (also under NOT)
 -- instead of understating it.
-local Functions={
-    values={isin=addon.Functions.values.isin,compare=addon.Functions.values.compare},
-    presentation={nullable=addon.Functions.presentation.nullable,compareString=addon.Functions.presentation.compareString},
-    cache={getCached=addon.Functions.cache.getCached},
+local Functions = {
+    values = { isin = addon.Functions.values.isin, compare = addon.Functions.values.compare },
+    presentation = {
+        nullable = addon.Functions.presentation.nullable,
+        compareString = addon.Functions.presentation.compareString,
+    },
+    cache = { getCached = addon.Functions.cache.getCached },
 }
-addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
-addon.builtinCallbackBindings["Conditions/group_state.lua"]={
-    ["Functions.values.isin"]="builtin:utils.lua:isin",
-    ["Functions.values.compare"]="builtin:utils.lua:compare",
-    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
-    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
-    ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
+
+addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
+
+addon.builtinCallbackBindings["Conditions/group_state.lua"] = {
+    ["Functions.values.isin"] = "builtin:utils.lua:isin",
+    ["Functions.values.compare"] = "builtin:utils.lua:compare",
+    ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
+    ["Functions.presentation.compareString"] = "builtin:utils.lua:compareString",
+    ["Functions.cache.getCached"] = "builtin:utils.lua:getCached",
 }
 
 -- What can be counted, in the order the editor lists it.
 local MEASURE_ORDER = { "size", "TANK", "HEALER", "DAMAGER", "dead" }
+
 local function measureNames()
     return {
         size = L["Players in the group"], TANK = L["Tanks"], HEALER = L["Healers"], DAMAGER = L["Damage dealers"],
         dead = L["Dead or ghost members"],
     }
 end
+
 local function validCompare(value)
     if value.operator == nil or not Functions.values.isin(addon.operators, value.operator) then return false end
     if type(value.value) ~= "number" or value.value ~= value.value or value.value < 0 or value.value >= math.huge then return false end

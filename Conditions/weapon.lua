@@ -1,5 +1,9 @@
 local addon_name, addon = ...
-local runtimeCondition=addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness('Conditions/weapon.lua') or function(_,definition)return definition end
+
+local runtimeCondition = addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness(
+    'Conditions/weapon.lua'
+)
+    or function(_, definition) return definition end
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
@@ -7,18 +11,23 @@ local helpers = addon.help_funcs
 
 -- These pure dependencies are selected from their owning modules and remain
 -- private to the authored callbacks and their editable source copies.
-local Functions={
-    cache={getCached=addon.Functions.cache.getCached},
-    values={isin=addon.Functions.values.isin,compare=addon.Functions.values.compare},
-    presentation={compareString=addon.Functions.presentation.compareString,nullable=addon.Functions.presentation.nullable},
+local Functions = {
+    cache = { getCached = addon.Functions.cache.getCached },
+    values = { isin = addon.Functions.values.isin, compare = addon.Functions.values.compare },
+    presentation = {
+        compareString = addon.Functions.presentation.compareString,
+        nullable = addon.Functions.presentation.nullable,
+    },
 }
-addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
-addon.builtinCallbackBindings["Conditions/weapon.lua"]={
-    ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
-    ["Functions.values.isin"]="builtin:utils.lua:isin",
-    ["Functions.values.compare"]="builtin:utils.lua:compare",
-    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
-    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
+
+addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
+
+addon.builtinCallbackBindings["Conditions/weapon.lua"] = {
+    ["Functions.cache.getCached"] = "builtin:utils.lua:getCached",
+    ["Functions.values.isin"] = "builtin:utils.lua:isin",
+    ["Functions.values.compare"] = "builtin:utils.lua:compare",
+    ["Functions.presentation.compareString"] = "builtin:utils.lua:compareString",
+    ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
 }
 
 -- Select the requested hand before interpreting observations. Lua's and/or
@@ -40,12 +49,14 @@ local function enchantObservation(value, cache)
     if enchanted~=true and enchanted~=1 then return nil,nil,nil,"invalid-weapon-observation" end
     return true,expires,charges
 end
+
 local function numericObservation(value)
     if not addon.Platform:CanReadValue(value) then return nil,"restricted-value" end
     if type(value)~="number" or value~=value or value<0 or value==math.huge then return nil,"invalid-weapon-observation" end
     return value
 end
-local function swingSpeed(value,cache)
+
+local function swingSpeed(value, cache)
     -- Ranged: the Auto Shot or wand interval (UnitRangedDamage), false with no
     -- ranged attack; the melee hands read UnitAttackSpeed.
     if value.ranged then
@@ -71,7 +82,7 @@ end
 -- Temporary weapon enchants on every client, Retail included: Shaman imbues
 -- are weapon enchants there again. Unreadable values stay unavailable.
 do
-    addon:RegisterCondition("WEAPON", runtimeCondition('WEAPON',{
+    addon:RegisterCondition("WEAPON", runtimeCondition('WEAPON', {
         description = L["Weapon Enchant Present"],
         icon = addon.Artwork.condition["WEAPON"],
         fields = { offhand = "boolean" },
@@ -105,7 +116,7 @@ do
             frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Off Hand"] .. color.RESET .. " - " ..
                     "Should this condition affect your main or off-hand weapon.  If this is checked, it will affect " ..
                     "your off-hand weapon, otherwise it will affect your main-hand (or two-handed) weapon."))
-        end
+        end,
     }))
 
     addon:RegisterCondition("WEAPON_REMAIN", {
@@ -158,7 +169,7 @@ do
                     "The amount of time (in seconds) your weapon buff has left before it expires.  If there is no buff " ..
                             "on your weapon, this condition will not be successful (regardless of the " .. color.BLIZ_YELLOW ..
                             "Operator" .. color.RESET .. " used.)")
-        end
+        end,
     })
 
     addon:RegisterCondition("WEAPON_STACKS", {
@@ -211,7 +222,7 @@ do
                     "The number of stacks of a buff applied to your weapon.  If there is no buff on your weapon, this " ..
                             "condition will not be successful (regardless of the " .. color.BLIZ_YELLOW .. "Operator" ..
                             color.RESET .. " used.)")
-        end
+        end,
     })
 end
 
@@ -276,7 +287,7 @@ addon:RegisterCondition("SWING_TIME", {
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Attack Speed"], L["Seconds"],
                 "The amount of time (in seconds) between swing times for your weapon.")
-    end
+    end,
 })
 
 addon:RegisterCondition("SWING_TIME_REMAIN", {
@@ -352,12 +363,12 @@ addon:RegisterCondition("SWING_TIME_REMAIN", {
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Swing Time Remaining"], L["Seconds"],
                 "The amount of time (in seconds) until your next weapon swing.")
-    end
+    end,
 })
 
 -- Source-owned configuration validators and optional notification facts.
 if addon.DeclareOwnedConditionRuntime then
-    addon:DeclareOwnedConditionRuntime('Conditions/weapon.lua',{ WEAPON={pure=true} })
+    addon:DeclareOwnedConditionRuntime('Conditions/weapon.lua', { WEAPON = { pure = true } })
 end
 
 -- BEGIN GENERATED RM SOURCE BINDINGS

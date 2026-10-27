@@ -6,23 +6,30 @@ local helpers = addon.help_funcs
 
 -- BEGIN SPATIAL STATS CALLBACK NAMESPACE
 -- Explicit callback leaves; retain native statistic helper closures.
-local Functions={
-    values={isin=addon.Functions.values.isin,compare=addon.Functions.values.compare},
-    presentation={nullable=addon.Functions.presentation.nullable,phrase=addon.Functions.presentation.phrase,predicate=addon.Functions.presentation.predicate},
-    collections={keys=addon.Functions.collections.keys},
+local Functions = {
+    values = { isin = addon.Functions.values.isin, compare = addon.Functions.values.compare },
+    presentation = {
+        nullable = addon.Functions.presentation.nullable,
+        phrase = addon.Functions.presentation.phrase,
+        predicate = addon.Functions.presentation.predicate,
+    },
+    collections = { keys = addon.Functions.collections.keys },
 }
-addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
-addon.builtinCallbackBindings["Conditions/spatial_stats.lua"]={
-    ["Functions.values.isin"]="builtin:utils.lua:isin",
-    ["Functions.values.compare"]="builtin:utils.lua:compare",
-    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
-    ["Functions.presentation.phrase"]="builtin:Functions/presentation.lua:phrase",
-    ["Functions.presentation.predicate"]="builtin:Functions/presentation.lua:predicate",
-    ["Functions.collections.keys"]="builtin:Functions/collections.lua:keys",
+
+addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
+
+addon.builtinCallbackBindings["Conditions/spatial_stats.lua"] = {
+    ["Functions.values.isin"] = "builtin:utils.lua:isin",
+    ["Functions.values.compare"] = "builtin:utils.lua:compare",
+    ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
+    ["Functions.presentation.phrase"] = "builtin:Functions/presentation.lua:phrase",
+    ["Functions.presentation.predicate"] = "builtin:Functions/presentation.lua:predicate",
+    ["Functions.collections.keys"] = "builtin:Functions/collections.lua:keys",
 }
+
 -- END SPATIAL STATS CALLBACK NAMESPACE
 
-local function observation(cache,method,unit,power)
+local function observation(cache, method, unit, power)
     if type(method)~="function" then return nil,"missing-api" end
     local ok,current
     if power then ok,current=pcall(addon.getCached,cache,method,unit,Enum.PowerType.Mana)
@@ -32,7 +39,8 @@ local function observation(cache,method,unit,power)
     if type(current)~="number" or current~=current or current<0 or current==math.huge then return nil,"statistic-unavailable" end
     return current
 end
-local function statistic(cache,unit,mana,percentage,deficit)
+
+local function statistic(cache, unit, mana, percentage, deficit)
     local method=UnitHealth;if mana then method=UnitPower end
     local current,reason=observation(cache,method,unit,mana)
     if current==nil then return nil,reason end
@@ -51,7 +59,7 @@ local function statistic(cache,unit,mana,percentage,deficit)
     return current
 end
 
-local function aggregate(values,operation)
+local function aggregate(values, operation)
     if #values==0 then return nil,"no-units-in-range" end
     local value=values[1]
     if operation=="average" then
@@ -71,7 +79,15 @@ end
 addon:RegisterCondition("PROXIMITY_HEALTH", {
     description = L["Health Within Range"],
     icon = addon.Artwork.condition["PROXIMITY_HEALTH"],
-    fields = { unit = "string", operation = "string", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
+    fields = {
+        unit = "string",
+        operation = "string",
+        operator = "string",
+        value = "number",
+        distance = "number",
+        samegroup = "boolean",
+        includepets = "boolean",
+    },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.operation ~= nil and Functions.values.isin(addon.math_operations, value.operation) and
@@ -165,13 +181,22 @@ addon:RegisterCondition("PROXIMITY_HEALTH", {
                 "Include pets in the count."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(L["Uses readable positions in the same instance, or player-centered range estimates when positions are unavailable. A unit counts only when its upper range bound is within Distance. Uncertain positions, range, subgroup membership or required health/mana values keep the whole condition unavailable, including under Unless. Percentage checks require a positive maximum; empty aggregates have no result."]))
-    end
+    end,
 })
 
 addon:RegisterCondition("PROXIMITY_HEALTH_COUNT", {
     description = L["Health Count Within Range"],
     icon = addon.Artwork.condition["PROXIMITY_HEALTH_COUNT"],
-    fields = { unit = "string", healthoperator = "string", health = "number", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
+    fields = {
+        unit = "string",
+        healthoperator = "string",
+        health = "number",
+        operator = "string",
+        value = "number",
+        distance = "number",
+        samegroup = "boolean",
+        includepets = "boolean",
+    },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.healthoperator ~= nil and Functions.values.isin(addon.operators, value.healthoperator) and
@@ -253,13 +278,21 @@ addon:RegisterCondition("PROXIMITY_HEALTH_COUNT", {
                 "Include pets in the count."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(L["Uses readable positions in the same instance, or player-centered range estimates when positions are unavailable. A unit counts only when its upper range bound is within Distance. Uncertain positions, range, subgroup membership or required health/mana values keep the whole condition unavailable, including under Unless. Percentage checks require a positive maximum; empty aggregates have no result."]))
-    end
+    end,
 })
 
 addon:RegisterCondition("PROXIMITY_HEALTHPCT", {
     description = L["Health Percentage Within Range"],
     icon = addon.Artwork.condition["PROXIMITY_HEALTHPCT"],
-    fields = { unit = "string", operation = "string", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
+    fields = {
+        unit = "string",
+        operation = "string",
+        operator = "string",
+        value = "number",
+        distance = "number",
+        samegroup = "boolean",
+        includepets = "boolean",
+    },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.operation ~= nil and Functions.values.isin(addon.math_operations, value.operation) and
@@ -350,13 +383,22 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT", {
                 "Include pets in the count."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(L["Uses readable positions in the same instance, or player-centered range estimates when positions are unavailable. A unit counts only when its upper range bound is within Distance. Uncertain positions, range, subgroup membership or required health/mana values keep the whole condition unavailable, including under Unless. Percentage checks require a positive maximum; empty aggregates have no result."]))
-    end
+    end,
 })
 
 addon:RegisterCondition("PROXIMITY_HEALTHPCT_COUNT", {
     description = L["Health Percentage Count Within Range"],
     icon = addon.Artwork.condition["PROXIMITY_HEALTHPCT_COUNT"],
-    fields = { unit = "string", healthoperator = "string", health = "number", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
+    fields = {
+        unit = "string",
+        healthoperator = "string",
+        health = "number",
+        operator = "string",
+        value = "number",
+        distance = "number",
+        samegroup = "boolean",
+        includepets = "boolean",
+    },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.healthoperator ~= nil and Functions.values.isin(addon.operators, value.healthoperator) and
@@ -434,12 +476,21 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT_COUNT", {
                 "Include pets in the count."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(L["Uses readable positions in the same instance, or player-centered range estimates when positions are unavailable. A unit counts only when its upper range bound is within Distance. Uncertain positions, range, subgroup membership or required health/mana values keep the whole condition unavailable, including under Unless. Percentage checks require a positive maximum; empty aggregates have no result."]))
-    end
+    end,
 })
+
 addon:RegisterCondition("PROXIMITY_MANA", {
     description = L["Mana Within Range"],
     icon = addon.Artwork.condition["PROXIMITY_MANA"],
-    fields = { unit = "string", operation = "string", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
+    fields = {
+        unit = "string",
+        operation = "string",
+        operator = "string",
+        value = "number",
+        distance = "number",
+        samegroup = "boolean",
+        includepets = "boolean",
+    },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.operation ~= nil and Functions.values.isin(addon.math_operations, value.operation) and
@@ -533,13 +584,22 @@ addon:RegisterCondition("PROXIMITY_MANA", {
                 "Include pets in the count."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(L["Uses readable positions in the same instance, or player-centered range estimates when positions are unavailable. A unit counts only when its upper range bound is within Distance. Uncertain positions, range, subgroup membership or required health/mana values keep the whole condition unavailable, including under Unless. Percentage checks require a positive maximum; empty aggregates have no result."]))
-    end
+    end,
 })
 
 addon:RegisterCondition("PROXIMITY_MANA_COUNT", {
     description = L["Mana Count Within Range"],
     icon = addon.Artwork.condition["PROXIMITY_MANA_COUNT"],
-    fields = { unit = "string", manaoperator = "string", mana = "number", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
+    fields = {
+        unit = "string",
+        manaoperator = "string",
+        mana = "number",
+        operator = "string",
+        value = "number",
+        distance = "number",
+        samegroup = "boolean",
+        includepets = "boolean",
+    },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.manaoperator ~= nil and Functions.values.isin(addon.operators, value.manaoperator) and
@@ -621,13 +681,21 @@ addon:RegisterCondition("PROXIMITY_MANA_COUNT", {
                 "Include pets in the count."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(L["Uses readable positions in the same instance, or player-centered range estimates when positions are unavailable. A unit counts only when its upper range bound is within Distance. Uncertain positions, range, subgroup membership or required health/mana values keep the whole condition unavailable, including under Unless. Percentage checks require a positive maximum; empty aggregates have no result."]))
-    end
+    end,
 })
 
 addon:RegisterCondition("PROXIMITY_MANAPCT", {
     description = L["Mana Percentage Within Range"],
     icon = addon.Artwork.condition["PROXIMITY_MANAPCT"],
-    fields = { unit = "string", operation = "string", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
+    fields = {
+        unit = "string",
+        operation = "string",
+        operator = "string",
+        value = "number",
+        distance = "number",
+        samegroup = "boolean",
+        includepets = "boolean",
+    },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.operation ~= nil and Functions.values.isin(addon.math_operations, value.operation) and
@@ -718,13 +786,22 @@ addon:RegisterCondition("PROXIMITY_MANAPCT", {
                 "Include pets in the count."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(L["Uses readable positions in the same instance, or player-centered range estimates when positions are unavailable. A unit counts only when its upper range bound is within Distance. Uncertain positions, range, subgroup membership or required health/mana values keep the whole condition unavailable, including under Unless. Percentage checks require a positive maximum; empty aggregates have no result."]))
-    end
+    end,
 })
 
 addon:RegisterCondition("PROXIMITY_MANAPCT_COUNT", {
     description = L["Mana Percentage Count Within Range"],
     icon = addon.Artwork.condition["PROXIMITY_MANAPCT_COUNT"],
-    fields = { unit = "string", manaoperator = "string", mana = "number", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
+    fields = {
+        unit = "string",
+        manaoperator = "string",
+        mana = "number",
+        operator = "string",
+        value = "number",
+        distance = "number",
+        samegroup = "boolean",
+        includepets = "boolean",
+    },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.manaoperator ~= nil and Functions.values.isin(addon.operators, value.manaoperator) and
@@ -802,7 +879,7 @@ addon:RegisterCondition("PROXIMITY_MANAPCT_COUNT", {
                 "Include pets in the count."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(L["Uses readable positions in the same instance, or player-centered range estimates when positions are unavailable. A unit counts only when its upper range bound is within Distance. Uncertain positions, range, subgroup membership or required health/mana values keep the whole condition unavailable, including under Unless. Percentage checks require a positive maximum; empty aggregates have no result."]))
-    end
+    end,
 })
 
 -- BEGIN GENERATED RM SOURCE BINDINGS

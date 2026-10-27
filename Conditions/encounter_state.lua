@@ -8,23 +8,29 @@ local helpers = addon.help_funcs
 -- difficulty and ID are optional parts of INSTANCE (Conditions/misc.lua). Each
 -- is read through the platform adapter (Platform/world_state.lua), once per
 -- evaluation, and an unreadable answer is unavailable (also under NOT).
-local Functions={
-    values={isin=addon.Functions.values.isin,compare=addon.Functions.values.compare},
-    presentation={nullable=addon.Functions.presentation.nullable,compareString=addon.Functions.presentation.compareString},
-    cache={getCached=addon.Functions.cache.getCached},
+local Functions = {
+    values = { isin = addon.Functions.values.isin, compare = addon.Functions.values.compare },
+    presentation = {
+        nullable = addon.Functions.presentation.nullable,
+        compareString = addon.Functions.presentation.compareString,
+    },
+    cache = { getCached = addon.Functions.cache.getCached },
 }
-addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
-addon.builtinCallbackBindings["Conditions/encounter_state.lua"]={
-    ["Functions.values.isin"]="builtin:utils.lua:isin",
-    ["Functions.values.compare"]="builtin:utils.lua:compare",
-    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
-    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
-    ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
+
+addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
+
+addon.builtinCallbackBindings["Conditions/encounter_state.lua"] = {
+    ["Functions.values.isin"] = "builtin:utils.lua:isin",
+    ["Functions.values.compare"] = "builtin:utils.lua:compare",
+    ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
+    ["Functions.presentation.compareString"] = "builtin:utils.lua:compareString",
+    ["Functions.cache.getCached"] = "builtin:utils.lua:getCached",
 }
 
 local function validNumber(value)
     return type(value) == "number" and value == value and value >= 0 and value < math.huge
 end
+
 local function validCompare(value)
     return value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and validNumber(value.value)
 end
@@ -32,7 +38,7 @@ end
 addon:RegisterCondition("ENCOUNTER", {
     description = L["Boss Encounter"],
     icon = addon.Artwork.condition["ENCOUNTER"],
-    fields = { },
+    fields = {},
     valid = function()
         return true
     end,

@@ -1,11 +1,19 @@
 local addon_name, addon = ...
-local runtimeCondition=addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness('Conditions/range.lua') or function(_,definition)return definition end
-local L=LibStub("AceLocale-3.0"):GetLocale(addon_name)
-addon:RegisterCondition("BEYOND_MELEE",runtimeCondition('BEYOND_MELEE',{
-    description=L["Beyond Melee Range"],icon = addon.Artwork.condition["BEYOND_MELEE"],
-    fields={unit="string"},requiredFields={"unit"},
-    valid=function(_,value) return type(value.unit)=="string" and addon.units[value.unit]~=nil end,
-    evaluate=function(value)
+
+local runtimeCondition = addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness(
+    'Conditions/range.lua'
+)
+    or function(_, definition) return definition end
+
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
+
+addon:RegisterCondition("BEYOND_MELEE", runtimeCondition('BEYOND_MELEE', {
+    description = L["Beyond Melee Range"],
+    icon = addon.Artwork.condition["BEYOND_MELEE"],
+    fields = { unit = "string" },
+    requiredFields = { "unit" },
+    valid = function(_, value) return type(value.unit)=="string" and addon.units[value.unit]~=nil end,
+    evaluate = function(value)
         if type(UnitExists)~="function" then return nil,"missing-api" end
         local ok,exists=pcall(UnitExists,value.unit)
         if not ok then return nil,"api-error" end
@@ -15,14 +23,17 @@ addon:RegisterCondition("BEYOND_MELEE",runtimeCondition('BEYOND_MELEE',{
         if exists~=true and exists~=1 then return nil,"invalid-api-result" end
         return addon.Platform:IsBeyondMeleeRange(value.unit)
     end,
-    print=function(_,value) return string.format(value.unit=="player" and L["%s {{!are|are not}} beyond melee range"] or L["%s {{!is|is not}} beyond melee range"],addon.units[value.unit] or L["<unit>"]) end,
-    widget=function(parent,spec,value)
+    print = function(
+        _,
+        value
+    ) return string.format(value.unit=="player" and L["%s {{!are|are not}} beyond melee range"] or L["%s {{!is|is not}} beyond melee range"],addon.units[value.unit] or L["<unit>"]) end,
+    widget = function(parent, spec, value)
         local top=parent:GetUserData("top")
         parent:AddChild(addon:Widget_UnitWidget(value,addon.units,function()
             top:SetStatusText(top:GetUserData("funcs"):print(top:GetUserData("root"),spec))
         end))
     end,
-    help=function(frame)
+    help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(addon.help_funcs.CreateText(L["Uses the native Attack range check when available. Otherwise it uses LibRangeCheck's public interval to distinguish close range from beyond five yards; that estimate does not prove exact melee geometry for every target. An interval spanning the boundary, missing data or restricted data stays unavailable, including under NOT."]))
     end,
@@ -30,7 +41,7 @@ addon:RegisterCondition("BEYOND_MELEE",runtimeCondition('BEYOND_MELEE',{
 
 -- Source-owned configuration validators and optional notification facts.
 if addon.DeclareOwnedConditionRuntime then
-    addon:DeclareOwnedConditionRuntime('Conditions/range.lua',{ BEYOND_MELEE={pure=true} })
+    addon:DeclareOwnedConditionRuntime('Conditions/range.lua', { BEYOND_MELEE = { pure = true } })
 end
 
 -- BEGIN GENERATED RM SOURCE BINDINGS

@@ -9,38 +9,49 @@ local helpers = addon.help_funcs
 
 -- Canonical leaves for direct callbacks; private observation and validation
 -- helpers keep their existing source contracts for saved custom requirements.
-local Functions={
-    collections={keys=addon.Functions.collections.keys},
-    values={compare=addon.Functions.values.compare},
-    presentation={nullable=addon.Functions.presentation.nullable,compareString=addon.Functions.presentation.compareString},
-}
-addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
-addon.builtinCallbackBindings["Conditions/totem.lua"]={
-    ["Functions.collections.keys"]="builtin:Functions/collections.lua:keys",
-    ["Functions.values.compare"]="builtin:utils.lua:compare",
-    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
-    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
+local Functions = {
+    collections = { keys = addon.Functions.collections.keys },
+    values = { compare = addon.Functions.values.compare },
+    presentation = {
+        nullable = addon.Functions.presentation.nullable,
+        compareString = addon.Functions.presentation.compareString,
+    },
 }
 
-local platform=addon.Platform
-local function observe(cache,method,...)
+addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
+
+addon.builtinCallbackBindings["Conditions/totem.lua"] = {
+    ["Functions.collections.keys"] = "builtin:Functions/collections.lua:keys",
+    ["Functions.values.compare"] = "builtin:utils.lua:compare",
+    ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
+    ["Functions.presentation.compareString"] = "builtin:utils.lua:compareString",
+}
+
+local platform = addon.Platform
+
+local function observe(cache, method, ...)
     return addon.getCached(cache,method,platform,...)
 end
-local function remaining(record,start)
+
+local function remaining(record, start)
     if not record.active then return 0 end
     return math.max(0,record.startTime+record.duration-(start or GetTime()))
 end
+
 local function element(value)
     return addon.IsConditionSpellID(value.spell) and value.spell<=4
 end
+
 local function amount(value)
     return type(value.value)=="number" and value.value==value.value and value.value>=0 and value.value<math.huge
         and type(value.operator)=="string" and addon.isin(addon.operators,value.operator)
 end
+
 local function specific(value)
     return addon.IsConditionSpellID(value.spell) and (value.ranked==nil or type(value.ranked)=="boolean")
 end
-local function findSpecific(value,cache,start,compareTime)
+
+local function findSpecific(value, cache, start, compareTime)
     local target,reason=observe(cache,platform.GetSpellInfo,value.spell)
     if not target then return nil,reason end
     local count,why=observe(cache,platform.GetTotemSlotCount)
@@ -73,7 +84,8 @@ end
 addon:RegisterCondition("TOTEM", {
     description = L["Totem Present"],
     icon = addon.Artwork.condition["TOTEM"],
-    fields = { spell = "number" }, requiredFields = { "spell" },
+    fields = { spell = "number" },
+    requiredFields = { "spell" },
     valid = function(_, value) return element(value) end,
     evaluate = function(value, cache, start)
         local record,reason=observe(cache,platform.GetTotemInfo,value.spell)
@@ -103,13 +115,14 @@ addon:RegisterCondition("TOTEM", {
     help = function(frame)
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Totem"] .. color.RESET .. " - " ..
             L["The elemental slot to check: Fire, Earth, Water or Air. Empty, zero-duration and expired totems do not match."]))
-    end
+    end,
 })
 
 addon:RegisterCondition("TOTEM_SPELL", {
     description = L["Specific Totem Present"],
     icon = addon.Artwork.condition["TOTEM_SPELL"],
-    fields = { spell = "number", ranked = "boolean" }, requiredFields = { "spell" },
+    fields = { spell = "number", ranked = "boolean" },
+    requiredFields = { "spell" },
     valid = function(_, value) return specific(value) end,
     evaluate = function(value, cache, start) return findSpecific(value,cache,start,false) end,
     print = function(_, value)
@@ -133,13 +146,14 @@ addon:RegisterCondition("TOTEM_SPELL", {
     help = function(frame)
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Totem"] .. color.RESET .. " - " ..
             L["The active totem to check. Unticked, Use this exact spell rank matches its localized name across ranks. Ticked, it requires the native spell ID; name-only observations are unavailable."]))
-    end
+    end,
 })
 
 addon:RegisterCondition("TOTEM_REMAIN", {
     description = L["Totem Time Remaining"],
     icon = addon.Artwork.condition["TOTEM_REMAIN"],
-    fields = { spell = "number", operator = "string", value = "number" }, requiredFields = { "spell", "operator", "value" },
+    fields = { spell = "number", operator = "string", value = "number" },
+    requiredFields = { "spell", "operator", "value" },
     valid = function(_, value) return element(value) and amount(value) end,
     evaluate = function(value, cache, start)
         local record,reason=observe(cache,platform.GetTotemInfo,value.spell)
@@ -179,13 +193,14 @@ addon:RegisterCondition("TOTEM_REMAIN", {
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Totem Time Remaining"], L["Seconds"],
             L["Compare the active totem's remaining seconds with this amount. An absent or expired totem does not match; unavailable observations stay unavailable."])
-    end
+    end,
 })
 
 addon:RegisterCondition("TOTEM_SPELL_REMAIN", {
     description = L["Specific Totem Time Remaining"],
     icon = addon.Artwork.condition["TOTEM_SPELL_REMAIN"],
-    fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" }, requiredFields = { "spell", "operator", "value" },
+    fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
+    requiredFields = { "spell", "operator", "value" },
     valid = function(_, value) return specific(value) and amount(value) end,
     evaluate = function(value, cache, start) return findSpecific(value,cache,start,true) end,
     print = function(_, value)
@@ -217,7 +232,7 @@ addon:RegisterCondition("TOTEM_SPELL_REMAIN", {
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Specific Totem Time Remaining"], L["Seconds"],
             L["Compare the active totem's remaining seconds with this amount. An absent or expired totem does not match; unavailable observations stay unavailable."])
-    end
+    end,
 })
 
 -- BEGIN GENERATED RM SOURCE BINDINGS

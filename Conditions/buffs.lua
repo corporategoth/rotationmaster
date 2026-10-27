@@ -1,5 +1,9 @@
 local addon_name, addon = ...
-local runtimeCondition=addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness('Conditions/buffs.lua') or function(_,definition)return definition end
+
+local runtimeCondition = addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness(
+    'Conditions/buffs.lua'
+)
+    or function(_, definition) return definition end
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
@@ -8,30 +12,37 @@ local helpers = addon.help_funcs
 
 -- Canonical pure leaves; aura observations, spell identity and rank stay owned
 -- by the existing aura services and field callbacks.
-local AuraLiteral={phrase=addon.Functions.presentation.phrase}
-local AuraSummary={phrase=addon.Functions.presentation.phrase,predicate=addon.Functions.presentation.predicate}
-local Functions={
-    collections={deepcopy=addon.Functions.collections.deepcopy},
-    values={isin=addon.Functions.values.isin},
-    presentation={nullable=addon.Functions.presentation.nullable,compareString=addon.Functions.presentation.compareString,playerize=addon.Functions.presentation.playerize},
-}
-addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
-addon.builtinCallbackBindings["Conditions/buffs.lua"]={
-    ["AuraLiteral.phrase"]="builtin:Functions/presentation.lua:phrase",
-    ["AuraSummary.phrase"]="builtin:Functions/presentation.lua:phrase",
-    ["AuraSummary.predicate"]="builtin:Functions/presentation.lua:predicate",
-    ["Functions.collections.deepcopy"]="builtin:Functions/collections.lua:deepcopy",
-    ["Functions.values.isin"]="builtin:utils.lua:isin",
-    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
-    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
-    ["Functions.presentation.playerize"]="builtin:utils.lua:playerize",
+local AuraLiteral = { phrase = addon.Functions.presentation.phrase }
+local AuraSummary = { phrase = addon.Functions.presentation.phrase, predicate = addon.Functions.presentation.predicate }
+
+local Functions = {
+    collections = { deepcopy = addon.Functions.collections.deepcopy },
+    values = { isin = addon.Functions.values.isin },
+    presentation = {
+        nullable = addon.Functions.presentation.nullable,
+        compareString = addon.Functions.presentation.compareString,
+        playerize = addon.Functions.presentation.playerize,
+    },
 }
 
-addon:RegisterCondition("BUFF", runtimeCondition('BUFF',{
-    requiredFields = {"unit","spell"},
+addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
+
+addon.builtinCallbackBindings["Conditions/buffs.lua"] = {
+    ["AuraLiteral.phrase"] = "builtin:Functions/presentation.lua:phrase",
+    ["AuraSummary.phrase"] = "builtin:Functions/presentation.lua:phrase",
+    ["AuraSummary.predicate"] = "builtin:Functions/presentation.lua:predicate",
+    ["Functions.collections.deepcopy"] = "builtin:Functions/collections.lua:deepcopy",
+    ["Functions.values.isin"] = "builtin:utils.lua:isin",
+    ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
+    ["Functions.presentation.compareString"] = "builtin:utils.lua:compareString",
+    ["Functions.presentation.playerize"] = "builtin:utils.lua:playerize",
+}
+
+addon:RegisterCondition("BUFF", runtimeCondition('BUFF', {
+    requiredFields = { "unit", "spell" },
     description = L["Buff Present"],
     icon = addon.Artwork.condition["BUFF"],
-    fields = { unit = "string", spell = {"string", "number"}, anyrank = "boolean", ownbuff = "boolean" },
+    fields = { unit = "string", spell = { "string", "number" }, anyrank = "boolean", ownbuff = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and value.spell ~= nil)
     end,
@@ -83,13 +94,20 @@ addon:RegisterCondition("BUFF", runtimeCondition('BUFF',{
         frame:AddChild(helpers.Gap())
         addon.layout_condition_spellnamewidget_help(frame)
         addon.layout_condition_aurarank_help(frame)
-    end
+    end,
 }))
 
 addon:RegisterCondition("BUFF_REMAIN", {
     description = L["Buff Time Remaining"],
     icon = addon.Artwork.condition["BUFF_REMAIN"],
-    fields = { unit = "string", spell = {"string", "number"}, anyrank = "boolean", ownbuff = "boolean", operator = "string", value = "number" },
+    fields = {
+        unit = "string",
+        spell = { "string", "number" },
+        anyrank = "boolean",
+        ownbuff = "boolean",
+        operator = "string",
+        value = "number",
+    },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and value.spell ~= nil and
                 value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
@@ -147,13 +165,20 @@ addon:RegisterCondition("BUFF_REMAIN", {
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Buff Time Remaining"], L["Seconds"],
             L["Remaining aura time is measured in seconds. Permanent auras have no expiration and do not satisfy a finite refresh threshold. An absent aura does not satisfy this condition. Restricted or unknown timing is unavailable, including under NOT."])
-    end
+    end,
 })
 
 addon:RegisterCondition("BUFF_STACKS", {
     description = L["Buff Stacks"],
     icon = addon.Artwork.condition["BUFF_STACKS"],
-    fields = { unit = "string", spell = {"string", "number"}, anyrank = "boolean", ownbuff = "boolean", operator = "string", value = "number" },
+    fields = {
+        unit = "string",
+        spell = { "string", "number" },
+        anyrank = "boolean",
+        ownbuff = "boolean",
+        operator = "string",
+        value = "number",
+    },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and value.spell ~= nil and
                 value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
@@ -210,7 +235,7 @@ addon:RegisterCondition("BUFF_STACKS", {
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Buff Stacks"], L["Stacks"],
             L["Compare the application count of a matching aura, including charges such as Earth Shield. An absent aura does not satisfy this condition; an unreadable count is unavailable."])
-    end
+    end,
 })
 
 addon:RegisterCondition("STEALABLE", {
@@ -237,12 +262,34 @@ addon:RegisterCondition("STEALABLE", {
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
-    end
+    end,
 })
 
 -- Source-owned configuration validators and optional notification facts.
 if addon.DeclareOwnedConditionRuntime then
-    addon:DeclareOwnedConditionRuntime('Conditions/buffs.lua',{ BUFF={pure=true,fact='aura',methods={'EvaluateAuraCondition'},platform={'GetAuraByIndex','ReadAuraField','GetSpellInfo','CanReadValue','GetClientInfo'},namespaces={C_UnitAuras={'GetAuraDataByIndex'},C_Spell={'GetSpellInfo'},C_Secrets={'HasSecretRestrictions'}},native={'UnitExists','UnitAura','C_UnitAuras','C_Spell','GetSpellInfo','issecretvalue','canaccessvalue','C_Secrets'}} })
+    addon:DeclareOwnedConditionRuntime('Conditions/buffs.lua', {
+        BUFF = {
+            pure = true,
+            fact = 'aura',
+            methods = { 'EvaluateAuraCondition' },
+            platform = { 'GetAuraByIndex', 'ReadAuraField', 'GetSpellInfo', 'CanReadValue', 'GetClientInfo' },
+            namespaces = {
+                C_UnitAuras = { 'GetAuraDataByIndex' },
+                C_Spell = { 'GetSpellInfo' },
+                C_Secrets = { 'HasSecretRestrictions' },
+            },
+            native = {
+                'UnitExists',
+                'UnitAura',
+                'C_UnitAuras',
+                'C_Spell',
+                'GetSpellInfo',
+                'issecretvalue',
+                'canaccessvalue',
+                'C_Secrets',
+            },
+        },
+    })
 end
 
 -- BEGIN GENERATED RM SOURCE BINDINGS

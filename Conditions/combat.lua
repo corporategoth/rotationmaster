@@ -1,33 +1,44 @@
 local addon_name, addon = ...
-local runtimeCondition=addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness('Conditions/combat.lua') or function(_,definition)return definition end
+
+local runtimeCondition = addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness(
+    'Conditions/combat.lua'
+)
+    or function(_, definition) return definition end
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color, tostring, tonumber, pairs = color, tostring, tonumber, pairs
 local helpers = addon.help_funcs
 
 -- Private canonical leaves preserve explicit saved-source dependency identities.
-local PetSummary={phrase=addon.Functions.presentation.phrase}
-local Functions={
-    collections={deepcopy=addon.Functions.collections.deepcopy,keys=addon.Functions.collections.keys},
-    values={compare=addon.Functions.values.compare,isin=addon.Functions.values.isin},
-    presentation={nullable=addon.Functions.presentation.nullable,playerize=addon.Functions.presentation.playerize,compareString=addon.Functions.presentation.compareString},
-    cache={getCached=addon.Functions.cache.getCached},
-}
-addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
-addon.builtinCallbackBindings["Conditions/combat.lua"]={
-    ["PetSummary.phrase"]="builtin:Functions/presentation.lua:phrase",
-    ["Functions.collections.deepcopy"]="builtin:Functions/collections.lua:deepcopy",
-    ["Functions.collections.keys"]="builtin:Functions/collections.lua:keys",
-    ["Functions.values.compare"]="builtin:utils.lua:compare",
-    ["Functions.values.isin"]="builtin:utils.lua:isin",
-    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
-    ["Functions.presentation.playerize"]="builtin:utils.lua:playerize",
-    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
-    ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
+local PetSummary = { phrase = addon.Functions.presentation.phrase }
+
+local Functions = {
+    collections = { deepcopy = addon.Functions.collections.deepcopy, keys = addon.Functions.collections.keys },
+    values = { compare = addon.Functions.values.compare, isin = addon.Functions.values.isin },
+    presentation = {
+        nullable = addon.Functions.presentation.nullable,
+        playerize = addon.Functions.presentation.playerize,
+        compareString = addon.Functions.presentation.compareString,
+    },
+    cache = { getCached = addon.Functions.cache.getCached },
 }
 
-addon:RegisterCondition("COMBAT", runtimeCondition('COMBAT',{
-    requiredFields = {"unit"},
+addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
+
+addon.builtinCallbackBindings["Conditions/combat.lua"] = {
+    ["PetSummary.phrase"] = "builtin:Functions/presentation.lua:phrase",
+    ["Functions.collections.deepcopy"] = "builtin:Functions/collections.lua:deepcopy",
+    ["Functions.collections.keys"] = "builtin:Functions/collections.lua:keys",
+    ["Functions.values.compare"] = "builtin:utils.lua:compare",
+    ["Functions.values.isin"] = "builtin:utils.lua:isin",
+    ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
+    ["Functions.presentation.playerize"] = "builtin:utils.lua:playerize",
+    ["Functions.presentation.compareString"] = "builtin:utils.lua:compareString",
+    ["Functions.cache.getCached"] = "builtin:utils.lua:getCached",
+}
+
+addon:RegisterCondition("COMBAT", runtimeCondition('COMBAT', {
+    requiredFields = { "unit" },
     description = L["In Combat"],
     icon = addon.Artwork.condition["COMBAT"],
     fields = { unit = "string" },
@@ -52,13 +63,13 @@ addon:RegisterCondition("COMBAT", runtimeCondition('COMBAT',{
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
-    end
+    end,
 }))
 
 addon:RegisterCondition("PET", {
     description = L["Have Pet"],
     icon = addon.Artwork.condition["PET"],
-    fields = { },
+    fields = {},
     valid = function()
         return true
     end,
@@ -110,13 +121,13 @@ addon:RegisterCondition("PET_NAME", {
     help = function(frame)
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. NAME .. color.RESET .. " - " ..
             "The name of the pet you have summoned."))
-    end
+    end,
 })
 
-addon:RegisterCondition("STEALTHED", runtimeCondition('STEALTHED',{
+addon:RegisterCondition("STEALTHED", runtimeCondition('STEALTHED', {
     description = L["Stealth"],
     icon = addon.Artwork.condition["STEALTHED"],
-    fields = { },
+    fields = {},
     valid = function()
         return true
     end,
@@ -134,7 +145,7 @@ addon:RegisterCondition("STEALTHED", runtimeCondition('STEALTHED',{
 addon:RegisterCondition("INCONTROL", {
     description = L["In Control"],
     icon = addon.Artwork.condition["INCONTROL"],
-    fields = { },
+    fields = {},
     valid = function()
         return true
     end,
@@ -206,7 +217,7 @@ addon:RegisterCondition("LOC_TYPE", {
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorpercentwidget_help(frame, L["Loss Of Control Type"], L["Seconds"],
             "How long until the loss of control expires.")
-    end
+    end,
 })
 
 addon:RegisterCondition("LOC_BLOCKED", {
@@ -274,13 +285,13 @@ addon:RegisterCondition("LOC_BLOCKED", {
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorpercentwidget_help(frame, L["Loss Of Control Blocked"], L["Seconds"],
             "How long until the loss of control expires.")
-    end
+    end,
 })
 
-addon:RegisterCondition("MOVING", runtimeCondition('MOVING',{
+addon:RegisterCondition("MOVING", runtimeCondition('MOVING', {
     description = L["Moving"],
     icon = addon.Artwork.condition["MOVING"],
-    fields = { },
+    fields = {},
     valid = function()
         return true
     end,
@@ -361,7 +372,7 @@ addon:RegisterCondition("THREAT", {
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["tanking, secure"] .. color.RESET .. " - " ..
             "You are currently tanking " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " and are " ..
             "not at risk of them switching targets at the moment.")))
-    end
+    end,
 })
 
 addon:RegisterCondition("THREAT_COUNT", {
@@ -424,11 +435,12 @@ addon:RegisterCondition("THREAT_COUNT", {
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText("Threat is measured only on units within a maximum measurable range. The maximum " ..
                 "range is set using Game Options -> Interface -> Game tab -> Names -> Nameplate Distance."))
-    end
+    end,
 })
 
 local character_class = select(2, UnitClass("player"))
-addon:RegisterCondition("FORM", runtimeCondition('FORM',{
+
+addon:RegisterCondition("FORM", runtimeCondition('FORM', {
     description = L["Shapeshift Form"],
     icon = addon.Artwork.condition["FORM"],
     fields = { value = "number", form = "number" },
@@ -578,11 +590,11 @@ addon:RegisterCondition("FORM", runtimeCondition('FORM',{
             color.GREEN .. L["humanoid"] .. color.RESET .. " can be used to indicate you are NOT shapeshifted."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(L["A form is chosen by its spell, so the condition keeps working as new forms are learned and on every client language. Any rank of the form matches. The list shows the forms on your stance bar, then your class's other forms on this client. A condition saved by stance bar slot keeps that slot until you choose a form. If the client cannot read the active form, the condition is unavailable, including under NOT."]))
-    end
+    end,
 }))
 
-addon:RegisterCondition("ATTACKABLE", runtimeCondition('ATTACKABLE',{
-    requiredFields = {"unit"},
+addon:RegisterCondition("ATTACKABLE", runtimeCondition('ATTACKABLE', {
+    requiredFields = { "unit" },
     description = L["Attackable"],
     icon = addon.Artwork.condition["ATTACKABLE"],
     fields = { unit = "string" },
@@ -606,7 +618,7 @@ addon:RegisterCondition("ATTACKABLE", runtimeCondition('ATTACKABLE',{
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
-    end
+    end,
 }))
 
 addon:RegisterCondition("ENEMY", {
@@ -633,7 +645,7 @@ addon:RegisterCondition("ENEMY", {
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
-    end
+    end,
 })
 
 addon:RegisterCondition("COMBAT_HISTORY", {
@@ -707,7 +719,7 @@ addon:RegisterCondition("COMBAT_HISTORY", {
             "Each combat action is treated separately.  Any combat action more than the setting of " .. color.BLUE ..
             L["Combat History Memory (seconds)"] .. color.RESET .. " in the primary Rotation Master configuration " ..
             "screen ago will not be available.")
-    end
+    end,
 })
 
 addon:RegisterCondition("COMBAT_HISTORY_TIME", {
@@ -793,7 +805,7 @@ addon:RegisterCondition("COMBAT_HISTORY_TIME", {
             "'is less than 3' means it happened within the last 3 seconds.  Each combat action is treated " ..
             "separately.  Combat actions older than " .. color.BLUE .. L["Combat History Memory (seconds)"] ..
             color.RESET .. " (set in the primary Rotation Master configuration screen) are not available.")
-    end
+    end,
 })
 
 addon:RegisterCondition("TIME_IN_COMBAT", {
@@ -833,12 +845,18 @@ addon:RegisterCondition("TIME_IN_COMBAT", {
         "value is set to 5, this condition will only be true if you have been in combat for less than 5 seconds, or if the " ..
         "operator is set to 'is greater than' and the value is set to 10, the condition will only be true if you have been in " ..
         "combat for more than 10 seconds. This is very useful for adjusting rotation priorities for openers vs. normal rotation")
-    end
+    end,
 })
 
 -- Source-owned configuration validators and optional notification facts.
 if addon.DeclareOwnedConditionRuntime then
-    addon:DeclareOwnedConditionRuntime('Conditions/combat.lua',{ COMBAT={pure=true},ATTACKABLE={pure=true},MOVING={pure=true},FORM={pure=false},STEALTHED={pure=true} })
+    addon:DeclareOwnedConditionRuntime('Conditions/combat.lua', {
+        COMBAT = { pure = true },
+        ATTACKABLE = { pure = true },
+        MOVING = { pure = true },
+        FORM = { pure = false },
+        STEALTHED = { pure = true },
+    })
 end
 
 -- BEGIN GENERATED RM SOURCE BINDINGS

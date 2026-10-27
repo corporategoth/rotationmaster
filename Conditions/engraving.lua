@@ -14,12 +14,14 @@ local platform = addon.Platform
 -- costs a table lookup. Without C_Engraving, on a realm without engraving or
 -- before the rune list has loaded, the condition is unavailable, including
 -- under NOT.
-local Functions={
-    presentation={nullable=addon.Functions.presentation.nullable},
+local Functions = {
+    presentation = { nullable = addon.Functions.presentation.nullable },
 }
-addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
-addon.builtinCallbackBindings["Conditions/engraving.lua"]={
-    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
+
+addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
+
+addon.builtinCallbackBindings["Conditions/engraving.lua"] = {
+    ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
 }
 
 local function identifier(value)
@@ -166,7 +168,7 @@ addon:RegisterCondition("RUNE_ENGRAVED", {
             L["Enter a spell the rune teaches, or the rune's own ID (its skill line ability ID) for a rune that teaches no spell. Entering one clears the other."]))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(L["Engraving exists only on Season of Discovery realms. Elsewhere, and until your runes have loaded after logging in, this condition is unavailable rather than false, including under NOT. The Phase 7 shoulder runes are not engravings and are not seen. This is not the Death Knight Rune condition."]))
-    end
+    end,
 })
 
 -- BEGIN GENERATED RM SOURCE BINDINGS

@@ -11,24 +11,28 @@ local helpers = addon.help_funcs
 -- unavailable (also under NOT); a readable "no" is an ordinary false. Stealth,
 -- being outdoors and having full control are their own older conditions
 -- (STEALTHED, OUTDOORS, INCONTROL), and "dead or ghost" of any unit is DEAD.
-local Functions={
-    values={isin=addon.Functions.values.isin},
-    cache={getCached=addon.Functions.cache.getCached},
+local Functions = {
+    values = { isin = addon.Functions.values.isin },
+    cache = { getCached = addon.Functions.cache.getCached },
 }
-addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
-addon.builtinCallbackBindings["Conditions/player_state.lua"]={
-    ["Functions.values.isin"]="builtin:utils.lua:isin",
-    ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
+
+addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
+
+addon.builtinCallbackBindings["Conditions/player_state.lua"] = {
+    ["Functions.values.isin"] = "builtin:utils.lua:isin",
+    ["Functions.cache.getCached"] = "builtin:utils.lua:getCached",
 }
 
 -- The states, in the order the editor lists them, and what each reads.
 local STATE_ORDER = { "mounted", "swimming", "flying", "falling", "resting", "dead", "ghost" }
+
 local function stateNames()
     return {
         mounted = L["Mounted"], swimming = L["Swimming"], flying = L["Flying"], falling = L["Falling"],
         resting = L["In a Rested Area"], dead = L["Dead"], ghost = L["Ghost"],
     }
 end
+
 local function statePhrase(state)
     if state == "mounted" then return L["you {{!are|are not}} mounted"]
     elseif state == "swimming" then return L["you {{!are|are not}} swimming"]

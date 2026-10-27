@@ -6,18 +6,23 @@ local helpers = addon.help_funcs
 
 -- Direct callback leaves use their owning modules; spell observation arguments,
 -- rank resolution and book-bank selection keep their existing contracts.
-local Functions={
-    values={isin=addon.Functions.values.isin,compare=addon.Functions.values.compare},
-    presentation={nullable=addon.Functions.presentation.nullable,compareString=addon.Functions.presentation.compareString},
-    cache={getCached=addon.Functions.cache.getCached},
+local Functions = {
+    values = { isin = addon.Functions.values.isin, compare = addon.Functions.values.compare },
+    presentation = {
+        nullable = addon.Functions.presentation.nullable,
+        compareString = addon.Functions.presentation.compareString,
+    },
+    cache = { getCached = addon.Functions.cache.getCached },
 }
-addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
-addon.builtinCallbackBindings["Conditions/petspell.lua"]={
-    ["Functions.values.isin"]="builtin:utils.lua:isin",
-    ["Functions.values.compare"]="builtin:utils.lua:compare",
-    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
-    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
-    ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
+
+addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
+
+addon.builtinCallbackBindings["Conditions/petspell.lua"] = {
+    ["Functions.values.isin"] = "builtin:utils.lua:isin",
+    ["Functions.values.compare"] = "builtin:utils.lua:compare",
+    ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
+    ["Functions.presentation.compareString"] = "builtin:utils.lua:compareString",
+    ["Functions.cache.getCached"] = "builtin:utils.lua:getCached",
 }
 
 addon:RegisterCondition("PETSPELL_AVAIL", {
@@ -57,7 +62,7 @@ addon:RegisterCondition("PETSPELL_AVAIL", {
     end,
     help = function(frame)
         addon.layout_condition_spellwidget_help(frame)
-    end
+    end,
 })
 
 addon:RegisterCondition("PETSPELL_RANGE", {
@@ -102,7 +107,7 @@ addon:RegisterCondition("PETSPELL_RANGE", {
     end,
     help = function(frame)
         addon.layout_condition_spellwidget_help(frame)
-    end
+    end,
 })
 
 addon:RegisterCondition("PETSPELL_COOLDOWN", {
@@ -156,7 +161,7 @@ addon:RegisterCondition("PETSPELL_COOLDOWN", {
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Pet Spell Cooldown"], L["Seconds"],
             "The number of seconds before you can cast " .. color.BLIZ_YELLOW .. L["Pet Spell"] .. color.RESET .. ".")
-    end
+    end,
 })
 
 addon:RegisterCondition("PETSPELL_REMAIN", {
@@ -212,7 +217,7 @@ addon:RegisterCondition("PETSPELL_REMAIN", {
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Pet Spell Recharge Time"], L["Seconds"],
             L["Seconds until the next spell charge. Full charges and inactive recharge timers report zero. Missing, restricted, or non-charge spell data stays unavailable."])
-    end
+    end,
 })
 
 addon:RegisterCondition("PETSPELL_CHARGES", {
@@ -263,7 +268,7 @@ addon:RegisterCondition("PETSPELL_CHARGES", {
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Pet Spell Charges"], L["Charges"],
             "The number of charges of " .. color.BLIZ_YELLOW .. L["Pet Spell"] .. color.RESET .. " currently active.")
-    end
+    end,
 })
 
 addon:RegisterCondition("PETSPELL_HISTORY", {
@@ -330,7 +335,7 @@ addon:RegisterCondition("PETSPELL_HISTORY", {
             "Each instance of the same spell cast is treated separately.  Any spell cast more than the setting " ..
             "of " .. color.BLUE .. L["Pet Spell History Memory (seconds)"] .. color.RESET .. " in the primary Rotation " ..
             "Master configuration screen ago will not be available.")
-    end
+    end,
 })
 
 addon:RegisterCondition("PETSPELL_HISTORY_TIME", {
@@ -405,7 +410,7 @@ addon:RegisterCondition("PETSPELL_HISTORY_TIME", {
             color.RESET .. " (by time).  Any spell cast more than the setting of " .. color.BLUE ..
             L["Pet Spell History Memory (seconds)"] .. color.RESET .. " in the primary Rotation Master configuration " ..
             "screen ago will not be available.")
-    end
+    end,
 })
 
 addon:RegisterCondition("PETSPELL_ACTIVE", {
@@ -445,7 +450,7 @@ addon:RegisterCondition("PETSPELL_ACTIVE", {
     end,
     help = function(frame)
         addon.layout_condition_spellwidget_help(frame)
-    end
+    end,
 })
 
 -- BEGIN GENERATED RM SOURCE BINDINGS

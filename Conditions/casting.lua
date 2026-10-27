@@ -1,5 +1,9 @@
 local addon_name, addon = ...
-local runtimeCondition=addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness('Conditions/casting.lua') or function(_,definition)return definition end
+
+local runtimeCondition = addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness(
+    'Conditions/casting.lua'
+)
+    or function(_, definition) return definition end
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
@@ -7,26 +11,33 @@ local helpers = addon.help_funcs
 
 -- Canonical callback leaves preserve the repaired observation contract and
 -- the original filtered unit choices, wording and validation semantics.
-local LiteralSummary={phrase=addon.Functions.presentation.phrase}
-local Functions={
-    values={isin=addon.Functions.values.isin,compare=addon.Functions.values.compare},
-    presentation={nullable=addon.Functions.presentation.nullable,compareString=addon.Functions.presentation.compareString,playerize=addon.Functions.presentation.playerize},
-    cache={getCached=addon.Functions.cache.getCached},
-    collections={deepcopy=addon.Functions.collections.deepcopy},
-}
-addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
-addon.builtinCallbackBindings["Conditions/casting.lua"]={
-    ["LiteralSummary.phrase"]="builtin:Functions/presentation.lua:phrase",
-    ["Functions.values.isin"]="builtin:utils.lua:isin",
-    ["Functions.values.compare"]="builtin:utils.lua:compare",
-    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
-    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
-    ["Functions.presentation.playerize"]="builtin:utils.lua:playerize",
-    ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
-    ["Functions.collections.deepcopy"]="builtin:Functions/collections.lua:deepcopy",
+local LiteralSummary = { phrase = addon.Functions.presentation.phrase }
+
+local Functions = {
+    values = { isin = addon.Functions.values.isin, compare = addon.Functions.values.compare },
+    presentation = {
+        nullable = addon.Functions.presentation.nullable,
+        compareString = addon.Functions.presentation.compareString,
+        playerize = addon.Functions.presentation.playerize,
+    },
+    cache = { getCached = addon.Functions.cache.getCached },
+    collections = { deepcopy = addon.Functions.collections.deepcopy },
 }
 
-addon:RegisterCondition("CASTING", runtimeCondition('CASTING',{
+addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
+
+addon.builtinCallbackBindings["Conditions/casting.lua"] = {
+    ["LiteralSummary.phrase"] = "builtin:Functions/presentation.lua:phrase",
+    ["Functions.values.isin"] = "builtin:utils.lua:isin",
+    ["Functions.values.compare"] = "builtin:utils.lua:compare",
+    ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
+    ["Functions.presentation.compareString"] = "builtin:utils.lua:compareString",
+    ["Functions.presentation.playerize"] = "builtin:utils.lua:playerize",
+    ["Functions.cache.getCached"] = "builtin:utils.lua:getCached",
+    ["Functions.collections.deepcopy"] = "builtin:Functions/collections.lua:deepcopy",
+}
+
+addon:RegisterCondition("CASTING", runtimeCondition('CASTING', {
     description = L["Casting"],
     icon = addon.Artwork.condition["CASTING"],
     fields = { unit = "string" },
@@ -54,13 +65,13 @@ addon:RegisterCondition("CASTING", runtimeCondition('CASTING',{
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
-    end
+    end,
 }))
 
 addon:RegisterCondition("CASTING_SPELL", {
     description = L["Specific Spell Casting"],
     icon = addon.Artwork.condition["CASTING_SPELL"],
-    fields = { unit = "string", spell = {"string", "number"}, ranked = "boolean" },
+    fields = { unit = "string", spell = { "string", "number" }, ranked = "boolean" },
     valid = function(_, value)
         -- A name (saved before spell IDs) or a spell ID picked in the editor.
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and value.spell ~= nil and
@@ -104,7 +115,7 @@ addon:RegisterCondition("CASTING_SPELL", {
         frame:AddChild(helpers.Gap())
         addon.layout_condition_spellnamewidget_help(frame)
         addon.layout_condition_castspell_help(frame)
-    end
+    end,
 })
 
 addon:RegisterCondition("CASTING_REMAIN", {
@@ -149,7 +160,7 @@ addon:RegisterCondition("CASTING_REMAIN", {
             color.RESET .. " is complete.  If the " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " is " ..
             "not currently casting, this condition will not be successful (regardless of the " ..
             color.BLIZ_YELLOW .. "Operator" .. color.RESET .. " used.)")
-    end
+    end,
 })
 
 -- Share of the cast done (0..1, shown as a percentage), from the same cached
@@ -196,7 +207,7 @@ addon:RegisterCondition("CASTING_PROGRESS", {
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorpercentwidget_help(frame, L["Cast Progress"], L["Progress"],
             (L["How much of the current cast of {unit} is done, from 0% when it starts to 100% when it completes. It follows haste and pushback, because it is measured against the cast's own start and end. If the unit is not casting, this condition is not successful, whatever the operator; if the cast's times cannot be read, it is unavailable, including under NOT."]:gsub("{unit}", color.BLIZ_YELLOW .. L["Unit"] .. color.RESET)))
-    end
+    end,
 })
 
 addon:RegisterCondition("CAST_INTERRUPTABLE", {
@@ -227,12 +238,12 @@ addon:RegisterCondition("CAST_INTERRUPTABLE", {
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
-    end
+    end,
 })
 
 -- Source-owned volatile observations; only configuration-only validators memoize.
 if addon.DeclareOwnedConditionRuntime then
-    addon:DeclareOwnedConditionRuntime('Conditions/casting.lua',{ CASTING={pure=true} })
+    addon:DeclareOwnedConditionRuntime('Conditions/casting.lua', { CASTING = { pure = true } })
 end
 
 -- BEGIN GENERATED RM SOURCE BINDINGS

@@ -7,14 +7,16 @@ local helpers = addon.help_funcs
 -- one observation is cached per evaluation. A missing API, an unreadable
 -- value or Assisted Combat being unavailable for this character is
 -- unavailable, including under NOT; "nothing suggested" is a real false.
-local Functions={
-    cache={getCached=addon.Functions.cache.getCached},
-    presentation={nullable=addon.Functions.presentation.nullable},
+local Functions = {
+    cache = { getCached = addon.Functions.cache.getCached },
+    presentation = { nullable = addon.Functions.presentation.nullable },
 }
-addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
-addon.builtinCallbackBindings["Conditions/assisted.lua"]={
-    ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
-    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
+
+addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
+
+addon.builtinCallbackBindings["Conditions/assisted.lua"] = {
+    ["Functions.cache.getCached"] = "builtin:utils.lua:getCached",
+    ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
 }
 
 addon:RegisterCondition("ASSISTED_SUGGESTION", {
@@ -58,7 +60,7 @@ addon:RegisterCondition("ASSISTED_SUGGESTION", {
         frame:AddChild(helpers.CreateText(L["Assisted Combat exists on Retail (and is declared on Forever). Where the game does not offer it, for this character or specialization, or the suggestion cannot be read, this condition is unavailable rather than false, including under NOT."]))
         frame:AddChild(helpers.Gap())
         addon.layout_condition_spellwidget_help(frame)
-    end
+    end,
 })
 
 -- Whether a spell is in this specialization's Assisted Combat rotation set
@@ -101,7 +103,7 @@ addon:RegisterCondition("ASSISTED_ROTATION_SPELL", {
         frame:AddChild(helpers.CreateText(L["The set is read again whenever your spells change, never guessed. Where the game does not offer Assisted Combat for this character or specialization, or the set cannot be read, this condition is unavailable rather than false, including under NOT."]))
         frame:AddChild(helpers.Gap())
         addon.layout_condition_spellwidget_help(frame)
-    end
+    end,
 })
 
 -- Whether the game offers Assisted Combat to this character and
@@ -112,7 +114,7 @@ addon:RegisterCondition("ASSISTED_ROTATION_SPELL", {
 addon:RegisterCondition("ASSISTED_AVAILABLE", {
     description = L["Assisted Combat Available"],
     icon = addon.Artwork.condition["ASSISTED_AVAILABLE"],
-    fields = { },
+    fields = {},
     valid = function()
         return true
     end,
@@ -128,7 +130,7 @@ addon:RegisterCondition("ASSISTED_AVAILABLE", {
         frame:AddChild(helpers.CreateText(L["Matches when the game offers Blizzard's Assisted Combat for your character and current specialization. When it does not (for example a specialization Blizzard has no Assisted Combat rotation for, or a client that declares the API but does not offer the feature), this is false, so a branch can fall back to your own steps."]))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(L["Unavailable only where the client has no Assisted Combat API or its answer cannot be read, including under NOT."]))
-    end
+    end,
 })
 
 -- BEGIN GENERATED RM SOURCE BINDINGS

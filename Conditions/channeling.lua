@@ -1,5 +1,9 @@
 local addon_name, addon = ...
-local runtimeCondition=addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness('Conditions/channeling.lua') or function(_,definition)return definition end
+
+local runtimeCondition = addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness(
+    'Conditions/channeling.lua'
+)
+    or function(_, definition) return definition end
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
@@ -7,26 +11,33 @@ local helpers = addon.help_funcs
 
 -- Canonical callback leaves preserve the repaired observation contract and
 -- the original filtered unit choices, wording and validation semantics.
-local LiteralSummary={phrase=addon.Functions.presentation.phrase}
-local Functions={
-    values={isin=addon.Functions.values.isin,compare=addon.Functions.values.compare},
-    presentation={nullable=addon.Functions.presentation.nullable,compareString=addon.Functions.presentation.compareString,playerize=addon.Functions.presentation.playerize},
-    cache={getCached=addon.Functions.cache.getCached},
-    collections={deepcopy=addon.Functions.collections.deepcopy},
-}
-addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
-addon.builtinCallbackBindings["Conditions/channeling.lua"]={
-    ["LiteralSummary.phrase"]="builtin:Functions/presentation.lua:phrase",
-    ["Functions.values.isin"]="builtin:utils.lua:isin",
-    ["Functions.values.compare"]="builtin:utils.lua:compare",
-    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
-    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
-    ["Functions.presentation.playerize"]="builtin:utils.lua:playerize",
-    ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
-    ["Functions.collections.deepcopy"]="builtin:Functions/collections.lua:deepcopy",
+local LiteralSummary = { phrase = addon.Functions.presentation.phrase }
+
+local Functions = {
+    values = { isin = addon.Functions.values.isin, compare = addon.Functions.values.compare },
+    presentation = {
+        nullable = addon.Functions.presentation.nullable,
+        compareString = addon.Functions.presentation.compareString,
+        playerize = addon.Functions.presentation.playerize,
+    },
+    cache = { getCached = addon.Functions.cache.getCached },
+    collections = { deepcopy = addon.Functions.collections.deepcopy },
 }
 
-addon:RegisterCondition("CHANNELING", runtimeCondition('CHANNELING',{
+addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
+
+addon.builtinCallbackBindings["Conditions/channeling.lua"] = {
+    ["LiteralSummary.phrase"] = "builtin:Functions/presentation.lua:phrase",
+    ["Functions.values.isin"] = "builtin:utils.lua:isin",
+    ["Functions.values.compare"] = "builtin:utils.lua:compare",
+    ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
+    ["Functions.presentation.compareString"] = "builtin:utils.lua:compareString",
+    ["Functions.presentation.playerize"] = "builtin:utils.lua:playerize",
+    ["Functions.cache.getCached"] = "builtin:utils.lua:getCached",
+    ["Functions.collections.deepcopy"] = "builtin:Functions/collections.lua:deepcopy",
+}
+
+addon:RegisterCondition("CHANNELING", runtimeCondition('CHANNELING', {
     description = L["Channeling"],
     icon = addon.Artwork.condition["CHANNELING"],
     fields = { unit = "string" },
@@ -54,13 +65,13 @@ addon:RegisterCondition("CHANNELING", runtimeCondition('CHANNELING',{
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
-    end
+    end,
 }))
 
 addon:RegisterCondition("CHANNELING_SPELL", {
     description = L["Specific Spell Channeling"],
     icon = addon.Artwork.condition["CHANNELING_SPELL"],
-    fields = { unit = "string", spell = {"string", "number"}, ranked = "boolean" },
+    fields = { unit = "string", spell = { "string", "number" }, ranked = "boolean" },
     valid = function(_, value)
         -- A name (saved before spell IDs) or a spell ID picked in the editor.
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and value.spell ~= nil and
@@ -104,7 +115,7 @@ addon:RegisterCondition("CHANNELING_SPELL", {
         frame:AddChild(helpers.Gap())
         addon.layout_condition_spellnamewidget_help(frame)
         addon.layout_condition_castspell_help(frame)
-    end
+    end,
 })
 
 addon:RegisterCondition("CHANNELING_REMAIN", {
@@ -149,7 +160,7 @@ addon:RegisterCondition("CHANNELING_REMAIN", {
             L["Unit"] .. color.RESET .. ".  If the " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " is " ..
             "not currently channeling, this condition will not be successful (regardless of the " ..
             color.BLIZ_YELLOW .. "Operator" .. color.RESET .. " used.)")
-    end
+    end,
 })
 
 -- Share of the channel done (0..1, shown as a percentage), from the same cached
@@ -196,7 +207,7 @@ addon:RegisterCondition("CHANNELING_PROGRESS", {
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorpercentwidget_help(frame, L["Channel Progress"], L["Progress"],
             (L["How much of the current channel of {unit} is done, from 0% when it starts to 100% when it ends. Ticks are evenly spaced through a channel, so tick N of a K-tick channel lands at N/K whatever your haste: to clip Mind Flay (3 ticks) after its second tick, use at least 66%. Pushback shortens a channel and the progress follows it. If the unit is not channeling, this condition is not successful, whatever the operator; if the channel's times cannot be read, it is unavailable, including under NOT."]:gsub("{unit}", color.BLIZ_YELLOW .. L["Unit"] .. color.RESET)))
-    end
+    end,
 })
 
 addon:RegisterCondition("CHANNEL_INTERRUPTABLE", {
@@ -227,39 +238,55 @@ addon:RegisterCondition("CHANNEL_INTERRUPTABLE", {
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
-    end
+    end,
 })
 
 -- Cold, one-time seed for profiles created before the progress conditions
 -- existed: add them to the Combat category once. Removing them later stays
 -- saved; new and reset profiles get them from the packaged defaults.
-local combatCategory="b3d7df2c-f257-4a2d-961e-66e49336d109"
+local combatCategory = "b3d7df2c-f257-4a2d-961e-66e49336d109"
+
 function addon:InitializeCastProgressConditions(_, db)
     local profile = db and db.profile
     if type(profile) ~= "table" or profile.castProgressConditionsSeeded then return end
+
     for _, category in ipairs(type(profile.condition_groups) == "table" and profile.condition_groups or {}) do
         if type(category) == "table" and category.id == combatCategory and type(category.conditions) == "table" then
-            for _, tag in ipairs({"CASTING_PROGRESS", "CHANNELING_PROGRESS"}) do
+            for _, tag in ipairs({ "CASTING_PROGRESS", "CHANNELING_PROGRESS" }) do
                 local found = false
-                for _, existing in ipairs(category.conditions) do if existing == tag then found = true;break end end
+
+                for _, existing in ipairs(category.conditions) do
+                    if existing == tag then
+                        found = true
+                        break
+                    end
+                end
+
                 if not found then category.conditions[#category.conditions + 1] = tag end
             end
         end
     end
+
     profile.castProgressConditionsSeeded = true
 end
+
 local seedOwner = {}
+
 function addon:InstallCastProgressConditions(db)
     if type(db) ~= "table" or type(db.RegisterCallback) ~= "function" then return end
-    for _, event in ipairs({"OnNewProfile", "OnProfileReset", "OnProfileChanged", "OnProfileCopied"}) do
-        db.RegisterCallback(seedOwner, event, function(_, currentDB) addon:InitializeCastProgressConditions(nil, currentDB) end)
+
+    for _, event in ipairs({ "OnNewProfile", "OnProfileReset", "OnProfileChanged", "OnProfileCopied" }) do
+        db.RegisterCallback(seedOwner, event, function(_, currentDB)
+            addon:InitializeCastProgressConditions(nil, currentDB)
+        end)
     end
+
     self:InitializeCastProgressConditions(nil, db)
 end
 
 -- Source-owned volatile observations; only configuration-only validators memoize.
 if addon.DeclareOwnedConditionRuntime then
-    addon:DeclareOwnedConditionRuntime('Conditions/channeling.lua',{ CHANNELING={pure=true} })
+    addon:DeclareOwnedConditionRuntime('Conditions/channeling.lua', { CHANNELING = { pure = true } })
 end
 
 -- BEGIN GENERATED RM SOURCE BINDINGS

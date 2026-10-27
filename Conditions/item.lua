@@ -5,23 +5,29 @@ local color = color
 local helpers = addon.help_funcs
 
 -- Select pure helpers from their actual owners for authored and cloned callbacks.
-local Functions={
-    values={isin=addon.Functions.values.isin},
-    presentation={nullable=addon.Functions.presentation.nullable,compareString=addon.Functions.presentation.compareString},
+local Functions = {
+    values = { isin = addon.Functions.values.isin },
+    presentation = {
+        nullable = addon.Functions.presentation.nullable,
+        compareString = addon.Functions.presentation.compareString,
+    },
 }
-local Summary={
-    phrase=addon.Functions.presentation.phrase,
-    predicate=addon.Functions.presentation.predicate,
+
+local Summary = {
+    phrase = addon.Functions.presentation.phrase,
+    predicate = addon.Functions.presentation.predicate,
 }
-local Literal={phrase=addon.Functions.presentation.phrase}
-addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
-addon.builtinCallbackBindings["Conditions/item.lua"]={
-    ["Functions.values.isin"]="builtin:utils.lua:isin",
-    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
-    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
-    ["Literal.phrase"]="builtin:Functions/presentation.lua:phrase",
-    ["Summary.phrase"]="builtin:Functions/presentation.lua:phrase",
-    ["Summary.predicate"]="builtin:Functions/presentation.lua:predicate",
+
+local Literal = { phrase = addon.Functions.presentation.phrase }
+addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
+
+addon.builtinCallbackBindings["Conditions/item.lua"] = {
+    ["Functions.values.isin"] = "builtin:utils.lua:isin",
+    ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
+    ["Functions.presentation.compareString"] = "builtin:utils.lua:compareString",
+    ["Literal.phrase"] = "builtin:Functions/presentation.lua:phrase",
+    ["Summary.phrase"] = "builtin:Functions/presentation.lua:phrase",
+    ["Summary.predicate"] = "builtin:Functions/presentation.lua:predicate",
 }
 
 local function itemHelp(frame)
@@ -55,7 +61,7 @@ end
 addon:RegisterCondition("EQUIPPED", {
     description = L["Have Item Equipped"],
     icon = addon.Artwork.condition["EQUIPPED"],
-    requiredFields={'item'},
+    requiredFields = { 'item' },
     fields = { item = { "string", { "string", "number" } } },
     valid = function(_, value)
         return addon:IsConditionItemReference(value.item) and (value.notcarrying==nil or type(value.notcarrying)=="boolean")
@@ -78,13 +84,13 @@ addon:RegisterCondition("EQUIPPED", {
     end,
     help = function(frame)
         itemHelp(frame)
-    end
+    end,
 })
 
 addon:RegisterCondition("CARRYING", {
     description = L["Have Item In Bags"],
     icon = addon.Artwork.condition["CARRYING"],
-    requiredFields={'item','operator','value'},
+    requiredFields = { 'item', 'operator', 'value' },
     fields = { item = { "string", { "string", "number" } }, operator = "string", value = "number" },
     valid = function(_, value)
         return (addon:IsConditionItemReference(value.item) and
@@ -120,13 +126,13 @@ addon:RegisterCondition("CARRYING", {
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Have Item In Bags"], L["Quantity"],
             "The quantity of " .. color.BLIZ_YELLOW .. L["Item"] .. color.RESET .. " you are carrying in your bags.")
-    end
+    end,
 })
 
 addon:RegisterCondition("ITEM", {
     description = L["Item Available"],
     icon = addon.Artwork.condition["ITEM"],
-    requiredFields={'item'},
+    requiredFields = { 'item' },
     fields = { item = { "string", { "string", "number" } }, notcarrying = "boolean" },
     valid = function(_, value)
         return addon:IsConditionItemReference(value.item) and (value.notcarrying==nil or type(value.notcarrying)=="boolean")
@@ -168,13 +174,13 @@ addon:RegisterCondition("ITEM", {
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Check If Not Carrying"] .. color.RESET .. " - " ..
                 "Check the availability of the first item in the item set as if you were carrying it, even " ..
                 "if you are not."))
-    end
+    end,
 })
 
 addon:RegisterCondition("ITEM_RANGE", {
     description = L["Item In Range"],
     icon = addon.Artwork.condition["ITEM_RANGE"],
-    requiredFields={'item'},
+    requiredFields = { 'item' },
     fields = { item = { "string", { "string", "number" } }, notcarrying = "boolean" },
     valid = function(_, value)
         return addon:IsConditionItemReference(value.item) and (value.notcarrying==nil or type(value.notcarrying)=="boolean")
@@ -214,7 +220,7 @@ addon:RegisterCondition("ITEM_RANGE", {
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Check If Not Carrying"] .. color.RESET .. " - " ..
                 "Check the availability of the first item in the item set as if you were carrying it, even " ..
                 "if you are not."))
-    end
+    end,
 })
 
 -- The trinket slots ITEM_COOLDOWN can read instead of a named item (inventory slots 13 and 14).
@@ -225,8 +231,14 @@ local TRINKET_SLOT_ORDER = { 13, 14 }
 addon:RegisterCondition("ITEM_COOLDOWN", {
     description = L["Item Cooldown"],
     icon = addon.Artwork.condition["ITEM_COOLDOWN"],
-    requiredFields={'operator','value'},
-    fields = { item = { "string", { "string", "number" } }, slot = "number", notcarrying = "boolean", operator = "string", value = "number" },
+    requiredFields = { 'operator', 'value' },
+    fields = {
+        item = { "string", { "string", "number" } },
+        slot = "number",
+        notcarrying = "boolean",
+        operator = "string",
+        value = "number",
+    },
     valid = function(_, value)
         local source
         if value.slot ~= nil then source = Functions.values.isin(TRINKET_SLOTS, value.slot) else source = addon:IsConditionItemReference(value.item) end
@@ -301,7 +313,7 @@ addon:RegisterCondition("ITEM_COOLDOWN", {
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Check If Not Carrying"] .. color.RESET .. " - " ..
                 "Check the availability of the first item in the item set as if you were carrying it, even " ..
                 "if you are not."))
-    end
+    end,
 })
 
 -- BEGIN GENERATED RM SOURCE BINDINGS

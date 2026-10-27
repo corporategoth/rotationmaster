@@ -1,5 +1,9 @@
 local addon_name, addon = ...
-local runtimeCondition=addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness('Conditions/bossmod.lua') or function(_,definition)return definition end
+
+local runtimeCondition = addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness(
+    'Conditions/bossmod.lua'
+)
+    or function(_, definition) return definition end
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local helpers = addon.help_funcs
@@ -7,25 +11,32 @@ local helpers = addon.help_funcs
 -- Boss-mod observations come from Integrations/encounters.lua: an event-fed
 -- cache of the selected boss mod's own callbacks. Reads never poll the boss
 -- mod. Without an enabled, loaded provider every predicate is unavailable.
-local Functions={
-    values={isin=addon.Functions.values.isin,compare=addon.Functions.values.compare},
-    presentation={nullable=addon.Functions.presentation.nullable,compareString=addon.Functions.presentation.compareString},
+local Functions = {
+    values = { isin = addon.Functions.values.isin, compare = addon.Functions.values.compare },
+    presentation = {
+        nullable = addon.Functions.presentation.nullable,
+        compareString = addon.Functions.presentation.compareString,
+    },
 }
-addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
-addon.builtinCallbackBindings["Conditions/bossmod.lua"]={
-    ["Functions.values.isin"]="builtin:utils.lua:isin",
-    ["Functions.values.compare"]="builtin:utils.lua:compare",
-    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
-    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
+
+addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
+
+addon.builtinCallbackBindings["Conditions/bossmod.lua"] = {
+    ["Functions.values.isin"] = "builtin:utils.lua:isin",
+    ["Functions.values.compare"] = "builtin:utils.lua:compare",
+    ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
+    ["Functions.presentation.compareString"] = "builtin:utils.lua:compareString",
 }
 
 local function validID(value)
     return type(value) == "number" and value > 0 and value < 2^31 and value % 1 == 0
 end
+
 local function validCompare(value)
     return value.operator ~= nil and Functions.values.isin(addon.operators, value.operator)
         and type(value.value) == "number" and value.value >= 0 and value.value < math.huge
 end
+
 local function idEditor(parent, label, current, changed)
     local edit = addon:CreateConditionEditBox()
     edit:SetFullWidth(true)
@@ -39,12 +50,14 @@ local function idEditor(parent, label, current, changed)
     parent:AddChild(edit)
     return edit
 end
+
 local function note(parent, text)
     local label = addon:CreateConditionLabel()
     label:SetFullWidth(true)
     label:SetText(text)
     parent:AddChild(label)
 end
+
 -- Authoring aid: what the selected boss mod is reporting right now.
 local function encounterNote()
     if type(addon.GetBossModEncounter) ~= "function" then return string.format(L["Boss mod data unavailable: %s"], "adapter-unavailable") end
@@ -53,6 +66,7 @@ local function encounterNote()
     if not active then return L["No boss-mod encounter is in progress."] end
     return string.format(L["Current encounter: %s (ID %s), stage %s"], detail or L["Unknown"], id and tostring(id) or L["none"], tostring(stage))
 end
+
 local function timerNote()
     if type(addon.ListBossModTimers) ~= "function" then return string.format(L["Boss mod data unavailable: %s"], "adapter-unavailable") end
     local rows = addon:ListBossModTimers(6)
@@ -170,45 +184,65 @@ addon:RegisterCondition("BOSSMOD_TIMER", runtimeCondition('BOSSMOD_TIMER', {
 -- Cold, one-time seed for profiles created before these predicates existed:
 -- add them to the Combat category and Switch picker once. Removing them later
 -- stays saved; new and reset profiles get them from the packaged defaults.
-local combatCategory="b3d7df2c-f257-4a2d-961e-66e49336d109"
+local combatCategory = "b3d7df2c-f257-4a2d-961e-66e49336d109"
+
 function addon:InitializeBossModConditions(_, db)
     local profile = db and db.profile
     if type(profile) ~= "table" or profile.bossModConditionsSeeded then return end
+
     local function append(list, tags)
         if type(list) ~= "table" then return end
+
         for _, tag in ipairs(tags) do
             local found = false
-            for _, existing in ipairs(list) do if existing == tag then found = true;break end end
+
+            for _, existing in ipairs(list) do
+                if existing == tag then
+                    found = true
+                    break
+                end
+            end
+
             if not found then list[#list + 1] = tag end
         end
     end
-    append(profile.switch_conditions, {"BOSSMOD_ENCOUNTER", "BOSSMOD_STAGE"})
+
+    append(profile.switch_conditions, { "BOSSMOD_ENCOUNTER", "BOSSMOD_STAGE" })
+
     for _, category in ipairs(type(profile.condition_groups) == "table" and profile.condition_groups or {}) do
         if type(category) == "table" and category.id == combatCategory then
-            append(category.conditions, {"BOSSMOD_ENCOUNTER", "BOSSMOD_STAGE", "BOSSMOD_TIMER"})
+            append(category.conditions, { "BOSSMOD_ENCOUNTER", "BOSSMOD_STAGE", "BOSSMOD_TIMER" })
         end
     end
+
     profile.bossModConditionsSeeded = true
 end
+
 local seedOwner = {}
+
 function addon:InstallBossModConditions(db)
     if type(db) ~= "table" or type(db.RegisterCallback) ~= "function" then return end
-    for _, event in ipairs({"OnNewProfile", "OnProfileReset", "OnProfileChanged", "OnProfileCopied"}) do
-        db.RegisterCallback(seedOwner, event, function(_, currentDB) addon:InitializeBossModConditions(nil, currentDB) end)
+
+    for _, event in ipairs({ "OnNewProfile", "OnProfileReset", "OnProfileChanged", "OnProfileCopied" }) do
+        db.RegisterCallback(seedOwner, event, function(_, currentDB)
+            addon:InitializeBossModConditions(nil, currentDB)
+        end)
     end
+
     self:InitializeBossModConditions(nil, db)
 end
 
 if addon.DeclareConditionRuntimeHelper then
-    addon:DeclareConditionRuntimeHelper('GetBossModEncounter',addon.GetBossModEncounter)
-    addon:DeclareConditionRuntimeHelper('GetBossModTimerRemaining',addon.GetBossModTimerRemaining)
+    addon:DeclareConditionRuntimeHelper('GetBossModEncounter', addon.GetBossModEncounter)
+    addon:DeclareConditionRuntimeHelper('GetBossModTimerRemaining', addon.GetBossModTimerRemaining)
 end
+
 -- Validation is pure; results change with provider callbacks, so no fact is declared.
 if addon.DeclareOwnedConditionRuntime then
-    addon:DeclareOwnedConditionRuntime('Conditions/bossmod.lua',{
-        BOSSMOD_ENCOUNTER={pure=true,methods={'GetBossModEncounter'}},
-        BOSSMOD_STAGE={pure=true,methods={'GetBossModEncounter'}},
-        BOSSMOD_TIMER={pure=true,methods={'GetBossModTimerRemaining'}},
+    addon:DeclareOwnedConditionRuntime('Conditions/bossmod.lua', {
+        BOSSMOD_ENCOUNTER = { pure = true, methods = { 'GetBossModEncounter' } },
+        BOSSMOD_STAGE = { pure = true, methods = { 'GetBossModEncounter' } },
+        BOSSMOD_TIMER = { pure = true, methods = { 'GetBossModTimerRemaining' } },
     })
 end
 

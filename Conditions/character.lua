@@ -1,5 +1,9 @@
 local addon_name, addon = ...
-local runtimeCondition=addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness('Conditions/character.lua') or function(_,definition)return definition end
+
+local runtimeCondition = addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness(
+    'Conditions/character.lua'
+)
+    or function(_, definition) return definition end
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
@@ -8,22 +12,28 @@ local unit_class_num
 
 -- Snapshot only the explicit pure/cache leaves used by these callbacks.
 -- Native observations, source variants and captured class values stay intact.
-local Functions={
-    values={isin=addon.Functions.values.isin,compare=addon.Functions.values.compare},
-    presentation={nullable=addon.Functions.presentation.nullable,compareString=addon.Functions.presentation.compareString,playerize=addon.Functions.presentation.playerize},
-    cache={getCached=addon.Functions.cache.getCached},
-    collections={deepcopy=addon.Functions.collections.deepcopy,keys=addon.Functions.collections.keys},
+local Functions = {
+    values = { isin = addon.Functions.values.isin, compare = addon.Functions.values.compare },
+    presentation = {
+        nullable = addon.Functions.presentation.nullable,
+        compareString = addon.Functions.presentation.compareString,
+        playerize = addon.Functions.presentation.playerize,
+    },
+    cache = { getCached = addon.Functions.cache.getCached },
+    collections = { deepcopy = addon.Functions.collections.deepcopy, keys = addon.Functions.collections.keys },
 }
-addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
-addon.builtinCallbackBindings["Conditions/character.lua"]={
-    ["Functions.values.isin"]="builtin:utils.lua:isin",
-    ["Functions.values.compare"]="builtin:utils.lua:compare",
-    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
-    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
-    ["Functions.presentation.playerize"]="builtin:utils.lua:playerize",
-    ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
-    ["Functions.collections.deepcopy"]="builtin:Functions/collections.lua:deepcopy",
-    ["Functions.collections.keys"]="builtin:Functions/collections.lua:keys",
+
+addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
+
+addon.builtinCallbackBindings["Conditions/character.lua"] = {
+    ["Functions.values.isin"] = "builtin:utils.lua:isin",
+    ["Functions.values.compare"] = "builtin:utils.lua:compare",
+    ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
+    ["Functions.presentation.compareString"] = "builtin:utils.lua:compareString",
+    ["Functions.presentation.playerize"] = "builtin:utils.lua:playerize",
+    ["Functions.cache.getCached"] = "builtin:utils.lua:getCached",
+    ["Functions.collections.deepcopy"] = "builtin:Functions/collections.lua:deepcopy",
+    ["Functions.collections.keys"] = "builtin:Functions/collections.lua:keys",
 }
 
 addon:RegisterCondition("ISSAME", {
@@ -55,7 +65,7 @@ addon:RegisterCondition("ISSAME", {
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
-    end
+    end,
 })
 
 addon:RegisterCondition("CLASS", {
@@ -105,10 +115,11 @@ addon:RegisterCondition("CLASS", {
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Class"] .. color.RESET .. " - " ..
             "The character class of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. "."))
-    end
+    end,
 })
 
 local character_class = select(2, UnitClass("player"))
+
 addon:RegisterCondition("CLASS_GROUP", {
     description = L["Class In Group"],
     icon = addon.Artwork.condition["CLASS_GROUP"],
@@ -172,12 +183,10 @@ addon:RegisterCondition("CLASS_GROUP", {
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Count"], L["Count"],
                 "Number of party or raid members of the desired class.")
-    end
+    end,
 })
 
 if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
-
-
     addon:RegisterCondition("ROLE", {
         builtinSourceVariant = "inspect",
         description = L["Role"],
@@ -233,11 +242,9 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
                 "The primary damage dealers against enemies, and lovers of standing in fire.")))
             frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Healer"] .. color.RESET .. " - " ..
                 "Those who keep everyone else alive by healing them.  Thank them!")))
-        end
+        end,
     })
 else
-
-
     if LE_EXPANSION_LEVEL_CURRENT >= 2 then
         addon:RegisterCondition("ROLE", {
             builtinSourceVariant = "talent",
@@ -284,13 +291,14 @@ else
                         "The primary damage dealers against enemies, and lovers of standing in fire.")))
                 frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Healer"] .. color.RESET .. " - " ..
                         "Those who keep everyone else alive by healing them.  Thank them!")))
-            end
+            end,
         })
     end
 end
 
 if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or LE_EXPANSION_LEVEL_CURRENT >= 2) then
     unit_class_num = select(3, UnitClass("player"))
+
     addon:RegisterCondition("GLYPH", {
         description = L["Glyph"],
         icon = addon.Artwork.condition["GLYPH"],
@@ -348,7 +356,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or LE_EXPANSION_LEVEL_CURRENT >= 2) t
                 "The glyph, entered as its item ID or item name; the icon beside the field shows the glyph " ..
                 "selected.  Only glyphs of your class are accepted.  The condition matches while that glyph " ..
                 "is active in one of your glyph sockets."))
-        end
+        end,
     })
 end
 
@@ -397,7 +405,7 @@ addon:RegisterCondition("CREATURE", {
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Creature Type"] .. color.RESET .. " - " ..
                 "The creature type of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ".  This " ..
                 "can be used to create conditions that are restricted by creature type (eg. Banish)."))
-    end
+    end,
 })
 
 addon:RegisterCondition("CLASSIFICATION", {
@@ -448,11 +456,11 @@ addon:RegisterCondition("CLASSIFICATION", {
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Unit Classification"] .. color.RESET .. " - " ..
                 "The classification of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ".  This " ..
                 "can be used to create conditions that only apply to certain unit classifications (eg. bosses)."))
-    end
+    end,
 })
 
-addon:RegisterCondition("LEVEL", runtimeCondition('LEVEL',{
-    requiredFields = {"unit","operator","value"},
+addon:RegisterCondition("LEVEL", runtimeCondition('LEVEL', {
+    requiredFields = { "unit", "operator", "value" },
     description = L["Level"],
     icon = addon.Artwork.condition["LEVEL"],
     fields = { unit = "string", operator = "string", value = "number", relative = "boolean" },
@@ -516,7 +524,7 @@ addon:RegisterCondition("LEVEL", runtimeCondition('LEVEL',{
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Level"], L["Level"],
                 "The level " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. "'s level is compared with.")
-    end
+    end,
 }))
 
 addon:RegisterCondition("GROUP", {
@@ -574,27 +582,27 @@ addon:RegisterCondition("GROUP", {
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Help.GROUP.unit"]))
         frame:AddChild(helpers.CreateText(L["Help.GROUP.raid"]))
-    end
+    end,
 })
 
 if MI2_GetMobData then
-addon:RegisterCondition("RUNNER", {
-    description = L["Runner"],
-    icon = addon.Artwork.condition["RUNNER"],
-    fields = { unit = "string" },
-    valid = function(_, value)
+    addon:RegisterCondition("RUNNER", {
+        description = L["Runner"],
+        icon = addon.Artwork.condition["RUNNER"],
+        fields = { unit = "string" },
+        valid = function(_, value)
         return value.unit ~= nil and Functions.values.isin(addon.units, value.unit)
     end,
-    evaluate = function(value, cache)
+        evaluate = function(value, cache)
         local observation,reason=addon.Platform:GetMobInfo2Observation(value.unit,"runner",nil,cache)
         if observation==nil then return nil,reason end
         if not observation.exists or observation.recorded==false then return false end
         return observation.runner
     end,
-    print = function(_, value)
+        print = function(_, value)
         return string.format(L["%s {{!will|will not}} run"], Functions.presentation.nullable(addon.units[value.unit]), Functions.presentation.nullable(addon.units[value.otherunit]))
     end,
-    widget = function(parent, spec, value)
+        widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
@@ -603,37 +611,37 @@ addon:RegisterCondition("RUNNER", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
     end,
-    help = function(frame)
+        help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.RED .. "This condition uses data from the MobInfo2 addon.  As such " ..
                 "it relies on previous interactions with the type of mob in question, which may be inaccurate. " ..
                 "Additionally, until you encounter the mob at least once, this condition will always be false."))
-    end
-})
+    end,
+    })
 
-addon:RegisterCondition("RESIST", {
-    description = L["Resistant"],
-    icon = addon.Artwork.condition["RESIST"],
-    fields = { unit = "string", school = "string", operator = "string", value = "number" },
-    valid = function(_, value)
+    addon:RegisterCondition("RESIST", {
+        description = L["Resistant"],
+        icon = addon.Artwork.condition["RESIST"],
+        fields = { unit = "string", school = "string", operator = "string", value = "number" },
+        valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit)) and
                (value.school ~= nil and Functions.values.isin(addon.spell_schools, value.school)) and
                (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator)) and
                (value.value ~= nil and value.value >= 0.00 and value.value <= 1.00)
     end,
-    evaluate = function(value, cache)
+        evaluate = function(value, cache)
         local observation,reason=addon.Platform:GetMobInfo2Observation(value.unit,"resist",value.school,cache)
         if observation==nil then return nil,reason end
         if not observation.exists or observation.recorded==false then return false end
         return Functions.values.compare(value.operator,observation.ratio,value.value)
     end,
-    print = function(_, value)
+        print = function(_, value)
         return Functions.presentation.compareString(value.operator, string.format(L["%s resistance to %s"],
                 Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"]), Functions.presentation.nullable(addon.spell_schools[value.school], L["<school>"])),
                 Functions.presentation.nullable(value.value and value.value * 100 or nil) .. '%')
     end,
-    widget = function(parent, spec, value)
+        widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
@@ -660,7 +668,7 @@ addon:RegisterCondition("RESIST", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
-    help = function(frame)
+        help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Spell School"] .. color.RESET .. " - " ..
@@ -673,18 +681,18 @@ addon:RegisterCondition("RESIST", {
         frame:AddChild(helpers.CreateText(color.RED .. "This condition uses data from the MobInfo2 addon.  As such " ..
                 "it relies on previous interactions with the type of mob in question, which may be inaccurate. " ..
                 "Additionally, until you encounter the mob at least once, this condition will always be false."))
-    end
-})
+    end,
+    })
 
-addon:RegisterCondition("IMMUNE", {
-    description = L["Immune"],
-    icon = addon.Artwork.condition["IMMUNE"],
-    fields = { unit = "string", school = "string", partial = "boolean" },
-    valid = function(_, value)
+    addon:RegisterCondition("IMMUNE", {
+        description = L["Immune"],
+        icon = addon.Artwork.condition["IMMUNE"],
+        fields = { unit = "string", school = "string", partial = "boolean" },
+        valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit)) and
                 (value.school ~= nil and Functions.values.isin(addon.spell_schools, value.school))
     end,
-    evaluate = function(value, cache)
+        evaluate = function(value, cache)
         local observation,reason=addon.Platform:GetMobInfo2Observation(value.unit,"immune",value.school,cache)
         if observation==nil then return nil,reason end
         if not observation.exists or observation.recorded==false then return false end
@@ -692,7 +700,7 @@ addon:RegisterCondition("IMMUNE", {
         if observation.hits==nil then return nil,observation.hitsReason end
         return observation.hits < 1
     end,
-    print = function(_, value)
+        print = function(_, value)
         local template
         if value.partial then
             template = Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} sometimes immune to %s"], L["%s {{!is|is not}} sometimes immune to %s"])
@@ -702,7 +710,7 @@ addon:RegisterCondition("IMMUNE", {
         return string.format(template,
                 Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]), Functions.presentation.nullable(addon.spell_schools[value.school], L["<school>"]))
     end,
-    widget = function(parent, spec, value)
+        widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
@@ -735,7 +743,7 @@ addon:RegisterCondition("IMMUNE", {
         end)
         parent:AddChild(partial)
     end,
-    help = function(frame)
+        help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Spell School"] .. color.RESET .. " - " ..
@@ -747,13 +755,22 @@ addon:RegisterCondition("IMMUNE", {
         frame:AddChild(helpers.CreateText(color.RED .. "This condition uses data from the MobInfo2 addon.  As such " ..
                 "it relies on previous interactions with the type of mob in question, which may be inaccurate. " ..
                 "Additionally, until you encounter the mob at least once, this condition will always be false."))
-    end
-})
+    end,
+    })
 end
 
 -- Source-owned configuration validators and optional notification facts.
 if addon.DeclareOwnedConditionRuntime then
-    addon:DeclareOwnedConditionRuntime('Conditions/character.lua',{ LEVEL={pure=true,fact='level',methods={'GetConditionUnitLevel'},platform={'GetUnitLevelObservation','CanReadValue','GetClientInfo'},namespaces={C_Secrets={'HasSecretRestrictions'}},native={'UnitLevel','UnitExists','issecretvalue','canaccessvalue','C_Secrets'}} })
+    addon:DeclareOwnedConditionRuntime('Conditions/character.lua', {
+        LEVEL = {
+            pure = true,
+            fact = 'level',
+            methods = { 'GetConditionUnitLevel' },
+            platform = { 'GetUnitLevelObservation', 'CanReadValue', 'GetClientInfo' },
+            namespaces = { C_Secrets = { 'HasSecretRestrictions' } },
+            native = { 'UnitLevel', 'UnitExists', 'issecretvalue', 'canaccessvalue', 'C_Secrets' },
+        },
+    })
 end
 
 -- BEGIN GENERATED RM SOURCE BINDINGS
