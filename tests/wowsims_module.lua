@@ -381,8 +381,16 @@ local WINDOW_WORDS = {'WowSims', 'Format', 'Check export', 'WowSims has no simul
     'Copy this text to use it in WowSims, or paste WowSims JSON here to import it.', 'Format changed. Preview the pasted text again before importing.',
     'WowSims export report', 'WowSims import report', 'Rotation Master has no such condition', 'Help.Transfers.rotation_format',
     'The Format choice could not be shown: %s', 'The WowSims export is too long for this box (%d characters), so it cannot be shown here.'}
+-- A language's text is spread over the main catalog and the load-on-demand bundles (Locales/bundles.json).
+local function loadCatalogs(locale)
+    local merged = {}
+    for _, english in ipairs(dofile('tests/fixtures/locale_files.lua')) do
+        for key, value in pairs(loadLocale((english:gsub('enUS%.lua$', locale .. '.lua')))) do merged[key] = value end
+    end
+    return merged
+end
 test('every word a report or failure can show is in the English locale, and in the other ten', function()
-    local english = loadLocale('Locales/enUS.lua')
+    local english = loadCatalogs('enUS')
     local locales = {'deDE', 'esES', 'esMX', 'frFR', 'itIT', 'koKR', 'ptBR', 'ruRU', 'zhCN', 'zhTW'}
     local required = {}
     for _, message in ipairs(ns.api.messages()) do required[#required + 1] = message end
@@ -392,7 +400,7 @@ test('every word a report or failure can show is in the English locale, and in t
     for _, key in ipairs(required) do if english[key] == nil then missing[#missing + 1] = 'enUS: ' .. key end end
     assert(#missing == 0, table.concat(missing, '\n'))
     for _, locale in ipairs(locales) do
-        local entries = loadLocale('Locales/' .. locale .. '.lua')
+        local entries = loadCatalogs(locale)
         local gone, same = {}, 0
         for _, key in ipairs(required) do
             if entries[key] == nil then gone[#gone + 1] = key

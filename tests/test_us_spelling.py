@@ -45,6 +45,7 @@ BRITISH = re.compile(
     + r')\b', re.I)
 
 SKIP = ('Libs/', 'LibsAugment/', 'tests/', 'Locales/')
+TRANSLATIONS = ('deDE', 'esES', 'esMX', 'frFR', 'itIT', 'koKR', 'ptBR', 'ruRU', 'zhCN', 'zhTW')
 # Known exceptions, by file and literal. The capture status 'cancelled' is the
 # value OnCPUProfileFinished, OnCPURuntimeCaptureFinished and
 # OnMemoryCaptureFinished receive (and the report's first line); the
@@ -66,9 +67,12 @@ def lua_strings(source):
 
 def findings():
     found = []
+    # The English of every catalog (the main one and each load-on-demand text bundle), never the translations.
     sources = [ROOT / 'Locales/enUS.lua']
+    sources += sorted(ROOT.glob('Modules/*/enUS.lua'))
     sources += sorted(p for p in ROOT.rglob('*.lua')
-                      if not str(p.relative_to(ROOT)).startswith(SKIP) and '.tools' not in p.parts)
+                      if not str(p.relative_to(ROOT)).startswith(SKIP) and '.tools' not in p.parts
+                      and not (p.parent.parent.name == 'Modules' and p.stem in TRANSLATIONS + ('enUS',)))
     for path in sources:
         for line, text in lua_strings(path.read_text(encoding='utf-8')):
             for word in british(text):

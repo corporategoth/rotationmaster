@@ -2,67 +2,24 @@ local addon_name = ...
 
 local L = LibStub("AceLocale-3.0"):NewLocale(addon_name, "enUS", true)
 if not L then return end
-L['CPU capture complete. Use General > CPU report or /rm perf cpu report to view and copy it.'] = true
-L['Runtime capture complete. Use General > Runtime report or /rm perf runtime report to view and copy it.'] = true
-L['Memory capture complete. Use General > Memory report or /rm perf memory report to view and copy it.'] = true
-L['Usage: /rm perf cpu|runtime|memory [seconds|start|stop|report], or /rm perf probe'] = 'Usage: /rm perf cpu||runtime||memory [seconds||start||stop||report], or /rm perf probe'
-L['Capture stopped. Use /rm perf %s report to view and copy it.'] = true
-L['Capture started for %g seconds. Close configuration, then use /rm perf %s report.'] = true
-L['Choose a duration from 1 to %d seconds.'] = true
 L['/rm perf probe - Check native profiler access.'] = true
 L['/rm perf engine [lean|standard] - Show or choose the rotation evaluation engine.'] = '/rm perf engine [lean||standard] - Show or choose the rotation evaluation engine.'
-L['Usage: /rm perf engine [lean|standard]'] = 'Usage: /rm perf engine [lean||standard]'
-L['Evaluation engine: %s'] = true
-L['%s is running. Stop it or wait for completion.'] = true
-L['No %s report is available. Start a capture first.'] = true
-L['No %s is running.'] = true
-L['%s is unavailable: %s'] = true
 L['/rm perf cpu|runtime|memory [seconds|stop|report] - Capture performance observations.'] = '/rm perf cpu||runtime||memory [seconds||stop||report] - Capture performance observations.'
 L['Capture memory (10m)'] = true
 L['Memory report'] = true
 L['Stop memory capture'] = true
-L['Memory capture'] = true
-L['Memory capture started for 10 minutes. Normal polling is unchanged; attribution refreshes every 30 seconds and their cost is reported.'] = 'Memory capture started for 10 minutes. Normal polling is unchanged; attribution refreshes at capture start and completion, with their cost reported.'
-L['Memory capture is unavailable: %s'] = true
-L['Memory capture stopped. Open Memory report to copy the observations.'] = true
-L['Memory capture ended with unavailable observations. Open Memory report for details.'] = true
-L["Help.General.memory_capture"] = "Observe memory for ten minutes without changing polling or forcing garbage collection. /rm perf memory accepts 1–1800 seconds (default 600), plus stop and report. Whole-Lua heap is sampled each second; bounded retained counts every thirty seconds. Addon attribution refreshes only at start and completion; intermediate values are cached with unknown age. Stop completes the final boundary before you open the report. Refreshes can hitch, and their cost is reported. Heap decreases do not prove collection or a leak."
-L["Help.General.memory_report"] = "Open the copyable lifetime report: whole-heap range and decreases, start/end addon attribution, explicitly cached intermediate values, retained key/row counts and capture overhead. Counts are not bytes; unavailable and capped observations stay explicit. Viewing the report never resamples memory."
-L["Help.General.memory_stop"] = "Stop this explicit memory capture and retain its completed observations. Normal polling and garbage collection remain unchanged."
 L["Capture runtime (10s)"] = true
 L["Runtime report"] = true
-L["Runtime profile"] = true
-L["Runtime capture started for 10 seconds. Close configuration, then open Runtime report."] = true
-L["Runtime capture is unavailable: %s"] = true
-L["Runtime capture ended without complete measurements. Open Runtime report for details."] = true
-L["Help.General.cpu_runtime_capture"] = "Measure normal rotation evaluation calls for ten seconds with the native profiler. /rm perf runtime accepts 1–60 seconds (default 10), plus stop and report. The 512-dispatch safety limit can end a longer capture sooner. Polling stays unchanged. Stop finalizes partial measurements; the legacy Cancel capture action still cancels. Close configuration after starting. Instrumentation adds overhead; allocation is not retained memory or proof of a leak. Cumulative CPU captures cannot overlap this capture."
-L["Help.General.cpu_runtime_report"] = "Open the copyable runtime report: measured evaluation calls, native elapsed time and gross allocation/deallocation counters. Missing metrics remain unavailable. Measurement covers evaluation calls only, not all addon events or rendering. Reading the report does not sample gameplay."
 L["Report"] = true
-L["CPU profile"] = true
 L["Capture CPU (10s)"] = true
 L["CPU report"] = true
-L["Native profiler probe"] = true
-L["Callback arguments"] = true
-L["Callback calls"] = true
-L["Callback returns"] = true
-L["Capability probe only; no evaluator or gameplay was measured."] = true
-L["Native profiler probe is already running."] = true
-L["Native profiler probe is unavailable while CPU capture is running."] = true
-L["Native profiler probe is unavailable."] = true
-L["call completed"] = true
-L["call failed"] = true
 L["disabled"] = true
 L["enabled"] = true
 L["exact"] = true
-L["malformed"] = true
 L["mismatch"] = true
-L["more than one"] = true
-L["not run"] = true
 L["present"] = true
 L["restricted"] = true
-L["unavailable (context changed)"] = true
 L["Bypass observation cache (reload required)"] = true
-L["Enable observation cache"] = true
 L["Enable observation cache (reload required)"] = true
 L["Enable observation cache (pending)"] = true
 L["Observation caching can reduce repeated lookups but increases table allocations. Off by default; reload to change the running mode."] = true
@@ -71,22 +28,8 @@ L["cached"] = true
 L["direct"] = true
 L["Cache diagnostic saved for the next reload. Active mode: %s."] = true
 L["Cache diagnostic is unavailable."] = true
-L["Help.General.cpu_cache_bypass"] = "Optional reuse of repeated getCached and getRetryCached lookups. Observation caching is off by default to reduce table allocations; enabling it can help conditions that repeat the same lookup. Compiled condition facts are independent of this option. The checkbox shows the saved choice for the next reload. Pending means it differs from the running mode. Use /reload to apply it; no full game restart is needed. This choice saves immediately without applying or discarding other pending settings."
 L["Cancel capture"] = true
-L["CPU capture requires WoW scriptProfile to be enabled before a reload. RM does not change this setting."] = true
-L["CPU capture is running. Open the report after it finishes."] = true
-L["No CPU capture is available. Start a capture first."] = true
-L["No CPU capture is running."] = true
-L["CPU capture is unavailable: %s"] = true
-L["CPU capture started for 10 seconds. Close configuration to measure normal gameplay, then open CPU report."] = true
-L["CPU capture canceled."] = true
-L["CPU capture could not produce valid measurements. Open CPU report for details."] = true
-L["Help.General.cpu_capture"] = "Capture native cumulative function CPU costs and call counts for ten seconds. /rm perf cpu starts the same capture; /rm perf cpu 30 chooses 30 seconds (range 1–60). /rm perf cpu stop finalizes partial counters; /rm perf cpu report opens the copyable result. Capture uses live settings and does not apply pending changes. Close configuration after starting. WoW scriptProfile must already be enabled before a reload; RM never changes it or resets shared counters. Profiling itself adds overhead."
-L["Help.General.cpu_report"] = "Open a selectable, copyable report with total addon CPU, measured function costs and calls, sample boundaries, and unavailable or replaced functions. Inclusive costs overlap and must not be added together. Boundary state does not prove configuration or combat stayed unchanged throughout the capture. Untracked functions and native work may account for remaining costs."
-L["Help.General.cpu_cancel"] = "Cancel the active diagnostic capture without changing settings, gameplay polling, or shared profiler counters."
-L["Help.General.cpu_probe"] = "Run one inert callback to check native CPU profiler capabilities and open a copyable report. This checks API access only; it does not measure gameplay, change profiling settings, reset counters, or start or cancel a capture. /rm perf probe runs the same check."
 L["Invalid rotation ownership data in profile %s (%s); record preserved."] = true
-L["the number of {item} you are carrying {comparison} {quantity}"] = true
 L['View source'] = true
 L['Change source helper'] = true
 L['Dependencies (%d)'] = true
@@ -107,30 +50,15 @@ L['This character'] = true
 L['Applies to'] = true
 L['Legacy character %s data conflicts with the active profile; character data preserved.'] = true
 L['Invalid rotation fallback configuration in profile %s; data preserved.'] = true
-L['Help.Functions.bindings'] = 'Choose a source helper and its name in this Lua body, such as custom.ready or utils.getCached. These are dependency records even when the source and local names match; a different local name is an optional alias. The records identify helpers for loading, export and availability checks. Accepting a completion records the dependency automatically. Typing a call does not infer a dependency: add its qualified name explicitly or accept a completion. WoW globals and existing addon APIs remain directly available. Namespaces are private to this callback and do not supply self. Pass a method receiver explicitly in a namespaced dot call; object:method(x) is shorthand for object.method(object, x). Click the bound source name to open its function; the adjacent arrow changes the mapping. Pending edits offer Apply, Discard or Cancel before navigation. Renaming a function, namespace or binding does not rewrite code. Missing, disabled or invalid dependencies keep consumers unavailable.'
 L['Condition summary unavailable: invalid template or values.'] = true
-L['{stat} {comparison} {value}'] = true
-L['{stat} {comparison} {value}%'] = true
 L['The number {members} members{pets} within {distance} yards of {unit} whose health defecit {qualifier} {threshold} {comparison} {value}'] = true
-L["The number of {members} members{pets} within {distance} yards of {unit} whose health deficit {qualifier} {threshold} {comparison} {value}"] = true
 L['The number {members} members{pets} within {distance} yards of {unit} whose health percentage {qualifier} {threshold}% {comparison} {value}'] = true
-L["The number of {members} members{pets} within {distance} yards of {unit} whose health percentage {qualifier} {threshold}% {comparison} {value}"] = true
 L['The number {members} members{pets} within {distance} yards of {unit} whose health {qualifier} {threshold} {comparison} {value}'] = true
-L["The number of {members} members{pets} within {distance} yards of {unit} whose health {qualifier} {threshold} {comparison} {value}"] = true
 L['The number {members} members{pets} within {distance} yards of {unit} whose mana defecit {qualifier} {threshold} {comparison} {value}'] = true
-L["The number of {members} members{pets} within {distance} yards of {unit} whose mana deficit {qualifier} {threshold} {comparison} {value}"] = true
 L['The number {members} members{pets} within {distance} yards of {unit} whose mana percentage {qualifier} {threshold}% {comparison} {value}'] = true
-L["The number of {members} members{pets} within {distance} yards of {unit} whose mana percentage {qualifier} {threshold}% {comparison} {value}"] = true
 L['The number {members} members{pets} within {distance} yards of {unit} whose mana {qualifier} {threshold} {comparison} {value}'] = true
-L["The number of {members} members{pets} within {distance} yards of {unit} whose mana {qualifier} {threshold} {comparison} {value}"] = true
 L['The {operation} health defecit of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}'] = true
-L["The {operation} health deficit of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}"] = true
-L['The {operation} health of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}'] = true
-L['The {operation} health percentage of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}%'] = true
 L['The {operation} mana defecit of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}'] = true
-L["The {operation} mana deficit of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}"] = true
-L['The {operation} mana of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}'] = true
-L['The {operation} mana percentage of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}%'] = true
 L['A readable string, or a transient named phrase from Functions.presentation.phrase. Named values remain literal; typed predicates choose positive or negative wording. The legacy string format remains supported.'] = true
 L['Test opens one condition-level dialog from any callback tab. It renders Fields UI and Help together with detached values. Committing a field value validates and evaluates once. Run test refreshes the current values, while only valid values are evaluated. Opening the dialog does not evaluate defaults. Live is opt-in and stops when the dialog closes. Committed test values are available to the debugger and stay separate from source, exports and rotation edits. Check syntax never runs a callback.'] = true
 L['Test values changed. Updating results.'] = true
@@ -139,8 +67,6 @@ L['The current source could not be compiled. Fix it before testing again.'] = tr
 L['Refresh'] = true
 L['Debug output'] = true
 L['Output'] = true
-L['View and copy full debugger output and errors.'] = true
-L['Arguments from Test'] = true
 L['Set values in Test before debugging this condition.'] = true
 L['Rotation Master addon instance. Public helper functions are documented in Functions.'] = true
 L['Localized Rotation Master text, indexed by its English key.'] = true
@@ -170,20 +96,19 @@ L["/rm check               - Check the database integrity."] = true
 L["/rm repair              - Fix any DB errors found in the data with internal validation."] = true
 
 L["No rotation is currently active."] = true
-L["The current rotation is " .. color.WHITE .. "%s" .. color.INFO] = true
-L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO] = true
-L["Could not find rotation named " .. color.WHITE .. "%s" .. color.WARN .. " for your current specialization."] = true
-L["Invalid option " .. color.WHITE .. "%s" .. color.WARN] = true
+L["The current rotation is |cFFFFFFFF%s|cFF7BC653"] = true
+L["Active rotation manually switched to |cFFFFFFFF%s|cFF7BC653"] = true
+L["Could not find rotation named |cFFFFFFFF%s|cFFB212B7 for your current specialization."] = true
+L["Invalid option |cFFFFFFFF%s|cFFB212B7"] = true
 
 L["Starting up version %s"] = true
-L["Rotaion " .. color.WHITE .. "%s" .. color.DEBUG .. " is now available for auto-switching."] = true
-L["Active rotation automatically switched to " .. color.WHITE .. "%s" .. color.INFO] = true
+L["Active rotation automatically switched to |cFFFFFFFF%s|cFF7BC653"] = true
 L["No rotation is active as there is none suitable to automatically switch to."] = true
 L["Battle rotation enabled"] = true
 L["Battle rotation disabled"] = true
 L["Current Rotation"] = true
 L["Automatic Switching"] = true
-L["Toggle %s " .. color.CYAN .. "/rm toggle" .. color.RESET] = true
+L["Toggle %s |cFF00FFFF/rm toggle|r"] = true
 L["Validating database integrity"] = true
 
 L["[Tier: %d, Column: %d]"] = true
@@ -208,17 +133,7 @@ L["Custom"] = true
 
 L["Bind"] = true
 L["Unbind"] = true
-L["Own Buff"] = true
-L["Own Debuff"] = true
-L["Dispellable"] = true
-L["your own %s"] = true
-L["{unit} {{!have|do not have}} {aura}"] = true
-L["{unit} {{!has|does not have}} {aura}"] = true
-L["{unit} {{!have|do not have}} {aura} where {remaining} {comparison} {duration}"] = true
-L["{unit} {{!has|does not have}} {aura} where {remaining} {comparison} {duration}"] = true
 L["{unit} {stacks} {comparison} {quantity}"] = true
-L["the number of stacks of {aura} on {unit} {comparison} {quantity}"] = true
-L["that is dispellable"] = true
 
 L["is less than"] = true
 L["is less than or equal to"] = true
@@ -274,11 +189,6 @@ L["Key"] = true
 L["Custom Condition"] = true
 L["Edit Condition"] = true
 L["Description"] = true
-L["Validity Function"] = true
-L["Evaluation Function"] = true
-L["Print Function"] = true
-L["Widget Function"] = true
-L["Help Function"] = true
 L["Post-Registration Function"] = true
 L["Pre-Unregistration Function"] = true
 
@@ -320,7 +230,6 @@ L["Minus"] = true
 L["Tank"] = true
 L["DPS"] = true
 L["Healer"] = true
-L["Enemy"] = true
 
 L["Magic"] = true
 L["Disease"] = true
@@ -448,7 +357,6 @@ L["Effects"] = true
 L["Item Sets"] = true
 L["Announces"] = true
 L["Profiles"] = true
-L["About"] = true
 L["Lines"] = true
 L["Frequency"] = true
 L["Steps"] = true
@@ -459,23 +367,15 @@ L["Thickness"] = true
 L["Particles"] = true
 L["Scale"] = true
 L["Level"] = true
-L["<level>"] = true
-L["%s's level"] = true
-L["your level"] = true
 L["Disabled"] = true
 L["Enabled"] = true
-L["Invalid"] = true
-L["Relative"] = true
 L["Help"] = true
 L["Time Until Health"] = true
 L["Time Until Health Percentage"] = true
 L["Runner"] = true
 L["%s will run"] = true
 L["Resistant"] = true
-L["Resistance"] = true
 L["Immune"] = true
-L["Spell School"] = true
-L["Partial"] = true
 
 L["Started"] = true
 L["Stopped"] = true
@@ -504,13 +404,10 @@ L["Duplicate"] = true
 L["Action Type"] = true
 L["No Action"] = true
 L["Spell"] = true
-L["Rank"] = true
 L["Pet Spell"] = true
 L["Any Spell"] = true
 L["Item"] = true
 L["Conditions"] = true
-L["Currently satisfied"] = true
-L["Not currently satisfied"] = true
 L["NOTE: Some spells can not be selected (even if auto-completed) due to WoW internals.  It may reequire you to switch specs or summon the requisite pet first before being able to populate this field."] = true
 L["%s is now available!"] = true
 L["Announce"] = true
@@ -525,16 +422,10 @@ L["Emote"] = true
 L["Local Only"] = true
 L["Text"] = true
 L["Item Set"] = true
-L["%s or %d others"] = true
-L["a %s item set item"] = true
 L["Click the icon above to bind to your action bar"] = true
 L["time until %s is at %s%% health"] = true
-L["time until %s health reaches %s%%"] = true
 L["time until %s is at %s health"] = true
-L["time until %s health reaches %s"] = true
 L["time until %s is at %s health defecit"] = true
-L["time until %s health deficit reaches %s"] = true
-L["including pets"] = true
 L["The %s health defecit of %s members%s within %d yards of %s"] = true
 L["The %s health of %s members%s within %d yards of %s"] = true
 L["The number %s members%s within %d yards of %s whose"] = true
@@ -561,32 +452,7 @@ L["Down"] = true
 
 -- From the Conditions
 
-L["<unit>"] = true
 L["<spell>"] = true
-L["<action>"] = true
-L["<item>"] = true
-L["<role>"] = true
-L["<class>"] = true
-L["<creature type>"] = true
-L["<classification>"] = true
-L["<talent>"] = true
-L["<talent tree>"] = true
-L["<glyph>"] = true
-L["<rune type>"] = true
-L["<buff>"] = true
-L["<debuff>"] = true
-L["<element>"] = true
-L["<totem>"] = true
-L["<threat>"] = true
-L["<form>"] = true
-L["<zone>"] = true
-L["<name>"] = true
-L["<distance>"] = true
-L["<quantity>"] = true
-L["<school>"] = true
-L["<control type>"] = true
-L["<operation>"] = true
-L["<stat>"] = true
 
 L["Your talent is a %s role"] = true
 L["%s is in a %s role"] = true
@@ -598,14 +464,11 @@ L["%s is %s"] = true
 L["%s are %s"] = true
 L["%s were %s"] = true
 L["%s was %s"] = true
-L["%s with %s"] = true
 L["%s have %s where %s"] = true
 L["%s has %s where %s"] = true
 L["you are talented in %s"] = true
 L["talent points in %s (%s)"] = true
-L["the number of talent points in %s (%s)"] = true
 L["%s's resistance to %s"] = true
-L["%s resistance to %s"] = true
 L["%s is sometimes immune to %s"] = true
 L["%s is immune to %s"] = true
 L["you have %s glyph"] = true
@@ -621,46 +484,30 @@ L["Talent"] = true
 L["Glyph"] = true
 L["Talent Tree"] = true
 L["Operator"] = true
-L["Operation"] = true
-L["Count"] = true
-L["Quantity"] = true
 L["Distance"] = true
 L["Distance Count"] = true
 L["yards"] = true
-L["Same Group"] = true
-L["Include Pets"] = true
 
 L["Health"] = true
-L["%s health"] = true
 L["%s health defecit"] = true
-L["%s health deficit"] = true
 L["Health Percentage"] = true
 
 L["Mana"] = true
-L["%s mana"] = true
 L["%s mana defecit"] = true
-L["%s mana deficit"] = true
 L["Mana Percentage"] = true
 
 L["Power"] = true
-L["%s power"] = true
 L["%s power defecit"] = true
-L["%s power deficit"] = true
 L["Power Percentage"] = true
 
 L["Points"] = true
 L["%s points"] = true
-L["%s point total"] = true
 L["%s point defecit"] = true
-L["%s point deficit"] = true
 
-L["Rune Type"] = true
 L["Runes"] = true
 L["Rune Cooldown"] = true
 L["%s runes available"] = true
-L["the number of %s runes available"] = true
 L["cooldown on %s rune"] = true
-L["cooldown on your next %s rune"] = true
 
 L["Blood"] = true
 L["Frost"] = true
@@ -680,30 +527,10 @@ L["%s is in range"] = true
 L["Spell Cooldown"] = true
 L["Pet Spell Cooldown"] = true
 -- This is used for things like "the cooldown on <spell> is less than 5 seconds"
-L["the %s"] = true
-L["cooldown on %s"] = true
-L["%s seconds"] = true
-L["Seconds"] = true
 L["Boss Mod Encounter"] = true
 L["Boss Mod Encounter Stage"] = true
 L["Boss Mod Timer"] = true
-L["Stage"] = true
 L["none"] = true
-L["Encounter ID (blank for any)"] = true
-L["Boss ability spell ID"] = true
-L["Running timers:"] = true
-L["No boss-mod timers are running."] = true
-L["No boss-mod encounter is in progress."] = true
-L["Boss mod data unavailable: %s"] = true
-L["Current encounter: %s (ID %s), stage %s"] = true
-L["your boss mod reports encounter %s {{!is|is not}} in progress"] = true
-L["your boss mod {{!reports|does not report}} an encounter in progress"] = true
-L["the boss-mod encounter stage"] = true
-L["the boss-mod timer for %s"] = true
-L["Seconds until the boss mod expects the ability. A paused timer keeps its remaining time."] = true
-L["Help.Conditions.BOSSMOD_ENCOUNTER"] = "True while your enabled boss mod (DBM or BigWigs, chosen on the Integrations page) reports a boss encounter in progress. Leave Encounter ID blank for any encounter, or enter the game's encounter ID, which DBM and BigWigs share, to match one boss; while an encounter is active the editor shows its name and ID. This is the boss mod's report, not game state: it starts when the boss mod engages and ends when it records a win, wipe or reset. Use it as a switch condition for encounter-specific rotations; automatic switching picks it up on its normal re-check interval. Unavailable, never simply false, when no boss mod is enabled or loaded."
-L["Help.Conditions.BOSSMOD_STAGE"] = "The stage (phase) your boss mod reports for the current encounter. An encounter whose boss mod has not reported a stage counts as stage 1, and some intermissions are reported as half stages such as 1.5. False when no encounter is in progress; unavailable when no boss mod is enabled or loaded."
-L["Help.Conditions.BOSSMOD_TIMER"] = "Compares the time left on your boss mod's timer for one boss ability, identified by the ability's spell ID; while timers run, the editor lists them with their IDs. Timers are the boss mod's predictions and can shift, pause or be canceled. When no timer for that ability is running the condition is false, so 'is less than 5 seconds' is only true while a timer is actually counting down. Bars without a spell ID, such as pull or respawn timers, are not tracked. Unavailable when no boss mod is enabled or loaded."
 L["Spell Active or Pending"] = true
 L["Pet Spell Active or Pending"] = true
 L["%s is active or pending"] = true
@@ -713,22 +540,14 @@ L["Pet Spell Time Remaining"] = true
 L["remaining time on %s"] = true
 L["Spell Charges"] = true
 L["Pet Spell Charges"] = true
-L["number of charges on %s"] = true
-L["Charges"] = true
 
 L["Spell Cast History Time"] = true
 L["Spell Cast History"] = true
 L["Pet Spell Cast History Time"] = true
 L["Pet Spell Cast History"] = true
 L["%s was cast"] = true
-L["%s casts ago"] = true
-L["%s seconds ago"] = true
 L["Combat Action History Time"] = true
 L["Combat Action History"] = true
-L["%s actions ago"] = true
-L["%s {{!was|was not}} cast %s"] = true
-L["%s {{!were|were not}} %s %s"] = true
-L["%s {{!was|was not}} %s %s"] = true
 L["fewer than %s casts ago"] = true
 L["at most %s casts ago"] = true
 L["more than %s casts ago"] = true
@@ -759,10 +578,8 @@ L["Any Spell Charges"] = true
 
 L["Buff Present"] = true
 L["Buff Time Remaining"] = true
-L["the remaining time"] = true
 L["Buff Stacks"] = true
 L["stacks of %s"] = true
-L["Stacks"] = true
 L["stacks"] = true
 L["Has Stealable Buff"] = true
 L["%s has a stealable buff"] = true
@@ -773,8 +590,6 @@ L["Debuff Stacks"] = true
 L["Debuff Type Present"] = true
 L["%s have a %s debuff"] = true
 L["%s has a %s debuff"] = true
-L["<debuff type>"] = true
-L["Debuff Type"] = true
 
 L["Totem Present"] = true
 L["%s totem is active"] = true
@@ -793,8 +608,6 @@ L["the number of %s you are carrying"] = true
 L["Item Available"] = true
 L["Item In Range"] = true
 L["Item Cooldown"] = true
-L["Check If Not Carrying"] = true
-L[", even if you do not currently have one"] = true
 
 L["In Combat"] = true
 L["%s are in combat"] = true
@@ -808,11 +621,7 @@ L["you are stealthed"] = true
 L["In Control"] = true
 L["you are in control of your character"] = true
 L["Loss Of Control Type"] = true
-L["Control Type"] = true
 L["Loss Of Control Type"] = true
-L["time remaining on %s"] = true
-L["School Blocked"] = true
-L["time remaining on block of your %s abilities"] = true
 L["Loss Of Control Blocked"] = true
 L["Moving"] = true
 L["you are moving"] = true
@@ -820,9 +629,6 @@ L["Threat"] = true
 L["Threat Count"] = true
 L["you are at least %s on %s"] = true
 L["Shapeshift Form"] = true
-L["humanoid"] = true
-L["humanoid form"] = true
-L["Form"] = true
 L["Attackable"] = true
 L["Hostile"] = true
 L["Allies Within Range"] = true
@@ -838,9 +644,7 @@ L["%s is an enemy"] = true
 L["%s is attackable"] = true
 L["number of %s members%s within %d yards"] = true
 L["number of %s members%s within %s yards"] = true
-L["the number of %s members%s within %s yards of %s"] = true
 L["number of enemies you are at least %s"] = true
-L["the number of enemies on which you are at least %s"] = true
 L["you {{!are|are not}} on %s threat table"] = true
 L["you {{!have|do not have}} at least as much threat on %s as its tank"] = true
 L["you {{!are|are not}} tanking %s"] = true
@@ -849,11 +653,6 @@ L["the number of enemies whose threat table you are on"] = true
 L["the number of enemies on which you have at least as much threat as their tank"] = true
 L["the number of enemies you are tanking"] = true
 L["the number of enemies you are securely tanking"] = true
-L["closer than %s yards"] = true
-L["allies"] = true
-L["enemies"] = true
-L["Number of %s within %s yards"] = true
-L["Number of %ss in the %s"] = true
 L["you are in %s form"] = true
 
 L["Channeling"] = true
@@ -864,7 +663,6 @@ L["%s are currently channeling %s"] = true
 L["%s is currently channeling %s"] = true
 L["Channel Time Remaining"] = true
 L["time remaining on spell channel"] = true
-L["the time remaining on %s channel"] = true
 L["Channel Interruptable"] = true
 L["Channel Interruptible"] = true
 L["%s's channeled spell is interruptable"] = true
@@ -877,7 +675,6 @@ L["%s are currently casting %s"] = true
 L["%s is currently casting %s"] = true
 L["Cast Time Remaining"] = true
 L["time remaining on spell cast"] = true
-L["the time remaining on %s cast"] = true
 L["Cast Interruptable"] = true
 L["Cast Interruptible"] = true
 L["%s's spell is interruptable"] = true
@@ -887,14 +684,10 @@ L["%s are PVP flagged"] = true
 L["%s is PVP flagged"] = true
 L["Zone PVP"] = true
 L["zone is a %s zone"] = true
-L["no PVP"] = true
-L["Mode"] = true
 L["Instance"] = true
 L["you are in a %s instance"] = true
-L["Other (scenario)"] = true
 L["in %s"] = true
 L["Zone"] = true
-L["SubZone"] = true
 L["In Group"] = true
 L["you are in a group"] = true
 L["In Raid"] = true
@@ -906,51 +699,22 @@ L["you are in a outdoors"] = true
 L["Weapon Enchant Present"] = true
 L["Different season or game rules"] = true
 -- Action and build contexts
-L["%s (set %d)"] = true
-L["%s, %d equipped"] = true
-L["<action bar>"] = true
-L["<enchant>"] = true
-L["<item set>"] = true
-L["A rotation of your own is used only on your own bar unless its switch condition requires another action context with this condition; it is then used, and its buttons found, while that bar is up."] = true
 L["Action Context"] = true
 L["Advice is suspended: no rotation applies while you are using another action bar."] = true
-L["Currently: no temporary enchant"] = true
-L["Currently: temporary enchant %d"] = true
-L["Enchant ID"] = true
-L["Equipped Sets"] = true
-L["Item Set ID"] = true
 L["Item Set Pieces Equipped"] = true
-L["Matches the bar you are acting through: your own, a vehicle, a possessed (mind controlled) unit, an override bar, or a pet battle. Vehicles and override bars exist from Wrath, pet battles only on Retail."] = true
-L["Pieces"] = true
-L["The game's item set (for example a tier set). Sets you are wearing are offered in the list; the count is taken from your equipped items' metadata and stays unavailable while any of it is still loading."] = true
-L["The number of pieces of that set you have equipped."] = true
-L["The temporary enchant on the weapon: a poison, oil, sharpening stone or weapon imbue. The current enchant ID of the selected hand is shown below the field."] = true
 L["Weapon Enchant Type"] = true
 L["a pet battle"] = true
 L["a possessed unit"] = true
 L["a vehicle"] = true
 L["an override action bar"] = true
-L["item set %d"] = true
-L["the number of {set} pieces you have equipped {comparison} {quantity}"] = true
-L["you {{!are|are not}} acting through %s"] = true
-L["your %s weapon {{!has|does not have}} temporary enchant %s"] = true
 L["your own action bar"] = true
 L["Weapon Enchant Time Remaining"] = true
 L["Weapon Enchant Stacks"] = true
 L["Your %s weapon buff has %s"] = true
-L["the time remaining on your %s weapon buff"] = true
-L["the number of stacks of your %s weapon buff"] = true
 L["Your %s weapon is enchanted"] = true
-L["Your %s weapon %s"] = true
-L["off hand"] = true
-L["main hand"] = true
 L["Off Hand"] = true
-L["attack speed"] = true
-L["Attack Speed"] = true
 L["Weapon Swing Time"] = true
 L["Weapon Swing Time Remaining"] = true
-L["swing time remaining"] = true
-L["Swing Time Remaining"] = true
 
 L["Global"] = true
 
@@ -960,41 +724,19 @@ L["Heals Only"] = true
 
 -- Condition help and elapsed-combat summaries.
 L["Action"] = true
-L["Pet Spell History Memory (seconds)"] = true
-L["Sound Alert"] = true
-L["Matches while your character is moving, based on current movement speed. It does not test the movement of your target."] = true
-L["Matches when your pet unit exists. This does not check whether the pet is alive, in range or able to use an ability."] = true
-L["Matches when the game reports that you are outdoors. Being outdoors is different from being outside an instance."] = true
-L["Matches when the game reports that you have full control of your character. This does not guarantee that a particular spell is usable."] = true
-L["Matches while the game reports your character as stealthed. It does not test whether an enemy can detect you."] = true
 L["Time Since Combat Start"] = true
 L["Time in combat is %s %s seconds"] = true
-L["This condition matches if any sub-condition matches. With no sub-conditions, it does not match."] = "Any (OR) checks children in order and stops at the first match. An empty group does not match. Encountered unavailable data remains unavailable; later children are skipped."
 
 -- Native diagnostic report access.
-L["Rotation Master errors"] = true
-L["Review the report, then select Copy and press Ctrl+C. Reload after fixing a paused callback."] = true
-L["Previous error"] = true
-L["Next error"] = true
 L["Copy report"] = true
-L["Clear RM errors"] = true
 L["Close"] = true
-L["Resize"] = true
-L["No Rotation Master errors have been captured this session."] = true
 L["/rm errors              - View and copy Rotation Master errors."] = true
-L["Use redacted error text"] = true
-L["Include original text (may contain names or code)"] = true
 L["Spell Known"] = true
 L["You know %s"] = true
 L["Your pet knows %s"] = true
 L["%s (spell ID %s)"] = true
 L["Spell ID"] = true
 L["Pet spell"] = true
-L["Check whether you or your pet know this exact spell ID. An unlearned spell is a valid condition that returns false, so the same rotation can adapt as you learn abilities. This does not check cooldown, resources, range, or whether the spell can currently be cast. Missing or restricted learned-state data stays unavailable under NOT."] = true
-L["Only consider auras that you applied yourself."] = true
-L["Remaining aura time is measured in seconds. Permanent auras have no expiration and do not satisfy a finite refresh threshold. An absent aura does not satisfy this condition. Restricted or unknown timing is unavailable, including under NOT."] = true
-L["Compare the application count of a matching aura, including charges such as Earth Shield. An absent aura does not satisfy this condition; an unreadable count is unavailable."] = true
-L["Only consider debuffs returned by the game's dispellable aura filter. This does not guarantee your dispel is ready or in range."] = true
 
 -- Packaged rotation browser
 L["Unavailable conditions or unsupported data"] = true
@@ -1031,7 +773,6 @@ L["Season %s"] = true
 L["Game mode %s"] = true
 L["Automatic switching tries nothing else, then the fallback (%s): no enabled rotation here can be selected now."] = true
 L["Revision %s"] = true
-L["Every rotation has an identifier (ID), shown beside its priority: type /rm set <id> to choose it (any case), /rm set auto to go back to automatic switching, and /rm list to see every identifier. A Built In's identifier is fixed; yours is made from its name until you change it."] = true
 L["you switched it off (turn it back on in Rotations)"] = true
 L["it ships disabled, an alternative to the recommended one (turn it on in Rotations)"] = true
 L["Identifier: %s (/rm set %s)"] = true
@@ -1057,11 +798,6 @@ L["Rotations and their identifiers"] = true
 L["More than one rotation uses the identifier %s. Give one of them another identifier in Rotations."] = true
 L["Identifiers you can use now: %s (or auto). /rm list shows every rotation."] = true
 L["ID"] = true
-L["Choosing a rotation"] = true
-L["Automatic switching tries the enabled rotations in priority order, yours and Built Ins alike: higher numbers are tried first, equal priorities by name. It picks the first that matches; a rotation with no switch condition always matches, so turn it off to keep it from being chosen. The fallback (Default) is used only when none matches. The rotation list is sorted in this same order and shows each priority."] = true
-L["Priority sits beside Enabled at the top of the editor. A Built In cannot be edited, but its Enabled setting and priority are yours to change for this profile: they are saved at once, shown in amber when they differ from how it ships, and Reset to default puts it back. Copy a Built In to your rotations to edit anything else."] = true
-L["A Built In shows a blue Read-Only pill in place of Undo and Redo; Duplicate makes your own copy. It loads only for the edition and class it was written for (the pill's tooltip). The specializations it is for show in the picker before its name; any level it needs is part of its switch condition. The switch's tooltip says when it can be selected together with another rotation, or is for another specialization."] = true
-L["In the list, a red border means the rotation cannot be selected (the tooltip names why), gray means it is switched off, and an amber bar means it can be selected at the same time as another rotation (yours or Built In), so only priority decides between them; a wider bar means they also have the same priority and the name decides. /rm why lists the order and what automatic switching would choose now."] = true
 L["Priority"] = true
 L["Reset to default"] = true
 L["Use the Built In as it ships: its own Enabled setting and priority."] = true
@@ -1111,16 +847,7 @@ L["Rotation eligibility opened in a window you can copy from."] = true
 -- Glow diagnostic (/rm debug glow, Diagnostics/glow.lua)
 L["/rm debug glow [seconds] - Explain why a recommendation does or does not light a button."] = true
 L['/rm debug editor        - Copy native Lua input diagnostics.'] = true
-L['Glow diagnostic'] = true
-L['Glow diagnostic saved.'] = true
-L['Glow diagnostic saved. Watching for %d seconds.'] = true
-L['Glow watch finished. Run /rm debug glow show to view it.'] = true
-L['Glow stops at: %s'] = true
-L['No glow diagnostic is saved yet. Run /rm debug glow.'] = true
 L['/rm debug talents [views] - Report why the Retail and Forever talent lists are short or empty.'] = true
-L['Talent diagnostic'] = true
-L['Talent diagnostic saved.'] = true
-L['Usage: /rm debug glow [seconds|show], /rm debug talents [views] or /rm debug editor'] = 'Usage: /rm debug glow [seconds||show], /rm debug talents [views] or /rm debug editor'
 L["rotations cannot be read (%s)"] = true
 L["Rotation %s cannot be selected."] = true
 L["Rotation settings"] = true
@@ -1146,7 +873,6 @@ L["your level is outside its level range"] = true
 L["your level is unavailable"] = true
 L["your specialization is not available yet"] = true
 L["No specialization"] = true
-L["Each rotation says which specializations it is for, in the picker before its name: several, or Any. It is listed, in the minimap menu and for /rm set, only while you play one of them; its switch condition never hides it. Automatic switching checks the specialization first, then the switch condition, then priority; a rotation with no switch condition matches whenever its specialization and level apply, so priority alone decides; turn it off to keep it for choosing by hand. The specialization menu above the list's search box starts at the one you are playing; choose another, or All specializations, to see theirs. Where the game has dual specialization instead of named specializations (Classic Era, TBC, Wrath, Cataclysm and Forever), they are your primary and secondary talents: exports leave them out, and an import is for the talents the list shows."] = true
 L["Primary talents"] = true
 L["Secondary talents"] = true
 L["Talent group %d"] = true
@@ -1166,7 +892,6 @@ L["you have not chosen a specialization yet, so Rotation Master uses %s, which t
 L["You have not chosen a specialization yet, so Rotation Master uses %s (%s). The Rotations editor only offers %s, so rotations saved there cannot run until you choose a specialization."] = true
 L["this client has no ranged slot"] = true
 L["this client has no specializations for your class"] = true
-L["With no off-hand weapon equipped, an off-hand check is false (and true under NOT)."] = true
 L["combat data is restricted on this client"] = true
 L["the game API it needs is missing"] = true
 L["this client is not supported"] = true
@@ -1241,7 +966,6 @@ L["Unknown spell (%s)"] = true
 
 L["Beyond Melee Range"] = true
 L["%s is beyond melee range"] = true
-L["Uses the native Attack range check when available. Otherwise it uses LibRangeCheck's public interval to distinguish close range from beyond five yards; that estimate does not prove exact melee geometry for every target. An interval spanning the boundary, missing data or restricted data stays unavailable, including under NOT."] = true
 
 L["Switch conditions"] = true
 L["Optional highlight"] = true
@@ -1373,8 +1097,6 @@ L["No other rotations to compare."] = true
 L["Spell Recharge Time"] = true
 L["Pet Spell Recharge Time"] = true
 L["Any Spell Recharge Time"] = true
-L["recharge time on %s"] = true
-L["Seconds until the next spell charge. Full charges and inactive recharge timers report zero. Missing, restricted, or non-charge spell data stays unavailable."] = true
 
 L["Rotation names"] = true
 L["Custom step name"] = true
@@ -1396,20 +1118,12 @@ L["Fallback"] = true
 L["%d of %d rotations"] = true
 
 -- Totem observation semantics
-L["The elemental slot to check: Fire, Earth, Water or Air. Empty, zero-duration and expired totems do not match."] = true
-L["The active totem to check. Unticked, Use this exact spell rank matches its localized name across ranks. Ticked, it requires the native spell ID; name-only observations are unavailable."] = true
-L["Compare the active totem's remaining seconds with this amount. An absent or expired totem does not match; unavailable observations stay unavailable."] = true
 
 L["Stop"] = true
 L["Actions automatically require a learned spell or carried item, usable resources, cooldown readiness and valid range. Conditions can additionally test other actions."] = true
-L["Stop ends lower priority actions. The implicit auto-attack (Attack or Shoot) remains eligible unless you suppress it. An unavailable Stop condition also suppresses it. Optional reminders remain independent."] = true
 L["When no priority action is ready, auto-attack (Attack or Shoot) is the implicit final fallback against a living hostile target in combat: Attack in melee range; beyond it, Auto Shot or wand Shoot while the target is in range and that button is on your action bars. Nothing is recommended while that auto-attack is already running. It uses the normal rotation highlight and never presses a button."] = true
 L["Implicit final fallback"] = true
 
-L["This reference belongs to another talent layout. Selecting a talent explicitly replaces it; viewing does not convert it."] = true
-L["Historical talent slot %s (unavailable)"] = true
-L["This client uses a different talent system. This reference is preserved but cannot be evaluated."] = true
-L["Classic conditions compare points spent in a tree talent. Mists selections use six tiers with three choices. Historical references from another talent system remain unavailable and are never automatically converted."] = true
 
 L["Also suppress auto-attack (Attack or Shoot)"] = true
 L["Implicit auto-attack (Attack or Shoot) is suppressed by this Stop."] = true
@@ -1425,8 +1139,6 @@ L["%d conditions"] = true
 L["Expand to edit fields"] = true
 L["Negate each"] = true
 
-L["All (AND) requires every child to match. An empty group always matches. Unavailable data remains unavailable."] = "All (AND) checks children in order and stops at the first non-match. An empty group matches. Encountered unavailable data remains unavailable; later children are skipped."
-L["Select cards with Ctrl-click or Shift-click. Group with All or Any, negate each, move or drag, and remove. Undo and Redo affect only the draft until Apply. Groups can be named and collapsed."] = true
 
 L["Version: %s  ·  Author: %s"] = true
 L["Configure rotations, conditions and highlights in the Rotation Master window."] = true
@@ -1557,27 +1269,16 @@ L["Delete this custom rotation and its unsaved draft? This cannot be undone."] =
 
 L['Rotation details'] = true
 
-L["Built In and custom rotations use the same cards. Built In rotations are read-only; enable or disable them, inspect their conditions, or Duplicate to edit."] = true
 
-L["Custom edits stay in a private draft. Apply saves; Discard restores the saved rotation. Undo and Redo include card deletion, movement, fields and conditions. Apply before reloading or logging out."] = true
 
-L["Closing the window retains drafts for this session. Switching rotations or opening comparison or transfer asks whether to Apply, Discard or Cancel when changes are pending."] = true
 
-L["The switch condition selects the rotation automatically; with none, it is selected whenever its specialization and level apply. Edit changes its condition tree. The fallback rotation is selected when no other rotation matches."] = true
 
-L["Cooldown cards have their own scrolling workspace and highlight independently of the sequence. Add cooldown creates a reminder; clicking its action shows local highlight settings."] = true
 
-L["Add action appends a priority action. Drag an Add control into a gap to insert there. Click a card name to rename it, expand for action fields, or click its condition text to edit the guard."] = true
 
-L["Adding a branch moves following steps into its True arm. False is on the left in red; True is on the right in green. The mode pill cycles Evaluate condition, Always true and Always false. Unreachable cards are gray."] = true
 
-L["Ordinary dragging moves one card and its own subtree. Hold Ctrl when starting a drag to carry that card and every following sibling, including their branch subtrees. Drop into a branch arm gap to move there. Up / Down always moves one card. A group cannot be dropped into itself or a carried descendant."] = true
 
-L["An evaluated branch follows one arm, then rejoins later siblings. Stop ends the sequence. Independent cooldowns still apply; implicit auto-attack (Attack or Shoot) remains available unless the Stop suppresses it."] = true
 
-L["Invalid or incomplete cards remain editable. Apply validates both branch arms without running custom condition code. Deleting a whole custom rotation requires confirmation and cannot be undone."] = true
 
-L["List and Cooldowns use flat scrollbars or the mouse wheel. Diagram uses wheel zoom and dragging empty space to pan. Window scaling applies when the slider is released and also affects RM child windows."] = true
 
 L['Complete the highlighted input fields before applying.'] = true
 
@@ -1636,7 +1337,6 @@ L["Saved metadata is invalid (%s). Editing these fields replaces it."] = "Saved 
 
 L["Color"] = "Color"
 
-L["Highlight preview"] = "Highlight preview"
 
 L["Choose an effect"] = "Choose an effect"
 
@@ -1673,7 +1373,6 @@ L["Any of"] = true
 -- Native settings pages
 L["Action bar binding"] = true
 L["Add announcement"] = true
-L["Add category"] = true
 L["Add custom condition"] = true
 L["Add effect"] = true
 L["Add item"] = true
@@ -1726,43 +1425,22 @@ L["Branch"] = true
 L["Choose a category and search for a condition. Hidden removes it from pickers without deleting its definition. Switch Condition controls its availability for automatic rotation switching. Move To changes its category; order arrows arrange category entries. Custom conditions can be edited, duplicated or deleted."] = true
 L["Choose a current profile or enter a new profile name and create it. Copy replaces the current profile’s settings; Reset restores defaults. Delete removes another saved profile. Copy, Reset and Delete ask for confirmation."] = true
 L["Choose an item set and edit its priority list. Global shares the set across profiles. Move arrows change item priority. Bind item set picks up an available item for placement on an action bar; Remove binding unlinks it. Reset restores a packaged set. Import replaces its item list."] = true
-L["Choose and edit"] = true
-L["Click a condition type to search or browse categories. Dismissing the picker or choosing the same type keeps its fields. Click the condition summary to edit its fields. The chevron switches between name only and summary; the double chevron closes the fields."] = true
-L["Click a name to rename it. Clear a custom step name to restore its action name. Click a collapsed title to show its summary. Click action or condition text to open its details; the double chevron returns from fields to the summary."] = true
-L["Click condition text to edit when this card can run. Enabled / Disabled preserves the card while switching its participation. Actions also require known or carried actions, usable resources, cooldown readiness and valid range."] = true
-L["Click the action to edit its type, spell or item. The leading icon previews the effect. Effect selects a style; Magnification changes its size. Click the swatch or edit RGBA on the 0–1 scale. Arrows adjust position; V / H show offsets. Default restores profile values. Sound selection and Play preview an audible reminder."] = true
-L["Click the guard text to edit the branch condition. Evaluate uses that condition; Always true / Always false skips it. False is left and red; True is right and green. The branch icon hides both arms without changing them. Click True or False to fold only that arm; its hidden count remains visible. Gray cards in a forced arm are unreachable."] = true
 L["Condition editor"] = true
-L["Conditions and state"] = true
-L["Configure recommendation timing, automatic switching, history, preview and profile highlight defaults. Labels are on the left. Checkboxes toggle options, sliders show numeric values, and fields validate before saving."] = true
 L["Description and attribution"] = true
-L["Drag one card into a highlighted gap; hold Ctrl when starting the drag to carry that card and all following siblings. A branch always carries its children. Use Up / Down on the left to move one card. Duplicate copies the card and the red trash can deletes it. Cooldowns are independent, so they have no move arrows."] = true
-L["Drag a card into one highlighted gap, or use the left-side Up / Down arrows. Hold Ctrl when starting a drag to carry the card and all following siblings. Groups always carry their children. Unavailable moves are gray. Ctrl-click or Shift-click selects several cards for grouping; dragging an existing selection moves that selection. Duplicate copies a card; Split group removes its wrapper; the red trash can deletes it. Add condition and Add group append when clicked or insert where dropped."] = true
 L["Drag the title bar to move. Set Scale with the top-left slider; child windows follow it. The question mark toggles Help. Close with X, Escape, or right-click in the content area."] = true
 L["Edit the description, author, realm, email, website and version. Source citations remain separate from your attribution. Use changes updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values."] = true
-L["Editing settings"] = true
 L["Expand an announcement to choose its action, event, channel and text. Spell fields search the catalog; where the client has spell ranks, Use this exact spell rank limits matching to the rank you chose. Enabled toggles the announcement. Add announcement creates a new entry after an action is selected."] = true
 L["Groups and toggles"] = true
 L["Help and saving"] = true
-L["Highlight effects"] = true
-L["If / Unless toggles negation. Enabled / Disabled keeps the saved fields while skipping evaluation. All / Any changes AND / OR. Click a group name to rename it; the branch icon hides or shows its children. Gray descendants cannot be reached."] = true
 L["Move, copy and remove"] = true
-L["Names and details"] = true
-L["Search or filter the rotation roster, then select a rotation. Blue Built In rotations use the same editor but remain read-only; Duplicate makes an editable copy. The name and Metadata describe the rotation. Switch condition selects when it applies. Use the Rotation and Cooldowns tabs to select the content below the switch condition. Cooldowns highlight independently of the ordered rotation."] = true
 L["Select an effect to edit its name, type and type-specific settings. The icon previews it live. Sequence sections edit animation, color, pulse or custom frames in order. Duplicate creates an independent effect. Import replaces the selected effect after validation."] = true
-L["The question mark explains the visible controls. With condition fields open, it adds that condition’s help below the fields. Undo / Redo affect the draft. Apply saves; Discard or Cancel abandons draft changes. Red borders mark invalid or incomplete data."] = "The question mark opens full Help for its subject. Hover controls for brief tips. Undo / Redo affect the draft. Apply saves; Discard or Cancel abandons draft changes. Red borders mark invalid or incomplete data."
 L["These settings apply immediately. Press Enter or leave a text field to commit it. Invalid text stays red and blocks navigation until corrected. Searchable selectors open on click and filter as you type. Section headings collapse or expand their contents."] = true
-L["Using this page"] = true
-L["Version, author, credits and project links are shown here. Click a link field to select its text for copying."] = true
-L["Window controls"] = true
 
 L["Unknown spell"] = true
 
 L["Item data loading"] = true
 
-L["Primary"] = true
 
-L["Secondary"] = true
 
 L["No matches."] = true
 
@@ -1788,7 +1466,6 @@ L["Back to conditions"] = true
 
 L["Built-in category"] = true
 
-L["Delete category"] = true
 
 L["Delete this category? Its conditions will remain available under Other."] = true
 
@@ -1798,25 +1475,16 @@ L["Open Manage categories below the list for category maintenance. Back to condi
 
 L["Name"] = true
 
-L["Rename the selected category in Manage categories. Built-in categories cannot be renamed or deleted."] = true
 
-L["Add an empty named category from the category-management list. Move To in condition settings assigns a condition to it."] = true
 
-L["In Manage categories, move the selected category earlier in the category list."] = true
 
-L["In Manage categories, move the selected category later in the category list."] = true
 
-L["Delete a named category after confirmation. Its conditions remain available under Other; their definitions are preserved."] = true
 
 L["In Manage categories, copy or replace a category’s ordered condition identifiers. Named categories and Other are exclusive destinations. Switch membership is independent."] = true
 
-L["Filter the visible condition list by name or identifier. The category filter still applies."] = true
 
-L["Allow this condition type to be used when automatically selecting a rotation."] = true
 
-L["Hide this condition from the Other picker category. Explicit named-category and Switch membership remain available."] = true
 
-L["Condition order"] = true
 
 L["The condition ordering controls in condition settings move the selected condition to the top, up, down or to the bottom within its current category. These are separate from the Up and Down controls for category order."] = true
 
@@ -1869,7 +1537,6 @@ L['Activate profile'] = true
 
 L['Active profile'] = true
 
-L['Apply / Cancel'] = true
 
 L['Apply pending changes before leaving? Use Cancel on the page to discard them.'] = true
 
@@ -1879,7 +1546,6 @@ L['Categories'] = true
 
 L['Choose a category and search for a condition. Hidden removes it from pickers without deleting its definition. Switch Condition controls its availability for automatic rotation switching. Move To stages a category destination; its Apply button confirms the move. The assigned category opens category management. Sidebar arrows and dragging order entries. Page Apply saves the draft; Cancel discards it. Custom conditions can be edited, duplicated or deleted.'] = true
 
-L['Choose a named category or Other, then use Apply beside the destination to stage the move. Page Apply saves all pending changes. Use Switch Condition separately for automatic-switch availability.'] = true
 
 L['Choose an item set and edit its priority list. Global shares the set across profiles. Move arrows change item priority. Bind item set picks up an available item for placement on an action bar; The binding pill removes matching bound bar actions when unbinding, outside combat. Reset restores a packaged set. Search or drag items into reference fields. Apply saves settings; Cancel discards them. Binding changes are explicit action-bar operations.'] = true
 
@@ -1928,9 +1594,6 @@ L['Enable selected cards'] = true
 L['Disable selected cards'] = true
 L['Delete selected cards'] = true
 L['Clear selection'] = true
-L['Select several cards'] = true
-L['Ctrl-click cards to add or remove them from the selection; Shift-click selects the siblings between it and the last clicked card. Shift-drag on empty canvas draws a box that selects every card it touches (Ctrl+Shift-drag adds). With several cards selected, the strip above the canvas groups them as All or Any, and Duplicate, Enable, Disable and Delete act on every selected card; one Undo reverses each. Drag any selected card to move the selection.'] = true
-L['Ctrl-click cards to add or remove them from the selection; Shift-click a title or condition to select the siblings between it and the last clicked card. Shift-drag on empty canvas draws a box that selects every card it touches (Ctrl+Shift-drag adds). Drag any selected card to move the whole selection to one gap. Beside Apply, Duplicate, Enable, Disable and Delete act on every selected card, and one Undo reverses each. Branches keep their Evaluate / Always mode. Click empty canvas to clear the selection.'] = true
 L['Target casting: %s'] = true
 L['Focus casting: %s'] = true
 L['Target channeling: %s'] = true
@@ -1946,7 +1609,6 @@ L["Right-click to insert your target's cast or a recent cast."] = true
 
 L['Search or drag an item here'] = true
 
-L['Select a profile in the sidebar to inspect it, then Activate profile to switch. New and Duplicate open a named draft with Apply and Cancel. Import stages a validated new profile; Compare shows setting differences. Copy and Reset replace the active profile after confirmation; the red trash deletes an inactive profile.'] = true
 
 L['Select an effect to edit its name, type and type-specific settings. The icon previews it live. Sequence sections edit animation, color, pulse or custom frames in order. Duplicate creates an independent effect. Drag a sequence card surface to reorder it; fields remain editable. New effects can be configured before naming. Apply saves the draft; Cancel discards it. Import stages a validated replacement.'] = true
 
@@ -1966,7 +1628,6 @@ L['Value'] = true
 
 L['Choose an action and complete the announcement before applying.'] = true
 
-L['The condition ordering controls are arrows and draggable rows in the sidebar of the selected category. In Manage categories, the same controls order the categories themselves.'] = true
 
 L['Apply changes before leaving this page?'] = true
 
@@ -2031,38 +1692,17 @@ L["Invalid switch priority for %s:%s; explicit repair resets it to zero."] = tru
 
 -- Rank-aware aura families.
 L["%s (any rank)"] = true
-L["Unticked, any rank of the spell matches: a numeric spell selection also recognizes auras with the same readable localized spell name. Ticked, only the exact spell ID you chose matches. Conditions saved before this option keep the exact ID until you untick it. Spell names already match by name. Unavailable metadata or restricted aura identity stays unavailable, including under NOT. Different spells sharing a name can match; tick the option when that distinction matters."] = true
 L["Unticked, any rank of the spell matches. Ticked, only the rank you chose matches."] = true
-L["Unticked (the default), any rank of the spell matches. Ticked, only the rank you chose matches."] = true
-L["Unticked (the default), any rank of the spell matches. Ticked, only the rank you chose matches, and that rank must be on your action bars."] = true
-L["A spell picked in the editor is matched by its spell ID, so the condition works on every client language. Conditions saved with a spell name keep matching by that name. If the client cannot read the spell being cast, the condition is unavailable, including under NOT."] = true
 
 -- Spell ID identity for casts, channels and forms.
-L["A spell picked in the editor is matched by its spell ID, so the condition works on every client language. Any rank of that spell matches unless Use this exact spell rank is ticked. Conditions saved with a spell name keep matching by that name. If the client cannot read the spell being cast, the condition is unavailable, including under NOT."] = true
-L["A form is chosen by its spell, so the condition keeps working as new forms are learned and on every client language. Any rank of the form matches. The list shows the forms on your stance bar, then your class's other forms on this client. A condition saved by stance bar slot keeps that slot until you choose a form. If the client cannot read the active form, the condition is unavailable, including under NOT."] = true
-L["Stance bar slot %s (%s)"] = true
 L["Cast Progress"] = true
 L["Channel Progress"] = true
-L["%s cast progress"] = true
-L["%s channel progress"] = true
-L["Progress"] = true
-L["How much of the current cast of {unit} is done, from 0% when it starts to 100% when it completes. It follows haste and pushback, because it is measured against the cast's own start and end. If the unit is not casting, this condition is not successful, whatever the operator; if the cast's times cannot be read, it is unavailable, including under NOT."] = true
-L["How much of the current channel of {unit} is done, from 0% when it starts to 100% when it ends. Ticks are evenly spaced through a channel, so tick N of a K-tick channel lands at N/K whatever your haste: to clip Mind Flay (3 ticks) after its second tick, use at least 66%. Pushback shortens a channel and the progress follows it. If the unit is not channeling, this condition is not successful, whatever the operator; if the channel's times cannot be read, it is unavailable, including under NOT."] = true
 
 -- Classic tree selection for adaptive rotations.
-L["Talent tree %s"] = true
-L["This client does not expose a Classic talent-tree layout. The saved tree reference is preserved."] = true
-L["Talent tree"] = true
 L["Talent Tree Points"] = true
 L["points spent in %s"] = true
-L["the number of points spent in %s"] = true
-L["Talent tree selects the Classic tree whose spent points are compared. Public points are read again on the next evaluation; missing or restricted points are unavailable, including under NOT. Grids and trait trees are unsupported."] = true
-L["Compare whole points spent from zero to 512. An explicit comparison with zero can describe an unspent tree."] = true
-L["Talent trees are named, never numbered: the list shows each tree by name, in the order the talent window shows them, for the class the rotation is for. Your own class takes the names the game gives its trees; another class's rotation uses Rotation Master's own list of that class's trees. The rotation saves the tree's position in that order, so it keeps its meaning when you share it."] = true
 L["Primary Talent Tree"] = true
 L["your primary talent tree is %s"] = true
-L["Talent tree selects the unique Classic tree with the most positive spent points. Equal maxima, no spent points, missing records and restricted points are unavailable, including under NOT."] = true
-L["The primary tree is derived from readable points, not the saved rotation slot. Hybrid builds may need tree-point or individual-talent conditions instead; the primary tree does not assign a tank or healer role. Grids and trait trees are unsupported."] = true
 -- Talent tree names (Data/talent_trees.lua): what a tree is called when the game cannot say,
 -- for a class you are not playing or before the talent data has loaded. Own keys, because a
 -- plain "Elemental" or "Fire" also names a creature type and a spell school.
@@ -2094,8 +1734,6 @@ L["TalentTree.Balance"] = "Balance"
 L["TalentTree.Feral Combat"] = "Feral Combat"
 
 -- Protected item observations
-L["Item sets are checked in priority order. Bag counts use the first carried candidate, not the sum. Availability, range and cooldown checks use the first carried or equipped candidate. Missing or restricted observations stay unavailable, including under NOT."] = true
-L["Item Available checks the required level and enabled item cooldown. An active cooldown qualifies only when it ends with the readable global cooldown. This condition does not bypass the action's implicit ownership, usability and range checks."] = true
 
 -- TBC early Frost Mage preview.
 L["Default.TBC.Mage.Frost.Name"] = "Frost"
@@ -2116,77 +1754,15 @@ L["Switch between the diagram and compact tree list. This changes only the view.
 L["Zoom out"] = true
 L["Zoom in"] = true
 L["Reset canvas zoom to 100%. Drag empty canvas space to pan. Window scale is unchanged."] = true
-L["Navigating rotations"] = true
 L["Diagram / List changes only the rotation view; General settings choose the default. Diagram has floating minus, percentage and plus controls at the bottom right. Scroll to zoom from 25% to 200%; click the percentage or middle-click to reset to 100%. Drag empty diagram space to pan. List uses normal scrollbars with touching cards and boxed branch arms, False before True. Cooldowns use a separate scrolling grid. Dragging cards reorders them in every view. Each workspace currently shows at most 200 cards; the remaining saved cards are preserved."] = true
 
 -- Current native announcement help: whole paragraphs, not English fragments.
-L["Enabled / Disabled"] = true
-L["Announcement substitutions"] = true
-L["New, Duplicate, Import/Export and Compare"] = true
-L["Help.Announces.editing"] = "Announcement details stay always expanded while editing. Press Enter or leave a text field to stage its value; Apply saves the draft. Invalid fields must be corrected before Apply; Discard abandons pending changes. Searchable selectors open on click and filter as you type. The page Help icon explains every option and text substitution."
-L["Help.Announces.overview"] = "Announce selected spell casts or item uses independently of your active rotation, or invoke a configured Via Script/Macro entry directly. Select an entry in the sidebar, or use New to prepare one. The trigger applies to every ordered output card; each card has its own destination and conditions. These settings do not cast spells or use items. Cast-triggered announcements follow RM's combat-data policy and do not run on reference-only clients."
-L["Help.Announces.name"] = "An optional name identifies this announcement in the sidebar. Without one, the action name or Via Script/Macro identifier is used. Changing this display name does not change the watched action or callable identifier."
-L["Help.Announces.type"] = "Choose Spell, Pet Spell, Item or Via Script/Macro. Changing type clears the previous action and exact-rank choice. Via Script/Macro uses an Identifier instead of a cast event or stored action; switching back restores the event selector. Choosing the current type keeps its fields."
-L["Help.Announces.type.spell"] = "Watch one of your spells. Choose the spell in the searchable field below Action Type."
-L["Help.Announces.type.pet"] = "Watch a spell from your pet spellbook. The spell selector uses the pet catalog for this action type."
-L["Help.Announces.type.item"] = "Watch item-use spells from a reusable item set or a custom list. This is an announcement trigger; it does not choose an item to use for you."
-L["Help.Announces.spell"] = "Search by spell name, select a result, or drag a spell from your spellbook or action bar into the field. The icon and name identify the selected spell. Spell and pet spell choices keep their respective catalog scope."
-L["Help.Announces.ranked"] = "Unchecked (the default), any known rank of the spell matches. Checked limits matching to the rank you chose. This checkbox is shown only for Spell and Pet Spell, and only on clients with spell ranks."
-L["Help.Announces.items"] = "Choose a reusable set, or Custom to edit this announcement's own list. For a custom list, search for or drag items into the fields; Add item appends one and a red trash can removes an entry. Any matching item-use spell in the list can trigger the announcement; list order does not limit announcements to the first carried item. Changes to a shared set belong on the Item Sets page."
-L["Help.Announces.event"] = "For automatic action types, choose which observed cast event triggers this entry. A start, stop, interruption, failure or delay is different from a successful cast. Client support determines which events and observations are available. Via Script/Macro has no cast event."
-L["Help.Announces.event.START"] = "The cast or channel started. This event does not mean it will finish successfully."
-L["Help.Announces.event.STOP"] = "The cast or channel stopped. A stop alone does not establish whether it succeeded."
-L["Help.Announces.event.SUCCEEDED"] = "The client reported a successful spell cast or item-use spell. For a channel, this can occur as channeling begins rather than after its final tick."
-L["Help.Announces.event.INTERRUPTED"] = "The client reported that the cast was interrupted. This can include canceling a cast yourself."
-L["Help.Announces.event.FAILED"] = "The client reported that the cast failed. This is separate from the successful-cast event."
-L["Help.Announces.event.DELAYED"] = "The client reported a delay to the cast. This event is not a completion or success notification."
-L["Help.Announces.announce"] = "Choose a chat destination, local output, a named Emote or Audible. Emote replaces Text with an emote selector and optional recipient. Audible replaces Text with Sound. Text is retained when switching modes. Say, Yell, Whisper and named joined channels are offered only for Via Script/Macro and remain subject to native restrictions."
-L["Help.Announces.channel.audible"] = "Play the selected sound locally on the Master audio channel; no chat message is sent. Choose an available sound before applying the announcement."
-L["Help.Announces.channel.partyraid"] = "Use raid chat while in a raid, party chat while in a party, or your local chat frame while solo."
-L["Help.Announces.channel.party"] = "Use party chat when grouped, including your party within a raid. This destination produces no solo chat message."
-L["Help.Announces.channel.raidwarn"] = "Request group warning output. Depending on group membership and permissions, RM may use raid chat, party chat, or local output instead."
-L["Help.Announces.channel.emote"] = "A saved free-text emote keeps its original message. Select Emote to use a named client emote instead."
 L["Custom emote"] = true
 L["Use spell recipient ({{target}})"] = true
 L["Automatic Say and Yell are unavailable. Choose another announcement destination."] = true
-L["Help.Announces.channel.gesture"] = "Choose a named emote from this client's slash commands, such as /cheer. This does not send the Text field as a custom emote."
-L["Help.Announces.emote"] = "Choose the emote to perform when the configured cast event is observed. The client may restrict an emote or require a hardware action; RM does not retry through another output path."
-L["Help.Announces.emote_target"] = "For cast entries, checked directs the emote to the recipient recorded for this exact cast, including click casting. It does not use your current target or a previous cast's recipient. For Via Script/Macro, checked uses the supplied macro unit. A missing recipient skips targeted output. Unchecked performs the emote without a target."
-L["Help.Announces.channel.local"] = "Write to your own chat frame. Other players do not receive this message."
-L["Help.Announces.text"] = "Enter the message for a chat destination. The substitutions below insert action and cast information when it is available. This text is not used for Audible or named Emote output."
-L["Help.Announces.substitutions"] = "For cast entries, {{spell}} is a spell link, {{item}} an item link and {{event}} the localized event name. {{target}} uses the recorded cast target, with the last recorded target for that spell as a fallback; it does not automatically use your selected target or your name. Unavailable cast substitutions can remain unchanged. Via Script/Macro instead uses its supplied target and spell, {{event}} becomes Via Script/Macro, and required missing inputs skip output; this API supplies no {{item}}."
-L["Help.Announces.sound"] = "Choose a sound supplied by the shared-media catalog, then click Play to preview it. Preview is local and does not save the draft. An unavailable sound cannot be previewed; Audible announcements require a nonempty sound selection."
-L["Help.Announces.state"] = "The pill turns this entry on or off while keeping its fields. Disabled entries do not announce matching casts or macro invocations. Apply saves the changed state."
-L["Help.Announces.save"] = "Edits stay in a draft until Apply. Complete the action or Via Script/Macro identifier and other required fields before saving. Discard abandons changes to saved announcements; Cancel closes a new creation draft. Leaving pending changes offers Apply, Discard or Cancel navigation."
-L["Help.Announces.collections"] = "Use the sidebar buttons to create, duplicate, transfer or compare announcements. Apply saves the imported draft; Compare does not merge entries. Via Script/Macro Duplicate assigns a distinct identifier and every copied output gets a fresh identity. Series exports use version 2; version 1 remains available for legacy single-output entries. Imports and Apply reject ambiguous identifiers. The red trash permanently deletes the selected saved entry after confirmation. Resolve pending edits first; deletion does not carry into the next selected draft."
 L["Press Enter or leave a text field to stage its value; Apply saves the draft. Invalid text stays red and blocks navigation until corrected. Searchable selectors open on click and filter as you type. Section headings collapse or expand their contents."] = true
 
 -- Item-set and item-list help: translate each paragraph as a whole.
-L["Help.ItemSets.overview"] = "An item set is an ordered list of alternatives, such as different mana potions. Runtime selection checks the list from the top for a carried or, where requested, equipped item. Priority comes from the order you choose, not the item level. Selecting an item does not by itself prove that it is usable, off cooldown, or in range; action readiness is checked separately."
-L["Help.ItemSets.name"] = "Name the selected set so it can be found in the sidebar and referenced by rotations or conditions. New opens a name form; its first Apply saves an empty named set. Add items afterward and Apply again to save them. Discarding later item edits keeps that already saved set. Renaming a set does not change its identity in saved references."
-L["Help.ItemSets.global"] = "Checked stores this set in the shared global collection, available to other profiles and characters using this addon database. Unchecked stores it in the current profile, which can itself be shared by characters. This is a staged move; Apply saves it. A profile set takes precedence if a global set has the same saved identity."
-L["Help.ItemSets.items"] = "The list of item cards is the priority order. Put preferred items first. RM can leave a selection unavailable when required inventory or identity observations are missing; it does not treat unknown data as proof that a lower-priority item should be used. The sidebar icon represents the first defined item and need not be the currently carried or highlighted one."
-L["Help.ItemSets.item"] = "Search by item name and choose a result, or drag an item from your bags or action bar into its field. The icon identifies the item; metadata can take time to load. Edit a row to replace that entry. Use its red trash can to remove it rather than clearing a required item field."
-L["Help.ItemSets.add"] = "Choose or drag an item into the empty item field above the list, then click Add item to append it to the priority list, or drag Add item into a gap between cards to insert it there. Entering an item in this field alone does not add a row."
-L["Move Up / Move Down"] = true
-L["Help.ItemSets.order"] = "Use the arrows on the left, or drag an item row into a highlighted insertion gap. Ctrl-drag moves that row and all following entries together. The floating preview identifies what you are moving. Moves past the beginning or end are unavailable. Reordering changes priority and stays in the draft until Apply."
-L["Bind / Unbind"] = true
-L["Help.ItemSets.binding"] = "Outside combat, apply pending item-set edits before binding. Drag the set (its row in the list, or the Bind pill) onto any action bar slot; an occupied slot swaps, leaving its previous action on the cursor. Or click Bind and then click an empty slot. Both pick up the first available item of the set. RM records the slot and updates it as item availability changes. The pill shows bound slot numbers; click it to unbind and remove still-matching bar items. Replaced bar actions are preserved. Binding changes are immediate action-bar operations, independent of the draft and its history."
-L["Help.ItemSets.reset"] = "Restore the packaged item list for this set. Reset is available only for a set with a packaged default. The restored list is staged until Apply; the name is kept."
-L["Help.ItemSets.delete"] = "The red trash can at the top right permanently removes the selected saved set after confirmation. Resolve pending edits before the final warning. References in rotations or conditions then need another set. Deletion reconciles still-matching bound bar actions and keeps the set if unbinding fails; the next selection opens without an unsaved deletion marker."
-L["Undo / Redo"] = true
-L["Help.ItemSets.history"] = "Undo and Redo travel through recent item-set draft edits, including replacements, additions, ordering and row removals. They are unavailable when that direction has no history. Apply, Discard or leaving the page clears this bounded history. They do not reverse confirmed entity deletion or explicit action-bar binding operations."
-L["Apply / Cancel"] = true
-L["Help.ItemSets.save"] = "Ordinary item-set edits stay in a draft until Apply. Discard restores the saved item sets. Cancel closes a new creation draft. Leaving with pending changes offers Apply, Discard or Cancel navigation. Invalid fields must be corrected before Apply; Discard can abandon them."
-L["Help.ItemSets.collections"] = "Use the buttons below the sidebar to create, duplicate, transfer, or compare sets. Duplicate makes an independent profile copy. Import shows the source name and can create a renamed copy or replace the selected list; Apply saves the staged result. Compare inspects differences without merging or modifying either set."
-L["Legacy macro buttons"] = true
-L["Help.ItemSets.macros"] = "Legacy clients may allow /click to invoke an RM item-set button separately from action-bar binding. The name is RM_ followed by the set name with non-alphanumeric characters removed, then an underscore and unit token. For a set named Bandages, an example is /click [@mouseover,nodead,help] RM_Bandages_mouseover. Other unit suffixes include player, pet, target, focus, pettarget, targettarget, focustarget, and mouseovertarget. These buttons contain item-use macro lines and do not provide the same readiness or first-item guarantee as the recommendation engine. Availability is subject to the client's secure-button and macro restrictions; reference-only support does not promise executable macro buttons."
-L["Help.ItemSets.list.item"] = "Search for an item or drag it into the item field or icon. Choose the result to retain its exact item identity. The icon and name may be unavailable until metadata loads. Field clearing and save behavior belong to the editor that contains this list; use Delete when you intend to remove an entry."
-L["Help.ItemSets.list.top"] = "Move this entry to the first position in the item priority list, when that control is offered."
-L["Help.ItemSets.list.up"] = "Move this entry one position earlier. A move before the first entry is unavailable."
-L["Help.ItemSets.list.down"] = "Move this entry one position later. A move past the final entry is unavailable."
-L["Help.ItemSets.list.bottom"] = "Move this entry to the final position in the item priority list, when that control is offered."
-L["Help.ItemSets.list.delete"] = "Remove this entry from the list. In a draft editor this remains pending until Apply, and Discard abandons the row edit. Undo is available where the containing editor provides draft history. This differs from permanently deleting the entire set after confirmation."
 
 L["Default rotation view"] = true
 
@@ -2201,103 +1777,65 @@ L["%d cards"] = true
 L[" (%d hidden)"] = true
 L["Click to fold or unfold this branch arm. Other cards and conditions are unchanged."] = true
 
-L["%s totem {{!is|is not}} active"] = true
 
-L["%s {{!are|are not}} %s"] = true
 
 L["%s {{!are|are not}} PVP flagged"] = true
 
 L["%s {{!are|are not}} a %s"] = true
 
-L["%s {{!are|are not}} currently casting"] = true
 
 L["%s {{!are|are not}} currently casting %s"] = true
-L["{unit} {{!are|are not}} currently casting {spell}"] = true
 
-L["%s {{!are|are not}} currently channeling"] = true
 
 L["%s {{!are|are not}} currently channeling %s"] = true
-L["{unit} {{!are|are not}} currently channeling {spell}"] = true
 
 L["%s {{!are|are not}} in combat"] = true
 
 L["%s {{!has|does not have}} %s"] = true
 
 L["%s {{!has|does not have}} a %s debuff"] = true
-L["%s {{!has|does not have}} a debuff of type %s"] = true
-L["%s {{!has|does not have}} a debuff you applied of type %s"] = true
 
-L["%s {{!has|does not have}} a stealable buff"] = true
-L["%s {{!have|do not have}} a stealable buff"] = true
 
 L["%s {{!have|do not have}} %s"] = true
 
 L["%s {{!have|do not have}} %s where %s"] = true
 
 L["%s {{!have|do not have}} a %s debuff"] = true
-L["%s {{!have|do not have}} a debuff of type %s"] = true
-L["%s {{!have|do not have}} a debuff you applied of type %s"] = true
 
-L["%s {{!is|is not}} %s"] = true
 
 L["%s {{!is|is not}} PVP flagged"] = true
 
 L["%s {{!is|is not}} a %s"] = true
-L["%s class {{!is|is not}} %s"] = true
-L["%s creature type {{!is|is not}} %s"] = true
-L["%s classification {{!is|is not}} %s"] = true
 
-L["%s {{!is|is not}} active"] = true
 
-L["%s {{!is|is not}} active or pending"] = true
 
 L["%s {{!is|is not}} active with %s"] = true
-L["%s {{!is|is not}} active where %s"] = true
 
 L["%s {{!is|is not}} an enemy"] = true
 
 L["%s {{!is|is not}} attackable"] = true
 
-L["%s {{!is|is not}} available"] = true
 
-L["%s {{!is|is not}} beyond melee range"] = true
-L["%s {{!are|are not}} beyond melee range"] = true
 
-L["%s {{!is|is not}} currently casting"] = true
-L["%s {{!is|is not}} currently channeling"] = true
 
 L["%s {{!is|is not}} currently casting %s"] = true
-L["{unit} {{!is|is not}} currently casting {spell}"] = true
-L["{unit} {{!is|is not}} currently channeling {spell}"] = true
 
-L["%s {{!is|is not}} immune to %s"] = true
-L["%s {{!are|are not}} immune to %s"] = true
 
 L["%s {{!is|is not}} in a %s role"] = true
-L["%s role {{!is|is not}} %s"] = true
 
 L["%s {{!is|is not}} in combat"] = true
 
-L["%s {{!is|is not}} in range"] = true
 
-L["%s {{!is|is not}} sometimes immune to %s"] = true
-L["%s {{!are|are not}} sometimes immune to %s"] = true
 
-L["%s {{!will|will not}} run"] = true
 
 L["%s's channeled spell {{!is|is not}} interruptable"] = true
-L["%s channeled spell {{!is|is not}} interruptible"] = true
 
 L["%s's spell {{!is|is not}} interruptable"] = true
-L["%s spell {{!is|is not}} interruptible"] = true
 
 
 
-L["You {{!know|do not know}} %s"] = true
 
-L["Your %s weapon {{!is|is not}} enchanted"] = true
 
-L["Your pet {{!knows|does not know}} %s"] = true
 
 L["Your talent {{!is|is not}} a %s role"] = true
 
@@ -2314,51 +1852,33 @@ L["is not less than or equal to"] = true
 L["not (%s)"] = true
 
 
-L["you {{!are|are not}} at least %s on %s"] = true
 
 L["you {{!are|are not}} in %s form"] = true
-L["you {{!are|are not}} in %s"] = true
 
 L["you {{!are|are not}} in a %s instance"] = true
-L["your instance type {{!is|is not}} %s"] = true
 
-L["you {{!are|are not}} in a group"] = true
 
 L["you {{!are|are not}} in a outdoors"] = true
-L["you {{!are|are not}} outdoors"] = true
 
-L["you {{!are|are not}} in a raid"] = true
 
-L["you {{!are|are not}} in control of your character"] = true
 
-L["you {{!are|are not}} moving"] = true
 
-L["you {{!are|are not}} stealthed"] = true
 
-L["you {{!are|are not}} talented in %s"] = true
 
 L["you {{!have|do not have}} %s equipped"] = true
 
 L["you {{!have|do not have}} %s glyph"] = true
-L["you {{!have|do not have}} %s active"] = true
 
 L["you {{!have|do not have}} a %s totem active with %s"] = true
-L["you {{!have|do not have}} a %s totem active where %s"] = true
 
-L["you {{!have|do not have}} a pet"] = true
 
 L["you {{!have|do not have}} a pet named %s"] = true
-L["you {{!have|do not have}} a pet named {name}"] = true
 
-L["your primary talent tree {{!is|is not}} %s"] = true
 
 L["zone {{!is|is not}} a %s zone"] = true
-L["the zone's PVP status {{!is|is not}} %s"] = true
 
 L["{{!in|not in}} %s"] = true
-L["{{!in|not in}} {zone}"] = true
 
-L["Time in combat"] = true
 
 L['Type a tag and press Enter, or choose an existing tag. Click a tag to remove it; right-click to choose its color.'] = true
 L['Search existing tags and select any number of them. Click a selected tag to remove it; right-click to choose its color.'] = true
@@ -2420,9 +1940,6 @@ L['Search...'] = true
 L['Add'] = true
 
 
-L['Use All, Built In or Custom to choose the condition source, then filter by Switch, Other or a named category. Search above these controls narrows the visible list without changing assignments.'] = true
-L['Open Manage categories below the list for category maintenance. Manage conditions returns to individual condition settings.'] = true
-L['Below the condition list, Import/Export opens the selected custom definition for transfer and code review; it is disabled for built-in conditions. In Manage categories, transfer a category’s ordered condition identifiers. Named categories and Other are exclusive destinations. Switch membership is independent.'] = true
 
 L['Comparison limit'] = true
 L['Showing the first 512 conditions per side.'] = true
@@ -2448,11 +1965,9 @@ L['Built In syntax highlighting'] = true
 L['Plain text'] = true
 L['Integrations'] = true
 L['Lua editor'] = true
-L['Editor'] = true
 L['Unavailable'] = true
 L['Choose optional addon integrations.'] = true
 L['Automatic uses an available editor integration, with built-in syntax highlighting as its fallback. Plain text disables highlighting. Apply changes the editor used the next time you open a custom condition.'] = true
-L['Optional addons'] = true
 L['Loaded; editor integration not connected.'] = true
 L['Not loaded.'] = true
 L['These addons are optional. Only connected editor providers appear in the Editor menu. Choosing an unavailable or failing editor falls back to the built-in editor.'] = true
@@ -2491,7 +2006,6 @@ L['Input test'] = true
 L['Stock font'] = true
 L['RM font'] = true
 L['Click the sample, then try Up/Down and look for the caret. Compare Stock font and RM font. This temporary text is not saved.'] = true
-L['Diagnostics'] = true
 L['Arrow test'] = true
 L['Arrows: on'] = true
 L['Arrows'] = true
@@ -2552,9 +2066,6 @@ L['Describe what this function does.'] = true
 L['Add a function or duplicate a packaged helper to edit its source.'] = true
 
 L['LuaWorkbench supplies editing, completion, API knowledge and debugging. Debug runs this buffer explicitly using the test arguments. It does not replace the saved rotation or live callback.']=true
-L['Test arguments']=true
-L['API knowledge']=true
-L['Test arguments must be a Lua table.']=true
 L['Connected: embedded editing, completion, API knowledge and debugging.']=true
 
 L['Review the dependency bundle before applying it.'] = true
@@ -2582,9 +2093,7 @@ L['Required functions'] = true
 L['Paste a bundle above, then review its original names, destinations and required functions.'] = true
 
 L['Filter Built In or Custom helpers and search their names, identifiers or descriptions. Packaged helpers show read-only source and typed documentation. Duplicate creates an editable copy with a new stable identifier. Argument and return rows document the Lua signature.'] = true
-L['Undo and Redo edit the Lua body. Reset restores the saved body or new-function template and can be undone. Check syntax executes no custom Lua. Apply saves the body and metadata together; Discard abandons the draft. Leaving with changes offers Apply, Discard or Cancel.'] = true
 L['Expand Function bindings to add explicit helper aliases and choose their targets. Changing an alias does not rewrite your Lua body. Missing, disabled or invalid dependencies keep their dependents unavailable until repaired.'] = true
-L['Include custom function dependencies exports their source with the selected definition. Without it, the bundle records required helper identities and versions. Review source shows every imported Lua body. Resolve each original name and destination with Reuse, Replace or a new identifier. Apply import saves the complete reviewed bundle and can register imported Lua. Only apply code you trust.'] = true
 L['Check'] = true
 L['Live'] = true
 L['Preview'] = true
@@ -2655,111 +2164,34 @@ L["Choose the editor for custom Lua conditions and functions. Show line numbers 
 L['All namespaces'] = true
 L['Call a utility as namespace.name(...). Built In namespaces follow source files; custom functions choose their Namespace. Accepting a completion attaches its stable dependency binding; for a typed call, add its qualified name under Function bindings. Namespaces do not supply self: the Invoke example includes a method receiver explicitly, and Existing API preserves its original dot or colon spelling. Existing aliases still work. Renaming a function or namespace does not rewrite existing code or bindings. Missing, disabled or invalid dependencies keep consumers unavailable.'] = true
 L['Choose a source helper and its name in this Lua body, such as custom.ready or utils.getCached. Namespaces are private to this callback. Renaming a binding does not rewrite code.'] = true
-L['Debug current buffer'] = true
-L['Debugger terminal'] = true
 L['Existing API'] = true
 L['Name in code'] = true
 L['Namespace'] = true
 L['Namespaces group functions; they do not supply a receiver. Accept a completion to bind the shown dotted call. For a typed call, add the same qualified name under Function bindings. Method examples include the required receiver explicitly. Functions are shared across profiles after Apply.'] = true
-L['Play runs the current buffer once without debugging. Condition callbacks use the fields configured in Test; functions use Test arguments. Returns, printed output and full errors are available in Output. Running does not apply source changes or replace the live callback.'] = true
 L['Private utility-function namespace. It contains only explicit bindings for this callback.'] = true
-L['Run current buffer'] = true
-L['The Debug button starts a separate session and pauses at the first executable line or breakpoint. Continue resumes execution, Step over advances past the current operation, and Step into enters instrumented script functions. Native functions cannot be stepped into. Stop ends the session. F5 continues, F10 steps over, F11 steps into, and Shift+F5 stops.'] = true
-L['The debugger terminal appears below the code while debugging. When paused, enter expressions or assignments to inspect or change the current variables. The drawer button hides or shows the terminal. Output provides a copyable report of printed output, terminal evaluations and complete errors.'] = true
 
 L['Argument'] = true
-L['Arguments and returns'] = true
 L['Bindings (%d)'] = true
 L['Call a utility as namespace.name(...). Built In namespaces follow source files; custom functions choose their Namespace. Accepting a completion attaches its stable dependency binding; for a typed call, add its qualified name under Function bindings. Namespaces do not supply self. Pass a method receiver explicitly in a namespaced dot call; object:method(x) is Lua shorthand for object.method(object, x). Existing addon APIs remain compatible with saved definitions. Existing aliases still work. Renaming a function or namespace does not rewrite existing code or bindings. Missing, disabled or invalid dependencies keep consumers unavailable.'] = true
 L['Changing argument or return order can break existing callers. Rotation Master will not rewrite their Lua code. Continue?'] = true
-L['Choose an existing namespace from the suggestions or type a new dotted namespace. Built In namespaces follow source files; custom namespaces are implied by saved functions and need no separate maintenance.'] = true
 L['Click an Arguments or Returns heading to collapse or expand it. + Argument and + Return append when clicked, or insert at a highlighted gap when dragged. Drag a row or use Up / Down to reorder; Ctrl-drag carries following rows. The trash can removes a row. Type and Nullable document accepted values; Description explains each input or result. Lua can return several ordered results. Reordering a saved function warns because positional callers may need changes; RM does not rewrite call sites.'] = true
-L['Function names use letters, numbers and underscores, beginning with a letter or underscore. The code signature shows the qualified namespace.name used by callers.'] = true
 L['Return'] = true
-L['Search helpers by name or description, then filter Built In / Custom and namespace. Packaged helpers use the same read-only pane. Duplicate creates an editable custom copy.'] = true
 
 L['Changing argument order can break existing callers. Rotation Master will not rewrite their Lua code. Continue?'] = true
 L['Changing return documentation order does not rewrite return statements or existing callers. Review the Lua body and callers for the new order. Continue?'] = true
-L['Click an Arguments or Returns heading to collapse or expand it. + Argument and + Return append when clicked, or insert at a highlighted gap when dragged. Drag a row or use Up / Down to reorder; Ctrl-drag carries following rows. The trash can removes a row. Type and Nullable document accepted values; Description explains each input or result. Lua can return several ordered results. Return rows describe those results; moving them does not rewrite return statements. Reordering a saved function warns because positional callers may need changes; RM does not rewrite call sites.'] = true
 
 L['Card controls'] = true
 L['Describe this value for function documentation, completion and hover help. Changes remain in the draft until Apply.'] = true
 L['Drag a card to reorder arguments; Ctrl-drag includes following arguments. Up and down move one position. Duplicate copies the argument with a unique name; the trash can removes it. Reordering a saved function requires confirmation because existing callers are not rewritten.'] = true
 L['Drag a card to reorder return documentation; Ctrl-drag includes following returns. Up and down move one position. Duplicate copies the documented return value; the trash can removes it. Return order in this list does not rewrite return statements or callers.'] = true
-L['Preview rendered. Use Output for printed messages.'] = true
 L['Rendered output appears here when the callback runs or steps through widget creation.'] = true
 L['Set values in Test before running or debugging this condition.'] = true
 L['The argument name is the local parameter available in the Lua body. Use a valid Lua identifier. Renaming this documentation does not rewrite references in the code.'] = true
 L['Type and Nullable describe the values accepted or returned by this function. They document the contract; they do not rewrite or validate values in the Lua body.'] = true
 
 -- Whole-field General help; each paragraph can be translated independently.
-L["Help.General.enable"] = "Enable Rotation Master recommendations, automatic rotation switching and bound item-set updates. Disabling clears active advice and highlights and hides the preview. Apply saves the change."
-L["Help.General.poll"] = "Set how often Rotation Master reevaluates the active rotation and independent cooldowns, in seconds. A shorter interval updates advice more often and uses more processing time. It does not cast spells, queue actions, or predict future combat."
-L["Help.General.idle_poll"] = "Out of combat with no target and no focus, Rotation Master skips a polling tick unless something it watches has changed: auras, cooldowns, health or power of you, your pet or party, movement, casting, equipment, bags, form, pets or group. It still re-checks at least this often, for time-based conditions (aura or cooldown remaining), distance, and custom code. In combat, with any target or focus, or while configuration is open, every polling tick is evaluated. Zero evaluates every polling tick."
-L["Help.General.autoswitch_poll"] = "With automatic switching, Rotation Master checks this often, in and out of combat, whether a different rotation's switch conditions now match, so conditions that change on their own (nearby enemy count, threat, movement, health) take effect. Target, focus and pet changes are checked straight away. Zero turns automatic switching off. Choosing a rotation manually still overrides automatic switching until you choose Auto again."
-L["Help.General.disable_autoswitch"] = "Keep Rotation Master from automatically selecting another rotation from its switch condition. This preference survives reloads. Manually choosing a rotation with /rm set <rotation> also suspends automatic switching until you choose automatic selection again."
-L["Help.General.disable_buttons"] = "Hide the main rotation recommendation on action bars. Independent cooldown highlights remain available. Enable Preview Spells if you want to see the main advice in a separate window; with both displays off, the main recommendation has no visible icon."
-L["Help.General.live_config_update"] = "How often, in seconds, the rotation editor checks each card's condition for the colored bar on the left of its condition field: green when it currently matches for you, red when it does not, gray when it cannot be read at the moment (hover the condition for why and when it was checked). Conditions are checked only while the editor is open; zero turns the bars off. This is separate from the recommendation polling interval."
-L["Help.General.minimap"] = "Show the Rotation Master minimap icon. Left-click toggles the configuration window. Right-click opens the quick menu for enabling recommendations and choosing a rotation or automatic switching."
-L["Help.General.rotation_view"] = "Choose Diagram or List as the starting rotation view. This profile preference applies when opening a rotation; changing the view inside the editor does not change this setting. Cooldowns always use a scrolling grid."
-L["Help.General.spell_history"] = "Choose how many seconds of previous spell casts to retain for history-based conditions. Older casts are removed as recommendations update. A longer history retains more records."
-L["Help.General.combat_history"] = "Choose how many seconds of combat events to retain for conditions such as recent hits, parries and blocks. Older events are removed as recommendations update. Availability depends on the client combat-data policy."
-L["Help.General.damage_history"] = "Choose how many seconds of observed damage and healing to retain for burn-rate and time-to-die estimates. Recent observations receive more weight. A longer window uses more records and smooths short changes; it cannot supply events the client does not expose."
-L["Help.General.preview_spells"] = "Choose a whole number of upcoming recommendations, from zero (hidden) to five. This is the only switch for the preview window: it is shown whenever this is above zero and hidden at zero, and the window has no close button. The preview shows current priority results, not a simulation of future cooldowns or combat. Icons start at 64 pixels; resizing scales all icons while preserving their square shape and the window ratio."
-L["Help.General.preview_opacity"] = "Adjust the preview background opacity without fading its icons. At zero only the icons remain, the hidden background does not intercept blank-space clicks and the resize grip is unavailable; an unlocked preview can still be dragged by its icons. Restore opacity in General to resize it."
-L["Help.General.preview_locked"] = "Unlocked, drag the preview by any icon or its background to move it, and resize it from the grip that appears at its lower-right corner on hover. Locked, it cannot be moved or resized and its background lets clicks through. Right-click an icon (or the background while unlocked) for a menu to lock, unlock or open these settings. Locking and unlocking take effect immediately and are saved without Apply. Other pending General edits remain unchanged."
-L["Help.General.preview_vertical"] = "Arrange preview icons horizontally (default) or vertically. Lock, Direction and Reset share one row below the opacity slider. Changing direction keeps icons square and adjusts the window ratio."
-L["Help.General.preview_reset"] = "Immediately return the preview window to the screen center and restore 64-pixel icons without Apply. Other pending settings are preserved."
-L["Help.General.preview"] = "This icon previews the selected profile effect, color, size, anchor and offsets. Previewing an effect does not save the draft or change the spell being recommended."
-L["Help.General.effect"] = "Choose the highlight used for the main recommendation and as the default for independent cooldowns. Manage available effects on the Effects page. A cooldown can override these profile settings in its action details."
-L["Help.General.magnification"] = "Scale the highlight relative to its action icon. A value of 1 uses the icon size. Drag the slider or type its numeric value; the preview updates as you edit."
-L["Help.General.color"] = "Choose the highlight color and opacity. Click the color swatch to open the picker, or enter R, G, B and A values between 0 and 1. Alpha controls opacity; individual cooldowns may override this profile color."
-L["Help.General.setpoint"] = "Choose the point on the action icon where a texture highlight is anchored by its center. Changing Anchor resets the offsets. The preview shows the resulting placement; non-texture glows may use offsets without a texture anchor."
-L["Help.General.yoffs"] = "Vertical offset in pixels. Use Up or Down on the position control, or edit V directly. Hold Shift while using an arrow for ten pixels. Center resets both offsets and the anchor to Center."
-L["Help.General.xoffs"] = "Horizontal offset in pixels. Use Left or Right on the position control, or edit H directly. Hold Shift while using an arrow for ten pixels. Non-texture glows interpret offsets according to their effect shape."
-L["Help.General.spec1"] = "Choose the display name for your primary specialization. This changes its label in Rotation Master, not your character talents or specialization."
-L["Help.General.spec2"] = "Choose the display name for your secondary specialization. This changes its label in Rotation Master, not your character talents or specialization."
-L["Help.General.loglevel"] = "Choose the amount of Rotation Master chat output. Silent suppresses routine output. Default reports normal changes such as rotation switching. Debug adds runtime statistics and trigger information. Verbose includes detailed condition and highlight activity and can produce substantial output."
-L["Help.General.detailed_profiling"] = "Include component timings in the periodic Debug or Verbose profiling report. Reports show measured runs, total, minimum, average and maximum in milliseconds. Timings include child work; nested scopes overlap and must not be added together. The overall scope starts after rotation preparation. This is elapsed timing, not the native addon CPU report."
 
 -- Complete Effects field and interaction documentation.
-L["Help.Effects.overview"] = "Effects define how action-bar icons are highlighted. They are shared across characters. General settings select the main recommendation effect and cooldown default; individual cooldowns can choose another effect. Select an effect in the sidebar to inspect or edit it."
-L["Help.Effects.name"] = "Give the effect a name used by selectors in General and cooldown action details. New drafts can change type and fields before being named, but Apply requires a nonempty, unique name."
-L["Help.Effects.type"] = "Choose the highlight implementation. Changing type stages the new fields and resets its sequence because different sequence types store different values. Choosing the current type preserves existing values. Apply saves the change; Discard restores the saved effect."
-L["Help.Effects.type.texture"] = "Texture: overlay a single image from game data or an installed addon. Its color, magnification and position come from the profile or the individual cooldown."
-L["Help.Effects.type.pixel"] = "Pixel: animate short lines around the action icon border. Lines, Frequency, Length and Thickness control this library glow."
-L["Help.Effects.type.autocast"] = "Auto Cast: animate groups of glowing particles around the action icon. Particles, Frequency and Scale control this library glow."
-L["Help.Effects.type.blizzard"] = "Glow: use the familiar Blizzard-style button glow. Frequency controls its animation rate."
-L["Help.Effects.type.dazzle"] = "Dazzle: keep one texture and cycle through the sequence of colors. Each sequence card contains one RGBA color."
-L["Help.Effects.type.animate"] = "Animate: cycle through the sequence of texture images. Each card selects one image and previews that selection."
-L["Help.Effects.type.pulse"] = "Pulse: keep one texture and cycle through the sequence of magnifications. Each card selects one scale relative to the action icon."
-L["Help.Effects.type.rotate"] = "Rotate: animate one texture through evenly spaced angles around a full circle. Steps chooses the number of angles and Reverse changes their order."
-L["Help.Effects.type.custom"] = "Custom: cycle through cards containing a texture, angle, magnification and color. Each card supplies its own settings instead of relying on one shared texture."
-L["Help.Effects.preview"] = "The image beside Name and Type previews the current draft with a white color and standard size. Texture and sequence changes update the preview without saving. Actual recommendations use their profile or cooldown color, size and offsets."
-L["Help.Effects.texture"] = "For Texture, Dazzle, Pulse and Rotate, choose the image used throughout the effect. The arrow beside an image field opens the bundled overlay catalog with previews. Enter an available texture path or numeric file ID to use another image. Animate and Custom choose images in their sequence cards using the same controls. Selections update the draft and preview; Apply saves them."
-L["Help.Effects.pixel.lines"] = "Pixel effects: choose the number of animated lines around the button, from 1 to 20."
-L["Help.Effects.pixel.frequency"] = "Pixel effects: signed cycles per second. A larger magnitude moves faster; a negative value reverses direction. Zero uses the glow library default of one cycle every four seconds."
-L["Help.Effects.pixel.length"] = "Pixel effects: choose line length in pixels. The glow library limits it to the smaller button dimension."
-L["Help.Effects.pixel.thickness"] = "Pixel effects: choose line thickness in pixels, from 1 to 5."
-L["Help.Effects.autocast.particles"] = "Auto Cast effects: choose 1 to 4 particles in each of the glow library particle groups."
-L["Help.Effects.autocast.frequency"] = "Auto Cast effects: signed cycles per second. A larger magnitude moves faster; a negative value reverses direction. Zero uses the glow library default of one cycle every eight seconds."
-L["Help.Effects.autocast.scale"] = "Auto Cast effects: scale the particles relative to the glow library default. A value of 1 uses their normal size."
-L["Help.Effects.blizzard.frequency"] = "Glow effects: adjust the library animation rate. Larger positive values animate faster. Zero uses the library default rather than stopping the glow."
-L["Help.Effects.dazzle.frequency"] = "Dazzle effects: seconds between color cards. A smaller positive interval changes colors more often; the sequence repeats after the last color."
-L["Help.Effects.animate.frequency"] = "Animate effects: seconds between texture cards. A smaller positive interval changes images more often; the sequence repeats after the last image."
-L["Help.Effects.pulse.frequency"] = "Pulse effects: seconds between magnification cards. A smaller positive interval changes size more often; the sequence repeats after the last size."
-L["Help.Effects.rotate.frequency"] = "Rotate effects: seconds between angle steps. A smaller positive interval rotates faster. One full cycle uses this interval multiplied by Steps."
-L["Help.Effects.rotate.steps"] = "Rotate effects: choose 2 to 36 evenly spaced angles for a full turn. More steps at the same Frequency interval make a longer complete cycle."
-L["Help.Effects.rotate.reverse"] = "Rotate effects: reverse the order of angle steps. Changing this checkbox does not alter the texture or number of steps."
-L["Help.Effects.custom.frequency"] = "Custom effects: seconds between sequence cards. A smaller positive interval changes settings more often; the sequence repeats after the last card."
-L["Help.Effects.sequence"] = "Sequence cards play in order and repeat. Add step, on the Sequence header row, appends a card; drag Add step into a gap to insert one there. Drag a card into an insertion gap to reorder it; hold Ctrl when starting to carry it and all following cards. Up and Down move one card and are disabled at their respective ends. The red trash removes a card from the draft. Canceling a drag restores its original position."
-L["Help.Effects.sequence.texture"] = "Animate and Custom cards: choose a texture path or numeric file ID. The card preview shows the selected image. Custom also keeps an independent angle, magnification and color on that card."
-L["Help.Effects.sequence.angle"] = "Custom cards: set the texture angle in degrees from 0 to 359. This is the angle for this card, rather than a continuous rotation speed."
-L["Help.Effects.sequence.magnification"] = "Pulse and Custom cards: scale the texture relative to the action icon. A value of 1 uses the icon size. Use the slider or edit its numeric value."
-L["Help.Effects.sequence.color"] = "Dazzle and Custom cards: choose an RGBA color. Click the swatch to open the picker, or edit channels between 0 and 1. Alpha controls opacity."
-L["Help.Effects.save"] = "Edits and sequence changes remain in a draft. Apply saves; Discard restores the saved effect. Cancel closes a new creation draft. View Changes compares saved and unsaved values. New drafts require a unique name and valid fields before Apply. Leaving with edits offers Apply, Discard or Cancel."
-L["Help.Effects.delete"] = "The red trash at the upper right deletes the selected effect after a permanent-deletion warning. Resolve pending edits first. Choose a replacement for any profile or cooldown using that effect; deletion does not silently rewrite those references."
-L["Help.Effects.collections"] = "New, Duplicate, Import/Export and Compare are below the sidebar. Duplicate copies the selected effect into a draft. Transfers show the original name and let you create a renamed copy or replace the selection when allowed. Compare inspects differences without saving them."
 
 L["Debuffs"] = true
 L["Resources"] = true
@@ -2769,10 +2201,7 @@ L["Environment"] = true
 L["Time"] = true
 
 L["Spell Auto-Repeat Active"] = true
-L["%s {{!is|is not}} auto-repeating"] = true
-L["Tests whether the selected spell is currently auto-repeating, such as Shoot or Auto Shot. This is different from a spell being current or queued: a queued cast alone does not satisfy this condition. Unavailable client observations remain unavailable even when negated."] = true
 
-L["Uses readable positions in the same instance, or player-centered range estimates when positions are unavailable. A unit counts only when its upper range bound is within Distance. Uncertain positions, range, subgroup membership or required health/mana values keep the whole condition unavailable, including under Unless. Percentage checks require a positive maximum; empty aggregates have no result."] = true
 
 L["Default.TBC.Paladin.Retribution.Wowhead.Name"] = "Retribution (Wowhead & wowsims)"
 L["Default.TBC.Paladin.Retribution.Wowhead.Description"] = "Melee Retribution from level 1 to 70, and the default for any Paladin no other premade fits. Opens each target with Judgement of Wisdom (low mana) or the Crusader, keeps your best seal up (Blood or Martyr, Command, then Righteousness), Crusader Strike, judges only Righteousness, Blood or Martyr (or Command on a stunned target), Exorcism on Undead and Demons, Consecration for three or more enemies with mana to spare. Hammer of Wrath is left to you (Wowhead uses it only on fleeing targets). Reminders: Sanctity, Retribution or Devotion Aura, a Blessing on yourself, a heal after the fight, Avenging Wrath. Seal twisting is a separate premade."
@@ -2830,40 +2259,14 @@ L["Default.TBC.Warlock.DpsIcyVeins.Description"] = "Every talent tree from level
 L["Default.TBC.Warlock.DpsWowhead.Name"] = "Drain-tank (Wowhead)"
 L["Default.TBC.Warlock.DpsWowhead.Description"] = "Warlock after Wowhead's guides, an alternative to the recommended Icy Veins Warlock premade, off by default: enable it and disable that one, or raise its priority. Solo it drain-tanks: Drain Life is the filler once your DoTs are up and Immolate and Siphon Life are kept for elite mobs. In a group Immolate always goes on, after Corruption and Siphon Life. Otherwise the same as the recommended premade."
 
-L["Count enemies when selected, or non-enemies when cleared."] = true
-L["The number of observed units proven within Distance of you."] = true
-L["Counts the addon's observed unit snapshot, including nameplates and tracked unit aliases, rather than every nearby unit. A unit counts only when its upper range bound is within Distance; uncertain membership or unreadable identity, hostility, range or nameplate settings makes the whole count unavailable, including under Unless. Known vanished or reused unit tokens are excluded. Distance cannot exceed the current nameplate distance setting; that setting does not guarantee a complete scan."] = true
 
-L["Help.Profiles.activate"] = "Selecting a sidebar row only inspects that profile. Activate profile switches the live profile immediately, including its rotations and settings. The active profile shows Active profile instead. This operation does not wait for page Apply."
-L["Help.Profiles.copy"] = "Choose a source to replace the active profile after confirmation. This copies settings and rotations into the active profile, even when the sidebar is inspecting a different profile. It does not switch to the source or rename the active profile. Cancel at the confirmation preserves the current profile."
-L["Help.Profiles.reset"] = "Reset current profile replaces the active profile with its defaults after confirmation. Custom rotations and settings in it are replaced. The control is disabled while inspecting another profile. Reset is immediate after confirmation; there is no later page Apply to undo it."
-L["Help.Profiles.delete"] = "The red trash can permanently removes the selected inactive profile after confirmation. The active profile and Default cannot be deleted here. Selecting another profile does not delete or activate it."
-L["Help.Profiles.new_name"] = "New and Duplicate open a named draft. Use a nonblank, unused name of at most 50 characters. Apply creates the profile; Cancel abandons creation. Creating a profile leaves the previously active profile active, so use Activate profile when you want to switch to the new copy."
-L["Help.Profiles.collections"] = "The buttons below the list create a new profile, duplicate the selected profile, transfer profiles or compare saved settings. Search narrows the list without activating a profile. Import/Export shows the original name and lets you replace the selection or create a renamed copy. Importing a new profile opens a creation draft; Apply saves it. Replacing a selected profile happens when you confirm the import, and replacing the active profile updates its runtime settings. Compare does not apply changes."
-L["Help.Integrations.lua_editor"] = "Status pills show Not loaded, Supported, Disabled, Enabled or Selected. Click Enabled to Select or Disable. Disabling Selected chooses the sole enabled available editor, offers a choice when several exist, or leaves none selected. Enabling an editor when none is selected selects it automatically. Native is always available; its Syntax highlighting option is independent of editor selection. With no enabled editor, emergency plain text remains usable. Apply saves preferences for the next source-editor opening; Discard keeps saved settings. An open editor keeps its current provider."
-L["Help.Integrations.lua_line_numbers"] = "Show line numbers controls the gutter in every condition and function code editor. It defaults to enabled. Apply saves the preference and updates open code panes; Discard keeps the saved setting. It does not change the Lua source or its line breaks."
-L["Help.Integrations.optional_addons"] = "Addon names open copyable official release and source links across available providers. Edition filtering follows declared support for the matching addon identity; unknown compatibility remains visible. An older release date alone does not prove incompatibility. Listed game-edition support describes publisher release evidence, not certification of the integration on your client. Some integrations have only historical or unverified releases. Not loaded means unavailable to RM; Supported identifies an available integration without an enable switch. Bundled libraries are excluded. Rotation Master does not install or enable other addons."
-L["Apply / Discard"] = true
-L["Edits stay in a draft until Apply. Discard abandons pending changes. Leaving with changes offers Apply, Discard or Cancel; Cancel keeps the page and draft open. Effect previews do not save changes. Action-bar binding operations are explicit and immediate."] = true
-L["Diagram / List changes only the rotation view; General settings choose the default. Diagram has floating minus, percentage and plus controls at the bottom right. Scroll to zoom from 25% to 200%; click the percentage or middle-click to reset to 100%. Drag empty diagram space to pan. List uses normal scrollbars with touching cards and boxed branch arms, False before True. Cooldowns use a separate scrolling grid. Dragging cards reorders them in every view. Valid rotation bodies can contain up to 2,000 total steps; large workspaces reuse nearby card controls as you navigate. Folded branches intentionally hide their children."] = true
-L["Editor"] = true
-L["Optional addons"] = true
 L["Activate profile"] = true
-L["New / Duplicate / Import / Compare"] = true
 
-L["Choose a category and search for a condition. Hidden removes it from pickers without deleting its definition. Switch Condition controls its availability for automatic rotation switching. Move To stages a category destination; its Apply button confirms the move. The assigned category opens category management. Sidebar arrows and dragging order entries. Page Apply saves the draft; Discard abandons edits to a saved entry. Custom conditions can be edited, duplicated or deleted."] = true
-L["Select an effect to edit its name, type and type-specific settings. The icon previews it live. Sequence sections edit animation, color, pulse or custom frames in order. Duplicate creates an independent effect. Drag a sequence card surface to reorder it; fields remain editable. New effects can be configured before naming. Apply saves the draft; Discard abandons edits to a saved entry. Import stages a validated replacement."] = true
-L["Choose an item set and edit its priority list. Global shares the set across profiles. Move arrows change item priority. Bind item set picks up an available item for placement on an action bar; The binding pill removes matching bound bar actions when unbinding, outside combat. Reset restores a packaged set. Search or drag items into reference fields. Apply saves settings; Discard abandons edits to a saved entry. Binding changes are explicit action-bar operations."] = true
-L["Press Enter or leave a text field to stage its value; Apply saves the draft. Invalid text stays red and must be corrected before Apply; Discard can abandon it. Searchable selectors open on click and filter as you type. Section headings collapse or expand their contents."] = true
 -- Native condition item-list editor
 L["Apply changes to this selected item list. Other settings keep their own Apply action."] = true
 L["Choose an item list before editing."] = true
 L["The item list changed elsewhere. Close and reopen it before applying."] = true
 
-L["Editing this list"] = true
-L["Help.ItemSets.popup.overview"] = "This window edits only the item list you opened. Search or drag items into the fields, then arrange preferred items first. A named item set is shared by its other users; a custom list belongs to the calling condition or action draft. Applying this list does not apply the parent editor."
-L["Help.ItemSets.popup.delete"] = "Use a row's red trash can to remove that entry from the draft list. This does not delete a named item set or remove an item from your inventory. The removal takes effect when you Apply this list."
-L["Help.ItemSets.popup.save"] = "Apply validates every entry and writes the edited list back to its original owner. Discard closes without changing it. Closing with pending edits offers Apply, Discard or Cancel; Cancel keeps this window open. View Changes compares the original list with this draft. If the original list changed elsewhere, close and reopen it before applying."
 L["Native settings page unavailable: %s"] = true
 
 L["The native rotation editor is unavailable."] = true
@@ -2880,9 +2283,6 @@ L["Proc Glow"] = true
 L["Loop duration"] = true
 L["Start burst"] = true
 L["Proc Glow is unavailable on this client; Pixel glow will be used."] = true
-L["Help.Effects.type.proc"] = "Proc Glow: use the animated actionbar proc border from LibCustomGlow. Rotation Master checks the required game artwork and animation support before using it. Unsupported clients use Pixel glow instead; the definition remains portable. Color and offsets come from the profile or the cooldown."
-L["Help.Effects.proc.duration"] = "Time in seconds for one repeating proc-border animation, from 0.1 to 5. Use the slider or enter an exact value in its number field. Changing the value updates the preview."
-L["Help.Effects.proc.startAnim"] = "Play the opening burst when this highlight first appears, then repeat its border animation. Off by default. Refreshing an already visible Proc Glow does not restart the burst."
 L['Rotation data requires recovery: %s'] = true
 L['Copies belong to your Class unless This character is selected. Replacement keeps its original owner.'] = true
 L['Archive report truncated; saved data is unchanged.'] = true
@@ -2901,8 +2301,6 @@ L['Could not adopt this record: %s'] = true
 L['More than one rotation is named %s. Select its Class or This character entry in the rotation browser.'] = true
 L['The fallback rotation is unavailable. Open Rotations to complete or recover it.'] = true
 L['Class rotations are shared by characters of the same class in this settings profile. This character limits the rotation to your current character. Applying a scope change moves the complete saved rotation; an existing destination is never overwritten.'] = true
-L['Rotations belong to the active settings profile. New copies use Class, shared by your characters of that class; Metadata can change this to This character. Built In rotations show only for their declared class or universal use. Equal identifiers in different owners remain separate entries.'] = true
-L['Older rotations without a recorded owner stay in an archive. Recover unassigned rotations opens the current profile and character archives for inspection or copying. Choose Class or This character to adopt one. Adoption preserves its identifier and evidence, refuses an existing destination, and leaves incomplete records unavailable until repaired.'] = true
 L["Unsupported condition editor frame."] = true
 
 L["The native condition editor is unavailable."] = true
@@ -2915,16 +2313,11 @@ L["Stock"] = true
 
 
 
-L["Target"] = true
 
 
-L["you {{!have|do not have}} {item} equipped"] = true
 
-L["{item} {{!is|is not}} available{carrying}"] = true
 
-L["{item} {{!is|is not}} in range{carrying}"] = true
 
-L["the cooldown on {item} {comparison} {duration}{carrying}"] = true
 
 
 
@@ -2937,7 +2330,6 @@ L["the cooldown on {item} {comparison} {duration}{carrying}"] = true
 
 -- Optional Questie receipt integration
 L["Questie"] = true
-L["Enable Questie integration"] = true
 L["Waiting for Questie."] = true
 L["Questie API incompatible."] = true
 L["Questie callback connection available."] = true
@@ -2945,7 +2337,6 @@ L["Questie values are restricted by this client."] = true
 L["Questie integration unavailable after an adapter error."] = true
 L["Questie adapter unavailable."] = true
 L["Questie version: %s (%s)"] = true
-L["source-tested"] = true
 L["unverified"] = true
 L["Client family: %s (%s)"] = true
 L["declared; unverified"] = true
@@ -2957,12 +2348,8 @@ L["Supported addons"] = true
 L["Loaded; integration not connected."] = true
 L["%s (version %s)"] = true
 L["Supported addons are listed even when missing. Loaded addons are only marked connected when their integration is available."] = true
-L["Help.Integrations.overview"] = "Review supported addons, detected versions and status by integration type. Expand or collapse each integration group. Click an addon name to choose a copyable release or source link. Configure editor and optional provider preferences here; Apply saves preferences for this profile and Discard keeps saved settings."
-L["Help.Integrations.questie_enabled"] = "Opt in to Questie callbacks for this profile, then Apply. Discard does not change the saved connection. Readiness, API compatibility, source-tested version and native acceptance are reported separately. The adapter retains recent update receipts only; they do not prove quest progress or completion and do not select rotations. No background polling is used."
 L["ExtendedCharacterStats"] = true
-L["MobInfo2"] = true
 L["LuaWorkbench"] = true
-L["WeakAuras"] = true
 L["ElvUI"] = true
 L["Bartender4"] = true
 L["ButtonForge"] = true
@@ -2971,111 +2358,45 @@ L["Dominos"] = true
 L["AzeriteUI"] = true
 L["FarmingBar"] = true
 L["TotemTimers"] = true
-L["ForeverAuras"] = true
 L["AzeriteUI6"] = true
-L["EllesmereUI Action Bars"] = true
-L["Optional character statistics conditions."] = true
-L["Recorded creature history conditions; no current history is queried."] = true
-L["Lua editor integration. Choose an editor in Lua editor options."] = true
-L["Recommendation event bridge; no WeakAuras display is required."] = true
-L["Quest update receipts only; native quest progress is not verified."] = true
-L["Optional action-bar mapping and glow support."] = true
-L["Optional action-bar glow support."] = true
-L["DBM"] = true
 L["BigWigs"] = true
-L["Titan Panel"] = true
 L["Boss mods"] = true
 L["Top panels"] = true
-L["Boss-mod timers and encounter stage for the Boss Mod conditions."] = true
-L["Shows the active rotation from RM's LibDataBroker feed; add Rotation Master from Titan's plugin menu."] = true
-L["DBM-Core for Retail, Forever, Classic Era, TBC and Mists Classic. Encounter timers need the matching raid or dungeon module download, such as DBM-Raids-BC for TBC raids."] = true
-L["Official historical release page. The authors no longer update it; use CurseForge or GitHub for current releases."] = true
-L["BigWigs (Boss Timers & Tools) for Retail, Forever, Classic and Classic progression. Its TOC also declares TBC Anniversary."] = true
-L["Official project page. Publisher lists Retail, Classic Era, TBC, Wrath and Cataclysm Classic. Choose the matching file; exact patch and RM integration behavior may be unverified."] = true
-L["Titan Panel for Retail, Forever, Mists Classic, Classic and Classic TBC."] = true
-L["Official project page. Publisher lists Retail and Classic Era. Choose the matching file; exact patch and RM integration behavior may be unverified."] = true
-L["Help.Integrations.encounter_provider"] = "Enable DBM or BigWigs to feed the Boss Mod conditions (encounter, stage and ability timers), then Apply. Only one boss mod can be enabled; enabling one disables the other. RM listens to the boss mod's own callbacks and never polls it or changes its settings. With none enabled, or the enabled addon not loaded, Boss Mod conditions are unavailable. Supported on Classic Era, TBC and Classic progression clients."
-L["Help.Integrations.top_panels"] = "Rotation Master publishes a LibDataBroker data source with the active rotation, a tooltip and click menus. Titan Panel and other LibDataBroker displays show it without further setup: in Titan, add Rotation Master from the plugin menu. Panel absence has no effect on rotation selection."
 L["Connected"] = true
 L["Incompatible"] = true
 
 L["Loaded; connection not confirmed."] = true
 
 -- Volatile cast receipt diagnostic controls.
-L["Advice: not available; presentation: not available; ordinary-cast proof: not available."] = true
-L["Attempts: %d; results: %d"] = true
 L["Capture casts (30s)"] = true
-L["Capture: unavailable"] = true
-L["Capture: complete; reason=%s"] = true
-L["Capture: unavailable; reason=%s"] = true
-L["Cast capture cleared."] = true
-L["Cast capture is running. Stop it or wait before opening Cast report."] = true
-L["Cast capture is unavailable."] = true
-L["Cast capture started for 30 seconds. Configuration can be closed during capture."] = true
-L["Cast capture status: idle"] = true
-L["Cast capture status: running"] = true
-L["Cast capture stopped. Open Cast report to inspect receipts."] = true
-L["Cast receipt report"] = true
 L["Cast report"] = true
 L["Stop CPU capture"] = true
 L["Stop runtime capture"] = true
 L["Stop cast capture"] = true
-L["Help.General.cast_capture"] = "Record spell cast receipts for thirty seconds without changing settings or gameplay polling. While it runs this button reads Stop cast capture and ends the capture early, keeping what was recorded."
-L["Help.General.cast_report"] = "Open the copyable cast receipt report. It stays disabled until a cast capture has produced a report and while a capture is running."
-L["Client: family=%s version=%s build=%s interface=%s locale=%s"] = true
-L["Counts describe receipt rows, not gameplay opportunities."] = true
-L["Damage: unavailable (no damage observations or encounter denominator)."] = true
-L["Duration: %s seconds"] = true
-L["Healer: unavailable (no effective healing, absorbs or mana observations)."] = true
-L["Native acceptance: unverified"] = true
-L["No cast capture is running."] = true
-L["No cast capture report is available. Start a capture first."] = true
-L["Producer: UNIT_SPELLCAST adapter"] = true
-L["Records: %d"] = true
-L["Receipt kinds: channel=%d unmodeled=%d"] = true
-L["Receipt signals: sent=%d start=%d success=%d failed=%d interrupted=%d stop=%d"] = true
-L["Rotation Master cast receipt diagnostics"] = true
-L["Rotation attribution: unavailable; capture seconds are not encounter seconds."] = true
-L["Rows omitted: %d"] = true
-L["Scoring: unavailable"] = true
-L["Tank: unavailable (no threat, mitigation or survival observations)."] = true
 L["unavailable"] = true
 
 
 
 
-L["Action bars"] = true
-L["Addon"] = true
 L["Apply changes the editor used the next time a source editor opens. Enable an editor before selecting it."] = true
 L["Automatic uses an enabled available provider, then enabled built-in highlighting, otherwise None (plain editor)."] = true
 L["Baseline plain editor; always available."] = true
 L["Built in"] = true
-L["Condition data"] = true
 L["Description / status"] = true
 L["Editor options"] = true
 L["Enable / Select"] = true
 L["Lua editors"] = true
 L["None (plain editor)"] = true
-L["Quest callbacks"] = true
-L["Recommendation notifications"] = true
-L["Selected"] = true
 L["Shared editor settings."] = true
 L["Editor settings"] = true
 L["Enable built-in syntax highlighting"] = true
-L["Lua editor integrations"] = true
-L["Native"] = true
 
 L["Syntax highlighting"] = true
 
-L["Not loaded"] = true
 
-L["Supported"] = true
 
-L["Status"] = true
 
-L["Built-in Lua editor."] = true
 
-L["Registered Lua editor provider."] = true
 
 L["Addon release pages"] = true
 
@@ -3085,258 +2406,126 @@ L["Copy %s"] = true
 
 L["Release links checked: 2026-10-20."] = true
 
-L["CurseForge"] = true
-
-L["Classic Era and TBC. Other editions are unverified; Forever Extended Character Stats is a different project."] = true
-
-L["Publisher lists Retail, Forever, Classic Era, TBC and Mists Classic."] = true
-
-L["Retail, Forever and TBC. Other editions are unverified."] = true
 
 
 
-L["Classic Era, TBC and Mists Classic. Retail and Forever releases are unverified."] = true
-
-L["Tukui"] = true
-
-L["Official release channel. Publisher TOC lists Retail, Forever, Classic Era, TBC, Mists and Wrath Classic."] = true
-
-L["Retail, Forever, Classic Era, TBC and Mists Classic. Choose the file for your edition."] = true
-
-L["Separate Retail, Classic Era, TBC and Mists Classic releases. Forever is unverified."] = true
 
 
-L["WoWInterface"] = true
 
 
-L["Primary LUI Core updates for Retail. Fresh installs use the author-linked full bundle below; Classic uses a separate fork."] = true
+
+
+
+
+
+
+
 
 L["CurseForge — LUI Classic"] = true
 
-L["Classic Era, TBC and Mists Classic fork. Its compatibility with RM action buttons is unverified."] = true
-
-L["WoWInterface — Retail full bundle"] = true
-
-L["Author-linked full Retail bundle; historical 10.0.2 release, older than the Core updates."] = true
-
-L["WoWInterface — Classic full bundle"] = true
-
-L["Author-linked full Classic bundle; historical Wrath release. For current Classic editions, inspect the newer Classic fork above."] = true
-
-L["Retail, Forever, Classic Era, TBC and Mists Classic."] = true
 
 
 
 
 
 
-L["Retail, Classic Era, TBC and Mists Classic releases. Latest-patch compatibility and Forever are unverified."] = true
 
-L["Primary project now releases TotemTimers Forever. Retail files are historical. Classic editions use the separate project below."] = true
 
-L["CurseForge — TotemTimers Classic"] = true
 
-L["Classic Era, TBC, Wrath, Cataclysm and Mists Classic. Compatibility with RM action buttons is unverified."] = true
+
+
+
+
+
 
 
 L["Copy link %d"] = true
 
-L["Disable"] = true
-L["Provider"] = true
 
-L["URL"] = true
 
-L["Select URL for copying (Ctrl+C)"] = true
-L["Help.Integrations.native_highlighting"] = "Syntax highlighting applies only to the Native Lua editor. Apply saves this preference for the next source-editor opening; it does not switch a selected external editor. Show line numbers under the editor heading applies to every provider."
 
 -- Official integration project labels and edition notes.
-L["Wago Addons"] = "Wago Addons"
-L["Official project page. Publisher lists Classic Era, TBC, Classic progression. Choose the matching file; exact patch and RM integration behavior may be unverified."] = "Official project page. Publisher lists Classic Era, TBC, Classic progression. Choose the matching file; exact patch and RM integration behavior may be unverified."
-L["GitHub"] = "GitHub"
-L["Official source repository. Choose the release for your game edition; source availability does not certify integration behavior."] = "Official source repository. Choose the release for your game edition; source availability does not certify integration behavior."
-L["WoWInterface — historical"] = "WoWInterface — historical"
-L["Official historical release page. Current patch compatibility is unverified; inspect the release details before downloading."] = "Official historical release page. Current patch compatibility is unverified; inspect the release details before downloading."
-L["Official source — CurseForge SVN"] = "Official source — CurseForge SVN"
-L["Official project page. Release edition and current patch compatibility are unverified."] = "Official project page. Release edition and current patch compatibility are unverified."
-L["Official project page. Publisher lists Retail, Forever, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified."] = "Official project page. Publisher lists Retail, Forever, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified."
-L["WowUp Hub"] = "WowUp Hub"
-L["Official website"] = "Official website"
-L["Official project page. Publisher lists Forever, Classic Era, TBC, Classic progression. Choose the matching file; exact patch and RM integration behavior may be unverified."] = "Official project page. Publisher lists Forever, Classic Era, TBC, Classic progression. Choose the matching file; exact patch and RM integration behavior may be unverified."
-L["Official project page. Publisher lists Retail, Classic Era, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified."] = "Official project page. Publisher lists Retail, Classic Era, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified."
-L["Official project page. Publisher lists Retail, Forever, Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified."] = "Official project page. Publisher lists Retail, Forever, Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified."
-L["WoWAce"] = "WoWAce"
-L["CurseForge — LUI Core"] = "CurseForge — LUI Core"
-L["CurseForge — LUI Classic fork"] = "CurseForge — LUI Classic fork"
-L["GitHub — LUI Core"] = "GitHub — LUI Core"
-L["CurseForge — Musca Auras"] = "CurseForge — Musca Auras"
-L["GitHub — Musca Auras"] = "GitHub — Musca Auras"
-L["CurseForge — LittleWigs"] = "CurseForge — LittleWigs"
-L["CurseForge — DBM Dungeons"] = "CurseForge — DBM Dungeons"
-L["CurseForge — EllesmereUI"] = "CurseForge — EllesmereUI"
-L["CurseForge — EllesmereUI Action Bars"] = "CurseForge — EllesmereUI Action Bars"
-L["Current Classic Era, TBC and Mists Classic releases. The newest Retail file (January 2026) predates Midnight and RM does not list Retail. There is no Forever file; see Musca Auras and ForeverAuras."] = "Current Classic Era, TBC and Mists Classic releases. The newest Retail file (January 2026) predates Midnight and RM does not list Retail. There is no Forever file; see Musca Auras and ForeverAuras."
-L["WeakAuras ported to Forever by a different team. It installs the WeakAuras folder, so it shares this identity; it is not an official WeakAuras release."] = "WeakAuras ported to Forever by a different team. It installs the WeakAuras folder, so it shares this identity; it is not an official WeakAuras release."
-L["Source of the Forever fork. It defines the same WeakAuras.ScanEvents function that RM calls."] = "Source of the Forever fork. It defines the same WeakAuras.ScanEvents function that RM calls."
-L["Author source repository: a modified WeakAuras for Forever. It still creates the WeakAuras global with ScanEvents, which is all RM calls."] = "Author source repository: a modified WeakAuras for Forever. It still creates the WeakAuras global with ScanEvents, which is all RM calls."
-L["Release page linked by the author's README. It returned HTTP 403 to automated checks, so its edition and version are unverified."] = "Release page linked by the author's README. It returned HTTP 403 to automated checks, so its edition and version are unverified."
-L["A project with this name exists on Wago; its author and editions could not be read (the page requires JavaScript)."] = "A project with this name exists on Wago; its author and editions could not be read (the page requires JavaScript)."
-L["Legacy AzeriteUI5, deprecated by its authors. The Classic Era and TBC releases are the current ones; AzeriteUI6 is a separate row."] = "Legacy AzeriteUI5, deprecated by its authors. The Classic Era and TBC releases are the current ones; AzeriteUI6 is a separate row."
-L["Current AzeriteUI series. Retail, Forever, Classic Era, TBC and Mists Classic. Action buttons come from LibActionButton-1.0."] = "Current AzeriteUI series. Retail, Forever, Classic Era, TBC and Mists Classic. Action buttons come from LibActionButton-1.0."
-L["Official project page. This page requires JavaScript; edition metadata was not independently readable."] = "Official project page. This page requires JavaScript; edition metadata was not independently readable."
-L["Full EllesmereUI suite including the Action Bars module. Retail and Forever."] = "Full EllesmereUI suite including the Action Bars module. Retail and Forever."
-L["Standalone Action Bars only. Retail and Forever. Its install folder was not confirmed; RM also recognizes the bars by the frames they create."] = "Standalone Action Bars only. Retail and Forever. Its install folder was not confirmed; RM also recognizes the bars by the frames they create."
-L["Official source repository. The action bars are the EllesmereUIActionBars folder. Source availability does not certify integration behavior."] = "Official source repository. The action bars are the EllesmereUIActionBars folder. Source availability does not certify integration behavior."
-L["BigWigs plugin for dungeon and delve bosses. Requires BigWigs and feeds the same bars and stages, so the BigWigs row covers it; no separate RM connection."] = "BigWigs plugin for dungeon and delve bosses. Requires BigWigs and feeds the same bars and stages, so the BigWigs row covers it; no separate RM connection."
-L["DBM module pack for dungeons, delves and events. Requires DBM-Core and registers through it, so the DBM row covers it; no separate RM connection."] = "DBM module pack for dungeons, delves and events. Requires DBM-Core and registers through it, so the DBM row covers it; no separate RM connection."
-L["GitHub — LUI Classic fork"] = "GitHub — LUI Classic fork"
-L["Official Classic fork for Classic Era, TBC and Mists. RM button integration on this fork is unverified."] = "Official Classic fork for Classic Era, TBC and Mists. RM button integration on this fork is unverified."
-L["Official project page. Publisher lists Retail, Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified."] = "Official project page. Publisher lists Retail, Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified."
-L["GitHub — TotemTimers Classic"] = "GitHub — TotemTimers Classic"
-L["WoWInterface — TotemTimers Classic"] = "WoWInterface — TotemTimers Classic"
-L["Official project page. Publisher lists Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified."] = "Official project page. Publisher lists Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified."
-L["Wago Addons — TotemTimers Classic"] = "Wago Addons — TotemTimers Classic"
 
 
 
-L['API'] = true
-L['Masque'] = true
 L['Preview appearance'] = true
 L['Skin preview buttons with Masque'] = true
-L['Optional preview-button skins; configure skins with /masque.'] = true
-L['Help.Integrations.preview_masque'] = "Enable separately installed Masque here and Apply. General > Preview then provides a Skin dropdown that updates the preview immediately. Masque owns the skin selection; /masque opens its other settings. The preview window keeps its native appearance. Missing or incompatible APIs and provider errors retain the native preview."
 
 
 
 
 L["History"] = true
-L["Button skins"] = true
 L["Bypass observation cache"] = true
 L["Bypass observation cache (requires restart)"] = true
 L["Bypass observation cache (pending)"] = true
 L["Skin"] = true
 L["Blizzard Classic"] = true
 L["Preview skin is unavailable."] = true
-L["Help.General.preview_skin"] = "Enable Masque in Integrations to choose a skin. Skin changes update the open preview immediately and are saved by Masque, independently of Apply or Discard. Without enabled Masque support, the preview uses Blizzard Classic. Preview toggles sample icons whether Masque is enabled or not."
-L["Help.General.preview_sample"] = "Click Preview to toggle temporary sample icons when no real recommendations are available. Real recommendations replace the samples. This does not change Preview Spells, cast spells, or save the sample state."
 
 L["Sample icon"] = true
 
 
 -- Explicit unscored advice/native-preview receipt coverage.
-L['Advice/presentation rows describe observed delivery boundaries only; ordinary-cast proof: not available.'] = true
-L['Coverage rows: advice=%d presentation=%d visible=%d hidden=%d unknown=%d retired=%d (not opportunities).'] = true
-L['Visible means RM-owned preview frame state at a delivery boundary; it does not prove perception or native pixel rendering.'] = true
 
 
 L['Saved manual choice is unavailable in the current context.'] = true
 
 -- Capture-only START witness diagnostics.
-L['START witness rows: observed=%s matched=%s mismatch=%s excluded=%s unknown=%s (not ordinary proof).'] = true
-L['START witnesses compare current cast identity and non-autorepeat classification only; they do not classify ordinary casts or enable scoring.'] = true
 L["Edit announcement conditions"] = "Edit announcement conditions"
 L["Announcement conditions"] = "Announcement conditions"
-L["Help.Announces.conditions"] = "Optional conditions use the Announcement condition list and All, Any and Not groups. For spell, pet and item announcements, they run when the configured action and event match. For Via Script/Macro, they run when you invoke the saved identifier. Each output card checks its own conditions. Only a matching result allows that output; unavailable data skips that card while later cards remain independent. In Group can check the Spell recipient recorded for this cast, including click casting, without using your selected target. Choose Announcement target to check the spell recipient for automatic entries, or the supplied unit for Via Script/Macro; Whisper uses that same supplied unit. Automatic entries pass the recorded recipient name to native unit queries. A missing or unresolvable recipient skips its required condition; an unrelated selected target is never substituted. Missing or ambiguous required recipients do not match. Apply in the condition editor updates the announcement draft; Apply on Announces saves it. Cancel or Discard abandons draft changes."
 
 L["Spell recipient"] = "Spell recipient"
 L["{unit} {{!is|is not}} in a raid"] = "{unit} {{!is|is not}} in a raid"
-L["{unit} {{!is|is not}} in a group"] = "{unit} {{!is|is not}} in a group"
-L["Help.GROUP.unit"] = "Choose the unit whose membership in your party or raid is checked. Player keeps the original player group-status behavior. Spell recipient uses only the current announcement event context; without that readable context the result is unavailable. It never substitutes your selected target or a previous cast."
-L["Help.GROUP.raid"] = "Checked tests raid membership only. Unchecked tests party membership or raid membership. A known nonmember is false; unavailable native data stays unavailable, including under NOT."
 L["Announcement target"] = "Announcement target"
 -- Unit death and friendliness conditions.
 L["Is Dead or Ghost"] = true
 L["Is Friendly"] = true
 L["{unit} {{!is dead or a ghost|is alive}}"] = true
-L["{unit} {{!is friendly to you|is not friendly to you}}"] = true
-L["Matches when the selected unit is dead or a ghost. A missing or unreadable unit is unavailable, including under NOT. In a Via Macro announcement, choose Announcement target to follow the supplied unit."] = true
-L["Matches when the game reports the selected unit as friendly to you. This does not imply party or raid membership. A missing or unreadable unit is unavailable."] = true
 L['Workbench Help'] = 'Workbench Help'
 
 L['Navigation'] = 'Navigation'
 
-L['Help.Window.navigation'] = 'Choose tabs to browse Rotations, General, Conditions, Functions, Effects, Item Sets, Announces, Profiles and Integrations. The opened panes have their own Help for page controls. Search and filters belong to the current page. Built In entries remain read-only; Duplicate creates an editable copy.'
 
-L['Help.Window.scale'] = 'Scale changes the whole workbench and its child windows from 70% to 130%. Drag the top-left slider or enter an integer percentage and press Enter. Escape restores the saved scale text. Drag the title bar to move; drag the lower-right corner to resize.'
 
-L['Help.Window.controls'] = 'Close with X, Escape, or right-click inside the frontmost RM window. Child dialogs have their own close controls and follow the window scale. The language selector changes the workbench language; project links open a copyable address.'
 
-L['Help.Window.drafts'] = 'Most settings and source editors keep drafts until Apply. Leaving a dirty page offers Apply, Discard or Cancel; invalid fields remain visible. Profile activation and confirmed replacement, action-bar binding and diagnostic capture have their own explicit actions. Help never applies or discards edits.'
 
-L['Help.Window.help'] = 'Gold question marks open full Help for their window, page or card. Hover controls for brief tips. Help does not save settings or commit pending text; spell and item fields keep their native reference tooltips.'
 
-L['Help.Brief.full'] = 'Open full Help for these controls without applying edits.'
 
-L['Help.Brief.window'] = 'Explain window navigation, scaling, closing and drafts.'
 
-L['Help.Brief.page'] = 'Open full Help for this page without switching tabs or applying edits.'
 
-L['Help.Brief.scale'] = 'Set the workbench and child-window scale from 70% to 130%; enter a whole percentage or drag the slider.'
 
-L['Help.Brief.edit'] = 'Edit the value; Enter or leaving the field checks and accepts valid text. Page Help explains when changes are saved.'
 
-L['Help.Brief.check'] = 'Click to toggle this option. Page Help explains when changes are saved.'
 
-L['Help.Brief.control'] = 'Use this control for the current page; page Help explains its options and consequences.'
 
-L['Help.Conditions.subject_unavailable'] = 'Help for this condition is unavailable. Its registered definition is missing, disabled or waiting for required functions. Opening Help does not register pending or imported source.'
 
-L['Help.Conditions.subject_missing'] = 'This registered condition does not provide Help.'
 
-L['Help.Conditions.subject_brief'] = 'Open Help for this condition without changing its fields.'
 
-L["Help.Transfers.copy"] = "Select all export text for manual copying. This button does not send it anywhere."
 
-L["Help.Transfers.clear"] = "Clear the transfer text. A previous preview becomes invalid; saved settings stay unchanged."
 
-L["Help.Transfers.apply"] = "Import into the displayed destination. Read the destination and review requirements before continuing."
 
-L["Help.Transfers.cancel"] = "Close this dialog without importing its text."
 
-L["Help.Transfers.destination"] = "Choose a new named copy or replacement of the selected editable entry."
 
-L["Help.Transfers.name"] = "Set the name for a new copy. Replacement keeps the selected entry as its destination."
 
-L["Help.Transfers.preview"] = "Preview import shows everything this import contains, read-only, the way the editor shows it. Nothing is saved."
 
-L["Help.Transfers.inspect"] = "Check import lists problems with the text instead of its content: why it cannot be imported and any unsupported data. It does not import or change anything."
 
-L["Help.Transfers.profile_brief"] = "Explain profile import destinations and when changes are saved."
 
-L["Help.Transfers.profile_overview"] = "Copy the text to export a profile, or paste profile text to import. The destination controls choose a new profile or replacement of the selected saved profile. Opening Help does not decode, import, or apply the text."
 
-L["Help.Transfers.profile_replace"] = "REPLACE applies immediately to the selected saved profile after Import. Replacing the active profile resets it and applies the imported settings; replacing another profile writes that profile. Reopen the import if the selected saved profile changes."
 
-L["Help.Transfers.profile_new"] = "NEW stages the imported profile in the Profiles editor. Import fills a new-profile draft; the new profile is not saved or activated until you complete the creation controls in that editor. Give it an unused name."
 
-L["Help.Transfers.source_brief"] = "Explain this read-only review of imported source."
 
-L["Help.Transfers.source_review"] = "This view shows the selected imported function or condition source, its original and destination identifiers, and available metadata. For a condition, choose a callback to inspect its text. This view and its Help do not compile, execute, accept, or register the source. Return to the bundle review to decide whether to import it."
 
-L["Help.Transfers.source_close"] = "Close this read-only source view and return to the bundle review."
 
-L["Help.Transfers.bundle_review"] = "Validate the pasted bundle and build a proposed import plan. Review does not apply the plan."
 
-L["Help.Transfers.bundle_dependencies"] = "Include referenced custom function dependencies when producing export text."
 
-L["Help.Transfers.bundle_brief"] = "Explain dependency-bundle export, review, and explicit import."
 
-L["Help.Transfers.bundle"] = "Export produces a function or condition bundle, optionally with its custom function dependencies. For import, paste bundle text, choose Review import, inspect the proposed identifiers and conflicts, and review source before applying. Apply import can register trusted Lua source; accept only source you intend to run. Changing the text invalidates the prior plan. Opening Help neither reviews nor applies the bundle."
 
-L["Help.Transfers.rotation_brief"] = "Explain rotation preview, destination, and import scope."
 
-L["Help.Transfers.rotation"] = "Copy the text to export the current rotation, or paste a rotation to import. Choose replacement of the selected editable rotation or a new named copy. Class and This character set the owner of a new copy; replacement keeps the original owner. The imported rotation is opened for editing after a successful import."
 
-L["Help.Transfers.rotation_preview"] = "With Replace selected entry ticked, the button reads Compare import and shows what would change in that rotation. For a new named copy it reads Preview import and shows everything the import contains, read-only, as the rotation editor shows it. Neither saves anything. Import is enabled only for a ready preview or comparison; changing the text requires another one. Check import shows read-only diagnostics, including unsupported data that prevents import."
 
-L["Help.Transfers.comparison_brief"] = "Explain this read-only incoming rotation comparison."
 
-L["Help.Transfers.comparison"] = "This view compares the saved or exported rotation with the current incoming preview. It does not apply changes. Close it to choose the destination and import from the transfer dialog. A changed preview, closed owner, or changed profile retires this comparison Help."
 
-L["Help.Transfers.compare"] = "Compare import shows what would change in the entry you are replacing, side by side with its current content. Nothing is saved."
 
-L["Help.Transfers.preview_view_brief"] = "Explain this read-only preview of the incoming rotation."
 
-L["Help.Transfers.preview_view"] = "This view shows the rotation as it would be imported: name, specializations, switch condition, steps and cooldowns. It is read-only and works on a copy; it saves and changes nothing. Close it to choose the destination and import from the transfer dialog. A changed text, closed transfer or changed profile retires this Help."
 
 L["Destination"] = "Destination"
 
@@ -3345,24 +2534,12 @@ L["Via Macro"] = true
 L["Via Script/Macro"] = true
 L["Use a unique Via Script/Macro identifier."] = true
 L["Whisper"] = true
-L["Macro invocation"] = true
-L["Supplied macro unit"] = true
 L["Use supplied macro target ({{target}})"] = true
 L["Macro call: %s"] = true
-L["Help.Announces.macro.brief"] = "Invoke this saved identifier directly from your macro. The supplied unit controls Announcement target conditions and Whisper; there is no implicit target."
-L["Help.Announces.type.macro"] = "Via Script/Macro is invoked by its saved Identifier rather than a cast event. It does not require a stored spell or item. Current conditions must match before any output. This call attempts output synchronously; it does not establish that a spell was cast or succeeded."
-L["Help.Announces.identifier"] = "Use a unique, case-sensitive identifier of at most 64 ASCII characters. Start with a letter or underscore; subsequent characters may also include digits, dots or hyphens. Identifiers are scoped to the active profile, including disabled entries. Duplicate assigns a distinct identifier; ambiguous imports and Apply are rejected."
-L["Help.Announces.macro.example"] = "Use /run RM_Annouce('FOO','mouseover',nil). RM_Announce is the same function. The target unit and spell are optional: /run RM_Announce('FOO',nil,403) or /run RM_Announce('FOO','target','Lightning Bolt'). Spell names depend on client language. {{event}} becomes Via Script/Macro; {{target}} and {{spell}} use the supplied arguments. A required missing argument skips output. {{item}} is not supplied by this API. A resurrection message announces an attempt, not a completed resurrection. Examples are text only; RM does not create or execute macros."
-L["Help.Announces.macro.target"] = "Supply a readable unit token such as mouseover, target or focus. RM resolves that exact unit name and rechecks its identity during delivery. Announcement target conditions and Whisper use this same unit. Omitting the argument does not use your selected target, yourself, a prior cast or a prior macro call. Missing Announcement target data remains unavailable, including under NOT."
-L["Help.Announces.macro.emote_target"] = "Checked directs a named emote to the supplied macro unit. Missing or unreadable target data skips the targeted emote; unchecked is targetless."
-L["Help.Announces.channel.say"] = "Available only for Via Script/Macro. Attempt a Say message directly in the invoking call. Blizzard may reject macro-origin chat, including during instance encounters; RM does not attest hardware input, defer delivery, retry or guarantee visible output."
-L["Help.Announces.channel.yell"] = "Available only for Via Script/Macro. Attempt a Yell message directly in the invoking call. Native macro and encounter restrictions still apply; a completed API call is not confirmation of delivery."
-L["Help.Announces.channel.whisper"] = "Available only for Via Script/Macro. Whisper uses the exact supplied unit name and requires a readable player identity. No target means no Whisper. Native macro and encounter restrictions still apply; RM never substitutes another recipient or retries."
 
 L['Announcement Condition'] = true
 L['Announcement'] = true
 L['Show this condition in the announcement condition editor.'] = true
-L['Offer this condition type when editing announcement conditions. This flag is independent of Switch Condition and does not remove or invalidate conditions already saved in announcements.'] = true
 -- Ordered announcement outputs (configuration only).
 L['Outputs']='Outputs'
 L['Output %d']='Output %d'
@@ -3370,10 +2547,7 @@ L['Output state']='Output state'
 L['Add output']='Add output'
 L['Channel']='Channel'
 L['Complete this output or choose a destination available for this action type.']='Complete this output or choose a destination available for this action type.'
-L['Help.Announces.outputs']='One trigger can send an ordered series of outputs. Each expanded card has its own destination, text or sound, conditions and enabled state. Help describes that card. Duplicate makes an independent card; delete removes it. Use the arrows, or drag a card from anywhere on it, to change order. Add output, on the Outputs header row, appends a card; drag it into a gap to insert one there. A legacy announcement stays unchanged on display. Adding, duplicating or removing a card, choosing Channel, or changing to an action type that cannot use its saved destination converts only the draft to output cards. Up to 64 outputs are allowed; an empty series sends nothing. Apply saves the draft and Discard restores it.'
-L['Help.Announces.channel.channel']='Via Script/Macro outputs can send to a joined chat channel. Open Channel to refresh the joined names, then select the exact name. A saved name remains visible when unavailable; that output is skipped until the channel is joined under that name. Numeric channel IDs are not saved and channels are never joined automatically. Native delivery permissions still apply.'
 
-L['Choose an announcement trigger, then edit its always expanded output cards. Each card has a destination, conditions, enabled state and Help. Add, duplicate, delete, move or drag outputs within the announcement. Joined channel names are available for Via Script/Macro. New opens a draft; Apply saves it and Discard restores it. Imports are validated and never execute code.']='Choose an announcement trigger, then edit its always expanded output cards. Each card has a destination, conditions, enabled state and Help. Add, duplicate, delete, move or drag outputs within the announcement. Joined channel names are available for Via Script/Macro. New opens a draft; Apply saves it and Discard restores it. Imports are validated and never execute code.'
 
 
 -- Read-only human condition summaries.
@@ -4001,9 +3175,6 @@ L["Default.MoP.Warrior.Protection.Description"] = "Tanking from level 10 to 90, 
 L["Default.MoP.Warrior.Unspecialized.Name"] = "Unspecialized"
 L["Default.MoP.Warrior.Unspecialized.Description"] = "For levels 1 to 9, or until you choose a specialization. Charge to pull, Victory Rush, Execute and Heroic Strike when you have 30 rage; reminds you to be in Battle Stance if you are in no stance."
 
-L['Help.General.memory_capture'] = "Start a ten-minute memory capture. Whole-Lua heap reads occur once per second; slower addon-memory refreshes and bounded container counts occur every thirty seconds. Sampling costs are reported. The capture does not force garbage collection, enable the native profiler or change gameplay polling."
-L['Help.General.memory_report'] = "Open the completed or stopped memory observations in a selectable, copyable report. Addon memory is sampled attribution, and container counts are rows or keys rather than bytes. Memory drops alone do not prove garbage collection or the absence of a leak."
-L['Help.General.memory_stop'] = "Stop the current memory capture and preserve its observations for Memory report. This cancels only memory-capture timers. No gameplay settings are changed."
 
 L['Silent'] = true
 
@@ -4014,70 +3185,21 @@ L["Weapon Imbue"] = true
 
 -- Blizzard Assisted Combat (condition and rotation step).
 L["Assisted Combat Suggestion"] = true
-L["Assisted Combat {{!is|is not}} suggesting a spell"] = true
-L["Assisted Combat {{!suggests|does not suggest}} %s"] = true
-L["Matches when Blizzard's Assisted Combat suggests this spell as the next cast. An override counts as its base spell, and the base spell as its override. With no spell chosen, matches whenever Assisted Combat suggests anything."] = true
-L["Assisted Combat exists on Retail (and is declared on Forever). Where the game does not offer it, for this character or specialization, or the suggestion cannot be read, this condition is unavailable rather than false, including under NOT."] = true
 L["Blizzard's suggestion"] = true
 L["Recommends the spell Blizzard's Assisted Combat suggests"] = true
-L["Recommends whatever spell Blizzard's Assisted Combat suggests next, read each time the rotation is evaluated. It highlights that spell's button and shows in the preview like a spell step, and is held to the same requirements: known, usable, off cooldown and in range. When nothing is suggested, the suggested spell is not on your bars, or Assisted Combat is unavailable (anywhere but Retail, or a specialization without it), the step is skipped. Rotation list only."] = true
 L["Assisted Combat Rotation Spell"] = true
-L["%s {{!is|is not}} in Blizzard's Assisted Combat rotation"] = true
-L["Matches when this spell is one Blizzard's Assisted Combat can suggest for your current specialization. Its current override and its base spell count too. Use it to highlight what Assisted Combat leaves out, for example a cooldown that is not in the set."] = true
-L["The set is read again whenever your spells change, never guessed. Where the game does not offer Assisted Combat for this character or specialization, or the set cannot be read, this condition is unavailable rather than false, including under NOT."] = true
 L["Assisted Combat Available"] = true
-L["Assisted Combat {{!is|is not}} available"] = true
-L["Matches when the game offers Blizzard's Assisted Combat for your character and current specialization. When it does not (for example a specialization Blizzard has no Assisted Combat rotation for, or a client that declares the API but does not offer the feature), this is false, so a branch can fall back to your own steps."] = true
-L["Unavailable only where the client has no Assisted Combat API or its answer cannot be read, including under NOT."] = true
 -- Who highlights a "Blizzard's suggestion" step (General settings).
 L["Blizzard's suggestion highlight"] = true
 L["Rotation Master's glow"] = true
 L["Blizzard's Assisted Highlight"] = true
 L["Both"] = true
 L["Assisted Combat is not available for your current specialization, so Blizzard's highlight stays off."] = true
-L["Help.General.assisted_highlight"] = "Who highlights the button while a \"Blizzard's suggestion\" step is the recommendation. Rotation Master's glow uses the effect below. Blizzard's Assisted Highlight turns on the game's own highlight (Options, Gameplay, Combat, Assisted Highlight) while a rotation with that step is active, and Rotation Master leaves that step's button to it; Both shows the two. Rotation Master turns Blizzard's highlight on only outside combat, never changes it if it was already on, and puts your setting back when the rotation ends, Rotation Master is disabled, or you log out or reload. If you change the setting yourself meanwhile, your choice is kept. Blizzard's highlight follows Blizzard's suggestion all the time, also while another step is recommended, and it shows on Blizzard's own action bars only, so choose Rotation Master's glow or Both with a bar addon. The choice is hidden on clients without Blizzard's highlight (Forever and the Classic clients)."
-L["Help.General.tooltips"] = "Add Rotation Master lines to spell and item tooltips. This is the master switch: off, Rotation Master adds nothing to any tooltip, and the options below do nothing. Lines are only added, never read from the tooltip, so other tooltip addons are unaffected."
-L["Help.General.tooltip_itemsets"] = "In an item tooltip, list the Rotation Master item sets that contain the item: your profile's and the shared ones from the Item Sets page. Names beyond the limit below end the line with how many more there are."
-L["Help.General.tooltip_rotations"] = "In a spell or item tooltip, list the rotations for your current specialization that use it as a step in the rotation or cooldown list. A rotation that is switched off is shown dimmed and marked disabled. Built In rotations that are not for this version of the game or your specialization are left out. The list is refreshed out of combat after a rotation or item set changes."
-L["Help.General.tooltip_conditions"] = "Also count a spell or item that appears only inside a condition (for example \"spell is ready\" or \"item is carried\"), not just as a step. Off by default because it lists more rotations."
-L["Help.General.tooltip_limit"] = "How many names a tooltip line lists before it ends with \"(+N more)\". A lower number keeps tooltips short."
 
 -- Season of Discovery rune engraving and trait talents.
-L["rune spell %s"] = true
-L["rune %s"] = true
 L["Engraved Rune"] = true
-L["you {{!have|do not have}} the rune %s engraved"] = true
-L["<rune>"] = true
-L["Your runes have not loaded yet. Reopen this condition shortly, or enter an ID below."] = true
-L["This character cannot engrave runes. A rune entered by ID below is kept, and is unavailable here."] = true
-L["Slot %d"] = true
-L["Equipment Slot"] = true
-L["Rune"] = true
-L["Rune Spell ID"] = true
-L["Rune ID"] = true
-L["Matches when a Season of Discovery rune is engraved on one of your equipped items. Passive runes count too, which a known-spell test cannot see."] = true
-L["Pick one of your known runes by equipment slot. The rune is saved by the first spell it teaches, so a shared rotation names it on any character."] = true
-L["Enter a spell the rune teaches, or the rune's own ID (its skill line ability ID) for a rune that teaches no spell. Entering one clears the other."] = true
-L["Engraving exists only on Season of Discovery realms. Elsewhere, and until your runes have loaded after logging in, this condition is unavailable rather than false, including under NOT. The Phase 7 shoulder runes are not engravings and are not seen. This is not the Death Knight Rune condition."] = true
-L["Your talents cannot be listed right now (%s). A node ID entered below is kept and evaluated."] = true
-L["Talents can be listed only for your own class. A node ID entered below is kept and evaluated."] = true
-L["Class talents"] = true
-L["Specialization talents"] = true
-L["Class and specialization talents"] = true
-L["Hero talents: %s"] = true
-L["Tier"] = true
-L["Tier %d (level %d)"] = true
-L["%s (choice)"] = true
-L["Talents"] = true
-L["Talent Node ID"] = true
-L["Choice Entry ID"] = true
-L["talent node %s"] = true
 L["ranks in %s"] = true
-L["the number of ranks in %s"] = true
-L["Retail and Forever compare the rank of a talent in your active loadout. Pick it from the talents of the rotation's specialization (the Specialization list shows another specialization's, outside combat), or enter the node ID (and, for a choice node, the entry ID of the choice) to share a rotation. A choice node's entry has rank zero unless it is the chosen one, a hero talent outside your chosen hero tree has rank zero, and so does a talent of a specialization you are not playing. A talent picked from the list also remembers its spell, and is found again by it if Blizzard renumbers the talent tree. Ranks are read again after any talent change; an unreadable node is unavailable, including under NOT."] = true
-L["Talents of another specialization cannot be loaded during combat. A node ID entered below is kept and evaluated."] = true
 L["Show talent tree"] = true
-L["Opens the talent tree of the rotation's specialization. Click a talent to choose it for this condition."] = true
 L["Hero Talents"] = true
 L["The talent tree cannot be shown during combat."] = true
 L["Finish or discard the changes in your own talent window first."] = true
@@ -4089,8 +3211,6 @@ L["Choose one of the talents on this node."] = true
 L["Click to choose this talent."] = true
 L["Click to clear this talent."] = true
 L["Close the build shown in your own talent window first."] = true
-L["Show talent tree draws the talent tree of the specialization shown, with every talent open to choose. Click a talent to choose it, or click the chosen one again to clear it; the Talent list follows. It cannot open during combat."] = true
-L["Forever is the exception: Talent tree is one of the three talent trees of your active loadout (in the order the talent window shows them); their points are read again after any talent change. Retail has no such trees."] = true
 
 -- Specialization and weapon type conditions (Conditions/specialization.lua, Conditions/equipment.lua).
 L["Arms"] = true
@@ -4108,42 +3228,11 @@ L["Restoration"] = true
 L["Affliction"] = true
 L["Demonology"] = true
 L["Destruction"] = true
-L["Brewmaster"] = true
-L["Windwalker"] = true
-L["Mistweaver"] = true
 L["Balance"] = true
-L["Feral"] = true
-L["Guardian"] = true
-L["Havoc"] = true
-L["Vengeance"] = true
-L["Devourer"] = true
-L["Devastation"] = true
-L["Preservation"] = true
-L["Augmentation"] = true
 L["Initial"] = true
-L["One-Handed Axes"] = true
-L["Two-Handed Axes"] = true
-L["Bows"] = true
-L["Guns"] = true
-L["One-Handed Maces"] = true
-L["Two-Handed Maces"] = true
-L["Polearms"] = true
-L["One-Handed Swords"] = true
-L["Two-Handed Swords"] = true
-L["Warglaives"] = true
-L["Staves"] = true
-L["Fist Weapons"] = true
-L["Daggers"] = true
-L["Thrown"] = true
-L["Crossbows"] = true
-L["Wands"] = true
-L["Fishing Poles"] = true
 L["Specialization"] = true
-L["<specialization>"] = true
 L["specialization %d"] = true
-L["your specialization {{!is|is not}} %s"] = true
 L["Weapon Type"] = true
-L["Slot"] = true
 L["Main Hand"] = true
 L["Ranged"] = true
 L["Nothing equipped"] = true
@@ -4152,14 +3241,6 @@ L["One-handed weapon"] = true
 L["Two-handed weapon"] = true
 L["Ranged weapon"] = true
 L["Held in off hand"] = true
-L["<slot>"] = true
-L["<weapon type>"] = true
-L["weapon type %d"] = true
-L["your %s slot {{!holds|does not hold}} %s"] = true
-L["Help.Conditions.SPECIALIZATION"] = "Your talent specialization. Choose a class, then one of its specializations; your own class is selected first, and other classes are offered for rotations shared between characters. A specialization of another class is always false."
-L["Help.Conditions.SPECIALIZATION.editions"] = "Retail and Mists of Pandaria Classic compare your active specialization. Classic Era, Burning Crusade and Wrath compare your primary talent tree, the one tree with the most points; Feral and Guardian both mean Feral Combat there. Forever cannot tell its specializations apart this way. No specialization yet, tied or unspent trees and unreadable values are unavailable, including under NOT. The answer is cached until your talents or specialization change."
-L["Help.Conditions.WEAPON_TYPE"] = "What is equipped in the main hand, off hand or ranged slot: nothing, any weapon, a one-handed, two-handed or ranged weapon, a shield, an off-hand item, or one weapon type such as Daggers. Types are read from the item's class and subclass, so they work in every language. The answer is cached until your equipment changes."
-L["Help.Conditions.WEAPON_TYPE.examples"] = "Dual wielding: off hand holds any weapon. Titan's Grip: off hand holds a two-handed weapon. Backstab and Ambush: main hand holds Daggers. Shield Slam or a tank set: off hand holds a shield. The ranged slot exists only before Mists of Pandaria; elsewhere, and while item data is still loading, this condition is unavailable, including under NOT."
 
 -- Steps whose action is on no action bar (buttons.lua GetStepBinding).
 L["Not on your action bars, so it can't be highlighted. It is skipped."] = true
@@ -4173,9 +3254,6 @@ L["Rotation Master highlights an action by lighting the button that holds it, so
 L["Skipped, not on your action bars (they cannot be highlighted): %s."] = true
 L["step %s"] = true
 L["cooldown"] = true
-L["Not on your action bars"] = true
-L["An amber border and warning mark a card whose action no action bar button holds right now. Rotation Master highlights an action by lighting the button that holds it, so that step is skipped (a cooldown is never shown) until you put it on a bar. The warning updates when your bars change. Red still marks invalid data."] = true
-L["Actions must also be on an action bar: Rotation Master highlights an action by lighting the button that holds it, so a step or cooldown that no button holds is skipped, and its card shows an amber warning."] = true
 
 -- Live condition bars (UI/rotation_cards.lua, UI/rotation_editor.lua).
 L["Currently Matches"] = true
@@ -4188,7 +3266,6 @@ L["Rotation Master is advising this step now."] = true
 L["This cooldown is showing now."] = true
 L["This rotation is advising now."] = true
 -- WowSims transport (Core/transfer_formats.lua, UI/transfer_format.lua, Modules/RotationMaster_WowSims)
-L["That JSON is outside what Rotation Master reads ({detail})."] = true
 L["The Format choice could not be shown: %s"] = true
 L["The WowSims export is too long for this box (%d characters), so it cannot be shown here."] = true
 L["Check export"] = true
@@ -4197,7 +3274,6 @@ L["Converted from WowSims: %d steps, %d disabled. Choose Check import for the fu
 L["Copy this text to use it in WowSims, or paste WowSims JSON here to import it."] = true
 L["Format"] = true
 L["Format changed. Preview the pasted text again before importing."] = true
-L["Help.Transfers.rotation_format"] = "Format chooses the text this window shows and reads: Rotation Master (the default) or WowSims. With WowSims chosen, the box shows the rotation as WowSims JSON with a warning that some detail may be lost, and Check export lists what became of every step. Pasted WowSims JSON is converted first; Preview import, Compare import and Check import then work on the converted rotation exactly as for any other import, and Check import lists what became of every item. A step that is not an exact copy is imported disabled. Your choice is remembered in the profile. WowSims has no Retail simulator. The older simulators apply everything in a pasted settings JSON and reset what it leaves out, so export your own settings from them first."
 L["Imported from a WowSims rotation (APL). Steps: {steps}, disabled: {disabled}, items not imported: {skipped}. Review the disabled steps before enabling them."] = true
 L["Rotation Master has no such condition"] = true
 L["Some detail may be lost converting from WowSims."] = true
@@ -4211,288 +3287,46 @@ L["This looks like a Rotation Master export. Set Format to Rotation Master to im
 L["WowSims"] = true
 L["WowSims has no simulator for this game version, so only the Rotation Master format is available here."] = true
 L["WowSims import: {label}"] = true
-L["A Rotation Master cooldown. Cooldowns run on their own there; here the step comes first in the priority list."] = true
-L["A cast on a friendly target is imported as a plain cast, without the target."] = true
-L["A comparison was left out: {why}."] = true
-L["A comparison with the maximum became a comparison with what is missing from the maximum, which Rotation Master reads as a negative number."] = true
-L["A pre-pull action carries no conditions, so this step's other conditions were lost."] = true
-L["A sequence of actions is imported as {count} separate steps; Rotation Master cannot require them to follow one another."] = true
-L["A spell reference was left out: {why}."] = true
-L["A value ({what}) could not be read, so its condition was left out."] = true
-L["Actions in the priority list: {actions}. Pre-pull actions: {prepull}. Steps not exported: {dropped}."] = true
-L["An empty condition value was left out."] = true
-L["An item set by name has no equivalent: the simulator needs item ids."] = true
-L["Approximate"] = true
-L["Assisted Combat steps have no equivalent."] = true
-L["Became: {step}"] = true
-L["Branches and Stops are flattened into conditions on the steps they cover, and the Cooldowns list comes first."] = true
-L["Casting on several targets is imported as a plain cast on your target, with a check that the debuff is missing; switching targets is not imported."] = true
-L["Channeled spell: {parts} cannot be imported."] = true
-L["Confirmed by: {list}."] = true
-L["Converted for {class} on {edition}."] = true
-L["Could not be checked: {count}."] = true
-L["Disabled in Rotation Master, so it was not exported."] = true
-L["Exact"] = true
-L["Exported"] = true
-L["Hidden in the source."] = true
-L["Hidden items skipped: {count}."] = true
-L["Imported disabled"] = true
-L["Item {id} was not found in: {sources}. The step is imported as converted."] = true
-L["Items imported exactly and enabled: {count}"] = true
-L["Items in the rotation: {items} ({exact} exact, {approximate} approximate, {lossy} lossy, {unsupported} not representable)."] = true
-L["Items that need attention: {count}"] = true
-L["Its conditions can never be true in the simulator (for example, only out of combat), so it was not exported."] = true
-L["Lossy"] = true
-L["Never reached ({why}), so it was not exported."] = true
-L["No single simulator reads every part of it (checked: {list}), so the simulator may report unknown actions or values."] = true
-L["Not exported"] = true
-L["Not found in those sources: {unknown} unknown, {otherClass} that belong to another class."] = true
-L["Not imported"] = true
-L["Not representable"] = true
-L["Nothing in that rotation could be imported. Choose Check import to see why."] = true
-L["Nothing in this item can be imported."] = true
-L["Only the first {limit} items are read."] = true
-L["Original (WowSims): {text}"] = true
-L["Paste a WowSims rotation first."] = true
-L["Pet actions have no equivalent: the simulator's pet acts on its own."] = true
-L["Pre-pull action ({time}): imported as a step that applies only out of combat, ahead of the priority list. The seconds are dropped."] = true
-L["Pre-pull action: WowSims needs a time before the pull and Rotation Master has none, so the times are approximated, one second apart, the last one a second before the pull."] = true
-L["Pre-pull actions that became steps applying only out of combat, ahead of the priority list: {count}."] = true
-L["Readable by: {list}."] = true
-L["Rotation Master advises when you can act, so this is taken as always true"] = true
-L["Rotation Master allows {limit} steps in a rotation; the rest were not imported."] = true
-L["Rotation Master does not know how long the fight lasts"] = true
-L["Rotation Master does not know it"] = true
-L["Rotation Master keeps cooldowns in their own Cooldowns list"] = true
-L["Rotation Master runs your cooldowns from its own Cooldowns list, so add the ones you want there"] = true
-L["Rotation Master suggests Attack or Shoot by itself, unless a Stop card suppresses it"] = true
-L["Skipped"] = true
-L["Specialization: {spec}."] = true
-L["Spell and item ids checked: {count}."] = true
-L["Spell {from} became {to} (rank {rank}), the highest rank, which is what a character at the level cap casts."] = true
-L["Spell {id} appears only in other classes' lists in the simulator data, so it may belong to another class. The step is imported disabled."] = true
-L["Spell {id} was not found in: {sources}. The step is imported as converted."] = true
-L["Steps created: {steps}, disabled: {disabled}. Items not imported: {skipped}."] = true
-L["Steps exported exactly: {count}"] = true
-L["Steps skipped: {count}"] = true
-L["Steps that need attention: {count}"] = true
-L["Steps: {items} ({exact} exact, {approximate} approximate, {lossy} lossy, {unsupported} not representable)."] = true
-L["That does not look like JSON. Paste the rotation's JSON: an .apl.json file, or the simulator's exported settings."] = true
-L["That holds several saved rotations ({names}). Paste only the one you want."] = true
-L["That is a WowSims share link. It holds a compressed binary form that cannot be read here. In the simulator, export the settings as JSON and paste that instead."] = true
-L["That is larger than the limit of {limit} characters."] = true
-L["That is not text."] = true
-L["That is not valid JSON ({detail})."] = true
-L["The action casts {id}, which is a simulator setting such as the potion, not a spell or item with an id."] = true
-L["The action group {name} contains itself or is nested too deeply."] = true
-L["The action group {name} does not exist in the file."] = true
-L["The action has no spell or item id."] = true
-L["The action targets {unit}; that target is not imported."] = true
-L["The action {kind} cannot be imported: {why}."] = true
-L["The action {kind} has no step to import: {note}."] = true
-L["The class {text} in the file is not one Rotation Master knows."] = true
-L["The condition is always false in the source, so the step is imported disabled."] = true
-L["The condition {kind} has no equivalent ({why}), so it was left out."] = true
-L["The condition {type} has no WowSims equivalent ({why}), so it was left out and the step does not check it."] = true
-L["The file cannot be for {chosen}: what it contains fits only {candidates}."] = true
-L["The file is for {declared}, but this character is {chosen}."] = true
-L["The file's spells look like {looksLike}, not {chosen}."] = true
-L["The list is cut here: {count} more."] = true
-L["The simulator knows the whole fight; Rotation Master advises live. Even an exact step can suggest something different, so check the result in the game."] = true
-L["The simulator's resource potion became an item step with this edition's mana potions, best first. The simulator uses the potion chosen in its settings."] = true
-L["The specialization in the file could not be matched, so none is recorded."] = true
-L["The spell is not given by id."] = true
-L["The unit {unit} (another target or player) has no equivalent, so its condition was left out."] = true
-L["The variable {name} is missing or refers to itself, so its condition was left out."] = true
-L["This edition's mana potions became the simulator's resource potion, which uses the potion chosen in the simulator's settings."] = true
-L["This entry is not an action item."] = true
-L["This export contains no rotation to import. In WowSims, open the Rotation tab, choose an APL (or a preset), then export again."] = true
-L["This is a WowSims Simple rotation (fixed options and cooldown times), not an APL, so it has no priority list to import. In WowSims, open the Rotation tab, choose an APL (or a preset), then export again."] = true
-L["This item has no action."] = true
-L["This kind of step has no equivalent."] = true
-L["This rotation is empty: it has no actions to import."] = true
-L["Too complex to convert: its conditions expand too far."] = true
 L["WowSims export report"] = true
 L["WowSims import report"] = true
-L["WowSims simulator data ({repo})"] = true
-L["a druid's power bar depends on its form; energy was assumed"] = true
-L["a known talent became a known spell"] = true
-L["an aura that is known (a talent) became a spell that is known"] = true
-L["an earlier Stop ends the list"] = true
-L["an unknown comparison"] = true
-L["boss spell timers are not available"] = true
-L["both sides change, and Rotation Master compares only with a fixed number"] = true
-L["can cast became off cooldown; resources and range are not checked"] = true
-L["cast times, the global cooldown and swing timers are not conditions here"] = true
-L["conditions cannot do arithmetic"] = true
-L["it has no spell id"] = true
-L["it is a simulator setting, not a spell"] = true
-L["it is nested too deeply"] = true
-L["it is the simulator's own logic for this specialization"] = true
-L["it looks at every target at once"] = true
-L["it names an item, not a spell"] = true
-L["it only changes the simulation"] = true
-L["it reads the potions and food chosen in the simulator's settings"] = true
-L["it reads the simulator's internal state"] = true
-L["its branch arm is switched off"] = true
-L["maximum values are not conditions here"] = true
-L["movement speed is not a condition here"] = true
-L["no matching value for this class"] = true
-L["not a condition"] = true
-L["nothing in the simulator corresponds to it"] = true
-L["one side is not a number Rotation Master can read"] = true
-L["resource regeneration is not a condition here"] = true
-L["sequences are not tracked"] = true
-L["switching targets has no counterpart"] = true
-L["that comparison has none"] = true
-L["that unit has none"] = true
-L["that value has none"] = true
-L["the class's special resource became the main power bar"] = true
-L["the condition is incomplete"] = true
-L["the estimated time until your target dies became the time left in the fight"] = true
-L["the game client"] = true
-L["the game does not give addons the combat log there"] = true
-L["the game hides health from addons there"] = true
-L["the game hides mana and the other power bars from addons there, and Rotation Master offers no condition on them"] = true
-L["the game restricts combat data for addons there"] = true
-L["the number is outside what Rotation Master accepts"] = true
-L["the number of enemies you have threat on became the simulator's number of targets"] = true
-L["the number of runes counts the runes of that kind"] = true
-L["the number of runes of that kind became the simulator's rune count"] = true
-L["the number's unit does not fit, for example a percent compared with seconds"] = true
-L["the simulator is always in combat, so this is always true there"] = true
-L["the simulator only chooses an action when you are free to act, so this is never true there"] = true
-L["the simulator's execute phase became the target's health at or below the threshold"] = true
-L["the simulator's number of targets became the number of enemies you have threat on, which can differ"] = true
-L["the simulator's target can always be attacked"] = true
-L["the simulator's target is a boss, so this is true for a boss or elite target and false for any other"] = true
-L["the spell is not given by id"] = true
-L["the time left in the fight became the estimated time until your target dies, which needs the target's health and the combat log"] = true
-L["the time until the next rune of that type"] = true
-L["the time until the next swing, from the swing timer"] = true
-L["the time until your next swing became the simulator's time to the next auto attack"] = true
-L["this rune detail is not available"] = true
-L["trinket and proc tracking exists only in the simulator"] = true
-L["unit distance is not available"] = true
-L["waiting and timed actions have no counterpart"] = true
-L["{count} alternative items became separate steps."] = true
-L["{kind} was converted approximately: {note}."] = true
-L["{type} cannot be used on {edition}: {restricted}. It was left out, so the step is imported disabled."] = true
-L["{type} is not available on this client ({reason}), so it was left out."] = true
-L["{type} was converted approximately: {note}."] = true
 
 -- Conditions for the state of the world and for particular editions.
 L["Mounted"] = true
-L["you {{!are|are not}} mounted"] = true
 L["Swimming"] = true
-L["you {{!are|are not}} swimming"] = true
 L["Falling"] = true
-L["you {{!are|are not}} falling"] = true
 L["Flying"] = true
-L["you {{!are|are not}} flying"] = true
 L["In a Rested Area"] = true
-L["you {{!are|are not}} in a rested area"] = true
-L["Not in an instance"] = true
 L["Boss Encounter"] = true
-L["a boss encounter {{!is|is not}} in progress"] = true
 L["Instance Difficulty"] = true
-L["difficulty %d"] = true
-L["your instance difficulty {{!is|is not}} %s"] = true
-L["<difficulty>"] = true
 L["Specific Instance"] = true
-L["you {{!are|are not}} in instance %s"] = true
-L["<instance ID>"] = true
-L["Instance ID"] = true
-L["You are in %s (instance ID %d)."] = true
-L["The instance you are in cannot be read right now."] = true
 L["Mythic+ Keystone Level"] = true
-L["the level of your active Mythic+ keystone"] = true
-L["The keystone level of the Mythic+ dungeon you are running; 0 when you are not in one."] = true
 L["Group Size"] = true
-L["the number of players in your group"] = true
-L["Players"] = true
-L["The number of players in your party or raid, counting you; 1 when you are alone."] = true
 L["Group Role Count"] = true
-L["the number of group members whose assigned role is %s"] = true
-L["The number of group members, counting you, who hold the chosen role."] = true
 L["Dead Group Members"] = true
-L["the number of dead or ghost members of your group"] = true
-L["The number of other members of your party or raid who are dead or ghosts."] = true
 L["Hero Talent Tree"] = true
-L["hero talent tree %d"] = true
-L["you {{!have|have not}} chosen a hero talent tree"] = true
-L["your hero talent tree {{!is|is not}} %s"] = true
-L["<hero talent tree>"] = true
-L["Any hero talent tree"] = true
-L["Hero talent tree ID (blank for any)"] = true
 L["Spell Proc Glow"] = true
-L["%s {{!is|is not}} glowing with a proc"] = true
 L["Trinket Cooldown"] = true
 L["Trinket 1"] = true
 L["Trinket 2"] = true
-L["Trinket Slot"] = true
-L["the cooldown on your %s"] = true
-L["<trinket slot>"] = true
-L["The number of seconds before you can use the item in the chosen trinket slot; 0 means it is ready."] = true
 L["Pet Happiness"] = true
 L["Unhappy"] = true
 L["Content"] = true
 L["Happy"] = true
-L["your pet {{!is|is not}} %s"] = true
-L["<mood>"] = true
 L["Stagger"] = true
-L["the damage in your Stagger pool"] = true
-L["your Stagger as a percent of your maximum health"] = true
-L["%s percent"] = true
-L["As a percent of maximum health"] = true
-L["The damage waiting in your Stagger pool, or the same as a percent of your maximum health when the box is ticked."] = true
 L["Eclipse Direction"] = true
 L["a Solar Eclipse"] = true
 L["a Lunar Eclipse"] = true
-L["your Eclipse bar {{!is|is not}} heading toward %s"] = true
-L["<Eclipse>"] = true
 L["Eclipse Energy"] = true
 L["Energy"] = true
-L["your Eclipse energy"] = true
-L["The Eclipse bar, from -100 (a full Lunar Eclipse) to 100 (a full Solar Eclipse)."] = true
 L["Ranged Swing Time Remaining"] = true
-L["your ranged swing time remaining"] = true
-L["The amount of time (in seconds) until your next Auto Shot or wand shot."] = true
 L["only Retail has this"] = true
 L["this edition has no pet happiness"] = true
 L["this edition has no Stagger"] = true
 L["this edition has no Eclipse"] = true
 L["this client has no assigned group roles"] = true
-L["Help.Conditions.MOUNTED"] = "Matches while you are on a mount, whether it walks, swims or flies. Shapeshift forms such as Travel Form are separate from mounts; use the Form condition for those. Unavailable, never simply false, if the game cannot answer."
-L["Help.Conditions.SWIMMING"] = "Matches while you are swimming, at the surface or underwater."
-L["Help.Conditions.FALLING"] = "Matches while you are falling, for example after a jump or a drop, and not while you stand or walk on the ground."
-L["Help.Conditions.FLYING"] = "Matches while you are flying, on a flying mount or in a flight form. It is false while you walk, swim or ride on the ground."
-L["Help.Conditions.RESTING"] = "Matches while you are in a rested area, such as an inn or a capital city, where you slowly earn rested experience. It is false in the open world."
-L["Help.Conditions.ENCOUNTER"] = "Matches while the game says a boss encounter is in progress. Unlike the Boss Mod Encounter condition it needs no boss mod, and it knows nothing of which boss or stage it is. It starts when the encounter starts and ends on a kill, a wipe or a reset. It reads in combat on every edition, Retail and Forever included."
-L["Help.Conditions.INSTANCE_DIFFICULTY"] = "The difficulty of the instance you are in, for example Normal, Heroic or Mythic. Choose it from the list; the game names each difficulty in your language, and 'Not in an instance' matches the open world. Where a dungeon, a raid and a scenario give a difficulty the same name, the list says which is which. The Classic editions list the 10-player, 25-player and 40-player difficulties they use."
-L["Help.Conditions.INSTANCE_ID"] = "Matches while you are in one particular instance, identified by the number the game gives it (the instance ID). Unlike a zone name, the number does not change with the game language, so a rotation shared with another player keeps working. The editor shows the instance you are in right now, with its number. In the open world the number identifies the continent."
-L["Help.Conditions.KEYSTONE_LEVEL"] = "The level of the Mythic+ keystone you are running. It is 0 whenever you are not in a Mythic+ dungeon, so 'at least 10' is only true inside a run of that level. Retail only."
-L["Help.Conditions.GROUP_SIZE"] = "The number of players in your party or raid, counting you; 1 when you are alone. Use it to change rotation between solo play, a dungeon group and a raid."
-L["Help.Conditions.GROUP_ROLE_COUNT"] = "The number of members of your party or raid, counting you, who hold a role: Tank, Healer or DPS. Roles are the ones set in the group finder or by the group leader; a member with no role is counted in none of them. Classic Era and Burning Crusade have no assigned roles, so the condition is not available there. A member whose role cannot be read makes the count unavailable, never a smaller number."
-L["Help.Conditions.GROUP_DEAD_COUNT"] = "The number of other members of your party or raid who are dead or ghosts. Use it to decide when a resurrection is worth casting. A member whose state cannot be read makes the count unavailable, never a smaller number."
-L["Help.Conditions.HERO_TALENT"] = "The hero talent tree you have chosen. Pick a tree from the list, which shows the trees of the rotation's specialization, or choose 'Any hero talent tree' to match once you have chosen one. A tree can also be entered by its ID, to share a rotation with another class. Below the level that offers hero talents, or before you pick a tree, no tree is chosen. Retail only."
-L["Help.Conditions.SPELL_GLOW"] = "Matches while the game shows the activation glow on this spell, the golden border an action button gets when a proc makes the spell castable or stronger. It asks the game directly, so it still reads when the buff behind the proc is hidden from addons in combat. Choose the spell as it appears on your bars; its base and override forms are checked too. Unavailable, never simply false, if the game cannot answer."
-L["Help.Conditions.TRINKET_COOLDOWN"] = "The time left before the item in a trinket slot can be used again, whatever that item is, so one rotation fits every trinket. 0 means it is ready. An empty slot is false (and true under NOT). A trinket with no on-use effect has no cooldown, so the condition is unavailable for it, never ready."
-L["Help.Conditions.PET_HAPPINESS"] = "How happy your Hunter pet is: Unhappy, Content or Happy, as the game reports it. No pet, or a pet that is not a Hunter pet, is in none of these moods. Classic Era, Burning Crusade and Wrath only."
-L["Help.Conditions.STAGGER"] = "The damage waiting in your Brewmaster Monk's Stagger pool, or, with the box ticked, that damage as a percent of your maximum health. Mists of Pandaria, Retail and Forever only. On Retail and Forever the game can hide the pool from addons in combat, and always hides maximum health, so the percent form is unavailable there and the amount is unavailable whenever the game hides it; neither is ever guessed."
-L["Help.Conditions.ECLIPSE_DIRECTION"] = "Which Eclipse your Balance Druid's Eclipse bar is heading toward: a Solar Eclipse or a Lunar Eclipse. With no direction (outside Balance, or at the peak of an Eclipse) the condition matches neither. Another class has no Eclipse bar, so the condition is unavailable for it. Wrath through Mists of Pandaria only."
-L["Help.Conditions.ECLIPSE_ENERGY"] = "Your Balance Druid's Eclipse bar as a number from -100 to 100. Negative values are on the Lunar side and positive values on the Solar side: -100 is a full Lunar Eclipse and 100 a full Solar Eclipse. Another class has no Eclipse bar, so the condition is unavailable for it. Wrath through Mists of Pandaria only."
-L["Help.Conditions.RANGED_SWING_REMAIN"] = "The time left until your next Auto Shot (Hunters) or wand shot, worked out from your last shot and the speed of your ranged weapon. Before your first shot in a fight it reads the full interval. With no ranged weapon it is false (and true under NOT). It needs the combat log, which Retail and Forever hide from addons, so it is available on Classic Era, Burning Crusade and Mists of Pandaria only."
 
 -- /rm debug timeline (Diagnostics/timeline.lua).
 L["/rm debug timeline [seconds] - Report what the Retail and Forever encounter timeline offers to addons."] = true
-L["Timeline watch finished. Run /rm debug timeline show to view it."] = true
-L["No timeline watch is running."] = true
-L["Usage: /rm debug timeline [seconds|show|stop]"] = true
-L["Timeline diagnostic saved. Watching for %d seconds."] = true
-L["Timeline diagnostic saved."] = true
-L["Timeline diagnostic"] = true
-L["No timeline diagnostic is saved yet. Run /rm debug timeline."] = true
 
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true

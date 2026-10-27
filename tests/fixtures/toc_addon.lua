@@ -189,7 +189,10 @@ function T.new(o)
         if loaded[name] then return true end
         local dir='Modules/'..name
         local toc=dir..'/'..name..'_'..MODULE_FLAVOR[family]..'.toc'
-        local h=io.open(toc);if not h then return false,'MISSING' end;h:close()
+        local h=io.open(toc)
+        -- A text or converter add-on has one TOC for every client; a class module without this client's TOC has nothing to load.
+        if not h then toc=dir..'/'..name..'.toc';h=io.open(toc);if h then local listed=false;for line in h:lines() do if line:match('%.lua%s*$') then listed=true end end;h:close();h=listed and io.open(toc) or nil end end
+        if not h then return false,'MISSING' end;h:close()
         local namespace={}
         for _,line in ipairs(lines(toc)) do if line:match('%.lua$') then load(dir..'/'..line,name,namespace) end end
         loaded[name]=true;return true
