@@ -793,6 +793,26 @@ test('the world-condition seed also runs for a profile the player switches to or
     assert(a.db.profile.worldConditionsSeeded and contains(a.db.profile.switch_conditions,'PLAYER_STATE'),'copying an old profile did not seed the copy')
 end)
 
+-- init.lua offers once, to saved data older than version 1, to reset the effect list to the shipped one. Accepting must
+-- give the player their own copy of every effect: a copy that shares the shipped effect tables makes the player's later
+-- edit also an edit of AceDB's defaults, and at logout AceDB strips what equals the defaults.
+test('accepting the effect reset gives the player independent effects whose edits survive logout',function()
+    local env,a,scripts=persistentFixture({RotationMasterDB={global={version=0}}},nil,true,function(_,e)
+        e.StaticPopupDialogs={};e.StaticPopup_Show=function() end;e.YES,e.NO='Yes','No'
+    end)
+    assert(not a.initializationErrorReport)
+    local popup=assert(env.StaticPopupDialogs.ROTATIONMASTER_RESET_EFFECTS,'an old profile was not offered the effect reset')
+    popup.OnAccept()
+    local guid='61b36ed1-fa31-4656-ad71-f3d50f193a85'
+    local effect=assert(a.db.global.effects[guid],'the shipped Ping effect is missing after the reset')
+    assert(effect~=a.db.defaults.global.effects[guid],'the player\'s effect is the same table as AceDB\'s default')
+    effect.name='My ping'
+    assert(a.db.defaults.global.effects[guid].name=='Ping','editing an effect changed the shipped default')
+    scripts.OnEvent(nil,'PLAYER_LOGOUT')
+    local saved=env.RotationMasterDB.global.effects
+    assert(saved and saved[guid] and saved[guid].name=='My ping','the edit did not survive logout')
+end)
+
 test('scoped production profile reset preserves the real condition seed callback',function()
     local _,a=persistentFixture(nil,nil,true)
     assert(a.rotationProfileLifecycleInstalled and not a.initializationErrorReport)
