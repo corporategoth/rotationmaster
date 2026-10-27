@@ -1,3 +1,11 @@
+-- Plain-data checks for saved, imported and packaged records. data.CheckPortable decides whether a value is acyclic
+-- plain data inside fixed size limits (no metatables, functions or non-finite numbers) and otherwise returns a
+-- diagnostic with a code and a path; data.CopyData deep-copies such a value. This file creates the addon.RotationData
+-- namespace that the rest of Data/ extends, and loads first among them (RotationMaster.toc, before Data/tags.lua and
+-- Data/rotation_tree.lua). It must never see game observations or secret values, only decoded or packaged data. It also
+-- hands its ownership proof to Data/rotation_tree.lua once (BindRotationPortableReader), which the execution index
+-- reader uses to prove that these functions and the globals they rely on are still the originals.
+
 local _, addon = ...
 local data = addon.RotationData or {}
 addon.RotationData = data
@@ -7,9 +15,16 @@ local parserString = string
 local parserSub = type(parserString) == "table" and rawget(parserString, "sub") or nil
 if type(parserSub) ~= "function" then parserSub = nil end
 
+-- ============================================================================
+-- Portable data checks and copies
+-- ============================================================================
+
 -- Inputs are decoded/packaged data, never unsanitized game observations.
+-- Limits: nesting depth, total nodes (values and keys), total string bytes, and bytes in any one string.
 local maxDepth, maxNodes, maxBytes, maxString = 64, 20000, 1048576, 262144
 
+-- Builds the error record { code, path, severity = "error" } for a failed check. path is the list of keys walked so
+-- far and is rendered as "$.key[1]"; each string key is cut to 80 bytes to keep the message short.
 local function diagnostic(code, path)
     local location = "$"
 
@@ -20,10 +35,16 @@ local function diagnostic(code, path)
     return { code = code, path = location, severity = "error" }
 end
 
+-- True for a real, finite number (false for NaN and both infinities).
 local function finite(value)
     return value == value and value ~= math.huge and value ~= -math.huge
 end
 
+-- Returns true when value is portable: nil, booleans, finite numbers, strings, and tables without metatables or cycles
+-- whose keys are strings or positive integers, all within the size limits. Otherwise returns false and a diagnostic
+-- (data-node-limit, data-depth-limit, data-string-limit, data-byte-limit, non-finite-number, non-portable-type,
+-- non-portable-key, data-metatable, data-cycle). Keys are visited in sorted order so the reported failure is
+-- deterministic. Does not call __index or any other metamethod, since it rejects tables that have a metatable.
 function data.CheckPortable(value)
     local active, path, nodes, bytes = {}, {}, 0, 0
 
@@ -90,6 +111,8 @@ function data.CheckPortable(value)
     return visit(value, 0)
 end
 
+-- Returns a deep copy of portable data, or nil and the CheckPortable diagnostic. Shared subtables stay shared in the
+-- copy; the copy has no metatables.
 function data.CopyData(value)
     local ok, why = data.CheckPortable(value)
     if not ok then return nil, why end
@@ -111,7 +134,13 @@ function data.CopyData(value)
     return copy(value)
 end
 
+-- ============================================================================
+-- Ownership proof
+-- ============================================================================
+
 -- Private source-owner proof. Public portable/copy APIs remain fresh and live.
+-- The locals below capture the standard primitives at load. portableOwned later compares them with what the file's
+-- environment holds now, so a replaced global or a swapped CheckPortable is noticed.
 local portableType, portableRawget, portableEqual = type, rawget, rawequal
 local portableGetmetatable = getmetatable
 ---@type fun(f: number|function): table
@@ -122,6 +151,9 @@ local portableSort, portableHuge = table.sort, math.huge
 local portableEnvironment = portableType(portableGetfenv) == "function" and portableGetfenv(1) or nil
 local ownedPortable = data.CheckPortable
 
+-- True only while this file's functions are provably the originals: namespace is the RotationData table, CheckPortable
+-- is the function defined above, its helpers share the load-time environment, and that environment still holds the
+-- captured type, pairs, ipairs, getmetatable, getfenv, math and table.sort. Never raises; returns false on any doubt.
 local function portableOwned(namespace)
     return portableEqual(namespace, data)
         and portableType(portableEnvironment) == "table"
@@ -142,6 +174,8 @@ local function portableOwned(namespace)
 end
 
 -- Capture-only explanation of the existing proof; never authorizes execution.
+-- Runs the same checks as portableOwned but reports the first one that failed as result.reason ("ready" when all pass),
+-- plus a per-global map in result.raw, for the profiler's ownership report.
 local function portableStatus(namespace)
     local result = { reason = "ready", raw = {} }
 
@@ -202,6 +236,8 @@ local function portableStatus(namespace)
     return result
 end
 
+-- One-time handoff to Data/rotation_tree.lua, which calls it at load and then removes the name. Hands bind the proof
+-- function and the status function. Does nothing for any caller other than the addon.
 function addon:BindRotationPortableReader(bind)
     if self ~= addon or portableType(bind) ~= "function" then return end
     bind(portableOwned, portableStatus)

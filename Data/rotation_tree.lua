@@ -1,3 +1,11 @@
+-- The structural reader for a rotation body. data.IndexRotationSteps walks the "rotation" and "cooldowns" priority lists
+-- (including nested Branch arms), checks the structure (dense lists, step ids, Branch fields and modes, depth and row
+-- limits) and returns the steps as ordered rows plus an id lookup, or nil and a diagnostic. data.ReserveRotationIdentities
+-- marks every string in a record as taken so new step ids cannot collide. The last part is a private, cached reader for
+-- the lean engine, handed once to Core/rotation_sequence.lua (BindRotationExecutionIndexReader). It inspects declared
+-- rotation edges only, treats a condition's data as opaque, and reads no game data. Loaded after Data/plain.lua, whose
+-- ownership proof (BindRotationPortableReader) it consumes, and before Data/validation.lua (RotationMaster.toc).
+
 local _, addon = ...
 local data = addon.RotationData
 -- The identifier grammar uses the standard pattern operation captured at load,
@@ -6,6 +14,12 @@ local parserString = string
 local parserMatch = type(parserString) == "table" and rawget(parserString, "match") or nil
 if type(parserMatch) ~= "function" then parserMatch = nil end
 
+-- ============================================================================
+-- Path and shape helpers
+-- ============================================================================
+
+-- Returns a copy of the path list with key appended (the path of a child node). Allocates; used while indexing, not on
+-- the poll path.
 local function child(path, key)
     local result = {}
 
@@ -17,6 +31,7 @@ local function child(path, key)
     return result
 end
 
+-- Renders a path list as text like "$.rotation[2].onTrue[1]" for diagnostics.
 local function location(path)
     local text = "$"
 
@@ -27,14 +42,18 @@ local function location(path)
     return text
 end
 
+-- Builds the standard failed result: nil and a { code, path, severity = "error" } diagnostic.
 local function failure(code, path)
     return nil, { code = code, path = location(path), severity = "error" }
 end
 
+-- True for a valid step identifier: a string of 1 to 128 characters that starts with a letter or digit and continues
+-- with letters, digits and . _ : -.
 local function identifier(value)
     return type(value) == "string" and #value > 0 and #value <= 128 and parserMatch(value, "^[%w][%w._:%-]*$") ~= nil
 end
 
+-- True when value is a table whose keys are exactly 1..n with no holes (an empty table counts).
 local function dense(value)
     if type(value) ~= "table" then return false end
     local count, maximum = 0, 0
@@ -48,6 +67,11 @@ local function dense(value)
     return count == maximum
 end
 
+-- ============================================================================
+-- Indexing a rotation body
+-- ============================================================================
+
+-- The only fields a Branch step may carry. Anything else is rejected as an unexpected branch field.
 local branchFields = {
     id = true,
     type = true,
@@ -58,6 +82,8 @@ local branchFields = {
     onFalse = true,
 }
 
+-- Action-step fields that are never allowed on a Branch, even when options.allowUnknownBranchFields tolerates unknown
+-- ones.
 local incompatibleBranchFields = {
     action = true,
     disabled = true,
@@ -77,6 +103,13 @@ local incompatibleBranchFields = {
 -- Returns trusted source references for internal identity/ownership operations.
 -- Paths and presentation state are private. Public snapshots must copy steps.
 -- Inspect only declared rotation edges; a condition's arbitrary data is opaque.
+-- Returns { rows, byId, lists } for a rotation body, or nil and a diagnostic ({ code, path, severity }). rows holds one
+-- record per step in walk order (each section's list in order, a Branch row followed by its onTrue and onFalse arms):
+-- { step, path, section, index, ordinal, depth, parentId, arm, unreachable }. byId maps step id to its row; lists holds
+-- one record per priority list. unreachable marks arms that a Branch mode ("true" or "false") can never take. The
+-- body must pass CheckPortable. Limits: 2000 rows and Branch nesting of 16; Branches are allowed only in the "rotation"
+-- list, not in "cooldowns". options.allowMissingIds accepts steps without an id (upgrades of old data);
+-- options.allowUnknownBranchFields tolerates unknown, non-action fields on a Branch.
 function data.IndexRotationSteps(body, options)
     local portable, why = data.CheckPortable(body)
     if not portable then return nil, why end
@@ -188,9 +221,15 @@ function data.IndexRotationSteps(body, options)
     return result
 end
 
+-- ============================================================================
+-- Identity reservation
+-- ============================================================================
+
 -- Allocation reserves even identities retained in malformed-but-portable data
 -- and provenance. Treating every string conservatively prevents hidden nested
 -- IDs from colliding without interpreting unknown future structures.
+-- Adds every string (keys and values, at any depth) in a portable value to the set `used`. Returns true, or nil and the
+-- CheckPortable diagnostic when value is not portable. Mutates only `used`.
 function data.ReserveRotationIdentities(value, used)
     local portable, why = data.CheckPortable(value)
     if not portable then return nil, why end
@@ -210,8 +249,13 @@ function data.ReserveRotationIdentities(value, used)
     return true
 end
 
+-- ============================================================================
+-- Ownership proof for the execution reader
+-- ============================================================================
+
 -- The private execution reader never exposes its index or graph witness.
 -- Trusted standard-at-load primitives; inherited globals never certify reuse.
+-- As in Data/plain.lua, the locals capture the standard primitives so indexOwned can detect a replaced global.
 local indexType, indexRawget, indexNext, indexEqual = type, rawget, next, rawequal
 local indexGetmetatable = getmetatable
 ---@type fun(f: number|function): table
@@ -230,6 +274,10 @@ if indexType(bindPortable) == "function" then
     addon.BindRotationPortableReader = nil
 end
 
+-- True only while the indexer is provably the original: the plain-data proof from Data/plain.lua still holds, the
+-- public IndexRotationSteps is the function defined above, all helpers share the load-time environment, and that
+-- environment still holds the captured primitives and string.match. Returns a falsy value on any doubt (including when
+-- the plain-data proof was never bound).
 local function indexOwned()
     return portableOwned
         and portableOwned(data)
@@ -255,6 +303,9 @@ local function indexOwned()
 end
 
 -- A pure explanation of captured ownership facts, sampled only by the profiler.
+-- Returns { portable, index }, each with a reason ("ready" or the first failed check) and a per-global raw map; the
+-- portable part comes from Data/plain.lua. Runs the same checks as indexOwned but only reports; it never authorizes
+-- anything.
 local function indexStatus(namespace)
     local portable = portableStatus and portableStatus(data) or { reason = "unbound", raw = {} }
     local result = { reason = "ready", raw = {} }
@@ -308,6 +359,12 @@ local function indexStatus(namespace)
     return { portable = portable, index = result }
 end
 
+-- ============================================================================
+-- Execution index cache
+-- ============================================================================
+
+-- Records every table reachable from body together with a snapshot of its fields, so unchanged() can later prove that
+-- nothing in the body was edited in place. Cycles are visited once. Reads with next, so no metamethod runs.
 local function witness(body)
     local records, seen = {}, {}
 
@@ -328,6 +385,7 @@ local function witness(body)
     return records
 end
 
+-- True when every table recorded by witness() still has no metatable and exactly the fields and values it had then.
 local function unchanged(records)
     for i = 1, #records do
         local row = records[i]
@@ -346,6 +404,8 @@ local function unchanged(records)
     return true
 end
 
+-- Returns a copy of an index's rows ({ rows = ... }) with each row and each path copied, so a caller can never reach
+-- or modify the cached index. The step tables inside the rows stay the live references.
 local function materialize(index)
     local rows, paths = {}, {}
 
@@ -376,10 +436,17 @@ local function materialize(index)
     return { rows = rows }
 end
 
+-- One-time handoff to Core/rotation_sequence.lua, which calls it at load and then removes the name. Hands bind three
+-- functions: read(body, profile, namespace, db), retire() and status(). read returns false when the ownership proof
+-- fails; otherwise true plus a fresh copy of the rows, reusing the one cached index while the body, profile and db are
+-- the same objects and the body is unchanged, or true, nil and a diagnostic when the body cannot be indexed. retire()
+-- drops the cache. Does nothing for any caller other than the addon.
 function addon:BindRotationExecutionIndexReader(bind)
     if self ~= addon or indexType(bind) ~= "function" then return end
     local entry, attempt
 
+    -- Drops the cached index and starts a new attempt token, which also stops a read in progress from caching its
+    -- result.
     local function retire()
         entry = nil
         attempt = {}
