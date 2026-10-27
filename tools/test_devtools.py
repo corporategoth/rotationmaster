@@ -386,6 +386,27 @@ class Plan(unittest.TestCase):
         self.assertEqual(result['problems'], [])
         self.assertTrue(result['packager'].startswith('-u -e -l -d') or ' -d' in result['packager'])
 
+    # The workflow pipes the tool through tee under pipefail and relies on its exit status to refuse a release that would
+    # skip a site, and on the key=value lines for $GITHUB_OUTPUT. Run it as the workflow does, in a process.
+    def run_tool(self, *arguments, environ=None):
+        clean = {key: value for key, value in os.environ.items() if key not in ('CF_API_KEY', 'WOWI_API_TOKEN', 'WAGO_API_TOKEN')}
+        clean.update(environ or {})
+        return subprocess.run([sys.executable, str(TOOLS / 'release_plan.py'), *arguments], capture_output=True, text=True, env=clean)
+
+    def test_the_command_exits_nonzero_when_a_site_would_be_skipped(self):
+        refused = self.run_tool('--tag', '2.0.0', environ={'CF_API_KEY': 'x', 'WAGO_API_TOKEN': 'x'})
+        self.assertEqual(refused.returncode, 1, refused.stderr)
+        self.assertIn('ERROR wowinterface: WOWI_API_TOKEN is not set', refused.stderr)
+        self.assertEqual(self.run_tool('--tag', '2.0.0').returncode, 1, 'no secret at all was accepted')
+        self.assertEqual(self.run_tool('--tag', '2.0.0-beta.1', environ={'CF_API_KEY': 'x'}).returncode, 1, 'a beta without the Wago secret was accepted')
+
+    def test_the_command_exits_zero_and_prints_the_workflow_outputs(self):
+        done = self.run_tool('--tag', '2.0.0-beta.1', environ={'CF_API_KEY': 'x', 'WAGO_API_TOKEN': 'x'})
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertEqual(done.stdout.splitlines(), ['type=beta', 'prerelease=true', 'sites=curseforge wago', 'packager=-u -e -l -w 0'])
+        self.assertEqual(self.run_tool('--tag', '2.0.0', '--dry-run').returncode, 0)
+        self.assertEqual(self.run_tool('--tag', '2.0.0', '--allow-missing-tokens', environ={'CF_API_KEY': 'x'}).returncode, 0)
+
 
 class FakeGitea(http.server.BaseHTTPRequestHandler):
     state = None
