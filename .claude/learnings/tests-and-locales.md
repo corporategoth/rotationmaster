@@ -63,5 +63,5 @@ concatenated keys are invisible to it, so do not build keys. Zero missing litera
 ## What the headless suites cannot show
 
 Layout and clipping in the real client, tooltips and taint, protected actions in combat, Retail secret-value behavior beyond
-the probes recorded in `docs/restricted-clients.md`, native glow, the packaged layout of the 18 load-on-demand modules. Say
+the probes recorded in `docs/restricted-clients.md`, native glow, the packaged layout of the 17 load-on-demand modules. Say
 which of these a change touches and leave them as in-game checks.

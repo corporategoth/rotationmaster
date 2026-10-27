@@ -67,7 +67,7 @@ files for an addon once you allow them). Update. Check that `AddOns` now has `Ro
 **Wago Addons app or WowUp.** Set the addon's release channel to beta. WoWInterface does not carry betas.
 
 **By hand.** Download `RotationMaster-<version>.zip` from the release page of the project, close the game, and extract the zip
-*into* `Interface/AddOns` (so that `RotationMaster` and the 14 module folders sit side by side). Delete the old
+*into* `Interface/AddOns` (so that `RotationMaster` and the 17 module folders sit side by side). Delete the old
 `RotationMaster` folder first.
 
 The version appears in the Settings > About page and in the startup message. If it still says `@project-version@`, you are
@@ -138,7 +138,7 @@ These are the features most likely to misbehave. If you can exercise one, please
    shows "unavailable" in combat when it should work is a useful report.
 4. **Assisted Combat and button glow** on Retail: glow animations have been iterated, not proven everywhere.
 5. **Classic Era / SoD, Wrath, Titan, Cataclysm, Mists, Forever**: no in-game acceptance of startup or rotations yet.
-6. **The packaged layout**: 14 add-ons moved out of one folder. Only symlinked installs have been run, never the zip.
+6. **The packaged layout**: 17 add-ons moved out of one folder. Only symlinked installs have been run, never the zip.
 7. **Integrations** (Masque, Questie, boss mods, EllesmereUI, Dominos) and the native profiler: tested with fakes only.
 8. **Translations**: ten languages, not all strings are translated and none are guaranteed reviewed by a native speaker.
 9. **Premade quality**: the Built In rotations follow public guides; they are a starting point, not proof of an optimal rotation.
