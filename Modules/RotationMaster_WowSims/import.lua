@@ -45,7 +45,8 @@ local function slice(list, count)
     for i = 1, math.min(count, #list) do out[i] = list[i] end
     return out
 end
-local function trim(s) return (s:gsub('^%s+', ''):gsub('%s+$', '')) end
+-- Linear: a '%s+$' pattern is quadratic on a long run of spaces.
+local function trim(s) local a = s:find('%S'); if not a then return '' end; return s:sub(a, s:match('^.*()%S')) end
 
 -- ---- finding the APL in what was pasted ----------------------------------------------------------------------
 local SPEC_NOT = {}

@@ -3,6 +3,7 @@ local invalidateDependencies=addon.InvalidateRotationDependencies
 if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local function itemValue(text)
+    if text:find('[%z\1-\31\127]') then return end
     local value=text:match('^%s*(.-)%s*$');if value=='' then return end
     local number=tonumber(value);if number then if number<=0 or number%1~=0 then return end;return number end
     return value

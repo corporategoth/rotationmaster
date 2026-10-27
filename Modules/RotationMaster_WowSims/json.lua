@@ -53,7 +53,10 @@ end
 
 local function trimText(text)
     text = text:gsub('^\239\187\191', '')
-    return (text:gsub('^%s+', ''):gsub('%s+$', ''))
+    -- Linear: a '%s+$' pattern is quadratic on a long run of spaces.
+    local a = text:find('%S')
+    if not a then return '' end
+    return text:sub(a, text:match('^.*()%S'))
 end
 json.trimText = trimText
 

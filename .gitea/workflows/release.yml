@@ -130,8 +130,14 @@ jobs:
         run: |
           set -euo pipefail
           git tag --points-at HEAD | grep -Fx -- "${TAG}" || { echo "::error::HEAD is not tag ${TAG}"; exit 1; }
-          if git rev-parse --verify --quiet origin/master >/dev/null && ! git merge-base --is-ancestor HEAD origin/master; then
-            echo "::warning::${TAG} is not reachable from master; tag after merging."
+          # A tag on a branch head would upload that code to every site. A dry run only says so.
+          if [ "${DRY_RUN}" = "true" ]; then level="warning"; fail=0; else level="error"; fail=1; fi
+          if ! git rev-parse --verify --quiet origin/master >/dev/null; then
+            echo "::${level}::origin/master is not available, so ${TAG} cannot be checked against master."
+            [ "${fail}" = "0" ] || exit 1
+          elif ! git merge-base --is-ancestor HEAD origin/master; then
+            echo "::${level}::${TAG} is not reachable from master; tag after merging."
+            [ "${fail}" = "0" ] || exit 1
           fi
 
       # Says what will happen before it happens: release type, which sites, the packager flags. Fails when a site that
