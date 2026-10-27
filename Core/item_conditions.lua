@@ -1,15 +1,30 @@
+-- Item condition runtime: validates an item reference (one item set name, or a list of item ids/names), resolves a
+-- reference to its item list, and evaluates the EQUIPPED, CARRYING, ITEM, ITEM_RANGE and ITEM_COOLDOWN conditions that
+-- Conditions/item.lua declares. Owns no saved data (item sets live in db.profile.itemsets and db.global.itemsets) and
+-- never calls a game API itself: every read goes through Platform adapters via the evaluation cache, returning
+-- nil and a reason when a value is unavailable. Loaded from the Core condition-service group of RotationMaster.toc,
+-- before Core/itemset_services.lua and Core/item_sets.lua, which build on the list helpers here.
 local _, addon = ...
 local platform = addon.Platform
 
+-- ============================================================================
+-- Reference validation
+-- ============================================================================
+
+-- True for a number that is a real, non-negative, non-infinite value (rejects NaN).
 local function finite(value)
     return type(value) == 'number' and value == value and value >= 0 and value < math.huge
 end
 
+-- True for one acceptable list entry: a positive integer item id, or a non-empty item name string of at most 1024
+-- bytes.
 local function item(value)
     return type(value) == 'number' and finite(value) and value > 0 and value % 1 == 0
         or type(value) == 'string' and #value > 0 and #value <= 1024
 end
 
+-- True when `value` is a usable item reference: a short string naming an item set, or a plain (no metatable) dense
+-- list of at most 512 entries, each passing item(). Bounds the size of anything a saved condition can make us walk.
 function addon:IsConditionItemReference(value)
     if type(value) == 'string' then return #value > 0 and #value <= 128 end
     if type(value) ~= 'table' or getmetatable(value) ~= nil then return false end
@@ -24,6 +39,12 @@ function addon:IsConditionItemReference(value)
     return count == largest
 end
 
+-- ============================================================================
+-- Item list resolution
+-- ============================================================================
+
+-- Resolves a reference to its list: a table is returned as is, a string is looked up as an item set, per-character
+-- sets first and then global ones. Returns the list, or nil and 'invalid-item-reference' / 'item-set-unavailable'.
 function addon:GetConditionItemList(reference)
     if not self:IsConditionItemReference(reference) then return nil, 'invalid-item-reference' end
     if type(reference) == 'table' then return reference end
@@ -43,10 +64,14 @@ function addon:GetConditionItemList(reference)
     return source.items
 end
 
+-- Calls a Platform reader through the evaluation cache so one poll asks the game for each answer at most once.
 local function read(cache, method, ...)
     return addon.Functions.cache.getCached(cache, method, platform, ...)
 end
 
+-- Picks the item a condition should judge: the first list entry that is carried (or, with `equipped`, worn).
+-- Returns id and count, or nil, nil and a reason when a read is unavailable. When nothing is held it returns the first
+-- entry only if `notcarrying` is set, with a count of 0, so conditions can still describe an item the player lacks.
 local function selectItem(list, cache, equipped, notcarrying)
     local first
 
@@ -68,6 +93,10 @@ local function selectItem(list, cache, equipped, notcarrying)
     return notcarrying and first or nil, 0
 end
 
+-- ============================================================================
+-- Condition evaluation
+-- ============================================================================
+
 -- ITEM_COOLDOWN with a slot: the cooldown left on whatever is equipped in that
 -- trinket slot, so one rotation works for every trinket. The equipped item
 -- comes from the build context (refreshed on equipment changes, so no native
@@ -88,6 +117,8 @@ local function slotCooldown(self, value, cache, now)
     return self.Functions.values.compare(value.operator, self.Functions.values.round(remaining, 3), value.value)
 end
 
+-- Evaluates one item condition by tag for Conditions/item.lua. `now` is the poll's GetTime value and must pass
+-- platform:CanReadValue before it is compared. Returns true or false, or nil and a reason when any read is unavailable.
 function addon:EvaluateItemCondition(tag, value, cache, now)
     if tag == 'ITEM_COOLDOWN' and value.slot ~= nil then return slotCooldown(self, value, cache, now) end
     local list, reason = self:GetConditionItemList(value.item)

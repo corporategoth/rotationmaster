@@ -1,6 +1,19 @@
+-- Sequence executor: walks a rotation body's steps in order (actions, Branches, Stops), asks the caller's `evaluate`
+-- callback about each step's conditions, and reports which action step to visit, whether a Stop ended the walk, or
+-- that the walk was unavailable. It owns control flow only: observation policy, action availability and optional
+-- upkeep stay with the caller (main.lua). The second half of the file is a one-time private handoff to main.lua
+-- (addon.BindRotationSequenceReader) that adds the managed-caller path and the execution-index cache, and checks that
+-- the public function and its environment were not swapped. Loaded from the Core rotation group of RotationMaster.toc,
+-- after Data/rotation_tree.lua, which supplies the step index. Reads no game API.
 local _, addon = ...
 local data = addon.RotationData
 
+-- ============================================================================
+-- Step walker
+-- ============================================================================
+
+-- Builds the walk's result for a body that cannot be walked: status 'unavailable' with the attack suppressed, so a
+-- broken body never lets a lower-priority action fire.
 local function unavailable(diagnostic)
     return { status = "unavailable", suppressAttack = true, diagnostic = diagnostic }
 end
@@ -17,9 +30,17 @@ local function managedPath(path)
     return result
 end
 
+-- Walks `body.rotation` depth-first and returns { status, suppressAttack, fallbackOrdinal }. Status is 'complete' (no
+-- action chosen), 'selected' (`visit` returned false for a step), 'stopped' (a Stop matched) or 'unavailable' (a
+-- Branch or Stop condition was unavailable; a Branch whose mode is "true" or "false" is decided without calling
+-- `evaluate`). `rows` maps each step to its index row, `ordinal` is the row count, and `kind` and `each` stand
+-- in for type() and ipairs() so the managed path can use the captured originals. `managed`, when given, is asked
+-- before each path copy, iteration and resume whether the managed caller still owns the call, and ends the walk as
+-- unavailable if not. Callbacks receive path copies, so nothing they do can alter the index.
 local function execute(body, evaluate, visit, rows, ordinal, kind, each, managed)
     local result = { status = "complete", suppressAttack = false, fallbackOrdinal = ordinal + 1 }
 
+    -- Returns true while the managed caller still owns this walk; otherwise marks the result unavailable.
     local function permitted(receiver)
         if managed(receiver) then return true end
         result.status = "unavailable"
@@ -27,6 +48,7 @@ local function execute(body, evaluate, visit, rows, ordinal, kind, each, managed
         return false
     end
 
+    -- Evaluates one step's conditions. Returns 'match', 'no-match' or 'unavailable' (any malformed observation).
     local function check(step, row)
         local observation
 
@@ -47,6 +69,8 @@ local function execute(body, evaluate, visit, rows, ordinal, kind, each, managed
 
     local walk
 
+    -- Visits a step list in order and recurses into the chosen Branch arm. Returns false when the walk has ended (a
+    -- selection, a Stop or an unavailable result, recorded in `result`) and true to continue with the next sibling.
     walk = function(list)
         if managed and not permitted('iterator') then return false end
 
@@ -99,8 +123,14 @@ local function execute(body, evaluate, visit, rows, ordinal, kind, each, managed
     return result
 end
 
+-- ============================================================================
+-- Public entry
+-- ============================================================================
+
 -- The caller owns observation policy and action availability. This executor
 -- owns ordered control flow, and deliberately leaves optional upkeep alone.
+-- Indexes `body` afresh on every call and returns the execute() result. `evaluate(step.conditions, context)` returns an
+-- observation table with status 'match' or 'no-match'; `visit(step, ordinal, path)` returns false to select the step.
 function addon:EvaluateRotationSequence(body, evaluate, visit)
     local index, why = data.IndexRotationSteps(body, { allowMissingIds = true })
     if not index then return unavailable(why) end
@@ -118,6 +148,7 @@ function addon:EvaluateRotationSequence(body, evaluate, visit)
         end
     end
 
+    -- Plain type() and ipairs() for the public path; the managed path below substitutes captured copies.
     local function kind(value)
         return type(value)
     end
@@ -128,6 +159,10 @@ function addon:EvaluateRotationSequence(body, evaluate, visit)
 
     return execute(body, evaluate, visit, rows, ordinal, kind, each)
 end
+
+-- ============================================================================
+-- Private handoff to main.lua
+-- ============================================================================
 
 -- Only main receives this reader. Public sequence calls always index afresh.
 local sequenceType, sequenceRawget, sequenceEqual = type, rawget, rawequal
@@ -146,9 +181,12 @@ if sequenceType(bindIndex) == "function" then
 end
 
 -- Source-owned status carries no body, cache, method, or profile references.
+-- Diagnostic only: reports whether the owner, the public method, the environment and the captured globals are still the
+-- ones this file was loaded with (reason 'ready' or the first failed check), merged into the index reader's status.
 local function sequenceStatus(owner)
     local result = { reason = "ready", raw = {} }
 
+    -- Records the first failed check as the status reason; later failures do not overwrite it.
     local function check(reason, ok)
         if result.reason == "ready" and not ok then result.reason = reason end
     end
@@ -186,9 +224,13 @@ local function sequenceStatus(owner)
     return status
 end
 
+-- One-time handoff to main.lua, which calls it at load and then removes the name. Hands `bind` the raw-method reader,
+-- the guarded run function, the status function and the original EvaluateRotationSequence. Does nothing for any
+-- caller other than the addon.
 function addon:BindRotationSequenceReader(bind)
     if self ~= addon or sequenceType(bind) ~= "function" then return end
 
+    -- Reads the owner's EvaluateRotationSequence without metamethods, so main.lua can detect a replaced method.
     local function rawMethod(owner)
         return sequenceType(owner) == "table" and sequenceRawget(owner, "EvaluateRotationSequence") or nil
     end
@@ -197,6 +239,10 @@ function addon:BindRotationSequenceReader(bind)
     -- one private map; ordinary mutable callers retain the live index reader.
     local managedEntry
 
+    -- Runs a sequence with ownership checks. When the owner, method, namespace, profile or captured globals are not the
+    -- original ones, the cached index is retired and the call falls back to the public `method` (or, for a managed
+    -- caller, is unavailable). Otherwise rows come from the cached map (managed only) or a fresh index read. Returns
+    -- the execute() result.
     local function run(owner, before, method, body, evaluate, visit, managed)
         if managed and not managed('sequence') then return unavailable({ code = "retired-managed-sequence" }) end
         local db = sequenceType(owner) == "table" and sequenceRawget(owner, "db") or nil
@@ -264,6 +310,7 @@ function addon:BindRotationSequenceReader(bind)
             end
         end
 
+        -- Read through the captured environment, which the ownership check above proved still holds the originals.
         local function kind(value)
             return sequenceEnvironment.type(value)
         end

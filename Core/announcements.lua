@@ -1,9 +1,23 @@
+-- Announcement delivery: copies an announcement for one cast (a lease), walks a series' output cards, checks each
+-- card's conditions against the cast recipient, and sends the text to chat, an emote or a sound. Owns the delivery and
+-- emote request serials and the two retained emote diagnostics; it never builds the message text (the caller passes a
+-- `format` callback), never matches events and never retries. Everything it does is best-effort and runs under pcall,
+-- so a failing chat or sound API cannot interrupt cast bookkeeping or recommendations. Chat and emotes go through
+-- Platform adapters and game values pass platform:CanReadValue. A lease's `current()` turns false as soon as the
+-- announcement, its owner or a newer delivery changes, and every step re-checks it. Validation lives in
+-- Core/announcement_data.lua, which loads first; the callers are main.lua and Core/macro_announcements.lua.
 local _, addon = ...
 local platform = addon.Platform
 local direct = { ['local'] = 'LOCAL', emote = 'EMOTE', gesture = 'GESTURE' }
 local conditionRequest = 0
 local deliveryRequest = 0
 
+-- ============================================================================
+-- Delivery lease
+-- ============================================================================
+
+-- Structural equality for plain data: same types, same keys, same leaves, and false for any table that has a
+-- metatable. Used to prove a configuration has not been edited since it was copied.
 local function same(left, right)
     if type(left) ~= type(right) then return false end
     if type(left) ~= 'table' then return left == right end
@@ -22,6 +36,9 @@ end
 
 -- A cold event owns a detached, immutable witness of its complete entry.
 -- Retain this lease across action resolution, conditions and text formatting.
+-- Returns a private copy of `config` with `action` set from its spell or item, and a `current()` function that is true
+-- only while this is still the newest prepared delivery, `owner()` still returns true and `config` is unchanged.
+-- Returns nil when `config` is not portable data or `owner` is not a function.
 function addon:PrepareAnnouncementDelivery(config, owner)
     deliveryRequest = deliveryRequest + 1
     local request = deliveryRequest
@@ -49,8 +66,16 @@ function addon:PrepareAnnouncementDelivery(config, owner)
     return entry, current
 end
 
+-- ============================================================================
+-- Series dispatch
+-- ============================================================================
+
 -- One prepared parent lease owns all reached cards. Never prepare a card: that
 -- would replace the parent delivery serial. Public callbacks see a detached view.
+-- Delivers each enabled card of `parent.outputs` whose conditions match: `format(view, live)` builds the text and
+-- `deliver` (default DispatchAnnouncement) sends it. Returns { chat, sound, outputs, retired }, where chat and sound
+-- say whether anything was sent or played and `retired` is set when the lease lapsed part way. All cards are validated
+-- before the first one is sent, and an invalid series sends nothing.
 function addon:DispatchAnnouncementSeries(parent, recipient, current, targetUnit, format, deliver)
     local result = { chat = false, sound = false, outputs = {} }
     local cards = parent.outputs
@@ -149,9 +174,17 @@ function addon:DispatchAnnouncementSeries(parent, recipient, current, targetUnit
     return result
 end
 
+-- ============================================================================
+-- Condition matching
+-- ============================================================================
+
 -- Native unit APIs may accept a resolvable name as well as a unit token.
 -- Keep the cast's recorded recipient exact; never infer the selected target.
+-- Resolves the cast recipient to a unit usable by conditions after proving it exists and has a readable GUID. Returns
+-- the recipient and a function that is true while the same unit is still there, or nothing when the recipient cannot
+-- be read or does not exist. `owned` is the caller's lease check.
 local function automaticTarget(recipient, owned)
+    -- Restricted clients hide values with canaccessvalue as well as CanReadValue; require both before comparing.
     local function readable(value)
         return platform:CanReadValue(value) and (not canaccessvalue or canaccessvalue(value))
     end
@@ -165,6 +198,7 @@ local function automaticTarget(recipient, owned)
     local exists, guid = UnitExists, UnitGUID
     if type(exists) ~= 'function' or type(guid) ~= 'function' then return end
 
+    -- The unit APIs are captured above; a replaced global ends the lease so the proof cannot be redirected.
     local function live()
         if not owned() then return false end
         return exists == UnitExists and guid == UnitGUID
@@ -193,6 +227,9 @@ local function automaticTarget(recipient, owned)
 end
 
 -- Called only after a cast matches an announcement, never by cooldown output.
+-- True when `config` has no conditions or they evaluate to a match for `recipient`. A spell, pet or item announcement
+-- with no explicit `targetUnit` resolves the recipient through automaticTarget; a macro announcement does not.
+-- `current` is the lease check; any lapse makes the answer false.
 function addon:AnnouncementConditionMatches(config, recipient, current, targetUnit)
     conditionRequest = conditionRequest + 1
     local request = conditionRequest
@@ -230,6 +267,10 @@ function addon:AnnouncementConditionMatches(config, recipient, current, targetUn
     return owned() and type(result) == 'table' and result.status == 'match'
 end
 
+-- ============================================================================
+-- Emote diagnostics
+-- ============================================================================
+
 -- Two bounded cold-output observations, never a history or polling cache.
 local emoteSerial = { automatic = 0, test = 0 }
 local emoteObservation = {}
@@ -243,11 +284,15 @@ local emoteReasons = {
     ['cast-recipient-unavailable'] = true,
 }
 
+-- Starts an emote attempt of `kind` ('automatic' or 'test') and returns its serial; a newer attempt of the same kind
+-- makes older ones drop their observation.
 local function beginEmote(kind)
     emoteSerial[kind] = emoteSerial[kind] + 1
     return emoteSerial[kind]
 end
 
+-- Copies the adapter's emote detail through a whitelist of keys and values, so the report can never hold game data
+-- or free text. Returns the safe copy, or nil when the detail is hidden or not a table.
 local function emoteDetailCopy(detail)
     if not platform:CanReadValue(detail) or type(detail) ~= 'table' then return nil end
     local copy = {}
@@ -284,6 +329,9 @@ local function emoteDetailCopy(detail)
     return copy
 end
 
+-- Records the outcome of an emote attempt as the retained observation for `kind`, unless a newer attempt superseded
+-- it. The reason is reduced to a known code and the detail to the whitelisted copy; a hidden or unknown value is stored
+-- as 'unavailable'.
 local function finishEmote(kind, serial, target, reason, detail)
     local copied, closed = pcall(emoteDetailCopy, detail)
 
@@ -302,6 +350,13 @@ local function finishEmote(kind, serial, target, reason, detail)
     }
 end
 
+-- ============================================================================
+-- Chat and sound output
+-- ============================================================================
+
+-- Maps an announce mode to a chat channel name, 'LOCAL' or 'GESTURE'. Returns nil and a reason when nothing should be
+-- sent: say and yell need a hardware event and are never sent from here; 'none' and 'audible' send no text. Group modes
+-- read the group from the platform and fall back to PARTY or LOCAL when the player is not in a raid.
 local function destination(mode)
     if not platform:CanReadValue(mode) or type(mode) ~= 'string' then return nil, 'invalid-destination' end
     if mode == 'say' or mode == 'yell' then return nil, 'hardware-event-required' end
@@ -324,12 +379,15 @@ local function destination(mode)
     return group.inGroup and 'PARTY' or 'LOCAL'
 end
 
+-- True when the optional lease check `current` is absent or reports true; an error in it counts as retired.
 local function active(current)
     if not current then return true end
     local ok, valid = pcall(current)
     return ok and valid == true
 end
 
+-- Plays the LibSharedMedia sound `key` on the Master channel. Returns true, or false and a reason code. The lease is
+-- re-checked after each call that can yield to other code, so a retired announcement stays silent.
 local function sound(key, current)
     if not active(current) then return false, 'announcement-retired' end
     if not platform:CanReadValue(key) then return false, 'restricted-value' end
@@ -359,6 +417,9 @@ end
 -- Output is best-effort and independent: a failed chat or audio API must not
 -- interrupt cast bookkeeping or recommendation evaluation. This does not
 -- construct templates, match events, or retry messages through another path.
+-- Sends `text` for one announcement config and plays its sound. Returns { chat, sound, chatReason, soundReason }:
+-- booleans for what happened and reason codes for what did not. `castRecipient` is the gesture target and `current`
+-- the lease check.
 function addon:DispatchAnnouncement(config, text, castRecipient, current)
     local result = { chat = false, sound = false }
     if not platform:CanReadValue(config) or type(config) ~= 'table' then return result end
@@ -422,8 +483,13 @@ function addon:DispatchAnnouncement(config, text, castRecipient, current)
     return result
 end
 
+-- ============================================================================
+-- Diagnostics and runtime source
+-- ============================================================================
+
 -- Called only by an explicitly labelled diagnostic button. It sends one
 -- independent targetless CHEER, never a pending announcement or cast retry.
+-- Returns { chat, chatReason } for the button to show.
 function addon:TestAnnouncementEmote()
     local serial = beginEmote('test')
     local sent, reason, detail = platform:PerformAnnouncementEmote('CHEER', '')
@@ -431,6 +497,8 @@ function addon:TestAnnouncementEmote()
     return { chat = sent == true, chatReason = reason }
 end
 
+-- Builds the plain-text emote diagnostics report from the two retained observations. Holds no recipient names or
+-- message text, only the whitelisted backend and call facts.
 function addon:GetAnnouncementEmoteReport()
     local lines = {
         'Rotation Master emote diagnostics',
@@ -469,6 +537,8 @@ end
 local runtimeDispatch = addon.DispatchAnnouncement
 local runtimeDispatchEnvironment = getfenv(1)
 
+-- Hands the active runtime plan the original DispatchAnnouncement and its environment so it can later prove neither was
+-- replaced. Works only for the addon itself.
 function addon:ConsumeAnnouncementRuntimeSource()
     if self ~= addon then return end
     return runtimeDispatch, runtimeDispatchEnvironment

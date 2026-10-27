@@ -1,5 +1,17 @@
+-- Validators for announcement configuration: a single announcement, a series (an announcement that owns a list of
+-- output cards), one output card, and the macro identifiers and item references they carry. Pure checks over saved or
+-- imported data; they build nothing, store nothing and read no game API. Every validator is strict: an unknown key, a
+-- wrong type, an oversized string or a table with a metatable makes the whole entry invalid, so imports and the
+-- settings draft can reject it before it is saved. Loaded from the Core group of RotationMaster.toc, before
+-- Core/announcements.lua (delivery) and Core/profile_data.lua and validate.lua, which call these.
 local _, addon = ...
 
+-- ============================================================================
+-- Shared field checks
+-- ============================================================================
+
+-- True when `items` is a usable item reference for an announcement: a string of at most 128 bytes (an item set), or a
+-- dense list of at most 256 entries of positive integer item ids or strings of at most 1024 bytes.
 function addon:IsValidAnnouncementItemReference(items)
     if type(items) == 'string' then return #items > 0 and #items <= 128 end
     if type(items) ~= 'table' or #items == 0 or #items > 256 then return false end
@@ -23,6 +35,8 @@ function addon:IsValidAnnouncementItemReference(items)
     return count == #items
 end
 
+-- True for a macro announcement identifier: at most 64 characters, starting with a letter or underscore and continuing
+-- with letters, digits, underscore, dot or hyphen.
 function addon:IsValidMacroAnnouncementIdentifier(value)
     return type(value) == 'string' and #value <= 64 and value:match('^[A-Za-z_][A-Za-z0-9_.-]*$') ~= nil
 end
@@ -45,12 +59,20 @@ function addon:AreMacroAnnouncementIdentifiersUnique(entries)
     return true
 end
 
+-- True for a canonical UUID string (8-4-4-4-12 hex digits), the form used for announcement and output card ids.
 local function outputIdentity(value)
     return type(value) == 'string'
         and value:match('^%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x$') ~= nil
 end
 
+-- ============================================================================
+-- Output cards
+-- ============================================================================
+
 -- Output cards are bounded configuration data; imports never execute callbacks.
+-- True when `value` is one well-formed output card of a series: a UUID id, only known keys, an announce mode, and
+-- conditions that pass the portable-data and body validators. `macro` is true for a macro series, the only kind that
+-- may use say, yell, whisper or channel.
 function addon:IsValidAnnouncementOutput(value, macro)
     if type(value) ~= 'table' or getmetatable(value) ~= nil or not outputIdentity(value.id) then return false end
 
@@ -139,6 +161,13 @@ function addon:IsValidAnnouncementOutput(value, macro)
     return true
 end
 
+-- ============================================================================
+-- Announcements and series
+-- ============================================================================
+
+-- Validates a series: an announcement with an `outputs` list of at most 64 cards, each valid for this series' kind
+-- with a unique id. Spell, pet and item series need a known event; a macro series needs an identifier and none of the
+-- spell, item, ranked or event fields. `requireIdentity` demands a UUID id on the series itself.
 local function validSeries(owner, value, requireIdentity)
     if getmetatable(value) ~= nil or requireIdentity and not outputIdentity(value.id) then return false end
 
@@ -209,6 +238,9 @@ local function validSeries(owner, value, requireIdentity)
     return count == #outputs
 end
 
+-- True when `value` is a well-formed announcement of either shape: a series (it has `outputs`) or the older single
+-- announcement that carries its own announce mode, text, sound, emote and conditions. `requireIdentity` demands a UUID
+-- id, as the saved profile does. Note the single form allows say and yell for every type and whisper only for macros.
 function addon:IsValidAnnouncement(value, requireIdentity)
     if type(value) ~= 'table' then return false end
     if value.outputs ~= nil then return validSeries(self, value, requireIdentity) end

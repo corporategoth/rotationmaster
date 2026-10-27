@@ -1,3 +1,8 @@
+-- Runtime services for item sets: whether a set is still referenced by a rotation or a button binding, the secure
+-- macro buttons that /use each set's items on a unit, and the name/value list the condition editor offers. Owns no
+-- saved data (item sets live in db.profile.itemsets and db.global.itemsets, bindings in db.char.bindings) and no
+-- window; the editing UI is UI/settings_items.lua and UI/item_list_popup.lua. Loaded from the Core condition-service
+-- group of RotationMaster.toc, after Core/item_conditions.lua. addon.itemSetButtons is created in main.lua.
 local _, addon = ...
 local CreateFrame, UIParent = CreateFrame, UIParent
 local pairs, color = pairs, color
@@ -5,6 +10,8 @@ local units = addon.units
 
 -- Runtime ItemSet services; legacy UI and secure-action policy remain unchanged.
 
+-- Walks a legacy condition tree (NOT / AND / OR around leaves) and returns true when an item condition names the item
+-- set `id`. Only string items count; a numeric item id is never a set reference.
 local function CondIsItem(cond, id)
     if cond then
         if cond.type == "NOT" then
@@ -31,6 +38,13 @@ local function CondIsItem(cond, id)
     return false
 end
 
+-- ============================================================================
+-- Usage scan
+-- ============================================================================
+
+-- True when item set `id` is referenced by a button binding or by any stored rotation. With the scoped rotation store
+-- the scan is conservative: an unreadable store, a very deep or very large record counts as "in use". Without it, it
+-- walks db.profile.rotations the legacy way. The usage scan has no caller outside tests in this tree.
 function addon:ItemSetInUse(id)
     local bindings = self.db.char.bindings
     local scoped = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
@@ -110,6 +124,14 @@ function addon:ItemSetInUse(id)
     return false
 end
 
+-- ============================================================================
+-- Secure buttons
+-- ============================================================================
+
+-- Rebuilds the hidden secure macro buttons for item set `id`, one per unit key in addon.units, each named
+-- RM_<set name>_<unit> with a macro that /uses every item in the set against that unit. A deleted set removes its
+-- buttons; a renamed set replaces them because the global frame name changes. Callers are the settings page and the
+-- PLAYER_ENTERING_WORLD and PLAYER_REGEN_ENABLED handlers in main.lua, never the poll.
 function addon:UpdateItemSetButtons(id)
     local itemsets = self.db.profile.itemsets
     local global_itemsets = self.db.global.itemsets
@@ -166,10 +188,17 @@ function addon:UpdateItemSetButtons(id)
     end
 end
 
+-- ============================================================================
+-- Editor lists
+-- ============================================================================
+
+-- Legacy six-argument entry point; forwards to the native owner OpenItemListPopup (UI/item_list_popup.lua).
 function addon:item_list_popup(name, editbox, items, isvalid, update, onclose, options)
     return self:OpenItemListPopup(name, editbox, items, isvalid, update, onclose, options)
 end
 
+-- Builds the item set choices for a dropdown: returns a value-to-label table and a sorted key list. Personal sets come
+-- first by name, then global sets (labeled in cyan), then the empty key "" labeled `empty` for the Custom choice.
 function addon:get_item_list(empty)
     local itemsets = self.db.profile.itemsets
     local global_itemsets = self.db.global.itemsets
