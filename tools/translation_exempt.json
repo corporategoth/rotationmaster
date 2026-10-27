@@ -42,10 +42,36 @@
   "WoWAce",
   "Wowhead",
   "WoWInterface",
-  "WowSims",
   "wowsims",
+  "WowSims",
   "WowUp Hub",
   "Zockify"
  ],
- "keep_english": {}
+ "keep_english": {
+  "deDE": [
+   "Rune"
+  ],
+  "esES": [
+   "Feral"
+  ],
+  "esMX": [
+   "Feral"
+  ],
+  "frFR": [
+   "<rune>",
+   "Augmentation",
+   "Rune",
+   "Talents",
+   "Vengeance",
+   "rune %s"
+  ],
+  "itIT": [
+   "<slot>",
+   "Slot",
+   "Slot %d"
+  ],
+  "ptBR": [
+   "Feral"
+  ]
+ }
 }

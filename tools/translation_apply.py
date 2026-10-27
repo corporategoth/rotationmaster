@@ -142,14 +142,15 @@ def main(argv=None):
     if args.dry_run:
         return 0
 
-    path = T.ROOT / 'Locales' / f'{args.locale}.lua'
-    original = path.read_bytes() if path.exists() else None
+    # A locale spans the main catalog and every text bundle: snapshot all its files to restore on a failed check.
+    paths = [each.path(args.locale) for each in L.catalogs()]
+    originals = {path: path.read_bytes() for path in paths if path.exists()}
     xml_path = T.ROOT / 'locales.xml'
     xml_original = xml_path.read_bytes()
     L.build(args.locale, incoming)
 
     problems = []
-    after_entries, after_sources = dict(L.read_lua(path)), L.read_sources(args.locale)
+    after_entries, after_sources = dict(L.locale_entries(args.locale)), L.read_sources(args.locale)
     for key, text in incoming.items():
         if after_entries.get(key) != text:
             problems.append(f'{key[:60]!r}: not written as given')
@@ -160,10 +161,11 @@ def main(argv=None):
             problems.append(f'{key[:60]!r}: an entry you did not supply changed')
     if problems:
         # Put back exactly the bytes this run replaced (our own write; no VCS command is involved).
-        if original is None:
-            path.unlink(missing_ok=True)
-        else:
-            path.write_bytes(original)
+        for path in paths:
+            if path in originals:
+                path.write_bytes(originals[path])
+            else:
+                path.unlink(missing_ok=True)
         xml_path.write_bytes(xml_original)
         print('translation_apply: verification failed, the previous file was restored:', file=sys.stderr)
         for problem in problems[:20]:

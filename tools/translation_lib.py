@@ -77,9 +77,9 @@ class Corpus:
         self.entries = {}
         self.sources = {}
         for locale in LOCALES:
-            path = ROOT / 'Locales' / f'{locale}.lua'
-            self.entries[locale] = dict(L.read_lua(path)) if path.exists() else {}
-            self.sources[locale] = L.read_sources(locale) if path.exists() else {}
+            # Every catalog: the main one and each load-on-demand text bundle.
+            self.entries[locale] = dict(L.locale_entries(locale))
+            self.sources[locale] = L.read_sources(locale)
         self.exempt = load_exempt()
         self.names = known_names(self.exempt)
         votes = Counter()
@@ -210,7 +210,7 @@ def source_index(keys):
     found = {}
     for path in catalog_check.sources(ROOT):
         relative = path.relative_to(ROOT).as_posix()
-        if relative.startswith('Locales/'):
+        if L.is_locale_file(relative):
             continue
         text = path.read_text(encoding='utf-8', errors='replace')
         if 'L[' not in text:

@@ -26,8 +26,15 @@ def decode_string(text):
 
 
 def tokens(source):
-    return [(m.lastgroup, m.group(), source.count('\n', 0, m.start()) + 1)
-            for m in TOKEN.finditer(source) if m.lastgroup not in ('space', 'comment')]
+    # The line of each token is counted incrementally from the previous one: counting from the start of the file for
+    # every token is quadratic, which made the catalog gate take over a minute on the shipped locales.
+    found, line, position = [], 1, 0
+    for m in TOKEN.finditer(source):
+        line += source.count('\n', position, m.start())
+        position = m.start()
+        if m.lastgroup not in ('space', 'comment'):
+            found.append((m.lastgroup, m.group(), line))
+    return found
 
 
 def literal_sites(source):
@@ -63,11 +70,35 @@ def invalid_base_value(value):
     return False
 
 
+LOCALE_NAMES = {'enUS', 'deDE', 'esES', 'esMX', 'frFR', 'itIT', 'koKR', 'ptBR', 'ruRU', 'zhCN', 'zhTW'}
+
+
+def bundle_modules(root):
+    """The add-on folders of the load-on-demand text bundles (Locales/bundles.json), if the repository has any."""
+    manifest = Path(root) / 'Locales/bundles.json'
+    if not manifest.exists():
+        return []
+    return [row['module'] for row in json.loads(manifest.read_text(encoding='utf-8')).get('bundles', [])]
+
+
+def bundle_english(root):
+    """Paths of each text bundle's enUS.lua, which define keys just as Locales/enUS.lua does."""
+    return [Path(root) / 'Modules' / module / 'enUS.lua' for module in bundle_modules(root)
+            if (Path(root) / 'Modules' / module / 'enUS.lua').exists()]
+
+
+def is_bundle_locale_file(root, path):
+    relative = path.relative_to(root).parts
+    return len(relative) == 3 and relative[0] == 'Modules' and relative[1] in bundle_modules(root) and path.stem in LOCALE_NAMES
+
+
 def sources(root):
+    """Lua sources that read keys. Locale files (the main ones and each text bundle's) define them and are not listed."""
     excluded = {'Libs', 'tests', 'docs', 'work'}
+    root = Path(root)
     return sorted(p for p in root.rglob('*.lua')
                   if not any(part.startswith('.') or part in excluded for part in p.relative_to(root).parts)
-                  and p.name != 'template.lua')
+                  and p.name != 'template.lua' and not is_bundle_locale_file(root, p))
 
 
 def check(root):
@@ -79,6 +110,16 @@ def check(root):
             issues.append(f'Locales/enUS.lua:{line}: invalid enUS value for {key!r}')
         elif not assigned and key not in known:
             issues.append(f'Locales/enUS.lua:{line}: missing enUS key {key!r}')
+    # A key a text bundle holds reads exactly like a main one; it must be defined once, in one catalog.
+    for path in bundle_english(root):
+        label = path.relative_to(root).as_posix()
+        entries = list(literal_sites(path.read_text()))
+        for key, line, assigned, value in entries:
+            if assigned and invalid_base_value(value):
+                issues.append(f'{label}:{line}: invalid enUS value for {key!r}')
+            elif assigned and key in known:
+                issues.append(f'{label}:{line}: {key!r} is also defined in Locales/enUS.lua')
+        known |= {key for key, _, assigned, value in entries if assigned and not invalid_base_value(value)}
     for path in sources(root):
         if 'Locales' in path.relative_to(root).parts:
             continue
