@@ -1,9 +1,23 @@
+-- Test window for a custom condition being authored: it renders the condition's own Fields UI and Help callbacks in a
+-- guarded scroll area, collects test values, compiles the pending source and runs its valid and evaluate callbacks once
+-- (or live, twice a second, when the player opts in). The same window serves as the debug surface that shows widget
+-- output for the Lua workbench. All user code runs through addon.Diagnostics and a failure closes the preview rather
+-- than leaving half-built widgets; sample data is copied as bounded plain data. Loaded from RotationMaster.toc after
+-- UI/custom_condition_editor.lua; the preview is owned by (and cached on) the custom condition dialog that opens it.
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- ============================================================================
+-- Sample data helpers
+-- ============================================================================
+
+-- Deep-copies bounded plain data (strings, finite numbers, booleans, tables with string or number keys, no cycles or
+-- metatables); returns nil if the value exceeds 512 nodes, depth 12 or 64 KiB of string, or contains anything else.
 local function plainCopy(value)
     local active, nodes, bytes = {}, 0, 0
 
+    -- Recursive worker: counts nodes and string bytes against the limits and raises a short code that pcall turns into
+    -- nil.
     local function copy(v, depth)
         nodes = nodes + 1
         if nodes > 512 or depth > 12 then error('sample-limit', 0) end
@@ -38,11 +52,13 @@ local function plainCopy(value)
     if ok then return result end
 end
 
+-- tostring that cannot raise: returns at most 512 characters, or the localized 'Unavailable' when conversion fails.
 local function safeText(value)
     local ok, text = pcall(tostring, value)
     return ok and text:sub(1, 512) or L['Unavailable']
 end
 
+-- Asks a widget and then every child to commit a pending edit (CommitPending); returns false if any field refuses.
 local function commitFields(widget)
     if widget.CommitPending and not widget:CommitPending() then return false end
 
@@ -53,6 +69,8 @@ local function commitFields(widget)
     return true
 end
 
+-- Builds default test values from a condition's field schema: zero, false or empty string per scalar, an empty AND for
+-- a condition, the first entry's shape for a list. Returns nil beyond depth 12.
 local function sample(schema, depth)
     if (depth or 0) > 12 then return nil end
 
@@ -79,6 +97,13 @@ local function sample(schema, depth)
     return result
 end
 
+-- ============================================================================
+-- Test values
+-- ============================================================================
+
+-- Returns a copy of the test values the player configured in Test, or nil and a message telling them to set values
+-- first. Valid only while owner is live, in the same profile and for the same condition key, and the fields, bindings
+-- and required fields of the pending source still equal the ones the values were captured against.
 function addon:ConditionTestValues(owner)
     local why = L['Set values in Test before running or debugging this condition.']
     local state = owner and owner.conditionTestState
@@ -112,6 +137,14 @@ function addon:ConditionTestValues(owner)
     return values
 end
 
+-- ============================================================================
+-- Test window
+-- ============================================================================
+
+-- Opens the Test window for the custom condition dialog owner and returns it (nil when the owner is invalid or cannot
+-- flush its fields). options.debugSurface shows only the rendered callback output (options.callback names it) with no
+-- test controls. The window is created once per owner and kind and reused. Methods on it: Render, Check, Configure,
+-- Persist, Invoke and Close; every one re-checks the owner and serial so a closed or replaced dialog is never touched.
 function addon:ShowConditionSourceTest(owner, options)
     options = options or {}
     local debugSurface = options.debugSurface == true
@@ -196,16 +229,20 @@ function addon:ShowConditionSourceTest(owner, options)
         }
     end
 
+    -- True while this opening of the window is the current one and its owner is still valid.
     local function valid()
         return d.active and d.serial == serial and owner.OwnerValid and owner.OwnerValid()
     end
 
     d.valid = valid
 
+    -- valid() and the preview has not failed.
     local function alive()
         return valid() and not d.failed
     end
 
+    -- Calls user code through addon.Diagnostics (tagged with this condition) so errors are reported; plain pcall
+    -- otherwise. Returns ok followed by the callback's results.
     local function report(operation, callback, ...)
         if addon.Diagnostics then
             return addon.Diagnostics:Call({
@@ -219,6 +256,8 @@ function addon:ShowConditionSourceTest(owner, options)
         return pcall(callback, ...)
     end
 
+    -- Releases the widgets the preview created from user callbacks (top-level ones only; children go with their
+    -- parents) and restores the methods Guard replaced, then forgets the panes.
     function d:ReleaseWidgets()
         local widgets = self.owned or {}
         self.owned = {}
@@ -245,6 +284,8 @@ function addon:ShowConditionSourceTest(owner, options)
         self.parent = nil
     end
 
+    -- Marks the preview failed after user code errored: stops live mode, releases its widgets and tells the player to
+    -- see /rm errors.
     function d:Fail()
         self.failed = true
         self.liveEnabled = false
@@ -255,6 +296,8 @@ function addon:ShowConditionSourceTest(owner, options)
         self.status:SetTextColor(1, .4, .3)
     end
 
+    -- Saves the sample as the stored test values for a custom condition (not for the debug surface). Data that is not
+    -- bounded plain data is refused with a message instead of being stored.
     function d:Persist()
         if debugSurface or not addon:IsCustomConditionIdentifier(key, true) then return end
         local value = plainCopy(self.sample)
@@ -270,6 +313,8 @@ function addon:ShowConditionSourceTest(owner, options)
         self.sampleProblem = nil
     end
 
+    -- Records the current sample and source as the owner's configured test state so ConditionTestValues can serve them,
+    -- then persists them. Returns false (and sets sampleProblem) when the sample is not bounded plain data.
     function d:Configure()
         if debugSurface then return false end
         local values = plainCopy(self.sample)
@@ -293,6 +338,8 @@ function addon:ShowConditionSourceTest(owner, options)
         return true
     end
 
+    -- Wraps a widget created by user code so its callbacks and children run only while this preview is attached and go
+    -- through Invoke. The wrapped methods are recorded so ReleaseWidgets can undo them.
     function d:Guard(widget)
         if self.owned[widget] then return end
 
@@ -305,10 +352,12 @@ function addon:ShowConditionSourceTest(owner, options)
 
         self.owned[widget] = record
 
+        -- True while the guarded widget still belongs to the current render generation.
         local function attached()
             return alive() and d.widgetGeneration == record.generation and d.owned[widget] == record
         end
 
+        -- Returns callback wrapped so it is skipped once the widget is detached, and otherwise runs via Invoke.
         local function guarded(callback)
             return function(...)
                 if attached() then return d:Invoke('preview-input', callback, ...) end
@@ -322,6 +371,8 @@ function addon:ShowConditionSourceTest(owner, options)
                 callbacks[name] = callback
             end
 
+            -- Routes every callback the widget registers through guarded(), so it only runs while the preview is
+            -- attached.
             widget.SetCallback = function(control, event, callback)
                 if type(callback) == 'function' then return record.setCallback(control, event, guarded(callback)) end
             end
@@ -332,6 +383,8 @@ function addon:ShowConditionSourceTest(owner, options)
         end
 
         if record.addChild then
+            -- Guards each child as it is added, so widgets built by user code are tracked and released with the
+            -- preview.
             widget.AddChild = function(control, child, ...)
                 if child == nil or not attached() then return end
                 d:Guard(child)
@@ -344,6 +397,9 @@ function addon:ShowConditionSourceTest(owner, options)
         end
     end
 
+    -- Runs user code for operation under diagnostics, guarding every widget it creates. A raised error fails the
+    -- preview (returns nil). When an input callback changed the sample while checking, the new values are stored and a
+    -- re-test is queued. Returns the callback's first two results.
     function d:Invoke(operation, callback, ...)
         if not alive() then return end
         local before = operation == 'preview-input' and plainCopy(self.sample)
@@ -378,6 +434,8 @@ function addon:ShowConditionSourceTest(owner, options)
         return result, reason
     end
 
+    -- Closes the window once: commits pending test fields (dropping the configured state if one cannot commit),
+    -- releases the widgets, clears the sample and runs the owner's onClose before the owner dialog is shown again.
     function d:Close()
         if not self.active then return end
 
@@ -408,6 +466,7 @@ function addon:ShowConditionSourceTest(owner, options)
         if onClose then report('close-test-surface', onClose, self) end
     end
 
+    -- Window-registry hook: hiding means closing.
     function d:Hide()
         self:Close()
     end
@@ -448,6 +507,8 @@ function addon:ShowConditionSourceTest(owner, options)
 
     local top = { userdata = { funcs = { print = function() return '' end } } }
 
+    -- AceGUI-style user data the callbacks expect from their top-level container: the sample as 'root', the current
+    -- spec and a zero index; anything else comes from the stored table.
     function top:GetUserData(name)
         if name == 'root' then
             return d.sample
@@ -460,18 +521,22 @@ function addon:ShowConditionSourceTest(owner, options)
         return self.userdata[name]
     end
 
+    -- Stores user data from a callback while the preview is alive.
     function top:SetUserData(name, value)
         if alive() then self.userdata[name] = value end
     end
 
+    -- Shows callback-supplied status text on the window's status line.
     function top:SetStatusText(text)
         if alive() then d.status:SetText(type(text) == 'string' and text or '') end
     end
 
+    -- Stores a callback registered on the stand-in container.
     function top:SetCallback(event, callback)
         if alive() then self.userdata[event] = callback end
     end
 
+    -- A callback asked to hide the container: hides the window but keeps the preview alive (suspended).
     function top:Hide()
         if alive() then
             d.suspended = true
@@ -479,6 +544,7 @@ function addon:ShowConditionSourceTest(owner, options)
         end
     end
 
+    -- Shows the window again after a callback hid it.
     function top:Show()
         if alive() then
             d.suspended = nil
@@ -486,6 +552,7 @@ function addon:ShowConditionSourceTest(owner, options)
         end
     end
 
+    -- Hook the Fields UI widgets call to relayout the preview pane after a compact-mode change.
     top.rmCompactRefresh = function()
         if alive() and d.pane and d.pane.DoLayout then
             d.pane:DoLayout()
@@ -493,6 +560,9 @@ function addon:ShowConditionSourceTest(owner, options)
         end
     end
 
+    -- Rebuilds the preview content for the pending source current. definition is the compiled condition when one
+    -- exists; otherwise the widget and help callbacks are compiled here. In debug mode only an empty content group is
+    -- created for the callback to draw into. Runs under Invoke, so an error fails the preview instead of propagating.
     function d:Render(current, definition)
         self:ReleaseWidgets()
         self.failed = false
@@ -513,6 +583,7 @@ function addon:ShowConditionSourceTest(owner, options)
             -- A reused group remains hidden after Release until shown explicitly.
             content.frame:Show()
 
+            -- Sizes the scroll child to the laid-out content height (capped at 20000) so the scroll bar matches.
             content.LayoutFinished = function(_, _, height)
                 if alive() and type(height) == 'number' then
                     content.frame:SetHeight(math.max(1, math.min(20000, height)))
@@ -574,6 +645,8 @@ function addon:ShowConditionSourceTest(owner, options)
         end)
     end
 
+    -- Stores and displays the outcome of a test run: validation (passed, failed or unavailable) and evaluation (true,
+    -- false, skipped or unavailable), colored by whether a result was produced.
     function d:ShowResult(accepted, status, matched, reason)
         self.lastResult = { valid = not not accepted, status = status, result = matched, reason = reason }
         self:Configure()
@@ -596,6 +669,9 @@ function addon:ShowConditionSourceTest(owner, options)
         self.status:SetTextColor(available and .4 or 1, available and .9 or .6, .4)
     end
 
+    -- Runs one test: flushes the editor, commits the test fields, compiles the pending source if it changed, renders
+    -- the Fields UI when the source changed, then calls valid and evaluate with the sample. automatic is the live
+    -- timer; it refuses to run until the player has configured values by hand.
     function d:Check(automatic)
         if not valid() or not self.frame:IsShown() or not self.checking then return end
         self.failed = false
@@ -792,10 +868,16 @@ function addon:ShowConditionSourceTest(owner, options)
     return d
 end
 
+-- ============================================================================
+-- Entry points
+-- ============================================================================
+
+-- Compatibility entry point: opens the Test window.
 function addon:ShowConditionSourcePreview(owner)
     return self:ShowConditionSourceTest(owner)
 end
 
+-- Opens the output-only window for the Lua workbench's debugger; callback is 'widget' or 'help'.
 function addon:CreateConditionDebugSurface(owner, callback)
     return self:ShowConditionSourceTest(owner, { debugSurface = true, callback = callback })
 end

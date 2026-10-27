@@ -1,8 +1,14 @@
+-- Read-only text window for a full condition expression or a copyable report. It owns one lazily created dialog
+-- (addon.conditionTextWindow) and never edits the text it shows: edits are reverted so the box stays selectable and
+-- copyable only. Loaded from RotationMaster.toc after UI/condition_editor.lua; depends on the workbench chrome, button
+-- and scroll helpers and on addon:OpenPopup and addon.HideOnEscape from the window layer.
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
 -- Oversized expressions remain fully inspectable/copyable without letting a
 -- footer displace the condition tree or adding a scrollbar to that footer.
+-- Shows value (a string; anything else is ignored) under heading, or under the default condition title when heading is
+-- nil, and returns the dialog table. A heading switches the button to "Copy report".
 function addon:ShowConditionText(value, heading)
     if type(value) ~= 'string' then return end
     local dialog = self.conditionTextWindow
@@ -33,12 +39,15 @@ function addon:ShowConditionText(value, heading)
         scroll:SetScrollChild(edit)
         local setting = false
 
+        -- Grows the edit box to fit its text so the scroll frame, not the box, provides scrolling. Falls back to an
+        -- 80-column estimate on clients whose EditBox lacks GetNumLines.
         local function resize()
             local lines = edit.GetNumLines and edit:GetNumLines() or math.ceil(#(edit:GetText() or '') / 80)
             edit:SetHeight(math.max(24, lines * 14 + 16))
             scroll:UpdateScrollChildRect()
         end
 
+        -- The box is a viewer: any typed or pasted change is undone by restoring the stored text.
         addon:SetUIScript(edit, 'OnTextChanged', function()
             if not setting and edit:GetText() ~= dialog.text then
                 setting = true
@@ -49,6 +58,7 @@ function addon:ShowConditionText(value, heading)
             resize()
         end)
 
+        -- Selects the whole text and scrolls to the top so the player can press Ctrl+C immediately.
         local function copy()
             edit:SetFocus()
             edit:SetCursorPosition(0)
@@ -65,14 +75,17 @@ function addon:ShowConditionText(value, heading)
         addon:SetUIScript(edit, 'OnEscapePressed', function() frame:Hide() end)
         addon:SetUIScript(frame, 'OnHide', function() edit:ClearFocus() end)
 
+        -- Window-registry interface: addon:OpenPopup and addon.HideOnEscape call Show and Hide on the dialog table.
         function dialog:Show()
             frame:Show()
         end
 
+        -- Hides the dialog frame; the OnHide script drops edit focus.
         function dialog:Hide()
             frame:Hide()
         end
 
+        -- Replaces the stored text and selects it for copying; the programmatic SetText is guarded by the setting flag.
         function dialog:SetText(text)
             self.text = text
             setting = true

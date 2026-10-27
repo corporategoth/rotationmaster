@@ -1,6 +1,11 @@
+-- View changes buttons for the editors' draft workflows. Each Install function adds a button beside Apply and wraps the
+-- owner's refresh method so the button is enabled only while there is something unsaved. The diff itself is built and
+-- shown by UI/draft_changes.lua; this file only snapshots the current draft against its baseline and collects pending
+-- edits that are not yet in the draft. Loaded from RotationMaster.toc after UI/draft_changes.lua; the editors call it.
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- Enables or disables button according to value.
 local function enable(button, value)
     if value then
         button:Enable()
@@ -9,7 +14,12 @@ local function enable(button, value)
     end
 end
 
+-- Adds the View changes button to the rotation editor pane and to its metadata window, and chains the pane's
+-- UpdateHistory and RefreshUnsaved to keep both enabled correctly. Called once per pane, after the unsaved tracking.
 function addon:InstallRotationChangeReview(pane)
+    -- Returns snapshot, pending: the workspace snapshot overlaid with edits still sitting in the text fields, and a
+    -- list of { label, before, after } for fields whose text does not yet parse (so they cannot enter the snapshot).
+    -- metadataOnly leaves out the name and the step fields.
     function pane:ReviewSnapshot(metadataOnly)
         local snapshot = self.workspace:Snapshot()
         local pending = {}
@@ -94,6 +104,7 @@ function addon:InstallRotationChangeReview(pane)
 
     local history = pane.UpdateHistory
 
+    -- Chains the pane's history refresh so the button follows the unsaved state; read-only rotations never enable it.
     function pane:UpdateHistory()
         history(self)
         enable(self.viewChanges, not self.workspace.readOnly and self:HasUnsavedChanges())
@@ -107,6 +118,7 @@ function addon:InstallRotationChangeReview(pane)
         local after, pending = pane:ReviewSnapshot(true)
         local before = workspace.session:Baseline()
 
+        -- Reduces a rotation body to the fields the metadata window edits, so the comparison shows only those.
         local function metadata(body)
             return {
                 description = body.description,
@@ -129,12 +141,15 @@ function addon:InstallRotationChangeReview(pane)
 
     local refreshed = pane.RefreshUnsaved
 
+    -- Chains the unsaved-state refresh so the metadata window's button follows the pane's unsaved flag.
     function pane:RefreshUnsaved()
         refreshed(self)
         enable(dialog.viewChanges, self.info.rmUnsaved and not self.workspace.readOnly)
     end
 end
 
+-- Adds the View changes button to the condition editor shell. The diff is the working condition against its baseline
+-- (a comparison baseline when one is set) plus pending edits from every open card pane.
 function addon:InstallConditionChangeReview(shell)
     shell.viewChanges = addon:CreateViewChangesButton(shell.frame, shell.apply, function()
         local active = shell.active
@@ -158,6 +173,7 @@ function addon:InstallConditionChangeReview(shell)
 
     local update = shell.UpdateHistoryButtons
 
+    -- Chains the history button refresh; dirty also counts pending widget edits not yet written to the working copy.
     function shell:UpdateHistoryButtons()
         update(self)
         local active = self.active
@@ -175,7 +191,11 @@ function addon:InstallConditionChangeReview(shell)
     end
 end
 
+-- Adds the View changes button to a settings pane (create form or settings draft); p is the pane from
+-- UI/settings_form.lua.
 function addon:InstallSettingsChangeReview(p)
+    -- Opens the draft diff for the pane: the transaction keys of the settings draft, or the creation state against its
+    -- baseline, plus every dirty text field as a pending row labeled from its unsaved binding.
     function p:ReviewSettingsChanges()
         local before, after
 
@@ -233,6 +253,8 @@ function addon:InstallSettingsChangeReview(p)
 
     local creation = p.CreationActions
 
+    -- Chains the creation row so the View changes button sits left of Apply; the button is acquired from the pane's
+    -- pool.
     function p:CreationActions(...)
         creation(self, ...)
 
@@ -249,6 +271,7 @@ function addon:InstallSettingsChangeReview(p)
 
     local refresh = p.RefreshUnsaved
 
+    -- Chains the pane's unsaved refresh so the button is enabled while a creation or settings draft is dirty.
     function p:RefreshUnsaved()
         if refresh then refresh(self) end
 
@@ -258,6 +281,8 @@ function addon:InstallSettingsChangeReview(p)
     end
 end
 
+-- Adds the View changes button to the custom condition dialog, comparing its saved definition with the pending
+-- source and field edits as { identifier, definition, preferences }.
 function addon:InstallCustomChangeReview(dialog)
     local p = dialog.form
     dialog.viewChanges = dialog.viewChanges or addon:CreateViewChangesButton(dialog.frame, dialog.apply, function() end)
@@ -279,6 +304,7 @@ function addon:InstallCustomChangeReview(dialog)
             end
         end
 
+        -- Maps a custom condition record to the definition shape shown in the diff.
         local function definition(value)
             return { identifier = value.key, definition = value.value, preferences = value.context }
         end
@@ -298,6 +324,7 @@ function addon:InstallCustomChangeReview(dialog)
 
     local update = dialog.UpdateActions
 
+    -- Chains the dialog's action refresh so the button is enabled while the dialog is dirty.
     function dialog:UpdateActions()
         update(self)
         enable(self.viewChanges, self:IsDirty())

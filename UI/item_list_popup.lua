@@ -1,6 +1,13 @@
+-- Popup editor for one item list (an item set or an item condition's list): a settings form of ordered item cards with
+-- its own draft, undo history and Apply. The popup edits a copy and writes into the caller's table only on Apply, after
+-- re-validating every item; the caller learns of the change through its update callback. Loaded from RotationMaster.toc
+-- after UI/settings_form.lua, which supplies the form it embeds; the popup is a pooled condition widget.
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- Pool constructor for the RM-ItemListPopup widget: builds the frame and embedded settings form once, overrides the
+-- form's dirty, history and review hooks to work on the popup's draft (w.draft) instead of saved settings, and returns
+-- the registered widget. Per-use state is set later in OnAcquire and addon:OpenItemListPopup.
 local function constructor()
     local w = { type = 'RM-ItemListPopup' }
     local frame = CreateFrame('Frame', nil, UIParent)
@@ -22,6 +29,8 @@ local function constructor()
     w.helpButton:SetSize(20, 20)
     w.helpButton.icon:SetSize(16, 16)
 
+    -- True while the popup is active and the profile, global and character tables it was opened against are still the
+    -- live ones (a profile switch invalidates it), and the caller's options.valid, if any, still passes.
     function w:Valid()
         if
             not self.rmActive
@@ -44,10 +53,12 @@ local function constructor()
 
     local formValid = p.Valid
 
+    -- Form validity token check, narrowed by the popup's own validity.
     function p:Valid(token)
         return formValid(self, token) and w:Valid()
     end
 
+    -- Returns whether item resolves through the reference provider and passes the caller's isvalid test.
     function w:Accept(item)
         if not self:Valid() then return false end
         local provider = addon:GetReferenceProvider(self.editbox)
@@ -57,6 +68,7 @@ local function constructor()
         return ok and value and true or false
     end
 
+    -- True when a field has an uncommitted edit or the draft differs from the list as it was opened.
     function p:IsSettingsDraftDirty()
         for _, record in ipairs(self.edits) do
             if record.dirty then return true end
@@ -65,16 +77,20 @@ local function constructor()
         return not addon:SettingsDataEqual(w.baseline, w.draft)
     end
 
+    -- The popup has no creation state; only the draft can be dirty.
     function p:IsCreationDirty()
         return false
     end
 
     p.historyEnabled = true
 
+    -- Snapshot recorded in the undo history: a copy of the whole draft list.
     function p:HistorySnapshot()
         return addon:CopySettingsData(w.draft)
     end
 
+    -- Undo (or redo) one step: swaps the draft with the previous (next) snapshot and redraws. No-op when a pending
+    -- field edit cannot be flushed or the stack is empty.
     function p:TravelSettingsHistory(redo)
         if not self:FlushEdits() then return end
         local from = redo and self.historyRedo or self.historyUndo
@@ -86,6 +102,7 @@ local function constructor()
         self:Draw()
     end
 
+    -- Opens the View changes comparison of the opened list against the draft, plus any item field still being edited.
     function p:ReviewSettingsChanges()
         local pending = {}
 
@@ -112,6 +129,8 @@ local function constructor()
         )
     end
 
+    -- Marks the item fields and cards that differ from the opened list and enables Apply and View changes only while
+    -- the draft is dirty.
     function p:RefreshUnsaved()
         if not self:Valid(self.generation) then return end
 
@@ -153,12 +172,16 @@ local function constructor()
         addon:SetWorkbenchUnsaved(self.fields.apply, dirty)
     end
 
+    -- Closes the popup once and releases the widget; later calls are ignored.
     function w:Close()
         if not self.rmActive or self.closed then return end
         self.closed = true
         addon:ReleaseConditionWidget(self)
     end
 
+    -- Writes the draft into the caller's list in place and closes. Refuses (returning false with a message) when the
+    -- list was changed elsewhere since opening or any item no longer validates. A failing update callback is rethrown
+    -- after the popup closes.
     function w:Apply()
         if not self:Valid() or self.applying or not p:FlushEdits() then return false end
 
@@ -193,6 +216,7 @@ local function constructor()
         return true
     end
 
+    -- Close with the unsaved-changes prompt: applies or discards when the draft is dirty, closes at once otherwise.
     function w:RequestClose()
         if not self:Valid() then
             self:Close()
@@ -206,10 +230,13 @@ local function constructor()
         end
     end
 
+    -- Window-registry hook: hiding the popup means asking to close it, so the unsaved prompt is not bypassed.
     function w:Hide()
         self:RequestClose()
     end
 
+    -- Pool hook: resets per-use state, centers and sizes the frame and binds the close and help buttons to this lease
+    -- so a stale click on a recycled popup does nothing.
     function w:OnAcquire()
         self.closed = false
         self.applying = false
@@ -231,6 +258,8 @@ local function constructor()
         end)
     end
 
+    -- Pool hook: tears down the form and any open comparison window, clears every reference to the caller's data and
+    -- then runs the caller's onclose callback.
     function w:OnRelease()
         local callback = self.onclose
         self.onclose = nil
@@ -265,6 +294,9 @@ local function constructor()
     return addon:RegisterConditionWidget(w)
 end
 
+-- Opens the popup for items (the caller's list, edited only on Apply) titled name. editbox names the reference provider
+-- that resolves and displays items (default the item editbox), isvalid(resolved) vets each entry, update() runs after a
+-- successful Apply and onclose(widget) after release. options.valid() may revoke the popup. Returns the widget.
 function addon:OpenItemListPopup(name, editbox, items, isvalid, update, onclose, options)
     local w = self:AcquireConditionWidget('RM-ItemListPopup', constructor)
     w.target = items
@@ -293,7 +325,8 @@ function addon:OpenItemListPopup(name, editbox, items, isvalid, update, onclose,
         p:HistoryActions()
         local items = w.draft
 
-        -- The new-item field and Add share the row above the item cards.
+        -- The new-item field and Add share the row above the item cards. Inserts the typed item at gap (clamped to the
+        -- list) after validating it; the field is cleared and the form redrawn.
         local function insertItem(gap)
             if p.newItem == '' or not w:Accept(p.newItem) then
                 p:Message(L['Choose an item first.'])

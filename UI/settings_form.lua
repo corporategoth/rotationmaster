@@ -1,6 +1,16 @@
+-- The native settings form: one pooled page object (created by addon:CreateSettingsForm) that every settings page,
+-- popup and transfer dialog draws into. A page supplies a builder that calls row methods (Edit, Check, Choice, Slider,
+-- Color, Reference, Position, ...) in order; Draw replays the builder from scratch, so controls are pooled per kind and
+-- every callback is wrapped in Guard, which drops it when the drawing, the profile, global or character table it
+-- belongs to has changed. Edits stay in text boxes until FlushEdits parses and commits them. Row methods place values
+-- at x = 220 and register them for the label-column scope. Game items and spells are looked up through reference
+-- providers and the cursor is read only through Platform:CanReadValue (restricted clients). Other UI/settings_*.lua
+-- files add methods through the Install* calls at the bottom; this file is loaded after all of them. It saves nothing
+-- itself.
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- Creates a small left-aligned, vertically centered caption font string on parent.
 local function label(parent)
     local t = parent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
     t:SetJustifyH('LEFT')
@@ -8,6 +18,7 @@ local function label(parent)
     return t
 end
 
+-- Default parse function for an Edit field: the text is the value.
 local function identity(text)
     return text
 end
@@ -37,6 +48,12 @@ function addon:CreateSettingsForm(parent)
     p.message:SetTextColor(1, .5, .3)
     p.message:SetHeight(20)
 
+    -- ============================================================================
+    -- Validity, help and guards
+    -- ============================================================================
+
+    -- True while the form is open for generation token and the profile, global and character tables are the ones it was
+    -- opened against. Every deferred callback checks this; a redraw or a profile switch makes older callbacks inert.
     function p:Valid(token)
         return self.active
             and token == self.generation
@@ -45,9 +62,11 @@ function addon:CreateSettingsForm(parent)
             and self.char == addon.db.char
     end
 
+    -- Wraps callback so it runs only while this drawing is current (through GuardWorkbenchHelp when available).
     function p:HelpGuard(callback)
         local token = self.generation
 
+        -- True while the drawing this guard was made for is still current.
         local function valid()
             return self:Valid(token)
         end
@@ -59,6 +78,9 @@ function addon:CreateSettingsForm(parent)
         end
     end
 
+    -- After a draw, gives every field a help brief: the first sentence of the page's authored help for that field key,
+    -- else the control's tooltip, else a generic brief for its kind. The bindings are released by the next draw's
+    -- cleanups.
     function p:BindHelpBriefs()
         if not addon.BindWorkbenchHelp then return end
         local token = self.generation
@@ -97,6 +119,8 @@ function addon:CreateSettingsForm(parent)
         end
     end
 
+    -- Wraps callback for this drawing: it runs only while Valid, inside one settings-history step when history is
+    -- installed, and afterwards re-enables or disables Apply from the draft's dirty state.
     function p:Guard(callback)
         local token = self.generation
 
@@ -123,6 +147,8 @@ function addon:CreateSettingsForm(parent)
         end
     end
 
+    -- Returns the next pooled control of the given kind for this drawing, building it with build() on first use,
+    -- reparenting it to the current surface and showing it. Draw resets the counts, so controls are reused in order.
     function p:Acquire(kind, build)
         self.counts[kind] = (self.counts[kind] or 0) + 1
         local i = self.counts[kind]
@@ -140,11 +166,18 @@ function addon:CreateSettingsForm(parent)
         return c
     end
 
+    -- Shows a status line at the bottom of the form, in green when success, otherwise orange.
     function p:Message(text, success)
         self.message:SetText(text or '')
         self.message:SetTextColor(success and .35 or 1, success and .85 or .5, success and .45 or .3)
     end
 
+    -- ============================================================================
+    -- Rows and label columns
+    -- ============================================================================
+
+    -- Reserves a row of height (default 30) at the current y and returns its top; a non-empty caption gets a label in
+    -- the label column and registers it with the open label scope.
     function p:Row(caption, height)
         local y = self.y
         self.y = y + (height or 30)
@@ -181,6 +214,7 @@ function addon:CreateSettingsForm(parent)
         return point, c, d
     end
 
+    -- Opens a label-column scope (a page, column or card); scopes nest.
     function p:BeginLabelScope()
         self.labelScopes = self.labelScopes or {}
         self.labelScopes[#self.labelScopes + 1] = self.labelScope
@@ -188,6 +222,9 @@ function addon:CreateSettingsForm(parent)
         self.labelRow = nil
     end
 
+    -- Registers a value control placed by a row so EndLabelScope can shift it left by dx times the saved column delta
+    -- and widen it by dw times the delta. A control anchored anywhere but TOPLEFT marks the scope as custom, which
+    -- keeps column 220.
     function p:LabelControl(control, dx, dw)
         local scope, row = self.labelScope, self.labelRow
         if not scope or not control then return control end
@@ -211,6 +248,9 @@ function addon:CreateSettingsForm(parent)
         return control
     end
 
+    -- Closes the innermost scope: narrows the label column to the longest caption (at most 220) and moves its
+    -- registered controls to match. Does nothing, leaving the standard column, if any row has no registered control or
+    -- the page moved a control itself. Returns the new column width, if changed.
     function p:EndLabelScope()
         local scope = self.labelScope
         self.labelScope = self.labelScopes and table.remove(self.labelScopes) or nil
@@ -247,6 +287,11 @@ function addon:CreateSettingsForm(parent)
         return column
     end
 
+    -- ============================================================================
+    -- Text, buttons and actions
+    -- ============================================================================
+
+    -- Adds wrapped body text across the page width and returns it; advances y by its height.
     function p:Text(text)
         local t = self:Acquire('text', function() return label(self.child) end)
         t:ClearAllPoints()
@@ -261,6 +306,7 @@ function addon:CreateSettingsForm(parent)
         return t
     end
 
+    -- Adds a header-styled text line; returns it.
     function p:Heading(text)
         local y = self.y
         local t = self:Text(text)
@@ -271,6 +317,8 @@ function addon:CreateSettingsForm(parent)
         return t
     end
 
+    -- Adds a full-row button (optionally with icon) registered as field key. The click flushes pending edits and then
+    -- calls action(), so an invalid input blocks it.
     function p:Button(key, text, action, icon)
         local y = self:Row(nil, 28)
 
@@ -299,6 +347,9 @@ function addon:CreateSettingsForm(parent)
         return c
     end
 
+    -- Adds the Apply and Cancel (Discard when pageDraft) buttons at the bottom right. Without pageDraft this is a
+    -- creation form: the baseline state is captured for the unsaved check and Apply goes through ApplyCreation. With
+    -- pageDraft Apply calls apply() after flushing, and Discard drops the settings draft and redraws.
     function p:CreationActions(apply, cancel, pageDraft)
         self.creationUsed = true
         self.creationUsedForNew = not pageDraft
@@ -348,6 +399,8 @@ function addon:CreateSettingsForm(parent)
         self:Layout()
     end
 
+    -- Adds a row of small buttons from entries { key, text, icon, action, enabled }; icon entries are 20 px icon
+    -- buttons, and the row wraps when it would pass the pane edge.
     function p:Actions(entries)
         local y = self:Row(nil, 28)
         local x = 0
@@ -400,6 +453,8 @@ function addon:CreateSettingsForm(parent)
         end
     end
 
+    -- Adds a collapsible section header; build() draws the section body unless the player collapsed it (state is kept
+    -- on the form across redraws).
     function p:Section(key, title, build)
         self.closedSections = self.closedSections or {}
         local y = self:Row(nil, 28)
@@ -431,6 +486,11 @@ function addon:CreateSettingsForm(parent)
         if not self.closedSections[key] then build() end
     end
 
+    -- ============================================================================
+    -- Value fields
+    -- ============================================================================
+
+    -- Adds a check box registered as key. A click flushes edits, toggles and calls changed(newValue). Returns it.
     function p:Check(key, caption, value, changed, tooltip)
         local y = self:Row(nil)
         local c = self:Acquire('checks', function() return addon:CreateWorkbenchCheckBox(self.child, '', 420) end)
@@ -459,6 +519,8 @@ function addon:CreateSettingsForm(parent)
         return c
     end
 
+    -- Adds a check box on the same row as the existing field fieldKey when it fits beside it, otherwise on a row below.
+    -- Both controls stay registered with the label scope.
     function p:InlineCheck(fieldKey, key, caption, value, changed, minimum, tooltip)
         local rowY = self.y - 30
         local option = self:Check(key, caption, value, changed, tooltip)
@@ -479,6 +541,10 @@ function addon:CreateSettingsForm(parent)
         return option
     end
 
+    -- Adds a text field registered as key. Typing marks it dirty and colors it red while parse(text) returns nil. The
+    -- value is committed only by FlushEdits (Enter, focus loss, or any other control): parse(text) -> value or nil,
+    -- then changed(value). Escape restores the text from the last commit. Reused pooled boxes have their reference and
+    -- texture decorations and scripts cleared first. Returns the edit box.
     function p:Edit(key, caption, value, parse, changed)
         local y = self:Row(caption)
         local c = self:Acquire('edits', function() return addon:CreateWorkbenchEditBox(self.child) end)
@@ -549,6 +615,8 @@ function addon:CreateSettingsForm(parent)
         return c
     end
 
+    -- Adds an Edit for a texture path or id with a preview and a catalog button (the shipped overlay textures);
+    -- options.preview = false hides the preview.
     function p:Texture(key, caption, value, changed, options)
         options = options or {}
         local c
@@ -606,6 +674,8 @@ function addon:CreateSettingsForm(parent)
         return c
     end
 
+    -- Adds a slider with a linked number box, both registered (key and key_value). Slider moves commit at once; a typed
+    -- number is range- and step-checked and committed through FlushEdits. Integer-step sliders round to the step.
     function p:Slider(key, caption, value, lo, hi, step, changed)
         local y = self:Row(caption)
 
@@ -715,6 +785,14 @@ function addon:CreateSettingsForm(parent)
         return c
     end
 
+    -- ============================================================================
+    -- Spell, item and sound fields
+    -- ============================================================================
+
+    -- Adds a spell or item field. kind names the reference provider ('Spell_EditBox' or 'Item_EditBox'); settings can
+    -- carry accept(id) to veto ids, spec and norank. The player can type a name or id, pick from the suggestion menu,
+    -- drag from the spellbook or bags, or right-click for what the game offers now (target cast, recent casts,
+    -- trinkets). changed(id) gets the resolved numeric id ('' when allowEmpty and cleared). Returns the edit box.
     function p:Reference(key, caption, value, kind, settings, changed, allowEmpty)
         local provider = addon:GetReferenceProvider(kind)
         settings = settings or {}
@@ -722,12 +800,14 @@ function addon:CreateSettingsForm(parent)
         settings.inventory = provider.inventory
         local selected = value and (tonumber(value) or provider.resolve(value)) or nil
 
+        -- True when the page's accept callback (if any) allows id; an erroring callback counts as a veto.
         local function accepted(id)
             if not settings.accept then return true end
             local ok, result = pcall(settings.accept, id)
             return ok and result and true or false
         end
 
+        -- Display name for id, or the provider's missing text; empty for no id.
         local function display(id)
             return id and (provider.name(id, settings.norank) or provider.missing) or ''
         end
@@ -758,6 +838,7 @@ function addon:CreateSettingsForm(parent)
         c.referenceIcon:SetPoint('LEFT', 2, 0)
         c:SetTextInsets(26, 4, 0, 0)
 
+        -- Shows the selected reference's icon, or the question mark icon when none is selected or it is unknown.
         paint = function()
             local info = selected and provider.info(selected)
             c.referenceIcon:SetTexture(info and info.icon or 'Interface\\Icons\\INV_Misc_QuestionMark')
@@ -785,6 +866,7 @@ function addon:CreateSettingsForm(parent)
         local textChanged = c:GetScript('OnTextChanged')
         local escape = c:GetScript('OnEscapePressed')
 
+        -- Takes id from the suggestion menu or the context menu as if it had been typed and committed.
         local function choose(id)
             if not self:Valid(self.generation) or not accepted(id) then return end
             c:SetText(display(id))
@@ -796,6 +878,7 @@ function addon:CreateSettingsForm(parent)
             if self:FlushEdits() then c:ClearFocus() end
         end
 
+        -- Opens the suggestion menu for the text in the box, or closes it when nothing matches.
         local function query()
             local rows = {}
             local input = c:GetText()
@@ -919,10 +1002,14 @@ function addon:CreateSettingsForm(parent)
             if GameTooltip and GameTooltip:IsOwned(c) then GameTooltip:Hide() end
         end)
 
+        -- Takes the spell or item currently on the mouse cursor, if it fits this field and is accepted, and clears the
+        -- cursor.
         local function drop()
             if type(GetCursorInfo) ~= 'function' then return end
             local observed = { pcall(GetCursorInfo) }
             local ok, cursor, first, third = observed[1], observed[2], observed[3], observed[5]
+            -- Cursor contents are read through pcall and CanReadValue: on restricted clients they can be secret values
+            -- that must not be compared or used.
             if not ok or not addon.Platform:CanReadValue(cursor) then return end
             local id
 
@@ -974,14 +1061,19 @@ function addon:CreateSettingsForm(parent)
         return c
     end
 
+    -- Reference field for a spell of spec (or the pet book); ranks are kept.
     function p:Spell(key, caption, id, spec, changed)
         return self:Reference(key, caption, id, 'Spell_EditBox', { spec = spec, norank = false }, changed)
     end
 
+    -- Reference field for an item.
     function p:Item(key, caption, id, changed, allowEmpty)
         return self:Reference(key, caption, id, 'Item_EditBox', {}, changed, allowEmpty)
     end
 
+    -- Adds the controls for an item action's target: a choice between a named item set and a custom list, and for a
+    -- custom list one Item field per entry with delete buttons plus an add field. changed receives the set id or the
+    -- new array.
     function p:ItemSequence(key, value, changed)
         local entries = { { value = '', text = L['Custom'] } }
         local sets = {}
@@ -1012,6 +1104,7 @@ function addon:CreateSettingsForm(parent)
         if type(value) == 'string' then return end
         local items = type(value) == 'table' and value or type(value) == 'number' and { value } or {}
 
+        -- Stores a new copy of the custom list and reports it.
         local function replace(copy)
             items = copy
             changed(copy)
@@ -1055,6 +1148,8 @@ function addon:CreateSettingsForm(parent)
         )
     end
 
+    -- Adds a choice of the LibSharedMedia sound names (plus the saved name if it is not registered) with a preview
+    -- button. changed gets the name, or nil for None.
     function p:Sound(key, caption, value, changed)
         local ok, media = pcall(LibStub, 'LibSharedMedia-3.0', true)
         local sounds = {}
@@ -1113,6 +1208,12 @@ function addon:CreateSettingsForm(parent)
         return c
     end
 
+    -- ============================================================================
+    -- Position, toggle, choice and color fields
+    -- ============================================================================
+
+    -- Adds a position pad with horizontal and vertical offset fields beside it. changed(x, y, centered) runs on every
+    -- pad step or committed offset. With anchor set the caller owns the caption column, so the scope is marked custom.
     function p:Position(xvalue, yvalue, changed, anchor)
         local caption
         if not anchor then caption = L['Position'] end
@@ -1155,6 +1256,7 @@ function addon:CreateSettingsForm(parent)
         self.fields.positionPad = pad
         local after = self.y
 
+        -- Parses a finite number or returns nil.
         local function numeric(text)
             local n = tonumber(text)
             if n and n == n and n > -math.huge and n < math.huge then return n end
@@ -1202,6 +1304,7 @@ function addon:CreateSettingsForm(parent)
         self.y = after
     end
 
+    -- Adds a two-state pill that shows trueLabel or falseLabel; a click flips it and calls changed(newValue).
     function p:Toggle(key, caption, value, falseLabel, trueLabel, changed)
         local y = self:Row(caption)
         local c = self:Acquire('togglePills', function() return addon:CreateWorkbenchPill(self.child, '', 94) end)
@@ -1228,6 +1331,8 @@ function addon:CreateSettingsForm(parent)
         return c
     end
 
+    -- Adds a dropdown button over entries { value, text, icon, ... } showing the entry whose value is value. Choosing a
+    -- different value calls changed(value). Returns the button so callers can resize it or replace its click handler.
     function p:Choice(key, caption, value, entries, changed)
         local y = self:Row(caption)
 
@@ -1272,6 +1377,8 @@ function addon:CreateSettingsForm(parent)
         return c
     end
 
+    -- Opens the form's shared selector menu under anchor (created on first use). The pick runs through Guard, so a
+    -- stale menu does nothing. inline hides the menu's search box and leaves the anchor text alone.
     function p:ShowChoices(anchor, entries, changed, inline)
         self.menu = self.menu or addon:CreateWorkbenchSelector()
         local token = self.generation
@@ -1289,6 +1396,13 @@ function addon:CreateSettingsForm(parent)
         )
     end
 
+    -- ============================================================================
+    -- Edits, prompts and leaving the page
+    -- ============================================================================
+
+    -- Commits every dirty field in order: all must parse first or nothing is committed (the bad field turns red and a
+    -- message shows). Returns whether the form is current and clean. Run before any action that reads or changes the
+    -- data.
     function p:FlushEdits()
         if not self:Valid(self.generation) then return false end
         local changes = {}
@@ -1326,6 +1440,8 @@ function addon:CreateSettingsForm(parent)
         return true
     end
 
+    -- Runs callback when it is safe to leave the page: at once when clean; otherwise opens the apply or discard prompt
+    -- and returns false, and callback runs after the draft is applied or discarded.
     function p:RequestLeave(callback)
         if not self:Valid(self.generation) then
             callback()
@@ -1362,6 +1478,7 @@ function addon:CreateSettingsForm(parent)
         return false
     end
 
+    -- Shows the shared confirmation prompt with message; callback runs on Confirm.
     function p:Confirm(message, callback)
         local prompt = self.prompt
 
@@ -1405,6 +1522,7 @@ function addon:CreateSettingsForm(parent)
         addon:OpenPopup(prompt, self)
     end
 
+    -- Turns the confirmation prompt into the Apply, Discard, Cancel prompt for unsaved changes.
     function p:ConfirmPending(apply, discard)
         self:Confirm(L['Apply changes before leaving this page?'], apply)
         local d = self.prompt
@@ -1426,6 +1544,8 @@ function addon:CreateSettingsForm(parent)
         )
     end
 
+    -- Adds a color swatch with four channel boxes (fields key_r, key_g, key_b, key_a) and a picker; changed({r,g,b,a})
+    -- runs when a channel is committed or the picker moves. A missing color shows opaque white.
     function p:Color(key, caption, color, changed)
         color = color or { r = 1, g = 1, b = 1, a = 1 }
         local y = self:Row(caption, 56)
@@ -1562,6 +1682,10 @@ function addon:CreateSettingsForm(parent)
         return swatch
     end
 
+    -- ============================================================================
+    -- Drawing and lifecycle
+    -- ============================================================================
+
     -- Every cleanup runs even if one fails; a failure part-way used to leave
     -- the old page's controls on screen and the page unusable.
     function p:RunCleanups()
@@ -1578,6 +1702,9 @@ function addon:CreateSettingsForm(parent)
         end
     end
 
+    -- Redraws the whole page: bumps the generation (invalidating every earlier callback), runs cleanups, hides pooled
+    -- controls, resets layout state and replays the builder, then binds help and updates the scroll height. Does
+    -- nothing when closed.
     function p:Draw()
         if not self.active then return end
         self.generation = self.generation + 1
@@ -1624,6 +1751,8 @@ function addon:CreateSettingsForm(parent)
         self.drawnColumnSingle = self.usedColumns and self.columnSingle or nil
     end
 
+    -- Opens the form with builder (called with the form on every Draw). Per-page selection state is cleared when the
+    -- profile, global or character table changed since the last open.
     function p:Open(builder)
         if self.profile ~= addon.db.profile or self.global ~= addon.db.global or self.char ~= addon.db.char then
             self.selection = nil
@@ -1650,6 +1779,7 @@ function addon:CreateSettingsForm(parent)
         self:Draw()
     end
 
+    -- Sizes the scroll area and status line to the frame, leaving room for the creation buttons and the help corner.
     function p:Layout()
         if self.fixedViewport then
             self.scroll:Hide()
@@ -1760,17 +1890,21 @@ function addon:CreateSettingsForm(parent)
         end)
     end
 
+    -- Resizes the form; geometry updates now and the redraw follows through the shared reflow driver.
     function p:SetWidth(n)
         self.frame:SetWidth(n)
         self:Layout()
         self:RequestRelayout()
     end
 
+    -- Resizes the form's height and re-lays out without redrawing.
     function p:SetHeight(n)
         self.frame:SetHeight(n)
         self:Layout()
     end
 
+    -- Closes the form: invalidates all callbacks, clears the draft and history, runs cleanups, releases focus and hides
+    -- it.
     function p:Release()
         if addon.CancelWorkbenchReflow then addon:CancelWorkbenchReflow(self) end
         if self.ClearSettingsHistory then self:ClearSettingsHistory() end

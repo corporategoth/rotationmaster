@@ -1,6 +1,12 @@
+-- Landing page registered with the game's AddOns settings panel: logo, version and author, an Open Options button, the
+-- slash-command list and credits. It owns only this page frame; the real options live in the Rotation Master window.
+-- Loaded from RotationMaster.toc just before UI/settings_setup.lua, which calls addon:CreateSettingsLauncher once.
+-- Metadata comes from the TOC through whichever GetAddOnMetadata the client provides.
 local addon_name, addon = ...
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
+-- Reads one TOC field for this addon (Version, Author, X-License, ...); returns the localized 'Unknown' when the
+-- client API is missing, errors or the field is empty.
 local function metadata(key)
     local getter = C_AddOns and C_AddOns.GetAddOnMetadata or GetAddOnMetadata
 
@@ -12,11 +18,14 @@ local function metadata(key)
     return L["Unknown"]
 end
 
+-- Builds the hidden launcher page and returns { frame = ..., open = ..., ... }; the caller registers page.frame with
+-- the settings panel. Widths follow the panel through OnSizeChanged so the wrapped text never overflows.
 function addon:CreateSettingsLauncher()
     local frame = CreateFrame("Frame", nil, UIParent)
     frame.name = self.pretty_name
     local page = { frame = frame }
 
+    -- Creates a left-justified, word-wrapped font string on the page frame (width is set later by OnSizeChanged).
     local function label(font)
         local result = frame:CreateFontString(nil, "OVERLAY", font or "GameFontHighlight")
         result:SetJustifyH("LEFT")

@@ -1,6 +1,18 @@
+-- Announces settings page: a roster of announcements (a spell, pet spell, item or macro action plus an event) each with
+-- one or more outputs (channel, text, sound or emote, optional conditions), with create, duplicate, delete, import and
+-- export. It edits the profile's announces list through the settings pane and never speaks anything itself; sending is
+-- done by Core's announcement code. Loaded from RotationMaster.toc right after UI/settings_collections.lua, which
+-- registers addon:BuildAnnounceSettings as the Announces page builder. Say, yell, whisper and channel destinations are
+-- only offered for macro actions; a saved one on any other action stays visible and invalid.
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- ============================================================================
+-- Choice tables
+-- ============================================================================
+
+-- Destinations offered for every action type. Say, yell, whisper and channel are added for macro actions only, and a
+-- custom emote entry appears only when an output already has one.
 local channels = {
     { value = 'audible', text = L['Audible'] },
     { value = 'partyraid', text = L['Raid or Party'] },
@@ -10,6 +22,7 @@ local channels = {
     { value = 'local', text = L['Local Only'] },
 }
 
+-- Action types an announcement can be attached to.
 local types = {
     { value = 'spell', text = L['Spell'] },
     { value = 'pet', text = L['Pet Spell'] },
@@ -17,12 +30,21 @@ local types = {
     { value = 'macro', text = L['Via Script/Macro'] },
 }
 
+-- ============================================================================
+-- Announces page
+-- ============================================================================
+
+-- Draws the Announces page into the settings pane p: roster, selected entry (name, action, event, outputs), footer
+-- actions and the creation form. Every callback re-checks that the pane generation, the settings store, the announces
+-- list and the entry it was built for are unchanged, and re-checks again after any call that can run foreign code (uuid
+-- generation, platform queries, the condition editor); an edit that arrives for a stale draw is dropped, not applied.
 function addon:BuildAnnounceSettings(p)
     local store = p:SettingsData()
     local values = store.profile.announces or {}
     local listSource = store.profile.announces
     local drawing = p.generation
 
+    -- True while the pane is on the same draw and the profile announces list is the one this draw started from.
     local function storeCurrent()
         return p:Valid(drawing) and p:SettingsData() == store and store.profile.announces == listSource and p:Valid(
             drawing
@@ -38,6 +60,8 @@ function addon:BuildAnnounceSettings(p)
     table.sort(events, function(a, b) return a.text < b.text end)
     local refreshRoster
 
+    -- True when value is a valid macro announcement identifier not used by another macro announcement (except is
+    -- skipped).
     local function identifierFree(value, except)
         if not self:IsValidMacroAnnouncementIdentifier(value) then return false end
 
@@ -48,6 +72,8 @@ function addon:BuildAnnounceSettings(p)
         return true
     end
 
+    -- Returns seed, or seed with a numeric suffix, as an unused valid macro identifier; nil if none is found. An
+    -- invalid seed becomes ANNOUNCE.
     local function nextIdentifier(seed)
         seed = self:IsValidMacroAnnouncementIdentifier(seed) and seed or 'ANNOUNCE'
         if identifierFree(seed) then return seed end
@@ -59,6 +85,7 @@ function addon:BuildAnnounceSettings(p)
         end
     end
 
+    -- Stores a field on entry and refreshes its roster label and search text.
     local function update(entry, key, value)
         entry[key] = value
         if refreshRoster then refreshRoster(entry) end
@@ -74,6 +101,8 @@ function addon:BuildAnnounceSettings(p)
         'channel_name',
     }
 
+    -- Gives every output of a copied or imported entry a fresh id so copies never share ids. Returns false if current()
+    -- becomes false midway.
     local function renewOutputs(entry, current)
         for _, output in ipairs(entry.outputs or {}) do
             if not current() then return false end
@@ -85,12 +114,18 @@ function addon:BuildAnnounceSettings(p)
         return current()
     end
 
+    -- Draws the action rows (type, spell or item or identifier, rank, event) and the Outputs list for entry, with field
+    -- names starting at prefix. Returns false if the entry went stale while drawing. Entries saved in the legacy shape
+    -- (output fields directly on the entry) are converted to an outputs list (materialize) on the first structural
+    -- edit.
     local function drawAction(prefix, entry)
         local generation = p.generation
         local kind = entry.type
         local identity = entry.id
         local source = entry.outputs
 
+        -- True while the pane, store and this exact entry (same type, id and outputs table) are still on screen and in
+        -- the list.
         local function parentCurrent()
             if
                 not p:Valid(generation)
@@ -113,6 +148,7 @@ function addon:BuildAnnounceSettings(p)
 
         local materialize
 
+        -- Applies a field edit to the entry if it is still current.
         local function change(key, value)
             if parentCurrent() then update(entry, key, value) end
         end
@@ -193,6 +229,7 @@ function addon:BuildAnnounceSettings(p)
             identities[i] = output.id
         end
 
+        -- True while the outputs list still holds exactly the outputs, with the same ids, that this draw displayed.
         local function collectionCurrent()
             if not parentCurrent() or #items ~= #snapshot then return false end
 
@@ -203,6 +240,8 @@ function addon:BuildAnnounceSettings(p)
             return true
         end
 
+        -- Converts a legacy single-output entry into an outputs list (copying each output field into a new output with
+        -- a fresh id) and returns the list; returns the existing list when there is one, nil if the entry went stale.
         materialize = function()
             if source then return items end
             local outputs = {}
@@ -227,6 +266,7 @@ function addon:BuildAnnounceSettings(p)
             return outputs
         end
 
+        -- Called after a reorder or insert: converts a legacy entry to an outputs list so the new order is stored.
         local function structuralChange()
             if parentCurrent() then materialize() end
         end
@@ -250,10 +290,12 @@ function addon:BuildAnnounceSettings(p)
             function(_, index, output, row)
                 local field = index == 1 and prefix or prefix .. 'output' .. index
 
+                -- True while this output is still the one at its position in the current outputs list.
                 local function current()
                     return collectionCurrent() and items[index] == output
                 end
 
+                -- Applies an edit to one output if the list is still current and the output is still at its position.
                 local function outputChange(key, value)
                     if current() then
                         output[key] = value
@@ -447,6 +489,8 @@ function addon:BuildAnnounceSettings(p)
                     local draft = self:CopySettingsData(conditions or {})
                     local baseline = self:CopySettingsData(draft)
 
+                    -- True while the output and its conditions are still exactly what the condition editor was opened
+                    -- on.
                     local function editing()
                         return current()
                             and output.conditions == conditions
@@ -587,6 +631,7 @@ function addon:BuildAnnounceSettings(p)
         return true
     end
 
+    -- Name and icon for an item action: an item set (first member), an item list or a single item id.
     local function itemInfo(value)
         if type(value) == 'string' then
             local set = (store.profile.itemsets or {})[value] or (store.global.itemsets or {})[value]
@@ -602,11 +647,13 @@ function addon:BuildAnnounceSettings(p)
         return self:GetReferenceProvider('item').info(tonumber(id) or self:GetReferenceProvider('item').resolve(id))
     end
 
+    -- Name and icon for an announcement's action, used for the roster label.
     local function entryInfo(entry)
         if entry.type == 'macro' then return { name = entry.identifier or L['Via Script/Macro'] } end
         return entry.type == 'item' and itemInfo(entry.item) or self.Platform:GetSpellInfo(entry.spell)
     end
 
+    -- Text the roster search matches: the event and every output's text, destination and channel name.
     local function searchText(entry)
         local parts = { entry.event or '' }
 
@@ -619,6 +666,7 @@ function addon:BuildAnnounceSettings(p)
         return table.concat(parts, ' ')
     end
 
+    -- Updates one roster row's label, icon and search text after an edit, without redrawing the whole page.
     refreshRoster = function(entry)
         local info = entryInfo(entry)
 
@@ -656,6 +704,8 @@ function addon:BuildAnnounceSettings(p)
 
     if not values[p.selection] and not p.creating then p.selection = entries[1] and entries[1].value end
 
+    -- Validates the creation form's draft and appends it to the profile announces list as a new entry with a fresh id.
+    -- Shows a message and keeps the form open when the action or outputs are incomplete.
     local function addAnnouncement()
         local entry = p.newAnnounce
         local field = entry.type == 'item' and 'item' or 'spell'
@@ -719,18 +769,22 @@ function addon:BuildAnnounceSettings(p)
     local selection = p.selection
     local selectedID = selected and selected.id
 
+    -- True while the selected entry and pane selection are the ones this draw captured.
     local function footerCurrent()
         if not storeCurrent() or p.selection ~= selection then return false end
         if selected and (values[selection] ~= selected or selected.id ~= selectedID) then return false end
         return storeCurrent() and p.selection == selection
     end
 
-    -- Ordinary staged edits are current. Freeze values only for one footer operation.
+    -- Ordinary staged edits are current. Freeze values only for one footer operation. Starts a footer action
+    -- (duplicate, import/export): flushes pending field edits, snapshots the selected entry and returns a current()
+    -- check that also fails if the entry changed meanwhile; nil when the page is stale.
     local function beginFooter()
         if not footerCurrent() or not p:FlushEdits() or not footerCurrent() then return end
         local baseline = selected and self:CopySettingsData(selected)
         if not footerCurrent() then return end
 
+        -- True while the page and the selected entry are unchanged since beginFooter took its snapshot.
         local function current()
             if not footerCurrent() then return false end
             if selected and not self:SettingsDataEqual(selected, baseline) then return false end
@@ -798,6 +852,7 @@ function addon:BuildAnnounceSettings(p)
                 p.announcementTransferRequest = request
                 local dialog, transferSerial
 
+                -- True while the import/export dialog opened by this action is still the live one for this selection.
                 local function transferCurrent()
                     if not current() or p.announcementTransferRequest ~= request or p.textDialog ~= dialog then
                         return false

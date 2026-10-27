@@ -1,7 +1,14 @@
+-- Rotation metadata window opened from the rotation editor: description, tags, scope (class or this character) and the
+-- author, realm, email, website and version fields, plus a read-only list of source citations. It edits the pane's
+-- draft through pane fields (metadataDraft, tagsDirty, scopeDraft, ...) and never saves; Apply writes into the draft
+-- and the rotation Apply saves it. Cancel or Escape restores the values the window opened with. Loaded from
+-- RotationMaster.toc after UI/rotation_navigation.lua; UI/rotation_editor.lua calls
+-- addon:InstallRotationMetadata(pane).
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local data = addon.RotationData
 
+-- Order, key and caption of the plain text attribution fields; the key is the field name in the saved metadata table.
 local definitions = {
     { 'author', 'Author' },
     { 'realm', 'Realm' },
@@ -10,6 +17,7 @@ local definitions = {
     { 'version', 'Version' },
 }
 
+-- Creates a wrapped, left-aligned caption at the given y inside parent.
 local function label(parent, value, y)
     local text = parent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
     text:SetPoint('TOPLEFT', 8, -y)
@@ -20,6 +28,9 @@ local function label(parent, value, y)
     return text
 end
 
+-- Builds the window once for pane and stores it as pane.metadataWindow. The pane's description edit box and tags field
+-- are re-parented into this window, so the pane keeps one set of controls and the window only decides where they show.
+-- The dialog table follows the window interface (Valid, Open, Close, Hide) that addon:OpenPopup and HideOnEscape use.
 function addon:InstallRotationMetadata(pane)
     local dialog = { fields = {}, labels = {} }
     local frame = CreateFrame('Frame', nil, UIParent)
@@ -97,6 +108,7 @@ function addon:InstallRotationMetadata(pane)
         bar:SetValue(bar:GetValue() - delta * 40)
     end)
 
+    -- Right-click anywhere in the window cancels it; a left click on the description area focuses the editable box.
     local function bodyMouseUp(_, button)
         if not dialog:Valid() then return end
 
@@ -153,10 +165,12 @@ function addon:InstallRotationMetadata(pane)
     dialog.scope:SetPoint('TOPLEFT', 116, -140)
     dialog.scopeMenu = addon:CreateWorkbenchSelector()
 
+    -- True when the rotation can be re-scoped: it is editable and its workspace can name its stored target.
     function dialog:HasOwnership()
         return not pane.workspace.readOnly and type(pane.workspace.TargetReference) == 'function'
     end
 
+    -- Shows the pane's effective scope on the scope button.
     function dialog:PaintScope()
         self.scope:SetText(pane:EffectiveScope() == 'character' and L['This character'] or L['Class'])
     end
@@ -229,12 +243,15 @@ function addon:InstallRotationMetadata(pane)
 
     scroll:EnableMouse(true)
 
+    -- Positions every row for the current state (the scope row exists only with ownership; the tag chips change
+    -- height), shows or hides the source list for sourceText and resizes the scroll area and window to fit.
     function dialog:Layout(sourceText)
         self.sourceText = sourceText
         local tagsY = self:HasOwnership() and 170 or 140
         local metadataY = tagsY + (self.tagPicker.height or 24) + 6
         local sourceY = metadataY + #definitions * 30 + 6
 
+        -- Anchors control at (x, y) below the top-left of the scroll content.
         local function place(control, x, y)
             control:ClearAllPoints()
             control:SetPoint('TOPLEFT', x, -y)
@@ -290,6 +307,7 @@ function addon:InstallRotationMetadata(pane)
         descriptionScroll:UpdateWorkbenchScroll()
     end
 
+    -- True only while the window is open for the pane's current workspace and generation; every callback checks it.
     function dialog:Valid()
         return pane.active
             and self.workspace == pane.workspace
@@ -297,6 +315,8 @@ function addon:InstallRotationMetadata(pane)
             and frame:IsShown()
     end
 
+    -- Loads the workspace's current metadata, description, tags and scope into the controls, leaving fields the player
+    -- has already edited alone. While open and clean it also refreshes the values Cancel restores.
     function dialog:Sync()
         local snapshot = pane.workspace:Snapshot()
         local metadata = type(snapshot.metadata) == 'table' and snapshot.metadata or {}
@@ -339,6 +359,7 @@ function addon:InstallRotationMetadata(pane)
         end
     end
 
+    -- Puts the draft back to the values captured when the window opened (Cancel, Escape, or hiding without Apply).
     function dialog:Restore()
         if not pane.active or self.workspace ~= pane.workspace or self.generation ~= pane.generation then return end
         pane.metadataDraft = data.CopyData(self.startMetadata)
@@ -357,6 +378,7 @@ function addon:InstallRotationMetadata(pane)
         pane:UpdateHistory()
     end
 
+    -- Hides the window. keep true keeps the edits (Apply); otherwise the opening values are restored first.
     function dialog:Close(keep)
         if not keep then self:Restore() end
         self.scopeMenu:Hide()
@@ -366,6 +388,9 @@ function addon:InstallRotationMetadata(pane)
         self.opened = false
     end
 
+    -- Opens the window for the pane's current rotation: captures the restore point, builds the source citation list,
+    -- sets the note and read-only state, and rebinds every control script to this open's token so stale callbacks do
+    -- nothing.
     function dialog:Open()
         if self:Valid() then
             addon:OpenPopup(self, pane)
@@ -390,6 +415,8 @@ function addon:InstallRotationMetadata(pane)
         local source = pane.workspace.source
         local seen = {}
 
+        -- Collects unique citation entries (title and URL) from a manifest into lines. Spell and item database links
+        -- are left out; they are references to game data, not sources of the rotation.
         local function sources(manifest)
             if type(manifest) ~= 'table' then return end
 
@@ -462,6 +489,8 @@ function addon:InstallRotationMetadata(pane)
         local token = self.openToken
         local owner = self.workspace
 
+        -- True only for this open of the window and this workspace; a reopen or workspace switch retires older
+        -- callbacks.
         local function valid()
             return self:Valid() and token == self.openToken and owner == self.workspace
         end
@@ -548,6 +577,7 @@ function addon:InstallRotationMetadata(pane)
             end
         end)
 
+        -- Cancel and Close both discard the edits made since the window opened.
         local function cancel()
             if not valid() then return end
             self:Close(false)
@@ -573,6 +603,7 @@ function addon:InstallRotationMetadata(pane)
         end
     end)
 
+    -- Window-registry hook: hiding the window by Escape or the registry counts as Cancel.
     function dialog:Hide()
         self:Close(false)
     end

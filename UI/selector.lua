@@ -1,8 +1,30 @@
+-- Workbench selector widgets: the bounded, searchable popup menu every native dropdown uses (CreateWorkbenchSelector)
+-- and the condition-field dropdown widget built on it (RM-Selector, CreateConditionDropdown). It owns the popup frame,
+-- its row pool and the leases that keep recycled rows and color pickers from firing stale callbacks; it never decides
+-- what a selection means, the caller's changed callback does. Loaded from RotationMaster.toc after
+-- UI/condition_display.lua and before UI/checkbox.lua. The bottom of this file is generated (source bindings for the
+-- Built In helpers); function bodies here are frozen text, so comments sit only above functions, not inside them.
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- ============================================================================
+-- Popup menu
+-- ============================================================================
+
 -- Popups are outside scroll children. Leases also protect rows recycled inside
 -- one opening, and active color children retain their original anchor frame.
+--
+-- Returns a menu table with its own frame (parented to UIParent, hidden). Methods:
+--   Open(anchor, entries, selected, changed, valid, inline) shows the menu under anchor. entries are
+--     {value, text, icon, selected, disabled, header, color, chooseColor}; changed(value, text, icon) runs on a pick;
+--     valid() revokes the menu (it closes on the next frame); inline hides the search box. Opening the same anchor
+--     again closes the menu unless inline.
+--   Hide, and Release (retire the menu for good; calls OnRelease if the owner set one).
+--   Refilter and RefreshViewport rebuild the matching list and bind only the rows scrolled into view (rows are pooled).
+--   Bind, Retire, IsValid, IsPinned and CloseColor manage one row's lease; a row whose color picker is open is pinned
+--     and survives a refilter until the picker hides.
+-- Every callback is guarded by the serial and revision counters so a click on a recycled row or a stale opening does
+-- nothing. A left click outside the menu, its anchor and any open color child closes it.
 function addon:CreateWorkbenchSelector()
     local menu = { frame = CreateFrame('Frame', nil, UIParent), rows = {}, serial = 0, revision = 0 }
     local frame = menu.frame
@@ -394,7 +416,16 @@ function addon:CreateWorkbenchSelector()
     return menu
 end
 
+-- ============================================================================
+-- Condition dropdown widget
+-- ============================================================================
+
 -- Native field selector uses the shared bounded workbench menu.
+--
+-- Pooled widget 'RM-Selector': a caption over a dropdown button. SetList(values, order) takes id -> text (or a record
+-- with text, icon, disabled, header) and an optional id order (sorted by text when omitted); SetValue and GetValue
+-- hold the selected id; the widget fires OnValueChanged only when the player picks a different value. Its popup is
+-- released with the widget.
 ---@class RMConditionSelector: RMConditionWidget
 ---@field SetList fun(self: RMConditionSelector, values: table, order?: table)
 ---@field SetValue fun(self: RMConditionSelector, value: any)
@@ -431,6 +462,7 @@ local function selectorWidget()
     return addon:RegisterConditionWidget(w)
 end
 
+-- Acquires a pooled selector widget for a condition field; release it with addon:ReleaseConditionWidget.
 ---@return RMConditionSelector
 function addon:CreateConditionDropdown()
     local w=addon:AcquireConditionWidget('RM-Selector',selectorWidget)

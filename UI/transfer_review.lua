@@ -1,5 +1,16 @@
+-- Preview, Compare and Check helpers for the direct-import transfer windows (item sets, effects, announcements,
+-- profiles, condition categories, custom conditions). It is read-only: it parses the pasted text with each kind's own
+-- parser and shows or reports the result, never saving or touching the destination. Loaded from RotationMaster.toc
+-- after UI/collection_compare.lua, whose ShowCollectionComparison it uses; UI/settings_transfer.lua is the only caller.
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
+
+-- Hides the import comparison window if it is the one this review opened (fromImport), leaving any other comparison
+-- open. p is the settings pane that owns the comparison.
+function addon:CloseTransferReview(p)
+    local d = p and p.comparison
+    if d and d.fromImport and d.frame:IsShown() then d.frame:Hide() end
+end
 
 -- Preview / Compare / Check for the transfer windows that import directly (item
 -- sets, effects, announcements, profiles, condition categories, custom
@@ -18,14 +29,14 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 --   notes    function(candidate,dialog) -> {text,...}          things worth knowing
 --   maxRows  cap on rows drawn (the rest is counted, not drawn)
 -- }
-function addon:CloseTransferReview(p)
-    local d = p and p.comparison
-    if d and d.fromImport and d.frame:IsShown() then d.frame:Hide() end
-end
-
+--
+-- Returns two closures, preview(dialog) and inspect(dialog), bound to review for the transfer dialog's buttons. preview
+-- opens a comparison (or a single-record view); inspect shows a problems and notes report. Every review callback is
+-- wrapped in pcall so a bad import text reports an error instead of raising.
 function addon:BuildTransferReview(p, review)
     local owner = self
 
+    -- Runs review.parse on the dialog's input text; returns the candidate, or nil and a reason string.
     local function parse(d)
         local ok, candidate, why = pcall(review.parse, d.input:GetText())
         if not ok then return nil, tostring(candidate) end
@@ -33,6 +44,8 @@ function addon:BuildTransferReview(p, review)
         return candidate
     end
 
+    -- Opens a comparison against the selected entry in replace mode, otherwise a single-record preview; failures are
+    -- shown in the dialog status line.
     local function preview(d)
         local candidate, why = parse(d)
         owner:CloseTransferReview(p)
@@ -80,6 +93,8 @@ function addon:BuildTransferReview(p, review)
         end
     end
 
+    -- Builds the Check import report: the first blocking problem as the verdict, then the problems and notes lists, in
+    -- a reused text report window. Returns whatever the report's SetReport returns.
     local function inspect(d)
         local candidate, why = parse(d)
         local problems, notes = {}, {}

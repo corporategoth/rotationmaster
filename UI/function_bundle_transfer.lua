@@ -1,6 +1,13 @@
+-- Import and export window for custom function and custom condition bundles: the bundle text, per-item conflict choices
+-- (reuse, replace, rename, create), the required-function list and a read-only source review window. Nothing is saved
+-- until the whole bundle has been reviewed and Apply import is pressed, and the plan comes from the bundle services in
+-- Core (BuildFunctionBundle, ParseFunctionBundleImport, PlanFunctionBundleImport, ApplyFunctionBundleImport). Imported
+-- Lua runs once registered, so the warning text stays on screen. Loaded from RotationMaster.toc after
+-- UI/function_bindings.lua and UI/function_source_pane.lua; callers are the function and custom condition editors.
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- Conflict actions offered for each bundle entry whose identifier already exists.
 local actions = {
     { value = 'reuse', text = L['Reuse existing'] },
     { value = 'replace', text = L['Replace existing'] },
@@ -8,6 +15,8 @@ local actions = {
     { value = 'create', text = L['Create'] },
 }
 
+-- Formats an import failure (a record with callback or field, and detail or reason, or a plain value) as one status
+-- line.
 local function problemText(why)
     if type(why) == 'table' then
         return (why.callback or why.field or L['Definition']) .. ': ' .. tostring(
@@ -18,6 +27,13 @@ local function problemText(why)
     return tostring(why)
 end
 
+-- ============================================================================
+-- Source review window
+-- ============================================================================
+
+-- Opens (creating once per owner) the read-only source review window for one import row: description, identifiers,
+-- signature or callback chooser, binding aliases and the code in a read-only Lua editor. It closes itself as soon as
+-- ownerValid() fails or the owner's plan or row changes, so it can never show source for a different import.
 function addon:ShowFunctionBundleSource(owner, row, ownerValid)
     local view = owner.sourceReview
 
@@ -42,6 +58,7 @@ function addon:ShowFunctionBundleSource(owner, row, ownerValid)
         view.xClose:SetPoint('TOPRIGHT', -5, -5)
         self:SetUIScript(view.xClose, 'OnClick', function() view.frame:Hide() end)
 
+        -- Window-registry hook: hides the review window.
         function view:Hide()
             self.frame:Hide()
         end
@@ -50,6 +67,7 @@ function addon:ShowFunctionBundleSource(owner, row, ownerValid)
     view.serial = (view.serial or 0) + 1
     local serial = view.serial
 
+    -- True while this review window is the current one, still shown and its owner (the transfer window) is still valid.
     local function valid()
         return view.serial == serial and view.frame:IsShown() and ownerValid()
     end
@@ -131,6 +149,7 @@ function addon:ShowFunctionBundleSource(owner, row, ownerValid)
     local sourceEvidence = self:CopySettingsData(source)
     local originalID, destinationID, kind = row.originalID, row.destinationID, row.kind
 
+    -- Help is bound only while the very same row, plan and source evidence are still on screen.
     local function helpValid()
         if
             not valid()
@@ -186,6 +205,15 @@ function addon:ShowFunctionBundleSource(owner, row, ownerValid)
     return view
 end
 
+-- ============================================================================
+-- Bundle transfer window
+-- ============================================================================
+
+-- Shows the bundle window for the settings pane p: exports (source, id) as bundle text and lets the player paste
+-- another bundle to import. options.kind is 'function' (default) or 'condition'; options.text pre-fills and reviews an
+-- incoming bundle; options.valid() ties the window to its caller; options.onApplied(rootId) replaces the default
+-- refresh of the function editor and options.onClose runs when the window hides. Returns the dialog. Any change of the
+-- pasted text or of a choice invalidates the plan, so Apply import only ever applies exactly what was reviewed.
 function addon:ShowFunctionBundleTransfer(p, id, source, options)
     options = options or {}
     local kind = options.kind or 'function'
@@ -248,6 +276,8 @@ function addon:ShowFunctionBundleTransfer(p, id, source, options)
 
     local profile, global = self.db.profile, self.db.global
 
+    -- True while this window is the current one for the pane and the profile and global tables it opened against, and
+    -- the caller's own validity test (or the pane's generation token) still holds. Gates every button and refresh.
     local function valid()
         return d.serial == serial
             and d.frame:IsShown()
@@ -265,11 +295,13 @@ function addon:ShowFunctionBundleTransfer(p, id, source, options)
         source and source.name or id or L['Functions']
     )
 
+    -- Writes a warning-colored message to the dialog's status line.
     local function status(message)
         d.status:SetText(message or '')
         d.status:SetTextColor(1, .75, .35)
     end
 
+    -- Drops the reviewed plan and disables Apply import until the bundle is reviewed again; shows the trust warning.
     function d:Invalidate()
         self.plan = nil
         self.apply:Disable()
@@ -279,6 +311,7 @@ function addon:ShowFunctionBundleTransfer(p, id, source, options)
         )
     end
 
+    -- Rebuilds the export text for the current source (with or without dependencies) and clears any import review.
     function d:Export()
         self.plan = nil
         self.bundle = nil
@@ -295,6 +328,8 @@ function addon:ShowFunctionBundleTransfer(p, id, source, options)
         self.scroll:UpdateWorkbenchScroll()
     end
 
+    -- Parses the pasted bundle and plans the import with the current conflict choices; enables Apply import only for a
+    -- valid plan of the expected kind. Choices reset when the pasted text changes. Returns whether the plan is valid.
     function d:Review()
         if not valid() or not self.form:FlushEdits() then return false end
         local bundle, why = addon:ParseFunctionBundleImport(self.input:GetText(), codec)
@@ -360,6 +395,7 @@ function addon:ShowFunctionBundleTransfer(p, id, source, options)
             local choice = d.choices[choiceKey] or {}
             d.choices[choiceKey] = choice
 
+            -- Any edit to a destination or name invalidates the reviewed plan.
             local function changed()
                 d:Invalidate()
             end
@@ -487,6 +523,7 @@ function addon:ShowFunctionBundleTransfer(p, id, source, options)
         end
     end)
 
+    -- Window-registry hook: hides the dialog.
     function d:Hide()
         self.frame:Hide()
     end
@@ -595,10 +632,18 @@ function addon:ShowFunctionBundleTransfer(p, id, source, options)
     return d
 end
 
+-- ============================================================================
+-- Custom condition entry point
+-- ============================================================================
+
+-- Shows the bundle window for a custom condition dialog (parent), hiding the dialog while it is open and tracking the
+-- window as one of its child widgets. update(identifier) runs after a successful import of the condition. Returns the
+-- bundle dialog, or nil when the parent has no form or no owner to return to.
 function addon:ShowConditionFunctionBundleTransfer(parent, update, key, source, incomingText)
     local owner = parent.rmConditionOwner
     if not owner or not parent.form then return end
 
+    -- True while the condition dialog can still be resumed, so a closed or replaced dialog is never reopened.
     local function valid()
         return addon:CanResumeCustomConditionDialog(parent, owner)
     end

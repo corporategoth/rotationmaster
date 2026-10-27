@@ -1,10 +1,17 @@
+-- Detail fields for a cooldown (optional highlight) step's visual and audible effect: effect choice, magnification,
+-- RGBA color, glow offsets, announce channel and sound. It only builds controls on a rotation card and stages edits
+-- through the owner (StageField, patch); it never writes the draft or the saved effects itself. Called once per
+-- cooldown card from UI/rotation_fields.lua, which supplies the row helpers in ctx. Loaded from RotationMaster.toc just
+-- before that file. The live glow preview uses only the step's own values and the saved effect definitions.
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- Serializes a color table as the 'r,g,b,a' text staged in the color field (missing channels default to 1).
 local function colorString(c)
     return table.concat({ c.r or 1, c.g or 1, c.b or 1, c.a or 1 }, ',')
 end
 
+-- Parses 'r,g,b,a' text into a color table; returns nil unless there are exactly four numbers in the range 0 to 1.
 local function parseColor(text)
     local values = {}
 
@@ -17,12 +24,20 @@ local function parseColor(text)
     if #values == 4 then return { r = values[1], g = values[2], b = values[3], a = values[4] } end
 end
 
+-- Builds the effect rows for the cooldown step model on card and returns the y position below them. owner is the
+-- rotation editor view (field staging, flush, render, messages); alive() says the card is still current; ctx carries
+-- the shared row helpers, the layout metrics and getY/setY for the running vertical position. Controls come from the
+-- card's pool and are registered in ctx.controls so the card can hide them on release. Also installs
+-- card.RefreshHighlightPreview, which redraws the live glow on the step's icon and is cleared by the card's
+-- releaseFields.
 function addon:BuildRotationEffectFields(owner, card, model, alive, ctx)
     local step = model.step
     local profile = addon.db.profile
     local controls = ctx.controls
     local width, x = ctx.width, ctx.valueX
 
+    -- Acquires a pooled control (an icon button unless build is given), records it under key and in the card's control
+    -- list.
     local function extra(key, kind, build)
         local control = ctx.acquire(
             'extras',
@@ -34,6 +49,7 @@ function addon:BuildRotationEffectFields(owner, card, model, alive, ctx)
         return control
     end
 
+    -- Reserves a labeled row of the given height and returns its top y and the label.
     local function row(caption, height)
         local label = ctx.label(caption)
         local y = ctx.getY()
@@ -41,6 +57,7 @@ function addon:BuildRotationEffectFields(owner, card, model, alive, ctx)
         return y, label
     end
 
+    -- Returns the x and y glow offsets, preferring a staged field edit, then the step, then the profile default.
     local function offsets()
         return tonumber(owner:FieldText(model.id, 'xoffs', step.xoffs or '')) or profile.xoffs or 0,
             tonumber(owner:FieldText(model.id, 'yoffs', step.yoffs or '')) or profile.yoffs or 0
@@ -51,11 +68,15 @@ function addon:BuildRotationEffectFields(owner, card, model, alive, ctx)
     local demo = { target = card.fieldSpellIcon or card.preview }
     card.effectDemo = demo
 
+    -- Returns the color to show: the staged text if it parses, otherwise the step's color or the resolved highlight
+    -- color.
     local function currentColor()
         return parseColor(owner:FieldText(model.id, 'color', step.color and baseline or colorString(baseColor)))
             or baseColor
     end
 
+    -- Redraws the demo glow on the step's icon (or the card preview) from the staged field values; the pooled card may
+    -- have been recycled, so it does nothing once alive() is false.
     card.RefreshHighlightPreview = function()
         if not alive() then return end
         local effect = (addon.db.global.effects or {})[step.effect or profile.effect]
@@ -112,6 +133,7 @@ function addon:BuildRotationEffectFields(owner, card, model, alive, ctx)
         or profile.magnification
         or 1
 
+    -- The range widens to include the current value so an out-of-range magnification is shown, not clamped.
     mag:SetMinMaxValues(math.min(.1, currentMag), math.max(2, currentMag))
     mag:SetValue(currentMag)
     local magNumber = extra('magnificationValue', nil, function() return addon:CreateWorkbenchEditBox(card.fields) end)
@@ -121,6 +143,8 @@ function addon:BuildRotationEffectFields(owner, card, model, alive, ctx)
     magNumber:SetText(owner:FieldText(model.id, 'magnification', string.format('%.3g', currentMag)))
     magNumber:EnableMouse(not ctx.readOnly)
 
+    -- Stages a magnification edit and, when the text is a usable positive number, moves the slider to match and redraws
+    -- the preview. The loading flag stops the slider's OnValueChanged from echoing back into the text box.
     local function stageMag(text)
         local n = tonumber(text)
         local valid = n and n == n and n > 0 and n < math.huge
@@ -188,6 +212,7 @@ function addon:BuildRotationEffectFields(owner, card, model, alive, ctx)
     reset.tooltip = L['Use profile color']
     local fields = {}
     local c = currentColor()
+    -- Raw text of each channel box, kept so a half-typed value such as '0.' is not rewritten while the player types.
     local rawChannels = {}
     local rawColor = owner:FieldText(model.id, 'color', baseline)
 
@@ -223,6 +248,7 @@ function addon:BuildRotationEffectFields(owner, card, model, alive, ctx)
         input:EnableMouse(not ctx.readOnly)
     end
 
+    -- Fills the swatch with color.
     local function paint(color)
         swatch.art:SetColorTexture(color.r, color.g, color.b, color.a)
     end
@@ -246,6 +272,8 @@ function addon:BuildRotationEffectFields(owner, card, model, alive, ctx)
 
     local popupBaseline, popupInputs
 
+    -- Color picker callback: stages the chosen color, mirrors it into the four channel boxes and the swatch. On cancel
+    -- it restores the text the fields had when the picker opened.
     local function stageColor(r, g, b, a, canceled)
         if not ctx.active() then return end
         local color = { r = r, g = g, b = b, a = a }
