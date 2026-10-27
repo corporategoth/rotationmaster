@@ -77,17 +77,18 @@ test('conditionally secret readers read a readable value and are unavailable on 
         local _,a,e=client(project)
         e.UnitExists=function(unit) return unit=='player' or unit=='target' end
         e.UnitIsEnemy=function() return true end
-        local state={threat=3,speed=7,class='MAGE',same=true,pvp=false}
+        local state={threat=3,speed=7,class='MAGE',same=true,pvp=false,classification='elite'}
         e.UnitThreatSituation=function() return state.threat end
         e.GetUnitSpeed=function() return state.speed end
         e.UnitClass=function(unit) if unit=='player' then return 'Rogue','ROGUE',4 end;return 'Mage',state.class,8 end
         e.UnitIsUnit=function() return state.same end
         e.UnitIsPVP=function() return state.pvp end
+        e.UnitClassification=function() return state.classification end
         e.LOCALIZED_CLASS_NAMES_MALE={MAGE='Mage',ROGUE='Rogue'}
         local cases={
             {{type='THREAT',unit='target',threat=3},'threat'},{{type='MOVING'},'speed'},
             {{type='CLASS',unit='target',value='MAGE'},'class'},{{type='ISSAME',unit='target',otherunit='focus'},'same'},
-            {{type='PVP',unit='target'},'pvp'},
+            {{type='PVP',unit='target'},'pvp'},{{type='CLASSIFICATION',unit='target',value='elite'},'classification'},
         }
         for _,case in ipairs(cases) do
             assert(support(a,case[1])==nil,case[1].type..' unsupported on '..project)
@@ -96,6 +97,18 @@ test('conditionally secret readers read a readable value and are unavailable on 
             expect(a,case[1],'unavailable',project..' secret '..case[1].type)
             state[case[2]]=saved
         end
+    end
+end)
+
+test('a classification the game cannot read is unavailable, not false, also under NOT',function()
+    for _,project in ipairs({1,18,2}) do
+        local _,a,e=client(project)
+        e.UnitExists=function(unit) return unit=='target' end
+        local condition={type='CLASSIFICATION',unit='target',value='elite'}
+        e.UnitClassification=function() return 'elite' end
+        expect(a,condition,'match',project..' readable classification')
+        e.UnitClassification=function() error('classification unavailable') end
+        expect(a,condition,'unavailable',project..' failing UnitClassification')
     end
 end)
 
