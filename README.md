@@ -72,3 +72,5 @@ tracker linked from the addon's TOC, on the [Discord](https://discord.gg/4aKZSpU
 
 [MIT](LICENSE), Copyright 2022 Preston A. Elder. Vendored libraries keep their own
 licenses (`Libs/UPSTREAM.json`, `Libs/Ace3-LICENSE.txt`); the monospace font is under the SIL OFL (`Fonts/OFL.txt`).
+Built In rotations written from the WowSims simulators' APLs carry the simulators' MIT notice in `THIRD_PARTY_NOTICES.md`,
+which ships with the addon.

@@ -58,9 +58,11 @@ FORBIDDEN_FILES = {'readme.md', 'contributing.md', 'claude.md', 'agents.md', 'to
                    'package-lock.json', 'pyproject.toml', 'requirements.txt', 'changelog.md.orig'}
 FORBIDDEN_SUFFIXES = ('.py', '.sh', '.svg', '.psd', '.xcf', '.png', '.jpg', '.jpeg', '.zip', '.gz', '.bak', '.orig',
                       '.rej', '.swp', '.log', '.pyc', '.pem', '.key', '.env')
-# Files that must be in every package: the TOC, the licenses the data and fonts require, the load lists.
+# Files that must be in every package: the TOC, the licenses the data and fonts require, the load lists. The third-party
+# notice carries the WowSims MIT notice that the Built In rotations written from its APLs depend on.
 REQUIRED = ['RotationMaster/RotationMaster.toc', 'RotationMaster/LICENSE', 'RotationMaster/Fonts/OFL.txt',
-            'RotationMaster/embeds.xml', 'RotationMaster/locales.xml']
+            'RotationMaster/THIRD_PARTY_NOTICES.md', 'RotationMaster/embeds.xml', 'RotationMaster/locales.xml']
+NOTICE = 'Copyright (c) 2022 wowsims team'
 TOC_SUFFIXES = ['', '-Mainline', '_Mainline', '-Classic', '_Classic', '-Vanilla', '_Vanilla', '-BCC', '_BCC', '-TBC',
                 '_TBC', '-Wrath', '_Wrath', '-WOTLKC', '_WOTLKC', '-Cata', '_Cata', '-Mists', '_Mists', '-Camelot', '_Camelot']
 TEXT_PATTERNS = ('*.lua', '*.md', '*.toc', '*.txt', '*.xml')
@@ -324,6 +326,8 @@ def check_layout(layout, meta, version, source_root=ROOT, interfaces=None, max_f
     for required in REQUIRED:
         if required not in names:
             problems.append(f'required file is missing: {required}')
+    if NOTICE.encode() not in layout.get('RotationMaster/THIRD_PARTY_NOTICES.md', NOTICE.encode()):
+        problems.append(f'RotationMaster/THIRD_PARTY_NOTICES.md does not carry the WowSims MIT notice ("{NOTICE}")')
     for module in modules:
         if f'{module}/{module}.toc' not in names:
             problems.append(f'module has no {module}.toc: {module}')

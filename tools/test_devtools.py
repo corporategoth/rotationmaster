@@ -57,6 +57,7 @@ def minimal_layout(version='2.0.0-beta.1'):
         'RotationMaster/Locales/enUS.lua': 'return 1\n',
         'RotationMaster/LICENSE': 'MIT\n',
         'RotationMaster/Fonts/OFL.txt': 'OFL\n',
+        'RotationMaster/THIRD_PARTY_NOTICES.md': f'{P.NOTICE}\n',
         'RotationMaster_Mage/RotationMaster_Mage.toc': f'## Interface: 11509\n## Version: {version}\nbind.lua\n',
         'RotationMaster_Mage/bind.lua': 'return 1\n',
     }
@@ -150,11 +151,16 @@ class Check(unittest.TestCase):
         self.assertEqual(self.problems(layout), [])
 
     def test_missing_required_files_and_modules_fail(self):
-        for path in ('RotationMaster/LICENSE', 'RotationMaster/Fonts/OFL.txt',
+        for path in ('RotationMaster/LICENSE', 'RotationMaster/Fonts/OFL.txt', 'RotationMaster/THIRD_PARTY_NOTICES.md',
                      'RotationMaster_Mage/RotationMaster_Mage.toc', 'RotationMaster/embeds.xml'):
             layout = minimal_layout()
             del layout[path]
             self.assertTrue(self.problems(layout), path)
+
+    def test_the_third_party_notice_must_carry_the_wowsims_mit_notice(self):
+        layout = minimal_layout()
+        layout['RotationMaster/THIRD_PARTY_NOTICES.md'] = b'Notices.\n'
+        self.assertTrue(any('WowSims MIT notice' in problem for problem in self.problems(layout)))
 
     def test_toc_rules(self):
         wrong_clients = minimal_layout()
