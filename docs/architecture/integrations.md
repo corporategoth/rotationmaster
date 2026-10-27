@@ -141,6 +141,7 @@ RM has always published a LibDataBroker data source (active rotation text, toolt
 | GTFO | Not now. Its alerts are sound/visual side effects without a documented callback; "standing in bad" is better left to the player. |
 | TomTom, HandyNotes, Atlas, GatherMate2, RareScanner, NovaInstanceTracker | No rotation value; native ZONE/INSTANCE/OUTDOORS cover location. |
 | LittleWigs | Uses the BigWigs contract; covered by the BigWigs adapter when installed. Listed as a companion link on the BigWigs row, with the DBM dungeon module pack on the DBM row; neither is a separate identity. |
+| WowSims (simulator rotation import and export) | Removed and not coming back. Early 2.0 test builds converted rotations to and from WowSims' Action Priority List text. The WowSims maintainers' attitude toward addon developers they consider beneath them (they indicated that community submissions supporting small addons, with only around 200,000 downloads, are not wanted) is why Rotation Master no longer supports their project. Rotations transfer as Rotation Master exports only. |
 | ElvUI skins / other themes | ElvUI is not installed on the test client; Masque covers button skins. |
 
 ## Masque preview button skins

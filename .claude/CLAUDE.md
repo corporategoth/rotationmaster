@@ -27,14 +27,14 @@ Start with `README.md`, `CONTRIBUTING.md` and `docs/dev/architecture.md`; the de
    text bundle (`tools/locales.py move`; `docs/dev/architecture.md`, "Text bundles"). Translations are written only by
    `tools/locales.py` through the translation tools; never hand-edit `Locales/<xx>.lua` or a bundle's locale files.
    `learnings/translations.md`.
-6. **Generated files are never hand-edited** (`.pkgmeta`, `Data/artwork.lua`, `Data/builtin_sources.lua`, the integration and
-   WowSims tables, locale files, the glossary). Run the generator; `python3 tools/check --static` proves freshness.
+6. **Generated files are never hand-edited** (`.pkgmeta`, `Data/artwork.lua`, `Data/builtin_sources.lua`, the integration
+   tables, locale files, the glossary). Run the generator; `python3 tools/check --static` proves freshness.
 7. **Docs describe how things are. Planning documents are never stored in the repository** (no plans, roadmaps, to-do lists,
    proposals, notes-to-self); the pre-commit guard refuses them. Update the topic document with the code.
 8. **Keep the website in step.** Any change to data, semantics or user-facing behavior (rotation fields, selection order,
    step types, conditions, the premade catalog, reason codes) has a matching change in the website repository: say what.
-9. **Releases only contain what the game loads.** `tests/`, `tools/`, `docs/`, `.claude/`, `.gitea/`, sources and pinned
-   simulator data are not in the package; `python3 tools/package_release.py --check` proves it. Never put a credential in a file.
+9. **Releases only contain what the game loads.** `tests/`, `tools/`, `docs/`, `.claude/`, `.gitea/` and the
+   generators' source files are not in the package; `python3 tools/package_release.py --check` proves it. Never put a credential in a file.
    `learnings/deploy-and-release.md`.
 10. **In-game probes need a copy box.** Anything a tester must paste back goes into a selectable multi-line window (focus and
     highlight so Ctrl-A, Ctrl-C works), not only chat; make test visuals visible in their resting state.

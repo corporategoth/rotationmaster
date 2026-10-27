@@ -45,7 +45,7 @@ with the fallback off" bugs hide; removed APIs always break.
 
 `Locales/enUS.lua` must stay at or below **3,900 entries** (`tests/client_locale.lua` asserts it and the resident memory).
 Crossing 4096 doubles the Lua table's hash part (about 177 KB resident for every player). It was crossed repeatedly, so the
-text nothing reads at startup moved into load-on-demand text bundles (`Modules/RotationMaster_*Text`, `RotationMaster_WowSims`;
+text nothing reads at startup moved into load-on-demand text bundles (`Modules/RotationMaster_*Text`;
 `Locales/bundles.json`; design in `docs/dev/architecture.md`, "Text bundles"). `L["English text"]` reads the same wherever the
 text lives. When the main table nears the limit, move text that is only read on demand with
 `python3 tools/locales.py move <bundle> keys.json` rather than deleting useful strings; never move a key a startup path reads

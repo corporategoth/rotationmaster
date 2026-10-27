@@ -57,6 +57,8 @@ local scalar = {
     disable_buttons = 'boolean',
     assisted_highlight = 'string',
     rotation_view = 'string',
+    -- Written by the beta's WowSims Format choice, which no longer exists: nothing reads it, but a profile saved or
+    -- exported with it must still load and import.
     transfer_format = 'string',
     preview_spells = 'number',
     preview_vertical = 'boolean',
@@ -469,10 +471,6 @@ function addon:ValidateProfileTransfer(value)
     end
 
     if value.rotation_view ~= nil and value.rotation_view ~= 'diagram' and value.rotation_view ~= 'list' then
-        return false
-    end
-
-    if value.transfer_format ~= nil and value.transfer_format ~= 'rm' and value.transfer_format ~= 'wowsims' then
         return false
     end
 

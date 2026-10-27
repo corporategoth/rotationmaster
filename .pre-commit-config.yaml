@@ -16,10 +16,9 @@
 
 default_install_hook_types: [pre-commit, pre-push]
 
-# Vendored libraries, fonts, art, the pinned simulator data and the large frozen fixtures are not reformatted or
-# re-scanned: their bytes are pinned (Libs/UPSTREAM.json, Data/wowsims/SOURCE.json, tests/fixtures) and changing
-# them is its own decision.
-exclude: '^(Libs/|LibsAugment/|Fonts/|Assets/.*\.(tga|blp|png)$|textures/|tools/vendor/|tests/fixtures/|Data/wowsims/)'
+# Vendored libraries, fonts, art and the large frozen fixtures are not reformatted or re-scanned: their bytes are
+# pinned (Libs/UPSTREAM.json, tests/fixtures) and changing them is its own decision.
+exclude: '^(Libs/|LibsAugment/|Fonts/|Assets/.*\.(tga|blp|png)$|textures/|tools/vendor/|tests/fixtures/)'
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -80,7 +79,7 @@ repos:
       # vendor hashes, packaged-runtime files), tools/catalog_check.py, tools/locales.py check,
       # tools/lint.py (pinned wowlua-ls static analysis against its baseline), tools/builtin_names.py check,
       # and the freshness of every generated file (generate_builtin_sources, generate_artwork_catalog
-      # including .pkgmeta, generate_integration_projects, export_wowsims_mapping --check).
+      # including .pkgmeta, generate_integration_projects).
       - id: rotationmaster-check
         name: Rotation Master static checks
         entry: python3 tools/check --static

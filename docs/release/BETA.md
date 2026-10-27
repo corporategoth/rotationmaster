@@ -13,9 +13,9 @@ a real client. Your reports are what turn it into a release.
 > an archive and do not run until you adopt them. Rotation Master says so once in chat and shows a banner in the settings
 > window. Choose Rotations, then Recover unassigned rotations, and adopt them one by one, or all at once for your class.
 >
-> **Install the whole package.** The zip contains 15 folders (`RotationMaster`, one per class `RotationMaster_<Class>`, and
-> `RotationMaster_WowSims`). Copy all of them into `Interface/AddOns`. Without the class folders there are no Built In
-> rotations.
+> **Install the whole package.** The zip contains 18 folders (`RotationMaster`, one per class `RotationMaster_<Class>`, and
+> four `RotationMaster_*Text` translation folders). Copy all of them into `Interface/AddOns`. Without the class folders
+> there are no Built In rotations.
 >
 > **It is a beta.** Expect rough edges. Do not use it for content where a broken rotation would cost you or your group
 > something you care about.
@@ -34,8 +34,11 @@ a real client. Your reports are what turn it into a release.
   what the game allows, is shown as unavailable, or does not exist on that client.
 - **Faster**: an idle gate, a lean evaluation engine, much less garbage per poll.
 - **Integrations**: Masque, Questie, boss-mod timers, more action-bar addons, tooltips that show your item sets and rotations.
-- **WowSims import and export** in the rotation transfer window (a separate load-on-demand module).
 - **Ten languages**, following the game's language.
+- **Not supported: WowSims.** Rotation Master does not import or export WowSims rotations; rotations travel as Rotation
+  Master exports. Early test builds had a converter, removed because of the WowSims maintainers' attitude toward addon
+  developers they consider beneath them (they indicated that community submissions supporting small addons, with only
+  around 200,000 downloads, are not wanted).
 - **Replaced**: the 1.x windows (built on AceGUI) are gone; every window is now native.
 
 The list of every renamed Built In is in `docs/builtin-name-changes.md`.
@@ -126,21 +129,19 @@ Do not attach your whole saved variables file unless asked; it contains your rot
 
 These are the features most likely to misbehave. If you can exercise one, please tell us what happened, good or bad.
 
-1. **WowSims import and export** (new module): never run in a client. Check the Format choice in the rotation transfer
-   window, that the module loads from the package, and that a converted rotation behaves.
-2. **Talent picker and "Show talent tree" window** (Retail, Forever): modeled only; whether driving Blizzard's talent window
+1. **Talent picker and "Show talent tree" window** (Retail, Forever): modeled only; whether driving Blizzard's talent window
    taints anything is unverified.
-3. **Tooltips** that add item-set and rotation lines: untested in and out of combat on Retail and Forever, with other
+2. **Tooltips** that add item-set and rotation lines: untested in and out of combat on Retail and Forever, with other
    tooltip addons, and for doubled lines on the Classic clients. If you see "blocked action" errors naming Rotation Master,
    turn tooltips off (Settings) and report it.
-4. **Retail and Forever restricted data**: only health, the global cooldown and cast IDs have been probed. A condition that
+3. **Retail and Forever restricted data**: only health, the global cooldown and cast IDs have been probed. A condition that
    shows "unavailable" in combat when it should work is a useful report.
-5. **Assisted Combat and button glow** on Retail: glow animations have been iterated, not proven everywhere.
-6. **Classic Era / SoD, Wrath, Titan, Cataclysm, Mists, Forever**: no in-game acceptance of startup or rotations yet.
-7. **The packaged layout**: 14 add-ons moved out of one folder. Only symlinked installs have been run, never the zip.
-8. **Integrations** (Masque, Questie, boss mods, EllesmereUI, Dominos) and the native profiler: tested with fakes only.
-9. **Translations**: ten languages, not all strings are translated and none are guaranteed reviewed by a native speaker.
-10. **Premade quality**: the Built In rotations follow public guides; they are a starting point, not proof of an optimal rotation.
+4. **Assisted Combat and button glow** on Retail: glow animations have been iterated, not proven everywhere.
+5. **Classic Era / SoD, Wrath, Titan, Cataclysm, Mists, Forever**: no in-game acceptance of startup or rotations yet.
+6. **The packaged layout**: 14 add-ons moved out of one folder. Only symlinked installs have been run, never the zip.
+7. **Integrations** (Masque, Questie, boss mods, EllesmereUI, Dominos) and the native profiler: tested with fakes only.
+8. **Translations**: ten languages, not all strings are translated and none are guaranteed reviewed by a native speaker.
+9. **Premade quality**: the Built In rotations follow public guides; they are a starting point, not proof of an optimal rotation.
 
 ## Thanks
 

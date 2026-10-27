@@ -2,7 +2,7 @@ local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite();local loc
 local function setup()
  local f=F.new();local a,e=f.addon,f.env;locales[a]=f.libraries['AceLocale-3.0']:GetLocale('RotationMaster');a.db.char={};a.pretty_name='Rotation Master'
  local data=dofile('tests/fixtures/rotation_data.lua')();a.RotationData=data
- for _,path in ipairs({'Data/catalog.lua','Data/diff.lua','Data/rotation_store.lua','Core/rotation_library.lua','Core/rotation_scope.lua','Core/rotation_migration.lua','Core/function_data.lua','UI/window.lua','UI/help.lua','UI/settings_layout.lua','UI/settings_roster_order.lua','UI/settings_ordered.lua','UI/settings_draft.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_form.lua','UI/settings_collections.lua','UI/settings_transfer.lua','UI/settings_profiles.lua','UI/lua_input_diagnostics.lua','UI/lua_editor.lua','UI/function_source_pane.lua','UI/function_bundle_transfer.lua','UI/transfer.lua','UI/transfer_format.lua'})do f.load(path)end
+ for _,path in ipairs({'Data/catalog.lua','Data/diff.lua','Data/rotation_store.lua','Core/rotation_library.lua','Core/rotation_scope.lua','Core/rotation_migration.lua','Core/function_data.lua','UI/window.lua','UI/help.lua','UI/settings_layout.lua','UI/settings_roster_order.lua','UI/settings_ordered.lua','UI/settings_draft.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_form.lua','UI/settings_collections.lua','UI/settings_transfer.lua','UI/settings_profiles.lua','UI/lua_input_diagnostics.lua','UI/lua_editor.lua','UI/function_source_pane.lua','UI/function_bundle_transfer.lua','UI/transfer.lua'})do f.load(path)end
  if arg and arg[1]then f.load(arg[1])end
  local host=e.CreateFrame('Frame',nil,e.UIParent);host:SetSize(1000,650);local p=a:CreateSettingsForm(host);p:Open(function()end)
  return f,a,e,p
@@ -70,7 +70,7 @@ test('stale profile Help cannot hide an unrelated newer document',function()
 end)
 test('actual rotation transfer Help preserves text and preview admission without invoking import work',function()
  local f,a=setup();local data,envelope,options=dofile('tests/fixtures/rotation_data.lua')();a.RotationData=data;a.conditionDefinitions=options.conditions;a.db.keys={char='A - Realm'};local n=0;a.uuid=function()n=n+1;return'help-transfer-'..n end
- for _,path in ipairs({'Data/import_session.lua','Data/rotation_draft.lua','Core/imports.lua','Core/transfer_formats.lua','Core/rotation_editor.lua','Core/rotation_workspace.lua','UI/rotation_comparison.lua'})do f.load(path)end
+ for _,path in ipairs({'Data/import_session.lua','Data/rotation_draft.lua','Core/imports.lua','Core/rotation_editor.lua','Core/rotation_workspace.lua','UI/rotation_comparison.lua'})do f.load(path)end
  local body=envelope().body;a.db.profile={rotationFallbackID='Default',rotationStore={version=1,classes={SHAMAN={[0]={mine={body=body}}}},characters={},legacy={}}}
  a.GetRotationContext=function(_,spec)return{class='SHAMAN',family='tbc',spec=spec,actionContext='player',combatDataPolicy='probe'}end;assert(a:BindRotationProfile())
  local calls=0;a.NewRotationCodec=function()return{Encode=function()return'encoded'end,Decode=function()calls=calls+1;return{kind='legacy',value=data.CopyData(body)}end}end

@@ -164,7 +164,6 @@ Core/group_unit_resolution.lua
 Core/rotation_lifecycle.lua
 Core/rotation_tags.lua
 Core/imports.lua
-Core/transfer_formats.lua
 Core/condition_editor.lua
 Core/unsaved_changes.lua
 Core/rotation_editor.lua
@@ -259,7 +258,6 @@ UI/rotation_reference.lua
 UI/defaults.lua
 UI/rotation_comparison.lua
 UI/transfer.lua
-UI/transfer_format.lua
 UI/rotation_adoption.lua
 UI/legacy_archive_banner.lua
 

@@ -1,6 +1,6 @@
 -- Rotation import and export services: validates and stores an imported rotation (with its manifest and step origins),
 -- applies a prepared import to a new or an existing custom rotation and refreshes the engine afterwards, and builds the
--- envelope that export serializes. It does not parse or encode text (Core/transfer_formats.lua and UI/transfer.lua do),
+-- envelope that export serializes. It does not parse or encode text (Data/codec.lua and UI/transfer.lua do),
 -- and it writes saved data only after every check has passed. Loaded after Core/rotation_tags.lua. When the scoped
 -- coordinator exists it does the storage work; the profile-library branches below are the legacy path.
 

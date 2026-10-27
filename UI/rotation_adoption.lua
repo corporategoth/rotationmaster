@@ -3,7 +3,7 @@
 -- all) for the class or the current character. It must never infer an owner and never change the archive except
 -- through addon:ApplyRotationAdoption and addon:AdoptAllUnassignedRotations (Core/). The window closes itself when the
 -- opening window, profile or character changes underneath it. Opened from the rotation browser
--- (UI/rotation_browser.lua); loaded in the UI/ block of RotationMaster.toc after UI/transfer_format.lua.
+-- (UI/rotation_browser.lua); loaded in the UI/ block of RotationMaster.toc after UI/transfer.lua.
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 

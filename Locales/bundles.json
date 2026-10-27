@@ -4,7 +4,6 @@
     {"id": "help", "module": "RotationMaster_HelpText", "title": "Help text", "notes": "The Help articles and tooltips."},
     {"id": "conditions", "module": "RotationMaster_ConditionText", "title": "Condition text", "notes": "The wording of conditions: summaries, help and choices."},
     {"id": "diagnostics", "module": "RotationMaster_DiagnosticsText", "title": "Diagnostics text", "notes": "The performance, memory, analytics and error report windows and their commands."},
-    {"id": "integrations", "module": "RotationMaster_IntegrationsText", "title": "Integrations text", "notes": "The Integrations page: addons Rotation Master can use and what each adds."},
-    {"id": "wowsims", "module": "RotationMaster_WowSims", "title": "WowSims", "notes": "The reports of the WowSims converter."}
+    {"id": "integrations", "module": "RotationMaster_IntegrationsText", "title": "Integrations text", "notes": "The Integrations page: addons Rotation Master can use and what each adds."}
   ]
 }

@@ -79,7 +79,7 @@ packaging and takes the better part of an hour (the suite without the single slo
 5. **Install the zip** from the Tests run's `RotationMaster-<sha>` artifact (or your local build) into a clean `Interface/AddOns`
    in a real client before tagging a first beta: the layout of 14 moved modules has never run from a zip.
 6. Update `docs/release/BETA.md` (supported clients, known risks) if it changed.
-7. If the website pins this addon (catalogs, WowSims mapping), regenerate and release it in step with the tag.
+7. If the website pins this addon (catalogs), regenerate and release it in step with the tag.
 
 ## Tagging
 

@@ -18,7 +18,7 @@ local function read(path) local h=assert(io.open(path));local s=h:read('*a');h:c
 local LOCALES={'deDE','esES','esMX','frFR','itIT','koKR','ptBR','ruRU','zhCN','zhTW'}
 local bundles={}
 for id,module in read('Locales/bundles.json'):gmatch('"id"%s*:%s*"([^"]+)"%s*,%s*"module"%s*:%s*"([^"]+)"') do bundles[#bundles+1]={id=id,module=module} end
-assert(#bundles>=5,'Locales/bundles.json names fewer bundles than expected: '..#bundles)
+assert(#bundles>=4,'Locales/bundles.json names fewer bundles than expected: '..#bundles)
 
 -- The entries of one locale file, read without AceLocale's selection: key -> displayed text.
 local function entries(path)

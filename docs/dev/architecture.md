@@ -39,13 +39,13 @@ and has not been verified in a real client is in `docs/quality/client-support.md
 | `Platform/` | One adapter per Blizzard API family (`unit_health`, `spells`, `auras`, `talents`, `range`, ...). Everything that touches a game API goes through here and returns a value or `nil, reason`. |
 | `Core/` | Rotation logic that does not draw: the condition registry and runtime, rotation library/catalog/scopes/selection, sequences, announcements, item sets, imports, tooltips, custom-code services |
 | `Conditions/` | The Built In condition definitions (`addon:RegisterCondition`), one file per area |
-| `Data/` | Pure data modules (rotation store, drafts, codec, validation, tags, export text) and generated tables (`artwork.lua`, `builtin_sources.lua`, `talent_trees.lua`); `Data/wowsims/` is pinned simulator JSON (not shipped) |
+| `Data/` | Pure data modules (rotation store, drafts, codec, validation, tags, export text) and generated tables (`artwork.lua`, `builtin_sources.lua`, `talent_trees.lua`) |
 | `Functions/` | Named utility functions conditions and custom code call |
 | `UI/` | The native widget set and every window (rotation editor, condition editor, settings, window registry `UI/window.lua`) |
 | `Help/` | Authored help text, one file per area |
 | `Diagnostics/`, `Analytics/` | Error reports, CPU/runtime/memory capture, `/rm debug` reports; analytics capture and replay |
 | `Integrations/` | Optional addons: Masque, Questie, boss mods, LuaWorkbench, the supported-addon catalog |
-| `Modules/` | Load-on-demand add-ons: 13 class modules of Built In rotations, `RotationMaster_WowSims` (the converter and its text) and four text bundles (`RotationMaster_HelpText`, `_ConditionText`, `_DiagnosticsText`, `_IntegrationsText`) |
+| `Modules/` | Load-on-demand add-ons: 13 class modules of Built In rotations and four text bundles (`RotationMaster_HelpText`, `_ConditionText`, `_DiagnosticsText`, `_IntegrationsText`) |
 | `Libs/`, `LibsAugment/` | Vendored libraries (hash-pinned in `Libs/UPSTREAM.json`) and local additions |
 | `Locales/` | `enUS.lua` (source) and ten generated translations for the text read at startup; `bundles.json` names the load-on-demand text bundles that hold the rest (see "Text bundles") |
 | `Assets/`, `Fonts/`, `textures/` | Icons and overlays (`Assets/*/provenance.json` records each one), the monospace font, the two `.blp` textures the help and condition pages still draw |
@@ -53,6 +53,16 @@ and has not been verified in a real client is in `docs/quality/client-support.md
 | `tools/` | Generators, checkers, the package builder, translation tools (`docs/dev/running-things.md`) |
 | `docs/` | Human documentation: `dev/`, `translators/`, `release/`, and the topic documents |
 | `.gitea/`, `.claude/`, `.pre-commit-config.yaml` | CI, agent instructions and personas, hooks. None of these ship. |
+
+### Integrations that do not exist
+
+Rotation Master has no WowSims import or export, and none will be added. Early 2.0 test builds had a converter (a
+load-on-demand module, a Format choice in the rotation transfer window and pinned simulator data); it was removed before
+release because of the WowSims maintainers' attitude toward addon developers they consider beneath them: they indicated that
+community submissions supporting small addons, with only around 200,000 downloads, are not wanted. The decision record is
+in `.claude/learnings/product-decisions.md`; the only trace in saved data is `profile.transfer_format`, which `init.lua`
+drops on load and `Core/profile_data.lua` still accepts in an imported profile. The addon-side integrations that do exist
+are in `docs/architecture/integrations.md`.
 
 ### Where a new file goes
 
@@ -103,11 +113,10 @@ Built In rotations are not in the main addon. `Modules/RotationMaster_<Class>/` 
 `_Forever`, `_Standard`, `_Mists`) plus a fallback TOC that loads nothing. At startup `Core/builtin_modules.lua`
 (`addon:LoadBuiltInModule`) asks the client for exactly the player's class module, and the client picks the flavor TOC, so
 only that edition's packs run. `bind.lua` (identical in every module) gives the module's private namespace
-`RegisterDefaultBlock` and `RegisterDefaultRotation`. `RotationMaster_WowSims` is a converter module loaded by
-`Core/transfer_formats.lua` the first time a transfer window needs it (it also holds the converter's text). The four text
-bundles under `Modules/` are not Built In modules; see "Text bundles" below. In the release zip each module is moved to its own
-top-level folder (`.pkgmeta` `move-folders`); in a development install each needs its own symlink. Full detail,
-authoring rules and the premade policy are in `Modules/README.md`.
+`RegisterDefaultBlock` and `RegisterDefaultRotation`. The four text bundles under `Modules/` are not Built In modules;
+see "Text bundles" below. In the release zip each module is moved to its own top-level folder (`.pkgmeta`
+`move-folders`); in a development install each needs its own symlink. Full detail, authoring rules and the premade
+policy are in `Modules/README.md`.
 
 ## Evaluation
 
@@ -169,7 +178,6 @@ Never hand-edit these; `python3 tools/check --static` fails when one is stale.
 | `Data/artwork.lua`, `.pkgmeta` | `tools/generate_artwork_catalog.py --write` (from `Assets/*/provenance.json`; `.pkgmeta` also carries the release ignore list) |
 | `Data/builtin_sources.lua` | `tools/generate_builtin_sources.py --write` |
 | integration catalog block in `Integrations/catalog.lua` | `tools/generate_integration_projects.py --write` (from `tools/integration_projects.json`) |
-| `Modules/RotationMaster_WowSims/*.lua` tables | `tools/export_wowsims_mapping.py` (from `Data/wowsims/*.json`) |
 | `Data/talent_trees.json` | `tools/export_talent_trees.py` |
 | `docs/builtin-name-changes.md`, Built In names | `tools/builtin_names.py apply|docs` |
 | `tests/fixtures/client_api_<client>.lua` | `tools/generate_client_api.py` |
@@ -209,10 +217,10 @@ The exact command list is `tools/check`; `tools/check_all.py` runs the same list
 
 A Lua table's hash part doubles past 4,096 entries (about 177 KB resident, for every player in every language), and
 `Locales/enUS.lua` had crossed the line. The text nothing reads while the game loads therefore lives outside the main
-table, in five load-on-demand add-ons named in `Locales/bundles.json`: `RotationMaster_HelpText` (Help articles and
+table, in four load-on-demand add-ons named in `Locales/bundles.json`: `RotationMaster_HelpText` (Help articles and
 tooltips), `RotationMaster_ConditionText` (condition summaries, help and choices), `RotationMaster_DiagnosticsText`
-(performance, memory, analytics and error reports, `/rm debug`), `RotationMaster_IntegrationsText` (the Integrations page)
-and `RotationMaster_WowSims` (the converter's reports, beside the converter). Each holds `enUS.lua` and the ten
+(performance, memory, analytics and error reports, `/rm debug`) and `RotationMaster_IntegrationsText` (the Integrations
+page). Each holds `enUS.lua` and the ten
 translations as an AceLocale application of its own; the English is still the key, and a key lives in exactly one catalog.
 
 `Core/text_bundles.lua` makes this invisible: a `L["English text"]` read the main table cannot answer asks

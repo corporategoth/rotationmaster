@@ -60,8 +60,7 @@ FORBIDDEN_SUFFIXES = ('.py', '.sh', '.svg', '.psd', '.xcf', '.png', '.jpg', '.jp
                       '.rej', '.swp', '.log', '.pyc', '.pem', '.key', '.env')
 # Files that must be in every package: the TOC, the licenses the data and fonts require, the load lists.
 REQUIRED = ['RotationMaster/RotationMaster.toc', 'RotationMaster/LICENSE', 'RotationMaster/Fonts/OFL.txt',
-            'RotationMaster/Data/wowsims/LICENSE-wowsims-MIT.txt', 'RotationMaster/embeds.xml',
-            'RotationMaster/locales.xml']
+            'RotationMaster/embeds.xml', 'RotationMaster/locales.xml']
 TOC_SUFFIXES = ['', '-Mainline', '_Mainline', '-Classic', '_Classic', '-Vanilla', '_Vanilla', '-BCC', '_BCC', '-TBC',
                 '_TBC', '-Wrath', '_Wrath', '-WOTLKC', '_WOTLKC', '-Cata', '_Cata', '-Mists', '_Mists', '-Camelot', '_Camelot']
 TEXT_PATTERNS = ('*.lua', '*.md', '*.toc', '*.txt', '*.xml')
@@ -320,8 +319,6 @@ def check_layout(layout, meta, version, source_root=ROOT, interfaces=None, max_f
             problems.append(f'development file in the package: {name}')
         elif base.endswith(FORBIDDEN_SUFFIXES):
             problems.append(f'file type that is not for the game: {name}')
-        if name.startswith(f'{package}/Data/wowsims/') and not name.endswith('LICENSE-wowsims-MIT.txt'):
-            problems.append(f'pinned simulator data in the package (only the MIT notice ships): {name}')
         if len(layout[name]) > max_file_kb * 1024:
             problems.append(f'{name} is {len(layout[name]) // 1024} KB (limit {max_file_kb} KB)')
     for required in REQUIRED:

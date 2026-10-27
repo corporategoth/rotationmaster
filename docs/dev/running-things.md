@@ -65,8 +65,7 @@ full run; CI still runs them.
 ## Generated files
 
 `python3 tools/<generator>.py` checks freshness and fails when a file is stale; `--write` rewrites it (`builtin_names.py`
-takes `check`, `apply` or `docs`; `export_wowsims_mapping.py` takes `--check` or `--refresh <website checkout>`; see each
-docstring). The table is in `docs/dev/architecture.md`. After changing
+takes `check`, `apply` or `docs`; see each docstring). The table is in `docs/dev/architecture.md`. After changing
 anything a generator reads (an `Assets/*/provenance.json`, a condition definition, an integration record), run the
 generator and commit both the input and the output in the same commit.
 
@@ -132,7 +131,6 @@ python3 tools/locales.py check
 | `tools/generate_artwork_catalog.py` | `Data/artwork.lua` and `.pkgmeta` |
 | `tools/generate_builtin_sources.py`, `tools/collect_builtin_sources.lua`, `tools/public_helpers.lua` | `Data/builtin_sources.lua` and the public helper documentation |
 | `tools/generate_integration_projects.py`, `tools/integration_projects.json` | The supported-addon link catalog |
-| `tools/export_wowsims_mapping.py`, `tools/wowsims_test_data.py` | WowSims transport data and its test inputs |
 | `tools/export_talent_trees.py` | Talent tree names for the website |
 | `tools/builtin_names.py`, `tools/builtin_names_overrides.py`, `tools/builtin_modules.lua` | Built In names; the offline view of the load-on-demand modules |
 | `tools/generate_client_api.py` | Per-client API manifests for the fixtures |

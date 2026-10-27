@@ -28,10 +28,19 @@ Brazilian Portuguese, Russian, Simplified and Traditional Chinese).
 
 - **CurseForge, Wago Addons, WowUp:** search for Rotation Master. Betas appear only if you choose the beta release type.
 - **WoWInterface:** stable releases only.
-- **By hand:** download the zip from the release page, close the game and extract it into `Interface/AddOns`. The zip holds 15
-  folders (`RotationMaster`, one `RotationMaster_<Class>` per class, `RotationMaster_WowSims`); all of them must be there.
+- **By hand:** download the zip from the release page, close the game and extract it into `Interface/AddOns`. The zip holds 18
+  folders (`RotationMaster`, one `RotationMaster_<Class>` per class, four `RotationMaster_*Text` translation folders); all
+  of them must be there.
 
 Open the settings and rotation editor with `/rm config`. `/rm help` lists the commands.
+
+## WowSims is not supported
+
+Rotation Master does not import or export WowSims rotations. Test builds of 2.0 had a WowSims converter in the rotation
+transfer window; it was removed before release. The reason is the WowSims maintainers' attitude toward addon developers they
+consider beneath them: they indicated that community submissions supporting small addons, with only around 200,000 downloads,
+are not wanted. Rotation Master therefore no longer supports their project, and the pull requests sent to their repositories
+were closed. Rotations move between players as Rotation Master exports, which is the only transfer format.
 
 ## Documentation
 
@@ -61,6 +70,5 @@ tracker linked from the addon's TOC, on the [Discord](https://discord.gg/4aKZSpU
 
 ## License
 
-[MIT](LICENSE), Copyright 2022 Preston A. Elder. The WowSims converter module is generated from data that is MIT licensed by the
-WowSims team; its notice ships with the addon in `Data/wowsims/LICENSE-wowsims-MIT.txt`. Vendored libraries keep their own
+[MIT](LICENSE), Copyright 2022 Preston A. Elder. Vendored libraries keep their own
 licenses (`Libs/UPSTREAM.json`, `Libs/Ace3-LICENSE.txt`); the monospace font is under the SIL OFL (`Fonts/OFL.txt`).

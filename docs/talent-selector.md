@@ -164,9 +164,9 @@ a tree RM is showing. If it is ever embedded, record exactly that and keep its h
 
 ## 6. Not built
 
-* A classic provider. It would need a shipped per-class table of trees, rows, columns, rank spell IDs and prerequisites (wowsims
-  publishes MIT-licensed per-class JSON for Classic, Wrath, Cataclysm and Mists, none for TBC; Wrath's index order is not row-major,
-  so the saved `{tree, talent}` indices need an in-game dump to map) and a grid drawn from it.
+* A classic provider. It would need a shipped per-class table of trees, rows, columns, rank spell IDs and prerequisites (community
+  projects publish MIT-licensed per-class JSON for Classic, Wrath, Cataclysm and Mists, none for TBC; Wrath's index order is
+  not row-major, so the saved `{tree, talent}` indices need an in-game dump to map) and a grid drawn from it.
 * A single catalog structure shared by all layouts. Each layout keeps its own reference; the trait view is the only structured tree.
 * Storing a stable `talentID` next to the classic `tree` and `talent` indices, which would survive an index shift between builds.
 * Talent catalogs for the website. The web editor cannot read game data, so it keeps the numeric-field form for talents; the data

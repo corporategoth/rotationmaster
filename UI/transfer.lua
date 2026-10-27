@@ -2,8 +2,8 @@
 -- comparison against the rotation it would replace, or the full incoming content in a read-only editor). It stages
 -- pasted text through an import session, previews the result and applies it only through ApplyRotationImport; it never
 -- writes a rotation itself, and every callback re-checks that the profile, owner and saved record are unchanged.
--- Loaded from RotationMaster.toc directly after UI/rotation_comparison.lua and before UI/transfer_format.lua;
--- UI/rotation_browser.lua opens it. The text and format layers live in Data and Core, not here.
+-- Loaded from RotationMaster.toc directly after UI/rotation_comparison.lua; UI/rotation_browser.lua opens it. The text
+-- layer lives in Data and Core, not here.
 
 local addon_name, addon = ...
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
@@ -203,17 +203,15 @@ end
 -- ============================================================================
 
 -- Opens the Import/Export window for rotation `id` of `spec` and returns the dialog. The export text is the current
--- rotation in the chosen format; an import is staged, previewed (a comparison when replacing, the full content for a
--- copy) and applied through ApplyRotationImport with the owner, profile and record token captured here, so a profile
--- switch, a character change or an edit of the saved rotation elsewhere invalidates the window (`valid`).
+-- rotation as a Rotation Master export; an import is staged, previewed (a comparison when replacing, the full content
+-- for a copy) and applied through ApplyRotationImport with the owner, profile and record token captured here, so a
+-- profile switch, a character change or an edit of the saved rotation elsewhere invalidates the window (`valid`).
 function addon:ShowRotationTransfer(spec, id)
     local codec = self:NewRotationCodec()
     local source, exportError = self:GetRotationExportData(spec, id)
     local exported
     if source then exported, exportError = codec:Encode(source) end
-    -- The Format choice (Rotation Master or WowSims): the session reads what is pasted through the chosen format.
-    local formats = self:NewTransferFormatState(codec, source, spec, exported)
-    local session = self.RotationData.NewImportSession(formats.codec, self:GetImportValidationOptions())
+    local session = self.RotationData.NewImportSession(codec, self:GetImportValidationOptions())
     local p = self.rotationTransferForm
 
     if p then
@@ -287,14 +285,13 @@ function addon:ShowRotationTransfer(spec, id)
                     title = L['Applies to'],
                     text = L['Copies belong to your Class unless This character is selected. Replacement keeps its original owner.'],
                 },
-                { title = L['Format'], text = L['Help.Transfers.rotation_format'] },
             },
         },
     }
 
     -- Name of the rotation inside pasted text, used to suggest a name for the copy; nil when the text does not decode.
     options.originalName = function(text)
-        local decoded = formats.codec:Decode(text)
+        local decoded = codec:Decode(text)
         local value = decoded and decoded.value
         if type(value) == 'table' then return self:RotationDisplayName(value) end
     end
@@ -328,8 +325,6 @@ function addon:ShowRotationTransfer(spec, id)
 
         if not candidate then
             d.status:SetText(string.format(L['Import preview unavailable: %s'], tostring(why)))
-            -- A WowSims rotation with nothing to import still has a report that says why.
-            if formats.format == 'wowsims' and formats.failure and formats.failure.report then d.inspect:Enable() end
             return
         end
 
@@ -344,18 +339,6 @@ function addon:ShowRotationTransfer(spec, id)
         )
 
         if ready then d.apply:Enable() end
-
-        if formats.format == 'wowsims' and formats.lastImport then
-            local summary = formats.lastImport.report.summary
-
-            d.status:SetText(
-                (d.status:GetText() or '') .. '\n' .. string.format(
-                    L['Converted from WowSims: %d steps, %d disabled. Choose Check import for the full report.'],
-                    summary.steps,
-                    summary.disabled
-                )
-            )
-        end
 
         if p.importPreview then p.importPreview.frame:Hide() end
         if p.importContent then p.importContent.frame:Hide() end
@@ -393,34 +376,8 @@ function addon:ShowRotationTransfer(spec, id)
         end
     end
 
-    -- Opens the check-import report: the WowSims conversion report when that format is selected, plus the diagnostics
-    -- and diff of the staged candidate.
+    -- Opens the check-import report: the diagnostics and diff of the staged candidate.
     options.inspect = function()
-        if formats.format == 'wowsims' and valid() then
-            local conversion = formats.lastImport
-            local text = conversion and conversion.text
-
-            if not text and formats.failure and formats.failure.report then
-                text = self:RenderTransferFormatReport('wowsims', formats.failure.report, 'import')
-            end
-
-            if text and not candidate then return self:ShowTransferReport(L['WowSims import report'], text) end
-
-            if text then
-                local object = candidate.kind == 'envelope' and candidate.value or { body = candidate.value }
-                local report = self.RotationData.DiffRotations({}, object)
-
-                for _, diagnostic in ipairs(candidate.validation.diagnostics) do
-                    report.diagnostics[#report.diagnostics + 1] = diagnostic
-                end
-
-                return self:ShowTransferReport(
-                    L['WowSims import report'],
-                    text .. '\n\n' .. self:FormatRotationComparison(report)
-                )
-            end
-        end
-
         if not valid() or not candidate then return end
         local object = candidate.kind == 'envelope' and candidate.value or { body = candidate.value }
         local report = self.RotationData.DiffRotations({}, object)
@@ -432,10 +389,9 @@ function addon:ShowRotationTransfer(spec, id)
         return self:ShowComparisonReport(self:FormatRotationComparison(report))
     end
 
-    -- Window closed: marks it inactive and releases the format state, the import session and the form.
+    -- Window closed: marks it inactive and releases the import session and the form.
     options.onClose = function()
         active = false
-        formats:Release()
         session:Clear()
         if p.active and p.generation == generation then p:Release() end
     end
@@ -531,26 +487,13 @@ function addon:ShowRotationTransfer(spec, id)
     end)
 
     dialog.scope.tooltip = L['Copies belong to your Class unless This character is selected. Replacement keeps its original owner.']
-    -- The Format row sits under the scope row; the text box and the status line move down to make room.
-    dialog.frame:SetHeight(470)
     dialog.scroll:ClearAllPoints()
-    dialog.scroll:SetPoint('TOPLEFT', 12, -190)
-    dialog.scroll:SetHeight(188)
-    dialog.input:SetHeight(188)
+    dialog.scroll:SetPoint('TOPLEFT', 12, -130)
+    dialog.scroll:SetHeight(200)
+    dialog.input:SetHeight(200)
     scopeState()
-    dialog.status:ClearAllPoints()
-    dialog.status:SetPoint('TOPLEFT', 12, -384)
-    -- The Format choice is an addition to the window: if it cannot be built, the window is the Rotation Master one.
-    local attached, problem = pcall(self.AttachTransferFormatControls, self, dialog, formats, options)
 
-    if not attached then
-        formats.format = 'rm'
-        dialog.status:SetText(string.format(L['The Format choice could not be shown: %s'], tostring(problem)))
-    end
-
-    if exportError and formats.format == 'rm' then
-        dialog.status:SetText(string.format(L['Export unavailable: %s'], exportError))
-    end
+    if exportError then dialog.status:SetText(string.format(L['Export unavailable: %s'], exportError)) end
 
     return dialog
 end

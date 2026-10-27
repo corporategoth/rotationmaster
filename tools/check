@@ -18,8 +18,7 @@ def main():
                 [sys.executable, 'tools/builtin_names.py', 'check'],
                 [sys.executable, 'tools/generate_builtin_sources.py'],
                 [sys.executable, 'tools/generate_artwork_catalog.py'],
-                [sys.executable, 'tools/generate_integration_projects.py'],
-                [sys.executable, 'tools/export_wowsims_mapping.py', '--check']]
+                [sys.executable, 'tools/generate_integration_projects.py']]
     if not args.static:
         commands.extend([
             [sys.executable, 'tests/test_integration_projects.py'],
@@ -776,14 +775,6 @@ def main():
             ['lua5.1', 'tests/transfer_ui.lua'],
             ['lua5.1', 'tests/rotation_name_transfer.lua'],
             ['luajit', 'tests/rotation_name_transfer.lua'],
-            ['lua5.1', 'tests/wowsims_golden.lua'],
-            ['luajit', 'tests/wowsims_golden.lua'],
-            ['lua5.1', 'tests/wowsims_module.lua'],
-            ['luajit', 'tests/wowsims_module.lua'],
-            ['lua5.1', 'tests/wowsims_transfer_ui.lua'],
-            ['luajit', 'tests/wowsims_transfer_ui.lua'],
-            ['lua5.1', 'tests/wowsims_real_catalog.lua'],
-            ['luajit', 'tests/wowsims_real_catalog.lua'],
             ['lua5.1', 'tests/import_preview.lua'],
             ['luajit', 'tests/import_preview.lua'],
             ['lua5.1', 'tests/import_preview_selection.lua'],

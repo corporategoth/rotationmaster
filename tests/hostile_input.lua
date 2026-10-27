@@ -2,7 +2,7 @@
 -- an imported item string is data, never a macro line. Each case here failed
 -- before the fix: a long run of spaces froze the client in a quadratic trim,
 -- and an item such as "1\n/logout" became a second command in a secure macro.
-local F=dofile('tests/fixtures/addon.lua');local W=dofile('tests/fixtures/wowsims.lua');local test,finish=F.suite()
+local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local function timed(label,budget,fn)
     local start=os.clock();local a,b,c=fn();local took=os.clock()-start
     assert(took<budget,string.format('%s took %.2fs (budget %.2fs)',label,took,budget))
@@ -36,17 +36,6 @@ test('item sets: a long run of spaces is linear, and the same list trims as befo
     end
     local parsed=assert(a:ParseItemSetImport('  5512 ,\t22829,\r\n  Healthstone  \n\n   ',codec))
     assert(#parsed.items==3 and parsed.items[1]==5512 and parsed.items[2]==22829 and parsed.items[3]=='Healthstone','list was not trimmed as before')
-end)
-
-test('WowSims paste: a long run of spaces around or inside the text is linear',function()
-    local ns=W.loadModule();local json=ns.json
-    for _,size in ipairs({32768,131000}) do
-        local padded=string.rep(' ',size)..'{"a":1}'..string.rep(' ',size)
-        assert(timed('trim '..size,0.5,function() return json.trimText(padded) end)=='{"a":1}')
-        assert(timed('inner '..size,0.5,function() return json.trimText('{'..string.rep(' ',size)..'x') end)=='{'..string.rep(' ',size)..'x')
-        assert(timed('blank '..size,0.5,function() return json.trimText(string.rep(' ',size)) end)=='')
-    end
-    assert(json.trimText('\239\187\191 \n x \t')=='x' and json.trimText('')=='' and json.trimText(' a b ')=='a b')
 end)
 
 -- The real addon, as the other startup-based suites load it.

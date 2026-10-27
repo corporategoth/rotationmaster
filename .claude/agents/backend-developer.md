@@ -26,7 +26,7 @@ You have several core areas you are concerned about.
   it is unavailable, or it does not exist for that edition.
 - **Backward Compatibility** - Saved variables and exported rotation strings outlive any single release.  Anything that
   changes a stored shape needs a migration that preserves unknown fields, a version bump, and a statement of what an older
-  release does with the result.  Export, import, the WowSims mapping and the website decoder move together.
+  release does with the result.  Export, import and the website decoder move together.
 - **Upgradability** - Upgrades must work from any earlier release, not only the previous one.  A migration that is not
   reversible says so, loudly, and the release notes tell testers to back up first.  New options have sane defaults; a
   missing preference means the shipped default and only an explicit user action writes one.

@@ -22,7 +22,7 @@ class BundleTests(unittest.TestCase):
         cls.corpus = T.Corpus()
 
     def test_the_manifest_names_the_bundles_the_runtime_expects(self):
-        self.assertGreaterEqual(len(self.bundles), 5)
+        self.assertGreaterEqual(len(self.bundles), 4)
         for bundle in self.bundles:
             self.assertTrue(bundle.module.startswith('RotationMaster_'), bundle.module)
             self.assertTrue(bundle.directory.is_dir(), bundle.directory)

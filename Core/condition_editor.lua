@@ -1,7 +1,7 @@
 -- Detached edit sessions for one condition tree: a draft copy, bounded undo and redo, and a validated Apply.
 -- It owns the session object and its history rules; the window that shows it is UI/condition_editor.lua. Nothing here
 -- writes the live condition except Apply, which checks schema, semantics and concurrent edits first and then mutates
--- the original table in place. Loaded from RotationMaster.toc after Core/transfer_formats.lua; it needs
+-- the original table in place. Loaded from RotationMaster.toc after Core/imports.lua; it needs
 -- addon.RotationData (Data/condition_draft.lua, Data/validation.lua) loaded earlier.
 
 local _, addon = ...

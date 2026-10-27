@@ -25,9 +25,9 @@ local platform = addon.Platform
 --   events ENGRAVING_MODE_CHANGED, ENGRAVING_TARGETING_MODE_CHANGED, RUNE_UPDATED
 -- Blizzard_EngravingUI names a category with C_Item.GetItemInventorySlotInfo
 -- and refreshes on PLAYER_EQUIPMENT_CHANGED and NEW_RECIPE_LEARNED. Shipped
--- addons (WowSimsExporter) note that GetNumRunesKnown reports max 0 until the
--- rune list has loaded after login, and that the Phase 7 shoulder "runes" are
--- not C_Engraving engravings at all (they override Soul Engraving 1219955).
+-- addons note that GetNumRunesKnown reports max 0 until the rune list has
+-- loaded after login, and that the Phase 7 shoulder "runes" are not
+-- C_Engraving engravings at all (they override Soul Engraving 1219955).
 --
 -- The namespace is absent outside the Classic Era client and inert there on
 -- realms without engraving. Every call is feature-detected and protected;

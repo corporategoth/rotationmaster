@@ -44,7 +44,7 @@ end)
 local function fixture(entries)
     local f=F.new();local a=f.addon;dofile('tests/fixtures/native_ui.lua')(f.env);local data,envelope,options=make();a.RotationData=data
     a.conditionDefinitions=options.conditions;a.db.keys={char='A - Realm'};local n=0;a.uuid=function() n=n+1;return 'transfer-'..n end
-    for _,path in ipairs({'Data/catalog.lua','Data/diff.lua','Data/import_session.lua','Data/rotation_store.lua','Data/rotation_draft.lua','Core/rotation_library.lua','Core/rotation_scope.lua','Core/rotation_tags.lua','Core/imports.lua','Core/transfer_formats.lua','Core/rotation_editor.lua','Core/rotation_workspace.lua','UI/settings_layout.lua','UI/settings_roster_order.lua','UI/settings_draft.lua','UI/settings_history.lua','UI/settings_ordered.lua','UI/settings_text.lua','UI/settings_form.lua','UI/settings_transfer.lua','UI/transfer.lua','UI/transfer_format.lua'}) do
+    for _,path in ipairs({'Data/catalog.lua','Data/diff.lua','Data/import_session.lua','Data/rotation_store.lua','Data/rotation_draft.lua','Core/rotation_library.lua','Core/rotation_scope.lua','Core/rotation_tags.lua','Core/imports.lua','Core/rotation_editor.lua','Core/rotation_workspace.lua','UI/settings_layout.lua','UI/settings_roster_order.lua','UI/settings_draft.lua','UI/settings_history.lua','UI/settings_ordered.lua','UI/settings_text.lua','UI/settings_form.lua','UI/settings_transfer.lua','UI/transfer.lua'}) do
         local ok=loadfile(path);if ok then f.load(path) end
     end
     localize(f,entries)
@@ -111,7 +111,7 @@ test('no shipped Built In shows a dotted key as its name, in English, in German,
     local register=a.RegisterDefaultRotation
     a.RegisterDefaultRotation=function(self,p) ids[#ids+1]=p.id;return register(self,p) end
     for _,path in ipairs(modules.paths()) do f.load(path) end
-    f.load('Core/rotation_tags.lua');f.load('Core/imports.lua','Core/transfer_formats.lua')
+    f.load('Core/rotation_tags.lua');f.load('Core/imports.lua')
     assert(#ids>=300,#ids..' Built Ins')
     local L=f.libraries['AceLocale-3.0'].GetLocale()
     local function names(read) local out={};for _,id in ipairs(ids) do local key=a:GetDefaultRotation(id).envelope.nameKey;out[id]=read(key) end;return out end

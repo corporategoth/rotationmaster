@@ -22,7 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import format_lua  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
-SKIP_PREFIXES = ('Libs/', 'LibsAugment/', 'Locales/', 'Modules/', 'tests/', 'tools/vendor/', 'Data/wowsims/')
+SKIP_PREFIXES = ('Libs/', 'LibsAugment/', 'Locales/', 'Modules/', 'tests/', 'tools/vendor/')
 SKIP_FILES = {'Data/builtin_sources.lua', 'Data/artwork.lua', 'Data/text_bundle_index.lua', 'Data/talent_trees.lua'}
 
 

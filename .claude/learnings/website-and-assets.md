@@ -3,15 +3,12 @@
 ## The website is a separate repository
 
 The companion website (Node, its own database) lives in a separate repository and is not mirrored to GitHub. Its catalogs,
-decoders, validators and help pages are generated from or checked against this addon, and the converter in
-`Modules/RotationMaster_WowSims` is a Lua port of the website's, driven by the same rule table. So:
+decoders, validators and help pages are generated from or checked against this addon. So:
 
 - every change to rotation fields, selection order, step types, conditions, the premade catalog or reason codes needs a matching
   website change; say in the commit message what must be regenerated;
 - generated website catalogs record source hashes of this addon: regenerate them after any merge that touches `Locales/enUS.lua`
   or `Core/`;
-- the WowSims data pinned in `Data/wowsims/` must be re-pinned (`tools/export_wowsims_mapping.py --refresh <website checkout>`)
-  when the website's mapping changes, in step with the Lua port;
 - the website enforces strict canonical validation of uploads and a content filter; do not ship premade text it would reject.
 
 Website facts that bind the addon: use Wowhead's official browser tooltip script, never server-side fetching of Wowhead or its

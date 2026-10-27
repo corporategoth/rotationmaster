@@ -3265,30 +3265,6 @@ L["Checked %d seconds ago."] = true
 L["Rotation Master is advising this step now."] = true
 L["This cooldown is showing now."] = true
 L["This rotation is advising now."] = true
--- WowSims transport (Core/transfer_formats.lua, UI/transfer_format.lua, Modules/RotationMaster_WowSims)
-L["The Format choice could not be shown: %s"] = true
-L["The WowSims export is too long for this box (%d characters), so it cannot be shown here."] = true
-L["Check export"] = true
-L["Choose the format of the text this window shows and reads. Rotation Master is the default; WowSims is the simulator's Action Priority List (JSON)."] = true
-L["Converted from WowSims: %d steps, %d disabled. Choose Check import for the full report."] = true
-L["Copy this text to use it in WowSims, or paste WowSims JSON here to import it."] = true
-L["Format"] = true
-L["Format changed. Preview the pasted text again before importing."] = true
-L["Imported from a WowSims rotation (APL). Steps: {steps}, disabled: {disabled}, items not imported: {skipped}. Review the disabled steps before enabling them."] = true
-L["Rotation Master has no such condition"] = true
-L["Some detail may be lost converting from WowSims."] = true
-L["Some detail may be lost converting to WowSims."] = true
-L["The WowSims converter could not be loaded (%s). Rotation Master keeps working; use the Rotation Master format."] = true
-L["The WowSims text could not be converted: %s"] = true
-L["The converted rotation is too large to import (%s)."] = true
-L["The rotation could not be converted to WowSims: %s"] = true
-L["This looks like WowSims JSON. Set Format to WowSims to import it."] = true
-L["This looks like a Rotation Master export. Set Format to Rotation Master to import it."] = true
-L["WowSims"] = true
-L["WowSims has no simulator for this game version, so only the Rotation Master format is available here."] = true
-L["WowSims import: {label}"] = true
-L["WowSims export report"] = true
-L["WowSims import report"] = true
 
 -- Conditions for the state of the world and for particular editions.
 L["Mounted"] = true

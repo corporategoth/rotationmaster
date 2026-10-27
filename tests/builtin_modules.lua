@@ -151,7 +151,7 @@ local function registrations(path)
     local chunk=assert(loadfile(path));setfenv(chunk,setmetatable({},{__index=_G}));chunk('RotationMaster_Test',namespace)
     return rows
 end
--- Add-ons that are not Built In modules: the WowSims converter and the load-on-demand text bundles (Locales/bundles.json).
+-- Add-ons that are not Built In modules: the load-on-demand text bundles (Locales/bundles.json).
 local notBuiltIn={}
 do
     local h=assert(io.open('Locales/bundles.json'));local text=h:read('*a');h:close()
@@ -192,7 +192,7 @@ test('every module on disk is one the loader can name, and bind.lua reaches Rota
     local listed={};for _,module in ipairs(modules.list())do listed[module.name]=module end
     local p=assert(io.popen('ls -1 Modules'));local count=0
     for entry in p:lines()do
-        -- The WowSims converter (docs/quality/wowsims-transport.md) and the text bundles are not Built In modules.
+        -- The text bundles are not Built In modules.
         if not notBuiltIn[entry] and readable('Modules/'..entry..'/'..entry..'.toc')then count=count+1;assert(listed[entry],entry..' is not a name the loader produces')end
     end
     p:close()

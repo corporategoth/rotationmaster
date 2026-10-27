@@ -51,8 +51,6 @@ def generate():
 
 
 def release_metadata():
-    # Data/wowsims holds the pinned JSON the WowSims module's Lua data is generated from; the game does not load it.
-    # Its MIT notice stays in the package: the shipped tables are derived from that data.
     # Generated files that are not for the game: Data/talent_trees.json is the website's copy of a Lua table,
     # Assets/Controls/*.svg are the sources of the shipped .tga controls.
     # Development-only trees and files. The packager already skips every dotfile; naming them here keeps the intent in
@@ -60,8 +58,7 @@ def release_metadata():
     ignored = ['tests', 'tools', 'docs', '.claude', '.gitea', '.github', '.pre-commit-config.yaml', '.gitattributes',
                'README.md', 'CONTRIBUTING.md',
                'Modules/README.md',
-               'Data/talent_trees.json', 'Data/wowsims/ids.json', 'Data/wowsims/kinds.json',
-               'Data/wowsims/mapping.json', 'Data/wowsims/SOURCE.json', 'Assets/Controls/*.svg',
+               'Data/talent_trees.json', 'Assets/Controls/*.svg',
                'Assets/Conditions/source', 'Assets/Conditions/qa',
                'Assets/Conditions/export_icons.py', 'Assets/Conditions/v2/source',
                'Assets/Conditions/v2/qa', 'Assets/Conditions/v2/export_icons.py',

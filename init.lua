@@ -592,6 +592,17 @@ local function upgradeLogLevel()
     addon.db.profile.verbose = nil
 end
 
+-- Drops profile.transfer_format from every saved profile: the rotation transfer window's Format choice (Rotation Master
+-- or WowSims, written by the 2.0 betas) was retired together with the WowSims converter, nothing reads the value any
+-- more, and the validator would report the key in each profile that still carries it.
+local function dropRetiredTransferFormat()
+    for _, profile in pairs(addon.db.sv and addon.db.sv.profiles or {}) do
+        if type(profile) == 'table' then profile.transfer_format = nil end
+    end
+
+    addon.db.profile.transfer_format = nil
+end
+
 -- Converts effects from a name-ordered list to UUID keys (reusing the default effect's UUID when the names match), maps
 -- the profile's selected effect and each cooldown step's effect from a name to its UUID, and, for a pre-version-1
 -- account, offers to reset the effect list because the defaults changed. Must run after upgradeTexturesToEffects.
@@ -940,6 +951,7 @@ function addon:init()
     -- The language picker was retired: Rotation Master follows the game's
     -- language. Drop a choice it saved, which the validator would report.
     addon.db.global.language = nil
+    dropRetiredTransferFormat()
     upgradeGlobalRotationstoPlayer()
     upgradeItemsToItemSets()
     cacheItems()

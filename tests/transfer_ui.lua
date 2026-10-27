@@ -2,7 +2,7 @@ local F=dofile('tests/fixtures/addon.lua');local make=dofile('tests/fixtures/rot
 test('shared native rotation transfer invalidates previews and applies copy or selected replacement explicitly',function()
     local f=F.new();local a=f.addon;dofile('tests/fixtures/native_ui.lua')(f.env);local data,envelope,options=make();a.RotationData=data
     a.conditionDefinitions=options.conditions;a.db.keys={char='A - Realm'};local n=0;a.uuid=function() n=n+1;return 'transfer-'..n end
-    for _,path in ipairs({'Data/catalog.lua','Data/diff.lua','Data/import_session.lua','Data/rotation_store.lua','Data/rotation_draft.lua','Core/rotation_library.lua','Core/rotation_scope.lua','Core/imports.lua','Core/transfer_formats.lua','Core/rotation_editor.lua','Core/rotation_workspace.lua','UI/settings_layout.lua','UI/settings_roster_order.lua','UI/settings_draft.lua','UI/settings_history.lua','UI/settings_ordered.lua','UI/settings_form.lua','UI/settings_transfer.lua','UI/rotation_comparison.lua','UI/transfer.lua','UI/transfer_format.lua'}) do f.load(path) end
+    for _,path in ipairs({'Data/catalog.lua','Data/diff.lua','Data/import_session.lua','Data/rotation_store.lua','Data/rotation_draft.lua','Core/rotation_library.lua','Core/rotation_scope.lua','Core/imports.lua','Core/rotation_editor.lua','Core/rotation_workspace.lua','UI/settings_layout.lua','UI/settings_roster_order.lua','UI/settings_draft.lua','UI/settings_history.lua','UI/settings_ordered.lua','UI/settings_form.lua','UI/settings_transfer.lua','UI/rotation_comparison.lua','UI/transfer.lua'}) do f.load(path) end
     local body=envelope().body;a.db.profile={rotationFallbackID='Default',rotationStore={version=1,classes={SHAMAN={[0]={mine={body=body}}}},characters={},legacy={}}}
     a.GetRotationContext=function(_,spec) return {class='SHAMAN',family='tbc',spec=spec,actionContext='player',combatDataPolicy='probe'} end;assert(a:BindRotationProfile())
     a.GetEditableRotation=function() error('ordinary transfer used mutable getter') end
@@ -34,7 +34,7 @@ test('shared transfer shell keeps moved coordinates while its text and themed co
 end)
 local function previewFixture()
     local f=F.new();local a=f.addon;a.RotationData=make()
-    for _,path in ipairs({'Data/diff.lua','Data/visual_comparison.lua','UI/rotation_reference.lua','UI/rotation_comparison.lua','UI/transfer.lua','UI/transfer_format.lua'}) do f.load(path) end
+    for _,path in ipairs({'Data/diff.lua','Data/visual_comparison.lua','UI/rotation_reference.lua','UI/rotation_comparison.lua','UI/transfer.lua'}) do f.load(path) end
     a.Platform={GetSpellInfo=function(_,id) return {name='Spell '..id,spellID=id,iconID=id} end,
         GetSpellLink=function(_,id) return '|Hspell:'..id..'|h[Named spell]|h' end}
     a.printCondition=function() return 'Readable conditions' end

@@ -57,7 +57,6 @@ def minimal_layout(version='2.0.0-beta.1'):
         'RotationMaster/Locales/enUS.lua': 'return 1\n',
         'RotationMaster/LICENSE': 'MIT\n',
         'RotationMaster/Fonts/OFL.txt': 'OFL\n',
-        'RotationMaster/Data/wowsims/LICENSE-wowsims-MIT.txt': 'MIT\n',
         'RotationMaster_Mage/RotationMaster_Mage.toc': f'## Interface: 11509\n## Version: {version}\nbind.lua\n',
         'RotationMaster_Mage/bind.lua': 'return 1\n',
     }
@@ -85,14 +84,13 @@ class Pkgmeta(unittest.TestCase):
         meta = P.parse_pkgmeta(ROOT / '.pkgmeta')
         self.assertEqual(meta['package-as'], 'RotationMaster')
         self.assertEqual(meta['changelog'], 'CHANGELOG.md')
-        # Every add-on folder under Modules/ ships beside the main add-on: the Built In class modules, the WowSims
-        # converter and the load-on-demand text bundles.
+        # Every add-on folder under Modules/ ships beside the main add-on: the Built In class modules and the
+        # load-on-demand text bundles.
         folders = sorted(d.name for d in (ROOT / 'Modules').iterdir() if d.is_dir())
         self.assertEqual(sorted(meta['move-folders'].values()), folders)
-        self.assertIn('RotationMaster_WowSims', meta['move-folders'].values())
-        for item in ('tests', 'tools', 'docs', '.claude', '.gitea', 'README.md', 'Data/wowsims/mapping.json'):
+        self.assertNotIn('RotationMaster_WowSims', meta['move-folders'].values())
+        for item in ('tests', 'tools', 'docs', '.claude', '.gitea', 'README.md', 'Data/talent_trees.json'):
             self.assertIn(item, meta['ignore'])
-        self.assertNotIn('Data/wowsims', meta['ignore'], 'the MIT notice in Data/wowsims ships')
 
     def test_ignore_entries_become_globs_the_way_release_sh_does(self):
         root = temp_dir(self)
@@ -131,7 +129,7 @@ class Check(unittest.TestCase):
     def test_development_paths_and_files_fail(self):
         for path in ('RotationMaster/tests/a.lua', 'RotationMaster/tools/a.lua', 'RotationMaster/docs/a.md', 'RotationMaster/.claude/CLAUDE.md',
                      'RotationMaster/.gitea/w.yml', 'RotationMaster/README.md', 'RotationMaster/TODO', 'RotationMaster/Libs/x/a.py',
-                     'RotationMaster/Assets/a.svg', 'RotationMaster/Data/wowsims/mapping.json', 'RotationMaster/__pycache__/a.pyc',
+                     'RotationMaster/Assets/a.svg', 'RotationMaster/__pycache__/a.pyc',
                      'RotationMaster/Web/index.html', 'RotationMaster/outputs/a.txt'):
             layout = minimal_layout()
             layout[path] = b'x'
@@ -152,7 +150,7 @@ class Check(unittest.TestCase):
         self.assertEqual(self.problems(layout), [])
 
     def test_missing_required_files_and_modules_fail(self):
-        for path in ('RotationMaster/LICENSE', 'RotationMaster/Data/wowsims/LICENSE-wowsims-MIT.txt', 'RotationMaster/Fonts/OFL.txt',
+        for path in ('RotationMaster/LICENSE', 'RotationMaster/Fonts/OFL.txt',
                      'RotationMaster_Mage/RotationMaster_Mage.toc', 'RotationMaster/embeds.xml'):
             layout = minimal_layout()
             del layout[path]
@@ -206,7 +204,7 @@ class Check(unittest.TestCase):
         layout = P.build_files(ROOT, meta, info, changelog=None)
         self.assertEqual(P.check_layout(layout, meta, '2.0.0-beta.1', ROOT), [])
         self.assertEqual(info['type'], 'beta')
-        self.assertIn('RotationMaster_WowSims/RotationMaster_WowSims.toc', layout)
+        self.assertNotIn('RotationMaster_WowSims/RotationMaster_WowSims.toc', layout)
         self.assertNotIn('RotationMaster/tests', ' '.join(layout))
 
     def test_zip_round_trip_is_deterministic(self):

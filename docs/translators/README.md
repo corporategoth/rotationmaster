@@ -33,7 +33,7 @@ L["Choose a duration from 1 to %d seconds."] = "Wähle eine Dauer von 1 bis %d S
   their order and format. You provide `{key: translation}` and the tools do the rest.
 - The `-- en:` comment above each entry is the English that entry was translated from. When the English later changes, the
   entry becomes **stale**: the game still shows the old translation until someone updates it, and the tools list it again.
-- A few keys are names (`Rotation Master`, `WowSims`, addon and site names): they stay identical in every language and the
+- A few keys are names (`Rotation Master`, addon and site names): they stay identical in every language and the
   tools do not ask for them (`tools/translation_exempt.json`).
 
 ## Workflow
