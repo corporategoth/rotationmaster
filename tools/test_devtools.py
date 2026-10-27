@@ -85,7 +85,10 @@ class Pkgmeta(unittest.TestCase):
         meta = P.parse_pkgmeta(ROOT / '.pkgmeta')
         self.assertEqual(meta['package-as'], 'RotationMaster')
         self.assertEqual(meta['changelog'], 'CHANGELOG.md')
-        self.assertEqual(len(meta['move-folders']), 14)
+        # Every add-on folder under Modules/ ships beside the main add-on: the Built In class modules, the WowSims
+        # converter and the load-on-demand text bundles.
+        folders = sorted(d.name for d in (ROOT / 'Modules').iterdir() if d.is_dir())
+        self.assertEqual(sorted(meta['move-folders'].values()), folders)
         self.assertIn('RotationMaster_WowSims', meta['move-folders'].values())
         for item in ('tests', 'tools', 'docs', '.claude', '.gitea', 'README.md', 'Data/wowsims/mapping.json'):
             self.assertIn(item, meta['ignore'])
@@ -285,7 +288,7 @@ class Guards(unittest.TestCase):
         for name in bad:
             self.assertTrue(H.check_forbidden([name]), name)
         good = ['docs/dev/architecture.md', 'docs/release/RELEASING.md', 'docs/architecture/tooltips.md', 'Libs/X/CHANGELOG.md',
-                '.claude/CLAUDE.md', 'TODO', 'docs/translators/README.md', 'docs/talent-selector-design.md']
+                '.claude/CLAUDE.md', 'TODO', 'docs/translators/README.md', 'docs/talent-selector.md']
         for name in good:
             self.assertEqual(H.check_forbidden([name]), [], name)
 
@@ -315,6 +318,14 @@ class Fast(unittest.TestCase):
         self.assertEqual(fast_tests.select(['Modules/RotationMaster_Mage/tbc/frost.lua'], self.COMMANDS), [['lua5.1', 'tests/defaults_tbc_mage.lua']])
         self.assertEqual(fast_tests.select(['tests/other.lua'], self.COMMANDS), [['lua5.1', 'tests/other.lua']])
         self.assertEqual(fast_tests.select(['Core/nothing.lua', 'Libs/X/a.lua'], self.COMMANDS), [])
+
+    def test_a_locale_or_text_bundle_edit_picks_the_locale_suites(self):
+        commands = [['lua5.1', 'tests/client_locale.lua'], ['lua5.1', 'tests/text_bundles.lua'], ['lua5.1', 'tests/other.lua']]
+        for changed in ('Locales/deDE.lua', 'Modules/RotationMaster_HelpText/frFR.lua', 'Core/text_bundles.lua'):
+            picked = fast_tests.select([changed], commands)
+            self.assertIn(['lua5.1', 'tests/text_bundles.lua'], picked, changed)
+        self.assertEqual(fast_tests.select(['Modules/RotationMaster_HelpText/frFR.lua'], commands),
+                         [['lua5.1', 'tests/client_locale.lua'], ['lua5.1', 'tests/text_bundles.lua']])
 
     def test_collect_lists_the_real_command_list(self):
         commands = check_all.collect()

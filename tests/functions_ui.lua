@@ -89,7 +89,7 @@ test('every imported row exposes full readonly Lua source before any save',funct
     d.input:SetText(assert(a:NewRotationCodec():Encode(bundle)));d:Review();assert(d.form.fields.review_source_1,'readable source review missing');d.form.fields.review_source_1:Click();assert(d.sourceReview.code:GetText()==value.code and d.sourceReview.code.readOnly and not next(a.db.global.custom_functions));d.sourceReview.close:Click();assert(d.frame:IsShown())
 end)
 test('function symbol navigation uses the shell pending-change guard',function()
-    local f,a=fixture();assert(a.ShowFunctionSource,'function source navigation missing');a.SetupOptions=function() end;a.pretty_name='Rotation Master';a.name='rotationmaster';a.db.GetCurrentProfile=function() return 'Test' end;f.load('UI/config.lua')
+    local f,a=fixture();assert(a.ShowFunctionSource,'function source navigation missing');a.SetupOptions=function() end;a.pretty_name='Rotation Master';a.name='rotationmaster';a.db.GetCurrentProfile=function() return 'Test' end;f.load('UI/help.lua');f.load('UI/config.lua')
     a.db.global.custom_functions.A=source('Alpha');a.db.global.custom_functions.B=source('Beta');a:InitializeFunctionRegistry();local shell=a:ShowFunctionSource('A');local p=shell.pane;code(p.inlineFunction,'return )');a:ShowFunctionSource('B');assert(p.prompt.frame:IsShown() and p.functionID=='A');p.prompt.cancel:Click();p:Draw();assert(p.functionID=='A' and p.inlineFunction.code:GetText()=='return )','Cancel left a pending symbol selection');a:ShowFunctionSource('B');p.prompt.discard:Click();assert(shell.pane.functionID=='B' and shell.pane.inlineFunction.code:GetText()=='return value')
 end)
 test('idle function source frames reuse syntax validation until source or graph changes',function()

@@ -317,7 +317,11 @@ for _,name in ipairs({'Call','ObserveReportedErrors'})do
   assert(assert(prepare(a,b,token,function()return true end)):EvaluateBool(root))
   local fn=a.Diagnostics[name];local environment=getfenv(fn);local calls=0;local replacement
   if name=='Call'then
-   local original=environment.select or select;replacement=setmetatable({select=function(...)calls=calls+1;return original(...)end},{__index=environment})
+   -- Call hands its arguments to xpcall where xpcall forwards them (LuaJIT, the client) and counts them with select where it
+   -- does not (plain Lua 5.1): the global it consults on this runtime is the one to replace (deb00549).
+   local forwards=select(2,xpcall(function(value)return value end,function()end,true))==true
+   local hooked=forwards and 'xpcall' or 'select'
+   local original=environment[hooked] or _G[hooked];replacement=setmetatable({[hooked]=function(...)calls=calls+1;return original(...)end},{__index=environment})
   else
    local original=environment.type or type;replacement=setmetatable({type=function(...)calls=calls+1;return original(...)end},{__index=environment})
   end

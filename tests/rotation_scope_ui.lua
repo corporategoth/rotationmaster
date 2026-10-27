@@ -31,7 +31,9 @@ end)
 test('native transfer captures exact Character replacement and selects issued key after success',function()
     local _,a=fixture();a.GetEditableRotation=function() error('ordinary UI used mutable getter') end
     local d=a:ShowRotationTransfer(0,ref('character'));assert(d.destination:GetChecked());pasted(d);d.apply:Click()
-    assert(not d.frame:IsShown() and a:GetRotationRecordSnapshot(0,ref('character')).body.name=='Character')
+    -- Closing is the page's job once a successful import selects the new record (the real ShowConfig releases the page, which hides
+    -- the dialog); the transfer callback no longer hides a dialog whose page has changed (bc33d965), and this ShowConfig is a stub.
+    assert(a:GetRotationRecordSnapshot(0,ref('character')).body.name=='Character')
     assert(a:GetRotationRecordSnapshot(0,ref()).body.name=='Class');local selected=a.selected.selection
     assert(selected.id:sub(1,1)==string.char(1) and a:ResolveRotationReference(0,selected.id).address.scope=='character')
 end)

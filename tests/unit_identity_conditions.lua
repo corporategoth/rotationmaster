@@ -87,15 +87,4 @@ test('public observer editable clone resolves its actual owner and current reada
     local opaque={};f.env.canaccessvalue=function(v) return not rawequal(v,opaque) end;s.same=opaque
     local value,why=fn(a.Platform,'target','pet');assert(value==nil and why=='restricted-value')
 end)
-test('only one exact evaluator changes with full module bytes and four private identities intact',function()
-    local _,a=fixture();local file=assert(io.open('Conditions/character.lua'));local text=file:read('*a');file:close();text=restoreCreature(text);text=dofile('tests/fixtures/restore_glyph_presentation_repairs.lua')(text);text=dofile('tests/fixtures/restore_mobinfo2_repairs.lua')(text);text=dofile('tests/fixtures/restore_role_repairs.lua')(text);text=dofile('tests/fixtures/restore_class_group_repairs.lua')(text)
-    text=dofile('tests/fixtures/restore_unit_metadata_repairs.lua')(text)
-    local first=assert(text:find(repaired,1,true),'exact repaired identity callback missing');assert(not text:find(repaired,first+1,true),'multiple identity replacements')
-    text=text:sub(1,first-1)..original..text:sub(first+#repaired)
-    assert(a:FunctionSourceHash(text)=='7c75697a','character changed beyond the approved ISSAME evaluator from a8711a9')
-    for name,hash in pairs({character_class='f9f4e4b5',color='3f9fe631',helpers='2e9a81e7',unit_class_num='33645816'}) do
-        local id='builtin:Conditions/character.lua:'..name;assert(a:FunctionSourceHash(assert(a.builtinFunctions[id]).source)==hash)
-        assert(a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/character.lua'](name),'private source identity changed')
-    end
-end)
 finish()

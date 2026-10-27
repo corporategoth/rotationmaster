@@ -9,17 +9,26 @@ serially, with `nice -n 19 ionice -c3`, and keep the output. Never loop it, neve
 synthetic load. Tests must leave nothing behind: no files written into the tree, no leaked temporary directories (use
 `tempfile.TemporaryDirectory`/`addCleanup`); a test that creates files in a shared location is a bug.
 
-## Byte-freeze and predecessor suites
+## The suite is green; predecessor suites
 
-Many suites prove a refactor kept behavior by loading a *predecessor* of a source file reconstructed from the current text by
+`python3 tools/check_all.py` exits 0 and `tools/known_failures.txt` is empty (comments only). A red command is yours until
+you have shown it red on the base commit; do not add a line to the list to get past it.
+
+Some suites prove a refactor kept behavior by loading a *predecessor* of a source file reconstructed from the current text by
 `tests/fixtures/restore_*.lua`. The restore asserts the current file equals a recorded "after" byte for byte and fails with
 `unrelated ... source change: <path>` on any difference. So:
 
-- an edit to a frozen file fails them by design; this is not flakiness and usually not a behavior regression;
-- the fix is to record the change in the fixture deliberately (new "after" text, or a layered restore), not to revert the edit;
-- compare against a clean baseline before concluding anything: a failure that exists on the base commit is not yours.
+- an edit to a file a live restore covers fails it by design; this is not flakiness and usually not a behavior regression;
+- the fix is to record the change in the fixture deliberately (new "after" text, or a layered restore such as
+  `restore_window_layering.lua`), never to revert the edit and never to re-record a pin just to turn a run green;
+- do not add new byte-exact proofs. "This refactor changed nothing else" is established when the refactor lands and git keeps
+  it; about a hundred such proofs of past commits were retired because any later edit (a wording fix, a new string in
+  `Locales/enUS.lua`) failed them. Test the behavior, and keep a pin only where the value is a contract.
+  `tests/private_helper_identities.lua` is that kind: the identity (source hash) of the private helpers saved copies and
+  exported bundles bind to. When a helper changes on purpose, record its new hash there against the commit that changed it.
 - a whitespace-only change to a hashed file also fails them. Do not reformat files; the pre-commit whitespace fixers skip the
   files that predate them for that reason.
+- a predecessor fixture builds lazily (`tests/fixtures/rotation_execution.lua` rebuilds its predecessors only when a test asks).
 
 `tests/fixtures/builtin_composition_ledger.lua` is a different ledger: it records Built In block and pack revisions and fails
 when content changes without a revision bump (`docs/dev/architecture.md`).
@@ -32,16 +41,21 @@ Retail suite once passed while the client was dead because the fixture defined `
 globals the real Retail removed. The deprecation fallback CVar (`loadDeprecationFallbacks`) defaults to on, so "only breaks
 with the fallback off" bugs hide; removed APIs always break.
 
-## The English locale has a size boundary
+## The English locale has a size boundary, and a way around it
 
-`Locales/enUS.lua` must stay under **4096 entries**. Crossing 4096 doubles the Lua table's hash part (about 160 KB resident for
-every player); `tests/client_locale.lua` fails on it ("an English game keeps translations resident"). It has been hit twice:
-when adding strings, first look for ones to remove or share (error codes the client never meets, near-duplicate sentences).
+`Locales/enUS.lua` must stay at or below **3,900 entries** (`tests/client_locale.lua` asserts it and the resident memory).
+Crossing 4096 doubles the Lua table's hash part (about 177 KB resident for every player). It was crossed repeatedly, so the
+text nothing reads at startup moved into load-on-demand text bundles (`Modules/RotationMaster_*Text`, `RotationMaster_WowSims`;
+`Locales/bundles.json`; design in `docs/dev/architecture.md`, "Text bundles"). `L["English text"]` reads the same wherever the
+text lives. When the main table nears the limit, move text that is only read on demand with
+`python3 tools/locales.py move <bundle> keys.json` rather than deleting useful strings; never move a key a startup path reads
+(`tests/text_bundles.lua` proves a normal start loads no bundle). Every bundle string must be translated in all ten locales
+(`tests/test_locale_bundles.py` fails otherwise); the main catalog may still carry untranslated keys, which show in English.
 Entries that are keys with `true` values count the same as translated ones.
 
 ## Locale files
 
-`tools/locales.py` writes `Locales/<xx>.lua`; a `-- en:` comment above each entry records the English it came from, which is
+`tools/locales.py` writes `Locales/<xx>.lua` and the same ten files in each text bundle; a `-- en:` comment above each entry records the English it came from, which is
 how *stale* translations are found. `tools/catalog_check.py` finds literal `L["key"]` reads and defines; dynamic or
 concatenated keys are invisible to it, so do not build keys. Zero missing literal keys is not a translated product.
 `tools/translation_status.py` is the per-language report; see `learnings/translations.md`.
@@ -49,5 +63,5 @@ concatenated keys are invisible to it, so do not build keys. Zero missing litera
 ## What the headless suites cannot show
 
 Layout and clipping in the real client, tooltips and taint, protected actions in combat, Retail secret-value behavior beyond
-the probes recorded in `docs/restricted-clients.md`, native glow, the packaged layout of the 14 load-on-demand modules. Say
+the probes recorded in `docs/restricted-clients.md`, native glow, the packaged layout of the 18 load-on-demand modules. Say
 which of these a change touches and leave them as in-game checks.

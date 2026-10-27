@@ -5,11 +5,15 @@ manual-changelog:
     filename: CHANGELOG.md
     markup-type: markdown
 move-folders:
+  RotationMaster/Modules/RotationMaster_ConditionText: RotationMaster_ConditionText
   RotationMaster/Modules/RotationMaster_DeathKnight: RotationMaster_DeathKnight
   RotationMaster/Modules/RotationMaster_DemonHunter: RotationMaster_DemonHunter
+  RotationMaster/Modules/RotationMaster_DiagnosticsText: RotationMaster_DiagnosticsText
   RotationMaster/Modules/RotationMaster_Druid: RotationMaster_Druid
   RotationMaster/Modules/RotationMaster_Evoker: RotationMaster_Evoker
+  RotationMaster/Modules/RotationMaster_HelpText: RotationMaster_HelpText
   RotationMaster/Modules/RotationMaster_Hunter: RotationMaster_Hunter
+  RotationMaster/Modules/RotationMaster_IntegrationsText: RotationMaster_IntegrationsText
   RotationMaster/Modules/RotationMaster_Mage: RotationMaster_Mage
   RotationMaster/Modules/RotationMaster_Monk: RotationMaster_Monk
   RotationMaster/Modules/RotationMaster_Paladin: RotationMaster_Paladin

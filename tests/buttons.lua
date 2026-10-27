@@ -100,9 +100,14 @@ test('optional textured highlights inherit complete profile color without modify
         SetVertexColor=function(_,r,g,b,a) assert(r and g and b and a,'incomplete glow color');rgba={r,g,b,a} end,
         SetTexture=function() end}
     env.CreateFrame=function(_,_,parent)
-        return {GetParent=function() return parent end,ClearAllPoints=function() end,
-            SetPoint=function() end,SetWidth=function() end,SetHeight=function() end,
-            SetFrameStrata=function(_,value) overlayStrata=value end,SetFrameLevel=function(_,value) overlayLevel=value end,CreateTexture=function() return texture end,Show=function() end}
+        local frame
+        frame={GetParent=function() return parent end,ClearAllPoints=function() end,
+            SetPoint=function() end,SetWidth=function(_,value) frame.width=value end,SetHeight=function(_,value) frame.height=value end,
+            GetWidth=function() return frame.width end,GetHeight=function() return frame.height end,
+            SetFrameStrata=function(_,value) overlayStrata=value end,SetFrameLevel=function(_,value) overlayLevel=value end,CreateTexture=function() return texture end,Show=function() end,
+            -- The overlay hooks Show/Hide to pause when hidden (e61adb18) and samples its size script every tick.
+            HookScript=function() end,GetScript=function() return nil end}
+        return frame
     end
     function button:GetWidth() return 36 end
     function button:GetHeight() return 36 end

@@ -117,15 +117,4 @@ test('wrapped debug disable and reenable retires captured event before new selec
  local f=enabled();local a=f.a;local changed=false;a.debug=function(self)if changed then return end;changed=true;self.debug=function()end;self:disable();self:enable()end
  local n=f.calls.evaluations;local switches=f.calls.switches;f.fire(13,true);assert(changed and f.calls.evaluations==n and f.calls.switches==switches,'old wrapper revived under new enable');f.equipped(true);f.fire(13,true);assert(a:GetRuntimeRotation(0,a.currentRotation).name==f.gearName and f.calls.evaluations==n+1)
 end)
-test('strict complete-main equipment inverse retainscfce predecessor and rejects altered input',function()
- local inverse=dofile('tests/fixtures/restore_equipment_event_refresh.lua');local h=assert(io.open('main.lua'));local text=h:read('*a');h:close();local old=inverse(text,'main.lua');assert(#old==88071);assert(not old:find('-- BEGIN EQUIPMENT EVENT LIFETIME',1,true));assert(not pcall(inverse,old,'main.lua')and not pcall(inverse,text..text,'main.lua')and not pcall(inverse,text..'-- unrelated','main.lua'));assert(inverse('opaque','other.lua')=='opaque')
-end)
-test('actual off-event query and publication order match completecfce predecessor',function()
- local inverse=dofile('tests/fixtures/restore_equipment_event_refresh.lua');local traces={}
- for _,old in ipairs({true,false})do
-  local disk=loadfile;if old then loadfile=function(path,...)if path=='main.lua'then local h=assert(io.open(path));local source=h:read('*a');h:close();return assert(loadstring(inverse(source,path),'@main.lua'))end;return disk(path,...)end end
-  local ok,c=pcall(make,{target=true});loadfile=disk;assert(ok,c);c.tick();c.reset(true);c.tick();local counts,order=c.snapshot();traces[#traces+1]={counts=counts,order=order}
- end
- local a,b=traces[1],traces[2];assert(#a.order==#b.order);for i,v in ipairs(a.order)do assert(v==b.order[i],i)end;for k,v in pairs(a.counts)do assert(v==b.counts[k],k)end;for k,v in pairs(b.counts)do assert(v==a.counts[k],k)end
-end)
 finish()

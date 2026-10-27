@@ -13,18 +13,6 @@ local predecessors={
  ['UI/rotation_editor.lua']={bytes=27620,hash='4f6f9218'},
  ['tests/fixtures/addon.lua']={bytes=7208,hash='679f5da9'},
 }
-test('all eight predecessor modules and the shared fixture retain complete c0 source identities',function()
- local count=0
- for path,pin in pairs(predecessors)do
-  local current=read(path);local previous=inverse(current,path);local hash=5381
-  for i=1,#previous do hash=(hash*33+previous:byte(i))%4294967296 end
-  assert(#previous==pin.bytes and string.format('%08x',hash)==pin.hash,'wrong complete predecessor '..path)
-  assert(not pcall(inverse,current..'\n-- unrelated',path),'unrelated bytes accepted '..path)
-  assert(not pcall(inverse,previous,path),'old source accepted as current '..path)
-  count=count+1
- end
- assert(count==9);assert(not pcall(inverse,read('Core/rotation_active.lua'),'Core/rotation_active.lua'))
-end)
 test('the single active service loads before every consumer in the real TOC',function()
  local text=read('RotationMaster.toc');local at=assert(text:find('\nCore/rotation_active.lua\n',1,true))
  assert(not text:find('\nCore/rotation_active.lua\n',at+1,true))

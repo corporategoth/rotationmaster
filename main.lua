@@ -219,7 +219,7 @@ local DataBroker = LibStub("LibDataBroker-1.1"):NewDataObject(addon_name,
 --
 
 BINDING_HEADER_ROTATIONMASTER = addon.pretty_name
-BINDING_NAME_ROTATIONMASTER_TOGGLE = string.format(L["Toggle %s " .. color.CYAN .. "/rm toggle" .. color.RESET], addon.pretty_name)
+BINDING_NAME_ROTATIONMASTER_TOGGLE = string.format(L["Toggle %s |cFF00FFFF/rm toggle|r"], addon.pretty_name)
 
 local playerGUID = UnitGUID("player")
 
@@ -428,7 +428,7 @@ local function chooseManualRotation(self,id,change,remember)
     else self.manualRotation=true end
     if remember then
         local named,name=activeValue(self,change,self.GetRotationLabel and 'GetRotationLabel' or 'GetRotationName',id)
-        if not named or not activeCall(self,change,'info',L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO],name) then return nil end
+        if not named or not activeCall(self,change,'info',L["Active rotation manually switched to |cFFFFFFFF%s|cFF7BC653"],name) then return nil end
         local checked,valid=activeValue(self,change,'rotationValidConditions',body,self.currentSpec)
         if not checked then return nil end
         if not valid and not activeCall(self,change,'warn',L["Active rotation is incomplete and may not work correctly!"]) then return nil end
@@ -541,7 +541,7 @@ function addon:HandleCommand(str)
         if self.currentRotation == nil then
             addon:print(L["No rotation is currently active."])
         else
-            addon:print(L["The current rotation is " .. color.WHITE .. "%s" .. color.INFO], addon:GetRotationName(self.currentRotation))
+            addon:print(L["The current rotation is |cFFFFFFFF%s|cFF7BC653"], addon:GetRotationName(self.currentRotation))
         end
 
     elseif cmd == "set" then
@@ -590,7 +590,7 @@ function addon:HandleCommand(str)
                     self:warn(L["Rotation %s cannot be selected."],name);self:WarnRotationRefusal(row.key);return
                 end
             end
-            self:warn(L["Could not find rotation named " .. color.WHITE .. "%s" .. color.WARN .. " for your current specialization."],name)
+            self:warn(L["Could not find rotation named |cFFFFFFFF%s|cFFB212B7 for your current specialization."],name)
             if self.ResolveRotationIdentifier then
                 local selectable=self:ListSelectableIdentifiers(self.currentSpec,rows)
                 if selectable and #selectable>0 then self:print(L['Identifiers you can use now: %s (or auto). /rm list shows every rotation.'],table.concat(selectable,', ')) end
@@ -603,7 +603,7 @@ function addon:HandleCommand(str)
         addon:print(L["Validating database integrity"])
         self:validate(defaults, true)
     else
-        addon:warn(L["Invalid option " .. color.WHITE .. "%s" .. color.WARN], cmd)
+        addon:warn(L["Invalid option |cFFFFFFFF%s|cFFB212B7"], cmd)
     end
 end
 
@@ -1168,7 +1168,7 @@ function addon:SwitchRotation()
             -- The name is already known; only the identifier is added (no second pass).
             if self.FormatRotationLabel then local labelled,value=activeValue(self,change,'FormatRotationLabel',name,newRotation,selectedSpec);if not labelled then return end;label=value or name end
             if not current() then return end
-            if not activeCall(self,change,'info',L["Active rotation automatically switched to " .. color.WHITE .. "%s" .. color.INFO],label) then return end
+            if not activeCall(self,change,'info',L["Active rotation automatically switched to |cFFFFFFFF%s|cFF7BC653"],label) then return end
             if not current() then return end
             if not activeObjectCall(self,change,AceEvent,'SendMessage',"ROTATIONMASTER_ROTATION",self.currentRotation,name) then return end
         end

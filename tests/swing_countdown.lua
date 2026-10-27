@@ -10,7 +10,11 @@ local function evaluator()
  local text=read('Conditions/weapon.lua');local first=assert(text:find('addon:RegisterCondition("SWING_TIME_REMAIN", {',1,true));local section=text:sub(first);local signature='    evaluate = function(value, cache, evalStart)';local _,start=assert(section:find(signature,1,true));assert(not section:find(signature,start+1,true));local ending=assert(section:find('    end,\n    print = function',start+1,true));local body=section:sub(start+1,ending+3);assert(body:sub(1,1)=='\n'and body:sub(-5)=='\n    ');return body
 end
 local authored=evaluator()
-local producer=assert(read('main.lua'):match('(local function handle_combat_log%(_.-\nend)\naddon%.COMBAT_LOG_EVENT_UNFILTERED'))
+-- The producer is the handler up to the registration below it (a comment now sits between them).
+local producer;do
+ local text=read('main.lua');local from=assert(text:find('local function handle_combat_log(_',1,true));local to=assert(text:find('\naddon.COMBAT_LOG_EVENT_UNFILTERED',from,true))
+ producer=assert(text:sub(from,to-1):gsub('\n%-%-[^\n]*',''):match('^(.-\nend)%s*$'))
+end
 local function fixture()
  local f=F.new();local a,e=f.addon,f.env;local s={now=100,main=2,off=3,calls={}};a.damageHistory={}
  local function hit(name,...)s.calls[#s.calls+1]={name,...}end
@@ -25,7 +29,9 @@ local function fixture()
  if mode=='generated-current'then assert(current.evaluate==authored,'generated SWING_TIME_REMAIN catalog does not equal actual authored evaluator')else current.evaluate=authored end
  a:RegisterCondition('CURRENT_COPY',assert(a:CompileCustomCondition('CURRENT_COPY',current)))
  local archive=a:CopySettingsData(catalog);if archive.evaluate:find(newLine,1,true)then archive.evaluate=replaceOne(archive.evaluate,newLine,oldLine)end
- assert(a:FunctionSourceHash(archive)=='12459e78','complete archived swing source changed');a:RegisterCondition('RAW_ARCHIVE',assert(a:CompileCustomCondition('RAW_ARCHIVE',archive)))
+ -- The archive is the current catalog source with the formula it had when the copy was saved. It used to be pinned by the hash of the
+ -- whole source, which any unrelated edit of the catalog entry (a description, a binding) changed; the formula is what it stands for.
+ assert(archive.evaluate:find(oldLine,1,true) and not archive.evaluate:find(newLine,1,true),'archived swing source does not carry the saved formula');a:RegisterCondition('RAW_ARCHIVE',assert(a:CompileCustomCondition('RAW_ARCHIVE',archive)))
  local factory=assert(loadstring('return function(addon,playerGUID) '..producer..';return handle_combat_log end','@actual-combat-log-producer'));setfenv(factory,e);local append=factory()(a,'Player-A')
  return f,a,s,append,catalog,current,archive
 end
@@ -72,14 +78,15 @@ test('direct current callbacks share unchanged native caches receiver arity and 
  for _,call in ipairs(s.calls)do assert(call[2]=='player'and call[3]==nil)end
 end)
 test('native speed readiness and requested hand failure behavior remain unchanged',function()
- for _,tag in ipairs(tags)do local f,a,s=fixture();s.speedThrow=true;assert(a:evaluateConditionResult({type='NOT',value=node(tag,false)}).status=='unavailable');s.speedThrow=false;s.off=nil;assert(a:evaluateConditionResult({type='NOT',value=node(tag,true)}).status=='unavailable');local opaque={};s.off=opaque;f.env.canaccessvalue=function(v)return not rawequal(v,opaque)end;assert(a:evaluateConditionResult({type='NOT',value=node(tag,true)}).status=='unavailable');assert(#a.Diagnostics:GetReports()==0)end
+ for _,tag in ipairs(tags)do local f,a,s=fixture();s.speedThrow=true;assert(a:evaluateConditionResult({type='NOT',value=node(tag,false)}).status=='unavailable');s.speedThrow=false;s.off=nil;assert(a:evaluateConditionResult({type='NOT',value=node(tag,true)}).status=='match','no off-hand weapon is a reading: the check is false, true under NOT');local opaque={};s.off=opaque;f.env.canaccessvalue=function(v)return not rawequal(v,opaque)end;assert(a:evaluateConditionResult({type='NOT',value=node(tag,true)}).status=='unavailable');assert(#a.Diagnostics:GetReports()==0)end
 end)
 test('archived raw source retains negative overdue behavior without mutating stored source',function()
  local _,a,s,append,catalog,current,archive=fixture();local before=a:CopySettingsData(archive);swing(append,'SWING_MISSED',false);s.now=102.25;known(a,node('RAW_ARCHIVE',false,'LESSTHAN',0),true);known(a,node('RAW_ARCHIVE',false,'EQUALS',0),false);assert(a:SettingsDataEqual(archive,before));assert(current.evaluate==authored)
  if mode=='generated-current'then assert(catalog.evaluate==authored)else assert(catalog.evaluate==archive.evaluate,'authored-copy requires explicit archived checked-in catalog')end
 end)
+-- swingSpeed changed on purpose (an absent off-hand weapon reads false, 994be32a); the other helpers are unchanged.
 test('native helper and capture source identities remain exact for current and historical copies',function()
- local _,a=fixture();for name,hash in pairs({enchantObservation='5abf63f3',numericObservation='02dee6a9',swingSpeed='56aa868b',color='63742be5',helpers='e831a1db'})do local id='builtin:Conditions/weapon.lua:'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/weapon.lua'](name))end
+ local _,a=fixture();for name,hash in pairs({enchantObservation='5abf63f3',numericObservation='02dee6a9',swingSpeed='5af56bab',color='63742be5',helpers='e831a1db'})do local id='builtin:Conditions/weapon.lua:'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/weapon.lua'](name))end
 end)
 print('Source mode: '..mode..(mode=='authored-copy'and' (exact authored evaluator over detached archived metadata; checked-in catalog untouched)'or' (checked-in catalog must equal actual authored evaluator)'))
 finish()

@@ -76,6 +76,8 @@ Platform/range.lua
 compat.lua
 embeds.xml
 locales.xml
+Data/text_bundle_index.lua
+Core/text_bundles.lua
 constants.lua
 Data/artwork.lua
 Data/talent_trees.lua

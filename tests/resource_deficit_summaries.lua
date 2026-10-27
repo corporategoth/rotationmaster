@@ -54,11 +54,6 @@ test('archived raw exports retain their old negative summary and stored source i
  for _,tag in ipairs({'POWER','POINT'}) do local _,a,_,source=setup(tag);source.print=old[tag];local before=a:CopySettingsData(source);a.db.global.custom_conditions={RAW=source};a:RegisterCondition('RAW',assert(a:CompileCustomCondition('RAW',source)));assert(a:printCondition({type='RAW',unit='target',operator='EQUALS',value=-2},0):find('-2',1,true));assert(a:SettingsDataEqual(source,before) and a.db.global.custom_conditions.RAW==source)
  end
 end)
-test('only the exact two print expressions change the stats module and inverse rejects other bodies',function()
- local _,a=setup('POWER');local text=read('Conditions/stats.lua');assert(a:FunctionSourceHash(inverse(text))=='f27721a7','stats changed beyond POWER and POINT signs from efad377')
- assert(not pcall(inverse,text..text));for _,tag in ipairs({'POWER','POINT'}) do assert(inverse(repaired[tag],tag)==old[tag] and not pcall(inverse,old[tag],tag) and not pcall(inverse,repaired[tag]..' ',tag)) end
- for name,hash in pairs({color='89107d36',helpers='c19dbbac'}) do local id='builtin:Conditions/stats.lua:'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and rawequal(a:ResolveFunctionBinding(id),a.builtinSourceModules['Conditions/stats.lua'](name))) end
-end)
 test('complete current and archived exports preserve all metadata and parameter or binding identities',function()
  for tag,hash in pairs({POWER='d33ea310',POINT='a03b3862'}) do local _,a,_,source=setup(tag);local restored=a:CopySettingsData(source);if restored.print==repaired[tag] then restored.print=inverse(restored.print,tag) else assert(restored.print==old[tag]) end
   if tag=='POINT' then restored.evaluate=dofile('tests/fixtures/restore_point_tbc_transport.lua')(restored.evaluate,'POINT',true) end

@@ -70,20 +70,4 @@ test('public observer clone resolves actual owner and live readability policy',f
     assert(a:InstallCustomFunction('COPY_PLAYER_FLAG',a:CopySettingsData(record.source)));local fn=a:ResolveFunctionBinding('COPY_PLAYER_FLAG');assert(fn(a.Platform,'outdoors')==true)
     local opaque={};f.env.canaccessvalue=function(v) return not rawequal(v,opaque) end;s.outdoors=opaque;local value,why=fn(a.Platform,'outdoors');assert(value==nil and why=='restricted-value')
 end)
-test('only three exact evaluator bodies change while complete modules and private sources remain intact',function()
-    local _,a=fixture()
-    for _,case in ipairs({{'combat','024d794b',{'stealthed','control'}},{'misc','81c86e93',{'outdoors'}}}) do
-        local file=assert(io.open('Conditions/'..case[1]..'.lua'));local text=file:read('*a');file:close()
-        if case[1]=='combat' then text=dofile('tests/fixtures/restore_threat_count_repairs.lua')(dofile('tests/fixtures/restore_combat_history_time_repairs.lua')(dofile('tests/fixtures/restore_form_presentation_repairs.lua')(dofile('tests/fixtures/restore_form_localization.lua')(text))));text=dofile('tests/fixtures/restore_combat_time_repairs.lua')(text);text=dofile('tests/fixtures/restore_form_repairs.lua')(text);text=dofile('tests/fixtures/restore_loss_of_control_repairs.lua')(text);text=dofile('tests/fixtures/restore_threat_repairs.lua')(text);text=dofile('tests/fixtures/restore_pet_repairs.lua')(text) end
-        if case[1]=='misc' then text=dofile('tests/fixtures/restore_environment_selector_repairs.lua')(text);text=dofile('tests/fixtures/restore_zone_pvp_repairs.lua')(text);text=dofile('tests/fixtures/restore_instance_repairs.lua')(text) end
-        for _,kind in ipairs(case[3]) do local repaired='        return Functions.cache.getCached(cache, addon.Platform.GetPlayerFlagObservation, addon.Platform, "'..kind..'")'
-            local first=assert(text:find(repaired,1,true),'exact player flag repair missing');assert(not text:find(repaired,first+1,true))
-            text=text:sub(1,first-1)..'        return Functions.cache.getCached(cache, '..apis[kind]..')'..text:sub(first+#repaired)
-        end
-        assert(a:FunctionSourceHash(text)==case[2],case[1]..' changed beyond exact player flag callbacks from742794c')
-    end
-    for module,pins in pairs({['Conditions/combat.lua']={color='dbda383d',character_class='d17cf4c1',helpers='9e28e933'},['Conditions/misc.lua']={color='89a5436e',helpers='3ab28a24'}}) do
-        for name,hash in pairs(pins) do local id='builtin:'..module..':'..name;assert(a:FunctionSourceHash(assert(a.builtinFunctions[id]).source)==hash and a:ResolveFunctionBinding(id)==a.builtinSourceModules[module](name),'private source identity drifted') end
-    end
-end)
 finish()

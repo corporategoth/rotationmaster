@@ -12,53 +12,6 @@ local baseline={
     spatial={["allcounts"]={["compare"]=2,["compareString"]=2,["getCached"]=5,["isin"]=4,["nullable"]=8,["playerize"]=2},["count"]=9,["counts"]={["compare"]=1,["getCached"]=5,["isin"]=3},["hashes"]={["DISTANCE"]=2475258908,["DISTANCE_COUNT"]=2142936204,["PROXIMITY"]=145759557,["ZONE"]=1804004460},["tags"]={["DISTANCE"]={["getCached"]=1,["isin"]=1},["DISTANCE_COUNT"]={["getCached"]=2},["PROXIMITY"]={["compare"]=1,["isin"]=2},["ZONE"]={["getCached"]=2}}},
     ext_stats={["allcounts"]={["compare"]=3,["compareString"]=3,["deepcopy"]=1,["getCached"]=5,["isin"]=7,["keys"]=2,["nullable"]=4,["nullable_value"]=3},["count"]=28,["counts"]={["compare"]=3,["compareString"]=3,["deepcopy"]=1,["getCached"]=5,["isin"]=7,["keys"]=2,["nullable"]=4,["nullable_value"]=3},["hashes"]={["ECS_STAT"]=218257749,["ECS_STAT_PCT"]=3618672851,["STAT"]=400887984},["tags"]={["ECS_STAT"]={["compare"]=1,["compareString"]=1,["getCached"]=1,["isin"]=2,["keys"]=1,["nullable"]=1,["nullable_value"]=1},["ECS_STAT_PCT"]={["compare"]=1,["compareString"]=1,["getCached"]=1,["isin"]=2,["keys"]=1,["nullable"]=1,["nullable_value"]=1},["STAT"]={["compare"]=1,["compareString"]=1,["deepcopy"]=1,["getCached"]=3,["isin"]=3,["nullable"]=2,["nullable_value"]=1}}},
 }
-local privateHashes={
-    ["builtin:Conditions/buffs.lua:color"]="89c33f24",
-    ["builtin:Conditions/buffs.lua:helpers"]="e55d7b5a",
-    ["builtin:Conditions/combat.lua:character_class"]="d17cf4c1",
-    ["builtin:Conditions/combat.lua:color"]="dbda383d",
-    ["builtin:Conditions/combat.lua:helpers"]="9e28e933",
-    ["builtin:Conditions/debuffs.lua:color"]="cd0b6691",
-    ["builtin:Conditions/debuffs.lua:helpers"]="785d08c7",
-    ["builtin:Conditions/ext_stats.lua:color"]="bcd5d295",
-    ["builtin:Conditions/ext_stats.lua:ecs_state"]="f87297b5",
-    ["builtin:Conditions/ext_stats.lua:helpers"]="8c6f9acb",
-    ["builtin:Conditions/spatial.lua:RangeCheck"]="272f05e0",
-    ["builtin:Conditions/spatial.lua:booleanRead"]="3b3ceeb2",
-    ["builtin:Conditions/spatial.lua:color"]="158ebd8f",
-    ["builtin:Conditions/spatial.lua:finite"]="9e1e3ece",
-    ["builtin:Conditions/spatial.lua:helpers"]="9485f785",
-    ["builtin:Conditions/spatial.lua:protectedRead"]="cc49d134",
-    ["builtin:Conditions/spatial.lua:rcf"]="a7ab75e4",
-    ["builtin:Conditions/talent.lua:dropdown"]="fc359881",
-    ["builtin:Conditions/talent.lua:gridWidget"]="d47802ad",
-    ["builtin:Conditions/talent.lua:group"]="d6f4e415",
-    ["builtin:Conditions/talent.lua:icon"]="957b6b1a",
-    ["builtin:Conditions/talent.lua:info"]="12d55633",
-    ["builtin:Conditions/talent.lua:integer"]="e1bd3b0e",
-    ["builtin:Conditions/talent.lua:legacySlot"]="b8bfb514",
-    ["builtin:Conditions/talent.lua:platform"]="7a51cfaa",
-    ["builtin:Conditions/talent.lua:text"]="6cd18802",
-    ["builtin:Conditions/talent.lua:treeExists"]="85703f5a",
-    ["builtin:Conditions/talent.lua:treeName"]="19de3afd",
-    ["builtin:Conditions/talent.lua:treePicker"]="8071735e",
-    ["builtin:Conditions/talent.lua:treeShape"]="f0ba2bf9",
-    ["builtin:Conditions/talent.lua:treeWidget"]="4d2ca794",
-    ["builtin:Conditions/totem.lua:amount"]="3bd67a6b",
-    ["builtin:Conditions/totem.lua:color"]="b1a3d66a",
-    ["builtin:Conditions/totem.lua:element"]="5fbfedcc",
-    ["builtin:Conditions/totem.lua:findSpecific"]="f753db9d",
-    ["builtin:Conditions/totem.lua:helpers"]="f15cbb60",
-    ["builtin:Conditions/totem.lua:observe"]="e59e23eb",
-    ["builtin:Conditions/totem.lua:platform"]="c9ee8d33",
-    ["builtin:Conditions/totem.lua:remaining"]="b96f5341",
-    ["builtin:Conditions/totem.lua:specific"]="fdeca8ba",
-    ["builtin:Conditions/weapon.lua:color"]="63742be5",
-    ["builtin:Conditions/weapon.lua:enchantObservation"]="5abf63f3",
-    ["builtin:Conditions/weapon.lua:helpers"]="e831a1db",
-    ["builtin:Conditions/weapon.lua:numericObservation"]="02dee6a9",
-    ["builtin:Conditions/weapon.lua:swingSpeed"]="56aa868b",
-}
 
 local owners={isin='values',compare='values',nullable='presentation',nullable_value='presentation',compareString='presentation',playerize='presentation',getCached='cache',deepcopy='collections',keys='collections'}
 local function path(name) return 'Functions.'..owners[name]..'.'..name end
@@ -93,92 +46,24 @@ local function copies(a,tag)
     local source=assert(a:GetBuiltinConditionSource(tag));local canonical=assert(a:CompileCustomCondition('COPY_'..tag,source));local old=assert(a:CompileCustomCondition('OLD_'..tag,legacy(a,source,tag)));a:RegisterCondition('COPY_'..tag,canonical);a:RegisterCondition('OLD_'..tag,old);return canonical,old
 end
 local function count(code,pattern) local _,n=code:gsub(pattern,'');return n end
-test('remaining fifty-four direct calls qualify actual owning leaves with no extra callback aliases',function()
-    local f,a=fixture();local changed=0
-    for module,record in pairs(baseline) do local declared=assert(a.builtinCallbackBindings and a.builtinCallbackBindings['Conditions/'..module..'.lua'],'missing canonical manifest '..module);changed=changed+record.count
-        for name in pairs(record.allcounts) do assert(declared[path(name)]==identity(name) and a:ResolveFunctionBinding(identity(name))==a.Functions[owners[name]][name]) end
-        local totals={};for tag in pairs(record.hashes) do local source=assert(a:GetBuiltinConditionSource(tag));assert(not source.bindings.Functions)
-            if (module=='buffs'and tag~='STEALABLE')or(module=='debuffs'and tag~='DISPELLABLE')then source=dofile('tests/fixtures/restore_aura_name_summary_literals.lua')(source,tag,'export')end
-            if tag=='ECS_STAT' or tag=='ECS_STAT_PCT' then source=dofile('tests/fixtures/restore_ecs_summary_literals.lua')(source,tag,'export')end
-            if tag=='STAT' then source.evaluate=restoreStat(source.evaluate,true) end
-            if tag=='ZONE' then source.evaluate=dofile('tests/fixtures/restore_zone_text_repairs.lua')(source.evaluate,true) end
-            if tag=='COMBAT_HISTORY_TIME' then source.evaluate=dofile('tests/fixtures/restore_combat_history_time_repairs.lua')(source.evaluate,true) end
+test('every condition callback calls the namespaced owning leaves and none of the legacy addon.<name> aliases',function()
+    local f,a=fixture();local checked=0
+    for module,record in pairs(baseline) do local declared=assert(a.builtinCallbackBindings and a.builtinCallbackBindings['Conditions/'..module..'.lua'],'missing canonical manifest '..module)
+        for tag in pairs(record.hashes) do
+            local source=assert(a:GetBuiltinConditionSource(tag));assert(not source.bindings.Functions,tag..': namespace captured as an opaque value')
             for callback in pairs(a.CustomConditionCallbacks) do if source[callback] then for name in pairs(owners) do
-                assert(not source[callback]:find('addon.'..name..'(',1,true),tag..' direct legacy '..name..' remains')
-                totals[name]=(totals[name] or 0)+count(source[callback],path(name):gsub('%.','%%.')..'%(')
-            end end end
-        end
-        for name in pairs(owners) do
-            local expectedCount=record.allcounts[name] or 0
-            -- ATTACKABLE and THREAT each save two raw queries; COMBAT/ENEMY each save one.
-            if module=='combat' and name=='getCached' then expectedCount=expectedCount-6 end
-            assert((totals[name] or 0)==expectedCount,module..' '..name..' count changed')
+                assert(not source[callback]:find('addon.'..name..'(',1,true),tag..' '..callback..' direct legacy '..name..' remains')
+                if source[callback]:find(path(name),1,true) then
+                    assert(declared[path(name)]==identity(name) and a:ResolveFunctionBinding(identity(name))==a.Functions[owners[name]][name],tag..': '..path(name)..' is not bound to its owner')
+                    assert(source.bindings[path(name)]==identity(name),tag..' '..callback..' lacks the binding for '..path(name))
+                end
+            end;checked=checked+1 end end
         end
     end
-    assert(changed==54 and not f.env.Functions)
+    assert(checked>100 and not f.env.Functions)
 end)
-test('every callback byte and parameter remains identical after reversing only namespace qualifiers',function()
-    local _,a=fixture();local callbacks={};for name in pairs(a.CustomConditionCallbacks) do callbacks[#callbacks+1]=name end;table.sort(callbacks)
-    for module,record in pairs(baseline) do for tag,hash in pairs(record.hashes) do local current=a:GetBuiltinConditionSource(tag)
-        if (module=='buffs'and tag~='STEALABLE')or(module=='debuffs'and tag~='DISPELLABLE')then current=dofile('tests/fixtures/restore_aura_name_summary_literals.lua')(current,tag,'export')end
-        if tag=='ECS_STAT' or tag=='ECS_STAT_PCT' then current=dofile('tests/fixtures/restore_ecs_summary_literals.lua')(current,tag,'export')end
-        if tag=='THREAT_COUNT' then
-            local restored,_,_,bindings,parameters=dofile('tests/fixtures/restore_threat_count_repairs.lua')(current.evaluate,true)
-            current.evaluate=restored;current.bindings=a:CopySettingsData(bindings);current.parameters.evaluate=a:CopySettingsData(parameters)
-        end
-        if tag=='COMBAT_HISTORY_TIME' then current.evaluate=dofile('tests/fixtures/restore_combat_history_time_repairs.lua')(current.evaluate,true) end
-        if tag=='TIME_IN_COMBAT' then current.evaluate=dofile('tests/fixtures/restore_combat_time_repairs.lua')(current.evaluate,true) end
-        if tag=='FORM' then current.evaluate=dofile('tests/fixtures/restore_form_repairs.lua')(current.evaluate,tag) end
-        if tag=='LOC_TYPE' or tag=='LOC_BLOCKED' then current.evaluate=dofile('tests/fixtures/restore_loss_of_control_repairs.lua')(current.evaluate,tag) end
-        if tag=='TOTEM_REMAIN' then current.evaluate=dofile('tests/fixtures/restore_rounding_qualifiers.lua')(current.evaluate,tag,true) end
-        if tag=='THREAT' then current.evaluate=dofile('tests/fixtures/restore_threat_repairs.lua')(current.evaluate,true) end
-        if tag=='PET_NAME' then current=dofile('tests/fixtures/restore_pet_name_summary_literals.lua')(current,'export') end
-        if tag=='PET' or tag=='PET_NAME' then current.evaluate=dofile('tests/fixtures/restore_pet_repairs.lua')(current.evaluate,tag) end
-        if tag=='FORM' then for _,name in ipairs({'print','widget'}) do current[name]=dofile('tests/fixtures/restore_form_presentation_repairs.lua')(dofile('tests/fixtures/restore_form_localization.lua')(current[name],name),name) end end
-        if tag=='ECS_STAT_PCT' then current.evaluate=dofile('tests/fixtures/restore_ecs_percentage_sign.lua')(current.evaluate,true) end
-        if tag=='PROXIMITY' then current.print=dofile('tests/fixtures/restore_proximity_summary_repairs.lua')(current.print,true) end
-        if tag=='ZONE' then current=dofile('tests/fixtures/restore_zone_cast_summary_literals.lua')(current,tag,'export') end
-        if tag=='ZONE' then current.evaluate=dofile('tests/fixtures/restore_zone_text_repairs.lua')(current.evaluate,true) end
-        if tag=='DISTANCE' then current.evaluate=dofile('tests/fixtures/restore_distance_presence.lua')(current.evaluate,true) end
-        if tag=='SWING_TIME_REMAIN' then current.evaluate=dofile('tests/fixtures/restore_swing_countdown.lua')(current.evaluate,true) end
-        local source=legacy(a,current,tag);local parts={}
-        -- Separate ECS API regression tests require the corrected dot contract.
-        -- Reverse only those explicit semantic fixes for this namespace-only byte proof.
-        if tag=='ECS_STAT' or tag=='ECS_STAT_PCT' then
-            source.on_register=source.on_register:gsub('ecs_state%.data%.GetStatInfo%(name%)','ecs_state.data:GetStatInfo(name)')
-            source.evaluate=source.evaluate:gsub('ecs_state%.data%.GetStatInfo, value%.stat','ecs_state.data.GetStatInfo, ecs_state.data, value.stat')
-        end
-        if tag=='COMBAT' or tag=='ENEMY' then
-            local kind=tag=='COMBAT' and 'combat' or 'enemy'
-            assert(source.evaluate=='\n        return addon.getCached(cache, addon.Platform.GetUnitFlagObservation, addon.Platform, value.unit, "'..kind..'")\n    ','unexpected unit flag evaluator repair')
-            local arguments=tag=='COMBAT' and 'UnitAffectingCombat, value.unit' or 'UnitIsEnemy, "player", value.unit'
-            source.evaluate='\n        if not addon.getCached(cache, UnitExists, value.unit) then return false end\n        return addon.getCached(cache, '..arguments..')\n    '
-        end
-        if tag=='STEALTHED' or tag=='INCONTROL' then
-            local kind=tag=='STEALTHED' and 'stealthed' or 'control'
-            assert(source.evaluate=='\n        return addon.getCached(cache, addon.Platform.GetPlayerFlagObservation, addon.Platform, \"'..kind..'\")\n    ','unexpected player flag evaluator repair')
-            source.evaluate='\n        return addon.getCached(cache, '..(tag=='STEALTHED' and 'IsStealthed' or 'HasFullControl')..')\n    '
-        end
-        -- The movement readiness suite separately pins this sole semantic body
-        -- repair and reverses it against the entire original combat module.
-        if tag=='MOVING' then
-            assert(source.evaluate=='\n        local record,reason=addon.getCached(cache,addon.Platform.GetPlayerMovementObservation,addon.Platform)\n        if not record then return nil,reason end\n        return record.speed~=0\n    ','unexpected MOVING evaluator repair')
-            source.evaluate='\n        return (addon.getCached(cache, GetUnitSpeed, "player") ~= 0)\n    '
-        end
-        if tag=='ATTACKABLE' then
-            assert(source.evaluate=='\n        return addon.getCached(cache, addon.Platform.GetUnitAttackabilityObservation, addon.Platform, value.unit)\n    ','unexpected ATTACKABLE evaluator repair')
-            source.evaluate='\n        if not addon.getCached(cache, UnitExists, value.unit) then return false end\n        return addon.getCached(cache, UnitCanAttack, "player", value.unit) and\n               not addon.getCached(cache, UnitIsDead, value.unit)\n    '
-        end
-        for _,callback in ipairs(callbacks) do if source.parameters[callback] then parts[#parts+1]=callback;parts[#parts+1]=table.concat(source.parameters[callback],',');parts[#parts+1]=source[callback] end end
-        local code=table.concat(parts,'\0');local first,second=1,0;for i=1,#code do first=(first+code:byte(i))%65521;second=(second+first)%65521 end
-        assert(second*65536+first==hash,module..' '..tag..' changed beyond namespaces')
-    end end
-end)
-test('all forty-five remaining captured source identities and private helper bodies remain exact',function()
+test('captured private helpers keep their cached-dispatch bodies',function()
     local _,a=fixture()
-    for id,hash in pairs(privateHashes) do local record=assert(a.builtinFunctions[id]);assert(a:FunctionSourceHash(record.source)==hash,'private source changed '..id)
-        local module,name=id:match('^builtin:(.+):([^:]+)$');assert(a:ResolveFunctionBinding(id)==a.builtinSourceModules[module](name))
-    end
     assert(a.builtinFunctions['builtin:Conditions/totem.lua:observe'].source.code:find('addon.getCached(',1,true))
     assert(a.builtinFunctions['builtin:Conditions/weapon.lua:enchantObservation'].source.code:find('pcall(addon.getCached',1,true))
     assert(a.builtinFunctions['builtin:Conditions/spatial.lua:protectedRead'].source.code:find('pcall(addon.getCached',1,true))

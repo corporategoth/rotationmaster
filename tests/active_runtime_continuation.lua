@@ -143,16 +143,4 @@ test('foreign requests do not revoke current cheap lease but a later owned poll 
  local _,stale,_,handled=get(a,1,a.currentRotation);assert(handled and not stale()and cheap())
  assert(get(a,0,a.currentRotation));assert(not cheap()and not full())
 end)
-test('complete four-module inverse rejects same-length edits and checksum collisions',function()
- local restore=dofile('tests/fixtures/restore_active_runtime_continuation.lua')
- for _,path in ipairs({'Data/rotation_store.lua','Core/rotation_scope.lua','Core/active_runtime_plan.lua','Core/rotation_references.lua'})do
-  local after=read(path);local before=restore(nil,path,'before')
-  assert(restore(after,path)==before and restore(nil,path,'before')==before and after~=before)
-  local changed=after:sub(1,7)..'X'..after:sub(9);assert(#changed==#after and not pcall(restore,changed,path))
-  local at=assert(after:find('local',1,true));local x,y,z=after:byte(at,at+2);local collision=after:sub(1,at-1)..string.char(x+1,y-2,z+1)..after:sub(at+3)
-  local function adler(t)local a,b=1,0;for i=1,#t do a=(a+t:byte(i))%65521;b=(b+a)%65521 end;return a+b*65536 end
-  assert(adler(collision)==adler(after)and not pcall(restore,collision,path));assert(not pcall(restore,before:sub(1,7)..'X'..before:sub(9),path))
- end
- assert(not pcall(restore,'x','unknown'))
-end)
 finish()

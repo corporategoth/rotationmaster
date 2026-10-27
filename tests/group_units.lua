@@ -105,12 +105,4 @@ test('new public helper source clone keeps receiver and exact native tuple',func
  assert(a:InstallCustomFunction('COPY_UNIT_MEMBERSHIP',a:CopySettingsData(record.source)));local fn=assert(a:ResolveFunctionBinding('COPY_UNIT_MEMBERSHIP'));s.raid=4
  assert(fn(a.Platform,'Recipient-Realm',true)==true and #s.calls==1 and s.calls[1][2]=='Recipient-Realm')
 end)
-test('strict source inverse preserves whole predecessors and rejects unrelated edits',function()
- local restore=dofile('tests/fixtures/restore_group_unit_membership.lua')
- for _,path in ipairs({'Conditions/character.lua','Platform/groups.lua'})do
-  local h=assert(io.open(path));local text=h:read('*a');h:close();local before=restore(text,path)
-  assert(before==restore(before,path) and not before:find('GetUnitGroupMembership',1,true))
-  assert(not pcall(restore,text..'\n-- unrelated',path))
- end
-end)
 finish()

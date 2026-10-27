@@ -73,7 +73,8 @@ test('all prior utility source hashes and source-bound live dispatches remain ex
     end
     table.sort(rows);assert(#rows==32 and a:FunctionSourceHash({text=table.concat(rows,'\n')})=='65b4cd2a','old utility source record changed')
     f.load('Conditions/common.lua');f.load('Conditions/totem.lua')
-    for id,hash in pairs({['builtin:Conditions/common.lua:Widget_SpellWidget']='0e324b13',['builtin:Conditions/totem.lua:findSpecific']='f753db9d',['builtin:Conditions/totem.lua:observe']='e59e23eb'}) do
+    -- Widget_SpellWidget changed on purpose: the single 'Use this exact spell rank' checkbox (a7024e68). No release carries the old hash.
+    for id,hash in pairs({['builtin:Conditions/common.lua:Widget_SpellWidget']='375cb3b6',['builtin:Conditions/totem.lua:findSpecific']='f753db9d',['builtin:Conditions/totem.lua:observe']='e59e23eb'}) do
         assert(a:FunctionSourceHash(assert(a.builtinFunctions[id]).source)==hash,'source-bound live helper changed: '..id)
     end
     local raw={description='Saved raw pure helper calls',args={},returns={},bindings={},code='return addon.round(1.5),addon.isint("01"),addon.starts_with("abc","a"),addon.ends_with("abc","c")'}

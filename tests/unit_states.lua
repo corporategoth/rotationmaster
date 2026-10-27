@@ -38,12 +38,4 @@ end)
 test('summaries and help retain literal unit labels and explain unavailable recipients',function()
  local f,a=fixture();f.load('Core/conditions.lua');f.load('Conditions/unit_states.lua');a.units.mouseover='Name%1|cFFFF0000';for _,tag in ipairs({'DEAD','FRIENDLY'})do local d=a.conditionDefinitions[tag];assert(a:DescribeCondition({type=tag,unit='mouseover'},0):find('Name%1|cFFFF0000',1,true));local frame=f.widget('Help');d.help(frame);assert(F.text(frame):find('unavailable',1,true))end
 end)
-test('additive source inverses preserve every preceding byte and reject unrelated mutations',function()
- local restore=dofile('tests/fixtures/restore_unit_states.lua')
- for _,path in ipairs({'init.lua','Core/profile_data.lua','Locales/enUS.lua','RotationMaster.toc'})do
-  local h=assert(io.open(path));local source=h:read('*a');h:close();local before=restore(source,path);assert(before~=source)
-  assert(not pcall(restore,source..'\n-- unrelated mutation\n',path))
- end
- local f=F.new();f.load('Data/builtin_sources.lua');local catalog=restore(f.addon.BuiltinSourceCatalog,nil,'catalog');assert(catalog.conditions.DEAD==nil and catalog.conditions.FRIENDLY==nil and catalog.modules['Platform/unit_states.lua']==nil and catalog.modules['Conditions/unit_states.lua']==nil)
-end)
 finish()

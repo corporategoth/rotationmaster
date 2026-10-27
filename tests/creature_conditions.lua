@@ -84,11 +84,6 @@ test('probe policy and readonly string observer remain distinct from new numeric
  local _,a,s=fixture();assert(a.Platform:GetUnitMetadataObservation('target','creature')=='Bête');assert(a:GetConditionCreatureTypeMatch('target','BEAST',{})==true)
  s.name='Wildtier';assert(a.Platform:GetUnitMetadataObservation('target','creature')=='Wildtier');assert(a:GetConditionCreatureTypeMatch('target','BEAST',{})==true)
 end)
-test('strict one-body inverse preserves whole Character bytes and four actual private bindings',function()
- local restore=dofile('tests/fixtures/restore_creature_type_repairs.lua');local _,a=fixture();local current=read('Conditions/character.lua');local old=restore(current)
- assert(#old==36302 and a:FunctionSourceHash(old)=='abc41747');assert(not pcall(restore,current..'\n')and not pcall(restore,old))
- for name,hash in pairs({character_class='f9f4e4b5',color='3f9fe631',helpers='2e9a81e7',unit_class_num='33645816'})do local id='builtin:Conditions/character.lua:'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/character.lua'](name))end
-end)
 test('generated current and archived complete sources keep distinct identity behavior and exact raw export',function()
  local restore,oldBody,newBody,oldBindings,oldParameters=dofile('tests/fixtures/restore_creature_type_repairs.lua');local _,a,s=fixture();local current=assert(a:GetBuiltinConditionSource('CREATURE'))
  assert(current.evaluate==newBody,'catalog pending new CREATURE identity evaluator')

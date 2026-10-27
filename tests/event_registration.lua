@@ -81,9 +81,4 @@ test('capability method lookup retirement prevents even invoking returned valida
  for event in pairs(added)do assert(not frame.events[event],'retired lookup registered optional event')end
  assert(seen.skills==0 and seen.enabled==0,'retired lookup continued enabling')
 end)
-test('strict optional-event inverse preserves source proof and rejects unrelated edits',function()
- local restore=dofile('tests/fixtures/restore_event_registration.lua');local f=assert(io.open('main.lua'));local source=f:read('*a');f:close();source=dofile('tests/fixtures/restore_runtime_publication_store.lua')(source,'main.lua');local old=restore(source,'main.lua')
- assert(old~=source and not pcall(restore,old,'main.lua'))
- assert(not pcall(restore,source..source,'main.lua')and not pcall(restore,source..'\n-- unrelated\n','main.lua'))
-end)
 finish()

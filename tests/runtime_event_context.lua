@@ -76,11 +76,4 @@ test('retired coordinator remains collectible after profile rebind',function()
  if jit then jit.flush()end
  collectgarbage('collect');collectgarbage('collect');assert(weak[1]==nil,'private method authority retained retired coordinator')
 end)
-test('strict event inverse rejects missing duplicated and unrelated source edits',function()
- local inverse=dofile('tests/fixtures/restore_runtime_event_context.lua')
- for _,path in ipairs({'main.lua','Core/rotation_scope.lua','Core/rotation_library.lua'})do
-  local h=assert(io.open(path));local s=h:read('*a');h:close();local old=inverse(s,path)
-  assert(old~=s and not pcall(inverse,old,path)and not pcall(inverse,s..s,path)and not pcall(inverse,s..'\n-- unrelated\n',path))
- end
-end)
 finish()

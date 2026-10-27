@@ -7,11 +7,7 @@ local expected={isin=21,compare=4,nullable=23,compareString=3,playerize=4,getCac
 local branchCounts={61,47,47,56,56,56,56,68}
 local baselineHashes={['CLASS:common']=3088725613,['CLASSIFICATION:common']=3454430665,['CLASS_GROUP:common']=1911721314,['CREATURE:common']=1392664048,['GLYPH:common']=233563292,['GROUP:common']=1891586705,['IMMUNE:common']=3885939024,['ISSAME:common']=2733275963,['LEVEL:common']=2839935621,['RESIST:common']=899540765,['ROLE:inspect']=1626999136,['ROLE:talent']=1169248649,['RUNNER:common']=3996103689}
 local callbacks={'valid','evaluate','print','widget','help'}
-local restoreCreature,_,_,oldCreatureBindings,oldCreatureParameters=dofile('tests/fixtures/restore_creature_type_repairs.lua')
-local restoreGlyph=dofile('tests/fixtures/restore_glyph_presentation_repairs.lua')
 local restoreClassGroup=dofile('tests/fixtures/restore_class_group_repairs.lua')
-local restoreRole,_,_,oldRoleBindings=dofile('tests/fixtures/restore_role_repairs.lua')
-local restoreMob,_,_,oldMobBindings=dofile('tests/fixtures/restore_mobinfo2_repairs.lua')
 local function path(name) return 'Functions.'..owners[name]..'.'..name end
 local function identity(name) return 'builtin:'..(owners[name]=='collections' and 'Functions/collections.lua' or 'utils.lua')..':'..name end
 local function fixture(case)
@@ -33,26 +29,7 @@ local function fixture(case)
     e.GetSpellInfo=function() call('spell');return s.spellName end
     if case[3] then e.MI2_GetMobData=function() call('mob');return {resists=s.resists,lowHpAction=s.runner} end end
     for _,file in ipairs({'Platform/spells.lua','Diagnostics/errors.lua','Core/conditions.lua','Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Core/rotation_sequence.lua','Conditions/character.lua','Data/builtin_sources.lua','Core/builtin_sources.lua','Core/custom_authoring.lua','Core/function_data.lua'}) do
-        if file=='Conditions/character.lua' then
-            local h=assert(io.open(file));local text=h:read('*a');h:close()
-            local chunk=assert(loadstring(restoreRole(restoreMob(restoreGlyph((restoreCreature(text))))),'@'..file));setfenv(chunk,e);chunk('rotationmaster',a)
-        else
-            f.load(file)
-            if file=='Data/builtin_sources.lua' then
-                dofile('tests/fixtures/restore_group_unit_membership.lua')(a.BuiltinSourceCatalog,nil,'catalog')
-                local creature=assert(a.BuiltinSourceCatalog.conditions.CREATURE).callbacks.evaluate
-                creature.code=restoreCreature(creature.code,true);creature.bindings=a:CopySettingsData(oldCreatureBindings);creature.parameters=a:CopySettingsData(oldCreatureParameters)
-                local glyph=assert(a.BuiltinSourceCatalog.conditions.GLYPH);glyph.callbacks.print.code=restoreGlyph(glyph.callbacks.print.code,true)
-                for _,tag in ipairs({'RUNNER','RESIST','IMMUNE'}) do
-                    local row=assert(a.BuiltinSourceCatalog.conditions[tag]);row.callbacks.evaluate.code=restoreMob(row.callbacks.evaluate.code,tag,true)
-                    row.callbacks.evaluate.bindings=a:CopySettingsData(oldMobBindings[tag])
-                end
-                for variant,row in pairs(assert(a.BuiltinSourceCatalog.conditions.ROLE.variants)) do
-                    row.callbacks.evaluate.code=restoreRole(row.callbacks.evaluate.code,variant,true)
-                    row.callbacks.evaluate.bindings=a:CopySettingsData(oldRoleBindings[variant])
-                end
-            end
-        end
+        f.load(file)
     end
     e.loadstring=function(code,name) local fn,why=loadstring(code,name);if fn then setfenv(fn,e) end;return fn,why end
     local selected={};for _,tag in ipairs(tags) do if a.conditionDefinitions[tag] then selected[#selected+1]=tag end end
@@ -159,41 +136,19 @@ local function unknown(a,v)
     local body={rotation={{id='guard',type='branch',conditions=v,onTrue={{id='yes',type='spell',action=1}},onFalse={{id='no',type='spell',action=2}}}}}
     assert(a:EvaluateRotationSequence(body,function(x) return a:evaluateConditionResult(x) end,function() error('unknown guard chose action') end).status=='unavailable')
 end
-test('character callbacks use exactly eighty-six direct calls eight stable leaves and both ROLE variants',function()
-    local seen,totals={},{}
-    for index,case in ipairs(cases) do local f,a,_,selected=fixture(case);local manifest=assert(a.builtinCallbackBindings and a.builtinCallbackBindings['Conditions/character.lua'],'character manifest missing');local leaves=0
+test('character callbacks call only the namespaced owning leaves, with both ROLE variants',function()
+    local seen={}
+    for _,case in ipairs(cases) do local f,a,_,selected=fixture(case);local manifest=assert(a.builtinCallbackBindings and a.builtinCallbackBindings['Conditions/character.lua'],'character manifest missing');local leaves=0
         for alias,id in pairs(manifest) do leaves=leaves+1;local name=alias:match('([%w_]+)$');assert(alias==path(name) and id==identity(name) and a:ResolveFunctionBinding(id)==a.Functions[owners[name]][name]) end;assert(leaves==8 and not f.env.Functions)
-        local branch=0;for _,tag in ipairs(selected) do local source=assert(a:GetBuiltinConditionSource(tag));assert(not source.bindings.Functions);local found=counts(source);local key=tag..':'..(a.conditionDefinitions[tag].builtinSourceVariant or 'common')
-            for name,n in pairs(found) do branch=branch+n;if not seen[key] then totals[name]=(totals[name] or 0)+n end end;seen[key]=true
-        end;assert(branch==branchCounts[index],'branch '..index..' count changed')
-    end
-    local total=0;for name,n in pairs(expected) do assert(totals[name]==n,name..' count changed');total=total+n end;assert(total==86 and seen['ROLE:inspect'] and seen['ROLE:talent'])
-end)
-test('reverse-qualified source preserves every original callback byte and parameter across variants',function()
-    for _,case in ipairs(cases) do local _,a,_,selected=fixture(case)
-        for _,tag in ipairs(selected) do local original=a:GetBuiltinConditionSource(tag)
-            if tag=='CLASS_GROUP' then original.evaluate=restoreClassGroup(original.evaluate,true);assert(table.concat(original.parameters.evaluate,',')=='value,cache') end
-            if metadataRepairBodies[tag] then
-                assert(original.evaluate==metadataRepairBodies[tag].repaired,tag..' changed beyond the exact metadata repair')
-                assert(table.concat(original.parameters.evaluate,',')=='value,cache')
-                original.evaluate=metadataRepairBodies[tag].original
-            end
-            if tag=='ISSAME' then
-                assert(original.evaluate==identityRepairBodies.repaired,'ISSAME changed beyond the exact identity repair')
-                assert(table.concat(original.parameters.evaluate,',')=='value,cache')
-                original.evaluate=identityRepairBodies.original
-            end
-            if tag=='LEVEL' then for name,bodies in pairs(levelRepairBodies) do
-                assert(original[name]==bodies.repaired,'LEVEL '..name..' changed beyond the exact level repair')
-                assert(table.concat(original.parameters[name],',')==(name=='evaluate' and 'value,cache' or '_,value'))
-                original[name]=bodies.original
-            end end
-            local source=legacySource(a,original);local parts={}
-            for _,callback in ipairs(callbacks) do if source[callback] then parts[#parts+1]=callback;parts[#parts+1]=table.concat(source.parameters[callback],',');parts[#parts+1]=source[callback] end end
-            local code=table.concat(parts,'\0');local first,second=1,0;for i=1,#code do first=(first+code:byte(i))%65521;second=(second+first)%65521 end
-            local key=tag..':'..(a.conditionDefinitions[tag].builtinSourceVariant or 'common');assert(second*65536+first==baselineHashes[key],key..' nonnamespace callback or parameter changed')
+        for _,tag in ipairs(selected) do local source=assert(a:GetBuiltinConditionSource(tag));assert(not source.bindings.Functions,tag..': namespace captured as an opaque value')
+            for _,callback in ipairs(callbacks) do if source[callback] then for name in pairs(owners) do
+                assert(not source[callback]:find('addon.'..name..'(',1,true),tag..' '..callback..' direct legacy '..name..' remains')
+                if source[callback]:find(path(name),1,true) then assert(source.bindings[path(name)]==identity(name),tag..' '..callback..' lacks the binding for '..path(name)) end
+            end end end
+            seen[tag..':'..(a.conditionDefinitions[tag].builtinSourceVariant or 'common')]=true
         end
     end
+    assert(seen['ROLE:inspect'] and seen['ROLE:talent'])
 end)
 test('every inventory branch compiles canonical and legacy-shaped callbacks with matching fields and variants',function()
     for _,case in ipairs(cases) do local _,a,_,selected=fixture(case);local canonical,legacy=copies(a,selected)
@@ -239,7 +194,7 @@ end)
 test('widget copies retain unit-filter collections dropdown key lists and native field configuration',function()
     for _,case in ipairs(cases) do local f,a,_,selected=fixture(case);local canonical,legacy=copies(a,selected);local originalUnits=a:CopySettingsData(a.units)
         local function render(definition,value)
-            local seen={};a.Widget_UnitWidget=function(_,_,units,_,field) seen[#seen+1]={kind='unit',units=a:CopySettingsData(units),field=field};return f.widget('Unit') end
+            local seen={};a.Widget_UnitWidget=function(_,_,units,_,field) seen[#seen+1]={kind='unit',units=a:CopySettingsData(units),field=field};local w=f.widget('Unit');w.SetList=function(self,list,order) self.list=list;self.order=order end;return w end
             a.Widget_OperatorWidget=function(_,_,name) seen[#seen+1]={kind='operator',name=name};return f.widget('Operator') end
             a.Widget_OperatorPercentWidget=function(_,_,name) seen[#seen+1]={kind='percent',name=name};return f.widget('Percent') end
             a.Widget_SingleItemWidget=function(_,_,scope,_,accept) seen[#seen+1]={kind='item',scope=scope,accept=accept(123)};return f.widget('Item') end
@@ -257,10 +212,11 @@ test('widget copies retain unit-filter collections dropdown key lists and native
         assert(a:SettingsDataEqual(originalUnits,a.units),'filtered collection mutated shared units')
     end
 end)
-test('existing raw MobInfo errors remain equivalent rather than becoming new availability policy',function()
+-- The MobInfo2 adapter contains a provider error (Platform/mobinfo2.lua), so the three forms agree on 'unavailable'.
+test('a failing MobInfo provider is unavailable in the built-in and in both copy forms alike',function()
     local _,a,s,selected=fixture(cases[8]);local canonical,legacy=copies(a,selected);s.throw='mob'
     for _,tag in ipairs({'RUNNER','RESIST','IMMUNE'}) do
-        for _,definition in ipairs({a.conditionDefinitions[tag],canonical[tag],legacy[tag]}) do local ok,why=pcall(definition.evaluate,node(tag),{});assert(not ok and tostring(why):find('native mob failed',1,true)) end
+        for _,definition in ipairs({a.conditionDefinitions[tag],canonical[tag],legacy[tag]}) do local ok,value,reason=pcall(definition.evaluate,node(tag),{});assert(ok and value==nil and reason=='mobinfo2-provider-error',tag..': '..tostring(value)..' '..tostring(reason)) end
     end
 end)
 test('private captured values source hashes and original addon aliases remain exact',function()

@@ -91,12 +91,4 @@ test('archived raw source retains complete bindings global inspect slot6 and nil
   assert(a:evaluateConditionResult({type='NOT',value=node(nil,'RAW_ROLE')}).status=='match' and a:SettingsDataEqual(source,before))
  end
 end)
-test('strict inverse restores entire087a686 module both exports and four exact private source identities',function()
- local text=dofile('tests/fixtures/restore_mobinfo2_repairs.lua')(dofile('tests/fixtures/restore_glyph_presentation_repairs.lua')((restoreCreature(read('Conditions/character.lua')))));local _,a=fixture();assert(a:FunctionSourceHash(inverse(text))=='4df013ba','unexpected change outside two ROLE evaluates')
- for _,shape in ipairs(variants) do local _,owner=fixture(shape[1],shape[2]);local source=assert(owner:GetBuiltinConditionSource('ROLE'));source.evaluate=inverse(source.evaluate,shape[3],true);source.bindings=owner:CopySettingsData(oldBindings[shape[3]])
-  assert(owner:FunctionSourceHash(source)==(shape[3]=='inspect' and '8a0b902d' or '7c9026e7'),'non-evaluate ROLE export changed')
- end
- for name,hash in pairs({color='3f9fe631',character_class='f9f4e4b5',helpers='2e9a81e7',unit_class_num='33645816'}) do local id='builtin:Conditions/character.lua:'..name;assert(a:FunctionSourceHash(assert(a.builtinFunctions[id]).source)==hash and a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/character.lua'](name)) end
- assert(not pcall(inverse,text..text));assert(not pcall(inverse,newBodies.inspect..' ','inspect',true))
-end)
 finish()

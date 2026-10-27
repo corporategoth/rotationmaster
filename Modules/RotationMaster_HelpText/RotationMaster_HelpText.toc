@@ -1,0 +1,22 @@
+## Interface: 11509, 20506, 30405, 38002, 40402, 50504, 120105, 16001
+## Title: Rotation Master - Help text
+## Notes: The Help articles and tooltips. Rotation Master loads this itself, the first time that text is needed; it holds only translations.
+## Author: PreZ
+## Version: @project-version@
+## Dependencies: RotationMaster
+## LoadOnDemand: 1
+## Group: RotationMaster
+## X-Category: Action Bars
+## X-License: MIT
+
+enUS.lua
+deDE.lua
+esES.lua
+esMX.lua
+frFR.lua
+itIT.lua
+koKR.lua
+ptBR.lua
+ruRU.lua
+zhCN.lua
+zhTW.lua

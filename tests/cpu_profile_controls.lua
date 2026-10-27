@@ -25,7 +25,7 @@ test('CPU report opens the shared copyable text window and cancellation stays ex
 end)
 test('unknown CPU commands show usage without starting or changing a capture',function()
     local a=fixture();a.StartCPUProfile=function() error('must not start') end
-    local ok,text=a:RunCPUProfileAction('other');assert(not ok and text:find('/rm cpu',1,true))
+    local ok,text=a:RunCPUProfileAction('other');assert(not ok and text:find('/rm perf',1,true))
 end)
 test('CPU reports reuse a themed movable window with copy and close controls',function()
     local f=F.new();dofile('tests/fixtures/native_ui.lua')(f.env)

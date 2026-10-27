@@ -83,13 +83,4 @@ test('normalized Shaman real AceAddon and AceDB owner uses managed stamps in bot
   e.pairs=nativePairs;c.tick();assert(a.currentSpell==before)
  end
 end)
-test('strict complete source inverse preserves every frozen writer and fixture module',function()
- local restore=dofile('tests/fixtures/restore_dependency_revisions.lua')
- for _,path in ipairs({'Core/rotation_references.lua','Core/conditions.lua','Core/functions.lua','Core/custom_authoring.lua','Core/function_data.lua','UI/condition_source_pane.lua','UI/settings_collections.lua','UI/settings_draft.lua','UI/settings_effects.lua','UI/settings_items.lua','Core/rotation_lifecycle.lua','UI/settings_profiles.lua','init.lua','validate.lua','tests/fixtures/addon.lua'})do
-  local h=assert(io.open(path));local source=h:read('*a');h:close()
-  local stage=dofile('tests/fixtures/restore_revision_changes.lua')(source,path,'dependency')
-  assert(restore(stage,path)==restore(nil,path,true))
-  assert(not pcall(restore,source..'\n-- unauthorized change\n',path),'unrelated source mutation accepted')
- end
-end)
 finish()

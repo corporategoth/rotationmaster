@@ -8,7 +8,9 @@ local function fixture()
     local context={family='tbc',class='SHAMAN',level=11,spec=0,actionContext='player',combatDataPolicy='probe'}
     local n=0;addon.uuid=function() n=n+1;return '00000000-0000-0000-0000-'..string.format('%012d',n) end
     local env=setmetatable({LibStub=function() return {GetLocale=function() return setmetatable({}, {__index=function(_,k) return k end}) end} end},{__index=_G})
+    dofile('tests/fixtures/tbc_player_env.lua')(env)
     local function load(p) local f=assert(loadfile(p));setfenv(f,env);f('rotationmaster',addon) end
+    load('Platform/client.lua')
     load('Core/rotation_active.lua')
     load('Core/rotation_references.lua')
     load('Data/catalog.lua');load('Data/diff.lua');load('Core/rotation_library.lua');load('Core/rotation_tags.lua')
@@ -34,8 +36,14 @@ test('current-class defaults stay visible but only eligible enabled defaults rea
         assert(#addon:ListDefaultRotations(0)==1)
         context[change[1]]=old
     end
-    context.combatDataPolicy='restricted'
-    assert(not addon:GetRuntimeRotations(0)[key])
+    -- The client's combat-data policy no longer gates a complete rotation (3831e918): restricted and unsupported
+    -- clients list it, enable it and run it like any other; a condition the client cannot run leaves the body
+    -- unresolved through validation instead.
+    for _,policy in ipairs({'restricted','unsupported'}) do
+        context.combatDataPolicy=policy
+        assert(addon:GetRuntimeRotations(0)[key],policy..' policy hid a complete packaged rotation')
+        assert(addon:ListDefaultRotations(0)[1].eligible,policy..' policy made a complete packaged rotation ineligible')
+    end
 end)
 test('declared class is a hard listing and candidate gate while saved references remain intact',function()
     local a,envelope,context,load=fixture();local pack=envelope()
@@ -277,12 +285,12 @@ test('comparison snapshots expose all three directions without live saved-variab
     assert(addon:GetEditableRotation(0,id).rotation[1].action==403)
     assert(addon:GetDefaultRotation(pack.id).envelope.body.rotation[1].action==403)
 end)
-test('restricted and unsupported clients keep custom editing without executing unscoped legacy advice',function()
+test('restricted and unsupported clients keep custom editing and run complete legacy bodies',function()
     local addon,_,context=fixture();assert(addon:InitializeRotationLibrary())
     assert(addon:GetRuntimeRotation(0,'user'))
     for _,policy in ipairs({'restricted','unsupported'}) do
         context.combatDataPolicy=policy
-        assert(not addon:GetRuntimeRotation(0,'user'),'legacy custom body bypassed client capability policy')
+        assert(addon:GetRuntimeRotation(0,'user'),'the client policy hid a legacy custom body')
         assert(addon:GetEditableRotation(0,'user').name=='Existing custom','reference editing was lost')
     end
 end)

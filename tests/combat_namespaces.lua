@@ -6,13 +6,17 @@ local expected={
     STEALTHED={evaluate={getCached=1}},INCONTROL={evaluate={getCached=1}},
     LOC_TYPE={valid={isin=2},evaluate={getCached=2,compare=1},print={compareString=1,nullable=2}},
     LOC_BLOCKED={valid={isin=2},evaluate={getCached=2,compare=1},print={compareString=1,nullable=2}},
-    MOVING={evaluate={getCached=1}},THREAT={valid={isin=1},evaluate={getCached=1},print={nullable=2}},
+    MOVING={evaluate={getCached=1}},THREAT={valid={isin=1},evaluate={getCached=1},print={nullable=3}},
     THREAT_COUNT={valid={isin=1},evaluate={compare=1},print={compareString=1,nullable=2}},
-    FORM={evaluate={getCached=1},print={nullable=1}},
-    ATTACKABLE={valid={isin=1},evaluate={getCached=1},print={nullable=1}},
-    ENEMY={valid={isin=1},evaluate={getCached=1},print={nullable=1}},
-    COMBAT_HISTORY={valid={isin=3},evaluate={compare=1},print={compareString=1,playerize=1,nullable=3}},
-    COMBAT_HISTORY_TIME={valid={isin=3},evaluate={compare=1},print={compareString=1,playerize=1,nullable=3}},
+    -- Two reads: the form spell for a condition that names a spell (baa983b4) and the form number for the older one.
+    FORM={evaluate={getCached=2},print={nullable=1}},
+    -- The summaries were reworded since this table was recorded (43c459d5, abfc3a93): the subject is now made second person with
+    -- playerize, and the history wording reads five nullable fields instead of going through compareString. The history time
+    -- evaluator holds Functions.values.compare in a local.
+    ATTACKABLE={valid={isin=1},evaluate={getCached=1},print={playerize=1,nullable=1}},
+    ENEMY={valid={isin=1},evaluate={getCached=1},print={playerize=1,nullable=1}},
+    COMBAT_HISTORY={valid={isin=3},evaluate={compare=1},print={playerize=1,nullable=5}},
+    COMBAT_HISTORY_TIME={valid={isin=3},evaluate={},print={playerize=1,nullable=5}},
     TIME_IN_COMBAT={valid={isin=1},evaluate={compare=1},print={compareString=1,nullable=1}},
 }
 local valueHashes={color='dbda383d',character_class='d17cf4c1',helpers='9e28e933'}
@@ -96,14 +100,14 @@ test('combat callbacks select eight explicit canonical leaves with exact call co
         for callback,counts in pairs(changes) do
             callbacks=callbacks+1
             for name in pairs(groups) do
-                local code=source[callback];if tag=='COMBAT_HISTORY_TIME' and callback=='evaluate' then code=dofile('tests/fixtures/restore_combat_history_time_repairs.lua')(code,true) end;local _,count=code:gsub(qualified(name):gsub('%.','%%.')..'%(', '')
+                local code=source[callback];local _,count=code:gsub(qualified(name):gsub('%.','%%.')..'%(', '')
                 assert(count==(counts[name] or 0),tag..'.'..callback..' canonical '..name..' call count differs');calls=calls+count
                 assert(not code:find('addon.'..name..'(',1,true),'selected callback retains legacy call')
             end
             for name in pairs(groups) do assert(source.bindings[qualified(name)]==id(name),'canonical source binding missing') end
         end
     end
-    assert(calls==65 and callbacks==38)
+    assert(calls==70 and callbacks==38)
     for name,hash in pairs(valueHashes) do
         local binding='builtin:Conditions/combat.lua:'..name;local record=assert(a.builtinFunctions[binding]);assert(record.valueBinding and a:FunctionSourceHash(record.source)==hash,'historical value metadata changed')
         assert(rawequal(a:ResolveFunctionBinding(binding),a.builtinSourceModules['Conditions/combat.lua'](name)))

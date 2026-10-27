@@ -25,6 +25,7 @@ import time
 import check_all
 
 ROOT = Path(__file__).resolve().parents[1]
+LOCALE_CODES = {'enUS', 'deDE', 'esES', 'esMX', 'frFR', 'itIT', 'koKR', 'ptBR', 'ruRU', 'zhCN', 'zhTW'}
 EDITIONS = {'era': 'era', 'tbc': 'tbc', 'forever': 'forever', 'retail': 'retail', 'mop': 'mop'}
 
 
@@ -37,13 +38,17 @@ def candidates(changed):
         if parts[0] == 'tests' and path.endswith('.lua') and len(parts) == 2:
             exact.add(stem)
             continue
+        # A text bundle's locale files (Modules/RotationMaster_HelpText/deDE.lua, ...) are locale files like Locales/*.lua.
+        if parts[0] == 'Modules' and len(parts) == 3 and stem in LOCALE_CODES:
+            loose.update(('client_locale', 'locale_fallback', 'text_bundles'))
+            continue
         if parts[0] == 'Modules' and len(parts) >= 4 and parts[1].startswith('RotationMaster_'):
             edition, klass = EDITIONS.get(parts[2]), parts[1][len('RotationMaster_'):].lower()
             if edition:
                 loose.add(f'defaults_{edition}_{klass}')
             continue
         if parts[0] == 'Locales':
-            loose.update(('client_locale', 'locale_fallback'))
+            loose.update(('client_locale', 'locale_fallback', 'text_bundles'))
         elif path.endswith('.lua') and parts[0] not in ('Libs', 'LibsAugment'):
             loose.add(stem)
             if len(parts) > 1:

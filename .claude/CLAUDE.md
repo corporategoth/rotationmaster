@@ -15,15 +15,18 @@ Start with `README.md`, `CONTRIBUTING.md` and `docs/dev/architecture.md`; the de
 2. **Run only what you need, serially, at low priority.** The full suite takes tens of minutes; run it once, with
    `nice -n 19 ionice -c3`, and read the output. No busy loops, no synthetic load, no several heavy jobs at once, no
    killing processes by name. Tests must leave nothing behind (no files in the tree, no leaked temp directories).
-3. **Many tests are byte-freeze ("inverse"/predecessor) checks** that fail on ANY edit of a frozen file. A failure there is not
-   automatically a regression: compare with a clean baseline (`tools/known_failures.txt`, `tools/check_all.py --baseline`).
-   When you change a frozen file on purpose, update its recorded fixture on purpose. `learnings/tests-and-locales.md`.
+3. **The whole suite is green and `tools/known_failures.txt` is empty.** A red command is yours until you prove otherwise
+   on the base commit. Some suites still rebuild a predecessor of a file (`tests/fixtures/restore_*.lua`) and fail on any
+   edit of it by design: record the change in the fixture on purpose, never to turn a run green, and do not add new
+   byte-exact pins (prove behavior instead). `learnings/tests-and-locales.md`.
 4. **Restricted clients (Retail, Forever) hide combat data.** Never compare, calculate with or index by a value from a
    restricted API without `platform:CanReadValue`. A condition either reads what the game allows, is *unavailable* this poll,
    or does not exist on that edition. Fixtures must model ABSENT globals. `learnings/restricted-clients.md`.
 5. **User-facing text is American English** (color, behavior, gray, -ize) and goes through `L["literal"]` and
-   `Locales/enUS.lua`. Keep `enUS` under **4096** entries. Translations are written only by `tools/locales.py` through the
-   translation tools; never hand-edit `Locales/<xx>.lua`. `learnings/translations.md`.
+   `Locales/enUS.lua`. Keep it at or below **3,900** entries: text only read when a window opens belongs in a load-on-demand
+   text bundle (`tools/locales.py move`; `docs/dev/architecture.md`, "Text bundles"). Translations are written only by
+   `tools/locales.py` through the translation tools; never hand-edit `Locales/<xx>.lua` or a bundle's locale files.
+   `learnings/translations.md`.
 6. **Generated files are never hand-edited** (`.pkgmeta`, `Data/artwork.lua`, `Data/builtin_sources.lua`, the integration and
    WowSims tables, locale files, the glossary). Run the generator; `python3 tools/check --static` proves freshness.
 7. **Docs describe how things are. Planning documents are never stored in the repository** (no plans, roadmaps, to-do lists,
@@ -55,7 +58,7 @@ Start with `README.md`, `CONTRIBUTING.md` and `docs/dev/architecture.md`; the de
 ```sh
 python3 tools/check --static                     # 20 s: syntax, load graph, locales, lint, generated files
 python3 tools/fast_tests.py <changed .lua files> # suites named after them
-python3 tools/check_all.py --baseline tools/known_failures.txt   # everything, never stops at the first failure
+python3 tools/check_all.py --baseline tools/known_failures.txt   # everything, never stops at the first failure (the list is empty)
 python3 tools/package_release.py --check         # build the release zip offline and verify it
 ```
 

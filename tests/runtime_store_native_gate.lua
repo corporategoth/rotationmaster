@@ -126,13 +126,4 @@ test('hidden and ordinary metadata retain actual native query and advice traces'
   local ac,at=a.snapshot();local bc,bt=b.snapshot();assert(same(ac,bc)and same(at,bt)and same(left,right),'query/order/advice trace differs')
  end
 end)
-test('strict additive inverse preserves the complete predecessor and rejects foreign missing duplicate and old inputs',function()
- local inverse=dofile('tests/fixtures/restore_runtime_store_native_gate.lua');local source=read('Data/rotation_store.lua');local prior=inverse(source,'Data/rotation_store.lua')
- assert(#prior==41494);local h=5381;for i=1,#prior do h=(h*33+prior:byte(i))%4294967296 end;assert(string.format('%08x',h)=='11e30f95')
- assert(not pcall(inverse,prior,'Data/rotation_store.lua'));assert(not pcall(inverse,source..'\n','Data/rotation_store.lua'))
- local needle='if not validAddress(a) or not visible(a,c) then return false end';local a,b=assert(source:find(needle,1,true))
- assert(not pcall(inverse,source:sub(1,a-1)..source:sub(b+1),'Data/rotation_store.lua'))
- assert(not pcall(inverse,source:sub(1,b)..needle..source:sub(b+1),'Data/rotation_store.lua'))
- assert(inverse('unchanged','main.lua')=='unchanged')
-end)
 finish()

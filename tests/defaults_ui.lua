@@ -78,7 +78,8 @@ test('read-only references never run custom Lua printers even inside nested fiel
     local parent=f.widget('parent')
     a:CreateConditionReference(parent,{type='NOT',value={type='WRAPPER',gate={type='CUSTOM_PREVIEW'}}},0)
     assert(calls==0 and not a.db.profile.sideEffect,'reference display executed custom Lua')
-    assert(F.text(parent):find('My custom check',1,true),'data-only custom condition description is missing')
+    -- The data-only summary (6494a9a3) names the wrapper and lists its saved settings, the nested condition by its tag.
+    assert(F.text(parent):find('Wrapper',1,true) and F.text(parent):find('CUSTOM_PREVIEW',1,true),'data-only condition summary is missing')
 end)
 test('cloning from a separate reference opens a fresh editor without touching a released source pane',function()
     local f=fixture();local a=f.addon

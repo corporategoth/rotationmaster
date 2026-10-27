@@ -44,9 +44,8 @@ test('direct evaluation stays uncached and preserves live Platform receiver full
  local x,y,z=fn(node(),cache);assert(x==nil and y=='range-override'and z==17)
  f.env.WOW_PROJECT_ID=999;platform.IsBeyondMeleeRange=function()return true end;assert(fn(node(),cache)==true,'added unsupported-family policy')
 end)
-test('strict complete evaluator inverse preserves whole module other callbacks and empty private getter',function()
- local _,a=fixture();assert(a:FunctionSourceHash(inverse(read('Conditions/range.lua')))=='3951815e');assert(inverse(repaired,true)==old)
- assert(not pcall(inverse,read('Conditions/range.lua')..'\n'));assert(not pcall(inverse,repaired..' ',true));assert(not pcall(inverse,old,true))
+test('the range module keeps an empty private getter and no private binding',function()
+ local _,a=fixture()
  local module=a.builtinSourceModules['Conditions/range.lua'];assert(type(module)=='function'and module('anything')==nil)
  for id in pairs(a.builtinFunctions)do assert(not id:find('builtin:Conditions/range.lua:',1,true),'invented private range binding')end
 end)

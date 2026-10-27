@@ -9,6 +9,17 @@
 ## X-Category: Action Bars
 ## X-License: MIT
 
+enUS.lua
+deDE.lua
+esES.lua
+esMX.lua
+frFR.lua
+itIT.lua
+koKR.lua
+ptBR.lua
+ruRU.lua
+zhCN.lua
+zhTW.lua
 json.lua
 mapping.lua
 ids.lua

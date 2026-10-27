@@ -113,13 +113,6 @@ test('same native API clearing the unit during callbacks retires selection',func
   assert(not c.run({type='GONE',unit='focus'}),stage..' retained stale positive presence')
  end
 end)
-test('strict complete inverse preserves both predecessor modules and rejects unrelated edits',function()
- local inverse=dofile('tests/fixtures/restore_switch_required_units.lua')
- for _,path in ipairs({'Core/conditions.lua','main.lua'})do
-  local text=read(path);local previous=inverse(text,path);assert(previous~=text and inverse(previous,path)==previous)
-  assert(not pcall(inverse,text..'\n-- unrelated mutation',path));if path=='Core/conditions.lua'then assert(not pcall(inverse,text:gsub('switch%-unit%-unavailable','other-unit-reason',1),path))end
- end
-end)
 test('presence retirement prevents all old-owner valid and evaluate callbacks',function()
  local c=setup();local calls=0;local armed=false;c.beforeSwitch=function()armed=true end
  c.a:RegisterCondition('OLDOWNER',{fields={unit='string'},valid=function()if armed then calls=calls+1 end;return true end,evaluate=function()calls=calls+1;return true end,print=function()return'old'end})

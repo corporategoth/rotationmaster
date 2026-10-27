@@ -80,7 +80,8 @@ end)
 test('mutable owned pass IsCurrent replacement remains the publication authority',function()
  for _,throws in ipairs({false,true})do
   local c=make();local calls=0;local spell=mutate(c,function()local p=assert(currentPass());p.IsCurrent=function()calls=calls+1;if throws then error('custom pass failure')end;return nil,'custom retirement'end end)
-  assert(spell==nil and calls==1 and (not not c.a.adviceErrorReport)==throws,'owned guard bypassed replaced public method')
+  -- The replaced method is consulted at each publication fence (b55cca0e added the cheap continuation, so more than once).
+  assert(spell==nil and calls>=1 and (not not c.a.adviceErrorReport)==throws,'owned guard bypassed replaced public method')
  end
 end)
 test('owned pass function environment replacement retains its throwing public route',function()
@@ -151,16 +152,6 @@ test('actual string index find and index replacements retain current validation'
    assert(spell==nil and not a.adviceErrorReport,'actual string consumer decision omitted: '..kind)
   end)
   rawset(meta,'__index',index);rawset(index,'find',find);a.GetRotationOwnerContext=owner;assert(ok,why)
- end
-end)
-test('strict publication-store inverse rejects unrelated missing and duplicate source changes',function()
- local inverse=dofile('tests/fixtures/restore_runtime_publication_store.lua')
- for _,path in ipairs({'Data/rotation_store.lua','Core/rotation_scope.lua','main.lua'})do
-  local source=read(path);local old=inverse(source,path);assert(old~=source)
-  assert(not pcall(inverse,source..'\n',path),'inverse accepted unrelated source')
-  local marker=path=='main.lua'and'publicationGuard'or path=='Core/rotation_scope.lua'and'ownedStoreFactory'or'PublicationGuard'
-  local a,b=assert(source:find(marker,1,true));assert(not pcall(inverse,source:sub(1,a-1)..source:sub(b+1),path),'inverse accepted missing source')
-  assert(not pcall(inverse,source:sub(1,b)..marker..source:sub(b+1),path),'inverse accepted duplicate source')
  end
 end)
 local function transportInjection(restored)

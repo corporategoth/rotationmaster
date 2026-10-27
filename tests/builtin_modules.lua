@@ -151,6 +151,13 @@ local function registrations(path)
     local chunk=assert(loadfile(path));setfenv(chunk,setmetatable({},{__index=_G}));chunk('RotationMaster_Test',namespace)
     return rows
 end
+-- Add-ons that are not Built In modules: the WowSims converter and the load-on-demand text bundles (Locales/bundles.json).
+local notBuiltIn={}
+do
+    local h=assert(io.open('Locales/bundles.json'));local text=h:read('*a');h:close()
+    for module in text:gmatch('"module"%s*:%s*"([^"]+)"')do notBuiltIn[module]=true end
+end
+local function notBuiltInPath(path)local module=path:match('^Modules/([^/]+)/');return module~=nil and notBuiltIn[module]==true end
 test('each flavour TOC lists exactly its edition\'s blocks and packs, every file in one edition of its class',function()
     local listed,count={},0
     for _,module in ipairs(modules.list())do
@@ -172,8 +179,8 @@ test('each flavour TOC lists exactly its edition\'s blocks and packs, every file
             end
         end
     end
-    local p=assert(io.popen("find Modules -path Modules/RotationMaster_WowSims -prune -o -name '*.lua' ! -name bind.lua -print"));local onDisk=0
-    for path in p:lines()do onDisk=onDisk+1;assert(listed[path],path..' is in no flavour TOC')end
+    local p=assert(io.popen("find Modules -name '*.lua' ! -name bind.lua -print"));local onDisk=0
+    for path in p:lines()do if not notBuiltInPath(path)then onDisk=onDisk+1;assert(listed[path],path..' is in no flavour TOC')end end
     p:close()
     -- 278 with Era; +42 MoP Death Knight, Druid, Hunter, Mage, Monk, Paladin; +38 MoP Priest, Rogue, Shaman, Warlock, Warrior;
     -- +13 Retail initial-specialization premades, one per class.
@@ -185,8 +192,8 @@ test('every module on disk is one the loader can name, and bind.lua reaches Rota
     local listed={};for _,module in ipairs(modules.list())do listed[module.name]=module end
     local p=assert(io.popen('ls -1 Modules'));local count=0
     for entry in p:lines()do
-        -- RotationMaster_WowSims is the WowSims converter (docs/quality/wowsims-transport.md), not a Built In module.
-        if entry~='RotationMaster_WowSims' and readable('Modules/'..entry..'/'..entry..'.toc')then count=count+1;assert(listed[entry],entry..' is not a name the loader produces')end
+        -- The WowSims converter (docs/quality/wowsims-transport.md) and the text bundles are not Built In modules.
+        if not notBuiltIn[entry] and readable('Modules/'..entry..'/'..entry..'.toc')then count=count+1;assert(listed[entry],entry..' is not a name the loader produces')end
     end
     p:close()
     local n=0;for _ in pairs(listed)do n=n+1 end;assert(count==n and n==13,count..' module folders, '..n..' named')

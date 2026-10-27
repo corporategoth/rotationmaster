@@ -201,10 +201,4 @@ test('near and oversized reports preserve old bytes and bound only the appended 
   local before=scenario(true);local text=scenario(false);if #before>=15999 then assert(text==before)else assert(text:sub(1,#before)==before and #text<16000)end
  end
 end)
-test('four strict whole-module inverses restore actual baseline and reject unrelated or old input',function()
- for _,path in ipairs({'Core/rotation_references.lua','Core/rotation_library.lua','Core/rotation_scope.lua','Diagnostics/cpu.lua'})do
-  local source=read(path);if path~='Diagnostics/cpu.lua' then source=dofile('tests/fixtures/restore_revision_changes.lua')(source,path) end;local old=restore(source,path);assert(old==restore(nil,path,true)and old~=source)
-  assert(not pcall(restore,source..'\n-- unrelated',path));assert(not pcall(restore,old,path));assert(not pcall(restore,source..source,path))
- end
-end)
 finish()

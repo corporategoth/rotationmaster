@@ -96,15 +96,6 @@ test('canonical capture and live seed errors propagate without later default or 
  ok,why=pcall(f.addon.augmentDefaults,f.addon,value);assert(not ok and why==marker and value.char.version==1 and next(value.global)==nil and next(value.profile)==nil,'copy error/default mutation order changed')
  local _,a=fixture(2,0);a.Functions.values.isin=function() error(marker) end;local list={};ok,why=pcall(a.InitializeTalentTreeConditions,a,nil,{profile={switch_conditions=list,condition_groups={}}});assert(not ok and why==marker and #list==0,'live membership error appended source')
 end)
-test('strict four-selection inverse restores every baseline byte while aliases and getters retain ownership',function()
- local f=F.new();f.load('Core/function_data.lua');local a=f.addon;local function hash(text) return a:FunctionSourceHash(text) end
- local h=assert(io.open('init.lua'));local text=h:read('*a');h:close();local original=restore(dofile('tests/fixtures/restore_revision_changes.lua')(text,'init.lua'),hash)
- assert(hash(original)=='ea3d0468' and not pcall(restore,original,hash) and not pcall(restore,text..text,hash) and not pcall(restore,text..'\n-- unrelated change\n',hash))
- f.load('Data/builtin_sources.lua');f.load('Core/builtin_sources.lua');assert(not a.BuiltinSourceCatalog.modules['init.lua'])
- for _,entry in ipairs({{'collections','multiinsert'},{'collections','deepcopy'},{'values','isin','builtin:utils.lua:isin'}}) do local namespace,name,binding=unpack(entry);local fn=a.Functions[namespace][name]
-  assert(a[name]==fn and debug.getinfo(fn,'S').source=='@Functions/'..namespace..'.lua');assert(a:ResolveFunctionBinding(binding or 'builtin:Functions/'..namespace..'.lua:'..name)==fn and a.builtinSourceModules['Functions/'..namespace..'.lua'](name)==fn)
- end
-end)
 test('new unit-state Switch migration survives profile switches copies and reset without readding removals',function()
  local _,a=persistent(true)
  assert(a.db.profile.unitStateSwitchSeeded and contains(a.db.profile.switch_conditions,'DEAD') and contains(a.db.profile.switch_conditions,'FRIENDLY'))

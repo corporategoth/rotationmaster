@@ -3,8 +3,9 @@ local function fixture()
     local data=make();local a={RotationData=data,db={keys={char='A - Realm'},profile={rotations={[0]={Fallback={},same={name='Keep exact',rotation={},cooldowns={}}}},rotationLibrary={preferences={}}},sv={profiles={},char={['A - Realm']={rotations={[0]={charold={name='Character recovery'}}}},['B - Realm']={rotations={[0]={offline={name='Offline'}}}}}}}}
     local n=0;a.uuid=function() n=n+1;return 'id-'..n end
     local env=setmetatable({DEFAULT='Fallback',NEW='New',LibStub=function() return {GetLocale=function() return setmetatable({},{__index=function(_,k) return k end}) end} end},{__index=_G})
+    dofile('tests/fixtures/tbc_player_env.lua')(env)
     local function load(path) local f=io.open(path);if f then f:close();local c=assert(loadfile(path));setfenv(c,env);c('rotationmaster',a) end end
-    for _,path in ipairs({'Data/catalog.lua','Data/diff.lua','Data/rotation_store.lua','Core/rotation_references.lua','Core/rotation_library.lua','Core/rotation_scope.lua','Core/rotation_migration.lua'}) do load(path) end
+    for _,path in ipairs({'Platform/client.lua','Data/catalog.lua','Data/diff.lua','Data/rotation_store.lua','Core/rotation_references.lua','Core/rotation_library.lua','Core/rotation_scope.lua','Core/rotation_migration.lua'}) do load(path) end
     a.db.global={};a.GetRotationContext=function() return {class='SHAMAN',family='tbc',actionContext='player',combatDataPolicy='probe'} end
     a.db.sv.profiles.Shared=a.db.profile
     return a,load

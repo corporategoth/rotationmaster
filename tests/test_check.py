@@ -2,6 +2,7 @@
 from pathlib import Path
 import shutil
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -18,13 +19,10 @@ class RunnerTests(unittest.TestCase):
             (root / 'tools').mkdir()
             (root / 'tests').mkdir()
             shutil.copyfile(RUNNER, root / 'tools/check')
-            (root / 'tests/verify.py').write_text('')
-            (root / 'tools/catalog_check.py').write_text('')
-            (root / 'tools/lint.py').write_text('')
-            (root / 'tools/generate_builtin_sources.py').write_text('')
-            (root / 'tools/generate_artwork_catalog.py').write_text('')
-            (root / 'tests/test_artwork.py').write_text('')
-            (root / 'tests/test_no_acegui.py').write_text('')
+            # Every Python script the runner starts before it reaches a Lua runtime, as an empty stand-in.
+            for script in sorted(set(re.findall(r"'((?:tools|tests)/[\w/]+\.py)'", RUNNER.read_text()))):
+                (root / script).parent.mkdir(parents=True, exist_ok=True)
+                (root / script).write_text('')
             result = subprocess.run([sys.executable, str(root / 'tools/check')],
                                     env=dict(os.environ, PATH=''), capture_output=True, text=True)
             self.assertEqual(result.returncode, 127)

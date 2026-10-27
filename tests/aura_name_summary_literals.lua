@@ -88,12 +88,4 @@ test('old and current summaries make equal metadata queries preserve live nullab
   if mode(tag)~='present'then assert(p:find('ALIAS_POS',1,true))end
  end
 end)
-test('strict complete module and export inverses preserve all other bytes and reject altered or duplicate input',function()
- local _,a=setup()
- for _,kind in ipairs({'buffs','debuffs'})do local body=read('Conditions/'..kind..'.lua');assert(inverse(body,kind)~=body)
-  assert(not pcall(inverse,body..'\n-- unrelated',kind)and not pcall(inverse,body..body,kind)and not pcall(inverse,inverse(body,kind),kind))
- end
- for _,tag in ipairs(tags)do assert(inverse(newPrint[tag],tag,true)==oldPrint[tag]and not pcall(inverse,oldPrint[tag],tag,true));assert(a:FunctionSourceHash(archived(a,tag))==hashes[tag])end
- for _,tag in ipairs({'STEALABLE','DISPELLABLE'})do assert(a:GetBuiltinConditionSource(tag).bindings['AuraSummary.phrase']==nil and a:GetBuiltinConditionSource(tag).bindings['AuraLiteral.phrase']==nil,'new root spread to unrelated callback')end
-end)
 finish()

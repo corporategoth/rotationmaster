@@ -127,7 +127,8 @@ test('direct and cached rows include real archived callers sharing the original 
   local ok,why=pcall(function()
    assert(a:StartCPUProfile());local calls=0;local fn=function()calls=calls+1;return calls end;local cache={};for i=1,3 do a.getCached(cache,fn)end
    local archived={};internal(archived,true,fn);internal(archived,true,fn);s:complete();local _,appendix=split(a:GetCPUProfileReport())
-   contains(appendix,'Functions.cache.getCachedInternal | exclusive=0.000 ms | inclusive=0.000 ms | calls=5')
+   -- Direct mode dispatches a read without the cached implementation (02fec6ed): only the two explicit archived calls reach it.
+   contains(appendix,'Functions.cache.getCachedInternal | exclusive=0.000 ms | inclusive=0.000 ms | calls='..(direct and 2 or 5))
    contains(appendix,'Functions.cache.packResults | exclusive=0.000 ms | inclusive=0.000 ms | calls='..(direct and 1 or 2))
    assert(calls==(direct and 4 or 2));assert(a.builtinSourceModules['Functions/cache.lua']('getCachedInternal')==internal)
   end)

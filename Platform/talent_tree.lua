@@ -3,7 +3,7 @@ local platform=addon.Platform
 
 -- Talent tree providers: the part of the talent selector that SHOWS a tree for
 -- a class and specialization and hands back the talent the player clicked.
--- docs/talent-selector-design.md has the design and the per-client research.
+-- docs/talent-selector.md has the per-client research.
 --
 -- A provider is a table registered once per client family set:
 --   id        string, unique

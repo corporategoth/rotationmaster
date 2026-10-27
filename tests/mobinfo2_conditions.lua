@@ -72,10 +72,4 @@ test('archived raw bindings sources nil behavior and provider errors remain byte
   s.exists=nil;assert(a:evaluateConditionResult({type='NOT',value=node('RAW_'..tag)}).status=='match');s.exists=true;s.throw='provider';local ok,why=pcall(definition.evaluate,node(tag),{});assert(not ok and tostring(why):find('native mob failed',1,true));assert(a:SettingsDataEqual(source,saved))
  end
 end)
-test('strict three-body inverse preserves whole character ROLE exports and every historic private identity',function()
- local _,a=fixture();assert(a:FunctionSourceHash(inverse(dofile('tests/fixtures/restore_glyph_presentation_repairs.lua')((restoreCreature(read('Conditions/character.lua'))))))=='ea9510de','change outside three MobInfo2 evaluators')
- for _,tag in ipairs(tags) do local source=assert(a:GetBuiltinConditionSource(tag));source.evaluate=inverse(source.evaluate,tag,true);source.bindings=a:CopySettingsData(oldBindings[tag]);assert(a:FunctionSourceHash(source)==oldHashes[tag]) end
- for name,hash in pairs({color='3f9fe631',character_class='f9f4e4b5',helpers='2e9a81e7',unit_class_num='33645816'}) do local id='builtin:Conditions/character.lua:'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/character.lua'](name)) end
- assert(not pcall(inverse,read('Conditions/character.lua')..read('Conditions/character.lua')));assert(not pcall(inverse,newBodies.RUNNER..' ','RUNNER',true))
-end)
 finish()

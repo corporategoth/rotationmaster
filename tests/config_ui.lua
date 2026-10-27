@@ -79,7 +79,7 @@ test('configuration refresh waits for field callbacks to return and does not reo
     a:RefreshConfiguration();local stale=shell.frame.scripts.OnUpdate
     shell.close:Click();stale(shell.frame);assert(shell.pane==nil and not shell.frame.visible)
 end)
-test('header help displays the selected section article and releases it when navigating',function()
+test('header help displays the window help and releases it when navigating',function()
     local f=F.new();local a=f.addon;local _,create=dofile('tests/fixtures/native_ui.lua')(f.env)
     f.env.ENABLE='Enable'
     f.load('Help/general.lua')
@@ -87,7 +87,8 @@ test('header help displays the selected section article and releases it when nav
     a.pretty_name='Rotation Master';a.name='rotationmaster';a.SetupOptions=function() end;a.BuildConfigurationPane=function() end
     f.load('UI/window.lua');f.load('UI/help.lua');f.load('UI/config.lua')
     local shell=a:ShowConfig('General');shell.help:Click()
-    assert(shell.helpDialog and shell.helpDialog.sections[1].text:find('timing',1,true) and shell.helpDialog.close and shell.helpDialog.chrome.version:GetText()=='Help' and shell.helpDialog.closeButton==nil)
+    assert(shell.helpDialog and shell.helpDialog.sections[1].title=='Navigation' and shell.helpDialog.frame:IsShown())
+    local window=assert(a.helpWindow,'the Help window was not built');assert(window.close and window.chrome.version:GetText()=='Help' and window.closeButton==nil)
     local article=shell.helpDialog;shell:SelectSection('Profiles')
     assert(not article.frame:IsShown() and not shell.helpPane:IsShown())
     shell.help:Click();assert(shell.helpPane:IsShown() and shell.helpContent==nil)
@@ -183,7 +184,7 @@ end)
 test('missing native pages use a native error surface without reviving unregistered legacy panes',function()
     local f=F.new();local a=f.addon;a.pretty_name='Rotation Master';a.name='rotationmaster';a.SetupOptions=function() end
     a.GetConditionWidgetCompatibilityLibrary=function() error('missing native page allocated retired GUI') end
-    f.load('UI/config.lua')
+    f.load('UI/help.lua');f.load('UI/config.lua')
     local shell=a:ShowConfig('General');assert(shell.nativePane and shell.pane and shell.pane.message:GetText():find('General',1,true))
     local first=shell.pane;shell:SelectSection('Profiles');assert(shell.pane==first and shell.pane.frame:IsShown() and shell.pane.message:GetText():find('Profiles',1,true),'error pane was not reused')
     shell:SelectSection('unregistered');assert(shell.section=='Rotations' and shell.pane.message:GetText():find('Rotations',1,true))
@@ -194,7 +195,7 @@ test('retired module maps and foreign builders cannot create tabs render panes o
     a.SetupOptions=function() end;a.configModuleApps={['Module title']='ApplicationID'};a.name='rotationmaster';a.pretty_name='Rotation Master'
     a.BuildConfigurationPane=function() error('retired foreign renderer invoked') end
     a.BuildModuleConfigurationPane=function() error('retired module renderer invoked') end
-    f.load('UI/config.lua');local shell=a:ShowConfig('module:Module title')
+    f.load('UI/help.lua');f.load('UI/config.lua');local shell=a:ShowConfig('module:Module title')
     assert(#shell.tabs==9 and shell.section=='Rotations' and shell.nativePane)
     for _,tab in ipairs(shell.tabs) do assert(not tab.section:match('^module:')) end
     local native=shell.pane;shell:ReleasePane();assert(pages.released==1 and not native.frame:IsShown())

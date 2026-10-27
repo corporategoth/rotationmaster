@@ -111,7 +111,7 @@ test('live browser and main tabs preserve selection until dirty navigation is re
     a.GetRotationEditorSpecs=function() return {{id=0,name='Primary'}} end
     a.BuildRotationEditor=function() error('legacy rotation view was still used') end
     a.SetupOptions=function() end;a.BuildConfigurationPane=function() end;a.pretty_name='Rotation Master';a.name='rotationmaster'
-    f.load('UI/rotation_browser.lua');f.load('UI/config.lua')
+    f.load('UI/rotation_browser.lua');f.load('UI/help.lua');f.load('UI/config.lua')
     local shell=a:ShowConfig('Rotations',{spec=0,id='mine'});local browser=shell.pane;local editor=browser.pane
     assert(editor.workspace and not editor.workspace.readOnly)
     editor:Command('UpdateStep','yes',{suppress_attack=true});browser:SelectRotation(0,'builtin')

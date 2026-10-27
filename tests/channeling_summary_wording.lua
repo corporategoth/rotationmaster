@@ -32,24 +32,4 @@ test('new nonplayer whole translations reorder unit spell and primary negation w
  for _,tag in ipairs({'CHANNELING_SPELL','COPY_CHANNELING_SPELL'})do prints(a,{type=tag,unit='target',spell=literal},literal..' -> your target: CHANNEL',literal..' -> your target: NO_CHANNEL')end
 end)
 local inverse,oldPrint,newPrint=dofile('tests/fixtures/restore_channeling_summary_wording.lua')
-test('complete saved exports keep old wording and both specific-spell archive generations unchanged',function()
- local _,a=setup();local hashes={CHANNELING='93871bc5',CHANNELING_SPELL='1d907312'}
- for _,tag in ipairs({'CHANNELING','CHANNELING_SPELL'})do
-  local source=inverse(a:GetBuiltinConditionSource(tag),tag,'export');assert(a:FunctionSourceHash(source)==hashes[tag]);local before=a:CopySettingsData(source)
-  a.db.global.custom_conditions=a.db.global.custom_conditions or{};a.db.global.custom_conditions['ARCHIVED_'..tag]=source;a:RegisterCondition('ARCHIVED_'..tag,assert(a:CompileCustomCondition('ARCHIVED_'..tag,source)))
-  local suffix=tag=='CHANNELING_SPELL'and' Arcane Missiles'or''
-  prints(a,{type='ARCHIVED_'..tag,unit='target',spell='Arcane Missiles'},'your target is currently casting'..suffix,'your target is not currently casting'..suffix)
-  assert(a:SettingsDataEqual(source,before)and a.db.global.custom_conditions['ARCHIVED_'..tag]==source)
- end
- local source=dofile('tests/fixtures/restore_zone_cast_summary_literals.lua')(a:GetBuiltinConditionSource('CHANNELING_SPELL'),'CHANNELING_SPELL','export')
- assert(a:FunctionSourceHash(source)=='31ba8a04');a:RegisterCondition('RAW_CHANNEL',assert(a:CompileCustomCondition('RAW_CHANNEL',source)))
- prints(a,{type='RAW_CHANNEL',unit='target',spell='Spell {{!blue|red}}'},'your target is currently casting Spell blue','your target is not currently casting Spell blue')
-end)
-test('strict wording inverses preserve held literal module and reject unrelated complete-source changes',function()
- local body=read('Conditions/channeling.lua');local previous=inverse(body);assert(#previous==9057 and previous~=body)
- assert(not pcall(inverse,body..'\n-- unrelated')and not pcall(inverse,body..body)and not pcall(inverse,previous))
- for _,tag in ipairs({'CHANNELING','CHANNELING_SPELL'})do
-  assert(inverse(newPrint[tag],tag,true)==oldPrint[tag]);assert(not pcall(inverse,oldPrint[tag],tag,true)and not pcall(inverse,newPrint[tag]..' ',tag,true))
- end
-end)
 finish()

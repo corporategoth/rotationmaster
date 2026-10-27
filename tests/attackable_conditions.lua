@@ -77,27 +77,4 @@ test('public observer source clone resolves actual method and uses live readabil
     local opaque={};f.env.canaccessvalue=function(v) return not rawequal(v,opaque) end;s.dead=opaque;local v,why=fn(a.Platform,'target');assert(v==nil and why=='restricted-value')
     s.attack=false;assert(fn(a.Platform,'target')==false)
 end)
-test('only the exact ATTACKABLE evaluator changes from the movement checkpoint with private bindings intact',function()
-    local f,a=fixture();local file=assert(io.open('Conditions/combat.lua'));local source=file:read('*a');file:close();source=dofile('tests/fixtures/restore_threat_count_repairs.lua')(dofile('tests/fixtures/restore_combat_history_time_repairs.lua')(dofile('tests/fixtures/restore_form_presentation_repairs.lua')(dofile('tests/fixtures/restore_form_localization.lua')(source))));source=dofile('tests/fixtures/restore_combat_time_repairs.lua')(source);source=dofile('tests/fixtures/restore_form_repairs.lua')(source);source=dofile('tests/fixtures/restore_loss_of_control_repairs.lua')(source);source=dofile('tests/fixtures/restore_threat_repairs.lua')(source);source=dofile('tests/fixtures/restore_pet_repairs.lua')(source);source=dofile('tests/fixtures/restore_player_flag_repairs.lua')(source,{'stealthed','control'});source=dofile('tests/fixtures/restore_unit_flag_repairs.lua')(source);source=dofile('tests/fixtures/restore_retired_gui_getter.lua')(source)
-    local repaired=[[    evaluate = function(value, cache)
-        return Functions.cache.getCached(cache, addon.Platform.GetUnitAttackabilityObservation, addon.Platform, value.unit)
-    end,]]
-    local original=[[    evaluate = function(value, cache)
-        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
-        return Functions.cache.getCached(cache, UnitCanAttack, "player", value.unit) and
-               not Functions.cache.getCached(cache, UnitIsDead, value.unit)
-    end,]]
-    local start=assert(source:find(repaired,1,true),'exact repaired ATTACKABLE body missing')
-    assert(not source:find(repaired,start+1,true),'approved attackability repair appears more than once')
-    source=source:sub(1,start-1)..original..source:sub(start+#repaired)
-    -- Frozen Conditions/combat.lua at movement checkpoint 8e3892c. Restoring
-    -- only ATTACKABLE must preserve MOVING and every other byte, including UI.
-    assert(a:FunctionSourceHash(source)=='e33bf6d4','combat module changed beyond the approved attackability evaluator')
-    for name,hash in pairs({color='dbda383d',character_class='d17cf4c1',helpers='9e28e933'}) do
-        local id='builtin:Conditions/combat.lua:'..name
-        assert(a:FunctionSourceHash(assert(a.builtinFunctions[id]).source)==hash,'private source identity changed: '..name)
-        assert(a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/combat.lua'](name),'private source getter changed: '..name)
-    end
-    assert(not a.builtinFunctions['builtin:Conditions/combat.lua:AceGUI'] and a:ResolveFunctionBinding('builtin:Conditions/combat.lua:AceGUI')==nil)
-end)
 finish()

@@ -4,7 +4,7 @@ local platform=addon.Platform
 
 -- "Show talent tree": the talent tree of a class and specialization, shown for
 -- the TALENT condition so a talent is chosen by clicking it. Two providers
--- (Platform/talent_tree.lua) serve Retail and Forever; docs/talent-selector-design.md
+-- (Platform/talent_tree.lua) serve Retail and Forever; docs/talent-selector.md
 -- has the research behind them.
 --   blizzard  Blizzard's own talent window in its view (inspect) mode, driven
 --             with a loadout string for the wanted specialization and hero
@@ -390,7 +390,7 @@ end
 local blizzard={families={retail=true,forever=true},priority=10}
 -- Opt-in only: in the first real-client test Blizzard's view showed the player's own
 -- purchased talents, greyed every row it counted as locked and gave no usable click
--- (docs/talent-selector-design.md section 5.6). Turn it on with
+-- (docs/talent-selector.md section 3). Turn it on with
 --   /run RotationMaster.db.global.talent_popup_provider='blizzard'
 function blizzard.available()
     local db=addon.db

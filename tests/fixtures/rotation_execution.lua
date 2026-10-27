@@ -66,7 +66,8 @@ local source=[====[local function make(options)
  e.WeakAuras=nil;e.LibStub('AceEvent-3.0').SendMessage=function() hit('SendMessage') end
  a.IsGlowing=function() return true end;a.GlowNextSpell=function() hit('GlowNextSpell') end;a.GlowClear=function() hit('GlowClear') end;a.GlowCooldown=function() hit('GlowCooldown') end;a.DispatchAnnouncement=function() hit('Announcement') end
  a.FindSpell=function(_,ids) return ids[1] end -- external action-bar mapping, stable populated bar
- local timed;a.ScheduleRepeatingTimer=function(_,method,delay) timed={method=method,delay=delay};return timed end;a.CancelTimer=function() timed=nil end
+ -- tick() is the evaluation poll. The auto-switch interval timer (234d62c6) is a second repeating timer and must not replace it.
+ local timed;a.ScheduleRepeatingTimer=function(_,method,delay) local timer={method=method,delay=delay};if method~='AutoSwitchTimer' then timed=timer end;return timer end;a.CancelTimer=function(_,timer) if timer==nil or timer==timed then timed=nil end end
  if options.preview or options.buttons then
   dofile('tests/fixtures/native_ui.lua')(e);a.SetUIScript=f.addon.SetUIScript;load('UI/controls.lua')
  end
@@ -83,7 +84,7 @@ local source=[====[local function make(options)
   for i=1,4 do local slot=i;local button=e.CreateFrame('Button',nil,e.UIParent);button.action=i;button:SetSize(36,36);button.GetAttribute=function(_,key) if key=='type' then return 'action' elseif key=='action' then return slot end end;e['ActionButton'..i]=button end
   load('Platform/macros.lua');load('Core/presentation.lua');load('buttons.lua');a:Fetch()
  end
- a.db.profile.poll=options.poll or .15;a:EnableRotationTimer()
+ a.db.profile.poll=options.poll or .15;a.db.profile.idle_poll=0;a:EnableRotationTimer()
  local function tick() if timed then a[timed.method](a) end end
  if options.inactive then a:DisableRotationTimer();a.currentRotation=nil end
  for i=1,5 do tick() end;assert(not a.adviceErrorReport,'real advice errored during warmup: '..a.Diagnostics:FormatReport(nil,true));assert(#a.Diagnostics:GetReports()==0,'warmup diagnostics')
@@ -95,11 +96,20 @@ source=source:sub(1,hitStart-1).." local tracking=false;local observed={}\n loca
 source=source.." return {a=a,e=e,tick=tick,load=load,reset=function(track)native={};observed={};tracking=track end,snapshot=function()return native,observed end}\nend\nreturn make"
 local factory=assert(loadstring('local persistent=...\nlocal function fixture()local e,a,_,load=persistent(nil,nil,true);a.currentSpec=0;e.GetTime=function()return 100 end;a.lastCacheReport=100;return e,a,nil,nil,nil,nil,load end\n'..source,'@external-normalized-shaman-factory'))(makePersistent)
 local restore=dofile('tests/fixtures/restore_rotation_execution_index.lua')
-local frozen={};for _,path in ipairs({'Core/rotation_sequence.lua','main.lua','Data/plain.lua','Data/rotation_tree.lua'})do local text=dofile('tests/fixtures/parser_string_history.lua')(read(path),path);if path=='Data/rotation_tree.lua'then text=dofile('tests/fixtures/restore_index_unsupported_binding.lua')(text)end;if path=='main.lua'then text=dofile('tests/fixtures/restore_cache_mode_initialization.lua')(text)end;frozen[path]=restore(dofile('tests/fixtures/restore_rotation_execution_diagnostics.lua')(text,path),path)end
+-- The predecessor sources are rebuilt only for a caller that asks for the old engine (the second argument below): a suite that
+-- runs the current code must not depend on the byte-exact text of the files it never compares against a predecessor.
+local frozen;local function predecessors()
+if frozen then return frozen end
+frozen={};for _,path in ipairs({'Core/rotation_sequence.lua','main.lua','Data/plain.lua','Data/rotation_tree.lua'})do local text=dofile('tests/fixtures/parser_string_history.lua')(read(path),path);if path=='Data/rotation_tree.lua'then text=dofile('tests/fixtures/restore_index_unsupported_binding.lua')(text)end;if path=='main.lua'then text=dofile('tests/fixtures/restore_cache_mode_initialization.lua')(text)end;frozen[path]=restore(dofile('tests/fixtures/restore_rotation_execution_diagnostics.lua')(text,path),path)end
+return frozen
+end
 return function(options,old)
  local original=loadfile
- if old then _G.loadfile=function(path)if frozen[path]then return assert(loadstring(frozen[path],'@'..path))end;return original(path)end end
+ if old then local frozen=predecessors();_G.loadfile=function(path)if frozen[path]then return assert(loadstring(frozen[path],'@'..path))end;return original(path)end end
  local ok,c=pcall(factory,options or {});_G.loadfile=original;assert(ok,c)
+ -- These suites state the contract of the standard engine (a live graph checked at every invocation, exact native query
+ -- counts). The default lean engine reuses a compiled plan under its own contract: options.engine='lean' keeps it.
+ if (options or {}).engine~='lean' then assert(c.a:SetEvaluationEngine('standard'),'standard engine unavailable') end
  assert(type(getmetatable(c.a).__tostring)=='function'and tostring(c.a)=='rotationmaster')
  assert(getfenv(c.a.EvaluateRotationSequence)==c.e,'wrong sequence owner environment')
  for _,key in ipairs({'type','pairs','ipairs','next','rawget','rawequal','getmetatable','getfenv','math','table','string'})do assert(rawget(c.e,key)==_G[key],'non-native raw model '..key)end
