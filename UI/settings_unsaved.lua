@@ -1,11 +1,24 @@
+-- Unsaved-change markers for the native settings forms: after every draw it compares each bound control, and each
+-- roster row, with the saved baseline (`draftBaseline`) and marks the ones that differ, including text still being
+-- typed. Owns the per-form binding table and the "defaults" remembered for fields a baseline lacks; it only reads the
+-- draft and the baseline, never writes saved data. `addon:InstallSettingsUnsaved(p)` wraps the form's control
+-- constructors, Draw, Guard and draft methods, so UI/settings_form.lua installs it after the history and draft methods.
+-- Loaded from RotationMaster.toc after UI/settings_history.lua; the comparison itself is `addon:UnsavedDataEqual` in
+-- Core/unsaved_changes.lua.
 local _, addon = ...
 
+-- ============================================================================
+-- Reading saved records
+-- ============================================================================
+
+-- Returns the entry of an array whose `id` matches, or nil.
 local function find(list, id)
     for _, value in ipairs(list or {}) do
         if value.id == id then return value end
     end
 end
 
+-- True when the array holds `value`; nil counts as empty.
 local function contains(list, value)
     for _, entry in ipairs(list or {}) do
         if entry == value then return true end
@@ -14,6 +27,9 @@ local function contains(list, value)
     return false
 end
 
+-- Returns the saved record the form is editing for `id` (or the current selection) as read from `store` (the baseline
+-- or the draft): the entry itself for Effects, Announces and Integrations, a derived table for Conditions and Item
+-- Sets, and a lazy view over the profile for General. Returns nil when the record does not exist in that store.
 local function context(p, store, id)
     store = store or {}
     local profile, global = store.profile or {}, store.global or {}
@@ -75,6 +91,10 @@ local function context(p, store, id)
     end
 end
 
+-- ============================================================================
+-- Roster and field comparison
+-- ============================================================================
+
 -- Build membership/order lookups once when draft markers change. Viewport
 -- binding reads these retained maps without rescanning the complete roster.
 local function rosterLookup(p, store)
@@ -133,6 +153,8 @@ local function rosterLookup(p, store)
     return result
 end
 
+-- Same result as `context` for one roster row, answered from the prebuilt `lookup` so redrawing a long roster does not
+-- rescan the saved lists for every row.
 local function rosterContext(p, store, id, lookup, currentAnnounces)
     if p.settingsKey == 'Conditions' then
         if p.mode == 'categories' then
@@ -156,6 +178,8 @@ local function rosterContext(p, store, id, lookup, currentAnnounces)
     return context(p, store, id)
 end
 
+-- Reads the saved value a control key refers to from a record: strips the `entry<N>` and `new_` prefixes and maps the
+-- sequence, item, enabled and action keys onto the record's own fields.
 local function field(object, key)
     if type(object) ~= 'table' then return nil end
     key = key:gsub('^entry%d+', ''):gsub('^new_', '')
@@ -176,12 +200,18 @@ local function field(object, key)
     return object[key]
 end
 
+-- ============================================================================
+-- Installing the markers on a form
+-- ============================================================================
+
 -- Every native form uses the same saved baseline, including entries first
 -- opened after an import. Pending text is compared before it is committed.
 function addon:InstallSettingsUnsaved(p)
     p.unsavedDefaults = {}
     p.unsavedBindings = {}
 
+    -- Names the page and selection a binding belongs to, so fields remembered in `unsavedDefaults` do not leak between
+    -- entries.
     function p:UnsavedIdentity()
         return table.concat({
             self.settingsKey or '',
@@ -196,6 +226,9 @@ function addon:InstallSettingsUnsaved(p)
         }, ':')
     end
 
+    -- Records one control with its current value and its saved baseline. A field the baseline lacks takes its first
+    -- drawn value as the baseline, except in a new or imported entry where the field is marked missing (unsaved)
+    -- outright. Returns the binding.
     function p:BindUnsaved(key, control, value, kind)
         local identity = self:UnsavedIdentity()
         local defaults = self.unsavedDefaults[identity] or {}
@@ -250,6 +283,8 @@ function addon:InstallSettingsUnsaved(p)
         return self.unsavedBindings[key]
     end
 
+    -- True when a roster row differs from the baseline: moved in its order, the selected row with pending text, or
+    -- changed data. Results are cached per value until the next `RefreshUnsaved`.
     function p:RosterEntryUnsaved(entry)
         local r = self.roster
         local state = r and r.unsavedState
@@ -265,6 +300,7 @@ function addon:InstallSettingsUnsaved(p)
         return changed == true
     end
 
+    -- Repaints the unsaved marker on every visible roster row.
     function p:RefreshRosterMarkers()
         if not self.roster then return end
 
@@ -273,6 +309,9 @@ function addon:InstallSettingsUnsaved(p)
         end
     end
 
+    -- Recomputes every unsaved marker on the form: bound controls (reading dirty text edits, color channels and ordered
+    -- rows), the Announces enabled toggle, the category icon, roster rows and the Apply button. Cheap to call after
+    -- each action; does nothing while the form is closed.
     function p:RefreshUnsaved()
         if not self.active then return end
         local changedRows = {}
@@ -393,6 +432,9 @@ function addon:InstallSettingsUnsaved(p)
         end
     end
 
+    -- Wraps each control constructor of the form: the number is the argument position of its change callback, which is
+    -- intercepted so the binding's value follows the control before the caller's callback runs, then the control is
+    -- bound for comparison against the baseline.
     for _, definition in ipairs({
         { 'Edit', 5 },
         { 'Check', 4 },
@@ -429,6 +471,7 @@ function addon:InstallSettingsUnsaved(p)
 
     local draw = p.Draw
 
+    -- Redraws the page and then refreshes the markers; the binding table is rebuilt from scratch by the draw.
     function p:Draw()
         self.unsavedBindings = {}
         draw(self)
@@ -437,6 +480,7 @@ function addon:InstallSettingsUnsaved(p)
 
     local guard = p.Guard
 
+    -- Wraps a guarded callback so the markers refresh after it runs.
     function p:Guard(callback)
         return guard(self, function(...)
             local result = callback(...)
@@ -447,6 +491,7 @@ function addon:InstallSettingsUnsaved(p)
 
     local discard = p.DiscardSettingsDraft
 
+    -- Forgets the remembered defaults along with the draft.
     function p:DiscardSettingsDraft()
         self.unsavedDefaults = {}
         return discard(self)
@@ -454,6 +499,7 @@ function addon:InstallSettingsUnsaved(p)
 
     local save = p.SaveSettingsDraft
 
+    -- Forgets the remembered defaults once the draft was saved, so the new saved data becomes the baseline.
     function p:SaveSettingsDraft()
         local ok = save(self)
         if ok then self.unsavedDefaults = {} end

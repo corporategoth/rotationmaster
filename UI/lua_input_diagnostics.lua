@@ -1,6 +1,20 @@
+-- Input diagnostics for the Lua code editor control: a rolling trace of edit box events (cursor, text, focus, mouse)
+-- and a plain-text report of the control's frames, focus owners, line-number gutter and LuaWorkbench overlay state,
+-- shown through `/rm debug editor` (Diagnostics/glow.lua). It must never include source text: reports carry counts and
+-- byte lengths only. Every client query goes through `read` so a missing or failing method reads as 'unavailable'
+-- instead of raising. The control is attached by UI/lua_editor.lua and Integrations/lua_workbench.lua, which call
+-- `InstallLuaInputDiagnostics` when it exists; this file loads just before them (after UI/lua_input_probe.lua) and
+-- shows a report through `addon:ShowConditionText`.
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- ============================================================================
+-- Report helpers
+-- ============================================================================
+
+-- Calls `object:method()` under pcall and returns the result as a string, or 'unavailable' when the object or method is
+-- missing, the call fails, or the result is not a string, number or boolean (so a secret or userdata value never leaks
+-- into a report).
 local function read(object, method)
     if not object or type(object[method]) ~= 'function' then return 'unavailable' end
     local ok, value = pcall(object[method], object)
@@ -12,6 +26,8 @@ local function read(object, method)
     return tostring(value)
 end
 
+-- Names what a focused frame is in the editor's terms (code EditBox, ScrollFrame, container, none), or else walks up to
+-- 12 parents and returns a "Type[name] > ..." path so an unexpected focus owner can be identified from the report.
 local function focusRole(frame, control)
     if frame == control.edit then return 'code EditBox' end
     if frame == control.scroll then return 'code ScrollFrame' end
@@ -35,6 +51,7 @@ local function focusRole(frame, control)
     return table.concat(path, ' > ')
 end
 
+-- True when `code` is `control` or wraps it through the `.inner` chain (bounded at 8 levels, cycle-safe).
 local function ownsControl(code, control)
     local seen = {}
 
@@ -48,11 +65,15 @@ local function ownsControl(code, control)
     return false
 end
 
+-- Finds which source editor (inline function, inline condition, custom condition dialog or Test owner) hosts `control`.
+-- Returns owner, kind and whether it is an open owner that really holds the control; falls back to a closed owner so
+-- the report can still say which editor the trace came from.
 local function sourceOwner(addon, control)
     local shell = addon.configWindow
     local pane = shell and shell.pane
     local candidates = {}
 
+    -- Adds a candidate source editor owner of the given kind, ignoring a missing one.
     local function add(owner, kind)
         if owner then candidates[#candidates + 1] = { owner = owner, kind = kind } end
     end
@@ -82,11 +103,16 @@ local function sourceOwner(addon, control)
     return nil, nil, false
 end
 
--- Reports contain counts, never source. Keep explicit diagnostic commands
--- available without adding temporary test controls to the editor chrome.
+-- ============================================================================
+-- Input trace
+-- ============================================================================
+
+-- Reports contain counts, never source. Keep explicit diagnostic commands available without adding temporary test
+-- controls to the editor chrome.
 function addon:InstallLuaInputDiagnostics(control)
     self.luaInputEditor = control
 
+    -- Clears the trace and every counter this file keeps on the control.
     function control:ResetInputTrace()
         self.inputTrace = {}
         self.inputCounts = {}
@@ -95,6 +121,8 @@ function addon:InstallLuaInputDiagnostics(control)
         self.lineNumberCounts = nil
     end
 
+    -- Appends one event to the 32-entry trace with the cursor, byte length and focus state. Consecutive identical polls
+    -- are collapsed so the trace shows changes, not time passing. Records only key names, never typed text.
     function control:ObserveInput(event, ...)
         if self.released then return end
         local edit = self.edit
@@ -150,6 +178,14 @@ function addon:InstallLuaInputDiagnostics(control)
     control.frame:HookScript('OnUpdate', function() control:ObserveInput('poll') end)
 end
 
+-- ============================================================================
+-- Report
+-- ============================================================================
+
+-- Builds the multi-line diagnostics report for the most recent Lua editor control (open or closed): frame state, who
+-- has mouse and keyboard focus, layout and gutter counters, the LuaWorkbench render state when that provider is in use,
+-- the event counts and the trace. Returns the report text, or a notice when no editor was opened this session. Contains
+-- no source text.
 function addon:LuaEditorInputReport()
     local control = self.luaInputEditor
     if not control then return L['No native Lua editor has been opened this session.'] end
@@ -272,6 +308,7 @@ function addon:LuaEditorInputReport()
         local ok, value = pcall(control.nativeGetText or edit.GetText, edit)
         if ok and type(value) == 'string' then source = value end
 
+        -- Returns the byte length of a string, or -1 when the value is not a string (never the text itself).
         local function bytes(value)
             return type(value) == 'string' and #value or -1
         end
@@ -341,6 +378,8 @@ function addon:LuaEditorInputReport()
 
     local state = input and (input.queryLineNumbers or input.queryLineNumberCache)
 
+    -- Appends one line of size, scale, level, mouse and bounds for a gutter-related frame (all values read through
+    -- `read`).
     local function frameInfo(label, frame)
         lines[#lines + 1] = 'gutter '
             .. label
@@ -364,6 +403,7 @@ function addon:LuaEditorInputReport()
             .. read(frame, 'GetBottom')
     end
 
+    -- Returns the result of `frame:method()` or nil when the method is missing or fails.
     local function object(frame, method)
         if not frame or type(frame[method]) ~= 'function' then return nil end
         local ok, value = pcall(frame[method], frame)
@@ -392,6 +432,7 @@ function addon:LuaEditorInputReport()
     return table.concat(lines, '\n')
 end
 
+-- Opens the report in the selectable text window so a tester can copy it.
 function addon:ShowLuaEditorInputReport()
     self:ShowConditionText(self:LuaEditorInputReport(), L['Lua input diagnostics'])
 end

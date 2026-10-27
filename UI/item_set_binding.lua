@@ -1,3 +1,9 @@
+-- Drag-to-bind flow for item sets: lets the player put an item of a set on an action slot so RM can find and light that
+-- button. Owns the pending-bind state (`addon.bindingItemSet`) and the per-character slot list under
+-- `db.char.bindings`; it must not touch secure attributes, replace scripts, or run any of this in combat. Callers are
+-- the settings item-set pages and the ACTIONBAR_SLOT_CHANGED handler in main.lua. Loaded from RotationMaster.toc after
+-- UI/settings_items.lua; it depends on `addon:FindItemInItemSet` and, optionally, `ForEachActionButton` and
+-- `ResolveActionButtonSlot` from buttons.lua.
 local _, addon = ...
 
 -- Item-set binding. Starting a bind puts the set's first available item on
@@ -9,12 +15,14 @@ local _, addon = ...
 -- non-secure post hooks. A pending bind lasts only while its item rides the
 -- cursor; nothing here touches secure attributes or replaces a script.
 
+-- Returns the item the cursor is carrying (id or link as the client reports it), or nil when it carries anything else.
 local function cursorItem()
     if type(GetCursorInfo) ~= 'function' then return end
     local kind, item = GetCursorInfo()
     if kind == 'item' then return item end
 end
 
+-- True while the client is in combat lockdown, when action slots must not be read or hooked.
 local function inCombat()
     return InCombatLockdown and InCombatLockdown()
 end
@@ -48,10 +56,14 @@ function addon:CompletePendingItemSetBind(slot)
     return true
 end
 
+-- Hooks one action button (once) so dropping or clicking the pending item onto a slot that already holds it still
+-- completes the bind. `slot` is the fallback when the button cannot be resolved to a slot at event time.
 local function observe(button, slot)
     if not button or button.rmItemSetBindHooked or type(button.HookScript) ~= 'function' then return end
     button.rmItemSetBindHooked = true
 
+    -- Hook body: resolves which slot `frame` is now (falling back to the slot captured when hooked) and completes the
+    -- pending bind if that slot holds a member of the set.
     local function placed(frame)
         if not addon.bindingItemSet then return end
         local current = addon.ResolveActionButtonSlot and addon:ResolveActionButtonSlot(frame) or slot
@@ -68,6 +80,8 @@ end
 -- frames' grace lets the slot-change path or a button hook finish first.
 local watcher
 
+-- Hooks the action buttons for the pending bind (outside combat) and starts a per-frame watcher that cancels it once
+-- the item leaves the cursor; a no-op when no bind is pending. Calling it again restarts the watcher's miss counter.
 function addon:WatchItemSetBind()
     if not self.bindingItemSet then return end
     if self.ForEachActionButton and not inCombat() then self:ForEachActionButton(observe) end

@@ -1,23 +1,36 @@
+-- Registry and lifecycle for the native condition widgets (the AceGUI replacement used by the condition editor, Help
+-- and Test surfaces). Owns the pool of reusable widgets per kind, the base widget methods (callbacks, userdata, sizing,
+-- parenting) and the lease that stops a released widget's callbacks from firing. It does not draw anything: concrete
+-- kinds such as RM-ConditionPositionPad register a constructor here. Loaded from RotationMaster.toc before every other
+-- UI/condition_*.lua file, which all create widgets through `addon:AcquireConditionWidget`. Widget state is per session
+-- and never saved.
 local _, addon = ...
 local available, observers = {}, {}
 local known = setmetatable({}, { __mode = 'k' })
 
+-- Empties a table in place, keeping the table identity that callers and callbacks hold.
 local function clear(t)
     for key in pairs(t or {}) do
         t[key] = nil
     end
 end
 
+-- True only for tables registered through `RegisterConditionWidget`; a table that merely looks like a widget is not
+-- one.
 function addon:IsConditionWidget(widget)
     return type(widget) == 'table' and known[widget] == true
 end
 
+-- Calls `callback(widget)` for every widget acquired until the returned function is called. Used to collect the widgets
+-- a Test or debugger run creates so they can be released afterwards.
 function addon:ObserveConditionWidgets(callback)
     local token = { callback = callback }
     observers[token] = true
     return function() observers[token] = nil end
 end
 
+-- Notifies the observers of a newly acquired widget. Snapshots the observer list first so a callback may unsubscribe
+-- while it runs.
 local function observed(widget)
     local callbacks = {}
 
@@ -29,6 +42,10 @@ local function observed(widget)
         if observers[token] then token.callback(widget) end
     end
 end
+
+-- ============================================================================
+-- Base widget methods
+-- ============================================================================
 
 ---@class RMConditionWidget
 ---@field type string
@@ -66,6 +83,9 @@ end
 local base = {}
 local inherited = { Release = function(self) return addon:ReleaseConditionWidget(self) end }
 
+-- Stores `callback` for `event`, wrapped so it only runs while this acquisition of the widget is still the live one: a
+-- callback queued before a release must not touch the next owner of the pooled widget. OnRelease is the one event that
+-- still fires during release.
 function base:SetCallback(event, callback)
     local lease = self.rmLease
 
@@ -76,24 +96,30 @@ function base:SetCallback(event, callback)
     end or nil
 end
 
+-- Runs the callback registered for `event` (if any) with the widget and the event name first, and returns its result.
 function base:Fire(event, ...)
     local callback = self.events[event]
     if not callback then return end
     return callback(self, event, ...)
 end
 
+-- Reads a caller-owned value stored on this acquisition of the widget.
 function base:GetUserData(key)
     return self.userdata[key]
 end
 
+-- Stores a caller-owned value; cleared when the widget is released.
 function base:SetUserData(key, value)
     self.userdata[key] = value
 end
 
+-- Returns the live userdata table.
 function base:GetUserDataTable()
     return self.userdata
 end
 
+-- Attaches the widget under a live registered parent, or raises a short error code. Refuses a second owner and any
+-- parent cycle (the walk is bounded at 128 levels so a corrupt chain cannot loop).
 function base:SetParent(parent)
     if not addon:IsConditionWidget(self) or not self.rmActive or self:IsReleasing() then
         error('inactive-condition-widget', 0)
@@ -117,6 +143,8 @@ function base:SetParent(parent)
     self.frame:SetParent(parent.content or parent.frame)
 end
 
+-- Sets the frame width and records it on the frame; `sizing` stops the OnSizeChanged hook from reporting our own
+-- change.
 function base:SetWidth(width)
     self.sizing = true
     self.frame:SetWidth(width)
@@ -125,6 +153,8 @@ function base:SetWidth(width)
     if self.OnWidthSet then self:OnWidthSet(width) end
 end
 
+-- Sets the frame height and records it on the frame; `sizing` stops the OnSizeChanged hook from reporting our own
+-- change.
 function base:SetHeight(height)
     self.sizing = true
     self.frame:SetHeight(height)
@@ -133,52 +163,65 @@ function base:SetHeight(height)
     if self.OnHeightSet then self:OnHeightSet(height) end
 end
 
+-- Asks the parent layout to stretch the widget across its width.
 function base:SetFullWidth(value)
     self.width = value and 'fill' or nil
 end
 
+-- Asks the parent layout to stretch the widget down its height.
 function base:SetFullHeight(value)
     self.height = value and 'fill' or nil
 end
 
+-- True when the widget was asked to fill its parent width.
 function base:IsFullWidth()
     return self.width == 'fill'
 end
 
+-- True when the widget was asked to fill its parent height.
 function base:IsFullHeight()
     return self.height == 'fill'
 end
 
+-- Asks the parent layout for a fraction (0 to 1] of its width.
 function base:SetRelativeWidth(value)
     assert(type(value) == 'number' and value > 0 and value <= 1, 'invalid-relative-width')
     self.width = 'relative'
     self.relWidth = value
 end
 
+-- Forwards to the frame.
 function base:IsShown()
     return self.frame:IsShown()
 end
 
+-- Forwards to the frame.
 function base:IsVisible()
     return self.frame:IsVisible()
 end
 
+-- Forwards to the frame.
 function base:SetPoint(...)
     return self.frame:SetPoint(...)
 end
 
+-- Forwards to the frame.
 function base:ClearAllPoints()
     self.frame:ClearAllPoints()
 end
 
+-- Forwards to the frame.
 function base:GetPoint(...)
     return self.frame:GetPoint(...)
 end
 
+-- Forwards to the frame.
 function base:GetNumPoints()
     return self.frame:GetNumPoints()
 end
 
+-- True when this widget or any ancestor is being released. A chain deeper than 128 levels is treated as releasing, so a
+-- corrupt parent loop fails closed.
 function base:IsReleasing()
     local current = self
 
@@ -190,6 +233,10 @@ function base:IsReleasing()
 
     return true
 end
+
+-- ============================================================================
+-- Registration, acquire and release
+-- ============================================================================
 
 -- Native registration establishes ownership; public shape flags are not authority.
 function addon:RegisterConditionWidget(widget)
@@ -212,6 +259,8 @@ function addon:RegisterConditionWidget(widget)
 
     local acquire, release = w.OnAcquire, w.OnRelease
 
+    -- Wraps the kind's own OnAcquire: starts a fresh lease and empty userdata and events, so nothing from a previous
+    -- owner of the pooled widget survives.
     function w:OnAcquire()
         self.rmLease = {}
         self.rmActive = true
@@ -223,6 +272,8 @@ function addon:RegisterConditionWidget(widget)
         if acquire then acquire(self) end
     end
 
+    -- Wraps the kind's own OnRelease: marks the widget inactive first so every callback guarded by the lease goes
+    -- quiet.
     function w:OnRelease()
         self.rmActive = false
         if release then return release(self) end
@@ -242,6 +293,9 @@ function addon:RegisterConditionWidget(widget)
     return w
 end
 
+-- Returns an active widget of `kind`, reusing a pooled one when possible and otherwise calling `constructor`. A widget
+-- whose OnAcquire fails is quarantined (never pooled again) and the error is rethrown. Observers hear of the widget
+-- last.
 function addon:AcquireConditionWidget(kind, constructor)
     local pool = available[kind] or {}
     available[kind] = pool
@@ -277,6 +331,9 @@ function addon:AcquireConditionWidget(kind, constructor)
     return widget
 end
 
+-- Releases a widget back to its pool: hides it, fires OnRelease, releases children, wipes its state and re-parents the
+-- frame to UIParent. Each step runs under pcall so one failure cannot strand the rest; the first failure quarantines
+-- the widget and is rethrown after cleanup. Returns false when it was already released.
 function addon:ReleaseConditionWidget(widget)
     if widget == nil then return false end
     if not self:IsConditionWidget(widget) then error('foreign-condition-widget', 0) end
@@ -285,6 +342,8 @@ function addon:ReleaseConditionWidget(widget)
     if available[widget.type] then available[widget.type][widget] = nil end
     local problem
 
+    -- Runs one cleanup step under pcall and remembers the first failure, so a failing step cannot skip the ones after
+    -- it.
     local function perform(callback, ...)
         if type(callback) ~= 'function' then return end
         local ok, why = pcall(callback, ...)

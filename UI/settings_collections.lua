@@ -1,8 +1,16 @@
+-- Shared helpers for the settings tabs that manage collections (Effects, Item Sets, Announces, Conditions, Functions)
+-- and the entry point that opens any native settings tab. Owns the map from each tab to the saved-variable keys its
+-- draft covers (`transactionKeys`, see UI/settings_draft.lua), the roster footer, the confirmed-deletion flow and
+-- deletion of a saved custom condition. Tab builders live in the settings_*.lua files and are looked up by
+-- `addon:OpenNativeSettings`; this file loads from RotationMaster.toc after UI/settings_form.lua. Writes go to
+-- `addon.db` only through the draft or the explicit delete paths here, never while in combat.
 local addon_name, addon = ...
 local invalidateDependencies = addon.InvalidateRotationDependencies
 if type(invalidateDependencies) ~= 'function' then invalidateDependencies = nil end
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- Turns a collection keyed by id into a list of `{ value = id, text = name }` entries sorted by name (then id), for
+-- rosters and selectors. Non-table values are skipped; an unnamed entry shows its id.
 function addon:SettingsEntries(values)
     local entries = {}
 
@@ -20,15 +28,18 @@ function addon:SettingsEntries(values)
     return entries
 end
 
+-- Returns `text` when it holds a non-blank string, otherwise nil.
 function addon:SettingsNonempty(text)
     if type(text) == 'string' and text:find('%S') then return text end
 end
 
+-- Parses a positive whole number from user text, or returns nil.
 function addon:SettingsPositiveID(text)
     local n = tonumber(text)
     if n and n > 0 and n == math.floor(n) then return n end
 end
 
+-- Makes `value` present exactly once (enabled) or absent (disabled) in an array, in place.
 function addon:SettingsFlag(list, value, enabled)
     for i = #list, 1, -1 do
         if list[i] == value then table.remove(list, i) end
@@ -37,6 +48,7 @@ function addon:SettingsFlag(list, value, enabled)
     if enabled then list[#list + 1] = value end
 end
 
+-- True when the array holds `value`; a nil list counts as empty.
 function addon:SettingsContains(list, value)
     for _, entry in ipairs(list or {}) do
         if entry == value then return true end
@@ -45,7 +57,10 @@ function addon:SettingsContains(list, value)
     return false
 end
 
+-- Adds the Move to Top/Up/Down/Bottom/Delete action row for entry `i` of the ordered array `list`. Each action edits
+-- the array in place, calls `changed()` so the caller can mark the draft, and redraws the page `p`.
 function addon:SettingsOrderControls(p, prefix, list, i, changed)
+    -- Moves entry `i` to position `destination`, tells the caller the list changed and redraws.
     local function move(destination)
         local value = table.remove(list, i)
         table.insert(list, destination, value)
@@ -95,6 +110,9 @@ function addon:SettingsOrderControls(p, prefix, list, i, changed)
     })
 end
 
+-- Opens (or reuses, via `cached`) the settings form for tab `key` inside `parent`, declares which saved keys its draft
+-- covers and builds the page. Returns the form, or nil for an unknown tab. The key lists below are the transaction
+-- boundary: Apply compares and copies back only the keys named for the tab, so a key a page edits must be listed.
 function addon:OpenNativeSettings(parent, key, cached)
     local builders = {
         General = self.BuildGeneralSettings,
@@ -160,6 +178,8 @@ function addon:OpenNativeSettings(parent, key, cached)
     return p
 end
 
+-- Fills the roster footer with New, the caller's Duplicate and Import/Export actions, and a Compare chooser listing
+-- every other entry of `values`. `compare(a, b)` overrides the default comparison window for `kind`.
 function addon:CollectionFooter(p, kind, values, current, duplicate, transfer, compare)
     local candidates = {}
 
@@ -193,6 +213,8 @@ function addon:CollectionFooter(p, kind, values, current, duplicate, transfer, c
     })
 end
 
+-- Places the red Delete icon at the top right of the detail pane; `action` runs guarded so it is ignored once the page
+-- is stale. Returns the button.
 function addon:SettingsTopDelete(p, action)
     local c = p:Acquire('rootDelete', function()
         return self:CreateWorkbenchIconButton(p.child, 'trash', L['Delete'])
@@ -269,6 +291,9 @@ function addon:ConfirmSettingsDeletion(p, warning, remove)
     end)
 end
 
+-- Unregisters a custom condition and removes its saved source. Returns true, or false and a reason. If unregistering
+-- fails the saved source and the previous registered definition are kept (and dependents invalidated when the registry
+-- entry had changed), so a failed cleanup hook cannot leave a runtime without its source.
 function addon:DeleteSavedCustomCondition(key)
     local source = (self.db.global.custom_conditions or {})[key]
     if not source then return false, 'definition-changed' end

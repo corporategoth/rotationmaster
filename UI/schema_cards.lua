@@ -1,5 +1,16 @@
+-- Card view of a custom condition's field schema inside the schema editor (UI/schema_editor.lua): one card per field
+-- with name, type, Required flag and move, duplicate, delete and fold controls, plus drag-and-drop to reorder or
+-- re-nest. It draws the scene computed by Core/schema_canvas.lua and routes every change through the draft model
+-- (`model:Transfer`, `SetKind`, `Add`, ...); it never edits the saved condition. Cards are virtualized: only rows near
+-- the viewport are bound, and a row with focus, unsaved text, an open menu or an active drag stays bound. Loaded from
+-- RotationMaster.toc after Core/schema_canvas.lua, just before UI/schema_editor.lua, which calls
+-- `addon:BuildFieldSchemaCards`.
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
+
+-- ============================================================================
+-- Helpers
+-- ============================================================================
 
 local types = {
     { value = 'string', text = L['Text'] },
@@ -11,16 +22,19 @@ local types = {
     { value = 'union', text = L['Allowed types / list alternatives'] },
 }
 
+-- Joins a field path (a list of child positions from the root) into the string that keys cards, rows and scene entries.
 local function key(path)
     return table.concat(path, '/')
 end
 
+-- Returns a copy of `path` without its last step, the path of the containing field.
 local function parentPath(path)
     local result = addon:CopySettingsData(path)
     table.remove(result)
     return result
 end
 
+-- True when path `a` is `b` or an ancestor of it.
 local function prefix(a, b)
     if #a > #b then return false end
 
@@ -31,6 +45,13 @@ local function prefix(a, b)
     return true
 end
 
+-- ============================================================================
+-- The card view
+-- ============================================================================
+
+-- Builds the card view for the editor `owner` on `form`: computes the scene, creates the drag ghost, and returns
+-- nothing but leaves `owner.cardView` and `form.schemaViewport` set. Redraws on scroll through `view:Refresh`, and
+-- releases every card and drag when the form is torn down.
 function addon:BuildFieldSchemaCards(form, owner)
     local model = owner.model
     local token = form.generation
@@ -50,10 +71,13 @@ function addon:BuildFieldSchemaCards(form, owner)
     owner.cardView = view
     form.y = view.scene.height - 12
 
+    -- True while the editor is open and this draw of the form is still the current one.
     local function valid()
         return owner.active and form:Valid(token)
     end
 
+    -- Runs a model change after flushing pending text; when `fn` reports success the form is redrawn. Returns true on
+    -- success, nil when stale, blocked by invalid text, or refused by the model.
     local function command(fn)
         if valid() and form:FlushEdits() and fn() then
             form:Draw()
@@ -61,6 +85,7 @@ function addon:BuildFieldSchemaCards(form, owner)
         end
     end
 
+    -- Ends any drag: hides the ghost and the drop zones and redraws, unless the view is being torn down.
     function view:CancelDrag()
         local moving = self.drag
         self.drag = nil
@@ -75,6 +100,8 @@ function addon:BuildFieldSchemaCards(form, owner)
         if moving and not self.releasing and valid() then self:Refresh() end
     end
 
+    -- True when the dragged field may be dropped into gap `gap` of the container at `path`. Answers are cached for the
+    -- drag, since the pointer asks every frame.
     function view:CanDrop(path, gap)
         if not valid() or not self.drag then return false end
         local id = key(path) .. ':' .. gap
@@ -83,6 +110,7 @@ function addon:BuildFieldSchemaCards(form, owner)
         return cache[id]
     end
 
+    -- Drops the dragged field at the target and ends the drag. Returns true only when the model accepted the move.
     function view:Drop(path, gap)
         local drag = self.drag
         local allowed = self:CanDrop(path, gap)
@@ -95,6 +123,8 @@ function addon:BuildFieldSchemaCards(form, owner)
         return false
     end
 
+    -- Finds the deepest allowed drop zone under the pointer, shows its marker (hiding the others) and returns it, or
+    -- nil.
     function view:Hover()
         local target
 
@@ -121,6 +151,7 @@ function addon:BuildFieldSchemaCards(form, owner)
         return target
     end
 
+    -- Called on mouse release: drops on the hovered zone if there is one, otherwise cancels.
     function view:EndDrag()
         local target = self:Hover()
 
@@ -131,6 +162,9 @@ function addon:BuildFieldSchemaCards(form, owner)
         end
     end
 
+    -- Starts dragging the field at `path` (with Ctrl, it and all following siblings): lifts the cards being carried
+    -- into the ghost, offers only the gaps that would move them, and polls the pointer until release. Does nothing
+    -- while pending text is invalid.
     function view:BeginDrag(path)
         self:CancelDrag()
         if not valid() or not form:FlushEdits() then return end
@@ -210,20 +244,25 @@ function addon:BuildFieldSchemaCards(form, owner)
         end)
     end
 
+    -- Builds one reusable card with its controls and a private form (`c.form`) that inherits from the editor form, so
+    -- the card's own fields keep separate pools and edit lists.
     local function createRow()
         local c = {}
         c.frame = CreateFrame('Frame', nil, form.child)
         c.frame:EnableMouse(true)
         c.decoration = addon:CreateRoundedCardDecoration(c.frame)
 
+        -- Shows the card frame.
         function c:Show()
             self.frame:Show()
         end
 
+        -- Hides the card frame.
         function c:Hide()
             self.frame:Hide()
         end
 
+        -- Reparents the card frame.
         function c:SetParent(value)
             self.frame:SetParent(value)
         end
@@ -261,6 +300,8 @@ function addon:BuildFieldSchemaCards(form, owner)
         return c
     end
 
+    -- Unbinds a card from its field: bumps the generation so queued callbacks go stale, clears focus, hides its
+    -- controls and forgets its path.
     function view:ReleaseRow(row)
         row.lease = nil
         row.form.generation = row.form.generation + 1
@@ -287,6 +328,9 @@ function addon:BuildFieldSchemaCards(form, owner)
         row.frame:Hide()
     end
 
+    -- Fills a card for the field described by `geometry` (name box, type choice, Required, movement buttons, help,
+    -- fold, Add field) and attaches the callbacks, all guarded by this binding's lease. Restores any pending text typed
+    -- before a redraw.
     function view:Bind(row, geometry)
         local path = geometry.path
         local id = geometry.key
@@ -307,10 +351,12 @@ function addon:BuildFieldSchemaCards(form, owner)
         p.y = 0
         p.surface = row.frame
 
+        -- True when the editor, this card's binding and the given form generation are all still current.
         function p:Valid(generation)
             return valid() and row.lease == lease and self.generation == generation
         end
 
+        -- Wraps `callback` so it only runs if the form generation has not changed since it was created.
         function p:Guard(callback)
             local generation = self.generation
 
@@ -319,14 +365,18 @@ function addon:BuildFieldSchemaCards(form, owner)
             end
         end
 
+        -- Forwards to the editor form, so a card commits the whole editor's pending text.
         function p:FlushEdits()
             return form:FlushEdits()
         end
 
+        -- Forwards to the editor form's message line.
         function p:Message(...)
             return form:Message(...)
         end
 
+        -- Opens a choice menu on the editor form and remembers which card owns it, so that card stays bound while the
+        -- menu is open.
         function p:ShowChoices(anchor, entries, changed, inline)
             view.menuRow = row
             form:ShowChoices(anchor, entries, self:Guard(changed), inline)
@@ -518,6 +568,7 @@ function addon:BuildFieldSchemaCards(form, owner)
         end
     end
 
+    -- Repaints each bound card's border (red when its field is invalid) and its unsaved marker against the baseline.
     function view:UpdateMarkers()
         local index = addon:GetFieldSchemaIndex(model, owner.baseline)
 
@@ -532,6 +583,8 @@ function addon:BuildFieldSchemaCards(form, owner)
         end
     end
 
+    -- True when a card must stay bound even if scrolled out of view: focus, unsaved text, an open menu or a drag in
+    -- progress.
     function view:IsPinned(row)
         if
             row.name:HasFocus()
@@ -548,6 +601,8 @@ function addon:BuildFieldSchemaCards(form, owner)
         return false
     end
 
+    -- Rebuilds the editor form's edit and field tables from the bound cards, so flush, validation and focus see every
+    -- visible card.
     function view:CollectRecords()
         owner.cards = {}
         form.edits = {}
@@ -568,6 +623,9 @@ function addon:BuildFieldSchemaCards(form, owner)
         end
     end
 
+    -- Binds cards for the rows in or near the viewport and releases the rest (pinned cards excepted), places the drop
+    -- zones for visible gaps and restores pending focus. Runs on every scroll change; re-entry is blocked and a failure
+    -- releases the half-bound card before rethrowing.
     function view:Refresh()
         if not valid() or self.refreshing then return end
         self.refreshing = true
@@ -583,6 +641,7 @@ function addon:BuildFieldSchemaCards(form, owner)
                 wanted[row.key] = row
             end
 
+            -- Keeps a card bound that holds pending text or the pending focus even when it is outside the viewport.
             local function retain(id)
                 local row = self.scene.byKey[id:match('^field_(.+)$') or '']
 

@@ -1,5 +1,16 @@
+-- The native rotation card: the frame, controls and text of one step (action, Branch, Stop, Blizzard suggestion) or
+-- cooldown in the rotation editor, plus the live-status stripe and tooltip shared with the switch field. A card only
+-- draws what a layout model tells it (`card:Place(model)`; the model comes from the pure layout in
+-- Core/rotation_canvas.lua and UI/rotation_canvas.lua places it) and never edits the rotation; callbacks are attached
+-- by the canvas and cleared again in `card:Release` because cards are pooled. Spell data is read through
+-- `addon.Platform:GetSpellInfo`. Loaded from RotationMaster.toc before UI/rotation_canvas.lua and
+-- UI/rotation_editor.lua.
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
+
+-- ============================================================================
+-- Warnings, icons and live status
+-- ============================================================================
 
 local tones = {
     white = { .85, .85, .85 },
@@ -43,6 +54,8 @@ function addon:DescribeSuggestionGap(missing)
     )
 end
 
+-- Returns the tooltip for the card's not-on-your-bars warning: the missing-spell list for Blizzard's suggestion,
+-- otherwise the cooldown or step wording.
 local function unboundTooltip(model)
     local unbound = model.unbound
 
@@ -73,6 +86,8 @@ addon.StepArtwork = addon.StepArtwork or {
     stop = { texture = 'Interface\\AddOns\\' .. addon_name .. '\\Assets\\Conditions\\stop', shipped = true },
 }
 
+-- Returns the icon of the Single-Button Assistant spell as the client reports it, or nil on a client without that
+-- spell, so the caller keeps its fallback icon.
 function addon:GetAssistedStepIcon()
     local platform = self.Platform
 
@@ -115,6 +130,7 @@ local LIVE_COLORS = {
     unavailable = { .55, .55, .55, .55 },
 }
 
+-- Returns the stripe color `{r, g, b, a}` for a live status; an unknown status reads as unavailable.
 function addon:LiveStatusColor(status)
     return LIVE_COLORS[status] or LIVE_COLORS.unavailable
 end
@@ -168,12 +184,15 @@ function addon:ShowConditionFieldTooltip(owner, text, state)
     GameTooltip:Show()
 end
 
+-- Creates the 3 pixel live stripe inside the left edge of `field`; `bar:SetState(state)` colors it or hides it when
+-- there is no state. The stripe takes no layout space.
 function addon:CreateLiveStatusBar(field)
     local bar = field:CreateTexture(nil, 'OVERLAY')
     bar:SetPoint('TOPLEFT', field, 'TOPLEFT', 0, 0)
     bar:SetPoint('BOTTOMLEFT', field, 'BOTTOMLEFT', 0, 0)
     bar:SetWidth(3)
 
+    -- Colors and shows the stripe for a live state, or hides it when the state is nil.
     function bar:SetState(state)
         self.state = state
 
@@ -191,6 +210,12 @@ function addon:CreateLiveStatusBar(field)
     return bar
 end
 
+-- ============================================================================
+-- The card
+-- ============================================================================
+
+-- Builds one pooled rotation card frame on `parent` with all of its controls and returns the card object. Nothing is
+-- placed or filled here: `card:Place(model)` does that for each use and `card:Release()` undoes it.
 function addon:CreateRotationCard(parent)
     local card = { frame = CreateFrame('Frame', nil, parent), controls = {} }
     local frame = card.frame
@@ -265,6 +290,9 @@ function addon:CreateRotationCard(parent)
     card.unbound:Hide()
     card.liveBar = self:CreateLiveStatusBar(card.condition)
 
+    -- Positions and fills the card from a layout model: title, action and condition text, icon, pills, which controls
+    -- show in the normal, compact or expanded layout, and the glow preview on cooldown cards. `readOnly` disables every
+    -- control but Help. Safe to call again on a pooled card; it recomputes everything from the model.
     function card:Place(model, readOnly)
         self.model = model
         frame:ClearAllPoints()
@@ -516,6 +544,9 @@ function addon:CreateRotationCard(parent)
         end
     end
 
+    -- Shows the not-on-your-bars warning for the card, or hides it. A normal card gets a text row under the action; a
+    -- compact or open card gets an icon beside the title (and the title is narrowed to make room), with the text in the
+    -- tooltip.
     function card:PlaceUnbound(model, row, pillWidth, branch)
         local warning = self.unbound
 
@@ -549,11 +580,14 @@ function addon:CreateRotationCard(parent)
         warning:Show()
     end
 
+    -- Stores a new live state and repaints the stripe, without a full re-place of the card.
     function card:SetLive(state)
         if self.model then self.model.live = state end
         self.liveBar:SetState(state)
     end
 
+    -- Colors the card border: red for invalid data, amber when no action button holds its action, else the model's own
+    -- border tone.
     function card:SetValidation(invalid)
         self.model.invalid = invalid
 
@@ -565,6 +599,8 @@ function addon:CreateRotationCard(parent)
         self.decoration:SetColors(tone[1], tone[2], tone[3], .75, .06)
     end
 
+    -- Returns the card to the pool: hides it, drops focus, selection and the glow preview, and clears every script the
+    -- canvas installed so a reused card cannot call back into the previous owner.
     function card:Release()
         self.token = nil
         self.frame:Hide()

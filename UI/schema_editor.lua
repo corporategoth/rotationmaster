@@ -1,6 +1,16 @@
+-- The field schema editor window for custom conditions: a 760x540 popup holding the Undo, Redo, Apply and Cancel
+-- buttons, Add field, and the settings form that draws the schema cards (UI/schema_cards.lua). It edits a detached
+-- draft (`addon:NewFieldSchemaDraft`) and hands the finished schema to the caller's `changed` callback only on Apply;
+-- Cancel and a closed owner discard it. The window object is cached on the owner (`owner.schemaEditor`) and reused.
+-- Loaded from RotationMaster.toc right after UI/schema_cards.lua; callers are the custom condition editors that declare
+-- fields.
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- Opens the schema editor for `owner` on a draft of `fields` (with `fieldOrder` and `requiredFields`). `changed(value,
+-- order, required)` receives the schema on Apply; `ownerValid()` says the owner is still open, and the editor closes
+-- itself when it is not. `resume` restores a captured draft (see `d:CaptureDraft`) so the window can be rebuilt without
+-- losing edits. Returns the window, or nil when the draft cannot be built.
 function addon:ShowFieldSchemaEditor(owner, fields, fieldOrder, changed, ownerValid, resume, requiredFields)
     local d = owner.schemaEditor
 
@@ -49,6 +59,8 @@ function addon:ShowFieldSchemaEditor(owner, fields, fieldOrder, changed, ownerVa
     d.baseline = baseline
     d.folded = resume and resume.folded or {}
 
+    -- Captures everything needed to rebuild the window after a redraw: the draft model, path, baseline, folded cards,
+    -- unsaved text by field, focused field with cursor, and scroll position.
     function d:CaptureDraft()
         local raw, focus = {}, nil
 
@@ -78,10 +90,12 @@ function addon:ShowFieldSchemaEditor(owner, fields, fieldOrder, changed, ownerVa
         }
     end
 
+    -- True while this opening of the window is the live one and its owner is still open; every callback checks it.
     local function valid()
         return d.active and d.serial == serial and ownerValid()
     end
 
+    -- Closes the window, releases its form and the draft, and shows the owner again when it is still open.
     function d:Close()
         if not self.active then return end
         self.active = false
@@ -91,6 +105,7 @@ function addon:ShowFieldSchemaEditor(owner, fields, fieldOrder, changed, ownerVa
         if ownerValid() then owner:Show() end
     end
 
+    -- True when the draft differs from its baseline, needs Apply to correct required fields, or has unsaved text.
     function d:IsDirty()
         local dirty = self.requiresApply or addon:GetFieldSchemaIndex(d.model, baseline).dirty
 
@@ -101,6 +116,7 @@ function addon:ShowFieldSchemaEditor(owner, fields, fieldOrder, changed, ownerVa
         return dirty
     end
 
+    -- Close request (the X button): closes at once when clean, otherwise asks whether to apply or discard first.
     function d:Hide()
         local dirty = self:IsDirty()
 
@@ -112,6 +128,7 @@ function addon:ShowFieldSchemaEditor(owner, fields, fieldOrder, changed, ownerVa
         p:ConfirmPending(function() self:Apply() end, function() self:Close() end)
     end
 
+    -- Refreshes the card markers and enables Apply, Undo and Redo according to the draft; polled every frame.
     function d:UpdateActions()
         if self.cardView then self.cardView:UpdateMarkers() end
         local dirty = self:IsDirty()
@@ -135,6 +152,8 @@ function addon:ShowFieldSchemaEditor(owner, fields, fieldOrder, changed, ownerVa
         end
     end
 
+    -- Flushes pending text, validates the draft snapshot and passes it to `changed`; closes on success. Returns false
+    -- with a message when the schema is invalid.
     function d:Apply()
         if not valid() or not p:FlushEdits() then return false end
         local value, order, required = d.model:Snapshot()

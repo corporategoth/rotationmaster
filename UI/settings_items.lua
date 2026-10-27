@@ -1,8 +1,17 @@
+-- The Item Sets tab of the settings workbench: a roster of item sets (profile and global scope), a detail pane with the
+-- ordered item list, Global toggle, action bar Bind pill, duplicate, import/export, reset to the packaged set and
+-- delete. Edits go to the page draft (`p:SettingsData()`, UI/settings_draft.lua) and take effect on Apply; binding and
+-- unbinding are runtime operations that refuse in combat and while the draft is dirty. Saved shape: `itemsets[id] = {
+-- name, items }` in profile or global, bindings per character in `db.char.bindings`. Loaded from RotationMaster.toc
+-- after UI/settings_collections.lua and opened through `addon:OpenNativeSettings`; the pending-bind flow is
+-- UI/item_set_binding.lua.
 local addon_name, addon = ...
 local invalidateDependencies = addon.InvalidateRotationDependencies
 if type(invalidateDependencies) ~= 'function' then invalidateDependencies = nil end
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- Parses one item field: a positive whole number is an item id, any other non-blank text is kept as a name or link, and
+-- blank or an invalid number returns nil.
 local function itemValue(text)
     local value = text:match('^%s*(.-)%s*$')
     if value == '' then return end
@@ -16,6 +25,8 @@ local function itemValue(text)
     return value
 end
 
+-- Builds the Item Sets page on settings form `p`: merged roster, detail fields for the selected set and the footers for
+-- the selected and the creating states. Redrawn on every selection or data change.
 function addon:BuildItemSettings(p)
     local store = p:SettingsData()
     local profileSets = store.profile.itemsets or {}
@@ -26,6 +37,7 @@ function addon:BuildItemSettings(p)
         merged[id] = set
     end
 
+    -- A profile set shadows a global set with the same id.
     for id, set in pairs(profileSets) do
         merged[id] = set
     end
@@ -47,6 +59,9 @@ function addon:BuildItemSettings(p)
     -- Binding: drag a set (its roster row or the Bind pill) onto any action
     -- bar slot, which swaps with what is there, or click Bind and then click
     -- an empty slot. Both start the same pending bind.
+    -- Starts the pending action bar bind for a set after flushing edits; refuses in combat, with unapplied draft
+    -- changes, or when no item of the set can be read. Shows the reason to the user and returns true only when the item
+    -- is on the cursor.
     local function beginBind(setId)
         if not p:FlushEdits() then return false end
 
@@ -123,6 +138,8 @@ function addon:BuildItemSettings(p)
         local id = p.selection
         local items = set.items or {}
 
+        -- Marks the set modified after an edit, refreshes its roster row and icon, and queues the button refresh to run
+        -- on Apply.
         local function update()
             local first = (set.items or {})[1]
             local provider = self:GetReferenceProvider('item')
@@ -173,6 +190,8 @@ function addon:BuildItemSettings(p)
         -- drops the chosen item into a gap through the same insert.
         p.newItem = p.newItem or ''
 
+        -- Inserts the item typed in the new-item field at position `gap` (clamped to the end of the list), then
+        -- redraws.
         local function insertItem(gap)
             local value = itemValue(tostring(p.newItem))
 
@@ -236,6 +255,8 @@ function addon:BuildItemSettings(p)
         p.fields.binding = binding
         p.fields.bind = binding
 
+        -- Updates the Bind pill with the slots this set is bound to and highlights them on the bars; shows "Bind" when
+        -- unbound.
         local function refreshBinding()
             local slots = bindings[id]
             local labels = {}
@@ -285,6 +306,7 @@ function addon:BuildItemSettings(p)
 
         binding.tooltip = L['Drag onto any action bar slot (it swaps with what is there), or click Bind and then click an empty slot.']
         self:BindWorkbenchDragSource(binding, p:Guard(function() beginBind(id) end), function() end)
+        -- The generation token drops a bind notification that arrives after the page was redrawn or closed.
         local token = p.generation
 
         local callback = function(changedId)
@@ -294,6 +316,8 @@ function addon:BuildItemSettings(p)
         self.itemSetCallback = callback
         refreshBinding()
 
+        -- Runs when the page is torn down: releases the notification, cancels an unfinished bind (taking the set's item
+        -- off the cursor) and removes the slot highlights.
         p.cleanups[#p.cleanups + 1] = function()
             if self.itemSetCallback == callback then self.itemSetCallback = nil end
 

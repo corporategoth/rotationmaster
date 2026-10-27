@@ -1,9 +1,18 @@
+-- Configuration window spell, pet action and item icon control: an icon with a tooltip that accepts a drag from the
+-- cursor and fires OnEnterPressed with the dropped id (or "" on a right click). It wraps the pooled condition icon
+-- (UI/condition_icon.lua) and must undo every override on release. It only displays and relays ids; saving them is the
+-- caller's job. Every value is read through `Platform:CanReadValue` and the Platform spell and item adapters. Loaded
+-- from RotationMaster.toc after UI/window.lua.
 local _, addon = ...
 
+-- True when the value is a positive whole number, the only shape a spell or item id may take.
 local function spellID(value)
     return type(value) == "number" and value > 0 and value < math.huge and value % 1 == 0
 end
 
+-- Builds the icon widget for kind "spell", "pet" or "item": shows the icon for the id it is given, accepts a spell, pet
+-- action or item dragged from the cursor, and clears on a right click. `accept(id)` may veto a dropped id. OnRelease
+-- restores every script and method it replaced, because the underlying icon widget is pooled.
 -- Configuration-only spell/item display and drop control. Both its image
 -- primitive and action identity belong to RM's lifecycle and adapters.
 ---@class RMActionIcon: RMConditionIcon
@@ -25,6 +34,7 @@ local function actionIcon(kind, initialSpell, accept)
     widget[activeKey] = true
     widget:SetImageSize(36, 36)
 
+    -- Hides the game tooltip if this icon owns it.
     local function hideTooltip()
         if GameTooltip and GameTooltip:IsOwned(frame) then GameTooltip:Hide() end
     end
@@ -74,6 +84,9 @@ local function actionIcon(kind, initialSpell, accept)
 
     widget:SetCallback("OnLeave", hideTooltip)
 
+    -- Accepts what the cursor carries when it is the right kind (spell, pet action or item), has a readable and valid
+    -- id and passes `accept`; clears the cursor and fires OnEnterPressed with the id. Ignored once the widget is
+    -- released.
     local function drop()
         if not alive or widget.disabled or widget:IsReleasing() or type(GetCursorInfo) ~= "function" then return end
         local cursor = { pcall(GetCursorInfo) }
@@ -97,6 +110,7 @@ local function actionIcon(kind, initialSpell, accept)
         widget:Fire("OnEnterPressed", tostring(id))
     end
 
+    -- Right click clears the id; left click is a drop attempt.
     local function click(_, button)
         if not alive or widget.disabled or widget:IsReleasing() then return end
 
@@ -107,6 +121,7 @@ local function actionIcon(kind, initialSpell, accept)
         end
     end
 
+    -- OnHide wrapper: hides the tooltip, then runs the original script while the widget is still live.
     local function hide(self, ...)
         if not alive then return end
         hideTooltip()
@@ -139,11 +154,13 @@ local function actionIcon(kind, initialSpell, accept)
 end
 
 ---@return RMActionIcon
+-- Creates a spell (kind "spell") or pet action (kind "pet") icon control showing `initialSpell`.
 function addon:CreateSpellActionIcon(kind, initialSpell, accept)
     return actionIcon(kind, initialSpell, accept)
 end
 
 ---@return RMActionIcon
+-- Creates an item icon control showing `initialItem` (an item id, link or name the platform can resolve).
 function addon:CreateItemActionIcon(initialItem, accept)
     return actionIcon('item', initialItem, accept)
 end

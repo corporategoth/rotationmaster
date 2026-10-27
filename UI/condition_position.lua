@@ -1,6 +1,14 @@
+-- Condition and Help editor adapter for the arrow-block position pad: wraps the workbench pad
+-- (`addon:CreateWorkbenchPositionPad`) as a pooled condition widget that fires `OnOffsetChanged(dx, dy, center,
+-- amount)`. Owns only the widget shell; the pad drawing and the offset math live in the workbench, and the widget never
+-- writes saved data itself. Loaded from RotationMaster.toc after UI/condition_widgets.lua, which provides the widget
+-- registry. Frozen: `constructor` and `CreateConditionPositionPad` are recorded Built In helpers (see the generated
+-- bindings at the end), so no comment may be added inside a function body in this file.
 local _, addon = ...
 
--- Condition/Help adapter for the same arrow block used by settings and cards.
+-- Condition/Help adapter for the same arrow block used by settings and cards. The pool constructor builds the frame,
+-- the wrapped pad and the widget methods once per pooled instance; OnAcquire rebinds the pad to the current lease so a
+-- click from a released widget is ignored, and OnRelease unbinds it and disables the pad.
 ---@class RMConditionPositionPad: RMConditionWidget
 ---@field pad any
 ---@field disabled boolean
@@ -31,6 +39,7 @@ local function constructor()
     return addon:RegisterConditionWidget(w)
 end
 
+-- Returns a pooled position pad widget (48x48) from the condition widget registry.
 ---@return RMConditionPositionPad
 function addon:CreateConditionPositionPad()
     return self:AcquireConditionWidget('RM-ConditionPositionPad',constructor)
