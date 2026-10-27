@@ -1,7 +1,15 @@
+-- Evaluation timer: addon:ProfiledCode builds a profiler object (start/stop/child/report/reset) that main.lua wraps
+-- around each poll, and the policy half of this file decides whether that profiler measures or is a no-op.
+-- Loaded from RotationMaster.toc after utils.lua and before main.lua, which consumes the policy hooks once at its load
+-- and then removes the public ConsumeLegacyEvaluationProfilerPolicy name. It owns timing only: times are kept in
+-- seconds, a broken or missing clock is counted as `unavailable` instead of raising, and nothing here may error on
+-- the poll path. Detailed per-phase numbers are read by Diagnostics/cpu_runtime.lua through addon.evaluationProfile.
 local _, addon = ...
 
 local string, pairs, protect, kind = string, pairs, pcall, type
 
+-- Picks the best clock the client has (GetTimePreciseSec, debugprofilestop, GetTime); returns the function and the
+-- factor that converts its result to seconds, or nil when none exists.
 local function clock()
     if kind(GetTimePreciseSec) == 'function' then return GetTimePreciseSec, 1 end
     if kind(debugprofilestop) == 'function' then return debugprofilestop, .001 end
@@ -9,18 +17,23 @@ local function clock()
     return nil, 1
 end
 
+-- Calls the clock under pcall; returns its reading only if it is a finite non-negative number, otherwise nil.
 local function readClock(fn)
     if not fn then return end
     local ok, value = protect(fn)
     if ok and kind(value) == 'number' and value == value and value >= 0 and value < math.huge then return value end
 end
 
+-- Shared do-nothing method for the disabled profiler.
 local function noop() end
 
+-- Disabled profilers hand back themselves as every child, so chained child():start() calls stay no-ops.
 local function nopChild(self)
     return self
 end
 
+-- Builds a profiler. enabled == false returns an inert object with the same method names; anything else (including
+-- nil) measures. Children are created on demand by name and overlap with their parent rather than adding to it.
 local function Constructor(enabled)
     if enabled == false then
         return {
@@ -126,6 +139,8 @@ local function Constructor(enabled)
     return rv
 end
 
+-- Public factory for a profiler object; see Constructor. It may be replaced by another addon or a test, which is why
+-- build() below checks that it is still the original before claiming ownership of a root.
 function addon:ProfiledCode(enabled)
     return Constructor(enabled)
 end
@@ -136,11 +151,13 @@ local ownedRoot, ownedMode, ownedMethods, consumed
 local refreshVersion = 0
 local methods = { 'start', 'stop', 'child', 'report', 'reset' }
 
+-- True when the profile's log level is 3 or higher, the level at which evaluation timing is worth collecting.
 local function collecting(owner)
     local level = owner.db and owner.db.profile and owner.db.profile.loglevel
     return type(level) == 'number' and level >= 3
 end
 
+-- True when owner's current evaluationProfile is still the root this file built, with none of its methods swapped out.
 local function unmodified(owner)
     if owner.evaluationProfile ~= ownedRoot or not ownedRoot or owner.ProfiledCode ~= ownedFactory then return false end
 
@@ -151,6 +168,9 @@ local function unmodified(owner)
     return true
 end
 
+-- Installs a fresh root profiler on owner.evaluationProfile, measuring when mode is true and inert when false.
+-- Returns true if it installed one. On a refresh (initial false) it backs off when someone replaced the root or its
+-- methods or the mode did not change; it also backs off if the factory call itself changed the owner's state.
 local function build(owner, mode, initial)
     refreshVersion = refreshVersion + 1
     local version = refreshVersion
@@ -193,11 +213,15 @@ local function build(owner, mode, initial)
     return true
 end
 
+-- Called from the periodic report in main.lua: swaps the root profiler when the log level crossed the collecting
+-- threshold. Returns true if it replaced the root.
 function addon:RefreshEvaluationProfilerPolicy()
     if self ~= addon then return false end
     return build(self, collecting(self), false)
 end
 
+-- One-shot hand-off to main.lua: returns an initializer for the first root profiler and a report gate for the periodic
+-- report (true means report and reset, false means skip this period). A second call returns nothing.
 function addon:ConsumeLegacyEvaluationProfilerPolicy()
     if self ~= addon or consumed then return end
     consumed = true

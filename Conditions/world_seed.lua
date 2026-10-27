@@ -1,3 +1,8 @@
+-- One-time migration seed for profiles created before the world-state and edition conditions existed: adds those
+-- condition tags to the profile's condition categories and Switch picker, and drops tags from an abandoned draft.
+-- Loaded last among the Conditions/ files in RotationMaster.toc; addon:InstallWorldConditions is called from init.lua
+-- with the AceDB object. It edits only profile.switch_conditions, profile.condition_groups and the
+-- worldConditionsSeeded flag; it registers no conditions itself and never removes a tag the user saved.
 local addon_name, addon = ...
 
 -- Cold, one-time seed for profiles created before the world-state and
@@ -38,6 +43,7 @@ local retiredTags = {
     RANGED_SWING_REMAIN = true,
 }
 
+-- Removes every retired tag from list in place; ignores anything that is not a table.
 local function dropRetired(list)
     if type(list) ~= "table" then return end
 
@@ -46,6 +52,8 @@ local function dropRetired(list)
     end
 end
 
+-- Applies the seed to db's current profile: always strips retired tags, and appends the new tags once per profile
+-- (guarded by profile.worldConditionsSeeded). The first argument is unused so it can serve as an AceDB-style callback.
 function addon:InitializeWorldConditions(_, db)
     local profile = db and db.profile
     if type(profile) ~= "table" then return end
@@ -57,6 +65,7 @@ function addon:InitializeWorldConditions(_, db)
 
     if profile.worldConditionsSeeded then return end
 
+    -- Adds each tag missing from list to its end, preserving the user's order; a list that is not a table is skipped.
     local function append(list, tags)
         if type(list) ~= "table" then return end
 
@@ -85,8 +94,11 @@ function addon:InitializeWorldConditions(_, db)
     profile.worldConditionsSeeded = true
 end
 
+-- Identity token AceDB keys the callbacks below under, so they do not collide with any other registrant.
 local seedOwner = {}
 
+-- Seeds the current profile and re-seeds on every profile event that can bring in an unseeded profile (new, reset,
+-- switched, copied). Does nothing if db is not an AceDB object.
 function addon:InstallWorldConditions(db)
     if type(db) ~= "table" or type(db.RegisterCallback) ~= "function" then return end
 

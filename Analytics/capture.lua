@@ -1,4 +1,10 @@
 -- Pure trusted-receipt builder. No live producers, native proof or persistence.
+-- Publishes addon.Analytics.NewCapture(options), an in-memory recorder that accepts caller-normalized receipts, turns
+-- them into the version-1 trace Analytics/replay.lua expects and returns replay's report as a snapshot.
+-- Loaded from RotationMaster.toc right after Analytics/replay.lua, whose Replay function it captures at load; the
+-- cast-event producer that feeds it is Platform/analytics_casts.lua. Raw cast keys stay private to a session and never
+-- reach the trace or a snapshot. Limits (4096 rows, 1024 aliases, 128 pending, 512 KiB charge) match replay's, and any
+-- breach ends the session with an unavailable snapshot rather than a partial one.
 local _, addon = ...
 local type, next, rawget, rawequal, getmetatable, pcall = type, next, rawget, rawequal, getmetatable, pcall
 local huge, min = math.huge, math.min
@@ -7,18 +13,26 @@ addon.Analytics = analytics
 local replay = analytics.Replay
 local RECORDS, ALIASES, PENDING, BYTES = 4096, 1024, 128, 524288
 
+-- ============================================================================
+-- Validation primitives and schemas
+-- ============================================================================
+
+-- True for a real, finite number (rejects NaN and both infinities).
 local function finite(v)
     return type(v) == 'number' and v == v and v ~= huge and v ~= -huge
 end
 
+-- True for a finite whole number between low and 2^31 - 1.
 local function integer(v, low)
     return finite(v) and v >= low and v <= 2147483647 and v % 1 == 0
 end
 
+-- True for a table with no metatable, so no hidden __index or __eq can run during validation.
 local function plain(v)
     return type(v) == 'table' and getmetatable(v) == nil
 end
 
+-- True when v is a string present in the allowed-value set (read with rawget).
 local function member(v, set)
     return type(v) == 'string' and rawget(set, v) == true
 end
@@ -41,6 +55,8 @@ local fields = {
     result = { type = true, key = true, actor = true, castKind = true, spell = true, status = true },
 }
 
+-- True when value is a plain table whose keys are all strings listed in allowed; this is how unknown fields are
+-- refused.
 local function closed(value, allowed)
     if not plain(value) then return false end
 
@@ -50,6 +66,10 @@ local function closed(value, allowed)
 
     return true
 end
+
+-- ============================================================================
+-- Size accounting and helpers
+-- ============================================================================
 
 -- Fixed data-only charge, not a Lua heap/wire-size claim. Cast rows reserve the
 -- longest kind (autorepeat), plus18+keyBytes for each private alias tombstone.
@@ -67,6 +87,7 @@ local function charge(v)
     return 2
 end
 
+-- Byte charge of one row; castKind is always charged as the longest kind because replay may rewrite it at Stop.
 local function rowCharge(row)
     local bytes = 10
 
@@ -77,6 +98,7 @@ local function rowCharge(row)
     return bytes
 end
 
+-- Deep copy of plain data, so snapshots handed to callers share nothing with the session.
 local function copy(value)
     if type(value) ~= 'table' then return value end
     local result = {}
@@ -88,6 +110,8 @@ local function copy(value)
     return result
 end
 
+-- The evidence block of a snapshot: how ordinary and presentation receipts were trusted for this session; damage is
+-- never collected here.
 local function evidence(state)
     return {
         ordinary = state.ordinary,
@@ -97,6 +121,7 @@ local function evidence(state)
     }
 end
 
+-- Ends every pending attempt alias (an epoch change or retire made them unobservable) and zeroes the counter.
 local function finishPending(state)
     for _, alias in next, state.byAlias do
         if alias.pending then alias.pending = false end
@@ -105,6 +130,7 @@ local function finishPending(state)
     state.pending = 0
 end
 
+-- Drops pending status from attempts older than 30 seconds, mirroring replay's expiry so the pending limit agrees.
 local function expire(state, time)
     for _, alias in next, state.byAlias do
         if alias.pending and time - alias.time > 30 then
@@ -114,6 +140,13 @@ local function expire(state, time)
     end
 end
 
+-- ============================================================================
+-- Capture builder
+-- ============================================================================
+
+-- Creates a capture object (nil and a reason if replay is missing or options are invalid). options may only hold
+-- adviceMaxAge, a number above 0 and at most 0.5 seconds (default 0.5). Only one session can run at a time, and every
+-- method must be called with the colon on the returned object.
 function analytics.NewCapture(options)
     if type(replay) ~= 'function' then return nil, 'missing-replay' end
     if options ~= nil and not closed(options, optionsKeys) then return nil, 'invalid-options' end
@@ -122,6 +155,7 @@ function analytics.NewCapture(options)
     if not finite(age) or age <= 0 or age > 0.5 then return nil, 'invalid-options' end
     local active, last, api
 
+    -- Ends the running session, stores an unavailable snapshot carrying reason, and returns nil, reason.
     local function fail(state, reason)
         active = nil
 
@@ -139,12 +173,14 @@ function analytics.NewCapture(options)
         return nil, reason
     end
 
+    -- Returns the active session when self is this object and lease is the live one; otherwise nil and a reason.
     local function owned(self, lease)
         if not rawequal(self, api) then return nil, 'foreign-receiver' end
         if not active or not rawequal(lease, active.lease) then return nil, 'retired-lease' end
         return active
     end
 
+    -- Checks a caller-supplied elapsed time: finite, 0 to 600 seconds, and not before the last accepted row.
     local function validTime(state, time)
         if not finite(time) or time < 0 or time > 600 then return nil, 'invalid-time' end
         if time < state.time then return nil, 'decreasing-time' end
@@ -153,6 +189,8 @@ function analytics.NewCapture(options)
 
     api = {}
 
+    -- Begins a session for a validated context (family 'tbc', actor 'player', optional evidence modes) and returns its
+    -- lease; refuses while another session runs. Any earlier snapshot is discarded.
     function api:Start(context)
         if not rawequal(self, api) then return nil, 'foreign-receiver' end
         if active then return nil, 'already-running' end
@@ -189,6 +227,9 @@ function analytics.NewCapture(options)
         return lease
     end
 
+    -- Validates one receipt (advice, presentation, retire, attempt or result) against its closed schema and appends it
+    -- as a row with the next sequence number. Returns the sequence number, or nil and a reason; a bad receipt or a
+    -- limit breach also ends the session. Raw cast keys become numeric aliases here and are never stored on a row.
     function api:Push(lease, time, receipt)
         local state, why = owned(self, lease)
         if not state then return nil, why end
@@ -315,6 +356,8 @@ function analytics.NewCapture(options)
         return row.seq
     end
 
+    -- Ends the session at time, resolves each alias's cast kind from every receipt that mentioned it, runs replay over
+    -- the trace and returns a detached snapshot (the unavailable one, plus a reason, if replay refuses it).
     function api:Stop(lease, time, reason)
         local state, why = owned(self, lease)
         if not state then return nil, why end
@@ -383,6 +426,7 @@ function analytics.NewCapture(options)
         return copy(last)
     end
 
+    -- Discards any running session and the last snapshot.
     function api:Clear()
         if not rawequal(self, api) then return nil, 'foreign-receiver' end
         active = nil
@@ -390,6 +434,7 @@ function analytics.NewCapture(options)
         return true
     end
 
+    -- Returns a copy of the last snapshot, or nil and 'running' / 'no-session'.
     function api:GetSnapshot()
         if not rawequal(self, api) then return nil, 'foreign-receiver' end
         if active then return nil, 'running' end

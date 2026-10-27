@@ -1,15 +1,29 @@
+-- Shared editor widgets for the Built In conditions: the spell, item, operator and rank pickers that the other
+-- Conditions/ files call as addon:Widget_*. Each builds a condition editor group bound to a field of the saved `value`
+-- table and calls update() after every change, so the caller re-validates and re-prints the condition.
+-- Loaded first of the Conditions/ block in RotationMaster.toc, after the UI widget set it builds on. It reads no game
+-- values (spell and item data come through SpellCatalog and Platform), and every function here is part of the saved
+-- custom-condition bindings: never edit inside a function body, and leave the generated block at the end alone.
 local addon_name, addon = ...
 
 local SpellData = addon.SpellCatalog
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
--- Portable condition fields contain ordinary saved data, never live secrets.
+-- ============================================================================
+-- Spell widgets
+-- ============================================================================
+
+-- True for a positive whole-number spell id. Portable condition fields contain ordinary saved data, never live
+-- secrets.
 function addon.IsConditionSpellID(value)
     return type(value) == "number" and value > 0 and value < math.huge and value % 1 == 0
 end
 
+-- Tooltip text shared by every rank checkbox.
 local RANK_TIP = L["Unticked, any rank of the spell matches. Ticked, only the rank you chose matches."]
 
+-- Resolves a saved spell value to an id for display. On non-Retail clients and when not ranked, it maps to the
+-- spell catalog's canonical id; returns the id, or nil and a reason if the catalog cannot answer.
 function addon:Widget_GetSpellId(spellid, ranked)
     if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
         if not ranked then
@@ -20,6 +34,8 @@ function addon:Widget_GetSpellId(spellid, ranked)
     return spellid
 end
 
+-- Returns a chat link (with the rank appended when ranked and known) or a plain label for a spell value, or nil
+-- for no spell.
 function addon:Widget_GetSpellLink(spellid, ranked)
     if spellid ~= nil then
         if ranked then
@@ -38,6 +54,8 @@ function addon:Widget_GetSpellLink(spellid, ranked)
     return nil
 end
 
+-- Spell picker: an icon box and a name edit box (and an exact-rank checkbox on clients with ranks) that write
+-- value.spell as a spell id. nametoid converts typed text to an id and isvalid accepts or rejects it.
 function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, update)
     local spell_group = addon:CreateConditionGroup()
     spell_group:SetLayout('RM-SpellField')
@@ -128,6 +146,8 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
     return spell_group
 end
 
+-- Spell picker like Widget_SpellWidget, but with a labeled field and no rank checkbox. It stores the id when storeId
+-- is set and the spell name otherwise.
 function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update, storeId)
     local spell_group = addon:CreateConditionGroup()
     spell_group:SetLayout("Table")
@@ -261,6 +281,14 @@ function addon:Widget_SpellRankWidget(value, update)
     return check
 end
 
+-- ============================================================================
+-- Item widgets
+-- ============================================================================
+
+-- Item set picker: an icon, a dropdown of item sets (or Custom) and an edit button that opens the item list popup.
+-- Writes value.item as an item set id or as a list of items. top is the owning condition window, hidden while the
+-- popup is open (nil when the widget is not inside one). The popup callbacks check that this widget and the
+-- saved tables are still the live ones before writing, since either can be released while the popup is open.
 function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
     local itemsets = addon.db.profile.itemsets
     local global_itemsets = addon.db.global.itemsets
@@ -465,6 +493,7 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
     return item_group
 end
 
+-- Single item picker: an icon box and a name edit box that write one item id or name to value.item.
 function addon:Widget_SingleItemWidget(spec, editbox, value, isvalid, update)
     local item_group = addon:CreateConditionGroup()
     item_group:SetLayout("Table")
@@ -548,6 +577,12 @@ function addon:Widget_SingleItemWidget(spec, editbox, value, isvalid, update)
     return item_group
 end
 
+-- ============================================================================
+-- Operator widgets
+-- ============================================================================
+
+-- Operator dropdown plus a numeric edit box labeled name. Stores into value[op_field or "operator"] and
+-- value[val_field or "value"]; the returned group has a Refresh() for callers that fill the fields themselves.
 function addon:Widget_OperatorWidget(value, name, update, op_field, val_field)
     local operator_group = addon:CreateConditionGroup()
     operator_group:SetLayout("Table")
@@ -594,6 +629,8 @@ function addon:Widget_OperatorWidget(value, name, update, op_field, val_field)
     return operator_group
 end
 
+-- Operator dropdown plus a 0 to 100 percent slider (stored as a 0 to 1 fraction), with the same field names as
+-- Widget_OperatorWidget.
 function addon:Widget_OperatorPercentWidget(value, name, update, op_field, val_field)
     local operator_group = addon:CreateConditionGroup()
     operator_group:SetLayout("Table")

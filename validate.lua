@@ -1,9 +1,22 @@
+-- Saved-data validator behind `/rm check` (report only) and `/rm repair` (fix = true), and run once in report-only
+-- mode at startup. addon:validate walks RotationMasterDB, compares every record with a template of expected field
+-- names and types, warns about each deviation and, when fix is set, strips the offending data.
+-- Loaded from RotationMaster.toc right after init.lua, whose migrations leave the data this checks. Records that newer
+-- code owns (the rotation store, custom condition source, branch bodies, announcements the shared service accepts) are
+-- preserved and at most disabled, never stripped. Every repair that edits saved data must notify through
+-- InvalidateRotationDependencies so the lean engine drops its plan; nothing here may raise on malformed data.
 local addon_name, addon = ...
 local invalidateDependencies = addon.InvalidateRotationDependencies
 if type(invalidateDependencies) ~= 'function' then invalidateDependencies = nil end
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
+-- ============================================================================
+-- Removal bookkeeping and basic template checks
+-- ============================================================================
+
+-- Queues key for removal from the table being walked. Removals are deferred because deleting during pairs() is
+-- unsafe; a non-array key switches apply_remove to key deletion instead of table.remove.
 local function mark_for_remove(toremove, key)
     if type(key) ~= "number" or key < 1 then
         toremove.not_array = true
@@ -16,6 +29,8 @@ local function mark_for_remove(toremove, key)
     table.insert(toremove.data, key)
 end
 
+-- Applies the queued removals to tbl when fix is set (by key, or by shifting array positions), then clears the queue.
+-- Without fix it only clears, so a report-only run leaves the data untouched.
 local function apply_remove(toremove, tbl, fix)
     if fix and toremove.data then
         if toremove.not_array then
@@ -36,6 +51,9 @@ local function apply_remove(toremove, tbl, fix)
     addon.Functions.collections.cleanArray(toremove)
 end
 
+-- Compares data with template: a key absent from the template, or with a different Lua type, is warned about and
+-- removed under fix. Nested tables are descended only when the template's table has named keys. Keys listed in
+-- preserved are skipped because a dedicated validator owns them.
 local function validate_basic(prefix, data, template, fix, preserved)
     local toremove = {}
 
@@ -65,6 +83,7 @@ local function validate_basic(prefix, data, template, fix, preserved)
     apply_remove(toremove, data, fix)
 end
 
+-- Removes entries of an item set's list that are neither an item id nor an item name.
 local function validate_itemset_items(prefix, name, items, fix)
     local toremove = {}
 
@@ -78,11 +97,18 @@ local function validate_itemset_items(prefix, name, items, fix)
     apply_remove(toremove, items, fix)
 end
 
+-- ============================================================================
+-- Record validators
+-- ============================================================================
+
+-- True when uuid is a string containing the canonical 8-4-4-4-12 hex form.
 local function is_uuid(uuid)
     return type(uuid) == "string"
         and uuid:match("(%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x)") ~= nil
 end
 
+-- Validates one item set record: its key must be a uuid (otherwise the record is emptied under fix) and its fields
+-- and items must match the template.
 function addon:validate_itemset(prefix, name, itemset, fix)
     if not is_uuid(name) then
         addon:warn("Invalid ID for itemset %s:%s", prefix, name)
@@ -104,6 +130,8 @@ function addon:validate_itemset(prefix, name, itemset, fix)
     validate_itemset_items(prefix, name, itemset.items, fix)
 end
 
+-- Validates one effect record against the field template of its type, plus the shape of its sequence entries. An
+-- unknown effect type is preserved with a warning rather than stripped, since newer code may own it.
 function addon:validate_effect(prefix, name, effect, fix)
     if not is_uuid(name) then
         addon:warn("Invalid ID for effect %s:%s", prefix, name)
@@ -126,6 +154,7 @@ function addon:validate_effect(prefix, name, effect, fix)
         return
     end
 
+    -- Example field values for each effect type; only the types and key names matter, never the values.
     local function get_effect_template(type)
         if type == "texture" then
             return {
@@ -237,6 +266,9 @@ function addon:validate_effect(prefix, name, effect, fix)
     end
 end
 
+-- Validates one announcement. Shapes the shared acceptance service recognizes pass untouched; rejected macro or
+-- output-series announcements are preserved and disabled, and only legacy spell/petspell/item announcements are
+-- stripped to the old template.
 function addon:validate_announce(prefix, idx, announce, fix)
     if not announce["type"] then
         addon:warn("No announce type for %s:%s", prefix, idx)
@@ -305,6 +337,8 @@ function addon:validate_announce(prefix, idx, announce, fix)
     end
 end
 
+-- Validates one condition picker category (id, name, condition list, optional icon); an invalid icon is cleared
+-- under fix.
 function addon:validate_condition_group(prefix, idx, group, fix)
     local template = {
         id = "61b36ed1-fa31-4656-ad71-f3d50f193a85",
@@ -325,6 +359,9 @@ function addon:validate_condition_group(prefix, idx, group, fix)
     end
 end
 
+-- Validates one saved custom condition by data contract only: schema, icon, flag, parameters, function bindings,
+-- required fields and field order. A failure never strips the record; under fix it disables the condition (and its
+-- registered definition) and keeps the source, so the user can recover it.
 function addon:validate_custom_condition(prefix, name, custom_condition, fix)
     local semantic = {
         fields = true,
@@ -344,6 +381,8 @@ function addon:validate_custom_condition(prefix, name, custom_condition, fix)
 
     validate_basic(prefix .. ":" .. name, custom_condition, template, fix, semantic)
 
+    -- Warns about one invalid field; under fix, disables the saved condition and its live definition without
+    -- recompiling anything.
     local function invalid(field, reason)
         local message = fix and L["Invalid custom condition %s:%s field %s (%s); source preserved; condition disabled."]
             or L["Invalid custom condition %s:%s field %s (%s); explicit repair will preserve source and disable the condition."]
@@ -420,6 +459,9 @@ function addon:validate_custom_condition(prefix, name, custom_condition, fix)
     end
 end
 
+-- Checks one condition tree against the field schema its type declares (found through describeCondition), recursing
+-- into nested conditions and typed arrays. A type that is not registered on this client is skipped, because the
+-- condition may belong to another class. Mismatched or extra fields are removed under fix.
 local function validate_rotation_condition(prefix, condition, fix)
     if addon.Functions.collections.tablelength(condition) == 0 then
         return
@@ -447,6 +489,8 @@ local function validate_rotation_condition(prefix, condition, fix)
     fields["disabled"] = "boolean"
     if condition.type == "AND" or condition.type == "OR" or condition.type == "NOT" then fields.name = "string" end
 
+    -- True when cond matches any alternative of an array-style field spec (a list of allowed Lua types or nested
+    -- shapes).
     local function handle_array_field(cond, field)
         if type(cond) == "table" then
             for i = 1, #field do
@@ -478,6 +522,8 @@ local function validate_rotation_condition(prefix, condition, fix)
         return false
     end
 
+    -- Walks one level of a condition against its field spec, removing extra or wrongly typed keys under fix and
+    -- recursing into nested conditions and tables.
     local function handle_fields(cond, f, subtree)
         local keyremove = {}
 
@@ -583,6 +629,9 @@ local function validate_rotation_condition(prefix, condition, fix)
     handle_fields(condition, fields)
 end
 
+-- Validates one legacy-format rotation (cooldown and rotation step lists, switch conditions). A rotation that holds
+-- a branch step is checked with the non-destructive RotationData.ValidateBody instead and never modified; a
+-- priority RotationData rejects is reset only under fix.
 function addon:validate_rotation(prefix, id, rotation, fix)
     if
         type(rotation) == 'table'
@@ -668,6 +717,7 @@ function addon:validate_rotation(prefix, id, rotation, fix)
 
     local cooldown_template = addon.Functions.collections.deepcopy(rotation_template)
 
+    -- Adds the fields that depend on a step's type (the action id or item set, and stop's suppress_attack).
     local function augment_template_type(template, rot)
         if rot.type == "stop" then template.suppress_attack = false end
 
@@ -796,6 +846,13 @@ function addon:validate_rotation(prefix, id, rotation, fix)
     end
 end
 
+-- ============================================================================
+-- Database walk
+-- ============================================================================
+
+-- Validates the whole saved database against the AceDB defaults template: global, per-character and per-profile data.
+-- With fix false it only warns (the startup and /rm check behavior); with fix true (/rm repair) it removes invalid
+-- data. Ownership archives and other records newer code owns are named in the preserved lists and only reported.
 function addon:validate(template, fix)
     if fix then
         if invalidateDependencies then invalidateDependencies(addon, 'all', nil) end

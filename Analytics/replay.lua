@@ -1,23 +1,35 @@
 -- Pure v1 replay of validated normalized evidence. No native capture or API calls.
 -- Exact selected-spell agreement is not native adherence/visibility certification.
 -- Caller supplies TBC/player evidence; aliases are local numeric keys, never GUIDs.
+-- Publishes addon.Analytics.Replay(trace), which returns a report table and never raises or touches saved data.
+-- Loaded from RotationMaster.toc just before Analytics/capture.lua, which captures the function at its own load, so
+-- it must stay ahead of it. The trace shape and limits (4096 records, 600 seconds, 512 KiB charge) are documented in
+-- docs/architecture/analytics-replay.md.
 local _, addon = ...
 local type, pairs, rawget, getmetatable = type, pairs, rawget, getmetatable
 local huge, max = math.huge, math.max
 local LIMIT_RECORDS, LIMIT_CASTS, LIMIT_PENDING, LIMIT_BYTES = 4096, 1024, 128, 524288
 
+-- ============================================================================
+-- Validation primitives and schemas
+-- ============================================================================
+
+-- True for a real, finite number (rejects NaN and both infinities).
 local function finite(v)
     return type(v) == 'number' and v == v and v ~= huge and v ~= -huge
 end
 
+-- True for a finite whole number between minimum and 2^31 - 1.
 local function integer(v, minimum)
     return finite(v) and v >= minimum and v <= 2147483647 and v % 1 == 0
 end
 
+-- True for a table with no metatable, so no hidden __index or __eq can run during validation.
 local function plain(v)
     return type(v) == 'table' and getmetatable(v) == nil
 end
 
+-- True when v is a string present in the allowed-value set.
 local function member(v, set)
     return type(v) == 'string' and set[v] == true
 end
@@ -57,6 +69,9 @@ local function charge(v)
     return 2
 end
 
+-- Checks that every key of a record is an allowed string (plus type/seq/time when common is set) and returns the
+-- record's byte charge, or nil and 'unknown-field'. Used for both the header and each row, so no extra field can ride
+-- along unnoticed.
 local function keys(value, allowed, common)
     local bytes = 2
 
@@ -71,6 +86,13 @@ local function keys(value, allowed, common)
     return bytes
 end
 
+-- ============================================================================
+-- Trace validation
+-- ============================================================================
+
+-- Verifies the whole trace before any scoring: header, dense record array, size limits, strictly increasing seq,
+-- nondecreasing time inside the duration, and the per-type field schema. Returns the record count and byte charge, or
+-- nil and a reason code. Nothing is partially accepted, so the reducer can trust every field it reads.
 local function validate(trace)
     if not plain(trace) then return nil, 'unsafe-table' end
     local bytes, why = keys(trace, headerKeys)
@@ -177,6 +199,11 @@ local function validate(trace)
     return count, bytes
 end
 
+-- ============================================================================
+-- Report skeleton
+-- ============================================================================
+
+-- Builds a complete report with every metric in its 'unavailable' state, which the reducer then fills in.
 local function blank()
     return {
         format = 1,
@@ -228,6 +255,7 @@ local function blank()
     }
 end
 
+-- The bounded report returned when the trace is refused: status 'unavailable' with a reason and no partial score.
 local function refused(reason)
     local r = blank()
     r.status = 'unavailable'
@@ -235,8 +263,15 @@ local function refused(reason)
     return r
 end
 
+-- ============================================================================
+-- Replay reducer
+-- ============================================================================
+
 addon.Analytics = addon.Analytics or {}
 
+-- Validates trace and reduces it to a report: exact-selected-spell agreement for the player's ordinary cast results,
+-- cast and coverage counts, and raw/net damage totals over the seconds damage was covered. Returns a report in every
+-- case; an invalid or over-limit trace yields the unavailable report from refused(). Pure: no events, no APIs.
 function addon.Analytics.Replay(trace)
     local count, bytes = validate(trace)
     if not count then return refused(bytes) end
@@ -250,6 +285,7 @@ function addon.Analytics.Replay(trace)
     local outcome = report.outcome
     local raw, net, rawOK, netOK, netMissing = 0, 0, true, true, 0
 
+    -- Marks every cast still waiting for a result as unobservable for the given reason (an epoch change or a retire).
     local function finishPending(reason)
         for _, c in pairs(casts) do
             if c.pending then
@@ -260,6 +296,7 @@ function addon.Analytics.Replay(trace)
         end
     end
 
+    -- Gives up on attempts that have had no result for 30 seconds, counting them as expired.
     local function expire(now)
         for _, c in pairs(casts) do
             if c.pending and now - c.time > 30 then
@@ -271,6 +308,8 @@ function addon.Analytics.Replay(trace)
         end
     end
 
+    -- Returns the cast record for row.cast, creating it on first sight; nil once more than LIMIT_CASTS distinct casts
+    -- exist.
     local function remember(row)
         local c = casts[row.cast]
 
@@ -284,6 +323,7 @@ function addon.Analytics.Replay(trace)
         return c
     end
 
+    -- True when a row agrees with the actor, kind and spell its cast was first seen with.
     local function identity(c, row)
         return c.actor == row.actor and c.kind == row.castKind and c.spell == row.spell
     end

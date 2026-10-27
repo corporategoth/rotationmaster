@@ -1,4 +1,14 @@
+-- Static lookup tables the condition definitions and the UI share: translated labels for operators, units, creature
+-- types and so on, plus class/spell id lists (forms, glyphs) and power types, all hung on the addon table.
+-- Loaded from RotationMaster.toc after the locales and the Platform adapters (it asks Platform/focus_unit.lua and the
+-- group unit adapter what this client supports), before utils.lua and every condition. It must stay data only: no
+-- game-value reads, no events, no saved variables. Every user-facing label goes through L[] so it is translated.
+-- Several tables are keyed by values saved in profiles (operators, units, tags), so keys must not be renamed.
 local addon_name, addon = ...
+
+-- ============================================================================
+-- Labels, operators and history phrases
+-- ============================================================================
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 addon.logoTexture = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Branding\\rotation-master-small.tga"
@@ -77,6 +87,10 @@ addon.historySecondsAgo = {
     DIVISIBLE = L["a multiple of %s seconds ago"],
 }
 
+-- ============================================================================
+-- Units
+-- ============================================================================
+
 addon.units = {
     player = L["you"],
     pet = L["your pet"],
@@ -151,6 +165,10 @@ end
 for kind in pairs(groupUnitOffered) do
     addon.unitsPossessive[kind] = groupUnitNames[kind][2]
 end
+
+-- ============================================================================
+-- Creatures, events, roles and other enumerations
+-- ============================================================================
 
 addon.creatures = {
     BEAST = L["Beast"],
@@ -298,6 +316,10 @@ addon.actions = {
     RESIST = L["resisted"],
 }
 
+-- ============================================================================
+-- Class resources, runes, threat and stats
+-- ============================================================================
+
 addon.points = {
     DEATHKNIGHT = Enum.PowerType.Runes,
     WARLOCK = Enum.PowerType.SoulShards,
@@ -355,6 +377,10 @@ addon.stats = {
     ARMOR,  -- 6
 }
 
+-- ============================================================================
+-- Shapeshift forms and math operations
+-- ============================================================================
+
 addon.forms = {
     WARRIOR = {
         2457,  -- Battle Stance
@@ -390,6 +416,11 @@ addon.math_operations_prose = {
     maximum = L["highest"],
 }
 
+-- ============================================================================
+-- Glyph item ids per class
+-- ============================================================================
+
+-- Retail has its own, shorter glyph list; every other client uses the Classic-family list in the else branch.
 if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
     addon.glyphs = {
         WARRIOR = {104138, 141898, 43398, 80588, 43400, 85221, 80587, 49084, 137188},
