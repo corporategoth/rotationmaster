@@ -36,11 +36,6 @@ function data.IsRotationClassToken(value)
     return type(value) == "string" and classes[value] == true
 end
 
--- Returns true for a known action context (player, pet, vehicle, possession, override, petbattle).
-function data.IsRotationActionContext(value)
-    return type(value) == "string" and contexts[value] == true
-end
-
 -- A rotation without a source manifest belongs to the player's own action bar.
 -- It opts into a vehicle, possession, override bar or pet battle only through
 -- its switch condition: an enabled ACTION_CONTEXT leaf naming that context,

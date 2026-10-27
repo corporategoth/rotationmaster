@@ -617,11 +617,6 @@ function addon:GetBuildContext()
     return refresh()
 end
 
--- Counter that advances whenever any section is marked dirty.
-function addon:GetBuildContextRevision()
-    return revision
-end
-
 -- Marks one section (or all) dirty, e.g. after a test or a manual refresh.
 function addon:InvalidateBuildContext(section)
     if section == nil then

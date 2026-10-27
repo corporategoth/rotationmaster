@@ -151,9 +151,3 @@ function platform:ResolveGroupUnit(kind)
 
     return nil, 'no-assigned-unit'
 end
-
--- Returns the table of supported unit types, mapping each to how it is resolved ("roster", "role" or "leader").
--- The table is shared; callers must not modify it.
-function platform:GetGroupUnitKinds()
-    return KINDS
-end

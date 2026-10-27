@@ -1,6 +1,5 @@
 -- Shared builders for the Help/ files and the condition help callbacks: text blocks, picture and button rows, an
--- indent and a gap, built from the condition widget set (addon:CreateCondition*), plus the plain-data field-help
--- sections used by the settings pages. Exposed as addon.help_funcs and addon:SettingsHelpSections.
+-- indent and a gap, built from the condition widget set (addon:CreateCondition*). Exposed as addon.help_funcs.
 -- Loaded first of the Help/ files (RotationMaster.toc), after UI/ has defined the widget constructors; each helper
 -- must only build widgets when called, never at load. Help text itself lives in the locale tables, not here.
 local _, addon = ...
@@ -91,18 +90,3 @@ function helpers.Gap()
 end
 
 addon.help_funcs = helpers
-
--- Authored field documentation is data, independent of any renderer.
--- Turns a list of "Title - text" help strings into { title, text } rows with the color codes stripped; a string with no
--- " - " separator becomes a row with an empty title.
-function addon:SettingsHelpSections(values)
-    local rows = {}
-
-    for _, value in ipairs(values) do
-        local plain = value:gsub('|c%x%x%x%x%x%x%x%x', ''):gsub('|r', '')
-        local title, text = plain:match('^(.-) %- (.*)$')
-        rows[#rows + 1] = { title = title or '', text = text or plain }
-    end
-
-    return rows
-end

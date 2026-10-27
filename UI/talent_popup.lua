@@ -375,12 +375,6 @@ function addon:CloseTalentTree(owner)
     if d and d.frame:IsShown() and (owner == nil or d.request and d.request.owner == owner) then d.frame:Hide() end
 end
 
--- True while a tree window is showing for a request.
-function addon:IsTalentTreeOpen()
-    local d = addon.talentTreeWindow
-    return d ~= nil and d.frame:IsShown() and d.request ~= nil
-end
-
 -- The condition's talent changed elsewhere (the Talent list): follow it.
 -- Ignored unless the open tree belongs to `owner`.
 function addon:RefreshTalentTree(owner, selection, name)

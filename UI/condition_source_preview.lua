@@ -872,11 +872,6 @@ end
 -- Entry points
 -- ============================================================================
 
--- Compatibility entry point: opens the Test window.
-function addon:ShowConditionSourcePreview(owner)
-    return self:ShowConditionSourceTest(owner)
-end
-
 -- Opens the output-only window for the Lua workbench's debugger; callback is 'widget' or 'help'.
 function addon:CreateConditionDebugSurface(owner, callback)
     return self:ShowConditionSourceTest(owner, { debugSurface = true, callback = callback })
