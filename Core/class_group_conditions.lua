@@ -1,9 +1,9 @@
-local _,addon=...
+local _, addon = ...
 
 -- A count is complete only after every selected fixed roster slot is known.
 -- Current player observations are pass snapshots; archived source keeps its
 -- original load-time class binding independently of this live path.
-function addon:GetClassGroupCount(cache,class,raid)
+function addon:GetClassGroupCount(cache, class, raid)
     local platform=self.Platform
     if not platform:CanReadValue(class) or not platform:CanReadValue(raid) then return nil,'restricted-value' end
     if type(class)~='string' or class=='' then return nil,'invalid-class-group-query' end

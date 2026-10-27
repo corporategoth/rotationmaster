@@ -1,282 +1,475 @@
-local _,addon=...
-local platform=addon.Platform
-local direct={['local']='LOCAL',emote='EMOTE',gesture='GESTURE'}
-local conditionRequest=0
-local deliveryRequest=0
-local function same(left,right)
-    if type(left)~=type(right) then return false end
-    if type(left)~='table' then return left==right end
-    if getmetatable(left)~=nil or getmetatable(right)~=nil then return false end
-    for key,value in pairs(left) do if not same(value,rawget(right,key)) then return false end end
-    for key in pairs(right) do if rawget(left,key)==nil then return false end end
+local _, addon = ...
+local platform = addon.Platform
+local direct = { ['local'] = 'LOCAL', emote = 'EMOTE', gesture = 'GESTURE' }
+local conditionRequest = 0
+local deliveryRequest = 0
+
+local function same(left, right)
+    if type(left) ~= type(right) then return false end
+    if type(left) ~= 'table' then return left == right end
+    if getmetatable(left) ~= nil or getmetatable(right) ~= nil then return false end
+
+    for key, value in pairs(left) do
+        if not same(value, rawget(right, key)) then return false end
+    end
+
+    for key in pairs(right) do
+        if rawget(left, key) == nil then return false end
+    end
+
     return true
 end
+
 -- A cold event owns a detached, immutable witness of its complete entry.
 -- Retain this lease across action resolution, conditions and text formatting.
-function addon:PrepareAnnouncementDelivery(config,owner)
-    deliveryRequest=deliveryRequest+1
-    local request=deliveryRequest
-    local data=self.RotationData
-    if type(config)~='table' or type(owner)~='function' or not data then return nil end
-    local portable,copy=data.CheckPortable,data.CopyData
+function addon:PrepareAnnouncementDelivery(config, owner)
+    deliveryRequest = deliveryRequest + 1
+    local request = deliveryRequest
+    local data = self.RotationData
+    if type(config) ~= 'table' or type(owner) ~= 'function' or not data then return nil end
+    local portable, copy = data.CheckPortable, data.CopyData
     if not portable(config) then return nil end
-    local witness=copy(config)
-    local entry=copy(witness)
-    if entry.type=='spell' or entry.type=='pet' then entry.action=entry.spell
-    elseif entry.type=='item' then entry.action=entry.item end
-    local expected=copy(entry)
-    local function current()
-        if request~=deliveryRequest then return false end
-        local ok,valid=pcall(owner)
-        return ok and valid==true and request==deliveryRequest and same(witness,config) and same(expected,entry)
+    local witness = copy(config)
+    local entry = copy(witness)
+
+    if entry.type == 'spell' or entry.type == 'pet' then
+        entry.action = entry.spell
+    elseif entry.type == 'item' then
+        entry.action = entry.item
     end
-    return entry,current
+
+    local expected = copy(entry)
+
+    local function current()
+        if request ~= deliveryRequest then return false end
+        local ok, valid = pcall(owner)
+        return ok and valid == true and request == deliveryRequest and same(witness, config) and same(expected, entry)
+    end
+
+    return entry, current
 end
+
 -- One prepared parent lease owns all reached cards. Never prepare a card: that
 -- would replace the parent delivery serial. Public callbacks see a detached view.
-function addon:DispatchAnnouncementSeries(parent,recipient,current,targetUnit,format,deliver)
-    local result={chat=false,sound=false,outputs={}}
-    local cards=parent.outputs
-    if type(cards)~='table' or getmetatable(cards)~=nil or #cards>64 or not current() then return result end
-    local count,seen=0,{}
-    for key,card in pairs(cards) do
+function addon:DispatchAnnouncementSeries(parent, recipient, current, targetUnit, format, deliver)
+    local result = { chat = false, sound = false, outputs = {} }
+    local cards = parent.outputs
+    if type(cards) ~= 'table' or getmetatable(cards) ~= nil or #cards > 64 or not current() then return result end
+    local count, seen = 0, {}
+
+    for key, card in pairs(cards) do
         if not current() then return result end
-        if type(key)~='number' or key%1~=0 or key<1 or key>#cards or not self:IsValidAnnouncementOutput(card,parent.type=='macro') or seen[card.id] then return result end
+
+        if
+            type(key) ~= 'number'
+            or key % 1 ~= 0
+            or key < 1
+            or key > #cards
+            or not self:IsValidAnnouncementOutput(card, parent.type == 'macro')
+            or seen[card.id]
+        then
+            return result
+        end
+
         if not current() then return result end
-        count=count+1;seen[card.id]=true
+        count = count + 1
+        seen[card.id] = true
     end
-    if count~=#cards or not current() then return result end
-    for _,card in ipairs(cards) do
-        if not current() then result.retired=true;break end
+
+    if count ~= #cards or not current() then return result end
+
+    for _, card in ipairs(cards) do
+        if not current() then
+            result.retired = true
+            break
+        end
+
         if not card.disabled then
-            local view=self.RotationData.CopyData(card)
-            view.type=parent.type
-            local expected=self.RotationData.CopyData(view)
-            local function live()return current() and same(view,expected) end
-            local matches=self.AnnouncementConditionMatches
-            if not live() then result.retired=true;break end
-            local ok,matched=pcall(matches,self,view,recipient,live,targetUnit)
-            if not live() then result.retired=true;break end
-            if ok and matched and not (view.announce=='gesture' and view.emote_target and not recipient) then
-                local formatted,value=pcall(format,view,live)
-                if not live() then result.retired=true;break end
-                if formatted and value~=nil then
-                    local sent,output
-                    if deliver then sent,output=pcall(deliver,view,value,live)
+            local view = self.RotationData.CopyData(card)
+            view.type = parent.type
+            local expected = self.RotationData.CopyData(view)
+
+            local function live()
+                return current() and same(view, expected)
+            end
+
+            local matches = self.AnnouncementConditionMatches
+
+            if not live() then
+                result.retired = true
+                break
+            end
+
+            local ok, matched = pcall(matches, self, view, recipient, live, targetUnit)
+
+            if not live() then
+                result.retired = true
+                break
+            end
+
+            if ok and matched and not (view.announce == 'gesture' and view.emote_target and not recipient) then
+                local formatted, value = pcall(format, view, live)
+
+                if not live() then
+                    result.retired = true
+                    break
+                end
+
+                if formatted and value ~= nil then
+                    local sent, output
+
+                    if deliver then
+                        sent, output = pcall(deliver, view, value, live)
                     else
-                        local dispatch=self.DispatchAnnouncement
-                        if not live() then result.retired=true;break end
-                        sent,output=pcall(dispatch,self,view,value,recipient,live)
+                        local dispatch = self.DispatchAnnouncement
+
+                        if not live() then
+                            result.retired = true
+                            break
+                        end
+
+                        sent, output = pcall(dispatch, self, view, value, recipient, live)
                     end
-                    if sent and type(output)=='table' then
-                        result.outputs[#result.outputs+1]=output
-                        result.chat=result.chat or output.chat==true
-                        result.sound=result.sound or output.sound==true
+
+                    if sent and type(output) == 'table' then
+                        result.outputs[#result.outputs + 1] = output
+                        result.chat = result.chat or output.chat == true
+                        result.sound = result.sound or output.sound == true
                     end
-                    if not live() then result.retired=true;break end
+
+                    if not live() then
+                        result.retired = true
+                        break
+                    end
                 end
             end
         end
     end
+
     return result
 end
+
 -- Native unit APIs may accept a resolvable name as well as a unit token.
 -- Keep the cast's recorded recipient exact; never infer the selected target.
-local function automaticTarget(recipient,owned)
+local function automaticTarget(recipient, owned)
     local function readable(value)
         return platform:CanReadValue(value) and (not canaccessvalue or canaccessvalue(value))
     end
-    if not readable(recipient) or type(recipient)~='string' or recipient=='' or #recipient>512 or recipient:find('[%z\1-\31\127]') then return end
-    local exists,guid=UnitExists,UnitGUID
-    if type(exists)~='function' or type(guid)~='function' then return end
+
+    if not readable(recipient) or type(recipient) ~= 'string' or recipient == '' or #recipient > 512 or recipient:find(
+        '[%z\1-\31\127]'
+    ) then
+        return
+    end
+
+    local exists, guid = UnitExists, UnitGUID
+    if type(exists) ~= 'function' or type(guid) ~= 'function' then return end
+
     local function live()
         if not owned() then return false end
-        return exists==UnitExists and guid==UnitGUID
+        return exists == UnitExists and guid == UnitGUID
     end
+
     local function observe()
         if not live() then return end
-        local ok,present=pcall(exists,recipient)
-        if not ok or not readable(present) or present~=true or not live() then return end
-        local identified,id=pcall(guid,recipient)
+        local ok, present = pcall(exists, recipient)
+        if not ok or not readable(present) or present ~= true or not live() then return end
+        local identified, id = pcall(guid, recipient)
         if not identified or not readable(id) then return end
         if canaccessvalue and not canaccessvalue(id) then return end
-        if type(id)~='string' or id=='' or #id>256 or not live() then return end
+        if type(id) ~= 'string' or id == '' or #id > 256 or not live() then return end
         return id
     end
-    local identity=observe()
+
+    local identity = observe()
     if not identity then return end
-    return recipient,function()
-        local now=observe()
+
+    return recipient, function()
+        local now = observe()
         if canaccessvalue and not canaccessvalue(now) then return false end
         if canaccessvalue and not canaccessvalue(identity) then return false end
-        return live() and now==identity
+        return live() and now == identity
     end
 end
+
 -- Called only after a cast matches an announcement, never by cooldown output.
-function addon:AnnouncementConditionMatches(config,recipient,current,targetUnit)
-    conditionRequest=conditionRequest+1
-    local request=conditionRequest
+function addon:AnnouncementConditionMatches(config, recipient, current, targetUnit)
+    conditionRequest = conditionRequest + 1
+    local request = conditionRequest
+
     local function owned()
-        if request~=conditionRequest then return false end
+        if request ~= conditionRequest then return false end
+
         if current then
-            local ok,valid=pcall(current)
-            return ok and valid==true and request==conditionRequest
+            local ok, valid = pcall(current)
+            return ok and valid == true and request == conditionRequest
         end
+
         return true
     end
+
     if not owned() then return false end
-    if config.conditions==nil then return true end
+    if config.conditions == nil then return true end
     local resolve
-    if config.type~='macro' and targetUnit==nil then
-        resolve=function(tag)
-            local unit,current=automaticTarget(recipient,owned)
-            if unit then return tag=='GROUP' and 'spellrecipient' or unit,current end
+
+    if config.type ~= 'macro' and targetUnit == nil then
+        resolve = function(tag)
+            local unit, current = automaticTarget(recipient, owned)
+            if unit then return tag == 'GROUP' and 'spellrecipient' or unit, current end
         end
     end
+
     local result
-    if resolve then result=self:evaluateAnnouncementConditionResult(config.conditions,recipient,targetUnit,resolve)
-    else result=self:evaluateAnnouncementConditionResult(config.conditions,recipient,targetUnit) end
-    return owned() and type(result)=='table' and result.status=='match'
+
+    if resolve then
+        result = self:evaluateAnnouncementConditionResult(config.conditions, recipient, targetUnit, resolve)
+    else
+        result = self:evaluateAnnouncementConditionResult(config.conditions, recipient, targetUnit)
+    end
+
+    return owned() and type(result) == 'table' and result.status == 'match'
 end
+
 -- Two bounded cold-output observations, never a history or polling cache.
-local emoteSerial={automatic=0,test=0}
-local emoteObservation={}
-local emoteReasons={['restricted-value']=true,['invalid-emote']=true,['emote-unavailable']=true,
-    ['missing-api']=true,['api-error']=true,['cast-recipient-unavailable']=true}
+local emoteSerial = { automatic = 0, test = 0 }
+local emoteObservation = {}
+
+local emoteReasons = {
+    ['restricted-value'] = true,
+    ['invalid-emote'] = true,
+    ['emote-unavailable'] = true,
+    ['missing-api'] = true,
+    ['api-error'] = true,
+    ['cast-recipient-unavailable'] = true,
+}
+
 local function beginEmote(kind)
-    emoteSerial[kind]=emoteSerial[kind]+1
+    emoteSerial[kind] = emoteSerial[kind] + 1
     return emoteSerial[kind]
 end
+
 local function emoteDetailCopy(detail)
-    if not platform:CanReadValue(detail) or type(detail)~='table' then return nil end
-    local copy={}
-    for _,key in ipairs({'backend','call','returns','firstType','firstBoolean'}) do
-        local value=rawget(detail,key)
+    if not platform:CanReadValue(detail) or type(detail) ~= 'table' then return nil end
+    local copy = {}
+
+    for _, key in ipairs({ 'backend', 'call', 'returns', 'firstType', 'firstBoolean' }) do
+        local value = rawget(detail, key)
+
         if platform:CanReadValue(value) then
-            if key=='backend' and (value=='C_ChatInfo.PerformEmote' or value=='DoEmote') then copy[key]=value
-            elseif key=='call' and (value=='completed' or value=='threw') then copy[key]=value
-            elseif key=='returns' and type(value)=='number' and value>=0 and value<=16 and value%1==0 then copy[key]=value
-            elseif key=='firstType' and (value=='nil' or value=='boolean' or value=='number' or value=='string' or value=='table' or value=='function' or value=='thread' or value=='userdata' or value=='unavailable') then copy[key]=value
-            elseif key=='firstBoolean' and type(value)=='boolean' then copy[key]=value end
+            if key == 'backend' and (value == 'C_ChatInfo.PerformEmote' or value == 'DoEmote') then
+                copy[key] = value
+            elseif key == 'call' and (value == 'completed' or value == 'threw') then
+                copy[key] = value
+            elseif key == 'returns' and type(value) == 'number' and value >= 0 and value <= 16 and value % 1 == 0 then
+                copy[key] = value
+            elseif
+                key == 'firstType'
+                and (value == 'nil'
+                    or value == 'boolean'
+                    or value == 'number'
+                    or value == 'string'
+                    or value == 'table'
+                    or value == 'function'
+                    or value == 'thread'
+                    or value == 'userdata'
+                    or value == 'unavailable')
+            then
+                copy[key] = value
+            elseif key == 'firstBoolean' and type(value) == 'boolean' then
+                copy[key] = value
+            end
         end
     end
+
     return copy
 end
-local function finishEmote(kind,serial,target,reason,detail)
-    local copied,closed=pcall(emoteDetailCopy,detail)
-    local checked,safeReason=pcall(function()
-        if reason==nil then return 'native-call-completed' end
-        if platform:CanReadValue(reason) and type(reason)=='string' and emoteReasons[reason] then return reason end
+
+local function finishEmote(kind, serial, target, reason, detail)
+    local copied, closed = pcall(emoteDetailCopy, detail)
+
+    local checked, safeReason = pcall(function()
+        if reason == nil then return 'native-call-completed' end
+        if platform:CanReadValue(reason) and type(reason) == 'string' and emoteReasons[reason] then return reason end
         return 'unavailable'
     end)
-    if serial~=emoteSerial[kind] then return end
-    emoteObservation[kind]={target=target,reason=checked and safeReason or 'unavailable',detail=copied and closed or nil}
+
+    if serial ~= emoteSerial[kind] then return end
+
+    emoteObservation[kind] = {
+        target = target,
+        reason = checked and safeReason or 'unavailable',
+        detail = copied and closed or nil,
+    }
 end
+
 local function destination(mode)
-    if not platform:CanReadValue(mode) or type(mode)~='string' then return nil,'invalid-destination' end
-    if mode=='say' or mode=='yell' then return nil,'hardware-event-required' end
+    if not platform:CanReadValue(mode) or type(mode) ~= 'string' then return nil, 'invalid-destination' end
+    if mode == 'say' or mode == 'yell' then return nil, 'hardware-event-required' end
     if direct[mode] then return direct[mode] end
-    if mode=='none' or mode=='audible' then return nil,'not-requested' end
-    if mode~='partyraid' and mode~='party' and mode~='raidwarn' then return nil,'invalid-destination' end
-    local group,why=platform:GetAnnouncementGroup();if not group then return nil,why end
-    if mode=='party' then
+    if mode == 'none' or mode == 'audible' then return nil, 'not-requested' end
+    if mode ~= 'partyraid' and mode ~= 'party' and mode ~= 'raidwarn' then return nil, 'invalid-destination' end
+    local group, why = platform:GetAnnouncementGroup()
+    if not group then return nil, why end
+
+    if mode == 'party' then
         if group.inGroup then return 'PARTY' end
-        return nil,'not-grouped'
+        return nil, 'not-grouped'
     end
+
     if group.inRaid then
-        if mode=='raidwarn' and (group.isLeader==true or group.isAssistant==true) then return 'RAID_WARNING' end
+        if mode == 'raidwarn' and (group.isLeader == true or group.isAssistant == true) then return 'RAID_WARNING' end
         return 'RAID'
     end
+
     return group.inGroup and 'PARTY' or 'LOCAL'
 end
+
 local function active(current)
     if not current then return true end
-    local ok,valid=pcall(current)
-    return ok and valid==true
+    local ok, valid = pcall(current)
+    return ok and valid == true
 end
-local function sound(key,current)
-    if not active(current) then return false,'announcement-retired' end
-    if not platform:CanReadValue(key) then return false,'restricted-value' end
-    if key==nil or key=='' then return false,'not-requested' end
-    if type(key)~='string' then return false,'invalid-sound' end
-    local play=PlaySoundFile
-    if type(play)~='function' then return false,'missing-api' end
-    local ok,media=pcall(LibStub,'LibSharedMedia-3.0',true)
-    if not active(current) then return false,'announcement-retired' end
-    if not ok or type(media)~='table' or type(media.Fetch)~='function' then return false,'missing-media' end
-    local fetched,path=pcall(media.Fetch,media,'sound',key,true)
-    if not fetched then return false,'media-error' end
-    if not platform:CanReadValue(path) then return false,'restricted-value' end
-    if not (type(path)=='string' and path~='' or type(path)=='number' and path>0 and path<math.huge and path%1==0) then return false,'sound-unavailable' end
-    if not active(current) then return false,'announcement-retired' end
-    local played,willPlay=pcall(play,path,'Master')
-    if not played then return false,'api-error' end
-    if not platform:CanReadValue(willPlay) or willPlay==false then return false,'sound-unavailable' end
+
+local function sound(key, current)
+    if not active(current) then return false, 'announcement-retired' end
+    if not platform:CanReadValue(key) then return false, 'restricted-value' end
+    if key == nil or key == '' then return false, 'not-requested' end
+    if type(key) ~= 'string' then return false, 'invalid-sound' end
+    local play = PlaySoundFile
+    if type(play) ~= 'function' then return false, 'missing-api' end
+    local ok, media = pcall(LibStub, 'LibSharedMedia-3.0', true)
+    if not active(current) then return false, 'announcement-retired' end
+    if not ok or type(media) ~= 'table' or type(media.Fetch) ~= 'function' then return false, 'missing-media' end
+    local fetched, path = pcall(media.Fetch, media, 'sound', key, true)
+    if not fetched then return false, 'media-error' end
+    if not platform:CanReadValue(path) then return false, 'restricted-value' end
+
+    if not (type(path) == 'string' and path ~= ''
+        or type(path) == 'number' and path > 0 and path < math.huge and path % 1 == 0) then
+        return false, 'sound-unavailable'
+    end
+
+    if not active(current) then return false, 'announcement-retired' end
+    local played, willPlay = pcall(play, path, 'Master')
+    if not played then return false, 'api-error' end
+    if not platform:CanReadValue(willPlay) or willPlay == false then return false, 'sound-unavailable' end
     return true
 end
 
 -- Output is best-effort and independent: a failed chat or audio API must not
 -- interrupt cast bookkeeping or recommendation evaluation. This does not
 -- construct templates, match events, or retry messages through another path.
-function addon:DispatchAnnouncement(config,text,castRecipient,current)
-    local result={chat=false,sound=false}
-    if not platform:CanReadValue(config) or type(config)~='table' then return result end
-    if not active(current) then result.chatReason='announcement-retired';return result end
-    local dest,why=destination(config.announce);result.chatReason=why
-    if not active(current) then result.chatReason='announcement-retired';return result end
-    if dest=='GESTURE' then
-        local serial=beginEmote('automatic')
-        local target=config.emote_target and castRecipient or ''
+function addon:DispatchAnnouncement(config, text, castRecipient, current)
+    local result = { chat = false, sound = false }
+    if not platform:CanReadValue(config) or type(config) ~= 'table' then return result end
+
+    if not active(current) then
+        result.chatReason = 'announcement-retired'
+        return result
+    end
+
+    local dest, why = destination(config.announce)
+    result.chatReason = why
+
+    if not active(current) then
+        result.chatReason = 'announcement-retired'
+        return result
+    end
+
+    if dest == 'GESTURE' then
+        local serial = beginEmote('automatic')
+        local target = config.emote_target and castRecipient or ''
         local detail
-        if config.emote_target and (not platform:CanReadValue(target) or type(target)~='string' or target=='') then result.chatReason='cast-recipient-unavailable'
-        else local sent,reason,observed=platform:PerformAnnouncementEmote(config.emote,target,current);result.chat=sent==true;result.chatReason=reason;detail=observed end
-        finishEmote('automatic',serial,config.emote_target and 'cast-recipient' or 'none',result.chatReason,detail)
-        dest=nil
+
+        if config.emote_target and (not platform:CanReadValue(target) or type(target) ~= 'string' or target == '') then
+            result.chatReason = 'cast-recipient-unavailable'
+        else
+            local sent, reason, observed = platform:PerformAnnouncementEmote(config.emote, target, current)
+            result.chat = sent == true
+            result.chatReason = reason
+            detail = observed
+        end
+
+        finishEmote('automatic', serial, config.emote_target and 'cast-recipient' or 'none', result.chatReason, detail)
+        dest = nil
     end
+
     if dest then
-        if not platform:CanReadValue(text) or type(text)~='string' then result.chatReason='invalid-message'
-        elseif dest=='LOCAL' then
-            local announce=self.announce
-            if type(announce)=='function' and active(current) then result.chat=pcall(announce,self,text);if not result.chat then result.chatReason='api-error' end
-            else result.chatReason='missing-api' end
-        else local sent,reason=platform:SendAnnouncementChat(text,dest,current);result.chat=sent==true;result.chatReason=reason end
+        if not platform:CanReadValue(text) or type(text) ~= 'string' then
+            result.chatReason = 'invalid-message'
+        elseif dest == 'LOCAL' then
+            local announce = self.announce
+
+            if type(announce) == 'function' and active(current) then
+                result.chat = pcall(announce, self, text)
+                if not result.chat then result.chatReason = 'api-error' end
+            else
+                result.chatReason = 'missing-api'
+            end
+        else
+            local sent, reason = platform:SendAnnouncementChat(text, dest, current)
+            result.chat = sent == true
+            result.chatReason = reason
+        end
     end
-    if not active(current) then result.soundReason='announcement-retired';return result end
-    result.sound,result.soundReason=sound(config.announce_sound,current)
+
+    if not active(current) then
+        result.soundReason = 'announcement-retired'
+        return result
+    end
+
+    result.sound, result.soundReason = sound(config.announce_sound, current)
     return result
 end
 
 -- Called only by an explicitly labelled diagnostic button. It sends one
 -- independent targetless CHEER, never a pending announcement or cast retry.
 function addon:TestAnnouncementEmote()
-    local serial=beginEmote('test')
-    local sent,reason,detail=platform:PerformAnnouncementEmote('CHEER','')
-    finishEmote('test',serial,'none',reason,detail)
-    return {chat=sent==true,chatReason=reason}
+    local serial = beginEmote('test')
+    local sent, reason, detail = platform:PerformAnnouncementEmote('CHEER', '')
+    finishEmote('test', serial, 'none', reason, detail)
+    return { chat = sent == true, chatReason = reason }
 end
+
 function addon:GetAnnouncementEmoteReport()
-    local lines={'Rotation Master emote diagnostics',
+    local lines = {
+        'Rotation Master emote diagnostics',
         'Native call completion does not prove visible output. Native booleans are reported without interpretation.',
-        'Only the latest automatic emote and explicit click test are retained; no recipient names or message text.'}
-    for _,entry in ipairs({{'automatic','Automatic:'},{'test','Explicit click test:'}}) do
-        local row=emoteObservation[entry[1]]
-        lines[#lines+1]=entry[2]..(row and (' target='..row.target..'; result='..row.reason) or ' not observed')
+        'Only the latest automatic emote and explicit click test are retained; no recipient names or message text.',
+    }
+
+    for _, entry in ipairs({ { 'automatic', 'Automatic:' }, { 'test', 'Explicit click test:' } }) do
+        local row = emoteObservation[entry[1]]
+
+        lines[#lines + 1] = entry[2]
+            .. (row and (' target=' .. row.target .. '; result=' .. row.reason) or ' not observed')
+
         if row and row.detail then
-            local detail=row.detail
-            lines[#lines+1]='backend='..(detail.backend or 'unavailable')..'; call='..(detail.call or 'unavailable')
+            local detail = row.detail
+
+            lines[#lines + 1] = 'backend='
+                .. (detail.backend or 'unavailable')
+                .. '; call='
+                .. (detail.call or 'unavailable')
+
             if detail.returns then
-                lines[#lines+1]='native returns='..detail.returns..'; first type='..(detail.firstType or 'unavailable')..
-                    (detail.firstBoolean~=nil and ('; first boolean='..tostring(detail.firstBoolean)) or '')
+                lines[#lines + 1] = 'native returns='
+                    .. detail.returns
+                    .. '; first type='
+                    .. (detail.firstType or 'unavailable')
+                    .. (detail.firstBoolean ~= nil and ('; first boolean=' .. tostring(detail.firstBoolean)) or '')
             end
         end
     end
-    return table.concat(lines,'\n')
+
+    return table.concat(lines, '\n')
 end
 
 -- Definition-owned consumer identity, cold-consumed by the runtime planner.
-local runtimeDispatch=addon.DispatchAnnouncement
-local runtimeDispatchEnvironment=getfenv(1)
+local runtimeDispatch = addon.DispatchAnnouncement
+local runtimeDispatchEnvironment = getfenv(1)
+
 function addon:ConsumeAnnouncementRuntimeSource()
-    if self~=addon then return end
-    return runtimeDispatch,runtimeDispatchEnvironment
+    if self ~= addon then return end
+    return runtimeDispatch, runtimeDispatchEnvironment
 end
