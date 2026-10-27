@@ -1,8 +1,8 @@
-local _,addon=...
+local _, addon = ...
 
 -- Keep the old player-level lifetime, but only promote a valid observation.
 -- Unknown/absent observations live in the evaluation cache and retry next pass.
-function addon:GetConditionUnitLevel(unit,cache)
+function addon:GetConditionUnitLevel(unit, cache)
     if not self.Platform:CanReadValue(unit) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end
     if self.Platform:GetClientFamily()=='unknown' then return nil,'unsupported-client' end
@@ -23,7 +23,7 @@ function addon:GetConditionUnitLevel(unit,cache)
 end
 
 if addon.DeclareConditionRuntimeHelper then
-    addon:DeclareConditionRuntimeHelper('GetConditionUnitLevel',addon.GetConditionUnitLevel)
+    addon:DeclareConditionRuntimeHelper('GetConditionUnitLevel', addon.GetConditionUnitLevel)
 end
 
 -- BEGIN GENERATED RM SOURCE BINDINGS

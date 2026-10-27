@@ -1,9 +1,9 @@
-local _,addon=...
-local playerClassCacheKey={}
+local _, addon = ...
+local playerClassCacheKey = {}
 
 -- This whole identity gate is cached once per pass, independently of whether
 -- its first query promotes a successful player class to the longterm cache.
-local function pointIdentity(self,unit,key)
+local function pointIdentity(self, unit, key)
     local platform=self.Platform
     local nativeClass=UnitClass
     local longterm=self.longtermCache
@@ -26,7 +26,7 @@ local function pointIdentity(self,unit,key)
     return record
 end
 
-function addon:GetConditionPointResource(unit,cache)
+function addon:GetConditionPointResource(unit, cache)
     local platform=self.Platform
     if platform:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
     if not platform:CanReadValue(unit) then return nil,'restricted-value' end
@@ -60,15 +60,20 @@ end
 
 -- Optional trusted-load capability for the explicitly versioned TBC policy.
 -- An inherited or subsequently replaced enum remains on the original transport.
-local pointComboTypes,pointComboValue
+local pointComboTypes, pointComboValue
+
 do
-    local platform=addon.Platform
-    local enum=Enum
-    if platform:CanReadValue(enum) and (not canaccessvalue or canaccessvalue(enum)) and type(enum)=='table' then
-        local types=rawget(enum,'PowerType')
-        if platform:CanReadValue(types) and (not canaccessvalue or canaccessvalue(types)) and type(types)=='table' then
-            pointComboTypes=types
-            pointComboValue=rawget(types,'ComboPoints')
+    local platform = addon.Platform
+    local enum = Enum
+
+    if platform:CanReadValue(enum) and (not canaccessvalue or canaccessvalue(enum)) and type(enum) == 'table' then
+        local types = rawget(enum, 'PowerType')
+
+        if
+            platform:CanReadValue(types) and (not canaccessvalue or canaccessvalue(types)) and type(types) == 'table'
+        then
+            pointComboTypes = types
+            pointComboValue = rawget(types, 'ComboPoints')
         end
     end
 end
@@ -96,16 +101,23 @@ end
 -- Wrath (2) has only combo points; Cataclysm (3) adds Holy Power and Soul
 -- Shards for every specialization. Another progression expansion has no map
 -- until it is researched.
-local editionPointPowers={
-    era={ROGUE='ComboPoints',DRUID='ComboPoints'},
-    progression={
-        [2]={ROGUE='ComboPoints',DRUID='ComboPoints'},
-        [3]={ROGUE='ComboPoints',DRUID='ComboPoints',PALADIN='HolyPower',WARLOCK='SoulShards'},
-        [4]={ROGUE='ComboPoints',DRUID='ComboPoints',PALADIN='HolyPower',MONK='Chi',
-            PRIEST={[3]='ShadowOrbs'},WARLOCK={'SoulShards','DemonicFury','BurningEmbers'}},
+local editionPointPowers = {
+    era = { ROGUE = 'ComboPoints', DRUID = 'ComboPoints' },
+    progression = {
+        [2] = { ROGUE = 'ComboPoints', DRUID = 'ComboPoints' },
+        [3] = { ROGUE = 'ComboPoints', DRUID = 'ComboPoints', PALADIN = 'HolyPower', WARLOCK = 'SoulShards' },
+        [4] = {
+            ROGUE = 'ComboPoints',
+            DRUID = 'ComboPoints',
+            PALADIN = 'HolyPower',
+            MONK = 'Chi',
+            PRIEST = { [3] = 'ShadowOrbs' },
+            WARLOCK = { 'SoulShards', 'DemonicFury', 'BurningEmbers' },
+        },
     },
 }
-local function editionPointResource(platform,info,unit,class,cache)
+
+local function editionPointResource(platform, info, unit, class, cache)
     local family=info.family
     local map=editionPointPowers[family]
     if family=='progression' then
@@ -141,7 +153,7 @@ end
 -- Under the restricted policy (Retail, Forever) only a power type Blizzard
 -- flags never secret is selected (Platform/points.lua); its reads stay guarded.
 -- Era and progression select per edition and specialization (above).
-function addon:GetConditionPointResourceV2(unit,cache)
+function addon:GetConditionPointResourceV2(unit, cache)
     local platform=self.Platform
     local info=platform:GetClientInfo()
     local policy=info.combatDataPolicy
