@@ -332,6 +332,18 @@ class Fast(unittest.TestCase):
         self.assertGreater(len(commands), 500)
         self.assertEqual(commands[0][1], 'tests/verify.py')
 
+    # A suite that tools/check does not run is a suite that never fails. Every tests/*.lua and tests/*.py is a command
+    # in the list, unless it is named here with the reason it is not (none is: the helper scripts live in
+    # tests/fixtures/, and the one file that is not a suite is tests/README.md).
+    UNLISTED_SUITES = {}
+
+    def test_every_suite_file_is_a_command_tools_check_runs(self):
+        run = {argument for command in check_all.collect() for argument in command}
+        suites = sorted(path.relative_to(ROOT).as_posix() for pattern in ('tests/*.lua', 'tests/*.py') for path in ROOT.glob(pattern))
+        self.assertGreater(len(suites), 500)
+        self.assertEqual([name for name in suites if name not in run and name not in self.UNLISTED_SUITES], [],
+                         'a suite file is not in tools/check; add it to the lua5.1/luajit/python lines or to UNLISTED_SUITES with a reason')
+
     def test_the_slow_and_known_failure_lists_name_real_commands(self):
         labels = {check_all.label(command) for command in check_all.collect()}
         for name in ('slow_tests.txt', 'known_failures.txt'):

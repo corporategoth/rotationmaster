@@ -38,6 +38,26 @@ class VendorTests(unittest.TestCase):
             file.unlink()
             self.assertNotEqual(check().returncode, 0, 'missing vendor file was accepted')
 
+    def test_a_lua_file_nothing_loads_fails(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            for child in ['tests', 'Libs', 'Core', 'tools']:
+                (root / child).mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(ROOT / 'tests/verify.py', root / 'tests/verify.py')
+            (root / 'Libs/UPSTREAM.json').write_text('{"libraries": {}}')
+            (root / 'RotationMaster.toc').write_text('Core/loaded.lua\n')
+            (root / 'Core/loaded.lua').write_text('return 1\n')
+            (root / 'tools/helper.lua').write_text('return 2\n')
+            def check():
+                return subprocess.run([sys.executable, 'tests/verify.py'], cwd=root, capture_output=True, text=True)
+            self.assertEqual(check().returncode, 0, 'a listed file or an unpackaged tool script was refused')
+            (root / 'Core/orphan.lua').write_text('return 3\n')
+            result = check()
+            self.assertNotEqual(result.returncode, 0, 'a Lua file no TOC loads was accepted')
+            self.assertIn('Core/orphan.lua', result.stdout)
+            (root / 'RotationMaster.toc').write_text('Core/loaded.lua\nCore/orphan.lua\n')
+            self.assertEqual(check().returncode, 0, 'listing the file in the TOC did not satisfy the gate')
+
     def test_missing_native_icon_fails_without_a_lua_or_toc_error(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
