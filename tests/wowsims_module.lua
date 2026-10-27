@@ -271,6 +271,92 @@ test('import never enables a step it could not copy exactly', function()
     assert(keep.report.summary.disabled <= r.report.summary.disabled)
 end)
 
+-- A condition compared with true/false (or 1/0): Eq keeps it, Ne negates it, and false negates what true keeps.
+test('import: an aura compared with a boolean constant is the aura or its negation', function()
+    local function converted(op, val)
+        local apl = '{"type":"TypeAPL","priorityList":[{"action":{"condition":{"cmp":{"op":"' .. op .. '","lhs":{"auraIsActive":{"auraId":{"spellId":11129},"sourceUnit":{"type":"Self"}}},"rhs":{"const":{"val":"' .. val .. '"}}}},"castSpell":{"spellId":{"spellId":11129}}}}]}'
+        local r = import.importWowsims(apl, {mapping = ns.mapping, known = data.known, verifiers = data.verifiers, potions = data.potions, edition = 'era', cls = 'MAGE'})
+        assert(r.ok, op .. ' ' .. val)
+        return r.body.rotation[1].conditions
+    end
+    local function buff(tree) assert(tree.type == 'BUFF' and tree.spell == 11129, 'expected the aura condition'); return true end
+    local function negated(tree) assert(tree.type == 'NOT'); return buff(tree.value) end
+    assert(buff(converted('OpEq', 'true')), 'Eq true')
+    assert(negated(converted('OpEq', 'false')), 'Eq false')
+    assert(negated(converted('OpNe', 'true')), 'Ne true')
+    assert(buff(converted('OpNe', 'false')), 'Ne false')
+    assert(buff(converted('OpEq', '1')), 'Eq 1')
+    assert(negated(converted('OpEq', '0')), 'Eq 0')
+end)
+
+-- The rules of mapping version 2 (the website's DECISIONS.md 63), one converted APL item at a time.
+test('the port implements the rule table version the data carries', function()
+    assert(import.MAPPING_VERSION == ns.mapping.mappingVersion, 'the data is mapping version ' .. tostring(ns.mapping.mappingVersion))
+    local pinned = json.parse(W.read('Data/wowsims/mapping.json'), W.BIG).value
+    assert(pinned.mappingVersion == import.MAPPING_VERSION, 'the pinned JSON is another version than the Lua table')
+end)
+local function itemOf(action, condition)
+    local item = {action = action}
+    item.action.condition = condition
+    local apl = json.encode({type = 'TypeAPL', priorityList = {item}})
+    local r = import.importWowsims(apl, {mapping = ns.mapping, known = data.known, verifiers = data.verifiers, potions = data.potions,
+        edition = 'progression', cls = 'SHAMAN'})
+    return r.report and r.report.items[1] or r
+end
+local function num(v) return {const = {val = v}} end
+local function cmp(op, l, r) return {cmp = {op = op, lhs = l, rhs = r}} end
+local function cast(id) return {castSpell = {spellId = {spellId = id}}} end
+local function becameText(item) local out = {}; for i, b in ipairs(item.became) do out[i] = b.conditions end; return out end
+test('arithmetic with a constant folds into the comparison; between two readings it has no equivalent', function()
+    local time = {currentTime = {}}
+    local folded = itemOf(cast(403), cmp('OpGt', {math = {op = 'OpAdd', lhs = num(1), rhs = time}}, num(5)))
+    assert(folded.fidelity == 'exact' and folded.became[1].conditions == 'TIME_IN_COMBAT > 4')
+    assert(itemOf(cast(403), cmp('OpGt', {math = {op = 'OpMul', lhs = num(2), rhs = time}}, num(10))).became[1].conditions == 'TIME_IN_COMBAT > 5')
+    -- A negative factor turns the comparison round.
+    assert(itemOf(cast(403), cmp('OpGt', {math = {op = 'OpMul', lhs = num(-2), rhs = time}}, num(-10))).became[1].conditions == 'TIME_IN_COMBAT < 5')
+    assert(itemOf(cast(403), cmp('OpGt', num(3), num(2))).outcome == 'enabled', 'constants fold')
+    local both = itemOf(cast(403), cmp('OpGt', {math = {op = 'OpAdd', lhs = time, rhs = {auraRemainingTime = {auraId = {spellId = 1}}}}}, num(5)))
+    assert(both.fidelity == 'lossy')
+    local found
+    for _, r in ipairs(both.reasons) do if r.code == 'cond-unsupported' then found = r.params.why end end
+    assert(found == 'arithmetic')
+    -- max(a, b) > c is either one above c, min(a, b) > c both.
+    local pair = {{currentTime = {}}, {auraRemainingTime = {auraId = {spellId = 1}}}}
+    local max = itemOf(cast(403), cmp('OpGt', {max = {vals = pair}}, num('3s')))
+    assert(max.became[1].conditions:find('^OR%(') and max.fidelity == 'exact', tostring(max.became[1].conditions))
+    local min = itemOf(cast(403), cmp('OpGt', {min = {vals = pair}}, num('3s')))
+    assert(min.became[1].conditions:find('^AND%('), tostring(min.became[1].conditions))
+end)
+test('actions: one dot, a free channel interrupt, waits, sequences and aura activation', function()
+    local single = itemOf({multidot = {spellId = {spellId = 172}, maxDots = 1, maxOverlap = num('2s')}})
+    assert(single.fidelity == 'approximate' and becameText(single)[1] == 'OR(NOT(DEBUFF target #172), DEBUFF_REMAIN target #172 <= 2)')
+    assert(becameText(itemOf({multidot = {spellId = {spellId = 172}, maxDots = 1, maxOverlap = num('0ms')}}))[1] == 'NOT(DEBUFF target #172)')
+    assert(itemOf({multidot = {spellId = {spellId = 172}, maxDots = 3, maxOverlap = num('0ms')}}).fidelity == 'lossy', 'several dots switch targets')
+    local free = itemOf({channelSpell = {spellId = {spellId = 5143}, interruptIf = num('true')}})
+    assert(free.fidelity == 'approximate' and free.reasons[1].code == 'action-channel-interrupt')
+    assert(itemOf({channelSpell = {spellId = {spellId = 5143}, interruptIf = {spellIsReady = {spellId = {spellId = 9}}}}}).fidelity == 'lossy')
+    assert(itemOf({channelSpell = {spellId = {spellId = 5143}}}).fidelity == 'exact')
+
+    local ready = {spellIsReady = {spellId = {spellId = 9}}}
+    local wait = itemOf({wait = {duration = num('1s')}}, ready)
+    assert(wait.fidelity == 'approximate' and wait.became[1].type == 'stop' and wait.became[1].conditions == 'SPELL_AVAIL #9' and wait.reasons[1].code == 'action-wait')
+    local until_ = itemOf({waitUntil = {condition = ready}})
+    assert(until_.became[1].type == 'stop' and until_.became[1].conditions == 'NOT(SPELL_AVAIL #9)')
+
+    local seq = itemOf({strictSequence = {actions = {cast(1), cast(2), {wait = {duration = num('1s')}}}}}, ready)
+    assert(seq.fidelity == 'lossy' and #seq.became == 2)
+    assert(seq.became[1].action == 2 and seq.became[1].conditions == 'SPELL_HISTORY #1 = 1' and seq.became[2].action == 1 and seq.became[2].conditions == 'SPELL_AVAIL #9')
+    local codes = {}
+    for _, r in ipairs(seq.reasons) do codes[r.code] = r.params.why or true end
+    assert(codes['action-sequence-history'] and codes['action-unsupported'] == 'in-sequence')
+    local plain = itemOf({sequence = {name = 's', actions = {cast(1), cast(2), cast(3)}}})
+    assert(plain.fidelity == 'approximate' and table.concat(becameText(plain), '|') == 'SPELL_HISTORY #2 = 1|SPELL_HISTORY #1 = 1|')
+
+    local aura = itemOf({activateAura = {auraId = {spellId = 403}}})
+    assert(aura.fidelity == 'approximate' and aura.became[1].type == 'spell' and aura.became[1].action == 403)
+    assert(itemOf({activateAura = {auraId = {spellId = 99999999}}}).fidelity == 'unsupported', 'no class spell by that id')
+end)
+
 -- ---- the export of structure ---------------------------------------------------------------------------------
 local function export(body, edition, cls)
     edition = edition or 'tbc'
@@ -389,6 +475,47 @@ local function loadCatalogs(locale)
     end
     return merged
 end
+test('export: items, the number missing from the maximum, and steps that follow one another become a sequence', function()
+    local function cond(r, index) return json.parse(json.encode(r.apl), W.BIG).value.priorityList[index].action.condition end
+    local r = export({rotation = {
+        spell(403, {type = 'ITEM', item = {19339}}),
+        spell(404, {type = 'ITEM_COOLDOWN', item = {19339}, operator = 'LESSTHAN', value = 5}),
+        spell(405, {type = 'EQUIPPED', item = {19339}}),
+        spell(406, {type = 'POWER', unit = 'player', operator = 'LESSTHANOREQUALS', value = -20})}, cooldowns = {}}, 'tbc', 'WARRIOR')
+    assert(r.ok)
+    assert(json.encode(cond(r, 1)) == json.encode({spellIsReady = {spellId = {itemId = 19339}}}), json.encode(cond(r, 1)))
+    assert(cond(r, 2).cmp.lhs.spellTimeToReady.spellId.itemId == 19339 and cond(r, 2).cmp.rhs.const.val == '5s')
+    assert(cond(r, 3).spellIsKnown.spellId.itemId == 19339)
+    local missing = cond(r, 4).cmp
+    assert(missing.op == 'OpLe' and missing.lhs.math.op == 'OpSub' and missing.lhs.math.lhs.maxRage and missing.lhs.math.rhs.currentRage and missing.rhs.const.val == '20')
+    for _, item in ipairs(r.report.items) do assert(item.fidelity == 'exact', item.path) end
+
+    local function history(id) return {type = 'SPELL_HISTORY', spell = id, operator = 'EQUALS', value = 1} end
+    local chain = export({rotation = {
+        spell(3, history(2)),
+        spell(2, {type = 'AND', value = {history(1), {type = 'TIME_IN_COMBAT', operator = 'GREATERTHAN', value = 3}}}),
+        spell(1, {type = 'SPELL_AVAIL', spell = 9}),
+        spell(7)}, cooldowns = {}})
+    assert(chain.ok and #chain.apl.priorityList == 2)
+    local first = chain.apl.priorityList[1].action
+    local ids = {}
+    for i, a in ipairs(first.sequence.actions) do ids[i] = a.castSpell.spellId.spellId end
+    assert(table.concat(ids, ',') == '1,2,3', table.concat(ids, ','))
+    assert(first.condition.spellIsReady.spellId.spellId == 9)
+    assert(first.sequence.actions[2].condition.cmp.lhs.currentTime and first.sequence.actions[2].condition.cmp.rhs.const.val == '3s')
+    assert(chain.report.items[1].fidelity == 'approximate')
+    for index = 1, 3 do
+        local found
+        for _, x in ipairs(chain.report.items[index].reasons) do if x.code == 'x-sequence-history' then found = true end end
+        assert(found, 'step ' .. index)
+    end
+    -- A step whose predecessor is not there keeps its place and loses that condition, said so.
+    local lone = export({rotation = {spell(3, history(2))}, cooldowns = {}})
+    assert(lone.apl.priorityList[1].action.condition == nil)
+    local dropped
+    for _, x in ipairs(lone.report.items[1].reasons) do if x.code == 'x-cond-dropped' and x.params.type == 'SPELL_HISTORY' then dropped = true end end
+    assert(dropped)
+end)
 test('every word a report or failure can show is in the English locale, and in the other ten', function()
     local english = loadCatalogs('enUS')
     local locales = {'deDE', 'esES', 'esMX', 'frFR', 'itIT', 'koKR', 'ptBR', 'ruRU', 'zhCN', 'zhTW'}
@@ -448,7 +575,7 @@ test('the reports read as plain text with the counts, the sources and what needs
     local r = api(W.read(W.dir .. 'era_ele.apl.json'), {edition = 'era', cls = 'SHAMAN', supports = W.supports(F, 'era'), checkSpell = function() return true end})
     local words = ns.api.renderImportReport(r.report, L, {classLabel = function() return 'Shaman' end, editionLabel = function() return 'Classic Era' end})
     assert(words:find('WowSims import report', 1, true) and words:find('Converted for Shaman on Classic Era.', 1, true))
-    assert(words:find('Items in the rotation: 9 (6 exact, 2 approximate, 1 lossy, 0 not representable).', 1, true), words)
+    assert(words:find('Items in the rotation: 9 (6 exact, 3 approximate, 0 lossy, 0 not representable).', 1, true), words)
     assert(words:find('Steps created: 8, disabled: 3. Items not imported: 1.', 1, true))
     assert(words:find('Confirmed by: the game client', 1, true) or words:find('WowSims simulator data', 1, true))
     assert(words:find('priorityList[1] - Approximate - Imported disabled', 1, true) and words:find('Became: spell 10438 (Disabled)', 1, true))

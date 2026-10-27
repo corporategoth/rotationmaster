@@ -109,6 +109,7 @@ function export.exportWowsims(body, options)
     end
     local ladders = options.ladders or {}
     local usedKinds, usedActions = {}, {castSpell = true}
+    local HISTORY = mapping.sequences and mapping.sequences.history == true
 
     local items = {}           -- the report
     local prepull = {}         -- APL prepull actions
@@ -168,6 +169,12 @@ function export.exportWowsims(body, options)
                 local head = parts[1]
                 if head == '@id' then
                     local r = actionId(tree[parts[2]])
+                    if r.fail then return {fail = 'id'} end
+                    out[key] = r.id
+                elseif head == '@item' then
+                    -- An item condition names the item in a one-id list; the simulator names it by item id.
+                    local raw = tree[parts[2]]
+                    local r = actionId(type(raw) == 'table' and #raw == 1 and raw[1] or raw, 'item')
                     if r.fail then return {fail = 'id'} end
                     out[key] = r.id
                 elseif head == '@target' then
@@ -284,7 +291,19 @@ function export.exportWowsims(body, options)
         if type(tree.value) ~= 'number' or tree.value ~= tree.value or tree.value == math.huge or tree.value == -math.huge then
             return dropLeaf(tree, 'incomplete')
         end
-        if tree.value < 0 and (utype == 'POINT' or utype == 'HEALTH' or utype == 'MANA' or utype == 'POWER') then return dropLeaf(tree, 'value') end
+        if tree.value < 0 then
+            -- A negative number compares what is MISSING from the maximum: max - current, against the number made positive.
+            local maxKind = EXP.maxOf and EXP.maxOf[made.kind]
+            local mine = tree.unit == nil or tree.unit == 'player'
+            local readable = not options.kinds
+            if maxKind and not readable then for _, name in ipairs(sims) do if kindSets[name].values[maxKind] then readable = true end end end
+            if maxKind and mine and readable then
+                usedKinds[maxKind] = true
+                return val({cmp = {op = op, lhs = {math = {op = 'OpSub', lhs = {[maxKind] = json.object({})}, rhs = node}},
+                    rhs = {const = {val = FORMAT.raw(-tree.value)}}}})
+            end
+            return dropLeaf(tree, 'value')
+        end
         return val({cmp = {op = op, lhs = node, rhs = {const = {val = FORMAT[entry.unit](tree.value)}}}})
     end
     local function convert(tree, depth)
@@ -398,7 +417,7 @@ function export.exportWowsims(body, options)
         ['x-cond-dropped'] = 'a condition has no WowSims equivalent and was left out',
         ['x-cond-approx'] = 'a condition was converted approximately', ['x-cooldown-first'] = 'a Rotation Master cooldown, placed first',
         ['x-prepull-time'] = 'pre-pull time assumed', ['x-item-list'] = 'one of several items',
-        ['x-cond-never'] = 'its condition can never be true in the simulator'}
+        ['x-cond-never'] = 'its condition can never be true in the simulator', ['x-sequence-history'] = 'steps that follow one another became a sequence'}
     local NOTE_ORDER = {'x-rank', 'x-prepull-cond', 'x-cond-dropped', 'x-cond-approx', 'x-cooldown-first', 'x-prepull-time', 'x-item-list', 'x-cond-never'}
     local function noteText(reasons)
         -- The words in the order the reasons appeared, each once (the website's order).
@@ -527,13 +546,30 @@ function export.exportWowsims(body, options)
                 local converted = convert(split.rest, 0)
                 if converted.k ~= 'true' then note('x-prepull-cond', 'lossy') end
             end
-            note('x-prepull-time', 'lossy')
+            note('x-prepull-time', 'approximate')
             for _, id in ipairs(casts.casts) do prepull[#prepull + 1] = {id = id, item = item, order = #prepull} end
             item.became = #casts.casts
             finishItem(item); item = nil
             return
         end
-        local cond = convert(andOf(all), 0)
+        -- "The spell you cast last was this one" is how Rotation Master asks for the next step of a sequence; a run of steps
+        -- that chain on each other becomes the simulator's own sequence action (below). Here the condition is taken out.
+        local whole = andOf(all)
+        local chainAfter
+        if HISTORY and step.type == 'spell' and #casts.casts == 1 then
+            local parts = conjuncts(whole)
+            local at
+            for k, x in ipairs(parts) do
+                if x.type == 'SPELL_HISTORY' and x.operator == 'EQUALS' and x.value == 1 and isInteger(x.spell) and x.spell > 0 then at = k; break end
+            end
+            if at then
+                chainAfter = parts[at].spell
+                local kept = {}
+                for k, x in ipairs(parts) do if k ~= at then kept[#kept + 1] = x end end
+                whole = andOf(kept)
+            end
+        end
+        local cond = convert(whole, 0)
         if cond.k == 'false' then
             item.outcome = 'dropped'; note('x-cond-never', 'lossy'); finishItem(item); item = nil
             return
@@ -544,29 +580,93 @@ function export.exportWowsims(body, options)
             local action = {}
             if cond.k == 'val' then action.condition = cond.v end
             action.castSpell = {spellId = id}
-            priority[#priority + 1] = {section = section, order = #priority, action = action, item = item}
+            priority[#priority + 1] = {section = section, order = #priority, action = action, item = item, items = {item},
+                chainAfter = chainAfter, spell = step.type == 'spell' and step.action or nil}
         end
         item.became = #casts.casts
         finishItem(item); item = nil
     end
 
+    -- A run of steps, each needing the spell of the step right after it to be the last one cast, is the simulator's
+    -- sequence: the steps in the other order, the first one starting it. A step whose predecessor is not there keeps
+    -- its place and loses that condition, said so.
+    local sequences = 0
+    local function chain(entries)
+        local out = {}
+        local i = 1
+        while i <= #entries do
+            local first = entries[i]
+            if first.chainAfter == nil then out[#out + 1] = first; i = i + 1
+            else
+                local j = i
+                while j + 1 <= #entries and entries[j].chainAfter ~= nil and entries[j + 1].spell == entries[j].chainAfter
+                    and entries[j + 1].section == first.section do j = j + 1 end
+                if j - i + 1 < 2 then
+                    item = first.item; note('x-cond-dropped', 'lossy', {type = 'SPELL_HISTORY', why = 'no-equivalent'}); item = nil
+                    local rest = {}
+                    for key, value in pairs(first) do if key ~= 'chainAfter' and key ~= 'spell' then rest[key] = value end end
+                    out[#out + 1] = rest; i = i + 1
+                else
+                    local ordered = {}
+                    for k = j, i, -1 do ordered[#ordered + 1] = entries[k] end
+                    local head = ordered[1]
+                    if head.chainAfter ~= nil then
+                        item = head.item; note('x-cond-dropped', 'lossy', {type = 'SPELL_HISTORY', why = 'no-equivalent'}); item = nil
+                    end
+                    for _, e in ipairs(ordered) do
+                        item = e.item; note('x-sequence-history', 'approximate', {count = #ordered}); item = nil
+                    end
+                    usedActions.sequence = true
+                    local action = {}
+                    if head.action.condition then action.condition = head.action.condition end
+                    sequences = sequences + 1
+                    local casts = {}
+                    for k, e in ipairs(ordered) do
+                        casts[k] = {castSpell = e.action.castSpell}
+                        if k > 1 and e.action.condition then casts[k].condition = e.action.condition end
+                    end
+                    action.sequence = {name = 'Sequence ' .. sequences, actions = json.array(casts)}
+                    local owners = {}
+                    for k, e in ipairs(ordered) do owners[k] = e.item end
+                    out[#out + 1] = {section = head.section, order = head.order, action = action, item = head.item, items = owners}
+                    i = j + 1
+                end
+            end
+        end
+        return out
+    end
+
     -- Cooldowns are independent in Rotation Master: no Stop or branch touches them.
     walk(body.cooldowns, 'cooldowns', 'cooldowns', {}, {ended = false, stops = {}}, 0)
-    local cooldownItems = priority
+    local cooldownItems = chain(priority)
     priority = {}
     walk(body.rotation, 'rotation', 'rotation', {}, {ended = false, stops = {}}, 0)
-    local mainItems = priority
+    local mainItems = chain(priority)
     local all = {}
     for _, e in ipairs(cooldownItems) do all[#all + 1] = e end
     for _, e in ipairs(mainItems) do all[#all + 1] = e end
+    -- The sequence pass added reasons after the items were finished: grade them again.
+    for _, rec in ipairs(items) do
+        local level = 'exact'
+        for _, r in ipairs(rec.reasons) do if LEVEL_RANK[r.level] then level = worse(level, r.level) end end
+        rec.fidelity = level
+    end
 
     -- Where each report item's actions ended up in the priority list.
-    for i, entry in ipairs(all) do entry.item.at[#entry.item.at + 1] = i - 1 end
+    for i, entry in ipairs(all) do
+        for _, it in ipairs(entry.items) do
+            local known = false
+            for _, at in ipairs(it.at) do if at == i - 1 then known = true end end
+            if not known then it.at[#it.at + 1] = i - 1 end
+        end
+    end
     -- Item notes carry the item's own reasons, once the item is final.
     local aplItems = {}
     for _, entry in ipairs(all) do
         local out = {}
-        local text = noteText(entry.item.reasons)
+        local reasons = {}
+        for _, it in ipairs(entry.items) do for _, r in ipairs(it.reasons) do reasons[#reasons + 1] = r end end
+        local text = noteText(reasons)
         if text then out.notes = text end
         out.action = entry.action
         aplItems[#aplItems + 1] = out

@@ -4,6 +4,14 @@ local _, ns = ...
 
 ns.mapping = {
   actions = {
+    activateAura = {
+      fidelity = "approximate",
+      handler = "cast",
+      idArg = "auraId",
+      note = "aura-activation",
+      requireKnown = true,
+      why = "sim-only",
+    },
     autocastOtherCooldowns = {
       fidelity = "exact",
       handler = "noop",
@@ -23,6 +31,9 @@ ns.mapping = {
       handler = "cast",
     },
     channelSpell = {
+      approxIf = {
+        interruptIf = "const-true",
+      },
       handler = "cast",
       lossyIf = {"interruptIf", "allowRecast"},
       note = "channel",
@@ -44,6 +55,35 @@ ns.mapping = {
       },
       handler = "cast",
       note = "multidot",
+      single = {
+        guardOverlap = {
+          type = "OR",
+          value = {
+            {
+              type = "NOT",
+              value = {
+                anyrank = "@ranks",
+                owndebuff = true,
+                spell = "@spell:spellId",
+                type = "DEBUFF",
+                unit = "target",
+              },
+            },
+            {
+              anyrank = "@ranks",
+              operator = "LESSTHANOREQUALS",
+              owndebuff = true,
+              spell = "@spell:spellId",
+              type = "DEBUFF_REMAIN",
+              unit = "target",
+              value = "@overlap",
+            },
+          },
+        },
+        maxKey = "maxDots",
+        note = "multidot-single",
+        overlapKey = "maxOverlap",
+      },
     },
     sequence = {
       fidelity = "lossy",
@@ -69,11 +109,51 @@ ns.mapping = {
       },
       handler = "cast",
       note = "multidot",
+      single = {
+        guardOverlap = {
+          type = "OR",
+          value = {
+            {
+              type = "NOT",
+              value = {
+                anyrank = "@ranks",
+                owndebuff = true,
+                spell = "@spell:spellId",
+                type = "DEBUFF",
+                unit = "target",
+              },
+            },
+            {
+              anyrank = "@ranks",
+              operator = "LESSTHANOREQUALS",
+              owndebuff = true,
+              spell = "@spell:spellId",
+              type = "DEBUFF_REMAIN",
+              unit = "target",
+              value = "@overlap",
+            },
+          },
+        },
+        maxKey = "maxDots",
+        note = "multidot-single",
+        overlapKey = "maxOverlap",
+      },
     },
     strictSequence = {
       fidelity = "lossy",
       handler = "sequence",
       note = "sequence",
+    },
+    wait = {
+      fidelity = "approximate",
+      handler = "stop",
+      note = "wait",
+    },
+    waitUntil = {
+      fidelity = "approximate",
+      handler = "stop",
+      note = "wait",
+      ["until"] = true,
     },
   },
   classSpecs = {
@@ -268,6 +348,13 @@ ns.mapping = {
         t = "num",
         unit = "count",
       },
+      EQUIPPED = {
+        args = {
+          spellId = "@item:item",
+        },
+        kind = "spellIsKnown",
+        t = "bool",
+      },
       HEALTH = {
         args = {
           sourceUnit = "@unit:unit",
@@ -283,6 +370,27 @@ ns.mapping = {
         kind = "currentHealthPercent",
         t = "num",
         unit = "fraction",
+      },
+      ITEM = {
+        args = {
+          spellId = "@item:item",
+        },
+        kind = "spellIsReady",
+        ["not"] = {
+          notcarrying = true,
+        },
+        t = "bool",
+      },
+      ITEM_COOLDOWN = {
+        args = {
+          spellId = "@item:item",
+        },
+        kind = "spellTimeToReady",
+        ["not"] = {
+          notcarrying = true,
+        },
+        t = "num",
+        unit = "seconds",
       },
       MANA = {
         args = {
@@ -454,6 +562,14 @@ ns.mapping = {
       CASTING = "sim-idle",
       CHANNELING = "sim-idle",
     },
+    maxOf = {
+      currentEnergy = "maxEnergy",
+      currentFocus = "maxFocus",
+      currentHealth = "maxHealth",
+      currentMana = "maxMana",
+      currentRage = "maxRage",
+      currentRunicPower = "maxRunicPower",
+    },
     note = "The reverse direction: a Rotation Master rotation as a WowSims APL. conditions.<RM type> says which APL value kind it becomes (t: bool or num; a num kind is compared with the condition's operator and value, in unit seconds, fraction, count or raw). Args: @id:FIELD is an ActionID made from the RM spell field, @unit:FIELD a UnitReference made from the RM unit, @table:NAME:FIELD a reverse lookup in tables. variants pick by the RM fields in when; byClass picks the kind by the player's class. fidelity approximate with a note marks a substitute; what is not listed is left out and reported.",
     ops = {
       EQUALS = "OpEq",
@@ -534,7 +650,22 @@ ns.mapping = {
       },
     },
   },
+  folds = {
+    const = "A math node with two constants is its value; min/max of constants likewise; @table kinds use the table default when the argument is left out.",
+    linear = "a*X + b op c (X one reading, a and b constants, a not 0) becomes X op' (c-b)/a with the operator flipped when a < 0; a result outside the reading's range is a lossy range reason, never a wrong number.",
+    minMax = "max(A,B) op C becomes OR for > and >=, AND for < and <=; min(A,B) the other way round; each side then mapped as its own comparison.",
+    missing = "R op (max - C), (max - R) op C and (R + C) op max with C a plain number is a negative number in RM (value = -C): \"missing from the maximum\" (version 1 behavior, kept).",
+    note = "Arithmetic the importer folds into the comparison before mapping a condition (code in wowsims/import.mjs, mappingVersion 2). A reader that does not fold keeps working: the comparison is then reported as unsupported arithmetic. Order tried: missing-from-maximum, min/max, linear.",
+  },
   format = "RotationMasterWowsimsMapping",
+  grading = {
+    note = "How an item is graded when the only thing lost is of a known, harmless kind. Level: exact (same behavior), approximate (close, the sim and the live game differ), lossy (a part was dropped), unsupported (nothing can be imported). benign: the loss never disables the step (an approximate step is imported disabled unless the person asks; a benign one is not).",
+    prepullTiming = {
+      benign = true,
+      level = "approximate",
+      why = "The only thing lost converting a pre-pull action is the number of seconds before the pull; the out-of-combat condition keeps the step out of the fight. If the action itself cannot be mapped the item is unsupported for the action's reason alone: the timing is not reported twice.",
+    },
+  },
   limits = {
     array = 20000,
     base64 = 1500000,
@@ -553,6 +684,11 @@ ns.mapping = {
     total = 400000,
     variableDepth = 16,
   },
+  mappingChanges = {
+    ["2"] = {"grading.prepullTiming (new): a pre-pull action whose only loss is the seconds is approximate and benign; it is no longer lossy, and no longer reported on an action that is itself unsupported", "actions.wait, actions.waitUntil: were unsupportedActions (timing); now handler stop (a Stop step while the condition holds, waitUntil while it does not), approximate", "actions.activateAura: was unsupportedActions (sim-only); now handler cast with idArg auraId and requireKnown, approximate (aura-activation); unsupported when the sources know no class spell by that id", "actions.multidot, actions.strictMultidot: new `single` rule: maxDots 1 and a constant (or empty) maxOverlap is approximate (multidot-single), guard OR(NOT DEBUFF, DEBUFF_REMAIN <= overlap) or NOT DEBUFF at 0", "actions.channelSpell: new approxIf interruptIf const-true (channel-interrupt, approximate) instead of lossy", "actions.sequence, actions.strictSequence: history emulation (sequences.history); noop actions inside are dropped; one cast is that cast; item-only is approximate; wait inside is lossy (sequences.insideUnsupported)", "values.spellIsKnown, values.auraIsKnown: new itemRm EQUIPPED (an item named by id)", "values: arithmetic folds (folds): const, linear, min/max; missing-from-maximum unchanged", "tables.swing: Melee, Any, default added; tableUnsupported.swing: Ranged and RangedAuto are unsupported (ranged-swing) instead of an unreadable value", "unsupportedValues.spellCurrentCost: why cast-time -> cost", "export.conditions: ITEM, ITEM_COOLDOWN, EQUIPPED (item named by id); export.maxOf: a negative POWER/MANA/HEALTH number is max - current; export: a chain of SPELL_HISTORY steps becomes a sequence action; x-prepull-time is approximate", "ids: wowsims/ids/*.json now include every ActionID-valued key of the preset rotations (runeId etc.), not only spellId and auraId"},
+  },
+  mappingVersion = 2,
+  mappingVersionNote = "An integer that grows whenever a rule changes behavior (a kind mapped, a grade changed, a template edited); fields are added, never renamed, so a reader of an older version keeps working. 1 = the first release of both directions (web bd0474f); 2 = phase A2 (see DECISIONS.md 63).",
   maxKinds = {
     maxEnergy = "currentEnergy",
     maxFocus = "currentFocus",
@@ -600,6 +736,16 @@ ns.mapping = {
     ["secret-health"] = true,
     ["secret-power"] = true,
     ["unsupported-policy"] = true,
+  },
+  sequences = {
+    history = true,
+    insideUnsupported = {
+      multidot = "targets",
+      strictMultidot = "targets",
+      wait = "in-sequence",
+      waitUntil = "in-sequence",
+    },
+    note = "A sequence of casts becomes steps in reverse order; each step after the first also needs SPELL_HISTORY (the previous spell is the last one cast). Graded approximate (action-sequence-history). A sequence of one cast is that cast (no reason); a sequence of only items is separate steps, approximate (action-sequence); autocast/auto-attack actions inside it are dropped silently (Rotation Master does them itself); a wait inside it is lossy (in-sequence). Otherwise (spells mixed with items, or a client without SPELL_HISTORY) the old rule applies: separate steps, lossy (action-sequence).",
   },
   simUrls = {
     cata = "progression",
@@ -660,6 +806,18 @@ ns.mapping = {
       [3] = "Water",
     },
   },
+  tableUnsupported = {
+    swing = {
+      Ranged = {
+        kind = "autoTimeToNext",
+        why = "ranged-swing",
+      },
+      RangedAuto = {
+        kind = "autoTimeToNext",
+        why = "ranged-swing",
+      },
+    },
+  },
   tables = {
     execute = {
       E20 = 0.2,
@@ -693,12 +851,15 @@ ns.mapping = {
       RuneUnholy = 3,
     },
     swing = {
+      Any = false,
       AnyAuto = false,
       MainHand = false,
       MainHandAuto = false,
+      Melee = false,
       MeleeAuto = false,
       OffHand = true,
       OffHandAuto = true,
+      default = false,
     },
     totems = {
       Air = 4,
@@ -721,7 +882,6 @@ ns.mapping = {
   },
   unsupportedActions = {
     activateAllStatBuffProcAuras = "sim-only",
-    activateAura = "sim-only",
     activateAuraWithStacks = "sim-only",
     addComboPoints = "sim-only",
     cancelAura = "sim-only",
@@ -742,8 +902,6 @@ ns.mapping = {
     resetSequence = "sequences",
     schedule = "timing",
     triggerIcd = "sim-only",
-    wait = "timing",
-    waitUntil = "timing",
     warlockNextExhaleTarget = "spec-logic",
   },
   unsupportedValues = {
@@ -830,7 +988,7 @@ ns.mapping = {
     spellCastTime = "cast-time",
     spellChanneledTicks = "cast-time",
     spellCpm = "cast-time",
-    spellCurrentCost = "cast-time",
+    spellCurrentCost = "cost",
     spellFullCooldown = "cast-time",
     spellGcdHastedDuration = "cast-time",
     spellInFlight = "cast-time",
@@ -920,6 +1078,11 @@ ns.mapping = {
     },
     auraIsKnown = {
       fidelity = "approximate",
+      itemArg = "auraId",
+      itemRm = {
+        item = "@item",
+        type = "EQUIPPED",
+      },
       note = "aura-known",
       rm = {
         spell = "@spell:auraId",
@@ -1220,6 +1383,10 @@ ns.mapping = {
       t = "bool",
     },
     spellIsKnown = {
+      itemRm = {
+        item = "@item",
+        type = "EQUIPPED",
+      },
       rm = {
         spell = "@spell:spellId",
         type = "SPELL_KNOWN",

@@ -1,6 +1,8 @@
 {
  "format": "RotationMasterWowsimsMapping",
  "version": 1,
+ "mappingVersion": 2,
+ "mappingVersionNote": "An integer that grows whenever a rule changes behavior (a kind mapped, a grade changed, a template edited); fields are added, never renamed, so a reader of an older version keeps working. 1 = the first release of both directions (web bd0474f); 2 = phase A2 (see DECISIONS.md 63).",
  "note": "How a WoWSims APL (Action Priority List, proto-JSON) becomes a Rotation Master rotation. Declarative: wowsims/import.mjs interprets it, and a Lua port can read the same table. Template strings: @spell:ARG is the spell id of an ActionID argument, @unit:ARG a UnitReference as an RM unit, @table:NAME:ARG a lookup in a table below, @ranks is true on editions with spell ranks and absent elsewhere. Fidelity: exact (the same behavior), approximate (close, but the sim and the live game differ), lossy (part of the original is dropped), unsupported (no Rotation Master equivalent).",
  "limits": {
   "text": 1048576,
@@ -265,7 +267,10 @@
    "MeleeAuto": false,
    "AnyAuto": false,
    "OffHand": true,
-   "OffHandAuto": true
+   "OffHandAuto": true,
+   "Melee": false,
+   "Any": false,
+   "default": false
   }
  },
  "otherActions": {
@@ -301,6 +306,10 @@
    "rm": {
     "type": "SPELL_KNOWN",
     "spell": "@spell:spellId"
+   },
+   "itemRm": {
+    "type": "EQUIPPED",
+    "item": "@item"
    }
   },
   "auraIsKnown": {
@@ -310,7 +319,12 @@
    "rm": {
     "type": "SPELL_KNOWN",
     "spell": "@spell:auraId"
-   }
+   },
+   "itemRm": {
+    "type": "EQUIPPED",
+    "item": "@item"
+   },
+   "itemArg": "auraId"
   },
   "spellTimeToReady": {
    "t": "num",
@@ -722,7 +736,7 @@
   "remainingCastTime": "cast-time",
   "spellGcdHastedDuration": "cast-time",
   "spellChanneledTicks": "cast-time",
-  "spellCurrentCost": "cast-time",
+  "spellCurrentCost": "cost",
   "spellInFlight": "cast-time",
   "spellTimeToCharge": "cast-time",
   "spellFullCooldown": "cast-time",
@@ -830,7 +844,10 @@
     "interruptIf",
     "allowRecast"
    ],
-   "note": "channel"
+   "note": "channel",
+   "approxIf": {
+    "interruptIf": "const-true"
+   }
   },
   "multidot": {
    "handler": "cast",
@@ -844,6 +861,35 @@
      "spell": "@spell:spellId",
      "owndebuff": true,
      "anyrank": "@ranks"
+    }
+   },
+   "single": {
+    "maxKey": "maxDots",
+    "overlapKey": "maxOverlap",
+    "note": "multidot-single",
+    "guardOverlap": {
+     "type": "OR",
+     "value": [
+      {
+       "type": "NOT",
+       "value": {
+        "type": "DEBUFF",
+        "unit": "target",
+        "spell": "@spell:spellId",
+        "owndebuff": true,
+        "anyrank": "@ranks"
+       }
+      },
+      {
+       "type": "DEBUFF_REMAIN",
+       "unit": "target",
+       "spell": "@spell:spellId",
+       "owndebuff": true,
+       "anyrank": "@ranks",
+       "operator": "LESSTHANOREQUALS",
+       "value": "@overlap"
+      }
+     ]
     }
    }
   },
@@ -859,6 +905,35 @@
      "spell": "@spell:spellId",
      "owndebuff": true,
      "anyrank": "@ranks"
+    }
+   },
+   "single": {
+    "maxKey": "maxDots",
+    "overlapKey": "maxOverlap",
+    "note": "multidot-single",
+    "guardOverlap": {
+     "type": "OR",
+     "value": [
+      {
+       "type": "NOT",
+       "value": {
+        "type": "DEBUFF",
+        "unit": "target",
+        "spell": "@spell:spellId",
+        "owndebuff": true,
+        "anyrank": "@ranks"
+       }
+      },
+      {
+       "type": "DEBUFF_REMAIN",
+       "unit": "target",
+       "spell": "@spell:spellId",
+       "owndebuff": true,
+       "anyrank": "@ranks",
+       "operator": "LESSTHANOREQUALS",
+       "value": "@overlap"
+      }
+     ]
     }
    }
   },
@@ -889,17 +964,33 @@
    "handler": "noop",
    "fidelity": "exact",
    "note": "auto-attack"
+  },
+  "wait": {
+   "handler": "stop",
+   "fidelity": "approximate",
+   "note": "wait"
+  },
+  "waitUntil": {
+   "handler": "stop",
+   "until": true,
+   "fidelity": "approximate",
+   "note": "wait"
+  },
+  "activateAura": {
+   "handler": "cast",
+   "idArg": "auraId",
+   "requireKnown": true,
+   "why": "sim-only",
+   "fidelity": "approximate",
+   "note": "aura-activation"
   }
  },
  "unsupportedActions": {
   "activateAllStatBuffProcAuras": "sim-only",
-  "wait": "timing",
-  "waitUntil": "timing",
   "schedule": "timing",
   "resetSequence": "sequences",
   "changeTarget": "targets",
   "multishield": "targets",
-  "activateAura": "sim-only",
   "activateAuraWithStacks": "sim-only",
   "cancelAura": "sim-only",
   "triggerIcd": "sim-only",
@@ -1364,6 +1455,34 @@
      "op": "OpGt",
      "val": "0s"
     }
+   },
+   "ITEM": {
+    "t": "bool",
+    "kind": "spellIsReady",
+    "args": {
+     "spellId": "@item:item"
+    },
+    "not": {
+     "notcarrying": true
+    }
+   },
+   "ITEM_COOLDOWN": {
+    "t": "num",
+    "unit": "seconds",
+    "kind": "spellTimeToReady",
+    "args": {
+     "spellId": "@item:item"
+    },
+    "not": {
+     "notcarrying": true
+    }
+   },
+   "EQUIPPED": {
+    "t": "bool",
+    "kind": "spellIsKnown",
+    "args": {
+     "spellId": "@item:item"
+    }
    }
   },
   "petKinds": {
@@ -1387,6 +1506,14 @@
     "minus",
     "rare"
    ]
+  },
+  "maxOf": {
+   "currentMana": "maxMana",
+   "currentHealth": "maxHealth",
+   "currentRage": "maxRage",
+   "currentEnergy": "maxEnergy",
+   "currentFocus": "maxFocus",
+   "currentRunicPower": "maxRunicPower"
   }
  },
  "noManaClasses": [
@@ -1412,5 +1539,58 @@
   "maxRunicPower": "currentRunicPower",
   "maxMana": "currentMana",
   "maxHealth": "currentHealth"
+ },
+ "grading": {
+  "note": "How an item is graded when the only thing lost is of a known, harmless kind. Level: exact (same behavior), approximate (close, the sim and the live game differ), lossy (a part was dropped), unsupported (nothing can be imported). benign: the loss never disables the step (an approximate step is imported disabled unless the person asks; a benign one is not).",
+  "prepullTiming": {
+   "level": "approximate",
+   "benign": true,
+   "why": "The only thing lost converting a pre-pull action is the number of seconds before the pull; the out-of-combat condition keeps the step out of the fight. If the action itself cannot be mapped the item is unsupported for the action's reason alone: the timing is not reported twice."
+  }
+ },
+ "sequences": {
+  "history": true,
+  "note": "A sequence of casts becomes steps in reverse order; each step after the first also needs SPELL_HISTORY (the previous spell is the last one cast). Graded approximate (action-sequence-history). A sequence of one cast is that cast (no reason); a sequence of only items is separate steps, approximate (action-sequence); autocast/auto-attack actions inside it are dropped silently (Rotation Master does them itself); a wait inside it is lossy (in-sequence). Otherwise (spells mixed with items, or a client without SPELL_HISTORY) the old rule applies: separate steps, lossy (action-sequence).",
+  "insideUnsupported": {
+   "wait": "in-sequence",
+   "waitUntil": "in-sequence",
+   "multidot": "targets",
+   "strictMultidot": "targets"
+  }
+ },
+ "tableUnsupported": {
+  "swing": {
+   "Ranged": {
+    "kind": "autoTimeToNext",
+    "why": "ranged-swing"
+   },
+   "RangedAuto": {
+    "kind": "autoTimeToNext",
+    "why": "ranged-swing"
+   }
+  }
+ },
+ "folds": {
+  "note": "Arithmetic the importer folds into the comparison before mapping a condition (code in wowsims/import.mjs, mappingVersion 2). A reader that does not fold keeps working: the comparison is then reported as unsupported arithmetic. Order tried: missing-from-maximum, min/max, linear.",
+  "const": "A math node with two constants is its value; min/max of constants likewise; @table kinds use the table default when the argument is left out.",
+  "linear": "a*X + b op c (X one reading, a and b constants, a not 0) becomes X op' (c-b)/a with the operator flipped when a < 0; a result outside the reading's range is a lossy range reason, never a wrong number.",
+  "minMax": "max(A,B) op C becomes OR for > and >=, AND for < and <=; min(A,B) the other way round; each side then mapped as its own comparison.",
+  "missing": "R op (max - C), (max - R) op C and (R + C) op max with C a plain number is a negative number in RM (value = -C): \"missing from the maximum\" (version 1 behavior, kept)."
+ },
+ "mappingChanges": {
+  "2": [
+   "grading.prepullTiming (new): a pre-pull action whose only loss is the seconds is approximate and benign; it is no longer lossy, and no longer reported on an action that is itself unsupported",
+   "actions.wait, actions.waitUntil: were unsupportedActions (timing); now handler stop (a Stop step while the condition holds, waitUntil while it does not), approximate",
+   "actions.activateAura: was unsupportedActions (sim-only); now handler cast with idArg auraId and requireKnown, approximate (aura-activation); unsupported when the sources know no class spell by that id",
+   "actions.multidot, actions.strictMultidot: new `single` rule: maxDots 1 and a constant (or empty) maxOverlap is approximate (multidot-single), guard OR(NOT DEBUFF, DEBUFF_REMAIN <= overlap) or NOT DEBUFF at 0",
+   "actions.channelSpell: new approxIf interruptIf const-true (channel-interrupt, approximate) instead of lossy",
+   "actions.sequence, actions.strictSequence: history emulation (sequences.history); noop actions inside are dropped; one cast is that cast; item-only is approximate; wait inside is lossy (sequences.insideUnsupported)",
+   "values.spellIsKnown, values.auraIsKnown: new itemRm EQUIPPED (an item named by id)",
+   "values: arithmetic folds (folds): const, linear, min/max; missing-from-maximum unchanged",
+   "tables.swing: Melee, Any, default added; tableUnsupported.swing: Ranged and RangedAuto are unsupported (ranged-swing) instead of an unreadable value",
+   "unsupportedValues.spellCurrentCost: why cast-time -> cost",
+   "export.conditions: ITEM, ITEM_COOLDOWN, EQUIPPED (item named by id); export.maxOf: a negative POWER/MANA/HEALTH number is max - current; export: a chain of SPELL_HISTORY steps becomes a sequence action; x-prepull-time is approximate",
+   "ids: wowsims/ids/*.json now include every ActionID-valued key of the preset rotations (runeId etc.), not only spellId and auraId"
+  ]
  }
 }

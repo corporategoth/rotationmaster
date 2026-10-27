@@ -29,12 +29,18 @@ ERROR['not-an-apl'] = ERROR['not-apl']
 local REASON = {
     ['action-empty'] = 'This item has no action.',
     ['action-unsupported'] = 'The action {kind} cannot be imported: {why}.',
-    ['action-other-id'] = 'The action casts {id}, which is a simulator setting such as the potion, not a spell or item with an id.',
+    ['action-other-id'] = "The action uses {id}, a potion or other item chosen in the simulator's settings. Rotation Master has no step for an item picked there, so it is not imported.",
     ['action-no-id'] = 'The action has no spell or item id.',
     ['action-target'] = 'The action targets {unit}; that target is not imported.',
     ['action-friendly-spell'] = 'A cast on a friendly target is imported as a plain cast, without the target.',
     ['action-channel'] = 'Channeled spell: {parts} cannot be imported.',
     ['action-multidot'] = 'Casting on several targets is imported as a plain cast on your target, with a check that the debuff is missing; switching targets is not imported.',
+    ['action-multidot-single'] = 'Casting a dot on one target became a cast when the debuff is missing, or when it runs out within the overlap the simulator allows.',
+    ['action-channel-interrupt'] = 'The channel the simulator may interrupt at any time became a plain channel; Rotation Master advises the best action every moment, so it never insists on finishing it.',
+    ['action-wait'] = "The simulator's wait became a Stop step while its condition holds. The simulator waits for a set time; Rotation Master checks again all the time.",
+    ['action-wait-until'] = "The simulator's wait until became a Stop step while its condition holds. The simulator waits for a set time; Rotation Master checks again all the time.",
+    ['action-aura-activation'] = 'Activating an aura became casting the spell of the same name.',
+    ['action-sequence-history'] = 'A sequence of {count} casts became {count} steps in reverse order, each needing the previous spell to be the one you cast last. A step above them can still come in between.',
     ['action-sequence'] = 'A sequence of actions is imported as {count} separate steps; Rotation Master cannot require them to follow one another.',
     ['cond-unsupported'] = 'The condition {kind} has no equivalent ({why}), so it was left out.',
     ['cond-empty'] = 'An empty condition value was left out.',
@@ -69,7 +75,7 @@ local WARNING = {
 }
 local WHY = {
     ['fight-length'] = 'Rotation Master does not know how long the fight lasts',
-    ['arithmetic'] = 'conditions cannot do arithmetic',
+    ['arithmetic'] = 'conditions compare one reading with a fixed number, so arithmetic between two readings has no equivalent',
     ['cast-time'] = 'cast times, the global cooldown and swing timers are not conditions here',
     ['proc-tracking'] = 'trinket and proc tracking exists only in the simulator',
     ['sim-state'] = "it reads the simulator's internal state",
@@ -80,12 +86,15 @@ local WHY = {
     ['boss'] = 'boss spell timers are not available',
     ['runes'] = 'this rune detail is not available',
     ['distance'] = 'unit distance is not available',
-    ['sequences'] = 'sequences are not tracked',
+    ['sequences'] = 'Rotation Master does not track whether a sequence has finished',
     ['constant'] = 'not a condition',
     ['metadata'] = 'not a condition',
     ['unknown'] = 'Rotation Master does not know it',
     ['cooldowns'] = 'Rotation Master keeps cooldowns in their own Cooldowns list',
-    ['timing'] = 'waiting and timed actions have no counterpart',
+    ['timing'] = 'timed actions have no counterpart',
+    ['cost'] = "a spell's cost is not a condition here",
+    ['ranged-swing'] = 'Rotation Master has no timer for the ranged auto shot',
+    ['in-sequence'] = 'a wait inside a sequence has no counterpart',
     ['targets'] = 'switching targets has no counterpart',
     ['sim-only'] = 'it only changes the simulation',
     ['operator'] = 'an unknown comparison',
@@ -93,7 +102,7 @@ local WHY = {
     ['operand'] = 'one side is not a number Rotation Master can read',
     ['unit'] = 'the number\'s unit does not fit, for example a percent compared with seconds',
     ['range'] = 'the number is outside what Rotation Master accepts',
-    ['item-id'] = 'it names an item, not a spell',
+    ['item-id'] = "it names an item's effect by the item id, and Rotation Master needs the effect's spell id",
     ['other-id'] = 'it is a simulator setting, not a spell',
     ['no-id'] = 'it has no spell id',
     ['consumables'] = "it reads the potions and food chosen in the simulator's settings",
@@ -127,6 +136,7 @@ local XREASON = {
     ['x-cond-approx'] = '{type} was converted approximately: {note}.',
     ['x-prepull-time'] = 'Pre-pull action: WowSims needs a time before the pull and Rotation Master has none, so the times are approximated, one second apart, the last one a second before the pull.',
     ['x-prepull-cond'] = "A pre-pull action carries no conditions, so this step's other conditions were lost.",
+    ['x-sequence-history'] = '{count} steps that each need the previous spell to be the last one cast became one sequence in the simulator.',
     ['x-item-list'] = '{count} alternative items became separate steps.',
     ['x-potion'] = "This edition's mana potions became the simulator's resource potion, which uses the potion chosen in the simulator's settings.",
     ['x-cond-never'] = 'Its conditions can never be true in the simulator (for example, only out of combat), so it was not exported.',
@@ -275,6 +285,8 @@ local function reasonWords(L, reason, opts, tables)
     for k, v in pairs(reason.params or {}) do params[k] = v end
     local code = reason.code
     local text = tables.reason[code]
+    -- The simulator's wait and wait until read alike; only the words for the action differ.
+    if code == 'action-wait' and params.kind == 'waitUntil' and tables.reason['action-wait-until'] then text = tables.reason['action-wait-until'] end
     if not text then return code end
     -- Codes inside a reason read as words.
     if params.why then

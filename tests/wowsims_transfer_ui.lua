@@ -241,7 +241,7 @@ test('pasted WowSims JSON is converted, then previewed, compared and imported li
     assert(d.apply:IsEnabled() and d.inspect:IsEnabled())
     assert(d.status:GetText():find('Ready to import', 1, true) and d.status:GetText():find('Converted from WowSims: 8 steps, 3 disabled', 1, true), tostring(d.status:GetText()))
     d.inspect:Click()
-    assert(#shown == 1 and shown[1].title == 'WowSims import report' and shown[1].text:find('Items in the rotation: 9 (6 exact, 2 approximate, 1 lossy, 0 not representable).', 1, true), tostring(shown[1] and shown[1].text))
+    assert(#shown == 1 and shown[1].title == 'WowSims import report' and shown[1].text:find('Items in the rotation: 9 (6 exact, 3 approximate, 0 lossy, 0 not representable).', 1, true), tostring(shown[1] and shown[1].text))
     assert(same(before, a.db.profile) and countRotations(a) == 1, 'previewing and checking saved nothing: ' .. tostring(countRotations(a)))
     -- A new copy shows the converted rotation in the read-only editor view.
     d.destination:Click()

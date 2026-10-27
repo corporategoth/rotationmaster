@@ -175,7 +175,8 @@ function M.digest(result)
         for _, reason in ipairs(item.reasons) do codes[#codes + 1] = reason.code end
         local row = {item.path, item.fidelity, item.outcome, table.concat(codes, ',')}
         for _, became in ipairs(item.became) do
-            local action = type(became.action) == 'table' and table.concat(became.action, '+') or string.format('%d', became.action)
+            -- A Stop step has no action; the website's digest prints that as JavaScript's undefined.
+            local action = became.action == nil and 'undefined' or type(became.action) == 'table' and table.concat(became.action, '+') or string.format('%d', became.action)
             row[#row + 1] = became.type .. ':' .. action .. (became.disabled and ':off' or '') .. ' ' .. (became.conditions or '')
         end
         items[#items + 1] = row

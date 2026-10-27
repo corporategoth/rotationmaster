@@ -1711,8 +1711,8 @@
   "summary": {
    "items": 22,
    "exact": 0,
-   "approximate": 4,
-   "lossy": 18,
+   "approximate": 6,
+   "lossy": 16,
    "unsupported": 0,
    "exported": 22,
    "dropped": 0,

@@ -9,8 +9,8 @@
   "summary": {
    "items": 9,
    "exact": 6,
-   "approximate": 2,
-   "lossy": 1,
+   "approximate": 3,
+   "lossy": 0,
    "unsupported": 0,
    "hidden": 0,
    "prepull": 1,
@@ -28,7 +28,7 @@
   "items": [
    [
     "prepullActions[1]",
-    "lossy",
+    "approximate",
     "enabled",
     "prepull-timing",
     "spell:15208 NOT(COMBAT player)"
@@ -100,8 +100,8 @@
   "summary": {
    "items": 17,
    "exact": 9,
-   "approximate": 1,
-   "lossy": 7,
+   "approximate": 5,
+   "lossy": 3,
    "unsupported": 0,
    "hidden": 0,
    "prepull": 4,
@@ -119,28 +119,28 @@
   "items": [
    [
     "prepullActions[1]",
-    "lossy",
+    "approximate",
     "enabled",
     "prepull-timing",
     "spell:25359 NOT(COMBAT player)"
    ],
    [
     "prepullActions[2]",
-    "lossy",
+    "approximate",
     "enabled",
     "prepull-timing",
     "spell:16387 NOT(COMBAT player)"
    ],
    [
     "prepullActions[3]",
-    "lossy",
+    "approximate",
     "enabled",
     "prepull-timing",
     "spell:25361 NOT(COMBAT player)"
    ],
    [
     "prepullActions[4]",
-    "lossy",
+    "approximate",
     "enabled",
     "prepull-timing",
     "spell:10497 NOT(COMBAT player)"

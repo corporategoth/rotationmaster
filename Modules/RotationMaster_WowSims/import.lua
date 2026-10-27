@@ -17,6 +17,9 @@ ns.import = import
 
 local LEVELS = {'exact', 'approximate', 'lossy', 'unsupported'}
 import.LEVELS = LEVELS
+-- The rule table's mappingVersion this port implements (mapping.json, tests/wowsims_module.lua checks the data agrees). A
+-- table of a newer version still reads, since rules only gain fields, but the rules the port lacks are not applied.
+import.MAPPING_VERSION = 2
 local LEVEL_RANK = {}
 for index, level in ipairs(LEVELS) do LEVEL_RANK[level] = index end
 local function worse(a, b) return LEVEL_RANK[b] > LEVEL_RANK[a] and b or a end
@@ -38,6 +41,14 @@ local function copy(v, depth)
     depth = depth or 0
     local out = {}
     for k, x in pairs(v) do out[k] = copy(x, depth + 1) end
+    return out
+end
+-- A copy of a template with every string equal to `from` replaced by `to` (a number, here).
+local function substitute(v, from, to)
+    if v == from then return to end
+    if type(v) ~= 'table' then return v end
+    local out = {}
+    for k, x in pairs(v) do out[k] = substitute(x, from, to) end
     return out
 end
 local function slice(list, count)
@@ -483,6 +494,12 @@ local function makeConverter(ctx)
                     local order = mapping.tableOrder and mapping.tableOrder[parts[2]]
                     local name
                     if type(raw) == 'number' then name = order and order[raw] or nil else name = raw end
+                    -- An argument left out takes the table's default.
+                    if name == nil and tbl and rawget(tbl, 'default') ~= nil then name = 'default' end
+                    local gone = mapping.tableUnsupported and mapping.tableUnsupported[parts[2]]
+                    if gone and type(name) == 'string' and rawget(gone, name) ~= nil then
+                        return {fail = {code = 'cond-unsupported', params = {kind = gone[name].kind, why = gone[name].why}}}
+                    end
                     if not tbl or type(name) ~= 'string' or rawget(tbl, name) == nil then
                         return {fail = {code = 'cond-value', params = {what = parts[3]}}}
                     end
@@ -503,7 +520,7 @@ local function makeConverter(ctx)
         if ctx.rootVars[name] ~= nil then return {value = ctx.rootVars[name], scope = ctx.rootScope} end
         return nil
     end
-    local convert, leaf, asBool, combine, compare, foldMissing
+    local convert, leaf, asBool, combine, compare, foldMissing, foldConst, foldMinMax, foldLinear
     local SWAP = {OpLt = 'OpGt', OpLe = 'OpGe', OpGt = 'OpLt', OpGe = 'OpLe', OpEq = 'OpEq', OpNe = 'OpNe'}
 
     function asBool(node)
@@ -564,6 +581,10 @@ local function makeConverter(ctx)
             return {k = 'cond', tree = {type = 'NOT', value = inner.tree}}
         elseif kind == 'cmp' then
             return compare(isObj(body) and body or {}, scope, depth)
+        elseif kind == 'math' or kind == 'min' or kind == 'max' then
+            -- Arithmetic on constants is a constant. Anything else has no RM equivalent as a value (compare handles the shapes it can).
+            local folded = foldConst(v)
+            if folded ~= nil then return {k = 'const', parsed = {num = folded, suffix = ''}, truthy = folded ~= 0} end
         elseif kind == 'variableRef' or kind == 'variablePlaceholder' then
             local name = isObj(body) and type(body.name) == 'string' and body.name or nil
             local found
@@ -643,6 +664,100 @@ local function makeConverter(ctx)
         return {k = 'cond', tree = built.tree}
     end
 
+    -- ---- arithmetic that is not arithmetic: constants, min and max against a constant, a constant moved across a comparison ----
+    local function numberOf(node)
+        local c = kindOf(node) == 'const' and parseConst(isObj(node.const) and node.const.val or nil) or nil
+        if not c or c.bool ~= nil or not (c.num == c.num and c.num ~= math.huge and c.num ~= -math.huge) then return nil end
+        -- In the number's base unit (seconds, a fraction), the way constIn reads it.
+        if c.suffix == 'ms' then return c.num / 1000 elseif c.suffix == 'm' then return c.num * 60 elseif c.suffix == '%' then return c.num / 100 end
+        return c.num
+    end
+    function foldConst(node, depth)
+        depth = depth or 0
+        if depth > 16 or not isObj(node) then return nil end
+        local k = kindOf(node)
+        if k == 'const' then return numberOf(node) end
+        if k == 'math' and isObj(node.math) then
+            local a, b = foldConst(node.math.lhs, depth + 1), foldConst(node.math.rhs, depth + 1)
+            if a == nil or b == nil then return nil end
+            local op, r = node.math.op, nil
+            if op == 'OpAdd' then r = a + b elseif op == 'OpSub' then r = a - b elseif op == 'OpMul' then r = a * b
+            elseif op == 'OpDiv' then if b ~= 0 then r = a / b end end
+            if r ~= nil and r == r and r ~= math.huge and r ~= -math.huge then return r end
+            return nil
+        end
+        if (k == 'min' or k == 'max') and isObj(node[k]) and isArray(node[k].vals) and #node[k].vals > 0 then
+            local best
+            for _, x in ipairs(node[k].vals) do
+                local value = foldConst(x, depth + 1)
+                if value == nil then return nil end
+                if best == nil or (k == 'min' and value < best) or (k == 'max' and value > best) then best = value end
+            end
+            return best
+        end
+        return nil
+    end
+    local function constNode(n)
+        local text = string.format('%.6f', n)
+        local rounded = tonumber(text)
+        return json.object({const = json.object({val = rounded == 0 and '0' or (isInteger(rounded) and numstr(rounded) or tostring(rounded))})})
+    end
+    -- X*a + b as {base, a, b}, one or more levels deep; nil when the node is not such a thing around one changing value.
+    local function linearOf(node, depth)
+        depth = depth or 0
+        if depth > 8 or not isObj(node) or kindOf(node) ~= 'math' or not isObj(node.math) then return nil end
+        local op, lhs, rhs = node.math.op, node.math.lhs, node.math.rhs
+        local cl, cr = foldConst(lhs), foldConst(rhs)
+        if (cl == nil) == (cr == nil) then return nil end           -- both constant (folded elsewhere) or neither (two changing values)
+        local other, c = cl == nil and lhs or rhs, cl == nil and cr or cl
+        local inner = linearOf(other, depth + 1) or {base = other, a = 1, b = 0}
+        local a, b = inner.a, inner.b
+        if op == 'OpAdd' then b = b + c
+        elseif op == 'OpSub' then if cl == nil then b = b - c else a = -a; b = c - b end   -- X - c, or c - X
+        elseif op == 'OpMul' then a = a * c; b = b * c
+        elseif op == 'OpDiv' then
+            if cl ~= nil or c == 0 then return nil end
+            a = a / c; b = b / c
+        else return nil end
+        local function finite(x) return x == x and x ~= math.huge and x ~= -math.huge end
+        if finite(a) and finite(b) and a ~= 0 then return {base = inner.base, a = a, b = b} end
+        return nil
+    end
+    -- max(a,b) > c is a > c OR b > c, max(a,b) <= c is a <= c AND b <= c; min the other way. Exact, for any comparison but equality.
+    function foldMinMax(op, lhs, rhs, scope, depth)
+        local side, k, constant, flip
+        for _, pair in ipairs({{lhs, rhs, false}, {rhs, lhs, true}}) do
+            local node, other = pair[1], pair[2]
+            local kn = kindOf(node)
+            if (kn == 'min' or kn == 'max') and isObj(node[kn]) and isArray(node[kn].vals) and #node[kn].vals > 1 and #node[kn].vals <= 8 and foldConst(other) ~= nil then
+                side = node; k = kn; constant = other; flip = pair[3]; break
+            end
+        end
+        if not side then return nil end
+        local real = flip and SWAP[op] or op
+        if real == 'OpEq' or real == 'OpNe' or not own(SWAP, real) then return nil end
+        local any = (k == 'max') == (real == 'OpGt' or real == 'OpGe')          -- max above, or min below: any one is enough
+        local parts = {}
+        for i, v in ipairs(side[k].vals) do
+            parts[i] = convert(json.object({cmp = json.object({op = real, lhs = v, rhs = constant})}), scope, depth + 1)
+        end
+        return combine(any and 'or' or 'and', parts)
+    end
+    -- (X*a + b) op c is X op' (c-b)/a, the comparison turned round when a is negative.
+    function foldLinear(op, lhs, rhs, scope, depth)
+        for _, pair in ipairs({{lhs, rhs, false}, {rhs, lhs, true}}) do
+            local node, other, swapped = pair[1], pair[2], pair[3]
+            local lin = linearOf(node)
+            local c = lin and foldConst(other) or nil
+            if lin and c ~= nil then
+                local real = swapped and SWAP[op] or op                      -- normalized to  node op other
+                if not own(SWAP, real) then return nil end
+                if lin.a < 0 then real = SWAP[real] end
+                return compare(json.object({op = real, lhs = lin.base, rhs = constNode((c - lin.b) / lin.a)}), scope, depth + 1)
+            end
+        end
+        return nil
+    end
     -- "Power against its maximum": rage >= max rage - 20, max mana - mana > 500, mana + 300 < max mana. Rotation
     -- Master compares a negative number with how much the unit is MISSING from its maximum, so these are one condition.
     function foldMissing(op, lhs, rhs, scope, depth)
@@ -694,7 +809,8 @@ local function makeConverter(ctx)
         local op = body.op
         if type(op) == 'number' then op = mapping.ops[op + 1] end
         if type(op) ~= 'string' or not own(mapping.opNames, op) then note('cond-cmp', 'lossy', {why = 'operator'}); return dropNode() end
-        local folded = foldMissing(op, body.lhs, body.rhs, scope, depth)
+        local folded = foldMissing(op, body.lhs, body.rhs, scope, depth) or foldMinMax(op, body.lhs, body.rhs, scope, depth)
+            or foldLinear(op, body.lhs, body.rhs, scope, depth)
         if folded then return folded end
         local l, r = convert(body.lhs, scope, depth + 1), convert(body.rhs, scope, depth + 1)
         if l.k == 'drop' or r.k == 'drop' then return dropNode() end
@@ -874,6 +990,12 @@ function import.convertApl(apl, options)
         return {k = 'cond', tree = {type = 'AND', value = value}}
     end
 
+    local function statusOf(id, kind)
+        if verifiers then return import.verifyId(verifiers, cls, id, kind).status end
+        return classifyId(sets, cls, id, kind)
+    end
+    local grading = mapping.grading or {prepullTiming = {level = 'lossy', benign = true}}
+
     -- Decides fidelity and outcome, builds the steps, checks ids, and fills the report record.
     local function finish(record, created, handler)
         local reasons = dedupe(ctx.item.reasons)
@@ -887,6 +1009,10 @@ function import.convertApl(apl, options)
         end
         local made = {}
         for _, m in ipairs(created) do if m then made[#made + 1] = m end end
+        -- A step that is not made has no timing to lose: only the reasons of the action itself are reported, never the benign ones.
+        if #made == 0 then
+            for i = #reasons, 1, -1 do if reasons[i].benign then table.remove(reasons, i) end end
+        end
         if #made == 0 and handler and handler.handler == 'noop' then
             record.fidelity = handler.fidelity or 'lossy'; record.outcome = 'skipped'; record.reasons = reasons
             return
@@ -916,7 +1042,7 @@ function import.convertApl(apl, options)
         local used = {}
         for _, m in ipairs(made) do
             if m.type == 'item' then for _, id in ipairs(m.action) do used[#used + 1] = {id = id, kind = 'item'} end
-            else used[#used + 1] = {id = m.action, kind = 'spell'} end
+            elseif m.type == 'spell' then used[#used + 1] = {id = m.action, kind = 'spell'} end
             for _, id in ipairs(treeSpellIds(m.tree)) do used[#used + 1] = {id = id, kind = 'spell'} end
             for _, id in ipairs(treeItemIds(m.tree)) do used[#used + 1] = {id = id, kind = 'item'} end
         end
@@ -959,7 +1085,8 @@ function import.convertApl(apl, options)
                 record.outcome = 'skipped'; record.fidelity = 'unsupported'; ctx.stop = true
                 break
             end
-            local step = {id = newId(), type = m.type, action = m.action}
+            local step = {id = newId(), type = m.type}
+            if m.type ~= 'stop' then step.action = m.action end
             if ranks and m.type == 'spell' then step.ranked = false end
             if m.tree then step.conditions = m.tree end
             if disabled then step.disabled = true end
@@ -978,9 +1105,10 @@ function import.convertApl(apl, options)
         local condNode = conv.conditionOf(conds)
         local function cast(sub, subKind)
             local node = isObj(sub) and sub[subKind] or nil
-            local r = conv.spellOf(isObj(node) and node.spellId or nil)
+            local idArg = handler.idArg or 'spellId'
+            local r = conv.spellOf(isObj(node) and node[idArg] or nil)
             if r.fail == 'item-id' then
-                local id = node.spellId.itemId
+                local id = node[idArg].itemId
                 if isInteger(id) and id > 0 and id <= mapping.validation.idMax then return {type = 'item', action = {id}} end
                 conv.note('action-no-id', 'unsupported'); return nil
             end
@@ -1007,44 +1135,124 @@ function import.convertApl(apl, options)
         end
         if handler.handler == 'cast' then
             local level = handler.fidelity
+            local made = cast(action, kind)
+            if not made then return {} end
+            -- Activating an aura the simulator's character would already have becomes casting the spell of that name, when the
+            -- sources know such a spell for this class; otherwise there is nothing to cast.
+            if handler.requireKnown and (made.type ~= 'spell' or statusOf(made.action, 'spell') ~= 'known') then
+                conv.note('action-unsupported', 'unsupported', {kind = kind, why = handler.why or 'sim-only'})
+                return {}
+            end
+            local guard = handler.guard
             if handler.lossyIf then
                 local used = {}
                 for _, k in ipairs(handler.lossyIf) do
                     if body[k] ~= nil and body[k] ~= false then used[#used + 1] = k end
                 end
+                -- A channel the simulator may interrupt whenever it likes (interruptIf: true) is one Rotation Master's advice
+                -- already allows: it names the best action every moment, so it never insists on finishing the channel.
+                local free, rest = 0, {}
+                for _, k in ipairs(used) do
+                    local parsed = handler.approxIf and handler.approxIf[k] == 'const-true' and isObj(body[k]) and conv.kindOf(body[k]) == 'const'
+                        and parseConst(isObj(body[k].const) and body[k].const.val or nil) or nil
+                    if parsed and parsed.bool == true then free = free + 1 else rest[#rest + 1] = k end
+                end
+                if free > 0 then conv.note('action-' .. handler.note .. '-interrupt', 'approximate', {}); used = rest end
                 if #used > 0 then
                     conv.note('action-' .. handler.note, 'lossy', {parts = table.concat(used, ', ')}); level = nil
                 end
+            elseif handler.single then
+                -- One dot on one target (maxDots 1) is the plain dot refresh: cast when it is missing, or about to run out within
+                -- the overlap. More targets means switching targets, which Rotation Master does not do.
+                local sg = handler.single
+                local dots, ov = body[sg.maxKey], body[sg.overlapKey]
+                local overlap
+                if ov == nil or (isObj(ov) and #json.keys(ov) == 0) then overlap = 0
+                elseif isObj(ov) and conv.kindOf(ov) == 'const' then overlap = constIn(parseConst(isObj(ov.const) and ov.const.val or nil), 'seconds') end
+                if dots == 1 and type(overlap) == 'number' and overlap >= 0 and overlap <= 3600 then
+                    conv.note('action-' .. sg.note, 'approximate', {})
+                    if overlap > 0 then guard = substitute(sg.guardOverlap, '@overlap', overlap) end
+                    level = nil
+                else level = handler.fidelity end
+                if level then conv.note('action-' .. handler.note, level, {}) end
             elseif level then conv.note('action-' .. handler.note, level, {}) end
-            local made = cast(action, kind)
-            if not made then return {} end
             local extra
-            if handler.guard then
-                local g = conv.build(handler.guard, body, nil)
+            if guard then
+                local g = conv.build(guard, body, nil)
                 if g.fail then conv.note(g.fail.code, 'lossy', g.fail.params) else extra = g.tree end
             end
             made.condNode = condNode; made.extra = extra
             return {made}
         end
+        if handler.handler == 'stop' then
+            -- The simulator waits (does nothing) while its condition holds, for a time; Rotation Master's Stop is the same
+            -- while it is true, and is checked again all the time. waitUntil waits while its condition is NOT yet true.
+            conv.note('action-' .. handler.note, 'approximate', {kind = kind})
+            local node = condNode
+            if handler['until'] then
+                if not isObj(body.condition) then conv.note('action-no-condition', 'unsupported'); return {} end
+                node = combineNodes(condNode, conv.conditionOf({{value = json.object({['not'] = json.object({val = body.condition})}), scope = scope}}))
+            end
+            return {{type = 'stop', condNode = node}}
+        end
         if handler.handler == 'sequence' then
+            local seqInside = mapping.sequences and mapping.sequences.insideUnsupported or {}
             local out = {}
-            for _, sub in ipairs(asList(body.actions)) do
+            local subs = asList(body.actions)
+            for _, sub in ipairs(subs) do
                 if isObj(sub) then
                     local sk
                     for _, k in ipairs(json.keys(sub)) do if k ~= 'condition' then sk = k; break end end
-                    if sk == 'castSpell' or sk == 'castFriendlySpell' or sk == 'channelSpell' then
+                    local act = sk ~= nil and own(mapping.actions, sk) and mapping.actions[sk] or nil
+                    -- What Rotation Master does by itself (autocast cooldowns, auto attack) is nothing to carry over inside a sequence either.
+                    if act and act.handler == 'noop' then
+                        -- dropped
+                    elseif sk == 'castSpell' or sk == 'castFriendlySpell' or sk == 'channelSpell' then
                         local made = cast(sub, sk)
                         if made then
                             local subCond = sub.condition ~= nil and conv.conditionOf({{value = sub.condition, scope = scope}}) or TRUE
-                            made.condNode = combineNodes(condNode, subCond); made.extra = nil
+                            made.condNode = combineNodes(condNode, subCond); made.subCond = subCond; made.extra = nil
                             out[#out + 1] = made
                         end
                     else
-                        conv.note('action-unsupported', 'lossy', {kind = tostring(sk), why = own(mapping.unsupportedActions, sk) and mapping.unsupportedActions[sk] or 'unknown'})
+                        conv.note('action-unsupported', 'lossy', {kind = tostring(sk),
+                            why = own(mapping.unsupportedActions, sk) and mapping.unsupportedActions[sk] or own(seqInside, sk) and seqInside[sk] or 'unknown'})
                     end
                 end
             end
-            conv.note('action-sequence', 'lossy', {count = #out})
+            -- Rotation Master has no "these casts, one after the other, nothing between", but it remembers your last casts: with
+            -- the steps in reverse order, each one after the first needs the previous spell to be the one you cast last, so a
+            -- started sequence carries on ahead of everything below it. Close, not the same (a higher item can still come between).
+            local history = mapping.sequences and mapping.sequences.history == true and #out > 1
+            if history then
+                for _, m in ipairs(out) do if m.type ~= 'spell' then history = false end end
+            end
+            if history and ctx.supports then
+                history = ctx.supports({type = 'SPELL_HISTORY', spell = out[1].action, operator = 'EQUALS', value = 1}).ok ~= false
+            end
+            if history then
+                local chained = {}
+                for i, m in ipairs(out) do
+                    if i == 1 then chained[i] = m
+                    else
+                        local c = {}
+                        for key, value in pairs(m) do c[key] = value end
+                        c.condNode = combineNodes(m.subCond or TRUE,
+                            {k = 'cond', tree = {type = 'SPELL_HISTORY', spell = out[i - 1].action, operator = 'EQUALS', value = 1}})
+                        chained[i] = c
+                    end
+                end
+                conv.note('action-sequence-history', 'approximate', {count = #out})
+                local reversed = {}
+                for i = #chained, 1, -1 do reversed[#reversed + 1] = chained[i] end
+                return reversed
+            end
+            -- One cast is just that cast; steps that are all items are each used when ready, in the same order (item use has no
+            -- global cooldown to wait for); anything else is separate steps with the order only partly kept.
+            if #out <= 1 then return out end
+            local allItems = true
+            for _, m in ipairs(out) do if m.type ~= 'item' then allItems = false end end
+            conv.note('action-sequence', allItems and 'approximate' or 'lossy', {count = #out})
             return out
         end
         return {}
@@ -1168,7 +1376,8 @@ function import.convertApl(apl, options)
         if ctx.stop then break end
         doEntry({item = entry.p, path = 'prepullActions[' .. entry.i .. ']', scope = rootScope, inherited = {{tree = outOfCombat()}},
             depth = 0, stack = {}, prepull = true,
-            reasons = {{code = 'prepull-timing', level = 'lossy', benign = true, params = {time = entry.when}}}})
+            reasons = {{code = 'prepull-timing', level = grading.prepullTiming.level, benign = grading.prepullTiming.benign == true,
+                params = {time = entry.when}}}})
     end
     -- The priority list, in order.
     for i, item in ipairs(slice(asList(apl.priorityList), lim.items)) do

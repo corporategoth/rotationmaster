@@ -100,7 +100,18 @@ end
 -- An APL item in a form that ignores what the conversion legitimately changes: ranks and tags, notes, the
 -- reaction-time flag, nested and/or, single-part and/or, the second spelling of the primary target, and the units
 -- a number was written in.
-local function norm(v)
+local MAXOF = {maxMana = 'currentMana', maxRage = 'currentRage', maxEnergy = 'currentEnergy', maxFocus = 'currentFocus', maxRunicPower = 'currentRunicPower',
+    maxHealth = 'currentHealth'}
+local SWAPOP = {OpLt = 'OpGt', OpGt = 'OpLt', OpLe = 'OpGe', OpGe = 'OpLe', OpEq = 'OpEq', OpNe = 'OpNe'}
+-- The one key of a table that has exactly one, else nil.
+local function soleKey(t)
+    if type(t) ~= 'table' then return nil end
+    local key = next(t)
+    if key == nil or next(t, key) ~= nil then return nil end
+    return key
+end
+local norm
+function norm(v)
     if json.isArray(v) then
         local out = {}
         for i, x in ipairs(v) do out[i] = norm(x) end
@@ -134,7 +145,45 @@ local function norm(v)
             out[k] = {vals = vals}
         end
     end
+    -- A sequence of one action is that action.
+    for _, k in ipairs({'sequence', 'strictSequence'}) do
+        local seq = out[k]
+        if type(seq) == 'table' and type(seq.actions) == 'table' and #seq.actions == 1 then
+            local merged = {}
+            for key, x in pairs(out) do if key ~= k then merged[key] = x end end
+            for key, x in pairs(seq.actions[1]) do merged[key] = x end
+            if out.condition and seq.actions[1].condition then
+                merged.condition = norm(json.object({['and'] = json.object({vals = json.array({out.condition, seq.actions[1].condition})})}))
+            end
+            return merged
+        end
+    end
     if out.auraIsInactive then return {['not'] = {val = {auraIsActive = out.auraIsInactive}}} end
+    -- A fraction written as a plain number (0.1) is the percent it means (10%) next to a reading that is a percent.
+    local cmp = out.cmp
+    if type(cmp) == 'table' and type(cmp.lhs) == 'table' and type(cmp.rhs) == 'table' then
+        local lk = soleKey(cmp.lhs)
+        local rc = type(cmp.rhs.const) == 'table' and cmp.rhs.const.val or nil
+        if lk and lk:match('Percent$') and type(rc) == 'string' and rc:match('^%-?%d*%.?%d+$') and math.abs(tonumber(rc)) <= 1 then
+            out.cmp = {op = cmp.op, lhs = cmp.lhs, rhs = {const = {val = canonVal(tostring(tonumber(rc) * 100) .. '%')}}}
+            cmp = out.cmp
+        end
+        -- "What is missing from the maximum", in whichever of its spellings: R op (max - C), (R + C) op max, (max - R) op C.
+        local op, lhs, rhs = cmp.op, cmp.lhs, cmp.rhs
+        local function miss(resource, c, o)
+            local max
+            for m, r in pairs(MAXOF) do if r == resource then max = m end end
+            return {cmp = {op = o, lhs = {math = {lhs = {[max] = {}}, op = 'OpSub', rhs = {[resource] = {}}}}, rhs = c}}
+        end
+        local mr = soleKey(rhs) == 'math' and rhs.math or nil
+        local ml = soleKey(lhs) == 'math' and lhs.math or nil
+        if mr and mr.op == 'OpSub' and MAXOF[soleKey(mr.lhs)] and soleKey(lhs) == MAXOF[soleKey(mr.lhs)] and soleKey(mr.rhs) == 'const' and SWAPOP[op] then
+            return miss(soleKey(lhs), mr.rhs, SWAPOP[op])
+        end
+        if ml and ml.op == 'OpAdd' and MAXOF[soleKey(rhs)] and soleKey(ml.lhs) == MAXOF[soleKey(rhs)] and soleKey(ml.rhs) == 'const' and SWAPOP[op] then
+            return miss(soleKey(ml.lhs), ml.rhs, SWAPOP[op])
+        end
+    end
     return out
 end
 
