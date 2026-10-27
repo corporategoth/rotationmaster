@@ -319,6 +319,14 @@ class Fast(unittest.TestCase):
         self.assertEqual(fast_tests.select(['tests/other.lua'], self.COMMANDS), [['lua5.1', 'tests/other.lua']])
         self.assertEqual(fast_tests.select(['Core/nothing.lua', 'Libs/X/a.lua'], self.COMMANDS), [])
 
+    def test_a_locale_or_text_bundle_edit_picks_the_locale_suites(self):
+        commands = [['lua5.1', 'tests/client_locale.lua'], ['lua5.1', 'tests/text_bundles.lua'], ['lua5.1', 'tests/other.lua']]
+        for changed in ('Locales/deDE.lua', 'Modules/RotationMaster_HelpText/frFR.lua', 'Core/text_bundles.lua'):
+            picked = fast_tests.select([changed], commands)
+            self.assertIn(['lua5.1', 'tests/text_bundles.lua'], picked, changed)
+        self.assertEqual(fast_tests.select(['Modules/RotationMaster_HelpText/frFR.lua'], commands),
+                         [['lua5.1', 'tests/client_locale.lua'], ['lua5.1', 'tests/text_bundles.lua']])
+
     def test_collect_lists_the_real_command_list(self):
         commands = check_all.collect()
         self.assertGreater(len(commands), 500)
