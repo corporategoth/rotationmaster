@@ -11,7 +11,7 @@ local function uuid(n) return string.format('00000000-0000-4000-8000-%012d',n) e
 -- The real startup fixture of tests/startup.lua, as several suites load it.
 local source=assert(io.open('tests/startup.lua')):read('*a')
 local prefix=assert(source:match('^(.-)\nlocal function initialize'))
-local persistent=assert(source:match('(local function persistentFixture%(saved,folder,scoped%).-)\n%-%- WoW SavedVariables'))
+local persistent=assert(source:match('(local function persistentFixture%(saved,folder,scoped[,%a]*%).-)\n%-%- WoW SavedVariables'))
 local make=assert(loadstring(prefix..'\n'..persistent..'\nreturn persistentFixture','@legacy-archive-startup'))()
 -- What the host writes at logout: AceDB strips defaults, then plain data only.
 local function serialized(value)

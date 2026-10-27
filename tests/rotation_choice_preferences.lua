@@ -3,7 +3,7 @@ local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local function read(path)local h=assert(io.open(path));local s=h:read('*a');h:close();return s end
 local startup=read('tests/startup.lua')
 local common=assert(startup:match('(local function fixture%(modern, absentThreat%).-)\ntest%('))
-local persistent=assert(startup:match('(local function persistentFixture%(saved,folder,scoped%).-)\n%-%- WoW SavedVariables'))
+local persistent=assert(startup:match('(local function persistentFixture%(saved,folder,scoped[,%a]*%).-)\n%-%- WoW SavedVariables'))
 persistent=persistent:gsub("    load%('main.lua'%)\n",'')
 persistent=persistent:gsub("load%('Core/rotation_library.lua'%)",[[do local h=io.open('Core/rotation_choice_preferences.lua');if h then h:close();load('Core/rotation_choice_preferences.lua') end end;load('Core/rotation_library.lua')]])
 persistent=persistent:gsub("    addon.GetRotationContext=function%(%)",[[    load('main.lua')

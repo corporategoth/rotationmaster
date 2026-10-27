@@ -648,7 +648,7 @@ test('startup failures remain copyable and cannot enable partial state or cascad
     end
 end)
 
-local function persistentFixture(saved,folder,scoped)
+local function persistentFixture(saved,folder,scoped,before)
     local env,addon=fixture(true,true)
     env.securecallfunction=function(fn,...) return fn(...) end
     env.UnitFactionGroup=function() return 'Horde' end
@@ -686,7 +686,9 @@ local function persistentFixture(saved,folder,scoped)
     addon.GetRotationContext=function() return {family='tbc',class='SHAMAN',level=11,spec=0,actionContext='player',combatDataPolicy='probe'} end
     local n=0;addon.uuid=function() n=n+1;return '00000000-0000-0000-0000-'..string.format('%012d',n) end
     assert(addon:RegisterDefaultRotation(envelope()))
-    load('Core/unit_state_conditions.lua');load('init.lua');load('validate.lua')
+    load('Core/unit_state_conditions.lua')
+    if before then before(addon,env,load) end
+    load('init.lua');load('validate.lua')
     addon:OnInitialize()
     return env,addon,scripts,load
 end
@@ -729,6 +731,66 @@ test('real AceDB defaults to diagram and preserves the chosen rotation view on r
     a.db.profile.rotation_view='list';scripts.OnEvent(nil,'PLAYER_LOGOUT')
     local _,b=persistentFixture({RotationMasterDB=savedVariablesCopy(env.RotationMasterDB)})
     assert(b.db.profile.rotation_view=='list')
+end)
+
+-- The boot sequence in init.lua: each condition module installs its seeds from addon:init, with the AceDB object.
+test('boot installs the unit-state, boss mod, loadout, world and cast progress conditions once each, with the database',function()
+    local calls={}
+    local env,a=persistentFixture(nil,nil,true,function(addon)
+        for _,name in ipairs({'InstallBossModConditions','InstallLoadoutConditions','InstallWorldConditions','InstallCastProgressConditions'}) do
+            addon[name]=function(self,db) calls[#calls+1]=name;assert(db==self.db,name..' was not given the AceDB object') end
+        end
+    end)
+    assert(not a.initializationErrorReport)
+    assert(table.concat(calls,',')=='InstallBossModConditions,InstallLoadoutConditions,InstallWorldConditions,InstallCastProgressConditions','boot did not install every module once, in order: '..table.concat(calls,','))
+end)
+
+test('a new profile offers Player State and the other 2.0 conditions in the Switch picker and the Spatial category',function()
+    local _,a=persistentFixture()
+    local function contains(list,tag) for _,entry in ipairs(list) do if entry==tag then return true end end end
+    for _,tag in ipairs({'PLAYER_STATE','GROUP_COUNT','ENCOUNTER','KEYSTONE_LEVEL','HERO_TALENT'}) do
+        assert(contains(a.db.profile.switch_conditions,tag),tag..' is missing from a new profile\'s Switch picker')
+    end
+    local spatial
+    for _,group in ipairs(a.db.profile.condition_groups) do if group.id=='fa10aaf8-bc71-480f-9062-c949fd7c74e9' then spatial=group.conditions end end
+    assert(spatial and contains(spatial,'PLAYER_STATE') and contains(spatial,'KEYSTONE_LEVEL'),'the Spatial category lacks Player State')
+end)
+
+test('a profile saved before the world conditions existed is seeded once at boot',function()
+    -- Lists longer than the packaged defaults, so AceDB has no numeric hole to fill from them: only the seed can add a tag.
+    local switch,spatial={'DELETE','AND','OR','NOT'},{}
+    for index=1,40 do switch[#switch+1]='OLD_SWITCH_'..index;spatial[#spatial+1]='OLD_SPATIAL_'..index end
+    local old={version=1,switch_conditions=switch,condition_groups={{id='fa10aaf8-bc71-480f-9062-c949fd7c74e9',name='Spatial',conditions=spatial}}}
+    local function seeded(saved)
+        return persistentFixture({RotationMasterDB={profiles={Default=saved}}},nil,true,function(addon,env,load) load('Conditions/world_seed.lua') end)
+    end
+    local function contains(list,tag) for _,entry in ipairs(list) do if entry==tag then return true end end end
+    local _,a=seeded(old)
+    assert(not a.initializationErrorReport and a.db.profile.worldConditionsSeeded==true,'boot did not run the world-condition seed')
+    for _,tag in ipairs({'ENCOUNTER','KEYSTONE_LEVEL','HERO_TALENT','GROUP_COUNT','PLAYER_STATE'}) do assert(contains(a.db.profile.switch_conditions,tag),tag..' was not added to the Switch picker') end
+    assert(contains(a.db.profile.condition_groups[1].conditions,'PLAYER_STATE'),'the Spatial category was not seeded')
+end)
+
+test('the world-condition seed also runs for a profile the player switches to or copies from',function()
+    local function oldProfile()
+        local switch,spatial={'DELETE','AND','OR','NOT'},{}
+        for index=1,40 do switch[#switch+1]='OLD_SWITCH_'..index;spatial[#spatial+1]='OLD_SPATIAL_'..index end
+        return {version=1,switch_conditions=switch,condition_groups={{id='fa10aaf8-bc71-480f-9062-c949fd7c74e9',name='Spatial',conditions=spatial}}}
+    end
+    local function contains(list,tag) for _,entry in ipairs(list) do if entry==tag then return true end end end
+    local function boot()
+        local _,a=persistentFixture({RotationMasterDB={profileKeys={['Fixture Character - Fixture Realm']='Default'},profiles={Default={version=1},Old=oldProfile()}}},nil,true,
+            function(addon,env,load) load('Conditions/world_seed.lua') end)
+        a.DisableRotation=function() end;a.EnableRotation=function() end;a.RefreshConfiguration=function() end
+        return a
+    end
+    local a=boot();assert(not a.initializationErrorReport)
+    assert(not a.db.sv.profiles.Old.worldConditionsSeeded,'a profile the player is not using was seeded at boot')
+    a.db:SetProfile('Old')
+    assert(a.db.profile.worldConditionsSeeded and contains(a.db.profile.switch_conditions,'PLAYER_STATE'),'switching to an old profile did not seed it')
+    a=boot();a.db:SetProfile('Other')
+    a.db:CopyProfile('Old')
+    assert(a.db.profile.worldConditionsSeeded and contains(a.db.profile.switch_conditions,'PLAYER_STATE'),'copying an old profile did not seed the copy')
 end)
 
 test('scoped production profile reset preserves the real condition seed callback',function()

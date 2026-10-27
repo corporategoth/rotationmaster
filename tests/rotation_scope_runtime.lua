@@ -3,7 +3,7 @@ local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 -- Keep this boundary in one fixture rather than duplicating its client shims.
 local file=assert(io.open('tests/startup.lua'));local source=file:read('*a');file:close()
 local common=assert(source:match('(local function fixture%(modern, absentThreat%).-)\ntest%('))
-local persistent=assert(source:match('(local function persistentFixture%(saved,folder,scoped%).-)\n%-%- WoW SavedVariables'))
+local persistent=assert(source:match('(local function persistentFixture%(saved,folder,scoped[,%a]*%).-)\n%-%- WoW SavedVariables'))
 local make=assert(loadstring(common..'\n'..persistent..'\nreturn persistentFixture','@scoped-runtime-fixture'))()
 local function fixture()
     local env,a,_,load=make(nil,nil,true);a.currentSpec=0;a.units={};env.GetTime=function() return 100 end;a.lastCacheReport=100

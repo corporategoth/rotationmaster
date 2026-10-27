@@ -2,7 +2,7 @@ local function read(path)local h=assert(io.open(path));local s=h:read('*a');h:cl
 local function once(s,old,new)local a,b=s:find(old,1,true);assert(a,'fixture anchor missing');assert(not s:find(old,b+1,true),'fixture anchor repeated');return s:sub(1,a-1)..new..s:sub(b+1)end
 local source=read('tests/startup.lua')
 local common=assert(source:match('(local function fixture%(modern, absentThreat%).-)\ntest%('))
-local persistent=assert(source:match('(local function persistentFixture%(saved,folder,scoped%).-)\n%-%- WoW SavedVariables'))
+local persistent=assert(source:match('(local function persistentFixture%(saved,folder,scoped[,%a]*%).-)\n%-%- WoW SavedVariables'))
 persistent=once(persistent,'    for key,value in pairs(saved or {}) do env[key]=value end','    env.RotationMasterDB=nil')
 persistent=once(persistent,"load('Functions/cache.lua');load('Functions/trends.lua')","load('Functions/cache.lua');load('Diagnostics/cache_mode.lua');load('Functions/trends.lua')")
 persistent=once(persistent,'    addon:OnInitialize()','    local beforeCache=addon.Functions.cache;local originalCached=beforeCache.getCached;local originalRetry=beforeCache.getRetryCached;local originalInternal=addon.builtinSourceModules["Functions/cache.lua"]("getCachedInternal")\n    if saved and saved.early then env.RotationMasterDB=saved.early end\n    for key,value in pairs(saved or {}) do if key~="early" then env[key]=value end end\n    addon:OnInitialize()\n    addon.__lateSVBefore={cached=originalCached,retry=originalRetry,internal=originalInternal}')
