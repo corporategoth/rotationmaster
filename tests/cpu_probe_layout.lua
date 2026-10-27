@@ -65,7 +65,10 @@ test('the probe has neither a General button nor a page Help row and keeps its c
  local f,parent=fixture();local a=f.addon;local p=a:OpenNativeSettings(parent,'General')
  assert(not p.fields.cpu_probe and not p.fields.cpu_cancel,'retired buttons are still drawn')
  for _,row in ipairs(a:GetGeneralOptionHelp())do assert(row.id~='cpu_probe' and row.id~='cpu_cancel' and row.id~='memory_stop','retired control still has page help: '..tostring(row.id))end
- assert(type(a.HandlePerformanceCommand)=='function' and type(f.translations['Help.General.cpu_probe'])=='string','probe command lost')
+ -- The command is the probe's only entry point; its usage line is checked with the other locale entries below. The page
+ -- Help text of the retired probe, cancel and memory-stop controls (Help.General.cpu_probe, cpu_cancel, memory_stop) had no
+ -- reader once their rows went, so those strings left the catalog and are not asserted.
+ assert(type(a.HandlePerformanceCommand)=='function','probe command lost')
 end)
 test('probe report states and the perf command usage have explicit locale entries',function()
  local f=fixture();local L=f.libraries['AceLocale-3.0']:GetLocale('rotationmaster')
