@@ -1,10 +1,18 @@
+-- Platform adapter for the player's bags: C_Container (or the legacy GetContainer* globals) item counts and slots.
+-- Owns the `value or nil, reason` readers for a bag-only item count map and a snapshot with slot positions; it must
+-- not include bank slots or decide which item matters. Reads are bounded (at most 17 bags of 256 slots) because they
+-- run when a condition asks. Loaded from RotationMaster.toc after Platform/communication.lua; uses
+-- platform:GetItemID from Platform/items.lua for legacy links.
 local _, addon = ...
 local platform = addon.Platform
 
+-- True for a finite number that is not negative (so NaN, infinity and negatives are all refused).
 local function finite(value)
     return type(value) == 'number' and value == value and value >= 0 and value < math.huge
 end
 
+-- Calls fn under pcall and returns its first result, or nil and a reason code when it throws or returns a restricted
+-- value. The caller has already checked that fn is a function.
 local function query(fn, ...)
     local ok, value = pcall(fn, ...)
     if not ok then return nil, 'api-error' end
@@ -14,6 +22,8 @@ end
 
 -- A detached bag-only snapshot. GetItemCount can also include worn items;
 -- bank slots are deliberately excluded from the Have Item In Bags predicate.
+-- Returns a table keyed by item id, holding the count (or, with withSlots, { count, slots = { { bag, slot } } }), or
+-- nil and a reason code. Any unreadable slot fails the whole scan rather than undercounting.
 local function scan(self, withSlots)
     local last = NUM_TOTAL_EQUIPPED_BAG_SLOTS
     if not self:CanReadValue(last) then return nil, 'restricted-value' end
@@ -120,10 +130,12 @@ local function scan(self, withSlots)
     return result
 end
 
+-- Returns { [itemID] = count } for the carried bags, or nil and a reason code.
 function platform:GetBagItemCounts()
     return scan(self, false)
 end
 
+-- Returns { [itemID] = { count, slots } } for the carried bags, or nil and a reason code.
 function platform:GetBagSnapshot()
     return scan(self, true)
 end

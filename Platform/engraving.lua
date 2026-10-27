@@ -1,3 +1,8 @@
+-- Platform adapter for Season of Discovery rune engraving (C_Engraving on Classic Era).
+-- Owns the `value or nil, reason` readers for whether engraving is readable, the runes engraved on the player's
+-- equipped items and the runes the character knows; it must not engrave or target anything. The namespace is absent
+-- outside Classic Era, so every reader reports "missing-api" there. Core/build_context.lua reads the engraved runes
+-- once per change. Loaded from RotationMaster.toc after Platform/talent_tree.lua; needs Platform/client.lua.
 local _, addon = ...
 local platform = addon.Platform
 
@@ -33,6 +38,7 @@ local platform = addon.Platform
 local SLOT_FIRST, SLOT_LAST = 1, 19
 local refreshRequested = false
 
+-- Returns the named C_Engraving function, or nil when the namespace or the function does not exist.
 local function method(name)
     local namespace = C_Engraving
     if type(namespace) ~= 'table' then return nil end
@@ -40,6 +46,7 @@ local function method(name)
     if type(fn) == 'function' then return fn end
 end
 
+-- True for a readable positive whole number (a rune, slot or spell id).
 local function identifier(value)
     return platform:CanReadValue(value)
         and type(value) == 'number'
@@ -48,6 +55,8 @@ local function identifier(value)
         and value % 1 == 0
 end
 
+-- Calls the named C_Engraving function under pcall. Returns true and its first two results, or false and a reason
+-- code when it is missing, throws or returns a restricted value.
 local function protected(name, ...)
     local fn = method(name)
     if not fn then return false, 'missing-api' end
@@ -60,6 +69,7 @@ end
 -- Whether engraving can be read at all: the API exists, the realm has
 -- engraving, and the rune list has loaded. A not-yet-loaded list asks the
 -- client to load it once per session and stays unavailable until it has.
+-- Returns true, or nil and a reason code ("rune-data-pending" while the list loads).
 function platform:GetEngravingAvailability()
     local ok, enabled = protected('IsEngravingEnabled')
     if not ok then return nil, enabled end
@@ -80,6 +90,7 @@ end
 
 -- One EngravingData record, copied: name, icon, rune (skillLineAbilityID),
 -- category (InventoryType), level and the learned spell IDs.
+-- Returns nil and a reason code when data is restricted or lacks a rune id.
 local function rune(data)
     if not platform:CanReadValue(data) then return nil, 'restricted-value' end
     if type(data) ~= 'table' then return nil, 'invalid-api-result' end
@@ -119,6 +130,8 @@ end
 -- Every rune engraved on the player's equipped items, as two lookups:
 -- byRune[skillLineAbilityID] and bySpell[learned spell ID], each giving the
 -- inventory slot. Read once per change by Core/build_context.lua.
+-- Returns { byRune, bySpell }, or nil and a reason code; any slot that cannot be read fails the whole read so that a
+-- partial map is never mistaken for a complete one.
 function platform:GetEngravedRunes()
     local available, why = self:GetEngravingAvailability()
     if not available then return nil, why end
@@ -159,6 +172,7 @@ end
 
 -- The character's known runes for the editor, grouped by equipment category
 -- in the game's order: {{category=, name=, runes={record...}}...}.
+-- Returns that list, or nil and a reason code. Builds a fresh table of records on every call.
 function platform:GetKnownRunes()
     local available, why = self:GetEngravingAvailability()
     if not available then return nil, why end
@@ -199,6 +213,7 @@ end
 
 -- A known rune by rune ID or by one of its learned spell IDs, for names and
 -- icons in summaries. nil when the character does not know it.
+-- Returns the rune record and its category group; rebuilds the known-rune list on every call.
 function platform:FindKnownRune(runeID, spellID)
     local groups = self:GetKnownRunes()
 

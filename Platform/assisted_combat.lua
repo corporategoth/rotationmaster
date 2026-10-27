@@ -1,3 +1,9 @@
+-- Platform adapter for C_AssistedCombat, C_Spell override relations and the assisted highlight CVar.
+-- Owns the `value or nil, reason` readers for Blizzard's suggested spell, its rotation set and availability, the
+-- spell-matching rules between a chosen spell and the suggestion, and the one writer in this file, the highlight CVar
+-- (outside combat only). It must not cast, press a button or choose between suggestions. Every read is
+-- feature-detected and protected (docs/restricted-clients.md). Loaded from RotationMaster.toc after
+-- Platform/spells.lua.
 local _, addon = ...
 local platform = addon.Platform
 
@@ -28,6 +34,11 @@ local platform = addon.Platform
 -- "api-error", "restricted-value", "assisted-unavailable",
 -- "invalid-api-result"); false when the game positively has no suggestion.
 
+-- ============================================================================
+-- Assisted Combat readers
+-- ============================================================================
+
+-- Returns the named C_AssistedCombat function, or nil when the namespace or the function does not exist.
 local function method(name)
     local namespace = C_AssistedCombat
     if type(namespace) ~= 'table' then return nil end
@@ -35,6 +46,7 @@ local function method(name)
     if type(fn) == 'function' then return fn end
 end
 
+-- True for a positive whole number, the only shape a spell id may have.
 local function spellID(value)
     return type(value) == 'number' and value > 0 and value < math.huge and value % 1 == 0
 end
@@ -103,6 +115,8 @@ end
 -- Override relations (C_Spell.GetBaseSpell / GetOverrideSpell, Retail and
 -- Forever): both return the argument when there is no override. Unreadable
 -- or missing relations are reported, never guessed.
+-- Returns the result of C_Spell[name](spell) (GetBaseSpell or GetOverrideSpell) when it is a valid spell id, or nil
+-- and a reason code.
 local function relation(self, name, spell)
     local namespace = C_Spell
     local fn = type(namespace) == 'table' and namespace[name] or nil
@@ -150,6 +164,8 @@ end
 -- first membership question, so profiles that never ask pay nothing.
 local rotationSet, rotationDirty, rotationWatcher = {}, true, nil
 
+-- Creates, once, the event frame that marks the cached rotation set stale. Returns the frame, or false when no frame
+-- could be made or no event registered; the caller then rereads on every call instead of trusting the cache.
 local function watchRotationSet()
     if rotationWatcher ~= nil then return rotationWatcher end
     rotationWatcher = false
@@ -176,6 +192,8 @@ local function watchRotationSet()
     return rotationWatcher
 end
 
+-- Returns the reused set of spell ids Assisted Combat may suggest, rebuilt when it is stale, or nil and a reason code.
+-- The returned table is shared; callers must only read it. A failed rebuild leaves it marked stale.
 local function rotationMembership(self)
     local watched = watchRotationSet()
 
@@ -233,6 +251,10 @@ function platform:IsAssistedRotationSpell(spell)
     return false
 end
 
+-- ============================================================================
+-- Assisted Highlight CVar
+-- ============================================================================
+
 -- Blizzard's Assisted Highlight: the action-bar glow Blizzard's own
 -- AssistedCombatManager draws on the suggested spell's button while the
 -- character CVar assistedCombatHighlight is on (default off; Blizzard's
@@ -246,6 +268,7 @@ end
 local HIGHLIGHT_CVAR = 'assistedCombatHighlight'
 platform.ASSISTED_HIGHLIGHT_CVAR = HIGHLIGHT_CVAR
 
+-- Returns C_CVar[name] or the legacy global of the same name, or nil when neither exists.
 local function cvarFunction(name)
     local namespace = C_CVar
     if type(namespace) == 'table' and type(namespace[name]) == 'function' then return namespace[name] end

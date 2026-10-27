@@ -1,10 +1,18 @@
+-- Platform adapter for the inputs of the health forecast conditions: UnitHealth, UnitHealthMax, UnitGUID, GetTime
+-- and the optional RealMobHealth provider.
+-- Owns the four `value or nil, reason` readers the forecast reads (identity, current or maximum value, provider
+-- estimate, clock); it must not do the forecasting arithmetic (Functions/forecast.lua and Functions/trends.lua do).
+-- All readers are Built In helpers: their bodies are recorded in the generated block at the end of the file and must
+-- keep their exact text. Loaded from RotationMaster.toc after Platform/unit_stat.lua; needs Platform/client.lua.
 local _, addon = ...
 local platform = addon.Platform
 
+-- True for a real finite number (not NaN, not infinite).
 local function finite(value)
     return type(value)=='number' and value==value and value<math.huge and value>-math.huge
 end
 
+-- Reads object[key] under pcall for a foreign table (the provider), returning the value or nil and a reason code.
 local function readField(self, object, key)
     if not self:CanReadValue(object) then return nil,'restricted-value' end
     if type(object)~='table' then return nil,'invalid-api-result' end
@@ -14,6 +22,8 @@ local function readField(self, object, key)
     return value
 end
 
+-- Validates a health number from the provider: nil (no reason) when it has none, otherwise a finite non-negative
+-- number, or nil and a reason code.
 local function providerValue(self, value)
     if not self:CanReadValue(value) then return nil,'restricted-value' end
     if canaccessvalue and not canaccessvalue(value) then return nil,'restricted-value' end
@@ -22,6 +32,8 @@ local function providerValue(self, value)
     return value
 end
 
+-- Returns the unit's GUID (the identity a forecast history is keyed by), false when the unit does not exist, or nil
+-- and a reason code.
 function platform:GetHealthForecastIdentityObservation(unit)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
@@ -44,6 +56,8 @@ function platform:GetHealthForecastIdentityObservation(unit)
     return guid
 end
 
+-- kind is "current" (UnitHealth) or "maximum" (UnitHealthMax). Returns a finite non-negative number, or nil and a
+-- reason code; a secret value is refused, never compared.
 function platform:GetHealthForecastValueObservation(unit, kind)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
@@ -63,6 +77,8 @@ function platform:GetHealthForecastValueObservation(unit, kind)
     return value
 end
 
+-- Asks the RealMobHealth addon for the unit's health. Returns { current, maximum } (either may be nil), an empty table
+-- when the addon is not installed, or nil and a reason code. The provider is foreign code, so every read is guarded.
 function platform:GetHealthForecastProviderObservation(unit)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
@@ -83,6 +99,7 @@ function platform:GetHealthForecastProviderObservation(unit)
     return {current=value,maximum=max}
 end
 
+-- Returns GetTime() when it is a finite number (the clock forecast samples are stamped with), or nil and a reason code.
 function platform:GetHealthForecastTimeObservation()
     if type(GetTime)~='function' then return nil,'missing-api' end
     local ok,now=pcall(GetTime)

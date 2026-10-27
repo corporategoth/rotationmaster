@@ -1,6 +1,18 @@
+-- Platform adapter for items: C_Item (with the legacy GetItemInfo family as fallback), C_Container item cooldowns and
+-- the equipped-weapon enchant tuple.
+-- Owns the `value or nil, reason` readers for item ids, use spells, display and gameplay metadata, counts, equipped
+-- state, cooldowns, range and readiness; it must not decide which item a rotation uses. GetItemInfoInstant and the
+-- helpers in the generated block at the end of the file are Built In helpers and must keep their exact text.
+-- Loaded from RotationMaster.toc after Platform/assisted_combat.lua; needs Platform/client.lua.
 local _, addon = ...
 local platform = addon.Platform
 
+-- ============================================================================
+-- Identity and use spell
+-- ============================================================================
+
+-- Validates an item argument (a positive whole item id, or a name or link up to 1024 characters): true, or nil and a
+-- reason code.
 local function identifier(item)
     if not platform:CanReadValue(item) then return nil,"restricted-value" end
     if type(item)=="number" and item>0 and item<math.huge and item%1==0 then return true end
@@ -8,6 +20,7 @@ local function identifier(item)
     return nil,"invalid-item"
 end
 
+-- Validates the (name, spell id) pair of an item's use spell and returns { name, spellID }, or nil and a reason code.
 local function normalize(name, id)
     if not platform:CanReadValue(name) or not platform:CanReadValue(id) then return nil, "restricted-value" end
     if name == nil and id == nil then return nil, "item-spell-unavailable" end
@@ -19,6 +32,7 @@ local function normalize(name, id)
     return { name = name, spellID = id }
 end
 
+-- Returns { name, spellID } for the spell an item casts when used, or nil and a reason code.
 function platform:GetItemUseSpell(item)
     local valid, reason = identifier(item)
     if not valid then return nil, reason end
@@ -29,6 +43,8 @@ function platform:GetItemUseSpell(item)
     return normalize(name, id)
 end
 
+-- Resolves an item id, name or link to its numeric item id (a number is returned as given); nil and a reason code
+-- when it cannot be resolved.
 function platform:GetItemID(item)
     local valid, reason = identifier(item)
     if not valid then return nil, reason end
@@ -44,11 +60,18 @@ function platform:GetItemID(item)
     return id
 end
 
+-- True for a finite number that is not negative (so NaN, infinity and negatives are all refused).
 local function finite(value)
     return type(value)=="number" and value==value and value>=0 and value<math.huge
 end
 
+-- ============================================================================
+-- Metadata
+-- ============================================================================
+
 -- Native classification is independent of display loading and gameplay policy.
+-- Returns { itemID, classID, subClassID, equipLoc } from the instant lookup (no server round trip), or nil and a
+-- reason code.
 function platform:GetItemInfoInstant(item)
     local valid,reason=identifier(item)
     if not valid then return nil,reason end
@@ -72,6 +95,8 @@ end
 -- Display metadata does not need a minimum-level observation. Keep the
 -- gameplay metadata contract separate so a readable name/icon is still usable
 -- in editors, while readiness never guesses a missing required level.
+-- Returns { itemID, name, link, iconID }, or nil and a reason code ("item-data-unavailable" while the client has not
+-- loaded the item).
 function platform:GetItemDisplayInfo(item)
     local id, reason = self:GetItemID(item)
     if not id then return nil, reason end
@@ -97,6 +122,12 @@ function platform:GetItemDisplayInfo(item)
     return { itemID = id, name = name, link = link, iconID = icon }
 end
 
+-- ============================================================================
+-- Cooldown, count, state and readiness
+-- ============================================================================
+
+-- Returns { startTime, duration, isEnabled } for an item, with isEnabled always a boolean; nil and a reason code
+-- otherwise.
 function platform:GetItemCooldown(item)
     local id, reason = self:GetItemID(item)
     if not id then return nil, reason end
@@ -125,6 +156,8 @@ function platform:GetItemCooldown(item)
     return { startTime = start, duration = duration, isEnabled = enabled }
 end
 
+-- Calls a native function under pcall and returns its first result, or nil and a reason code when the function is
+-- missing, throws or returns a restricted value.
 local function query(fn, ...)
     if type(fn) ~= "function" then return nil, "missing-api" end
     local ok, value = pcall(fn, ...)
@@ -133,6 +166,8 @@ local function query(fn, ...)
     return value
 end
 
+-- Returns { name, link, minimumLevel, iconID } for an item, or nil and a reason code. Unlike GetItemDisplayInfo it
+-- requires the minimum level, so it is the one readiness uses.
 function platform:GetItemMetadata(item)
     local id, reason = self:GetItemID(item)
     if not id then return nil, reason end
@@ -161,6 +196,7 @@ function platform:GetItemMetadata(item)
     return { name = name, link = link, minimumLevel = level, iconID = icon }
 end
 
+-- Returns how many of the item the player carries (bank and charges not counted), or nil and a reason code.
 function platform:GetItemCount(item)
     local id, reason = self:GetItemID(item)
     if not id then return nil, reason end
@@ -170,6 +206,7 @@ function platform:GetItemCount(item)
     return value
 end
 
+-- Returns whether the item is currently equipped, or nil and a reason code.
 function platform:IsItemEquipped(item)
     local id, reason = self:GetItemID(item)
     if not id then return nil, reason end
@@ -186,6 +223,8 @@ end
 local wandItems = {}
 local WAND_SLOTS = { 18, 16 }
 
+-- Returns true when a wand is equipped, false when none is, or nil and a reason code when an equipped item's class
+-- is not loaded yet (the answer is retried next poll rather than cached).
 function platform:IsWandEquipped()
     if type(GetInventoryItemID) ~= 'function' then return nil, 'missing-api' end
     local unknown
@@ -216,6 +255,7 @@ function platform:IsWandEquipped()
     return false
 end
 
+-- Returns whether the player's level meets the item's minimum level, or nil and a reason code.
 function platform:IsItemLevelAllowed(item)
     local metadata, reason = self:GetItemMetadata(item)
     if not metadata then return nil, reason end
@@ -225,6 +265,8 @@ function platform:IsItemLevelAllowed(item)
     return level >= metadata.minimumLevel
 end
 
+-- Returns true when the player has the item, it is usable with enough power and its cooldown has ended by now (a
+-- GetTime value); false when any of those fails; nil and a reason code when one cannot be read.
 function platform:IsItemReady(item, now)
     local id, reason = self:GetItemID(item)
     if not id then return nil, reason end
@@ -245,6 +287,8 @@ function platform:IsItemReady(item, now)
     return cooldown.startTime + cooldown.duration <= now
 end
 
+-- Returns { applicable = false } for an item with no range, { applicable = true, inRange = boolean } otherwise, or
+-- nil and a reason code; accepts both the boolean and the 0/1 forms of the native result.
 function platform:GetItemRangeState(item, unit)
     local valid, reason = identifier(item)
     if not valid then return nil, reason end
@@ -274,6 +318,10 @@ function platform:GetItemRangeState(item, unit)
     return { applicable = true, inRange = inRange }
 end
 
+-- ============================================================================
+-- Temporary weapon enchants
+-- ============================================================================
+
 -- Temporary weapon enchants (poison, oil, stone, Shaman imbue) as the
 -- GetWeaponEnchantInfo tuple: has, expiration (ms), charges, enchant ID for
 -- the main hand, then the off hand. Every Classic client returns the enchant
@@ -297,6 +345,8 @@ local function temporaryEnchantHand(read, slot)
     return true, remaining, info.chargesRemaining, info.enchantID
 end
 
+-- Composes the eight-value GetWeaponEnchantInfo tuple from C_PaperDollInfo for the main and off hand. Only installed
+-- as the reader where that function exists, so it needs no existence check of its own.
 local function composedWeaponEnchantInfo()
     local read = C_PaperDollInfo.GetTemporaryEnchantmentInfo
     local main, mainExpires, mainCharges, mainID = temporaryEnchantHand(read, INVSLOT_MAINHAND or 16)

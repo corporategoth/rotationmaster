@@ -18,6 +18,9 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 -- RotationMasterDB.diagnostics.timeline (at most 3 reports of 500 lines).
 -- Only reads: nothing here changes the timeline, and nothing runs until the
 -- command does. The event watch registers its events only for its duration.
+-- Loaded from RotationMaster.toc after Diagnostics/talents.lua; the command is dispatched by
+-- addon:RunTimelineDiagnostic.
+-- Restricted clients: every value is shown through platform:CanReadValue, so a secret field is reported as "secret".
 
 local MAX_REPORTS, MAX_LINES, MAX_WATCH, MAX_EVENTS = 3, 500, 300, 12
 
@@ -52,11 +55,17 @@ local INFO_FIELDS = {
     { 'isApproximate' },
 }
 
+-- ============================================================================
+-- Probe helpers and report storage
+-- ============================================================================
+
+-- True when value may be shown and compared; true as well when the platform adapter is not loaded.
 local function readable(value)
     local platform = addon.Platform
     return not platform or type(platform.CanReadValue) ~= 'function' or platform:CanReadValue(value)
 end
 
+-- Formats a value for the report: "secret" for an unreadable one, "nil", numbers to three decimals, else tostring.
 local function show(value)
     if not readable(value) then return 'secret' end
     if value == nil then return 'nil' end
@@ -64,16 +73,20 @@ local function show(value)
     return tostring(value)
 end
 
+-- pcall that tolerates a missing function: returns false and "missing" when fn is not callable.
 local function protect(fn, ...)
     if type(fn) ~= 'function' then return false, 'missing' end
     return pcall(fn, ...)
 end
 
+-- Returns C_EncounterTimeline[name], or nil when the namespace does not exist on this client.
 local function timeline(name)
     local space = rawget(_G, 'C_EncounterTimeline')
     return type(space) == 'table' and space[name] or nil
 end
 
+-- Returns the saved list of timeline reports (RotationMasterDB.diagnostics.timeline), creating it, or nil when the
+-- saved variables are not loaded.
 local function store()
     local saved = rawget(_G, addon.savedVariableName or 'RotationMasterDB')
     if type(saved) ~= 'table' then return nil end
@@ -94,6 +107,8 @@ local function store()
     return reports
 end
 
+-- Appends a report (time stamp and lines table) to the store and drops the oldest beyond MAX_REPORTS. Returns the
+-- entry, or nil when nothing can be stored. The lines table is kept by reference, so the watch can keep appending.
 local function save(lines)
     local reports = store()
     if not reports then return nil end
@@ -106,6 +121,10 @@ local function save(lines)
 
     return entry
 end
+
+-- ============================================================================
+-- Report
+-- ============================================================================
 
 -- One event's fields: readable ones with their value, secret ones as such.
 local function describeInfo(info)
@@ -125,6 +144,7 @@ local function describeInfo(info)
     return table.concat(parts, ' ')
 end
 
+-- Adds the report lines for one timeline event id: its state, time remaining, track and blocked flag, then its info.
 local function eventLines(add, id)
     local okState, state = protect(timeline('GetEventState'), id)
     local okLeft, left = protect(timeline('GetEventTimeRemaining'), id)
@@ -144,6 +164,8 @@ local function eventLines(add, id)
     add('    info: %s', okInfo and describeInfo(info) or ('error: ' .. tostring(info)))
 end
 
+-- Adds the one-shot report to add(): client and secret-restriction state, which timeline functions exist, their
+-- answers, the event list (first MAX_EVENTS events in detail) and the sorted event list.
 local function snapshot(add)
     add('== Encounter timeline probe')
     local client = addon.Platform and addon.Platform.GetClientInfo and addon.Platform:GetClientInfo() or {}
@@ -217,8 +239,14 @@ local function snapshot(add)
     end
 end
 
+-- ============================================================================
+-- Watch and slash command
+-- ============================================================================
+
 local watcher
 
+-- Ends the running watch: cancels its timer, unregisters its events and prints where to read the result. A no-op when
+-- no watch is running.
 local function finish(self)
     if not watcher then return end
     if watcher.timer then self:CancelTimer(watcher.timer) end
@@ -232,9 +260,12 @@ local function finish(self)
     self:print(L['Timeline watch finished. Run /rm debug timeline show to view it.'])
 end
 
+-- Builds the one-shot report and returns its lines (at most MAX_LINES). A failure inside the probe becomes a line of
+-- the report instead of an error.
 function addon:BuildTimelineDiagnostic()
     local lines = {}
 
+    -- Appends one formatted line, ignoring everything past MAX_LINES.
     local function add(text, ...)
         if #lines >= MAX_LINES then return end
         lines[#lines + 1] = select('#', ...) > 0 and string.format(text, ...) or text
@@ -245,6 +276,9 @@ function addon:BuildTimelineDiagnostic()
     return lines
 end
 
+-- Handler of /rm debug timeline. argument is "", "show", "stop" or a number of seconds (1 to MAX_WATCH): without
+-- seconds it saves the report and opens it; with seconds it also watches, adding a line per second and one per event
+-- as it arrives, then finishes by itself. Returns the report lines.
 function addon:RunTimelineDiagnostic(argument)
     argument = (argument or ''):match('^%s*(.-)%s*$')
     if argument == 'show' then return self:ShowTimelineDiagnostic() end
@@ -284,6 +318,7 @@ function addon:RunTimelineDiagnostic(argument)
         local started = type(GetTime) == 'function' and GetTime() or 0
         local frame = CreateFrame('Frame')
 
+        -- Seconds since the watch started, for the line prefix.
         local function stamp()
             return string.format('%+.1fs', (type(GetTime) == 'function' and GetTime() or 0) - started)
         end

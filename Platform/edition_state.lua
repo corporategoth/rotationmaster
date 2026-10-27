@@ -1,3 +1,8 @@
+-- Platform adapter for edition-specific mechanics: pet happiness, Stagger, Balance Eclipse and the ranged swing speed.
+-- Owns the `value or nil, reason` readers over GetPetHappiness, UnitStagger, GetEclipseDirection, UnitPower and
+-- UnitRangedDamage; it must not decide what any of them mean for a rotation (the conditions named below do). Each
+-- reader checks the combat data policy first and reports "unsupported-policy" on a client that lacks the mechanic.
+-- Loaded from RotationMaster.toc after Platform/world_state.lua; needs Platform/client.lua.
 local _, addon = ...
 local platform = addon.Platform
 
@@ -15,14 +20,18 @@ local platform = addon.Platform
 -- the Sun at the right end and the Moon at the left of its bar), UnitRangedDamage
 -- (every client).
 
+-- True for a real finite number (not NaN, not infinite).
 local function finite(value)
     return type(value) == 'number' and value == value and value < math.huge and value > -math.huge
 end
 
+-- Packs varargs with their count, so a trailing nil is not lost.
 local function pack(...)
     return { n = select('#', ...), ... }
 end
 
+-- Calls api under pcall and returns the packed results (the pcall flag is at index 1, the native returns follow), or
+-- nil and a reason code when the function is missing, throws or returns any restricted value.
 local function call(self, api, ...)
     if type(api) ~= 'function' then return nil, 'missing-api' end
     local results = pack(pcall(api, ...))
@@ -35,6 +44,7 @@ local function call(self, api, ...)
     return results
 end
 
+-- Returns the player's class token (for example "DRUID"), or nil and a reason code.
 local function playerClass(self)
     local results, reason = call(self, UnitClass, 'player')
     if not results then return nil, reason end

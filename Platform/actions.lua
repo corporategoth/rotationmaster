@@ -1,6 +1,14 @@
+-- Platform adapter for action-level facts about spells: usability (IsSpellUsable), range (IsSpellInRange,
+-- SpellHasRange and their spellbook-slot legacy forms) and whether a plain melee swing is worth suggesting.
+-- Owns the `value or nil, reason` readers and the per-pass range reader; it must not operate a button or infer
+-- combat or target data that is unreadable (restricted clients, docs/restricted-clients.md). GetSpellRangeState and the
+-- helpers in the generated block at the end of the file are Built In helpers and must keep their exact text.
+-- Loaded from RotationMaster.toc after Platform/totems.lua; needs Platform/client.lua.
 local _, addon = ...
 local platform = addon.Platform
 
+-- Fallback combat policy reader through the public GetClientInfo; replaced below by the allocation-free private reader
+-- when the client file provides one.
 local function readClientPolicy(current)
     return current:GetClientInfo().combatDataPolicy
 end
@@ -9,12 +17,15 @@ end
 local consumeClientPolicy = addon.ConsumeClientPolicyReader
 if type(consumeClientPolicy) == 'function' then readClientPolicy = consumeClientPolicy(addon) end
 
+-- Validates a spell id argument: returns true for a positive whole number, otherwise nil and a reason code.
 local function spellID(id)
     if not platform:CanReadValue(id) then return nil,"restricted-value" end
     if type(id)~="number" or id<1 or id==math.huge or id%1~=0 then return nil,"invalid-spell" end
     return true
 end
 
+-- Calls a native function under pcall and returns its first result, or nil and a reason code when the function is
+-- missing, throws or returns a restricted value.
 local function call(fn, ...)
     if type(fn)~="function" then return nil,"missing-api" end
     local ok,value=pcall(fn,...)
@@ -23,6 +34,8 @@ local function call(fn, ...)
     return value
 end
 
+-- Returns two booleans from the native usability check: whether the spell is usable, and whether it lacks the power
+-- to cast. On failure returns nil, nil and a reason code (the reason is the third value).
 function platform:IsSpellUsable(id)
     local valid, reason = spellID(id)
     if not valid then return nil, nil, reason end
@@ -35,6 +48,8 @@ function platform:IsSpellUsable(id)
     return usable, power
 end
 
+-- Finds the spellbook slot of a spell for the legacy slot-based range APIs; bank is "spell", "pet" or "any". Returns
+-- the slot and its book type, or nil, nil and a reason code ("spell-not-in-book" when the spell is not found).
 local function findSlot(id, bank)
     local pet=bank=="pet"
     local slot,reason=call(FindSpellBookSlotBySpellID,id,pet)
@@ -54,6 +69,9 @@ local rangeNotApplicable, rangeIn, rangeOut = { applicable = false }, { applicab
     inRange = false,
 }
 
+-- Returns a shared read-only record, { applicable = false } for a spell with no range or { applicable = true,
+-- inRange = boolean }, or nil and a reason code. unit defaults to "target". Uses the C_Spell range functions where
+-- they exist and spellbook slots otherwise. Callers must not modify the returned table.
 function platform:GetSpellRangeState(id, unit, bank)
     local valid,reason=spellID(id)
     if not valid then return nil,reason end
@@ -101,6 +119,8 @@ end
 -- spells by ID/unit, whereas legacy slot checks also depend on the book bank.
 -- The second result starts a new pass on the same reader: observations carry
 -- the pass stamp, so their tables are reused rather than rebuilt.
+-- Returns a function (id, unit, bank) giving the same results as GetSpellRangeState but asked at most once per spell
+-- and unit per pass, and a function that starts the next pass.
 function platform:NewSpellRangeReader()
     local observations = {}
     local stamp = 0
@@ -139,6 +159,9 @@ end
 -- A false answer for an attackable target in combat says why in its third
 -- value, for the ranged auto-attack (Core/action_policy.lua): "attack-active"
 -- (Attack is already on; range was not read) or "beyond-melee".
+-- Returns true when starting auto-attack on unit is sensible, false (with an optional third reason) when not, or nil
+-- and a reason code. Only the probe policy answers: the combat and target facts it needs are secret on restricted
+-- clients.
 function platform:IsMeleeAttackNeeded(unit)
     if not self:CanReadValue(unit) or type(unit) ~= "string" or unit == "" then return nil, "invalid-unit" end
     if readClientPolicy(self) ~= "probe" then return nil, "unsupported-policy" end

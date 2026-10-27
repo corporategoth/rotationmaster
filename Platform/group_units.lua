@@ -1,3 +1,8 @@
+-- Platform adapter for group-role unit types: main tank, main assist, assigned tank, assigned healer, group leader.
+-- Owns the `value or nil, reason` resolvers that turn one of those types into a unit token at evaluation time
+-- (GetNumGroupMembers, IsInRaid, GetRaidRosterInfo, UnitGroupRolesAssigned, UnitIsGroupLeader); it must not cache a
+-- token, because assignments change. Called by Core/group_unit_resolution.lua. Loaded from RotationMaster.toc after
+-- Platform/focus_unit.lua; needs Platform/client.lua.
 local _, addon = ...
 local platform = addon.Platform
 
@@ -27,10 +32,13 @@ local KINDS = {
 local ROSTER_ROLE = { maintank = 'maintank', mainassist = 'mainassist' }
 local ASSIGNED_ROLE = { assignedtank = 'TANK', assignedhealer = 'HEALER' }
 
+-- Packs varargs with their count, so a trailing nil is not lost.
 local function pack(...)
     return { n = select('#', ...), ... }
 end
 
+-- Calls api under pcall and returns the packed results (the pcall flag is at index 1, the native returns follow), or
+-- nil and a reason code when the function is missing, throws or returns any restricted value.
 local function call(self, api, ...)
     if type(api) ~= 'function' then return nil, 'missing-api' end
     local results = pack(pcall(api, ...))
@@ -61,6 +69,8 @@ function platform:GetGroupUnitSupport(kind)
     end
 end
 
+-- Lists the unit tokens of the current group (raid1..N in a raid; player, party1..N-1 in a party). Returns the list
+-- and whether it is a raid, or nil and a reason code.
 local function groupTokens(self)
     local count, reason = call(self, GetNumGroupMembers)
     if not count then return nil, reason end
@@ -142,6 +152,8 @@ function platform:ResolveGroupUnit(kind)
     return nil, 'no-assigned-unit'
 end
 
+-- Returns the table of supported unit types, mapping each to how it is resolved ("roster", "role" or "leader").
+-- The table is shared; callers must not modify it.
 function platform:GetGroupUnitKinds()
     return KINDS
 end

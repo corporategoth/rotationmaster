@@ -1,9 +1,17 @@
+-- Platform adapter for announcements: group membership of a cast recipient, and the chat channels a message can go to.
+-- Owns the `value or nil, reason` readers over UnitExists, UnitName, UnitGUID, GetNormalizedRealmName and
+-- GetChannelName; it must not send anything or cache a roster. Both channel readers return an "ownership" check that
+-- reports whether the answer still holds. GetAnnouncementRecipientGroupMembership is a Built In helper: its body is
+-- recorded in the generated block at the end of the file and must keep its exact text.
+-- Loaded from RotationMaster.toc after Platform/group_units.lua; needs Platform/groups.lua.
 local _, addon = ...
 local platform = addon.Platform
 
 -- Cast receipts contain names; membership APIs consume unit tokens. Resolve
 -- only at a matching announcement event, never from the selected target and
 -- never into a cache shared by polls or casts.
+-- Returns true or false when the named recipient is in the party or raid (raid only when raidOnly is true), or nil and
+-- a reason code; an ambiguous name, an unreadable roster or a roster that changed during the read is nil.
 function platform:GetAnnouncementRecipientGroupMembership(recipient, raidOnly)
     if not self:CanReadValue(recipient) or not self:CanReadValue(raidOnly) then return nil,'restricted-value' end
     if type(recipient)~='string' or recipient=='' or #recipient>256 then return nil,'cast-recipient-unavailable' end
@@ -80,6 +88,8 @@ function platform:GetAnnouncementRecipientGroupMembership(recipient, raidOnly)
 end
 
 -- Joined names are configuration; local IDs are fresh invocation-only addresses.
+-- Returns the list of { id, value, text } for the joined channels (slots 1 to 20), or nil and a reason code. current,
+-- when given, is polled between native calls and ends the scan with "announcement-retired" once it stops saying true.
 local function channelScan(self, current)
     local query = GetChannelName
     local readable = self.CanReadValue
@@ -127,6 +137,8 @@ local function channelScan(self, current)
     return rows
 end
 
+-- Returns the joined channels as { value, text } rows for the settings picker (no channel numbers, which change), or
+-- nil and a reason code.
 function platform:GetJoinedAnnouncementChannels(current)
     local rows, why = channelScan(self, current)
     if not rows then return nil, why end
@@ -139,6 +151,9 @@ function platform:GetJoinedAnnouncementChannels(current)
     return result
 end
 
+-- Turns a configured channel name into its current numeric id at the moment of use. Returns the id and a function that
+-- re-resolves and reports whether the id is still the same, or nil, nil and a reason code when the name is invalid,
+-- absent or joined twice. The numeric id must never be stored: a channel's number changes when others are joined.
 function platform:ResolveAnnouncementChannel(name, current)
     if not self:CanReadValue(name) or type(name) ~= 'string' or name == '' or #name > 256 or name:find(
         '[%z\1-\31\127]'

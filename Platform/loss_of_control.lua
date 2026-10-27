@@ -1,7 +1,13 @@
+-- Platform adapter for C_LossOfControl: the crowd-control effects currently on the player.
+-- Owns two `value or nil, reason` readers, the number of active effects and one field of one effect; it must not
+-- decide which effects matter to a rotation. Both run under the probe and restricted policies and refuse more than
+-- 256 effects as a work budget. Both readers are Built In helpers: their bodies are recorded in the generated block at
+-- the end of the file and must keep their exact text. Loaded from RotationMaster.toc after Platform/zone_pvp.lua.
 local _, addon = ...
 local platform = addon.Platform
 
 -- The scan limit is an RM resource budget, not a declared native maximum.
+-- Returns the number of active loss of control effects, or nil and a reason code.
 function platform:GetLossOfControlCount()
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
@@ -24,6 +30,8 @@ end
 
 -- Only the requested subject is required. Timing readiness stays on the row
 -- so an unrelated event with unknown duration does not block a later match.
+-- index is the effect's position (1 to 256) and kind is "type" or "school". Returns { locType } or { lockoutSchool },
+-- plus timeRemaining or timeRemainingReason; nil and a reason code when the subject itself cannot be read.
 function platform:GetLossOfControlEvent(index, kind)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end

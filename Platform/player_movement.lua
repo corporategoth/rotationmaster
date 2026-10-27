@@ -1,6 +1,13 @@
+-- Platform adapter for GetUnitSpeed("player"): how fast the player is currently moving.
+-- Owns platform:GetPlayerMovementObservation (the `value or nil, reason` reader); it must not decide what counts as
+-- "moving" for a rotation. Runs under the probe and restricted policies. The reader is a Built In helper whose body
+-- is recorded in the generated block at the end of the file and must keep its exact text.
+-- Loaded from RotationMaster.toc after Platform/unit_power.lua.
 local _, addon = ...
 local platform = addon.Platform
 
+-- Returns { speed = number } (yards per second, never negative), or nil and a reason code when the speed is
+-- missing, secret, not a finite number or negative.
 function platform:GetPlayerMovementObservation()
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end

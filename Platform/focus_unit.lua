@@ -1,3 +1,8 @@
+-- Platform adapter that answers one question: does this client have a focus target at all.
+-- Owns platform:IsFocusUnitSupported only; the focus unit's own state is read by the unit readers, and this file must
+-- not read it. It asks the client (event catalog, FocusUnit, FocusFrame) rather than branching on the client version.
+-- Loaded early in RotationMaster.toc, after Platform/groups.lua; it uses platform:GetClientFamily from
+-- Platform/client.lua only as a last resort when the client cannot answer.
 local _, addon = ...
 local platform = addon.Platform or {}
 addon.Platform = platform
@@ -13,6 +18,7 @@ addon.Platform = platform
 -- catalog and no sign) and its family is unknown to the caller.
 local env = getfenv and getfenv(1) or _G
 
+-- See the comment above env: returns true, false, or nil when the client cannot be probed. Safe to call at any time.
 function platform:IsFocusUnitSupported()
     local utils = env.C_EventUtils
     local asked

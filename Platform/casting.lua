@@ -1,10 +1,19 @@
+-- Platform adapter for UnitCastingInfo and UnitChannelInfo: what a unit is casting or channeling right now.
+-- Owns platform:GetUnitCastObservation (the `value or nil, reason` reader) and its field validators; it must not
+-- decide whether a cast is worth interrupting. Every field is an independent observation, so a secret or missing field
+-- degrades that field only (see docs/restricted-clients.md). The reader and the helpers in the generated block at the
+-- end of the file are Built In helpers and must keep their exact text.
+-- Loaded from RotationMaster.toc after Platform/mobinfo2.lua; needs Platform/client.lua.
 local _, addon = ...
 local platform = addon.Platform
 
+-- True for a real finite number (not NaN, not infinite).
 local function finite(value)
     return type(value)=='number' and value==value and value<math.huge and value>-math.huge
 end
 
+-- Seconds until the cast ends, from its end time in milliseconds and GetTime(); never negative. Returns nil and a
+-- reason code when either value is secret, missing or invalid.
 local function remainingSeconds(ending)
     if not platform:CanReadValue(ending) then return nil,'restricted-value' end
     if ending==nil then return nil,'cast-time-unavailable' end
@@ -26,6 +35,7 @@ local function durationSeconds(starting, ending)
     return (ending-starting)/1000
 end
 
+-- Validates a cast's spell id: returns it when it is a positive integer, otherwise nil and a reason code.
 local function spellIdentity(id)
     if not platform:CanReadValue(id) then return nil,'restricted-value' end
     if id==nil then return nil,'cast-spell-unavailable' end
@@ -33,6 +43,8 @@ local function spellIdentity(id)
     return id
 end
 
+-- Converts the native "not interruptible" flag into interruptible (its inverse); nil and a reason code when the flag
+-- is secret, missing or not a boolean.
 local function interruptibility(flag)
     if not platform:CanReadValue(flag) then return nil,'restricted-value' end
     if flag==nil then return nil,'interruptibility-unavailable' end
@@ -44,6 +56,9 @@ end
 -- A readable name can still establish presence when the timer, duration,
 -- interruptibility or spell ID is unavailable; so can a secret one, though
 -- the record then has no name (nameReason says why).
+-- kind is "cast" or "channel". Returns { active = false } when the unit does not exist or is not casting, otherwise
+-- { active = true } with name, remainingSeconds, durationSeconds, interruptible and spellID, each beside a *Reason
+-- code when that field alone could not be read; nil and a reason code when the query itself fails.
 function platform:GetUnitCastObservation(unit, kind)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end

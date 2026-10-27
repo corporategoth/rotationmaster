@@ -1,3 +1,9 @@
+-- Platform adapter for macro buttons: GetMacroItem and GetMacroSpell.
+-- Owns platform:GetMacroAction, the `value or nil, reason` reader that says which item or spell an existing macro
+-- uses; it must not parse, run or reconstruct a macro body. Runs only under the probe policy (a restricted client
+-- answers "unsupported-policy"). Observed on every poll, so it reads the session-fixed policy through the shared
+-- reader. Loaded from RotationMaster.toc after Platform/glyphs.lua; uses platform:GetItemID and
+-- platform:GetItemUseSpell from Platform/items.lua.
 local _, addon = ...
 local platform = addon.Platform
 
@@ -11,14 +17,17 @@ end
 local consumeClientPolicy = addon.ConsumeClientPolicyReader
 if type(consumeClientPolicy) == 'function' then readClientPolicy = consumeClientPolicy(addon) end
 
+-- True for a positive whole number.
 local function id(value)
     return type(value) == 'number' and value > 0 and value < math.huge and value % 1 == 0
 end
 
+-- True for a non-empty string of at most 1024 characters.
 local function text(value)
     return type(value) == 'string' and #value > 0 and #value <= 1024
 end
 
+-- Extracts the item id from a plain or hyperlink item string (colors stripped), or nil when the link is not one.
 local function linkedItemID(link)
     local plain = link:gsub('^|c%x%x%x%x%x%x%x%x', ''):gsub('|r$', '')
 
@@ -33,6 +42,8 @@ end
 
 -- Resolve only the action Blizzard exposes for an existing macro. This does
 -- not parse, execute or reconstruct a macro body or its hidden decisions.
+-- macro is a macro index or name. Returns { kind = "item", itemID, spellID } or { kind = "spell", spellID }, or nil
+-- and a reason code.
 function platform:GetMacroAction(macro)
     if readClientPolicy(self) ~= 'probe' then return nil, 'unsupported-policy' end
     if not self:CanReadValue(macro) then return nil, 'restricted-value' end

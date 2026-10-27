@@ -14,14 +14,24 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 -- RotationMasterDB.diagnostics.glow (at most 5 reports of 600 lines), so it
 -- survives a /reload and can be read from SavedVariables. Nothing here runs
 -- until the command does.
+-- Also owns the /rm debug command router (addon:HandleDebugCommand) and a small ring of the last eight recommendation
+-- changes. Reads the engine through the diagnostic accessors of buttons.lua and main.lua and the Platform readers;
+-- on restricted clients every value is shown through platform:CanReadValue, so a hidden value is reported as "secret".
+-- Loaded from RotationMaster.toc after buttons.lua, before Diagnostics/talents.lua.
 
 local MAX_REPORTS, MAX_LINES, MAX_STEPS, MAX_WATCH = 5, 600, 24, 60
 
+-- ============================================================================
+-- Report helpers
+-- ============================================================================
+
+-- True when value may be shown and compared; true as well when the platform adapter is not loaded.
 local function readable(value)
     local platform = addon.Platform
     return not platform or type(platform.CanReadValue) ~= 'function' or platform:CanReadValue(value)
 end
 
+-- Formats a value for the report: "secret" for an unreadable one, "nil", numbers to three decimals, else tostring.
 local function show(value)
     if not readable(value) then return 'secret' end
     if value == nil then return 'nil' end
@@ -29,11 +39,13 @@ local function show(value)
     return tostring(value)
 end
 
+-- pcall that tolerates a missing function: returns false and "missing" when fn is not callable.
 local function protect(fn, ...)
     if type(fn) ~= 'function' then return false, 'missing' end
     return pcall(fn, ...)
 end
 
+-- Returns "present" when namespace.name (or the global name when namespace is nil) is a function, else "missing".
 local function apiPresence(name, namespace)
     if namespace then
         local space = rawget(_G, namespace)
@@ -43,12 +55,15 @@ local function apiPresence(name, namespace)
     return type(rawget(_G, name)) == 'function' and 'present' or 'missing'
 end
 
+-- Returns a CVar's value formatted for the report, or "unreadable".
 local function cvar(name)
     local get = type(C_CVar) == 'table' and C_CVar.GetCVar or rawget(_G, 'GetCVar')
     local ok, value = protect(get, name)
     return ok and show(value) or 'unreadable'
 end
 
+-- Returns the saved list of glow reports (RotationMasterDB.diagnostics.glow), creating it, or nil when the saved
+-- variables are not loaded.
 local function store()
     local saved = rawget(_G, addon.savedVariableName or 'RotationMasterDB')
     if type(saved) ~= 'table' then return nil end
@@ -69,10 +84,13 @@ local function store()
     return reports
 end
 
+-- Returns a report object { lines, add } where add(text, ...) appends a line, formatting its arguments through show
+-- and stopping with a note at MAX_LINES.
 local function newReport()
     local lines = {}
     local report = { lines = lines }
 
+    -- Appends one line (formatted when arguments follow); ignores everything past MAX_LINES.
     function report.add(text, ...)
         if #lines >= MAX_LINES then
             if #lines == MAX_LINES then lines[#lines + 1] = '... (report capped at ' .. MAX_LINES .. ' lines)' end
@@ -95,7 +113,12 @@ local function newReport()
     return report
 end
 
+-- ============================================================================
+-- Walking the rotation
+-- ============================================================================
+
 -- Readiness piece by piece, the way Core/action_policy.lua decides it.
+-- Returns the pieces as one text, whether the engine's own readiness check says ready, and an error text ("" if none).
 local function readinessParts(kind, id, itemId, now)
     local platform = addon.Platform
     local parts = {}
@@ -143,6 +166,7 @@ local function readinessParts(kind, id, itemId, now)
     return table.concat(parts, ' '), ok and final == true, ok and '' or ('error: ' .. tostring(final))
 end
 
+-- Returns a spell's base spell, its override and the action slots the client lists for it (as text), for the report.
 local function spellRelations(id)
     local base, override
 
@@ -183,6 +207,8 @@ end
 -- makes for that step type, and what that lookup said.
 local SPELL_STEP = { spell = true, pet = true, any = true }
 
+-- Returns one line explaining why a step produced no spell ids, by repeating the lookup GetSpellIds makes for that
+-- step type (assisted suggestion, spell book type, item set contents) and reporting what it said.
 local function explainNoSpellIds(self, step)
     local kind, action = step.type, step.action
     local platform = self.Platform
@@ -265,6 +291,8 @@ local function explainNoSpellIds(self, step)
     return 'step type ' .. show(kind) .. ' has no spell IDs'
 end
 
+-- Returns the active rotation's top-level steps as indexed rows, nil and a reason when there is no readable active
+-- rotation, and the rotation body as the third value.
 local function rotationRows(self)
     local spec, id = self.currentSpec, self.currentRotation
     if id == nil or type(self.GetRotationForCleanup) ~= 'function' then return nil, 'no active rotation' end
@@ -288,6 +316,7 @@ local function rotationRows(self)
     return rows, nil, rotation
 end
 
+-- Evaluates a step's conditions the way the engine would now; returns the status and reason as text.
 local function conditionStatus(self, step)
     if step.conditions == nil then return 'match' end
     if type(self.evaluateConditionResult) ~= 'function' then return 'unknown' end
@@ -389,11 +418,18 @@ local function walkStep(self, report, row, now, verbose)
     return anyMapped and 'notready' or 'unmapped', nil, firstReason
 end
 
+-- ============================================================================
+-- Report sections
+-- ============================================================================
+
+-- Starts a titled section of the report, after a blank line.
 local function section(report, title)
     report.add('')
     report.add('== ' .. title)
 end
 
+-- Reports the button index and every standard action bar frame (type, slot, action, visibility), then the
+-- LibActionButton buttons. Returns the index summary and the first read error seen, for the verdict.
 local function scanSection(self, report)
     local index = self.GetButtonIndexDiagnostic and self:GetButtonIndexDiagnostic()
 
@@ -495,11 +531,7 @@ local function scanSection(self, report)
     return index, firstError
 end
 
--- Every step the editor would warn "not on your action bars" for, in the
--- rotation open in the editor and in the active one, with the spell IDs the
--- step names, the IDs the client relates to each, whether the scan holds it
--- (directly, or through which alias) and the slots the client reports. This
--- is the text to paste when a warning looks wrong.
+-- Joins a list of values, formatted through show, with commas.
 local function listIds(list)
     local out = {}
 
@@ -510,6 +542,11 @@ local function listIds(list)
     return table.concat(out, ',')
 end
 
+-- Every step the editor would warn "not on your action bars" for, in the
+-- rotation open in the editor and in the active one, with the spell IDs the
+-- step names, the IDs the client relates to each, whether the scan holds it
+-- (directly, or through which alias) and the slots the client reports. This
+-- is the text to paste when a warning looks wrong.
 local function bindingSection(self, report)
     local index = self.GetIndexedSpellsDiagnostic and self:GetIndexedSpellsDiagnostic(120)
 
@@ -600,6 +637,8 @@ local function bindingSection(self, report)
     end
 end
 
+-- Builds the full report and returns its lines and the verdict text naming the first link of the chain (client,
+-- rotation, button scan, step, suggestion, glow request, visible frame) that drops the recommendation.
 function addon:BuildGlowDiagnostic()
     local report = newReport()
     local add = report.add
@@ -875,6 +914,10 @@ function addon:BuildGlowDiagnostic()
     return report.lines, stop
 end
 
+-- ============================================================================
+-- Recent recommendations, watch and commands
+-- ============================================================================
+
 -- Every recommendation change the engine announces (ROTATIONMASTER_SPELL_UPDATE:
 -- rotation, step ordinal, step id, step type, spell; nil spell when the glow
 -- is cleared), newest last, so a report can say which step asked for a glow.
@@ -886,6 +929,7 @@ for i = 1, RECENT do
     recent[i] = {}
 end
 
+-- Message handler: stores one recommendation change in the next ring slot, reusing the slot table (no allocation).
 local function noteUpdate(_, rotation, index, id, kind, spell)
     local slot = recent[recentNext]
     slot.at = type(GetTime) == 'function' and GetTime() or nil
@@ -901,6 +945,7 @@ do
     end
 end
 
+-- Returns the stored recommendation changes, oldest first. The entries are the live ring slots; do not modify them.
 function addon:GetRecentRecommendations()
     local list = {}
 
@@ -914,6 +959,8 @@ end
 
 local watcher
 
+-- Appends a report (time stamp and lines table) to the store and drops the oldest beyond MAX_REPORTS. Returns the
+-- entry, or nil when nothing can be stored. The lines table is kept by reference, so the watch can keep appending.
 local function save(lines)
     local reports = store()
     if not reports then return nil end
@@ -963,6 +1010,9 @@ local function watchLine(self)
     return table.concat(parts, ' ')
 end
 
+-- Handler of /rm debug glow [seconds]. Builds and saves the report, prints where it stops, and opens it in the
+-- copyable window; with seconds (1 to MAX_WATCH) it instead keeps appending a line per second to the saved report
+-- and leaves the window to "/rm debug glow show". Returns the report lines and the verdict.
 function addon:RunGlowDiagnostic(seconds)
     local lines, stop = self:BuildGlowDiagnostic()
     local entry = save(lines)
@@ -1021,6 +1071,7 @@ end
 -- /rm debug editor copies the Lua editor input report (UI/lua_input_diagnostics.lua);
 -- /rm debug talents reports the trait talent reads (Diagnostics/talents.lua);
 -- /rm debug timeline probes Blizzard's encounter timeline (Diagnostics/timeline.lua).
+-- Routes the arguments of /rm debug to the matching report; prints the usage line for anything else.
 function addon:HandleDebugCommand(args)
     local what, rest = (args or ''):match('^%s*(%S*)%s*(.-)%s*$')
 

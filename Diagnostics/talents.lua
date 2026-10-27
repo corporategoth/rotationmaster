@@ -12,14 +12,22 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 -- "views" it also lists every other specialization of the class, which fills
 -- Blizzard's view loadout (the way the editor does when you pick one).
 -- Nothing here runs until the command does.
+-- Loaded from RotationMaster.toc after Diagnostics/glow.lua; the command is dispatched by addon:RunTalentDiagnostic.
+-- Restricted clients: every value is shown through platform:CanReadValue, so a hidden field is reported as "secret".
 
 local MAX_REPORTS, MAX_LINES, MAX_NODES = 3, 400, 1200
 
+-- ============================================================================
+-- Report helpers
+-- ============================================================================
+
+-- True when value may be shown and compared; true as well when the platform adapter is not loaded.
 local function readable(value)
     local platform = addon.Platform
     return not platform or type(platform.CanReadValue) ~= 'function' or platform:CanReadValue(value)
 end
 
+-- Formats a value for the report: "secret" for an unreadable one, "nil", numbers to three decimals, else tostring.
 local function show(value)
     if not readable(value) then return 'secret' end
     if value == nil then return 'nil' end
@@ -87,6 +95,7 @@ local function describe(value, keys)
     return '{' .. table.concat(parts, ' ') .. (#names > 16 and ' ...' or '') .. '}'
 end
 
+-- pcall that tolerates a missing function: returns false and "missing" when fn is not callable.
 ---@return boolean ok
 ---@return any ...
 local function call(fn, ...)
@@ -94,12 +103,15 @@ local function call(fn, ...)
     return pcall(fn, ...)
 end
 
+-- Returns "present" when namespace.name (or the global name when namespace is nil) is a function, else "missing".
 local function presence(namespace, name)
     local space = namespace and rawget(_G, namespace)
     if namespace then return type(space) == 'table' and type(space[name]) == 'function' and 'present' or 'missing' end
     return type(rawget(_G, name)) == 'function' and 'present' or 'missing'
 end
 
+-- Returns the saved list of talent reports (RotationMasterDB.diagnostics.talents), creating it, or nil when the saved
+-- variables are not loaded.
 local function store()
     local saved = rawget(_G, addon.savedVariableName or 'RotationMasterDB')
     if type(saved) ~= 'table' then return nil end
@@ -125,6 +137,8 @@ local NODE_KEYS = {
     'maxRanks'
 }
 
+-- Returns a new line list and an add(text, ...) function that appends to it, formatting arguments through show and
+-- stopping with a note at MAX_LINES.
 local function newReport()
     local lines = {}
 
@@ -147,6 +161,10 @@ local function newReport()
         lines[#lines + 1] = text
     end
 end
+
+-- ============================================================================
+-- Report and slash command
+-- ============================================================================
 
 -- The groups the editor lists, in one line each.
 local function listing(add, platform, spec, label)
@@ -190,6 +208,9 @@ local function listing(add, platform, spec, label)
     end
 end
 
+-- Builds the talent report and returns its lines: client and class, which trait APIs exist, the active config, the
+-- tree's node counts with sample nodes and entries, hero talent data, and what the editor lists. options.views also
+-- lists every other specialization of the class, which loads Blizzard's view loadout as a side effect.
 function addon:BuildTalentDiagnostic(options)
     local platform = self.Platform
     local lines, add = newReport()
@@ -484,6 +505,8 @@ function addon:BuildTalentDiagnostic(options)
     return lines
 end
 
+-- Handler of /rm debug talents. argument "views" adds the other specializations. Builds the report (a failure becomes
+-- one line), stores it, and opens it in the copyable window. Returns the report lines.
 function addon:RunTalentDiagnostic(argument)
     local ok, built = pcall(self.BuildTalentDiagnostic, self, { views = argument == 'views' })
     ---@type string[]

@@ -1,8 +1,14 @@
+-- Platform adapter for auras: C_UnitAuras (with the UnitAura global and LibClassicDurations as fallbacks on Era).
+-- Owns the `value or nil, reason` readers that turn a native aura into one validated record and read fields and
+-- remaining time from it; every field is checked on its own, so a secret or malformed field is marked unavailable in
+-- record.unavailable instead of failing the record. It must not interpret an aura for a rotation. Needs
+-- platform:GetClientFamily at load time. Loaded from RotationMaster.toc after Platform/spellbook.lua.
 local _, addon = ...
 local platform = addon.Platform
 local isEra = platform:GetClientFamily() == "era"
 local durationProvider, checkedDurations
 
+-- The aura fields RM reads, with the Lua type each must have.
 local fields = {
     name = "string",
     spellID = "number",
@@ -17,6 +23,7 @@ local fields = {
 -- owned: raw is a fresh table nobody else holds (a native record or our own
 -- tuple). On builds without secrets it is normalized in place instead of
 -- copied; invalid fields are still cleared and marked unavailable.
+-- Returns the validated record, nil for no aura, or nil and a reason code when raw itself is unusable.
 local function normalize(raw, owned)
     if not platform:CanReadValue(raw) then return nil, "restricted-value" end
     if raw == nil then return nil end
@@ -24,6 +31,7 @@ local function normalize(raw, owned)
     -- The unavailable map exists only when a field is unavailable.
     local result = owned and platform.secretsUnrestricted and raw or {}
 
+    -- Records why one field has no value.
     local function unavailable(key, reason)
         result.unavailable = result.unavailable or {}
         result.unavailable[key] = reason
@@ -55,6 +63,8 @@ local function normalize(raw, owned)
     return result
 end
 
+-- Returns the validated aura at index (1 to 256) of a unit for filter "HELPFUL", "HARMFUL" or "HARMFUL|RAID", nil
+-- when there is no such aura, or nil and a reason code. Never retains the native record.
 function platform:GetAuraByIndex(unit, index, filter)
     if not self:CanReadValue(unit) or not self:CanReadValue(index) or not self:CanReadValue(filter) then
         return nil, "restricted-value"
@@ -141,12 +151,15 @@ function platform:GetAuraBySpellName(unit, name, filter)
     return normalize(raw, true)
 end
 
+-- Returns one field of a validated aura, or nil and the reason that field is unavailable (or "invalid-aura-field").
 function platform:ReadAuraField(aura, field)
     if not fields[field] or type(aura) ~= "table" then return nil, "invalid-aura-field" end
     if aura.unavailable and aura.unavailable[field] then return nil, aura.unavailable[field] end
     return aura[field]
 end
 
+-- Returns the seconds left on an aura at time now (a GetTime value), math.huge for an aura with no duration, or nil
+-- and a reason code when its expiration cannot be read.
 function platform:AuraRemaining(aura, now)
     local expiration, reason = self:ReadAuraField(aura, "expirationTime")
     if reason then return nil, reason end

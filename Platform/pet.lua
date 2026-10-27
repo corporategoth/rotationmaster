@@ -1,8 +1,15 @@
+-- Platform adapter for the player's pet: UnitExists("pet") and, on request, GetUnitName("pet").
+-- Owns platform:GetPetObservation (the `value or nil, reason` reader); it must not decide what a pet means for a
+-- rotation. Runs under the probe and restricted policies. The reader is a Built In helper whose body is recorded in
+-- the generated block at the end of the file and must keep its exact text.
+-- Loaded from RotationMaster.toc after Platform/unit_presence.lua.
 local _, addon = ...
 local platform = addon.Platform
 
 -- Presence and display-name availability are independent requested facts.
 -- Keep the existing GetUnitName wrapper and its omitted optional argument.
+-- Returns { exists = boolean, name = string or nil }; name is read only when includeName is true and the pet exists.
+-- Returns nil and a reason code when presence, or a requested name, cannot be read.
 function platform:GetPetObservation(includeName)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end

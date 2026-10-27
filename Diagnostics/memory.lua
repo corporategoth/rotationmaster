@@ -1,3 +1,12 @@
+-- Memory capture: records how Lua heap use and the addon's attributed memory change over a bounded run (default 10
+-- minutes, at most 30) and renders a text report. Owns the capture run state and the StartMemoryCapture,
+-- CompleteMemoryCapture, StopMemoryCapture, IsMemoryCaptureRunning and GetMemoryCaptureReport entry points, which the
+-- performance window (UI/cpu_profile.lua) and the general settings call.
+-- Must not hook the evaluator or control garbage collection; it only observes, at most one sample a second and one
+-- detailed row every 30 seconds, and every native call is guarded because a run can be retired mid-callout.
+-- Optional WoWTaskManager counters are read as public scalars only. Loaded from RotationMaster.toc after
+-- Diagnostics/cpu_runtime.lua; detail rows read retained-memory counts from addon:GetRetainedMemoryDiagnostic
+-- (Diagnostics/cpu.lua) when it exists.
 local addon_name, addon = ...
 -- Explicit, bounded lifetime observations. No evaluator hook or GC control.
 local active, lastReport, latest
@@ -5,6 +14,11 @@ local DEFAULT_DURATION, MAX_DURATION, COUNT_LIMIT, NODE_LIMIT = 600, 1800, 4096,
 local kind, raw, nextKey, protect, each, same = type, rawget, next, pcall, ipairs, rawequal
 local format, concat = string.format, table.concat
 
+-- ============================================================================
+-- Value guards
+-- ============================================================================
+
+-- True when value is neither a secret nor inaccessible; a secret-value API that is not callable counts as unreadable.
 local function readable(value)
     local secret = raw(_G, 'issecretvalue')
 
@@ -25,18 +39,23 @@ local function readable(value)
     return true
 end
 
+-- True for a readable finite non-negative number small enough to be a safe integer.
 local function number(value)
     return readable(value) and kind(value) == 'number' and value == value and value >= 0 and value <= 9007199254740991
 end
 
+-- Returns value[key] without invoking metamethods, or nil when value is unreadable or not a table.
 local function field(value, key)
     if readable(value) and kind(value) == 'table' then return raw(value, key) end
 end
 
+-- True while run is the active, running capture. Checked after every native call, because a callout can stop or
+-- replace the capture.
 local function current(run)
     return active == run and run.phase == 'running'
 end
 
+-- Calls fn under pcall and returns its result only when it is a valid number and the run is still current.
 ---@return number|nil
 local function callNumber(run, fn, ...)
     if not current(run) or kind(fn) ~= 'function' then return end
@@ -46,6 +65,7 @@ local function callNumber(run, fn, ...)
     return value
 end
 
+-- Returns the C_AddOns function of that name, or the legacy global, or nil.
 local function api(name)
     local method = field(raw(_G, 'C_AddOns'), name)
     if kind(method) == 'function' then return method end
@@ -66,6 +86,12 @@ local publicKeys = {
 -- Optional installed WTM public scalars only; no WTM method, event or frame hook.
 local wtmAddonKey = string.lower(addon_name)
 
+-- ============================================================================
+-- Sampling
+-- ============================================================================
+
+-- Reads the WoWTaskManager spike counters for this addon and compares them with the previous snapshot, counting how
+-- many spike increases happened in intervals where the heap dropped. Co-occurrence only; it proves no causality.
 local function sampleSpikes(run, at, dropped)
     local owner = field(field(field(raw(_G, 'WoWTaskManager'), 'Processes'), 'byName'), wtmAddonKey)
     local n, last = field(owner, 'spikes'), field(owner, 'lastSpikeAt')
@@ -97,6 +123,8 @@ local function sampleSpikes(run, at, dropped)
     run.wtmLast = number(last) and last or nil
 end
 
+-- Counts the keys of a plain table (no metatable) without calling into it, charging each key to the shared budget.
+-- Returns the count and whether it was capped, or nil when the table is unreadable or the run was retired.
 local function count(run, map, budget)
     if not readable(map) or kind(map) ~= 'table' or getmetatable(map) ~= nil then return end
     local n, key = 0, nil
@@ -114,9 +142,12 @@ local function count(run, map, budget)
     return COUNT_LIMIT, true
 end
 
+-- Fills row with key and row counts of the addon's own history and cache tables, within one node budget for the whole
+-- row so that a huge table cannot stall a sample. Counts are lower bounds when the matching *Capped flag is true.
 local function roots(run, row)
     local budget = { n = 0 }
 
+    -- Stores the (capped) key count of map under row[key].
     local function save(key, map)
         local n, capped = count(run, map, budget)
         row[key], row[key .. 'Capped'] = n, capped
@@ -127,6 +158,8 @@ local function roots(run, row)
     save('combatKeys', raw(addon, 'combatCache'))
     save('longtermKeys', raw(addon, 'longtermCache'))
 
+    -- Counts a table of per-unit tables: the unit count under unitKey and the summed row count of the child (and, with
+    -- second, of a second child) under rowKey.
     local function nested(root, unitKey, rowKey, child, second)
         local map = raw(addon, root)
         save(unitKey, map)
@@ -173,14 +206,23 @@ local function roots(run, row)
     nested('damageHistory', 'damageUnits', 'damageRows', 'damage', 'heals')
 end
 
+-- ============================================================================
+-- Report
+-- ============================================================================
+
+-- True for a stored (already validated) non-negative number.
 local function storedNumber(value)
     return kind(value) == 'number' and value == value and value >= 0 and value <= 9007199254740991
 end
 
+-- Formats a stored number to three decimals, or "unavailable".
 local function amount(value)
     return storedNumber(value) and format('%.3f', value) or 'unavailable'
 end
 
+-- Renders the finished run as report text (about 15 KB at most; detail rows beyond that are omitted). status is
+-- "complete", "stopped", "cancelled", "invalid" or "unavailable". The text states what the numbers are not (heap is
+-- shared Lua memory, counts are keys not bytes) so the report cannot be misread.
 local function render(run, status)
     local lines = {
         'Rotation Master memory capture: ' .. status,
@@ -235,6 +277,7 @@ local function render(run, status)
         'Explicit memory attribution refreshes may themselves contribute to observed frame spikes; compare scan costs before attributing overlaps to ordinary RM work.',
     }
 
+    -- Formats the named counts of a detail row, marking a capped count with ">=".
     local function counts(row, keys)
         local parts = {}
 
@@ -305,6 +348,8 @@ local function render(run, status)
     return concat(lines, '\n')
 end
 
+-- Retires the run, cancels its timers, stores the rendered report and notifies the optional
+-- OnMemoryCaptureFinished hook. Does nothing for a run that is not current.
 local function finish(run, status)
     if not current(run) then return end
     active = nil
@@ -323,6 +368,9 @@ local function finish(run, status)
     end
 end
 
+-- Adds one detailed row: heap, the addon's memory (refreshed through UpdateAddOnMemoryUsage only when refresh is
+-- true, at capture start and end, because the refresh itself costs time and can cause frame spikes), CPU capture
+-- state, retained-memory counts and table counts. Abandons the row if the run is retired during a native call.
 local function detail(run, at, heap, refresh)
     local row = {
         t = at - run.started,
@@ -376,6 +424,7 @@ local function detail(run, at, heap, refresh)
         end
     end
 
+    -- Returns "active", "inactive" or "unknown" from the named addon method.
     local function captureState(name)
         local fn = raw(addon, name)
         if kind(fn) ~= 'function' then return 'unknown' end
@@ -413,6 +462,9 @@ local function detail(run, at, heap, refresh)
     run.nextDetail = at + 30
 end
 
+-- One timer tick: reads the heap, tracks drops, adds a detail row when due, charges its own cost to the overhead
+-- totals and finishes the run when its time is up. ending is true for the closing tick. Never re-entered
+-- (run.sampling).
 local function sample(run, ending)
     if not current(run) or run.sampling then return end
     run.sampling = true
@@ -499,6 +551,12 @@ local function sample(run, ending)
     end
 end
 
+-- ============================================================================
+-- Public API
+-- ============================================================================
+
+-- Starts a capture of duration seconds (default 600, 1 to 1800). Returns true, or false and a reason code (for
+-- example "already-running", "addon-disabled" or "missing-memory-api"). Only one capture runs at a time.
 function addon:StartMemoryCapture(duration)
     if self ~= addon then return false, 'foreign-owner' end
     local enabled = self.IsEnabled
@@ -600,6 +658,7 @@ function addon:StartMemoryCapture(duration)
 end
 
 -- Explicit completed boundary; legacy StopMemoryCapture remains cancellation.
+-- Ends the running capture as "stopped" with a final sample, keeping its report. Returns true, or false and a reason.
 function addon:CompleteMemoryCapture()
     if self ~= addon or not active then return false, 'not-running' end
     local run = active
@@ -614,16 +673,20 @@ function addon:CompleteMemoryCapture()
     return true
 end
 
+-- Cancels the running capture without a final sample (the report says "cancelled"). Returns true, or false and a
+-- reason.
 function addon:StopMemoryCapture()
     if self ~= addon or not active then return false, 'not-running' end
     finish(active, 'cancelled')
     return true
 end
 
+-- True while a capture is running.
 function addon:IsMemoryCaptureRunning()
     return self == addon and active ~= nil
 end
 
+-- Returns the report of the last finished capture, or nil and "running" or "not-captured".
 function addon:GetMemoryCaptureReport()
     if self ~= addon then return nil, 'foreign-owner' end
     if active then return nil, 'running' end

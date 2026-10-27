@@ -1,12 +1,20 @@
+-- Platform adapter for the optional MobInfo-2 addon: recorded runner, resist and immunity data about a unit.
+-- Owns the `value or nil, reason` reader platform:GetMobInfo2Observation and the guarded reads of the provider's
+-- MI2_GetMobData table; it must not trust the provider's shapes, which are foreign data. Runs under the probe and
+-- restricted policies. The reader and its helpers are Built In helpers: their bodies are recorded in the generated
+-- block at the end of the file and must keep their exact text. Loaded from RotationMaster.toc after
+-- Platform/role.lua; uses addon.Functions.cache for the per-pass presence cache.
 local _, addon = ...
 local platform = addon.Platform
 
+-- Returns true when value is a readable finite number, otherwise false and a reason code.
 local function finite(self, value)
     if not self:CanReadValue(value) then return false,'restricted-value' end
     if type(value)~='number' or value~=value or value>=math.huge or value<=-math.huge then return false,'invalid-mobinfo2-number' end
     return true
 end
 
+-- Reads object[key] under pcall from a foreign table, returning the value or nil and a reason code.
 local function readField(self, object, key)
     if not self:CanReadValue(object) then return nil,'restricted-value' end
     if type(object)~='table' then return nil,'invalid-mobinfo2-data' end
@@ -28,6 +36,8 @@ local function presence(self, unit)
     return exists
 end
 
+-- Returns how many hits the provider recorded for a school (1 when none was recorded, so a ratio stays defined), or
+-- nil and a reason code.
 local function hitCount(self, resists, school)
     local hits,reason=readField(self,resists,school..'Hits')
     if reason then return nil,reason end
@@ -37,6 +47,9 @@ local function hitCount(self, resists, school)
     return hits
 end
 
+-- kind is "runner", "resist" or "immune"; school names the damage school for the last two. cache is the optional
+-- per-pass cache. Returns { exists = false } for an absent unit, { exists = true, recorded = false } when MobInfo-2
+-- has no data, otherwise a record with runner, ratio or immune (plus hits); nil and a reason code on failure.
 function platform:GetMobInfo2Observation(unit, kind, school, cache)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
