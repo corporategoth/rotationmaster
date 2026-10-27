@@ -1,6 +1,16 @@
+-- Settings > General page: recommendation, polling, history, preview window, effect, tooltip and debugging options,
+-- and the diagnostic capture buttons, laid out in two columns on a pooled settings form `p`.
+-- Every field edits the page's settings draft (p:SettingsData()) and applies its side effect through
+-- p:RunSettingsEffect, so Discard undoes it; the exceptions are the preview lock, the preview position reset, the
+-- Masque skin and the capture buttons, which act immediately on live state and say why where they are built.
+-- Loaded from RotationMaster.toc after UI/settings_transfer.lua and custom_condition_transfer.lua; the settings window
+-- picks it from the section table in UI/settings_collections.lua. Many calls are guarded with `self.X and` because the
+-- optional feature files load later or are missing on some clients.
+
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- Turns a { key = text } table into a list of { value, text } entries sorted by text, for choice controls.
 local function entries(values)
     local result = {}
 
@@ -12,6 +22,13 @@ local function entries(values)
     return result
 end
 
+-- ============================================================================
+-- The General page
+-- ============================================================================
+
+-- Draws the General page into the settings pane `p`. Runs on every redraw of the page, so each call rebuilds all
+-- controls from the draft in `p:SettingsData()` and registers its cleanups on p.cleanups; nothing it creates may
+-- outlive the drawing (every callback checks the drawing's generation through p:Guard or p:Valid).
 function addon:BuildGeneralSettings(p)
     local store = p:SettingsData()
     local profile = store.profile
@@ -139,6 +156,8 @@ function addon:BuildGeneralSettings(p)
 
     p:Heading(L['Preview'])
 
+    -- Applies a preview setting change to the preview window: refresh it, create it when preview spells were just
+    -- raised above zero, resize it, or release it when set back to zero.
     local function previewChanged()
         p:RunSettingsEffect('preview', function()
             if self.RefreshPreviewWindow then
@@ -269,10 +288,13 @@ function addon:BuildGeneralSettings(p)
     p.fields.preview_skin = skin
     local skinToken = p.generation
 
+    -- True while this drawing of the page is still the live one; Masque and the skin chooser answer late.
     local function currentSkinPage()
         return p:Valid(skinToken)
     end
 
+    -- Returns the skin choices and whether skinning is available: Masque's list when the Masque option is on and the
+    -- addon is present, otherwise the single built-in skin and false (the chooser is then disabled).
     local function skinChoices()
         if not currentSkinPage() then return end
 
@@ -285,6 +307,8 @@ function addon:BuildGeneralSettings(p)
         return { { value = 'Blizzard Classic', text = L['Blizzard Classic'] } }, false
     end
 
+    -- Shows the current skin on the chooser button and enables it only when skinning is available. Returns the choices,
+    -- or nothing when the page is no longer current.
     local function paintSkin()
         local choices, available = skinChoices()
         if not currentSkinPage() or not choices then return end
@@ -375,6 +399,8 @@ function addon:BuildGeneralSettings(p)
     preview.icon:SetTexture('Interface\\Icons\\Spell_Nature_Lightning')
     p.fields.preview = preview
 
+    -- Builds a control through `build` and moves the caption it just acquired to the right of the preview icon, which
+    -- spans the Effect and Magnification rows. Relies on the label pool order: the caption is the next pooled label.
     local function besidePreview(build)
         local count = p.counts.labels or 0
         local rowY = p.y
@@ -390,6 +416,7 @@ function addon:BuildGeneralSettings(p)
         return control
     end
 
+    -- Redraws the sample glow on the preview icon from the draft's effect, color, magnification and position.
     local function refresh()
         if self.RemoveAllCurrentGlows then self:RemoveAllCurrentGlows() end
         if self.HideGlow then self:HideGlow(preview, 'settings-preview') end
@@ -497,6 +524,7 @@ function addon:BuildGeneralSettings(p)
     -- Lines Rotation Master adds to spell and item tooltips (Core/tooltips.lua).
     p:Heading(L['Tooltips'])
 
+    -- Re-applies the tooltip integration after any tooltip option changes.
     local function tooltipsChanged()
         p:RunSettingsEffect('tooltips', function()
             if self.RefreshTooltipIntegration then self:RefreshTooltipIntegration() end
@@ -595,6 +623,8 @@ function addon:BuildGeneralSettings(p)
         local control = p:Check('cpu_cache_bypass', '', requested == 'cached', function() end)
         control.tooltip = L['Observation caching can reduce repeated lookups but increases table allocations. Off by default; reload to change the running mode.']
 
+        -- Labels the box "required" when the loaded mode matches the requested one, "pending" while a reload would
+        -- change it, and checks it when the requested mode is the cached one.
         local function updateModeCaption()
             local loaded, nextMode = self:GetCacheDiagnosticMode()
 
@@ -629,6 +659,7 @@ function addon:BuildGeneralSettings(p)
     -- while this page is shown. Each action uses live settings, never a draft.
     local captures = {}
 
+    -- Calls addon method `method` under pcall; returns its first result, or false when it is missing or errors.
     local function call(method, ...)
         local fn = self[method]
         if type(fn) ~= 'function' then return false end
@@ -636,6 +667,8 @@ function addon:BuildGeneralSettings(p)
         return ok and value
     end
 
+    -- Returns the action that stops a capture of `kind`: through the shared performance command when it exists,
+    -- otherwise by calling the stop `method` directly.
     local function stopper(kind, method)
         return function()
             if type(self.HandlePerformanceCommand) == 'function' then
@@ -647,6 +680,7 @@ function addon:BuildGeneralSettings(p)
         end
     end
 
+    -- Returns a check that is true when addon method `method` yields a stored report string.
     local function stored(method)
         return function()
             local fn = self[method]
@@ -730,6 +764,9 @@ function addon:BuildGeneralSettings(p)
         local minimumWidth = 120
         local diagnosticY = p.y
 
+        -- Sets one capture's button label from its running state and enables its report button when a report exists.
+        -- A costly check (the cast report copies its snapshot) is repeated only when the running state changed, when
+        -- forced, or about every two seconds.
         local function paint(entry, force)
             local running = entry.running()
             local has = entry.has
@@ -751,6 +788,7 @@ function addon:BuildGeneralSettings(p)
             end
         end
 
+        -- Repaints every capture's buttons, but only while this drawing of the page is current.
         local function repaint(force)
             if p:Valid(token) then
                 for _, entry in ipairs(captures) do

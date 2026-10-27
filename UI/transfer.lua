@@ -1,6 +1,14 @@
+-- Rotation transfer: the Import/Export window for one rotation and the two read-only previews an import can open (a
+-- comparison against the rotation it would replace, or the full incoming content in a read-only editor). It stages
+-- pasted text through an import session, previews the result and applies it only through ApplyRotationImport; it never
+-- writes a rotation itself, and every callback re-checks that the profile, owner and saved record are unchanged.
+-- Loaded from RotationMaster.toc directly after UI/rotation_comparison.lua and before UI/transfer_format.lua;
+-- UI/rotation_browser.lua opens it. The text and format layers live in Data and Core, not here.
+
 local addon_name, addon = ...
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
+-- Builds the serializer/compressor codec used for every rotation export and import (AceSerializer plus LibCompress).
 function addon:NewRotationCodec()
     local serializer, compressor = LibStub("AceSerializer-3.0"), LibStub("LibCompress")
 
@@ -12,6 +20,13 @@ function addon:NewRotationCodec()
     })
 end
 
+-- ============================================================================
+-- Read-only import previews
+-- ============================================================================
+
+-- Shows the comparison between an incoming rotation and the one it would replace, as read-only cards in a popup
+-- owned by the transfer form `p`. Returns the popup. It closes itself when the form, the staged candidate (`view`) or
+-- its own drawing changes, and its widgets are released on hide.
 function addon:ShowNativeImportPreview(p, view, spec)
     local d = p.importPreview
 
@@ -32,6 +47,7 @@ function addon:ShowNativeImportPreview(p, view, spec)
         d.scroll:SetPoint('TOPLEFT', 12, -34)
         d.scroll:SetSize(898, 560)
 
+        -- Releases the comparison widgets so a hidden preview holds no pooled condition widgets.
         function d:Clear()
             self.scroll:ReleaseConditionContent()
             self.graph = nil
@@ -97,6 +113,7 @@ end
 -- they are shown for a Built In. The editor works on a detached copy of the
 -- staged candidate (NewRotationPreviewWorkspace): nothing here can reach the
 -- candidate, the live profile or the rotation in the transfer window.
+-- Returns the popup, or nil and a reason when the preview workspace or editor cannot be created.
 function addon:ShowNativeImportContent(p, preview, spec)
     local d = p.importContent
 
@@ -117,6 +134,8 @@ function addon:ShowNativeImportContent(p, preview, spec)
         d.host:SetPoint('TOPLEFT', 12, -34)
         d.host:SetSize(916, 562)
 
+        -- Releases the read-only editor pane and closes its detached workspace; both must go together or the workspace
+        -- would outlive its pane.
         function d:Clear()
             local pane, workspace = self.pane, self.workspace
             self.pane = nil
@@ -179,6 +198,14 @@ function addon:ShowNativeImportContent(p, preview, spec)
     return d
 end
 
+-- ============================================================================
+-- The Import/Export Rotation window
+-- ============================================================================
+
+-- Opens the Import/Export window for rotation `id` of `spec` and returns the dialog. The export text is the current
+-- rotation in the chosen format; an import is staged, previewed (a comparison when replacing, the full content for a
+-- copy) and applied through ApplyRotationImport with the owner, profile and record token captured here, so a profile
+-- switch, a character change or an edit of the saved rotation elsewhere invalidates the window (`valid`).
 function addon:ShowRotationTransfer(spec, id)
     local codec = self:NewRotationCodec()
     local source, exportError = self:GetRotationExportData(spec, id)
@@ -215,6 +242,8 @@ function addon:ShowRotationTransfer(spec, id)
     local active = true
     local generation = p.generation
 
+    -- True while the window still belongs to the state it opened for: same form drawing, profile and scoped
+    -- coordinator, same owner (class and character), and the replaced record's token is still current.
     local function valid()
         if
             not active
@@ -263,12 +292,15 @@ function addon:ShowRotationTransfer(spec, id)
         },
     }
 
+    -- Name of the rotation inside pasted text, used to suggest a name for the copy; nil when the text does not decode.
     options.originalName = function(text)
         local decoded = formats.codec:Decode(text)
         local value = decoded and decoded.value
         if type(value) == 'table' then return self:RotationDisplayName(value) end
     end
 
+    -- The pasted text changed: drops the staged candidate, disables Apply and Inspect and closes both previews, so
+    -- what is applied is always what was previewed.
     options.invalidate = function(d)
         if not valid() or dialog and (d ~= dialog or d.options ~= options) then return end
         candidate = nil
@@ -285,6 +317,8 @@ function addon:ShowRotationTransfer(spec, id)
         if p.importContent then p.importContent.frame:Hide() end
     end
 
+    -- Stages the pasted text and opens the matching preview: a comparison when replacing, the full content for a copy.
+    -- Apply is enabled only when the session reports the candidate ready.
     options.preview = function(d)
         if not valid() then return end
         local why
@@ -359,6 +393,8 @@ function addon:ShowRotationTransfer(spec, id)
         end
     end
 
+    -- Opens the check-import report: the WowSims conversion report when that format is selected, plus the diagnostics
+    -- and diff of the staged candidate.
     options.inspect = function()
         if formats.format == 'wowsims' and valid() then
             local conversion = formats.lastImport
@@ -396,6 +432,7 @@ function addon:ShowRotationTransfer(spec, id)
         return self:ShowComparisonReport(self:FormatRotationComparison(report))
     end
 
+    -- Window closed: marks it inactive and releases the format state, the import session and the form.
     options.onClose = function()
         active = false
         formats:Release()
@@ -444,6 +481,8 @@ function addon:ShowRotationTransfer(spec, id)
     dialog.scope:Show()
     dialog.classScope:Show()
 
+    -- Syncs the Class and This character boxes with the mode: a replacement keeps its owner's scope (both boxes
+    -- locked), a copy chooses one, and This character is unavailable when there is no current character.
     local function scopeState()
         if dialog.mode == 'replace' then
             dialog.scope:SetChecked(reference and reference.address and reference.address.scope == 'character')

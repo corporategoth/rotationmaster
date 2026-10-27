@@ -1,9 +1,27 @@
+-- Settings page layout: the two-column mode and the roster layout (a searchable, filterable, drag-orderable list on the
+-- left, the detail pane on the right) that a settings page can switch on. It is installed onto a pooled settings form
+-- `p` and replaces its Layout with one that falls back to the form's own simple layout when no roster is in use.
+-- It owns the roster frame, its virtualized row pool and the column frames; it must not decide what the rows mean (the
+-- page supplies entries and callbacks) and never writes saved data.
+-- Loaded from RotationMaster.toc after UI/settings_roster_order.lua and before UI/settings_ordered.lua;
+-- UI/settings_form.lua (loaded later) calls addon:InstallSettingsLayout while it builds a form. Row ordering and drag
+-- live in UI/settings_roster_order.lua and UI/settings_ordered.lua.
+
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- Adds the layout methods to the settings form `p` and remembers its original Layout as the single-column fallback.
+-- Call once per form, before the first Layout.
 function addon:InstallSettingsLayout(p)
     local simpleLayout = p.Layout
 
+    -- ============================================================================
+    -- Columns
+    -- ============================================================================
+
+    -- Clears the per-page layout state (columns, roster flags, surface) before a page is drawn again, hides the roster
+    -- and column frames, and runs the simple layout. A roster splitter being dragged is left alone so the drag
+    -- survives the redraw it causes.
     function p:ResetLayout()
         self.surface = nil
         self.rosterUsed = false
@@ -27,6 +45,9 @@ function addon:InstallSettingsLayout(p)
         simpleLayout(self)
     end
 
+    -- Starts column `index` (1 or 2) of a two-column page; later content goes into that column until the next
+    -- Column call or EndColumns. Below 960 px of page width the page collapses to one column and these calls only
+    -- track state. Each column sizes its own caption column, so the label scope is restarted per column.
     function p:Column(index)
         if index == 1 then
             self.fullWidth = math.max(340, self.frame:GetWidth() - 40)
@@ -68,6 +89,7 @@ function addon:InstallSettingsLayout(p)
         self.y = 4
     end
 
+    -- Closes the two-column region: the page continues below the taller column at full width.
     function p:EndColumns()
         if self.columnSingle then
             self.columnMode = false
@@ -87,6 +109,12 @@ function addon:InstallSettingsLayout(p)
         self.columnMode = false
     end
 
+    -- ============================================================================
+    -- Roster rows
+    -- ============================================================================
+
+    -- Changes how the roster entry for `value` is shown (text, search text, icon) and refreshes the list. No-op
+    -- without a roster.
     function p:UpdateRosterEntry(value, presentation)
         local r = self.roster
         if not r then return end
@@ -103,6 +131,8 @@ function addon:InstallSettingsLayout(p)
         self:RefreshRoster()
     end
 
+    -- Unbinds a pooled roster row from its entry: drops the lease and every click and drag handler so a late event
+    -- cannot reach the old entry, then hides the row for reuse.
     function p:RetireRosterRow(row)
         row.rosterLease = nil
         row.rosterEntry = nil
@@ -126,6 +156,8 @@ function addon:InstallSettingsLayout(p)
         row:Hide()
     end
 
+    -- Deactivates the roster when its drawing ends: cancels any order drag, retires every row and placeholder and hides
+    -- the frame. The rows stay pooled in the roster for the next drawing.
     function p:ReleaseRoster()
         local r = self.roster
         if not r then return end
@@ -150,6 +182,8 @@ function addon:InstallSettingsLayout(p)
         if r.splitter and not r.splitter.drag then r.splitter:Hide() end
     end
 
+    -- Binds a pooled row to `entry` at list position `index`: places and styles it, shows its icon, validation and
+    -- unsaved marks, and makes a click choose the entry only while the roster revision and the row's lease still match.
     function p:BindRosterViewportRow(row, entry, index)
         local r = self.roster
         local lease = {}
@@ -200,6 +234,10 @@ function addon:InstallSettingsLayout(p)
         row:Show()
     end
 
+    -- Virtualized roster drawing: only the rows in (and just around) the visible range are bound, so a long list costs
+    -- a fixed number of frames. Rows scrolled out are retired, rows missing in range are bound from the pool, and a
+    -- carried (dragged) entry gets a placeholder. Re-entrancy is guarded, and a row half-bound when an error occurs is
+    -- retired before the error is rethrown.
     function p:RefreshRosterViewport()
         local r = self.roster
 
@@ -299,6 +337,9 @@ function addon:InstallSettingsLayout(p)
         end
     end
 
+    -- Re-filters the roster by the search text (a plain, case-insensitive match on the entry text and search text),
+    -- bumps the revision so stale row callbacks die, and redraws keeping the scroll position anchored on the same entry
+    -- when it is still listed.
     function p:RefreshRoster()
         local r = self.roster
         if not r then return end
@@ -343,6 +384,9 @@ function addon:InstallSettingsLayout(p)
         self:RefreshRosterViewport()
     end
 
+    -- Replaces the roster's single New button with a footer grid of icon buttons, two per row. Each entry is
+    -- { key, text, icon, action, enabled }; `keepManage` keeps the Manage button above the grid. A click flushes
+    -- pending edits first and runs the action only if that succeeds.
     function p:SetRosterActions(entries, keepManage)
         local r = self.roster
         if not r then return end
@@ -393,6 +437,14 @@ function addon:InstallSettingsLayout(p)
         self:Layout()
     end
 
+    -- ============================================================================
+    -- The roster and page layout
+    -- ============================================================================
+
+    -- Turns the page into a roster page: builds (once) and shows the sidebar with its search box, source buttons,
+    -- category chooser, scrolling list and New/Manage buttons. `entries` are { value, text, ... } records, `current`
+    -- the selected value and `choose(value)` the selection callback; `options` carries sources, categories, new, manage
+    -- and ordering hooks. Every control click is guarded by the drawing's generation and flushes pending edits first.
     function p:UseRoster(entries, current, choose, options)
         options = options or {}
         self.rosterUsed = true
@@ -561,6 +613,8 @@ function addon:InstallSettingsLayout(p)
         self:RefreshRoster()
     end
 
+    -- Lays out the page: the plain layout when no roster is in use, otherwise sizes and places the sidebar, its
+    -- footer, the splitter and the detail scroll area from the shared roster geometry, then redraws the visible rows.
     function p:Layout()
         if not self.rosterUsed or not self.roster then
             simpleLayout(self)

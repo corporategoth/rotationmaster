@@ -1,8 +1,17 @@
+-- Condition type picker: the combobox the condition editor shows on a card to choose or replace a condition type, with
+-- a search box, a category list from the profile's condition groups and a capped list of matching types.
+-- It owns its popup frames and rows (reused through the `reuse` table) and reports a choice only through the callback;
+-- it never edits the rotation. Conditions are listed per scope from the registry (addon:listConditions).
+-- Loaded from RotationMaster.toc just before UI/condition_cards.lua; UI/condition_editor.lua is the only caller and
+-- registers the picker's escape frame with the window registry (UI/window.lua).
+
 local addon_name, addon = ...
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
 -- One native combobox: typing immediately opens its filtered results; clicking
 -- opens the same results and category browser without needing a search term.
+-- `choose(tag)` is called once for the chosen type, `alive()` must return false once the owning editor drawing is gone
+-- (every callback checks it), and `reuse` is a previous picker table whose frames are kept. Returns the picker, hidden.
 function addon:CreateConditionTypePicker(parent, scope, current, choose, alive, reuse)
     local picker = reuse or { rows = {}, categories = {} }
     local width = math.max(300, math.min(540, parent:GetWidth() - 48))
@@ -57,6 +66,7 @@ function addon:CreateConditionTypePicker(parent, scope, current, choose, alive, 
     local selected = 1
     local selectedType = current
 
+    -- Shows the current type's description in the box, or the prompt when there is none.
     local function display()
         input:SetText(
             selectedType
@@ -66,6 +76,7 @@ function addon:CreateConditionTypePicker(parent, scope, current, choose, alive, 
         )
     end
 
+    -- Records the choice, closes the popup, then reports it; ignored when the owning drawing is gone.
     local function selectType(tag)
         if not alive() then return end
         selectedType = tag
@@ -73,6 +84,9 @@ function addon:CreateConditionTypePicker(parent, scope, current, choose, alive, 
         choose(tag)
     end
 
+    -- Fills the result list with the allowed types in the selected category whose description or tag contains `query`
+    -- (case-insensitive, plain text), sorted by description. Only the first 200 matches get rows, which bounds the
+    -- number of buttons created; self.matches keeps the full list for Enter.
     function picker:Filter(query)
         if not alive() then return end
         query = string.lower(query or "")
@@ -164,6 +178,8 @@ function addon:CreateConditionTypePicker(parent, scope, current, choose, alive, 
 
     display()
 
+    -- OnUpdate poll while the picker is open: closes it when a left click lands outside the host frame, or when the
+    -- owner is gone. mouseDown remembers the previous state so the click that opened the picker does not close it.
     local function watchOutside()
         if not alive() then
             picker:Dismiss()
@@ -176,6 +192,7 @@ function addon:CreateConditionTypePicker(parent, scope, current, choose, alive, 
         picker.mouseDown = down
     end
 
+    -- Shows the host and the unfiltered results and starts the outside-click poll.
     local function open()
         if alive() then
             host:Show()
@@ -187,6 +204,7 @@ function addon:CreateConditionTypePicker(parent, scope, current, choose, alive, 
         end
     end
 
+    -- Closes the popup without choosing, restores the box text and stops the outside-click poll.
     function picker:Dismiss()
         popup:Hide()
         host:Hide()
@@ -195,6 +213,7 @@ function addon:CreateConditionTypePicker(parent, scope, current, choose, alive, 
         addon:SetUIScript(host, "OnUpdate", nil)
     end
 
+    -- Opens below `anchor` (when given) with the results showing and the box focused.
     function picker:Open(anchor)
         if anchor then
             host:ClearAllPoints()
@@ -241,6 +260,7 @@ function addon:CreateConditionTypePicker(parent, scope, current, choose, alive, 
         addon:OpenPopup(picker.escape, parent)
     end
 
+    -- Dismisses and hides the picker so its frames can be reused by the next CreateConditionTypePicker call.
     function picker:Release()
         self:Dismiss()
         input:Hide()

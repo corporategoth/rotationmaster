@@ -1,6 +1,18 @@
+-- Draft changes: the "View Changes" comparison between a saved document and its unsaved draft (a rotation, a condition
+-- or a whole profile-shaped table), plus the button that opens it and the collection of half-typed input that has not
+-- been committed to the draft yet. It builds comparison rows and hands them to UI/collection_compare.lua; it never
+-- edits either side.
+-- Loaded from RotationMaster.toc right after UI/collection_compare.lua and before UI/draft_change_controls.lua, which
+-- wires the button into every editor pane. Rows are bounded in length so a huge saved value cannot freeze the window.
+
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- ============================================================================
+-- Value helpers
+-- ============================================================================
+
+-- Short display text for a pending-input value: "None" for nil, "Fields" for a table, otherwise tostring.
 ---@param value any
 local function text(value)
     if value == nil then return L['None'] end
@@ -8,12 +20,14 @@ local function text(value)
     return tostring(value)
 end
 
+-- Caps a displayed value at 8192 characters (adding an ellipsis) so one giant string cannot make a row unmeasurable.
 ---@param value any
 local function bounded(value)
     value = tostring(value or '')
     return #value > 8192 and value:sub(1, 8192) .. '…' or value
 end
 
+-- Follows `path` (a list of keys) down from `root`; returns nil as soon as a level is not a table or the key is absent.
 local function at(root, path)
     for _, key in ipairs(path) do
         root = type(root) == 'table' and root[key] or nil
@@ -22,6 +36,13 @@ local function at(root, path)
     return root
 end
 
+-- ============================================================================
+-- Building the rows
+-- ============================================================================
+
+-- Builds the comparison rows for `kind` ('rotation', 'condition', or anything else for a profile-shaped table) from the
+-- saved `before` and the draft `after`, and returns the rows and the number of changed ones. With `showSame` the
+-- unchanged rows are listed too. `spec` is the class spec used to describe conditions in prose.
 function addon:BuildDraftChangeRows(kind, before, after, showSame, spec)
     if kind ~= 'rotation' and kind ~= 'condition' then
         return self:CollectionComparisonRows('profile', { profile = before }, { profile = after }, showSame)
@@ -29,6 +50,8 @@ function addon:BuildDraftChangeRows(kind, before, after, showSame, spec)
 
     local rows, total = {}, 0
 
+    -- Appends one row for a pair of values when they differ (or showSame is set) and counts it if it changed. `format`
+    -- turns a value into its text and the optional `icon` returns a texture id for either side.
     local function add(label, a, b, format, icon)
         local changed = not self:UnsavedDataEqual(a, b)
         if changed then total = total + 1 end
@@ -45,6 +68,8 @@ function addon:BuildDraftChangeRows(kind, before, after, showSame, spec)
         end
     end
 
+    -- When two conditions differ but read the same in prose (the description leaves some declared value out), lists the
+    -- raw field differences under `label` so no changed value is hidden.
     local function omittedConditionFields(label, a, b)
         if self:UnsavedDataEqual(a, b) or not a or not b or self:DescribeCondition(a, spec) ~= self:DescribeCondition(
             b,
@@ -146,6 +171,8 @@ function addon:BuildDraftChangeRows(kind, before, after, showSame, spec)
         end
     end
 
+    -- Display name of what a step does: its spell or item names, or the fixed label for a branch, stop or assisted
+    -- step.
     local function action(step)
         if step.type == 'branch' then
             return L['Condition']
@@ -177,6 +204,7 @@ function addon:BuildDraftChangeRows(kind, before, after, showSame, spec)
         return L['Item']
     end
 
+    -- Spell icon texture for a step record, or nil for any step that is not a single known spell id.
     local function icon(value)
         local step = value and value.step
 
@@ -190,6 +218,8 @@ function addon:BuildDraftChangeRows(kind, before, after, showSame, spec)
         end
     end
 
+    -- Multi-line summary of a step record: name, action, type, position, conditions, any remaining fields and the
+    -- branch targets. Two summaries differ exactly when something visible in the step changed.
     local function format(value)
         local step = value.step
 
@@ -272,12 +302,20 @@ function addon:BuildDraftChangeRows(kind, before, after, showSame, spec)
     return rows, total
 end
 
+-- ============================================================================
+-- The View Changes window and its button
+-- ============================================================================
+
+-- Opens the comparison window for `owner` between `before` and `after`. `valid()` must return false once the owning
+-- editor drawing is gone; `pending` is the list from PendingWidgetChanges, shown as extra rows. Each call bumps the
+-- adapter's generation so a window opened for an older drawing stops reacting.
 function addon:ShowWorkbenchDraftChanges(owner, kind, before, after, valid, spec, pending)
     local adapter = owner.draftComparisonOwner or { frame = owner.frame, generation = 0 }
     owner.draftComparisonOwner = adapter
     adapter.generation = adapter.generation + 1
     adapter.cleanups = {}
 
+    -- True while `token` is the latest generation and the owner's drawing is still alive.
     function adapter:Valid(token)
         return token == self.generation and valid()
     end
@@ -307,6 +345,8 @@ function addon:ShowWorkbenchDraftChanges(owner, kind, before, after, valid, spec
     return self:ShowCollectionComparison(adapter, 'profile', before, after, options)
 end
 
+-- Creates the View Changes button left of the `apply` button; it starts disabled, and the editor enables it while a
+-- draft differs from what is saved.
 function addon:CreateViewChangesButton(parent, apply, callback)
     local button = self:CreateWorkbenchButton(parent, L['View Changes'], 116)
     button:SetPoint('RIGHT', apply, 'LEFT', -6, 0)
@@ -315,6 +355,13 @@ function addon:CreateViewChangesButton(parent, apply, callback)
     return button
 end
 
+-- ============================================================================
+-- Pending input
+-- ============================================================================
+
+-- Walks a widget tree and collects every field with typed-but-uncommitted input as {label, before, after} records,
+-- appending to `result` (created when absent) and returning it. A custom widget with pending input that RM cannot
+-- read is reported as "Not inspected".
 function addon:PendingWidgetChanges(widget, result)
     result = result or {}
 

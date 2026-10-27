@@ -1,6 +1,18 @@
+-- Settings > Functions page: the roster of Built In helper functions and custom functions with its New, Duplicate,
+-- Import/Export and Compare actions, plus the helpers that name, find and open a function source. It builds the left
+-- roster and delegates the editor to UI/function_source_pane.lua; it never saves a function itself.
+-- Loaded from RotationMaster.toc after UI/settings_conditions.lua and before UI/function_bindings.lua. Custom functions
+-- live in addon.db.global.custom_functions (saved data); Built In ones come from addon.builtinFunctions and are
+-- read-only. Value-binding helpers are not functions to the user and are always left out of the roster.
+
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- ============================================================================
+-- Function sources and names
+-- ============================================================================
+
+-- Returns a fresh source for a new custom function (name, namespace, empty arguments and `return nil` code).
 function addon:NewFunctionSource()
     return {
         name = 'newFunction',
@@ -13,6 +25,9 @@ function addon:NewFunctionSource()
     }
 end
 
+-- Restricts a function name edit box to identifier characters: typed text is stripped to letters, digits and
+-- underscores with no leading digit, and the cursor is kept at the same logical place. The box's previous change
+-- handler still runs afterwards. `form` supplies the Guard that drops events from a stale drawing.
 function addon:ConfigureFunctionNameInput(form, input)
     input:SetMaxLetters(128)
     local changed = input:GetScript('OnTextChanged')
@@ -38,6 +53,8 @@ function addon:ConfigureFunctionNameInput(form, input)
     )
 end
 
+-- Returns an unused name for a copy of function `id`: its editor name with `_copy` (shortened to leave room), then
+-- `_copy2`, `_copy3` and so on until no existing function uses it.
 function addon:DuplicateFunctionName(id, source)
     local base = self:FunctionEditorName(id, source):sub(1, 116) .. '_copy'
     local name = base
@@ -56,6 +73,8 @@ function addon:DuplicateFunctionName(id, source)
     return name
 end
 
+-- Returns the source table for function `id` and whether it is read-only (a Built In), or nothing when `id` is unknown
+-- or is a value binding.
 function addon:FunctionSource(id)
     local custom = (self.db.global.custom_functions or {})[id]
     if custom then return custom, false end
@@ -63,6 +82,8 @@ function addon:FunctionSource(id)
     if builtin and not builtin.valueBinding then return builtin.source, true end
 end
 
+-- Starts a new custom function in the pane `p` (a copy of `source`, or the blank template) under a new generated id,
+-- after any unapplied edits have been resolved.
 function addon:OpenNewFunction(p, source)
     p:RequestLeave(function()
         if not p.active then return end
@@ -75,6 +96,9 @@ function addon:OpenNewFunction(p, source)
     end)
 end
 
+-- Opens the settings window on the Functions page with function `id` selected (used by the go-to-definition links).
+-- Returns the settings window, or nil when `id` is unknown. With a pane open, the jump waits for navigation to be
+-- approved, so a cancelled jump changes nothing.
 function addon:ShowFunctionSource(id)
     local source = self:FunctionSource(id)
     if not source then return end
@@ -96,6 +120,7 @@ function addon:ShowFunctionSource(id)
     return self:ShowConfig('Functions')
 end
 
+-- Returns the sorted list of namespaces in use by Built In and custom functions as { value, text } entries.
 function addon:FunctionNamespaces()
     local names = {}
 
@@ -123,9 +148,17 @@ function addon:FunctionNamespaces()
     return entries
 end
 
+-- ============================================================================
+-- The Functions page
+-- ============================================================================
+
+-- Draws the Functions page into the settings pane `p`: the filtered, sorted roster, the roster actions and the inline
+-- editor for the selected (or newly created) function. Runs on every redraw, so it reads the current registry and
+-- saved functions each time and keeps the selection in pane fields (functionID, newFunctionSource and the filters).
 function addon:BuildFunctionSettings(p)
     self:InstallInlineFunctionNavigation(p)
 
+    -- A pending jump from ShowFunctionSource: select that function, widen the filters so it is visible, and consume it.
     if self.configFunctionSelection then
         p.functionID = self.configFunctionSelection
         p.functionSource = 'all'
@@ -152,6 +185,8 @@ function addon:BuildFunctionSettings(p)
         p.functionNamespaceFilter = '*'
     end
 
+    -- Adds a roster entry for a function unless the source or namespace filter hides it; an entry whose function is
+    -- unavailable is marked invalid with the reason.
     local function add(id, source, builtin)
         if p.functionSource == 'builtin' and not builtin or p.functionSource == 'custom' and builtin then return end
 

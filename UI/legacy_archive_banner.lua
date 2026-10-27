@@ -1,3 +1,9 @@
+-- Legacy archive banner: the strip under the settings window's tabs that tells the user rotations from before version 2
+-- are waiting in the archive. It owns only its own frame and the dismiss click; the archive itself lives in
+-- Core/legacy_archive.lua, and dismissing hides the banner without touching the archive.
+-- Loaded last among the settings UI files (see RotationMaster.toc); UI/config.lua creates it with the shell, and
+-- UI/rotation_browser.lua refreshes it after an adoption through addon:RefreshLegacyArchiveBanner.
+
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
@@ -8,6 +14,8 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- adoption, never in layout.
 local HEIGHT, GAP = 32, 4
 
+-- Builds the banner for the settings shell and returns it with Refresh and Place methods. The caller (UI/config.lua)
+-- owns the shell and must call banner:Refresh when the window opens; the banner starts hidden.
 function addon:CreateLegacyArchiveBanner(shell, window)
     local banner = { frame = CreateFrame('Frame', nil, window), count = nil }
     local frame = banner.frame
@@ -67,6 +75,7 @@ function addon:CreateLegacyArchiveBanner(shell, window)
     return banner
 end
 
+-- Re-reads the archive count and re-lays out the settings window; a no-op while no settings window exists.
 function addon:RefreshLegacyArchiveBanner()
     local shell = self.configWindow
 

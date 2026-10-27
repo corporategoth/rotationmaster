@@ -1,6 +1,16 @@
+-- Lua debug output window: a read-only, copyable report of what a custom condition's code printed and what its
+-- debugger terminal showed. It owns one window per code-editor control (cached on control.outputWindow) and never
+-- accepts edits: the text box reverts any typing so the user can only select and copy.
+-- Loaded in the "Code authoring UI" block of RotationMaster.toc after the LuaWorkbench embed;
+-- Integrations/lua_workbench.lua calls it from the control's ShowDebugOutput. Builds on
+-- addon:CreateWorkbenchTransferShell (UI/settings_transfer.lua).
+
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- Opens (building on first use) the debug output window for a code-editor control and returns it. Does nothing once
+-- the control has been released or is no longer valid. Per the in-game probe rule the text is selectable and the
+-- Copy button focuses and highlights it.
 function addon:ShowLuaDebugOutput(control)
     if control.released or not control.valid() then return end
     local d = control.outputWindow
@@ -21,6 +31,8 @@ function addon:ShowLuaDebugOutput(control)
         d.measure:SetWordWrap(true)
         d.measure:Hide()
 
+        -- Sizes the scroll content to the wrapped height of the current text, measured on a hidden font string because
+        -- an EditBox cannot report its wrapped height.
         function d:Layout()
             local width = d.scroll:GetWidth() - 22
             d.measure:SetWidth(math.max(1, width - 12))
@@ -30,6 +42,7 @@ function addon:ShowLuaDebugOutput(control)
             d.scroll:UpdateWorkbenchScroll()
         end
 
+        -- Rebuilds the report from the control's context, the Query console lines and the debugger terminal lines.
         function d:Refresh()
             local context = control.context or {}
             local console = control.engine.Query.Console
@@ -55,10 +68,13 @@ function addon:ShowLuaDebugOutput(control)
             self:Layout()
         end
 
+        -- Hides the window; the transfer shell's other behaviors are not needed here.
         function d:Hide()
             self.frame:Hide()
         end
 
+        -- The box is read-only in effect: any edit is undone by writing the report text back. d.setting guards the
+        -- re-entrant OnTextChanged that SetText itself fires.
         addon:SetUIScript(d.input, 'OnTextChanged', function()
             if not d.setting and d.input:GetText() ~= d.text then
                 d.setting = true

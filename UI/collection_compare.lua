@@ -1,6 +1,19 @@
+-- Collection comparison: the read-only side-by-side window that shows how two saved records differ (profiles, custom
+-- conditions, announcements, categories, item sets, effects, rotations through their callers), and the row builder that
+-- decides what "different" means for each kind. It owns the window and the plain-language row text; it never edits
+-- either record and never executes the source code it displays (code is shown as text, cut at a limit).
+-- Loaded from RotationMaster.toc after UI/settings_profiles.lua; UI/draft_changes.lua, UI/transfer_review.lua and the
+-- settings pages (profiles, conditions, functions, collections) are the callers. Both sides are copied on open, so a
+-- later edit of the live data cannot change what is shown.
+
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- ============================================================================
+-- Value formatting
+-- ============================================================================
+
+-- Deep equality of two plain values; tables compare by content (cycles are not expected in saved data).
 local function equal(a, b)
     if type(a) ~= type(b) then return false end
     if type(a) ~= 'table' then return a == b end
@@ -16,6 +29,7 @@ local function equal(a, b)
     return true
 end
 
+-- Display text for a non-table value: None, Yes/No, a number to four significant digits, or tostring.
 local function scalar(value)
     if value == nil then return L['None'] end
     if type(value) == 'boolean' then return value and L['Yes'] or L['No'] end
@@ -23,12 +37,14 @@ local function scalar(value)
     return tostring(value)
 end
 
+-- Display text for an {r, g, b, a} color table (a missing channel reads as 1); other values fall back to scalar.
 local function color(value)
     if type(value) ~= 'table' then return scalar(value) end
     return string.format('R %.3f  G %.3f  B %.3f  A %.3f', value.r or 1, value.g or 1, value.b or 1, value.a or 1)
 end
 
 -- Structured data as readable indented text, keys in a fixed order, bounded.
+-- The bound is 200 entries and 8 levels, after which an ellipsis line is written, so a huge table cannot stall the UI.
 local function structured(value)
     local lines, count = {}, 0
 
@@ -77,6 +93,8 @@ end
 -- Source code is shown as text and never run; very long text is cut, and says so.
 local CODE_LIMIT = 20000
 
+-- Display text for a custom condition's source field: the code as text, cut at CODE_LIMIT with a note of how much is
+-- missing. Never compiled or run.
 local function code(value)
     if value == nil then return L['None'] end
     if type(value) ~= 'string' then return scalar(value) end
@@ -91,10 +109,20 @@ local function code(value)
     return value
 end
 
+-- ============================================================================
+-- Comparison rows
+-- ============================================================================
+
+-- Builds the comparison rows for two records of one `kind` ('profile', 'announcement', 'category', 'customcondition',
+-- 'itemset', anything else is an effect) and returns the rows and the number of changed ones. A row is
+-- { label, left, right, changed, leftIcon, rightIcon } with display text for both sides. Unchanged rows are included
+-- only with `showSame`. A profile-shaped table is walked recursively (to depth 12) with readable labels.
 function addon:CollectionComparisonRows(kind, left, right, showSame)
     local rows = {}
     local total = 0
 
+    -- Appends a row for one pair of values when they differ (or showSame is set) and counts it if it changed.
+    -- `format` turns a value into its text (default scalar); `icons` optionally returns a texture for each side.
     local function add(label, a, b, format, icons)
         local changed = not equal(a, b)
         if changed then total = total + 1 end
@@ -196,6 +224,8 @@ function addon:CollectionComparisonRows(kind, left, right, showSame)
             imports = L['Imports'],
         }
 
+        -- A human label for a settings key: the translated label table first, then the record's own name, a list
+        -- index, a condition's description, and last the key with underscores and camel case spaced out.
         local function plain(key, a, b)
             if labels[key] then return labels[key] end
             local record = type(a) == 'table' and a or type(b) == 'table' and b
@@ -206,6 +236,8 @@ function addon:CollectionComparisonRows(kind, left, right, showSame)
             return tostring(key):gsub('_', ' '):gsub('(%l)(%u)', '%1 %2')
         end
 
+        -- Compares two nodes and adds a row for each differing leaf, labeling it with the path of keys joined by " / ".
+        -- A table against a non-table is shown as "Structured settings" on the table side rather than expanded.
         local function walk(a, b, prefix, depth)
             if equal(a, b) and not showSame then return end
 
@@ -305,12 +337,14 @@ function addon:CollectionComparisonRows(kind, left, right, showSame)
             end
         end
 
+        -- Spell name and id for an announcement's spell, or None.
         local function spell(id)
             return id and self:PlainWorkbenchName(self:SpellLabel(id)) .. ' (' .. tostring(id) .. ')' or L['None']
         end
 
         add(L['Spell'], left.spell, right.spell, spell)
 
+        -- One line per item, as name and id; a name the client has not loaded yet reads as "Item data loading".
         local function items(value)
             if type(value) ~= 'table' then return scalar(value) end
             local parts = {}
@@ -330,6 +364,7 @@ function addon:CollectionComparisonRows(kind, left, right, showSame)
     elseif kind == 'category' then
         add(L['Icon'], left.icon, right.icon)
 
+        -- A category's condition list as a count followed by one description per tag.
         local function conditions(list)
             if type(list) ~= 'table' then return scalar(list) end
             local lines = { string.format(L['%d conditions'], #list) }
@@ -366,10 +401,12 @@ function addon:CollectionComparisonRows(kind, left, right, showSame)
     elseif kind == 'itemset' then
         local provider = self:GetReferenceProvider('item')
 
+        -- Item record for an id or a name reference, or nil.
         local function info(value)
             return value and provider.info(tonumber(value) or provider.resolve(value))
         end
 
+        -- Item name plus how it is identified (id or reference); "Item data loading" until the client knows the item.
         local function name(value)
             if value == nil then return L['None'] end
             local record = info(value)
@@ -381,6 +418,7 @@ function addon:CollectionComparisonRows(kind, left, right, showSame)
             return friendly .. '\n' .. identity
         end
 
+        -- Item icon texture for an id or reference, or nil.
         local function icon(value)
             local record = info(value)
             return record and record.icon
@@ -409,6 +447,8 @@ function addon:CollectionComparisonRows(kind, left, right, showSame)
             end
         end
 
+        -- Text for one step of an effect's sequence, shaped by the effect type: a custom step lists its texture, angle,
+        -- magnification and color, a dazzle step is a color, anything else is a plain value.
         local function entry(value, kind)
             if value == nil then return L['None'] end
 
@@ -458,6 +498,14 @@ function addon:CollectionComparisonRows(kind, left, right, showSame)
     return rows, total
 end
 
+-- ============================================================================
+-- The comparison window
+-- ============================================================================
+
+-- Opens (building on first use) the comparison window owned by the settings form `p` and returns it. `left` and
+-- `right` are copied on open. `options` may set title, leftHeading, rightHeading, `rows(first, second, showSame)` (a
+-- custom row builder returning rows and a change count), maxRows, `single` (one record, every field, no toggle) and
+-- fromImport. The window hides itself when the form's drawing changes (`p:Valid`) or a newer comparison replaces it.
 function addon:ShowCollectionComparison(p, kind, left, right, options)
     options = options or {}
     local d = p.comparison
@@ -516,6 +564,7 @@ function addon:ShowCollectionComparison(p, kind, left, right, options)
 
     local token = p.generation
 
+    -- True while the owning form drawing is current and no newer comparison has taken over this window.
     local function valid()
         return p:Valid(token) and d.serial == serial
     end
@@ -526,6 +575,8 @@ function addon:ShowCollectionComparison(p, kind, left, right, options)
 
     local showSame = single
 
+    -- Rebuilds the rows and lays out the label and value cells (pooled in d.cells, extra ones hidden), then updates the
+    -- changed-field count. Capped by options.maxRows with a "more not shown" line.
     local function draw()
         if not valid() then return end
         local rows, changes
@@ -556,6 +607,8 @@ function addon:ShowCollectionComparison(p, kind, left, right, options)
         local y = 0
         local n = 0
 
+        -- Takes the next pooled cell, places it at (x, current row top) with the given size and tone, and sets its text
+        -- and optional icon. Returns the cell so the caller can grow it to the measured text height.
         local function cell(value, x, width, height, tone, icon)
             n = n + 1
             local c = d.cells[n]

@@ -1,10 +1,24 @@
+-- Spell and item search box: the edit box used for every spell, item and totem field, with a suggestion list, exact
+-- selection by ID or link, drag and drop from the cursor, and a right-click menu of what the game offers right now.
+-- It decorates a pooled native text input lease (addon:CreateConditionEditBox) and restores its scripts and methods
+-- when the lease is released; it never owns saved data, it only reports the chosen reference through OnEnterPressed.
+-- Loaded from RotationMaster.toc after UI/window.lua and UI/help.lua and before UI/spell_icon.lua. Names and searches
+-- come from the reference provider (addon:GetReferenceProvider); live game values (the target's cast, trinkets, the
+-- cursor) are read through pcall and gated by platform:CanReadValue because restricted clients hide them.
+
 local addon_name, addon = ...
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
+-- ============================================================================
+-- Suggestion popup
+-- ============================================================================
+
+-- Removes color escapes from a name so it can sit in the edit box as plain text.
 local function clean(text)
     return type(text) == "string" and text:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "") or text
 end
 
+-- Hides the game tooltip when one of the popup's rows owns it, so closing the list never leaves a stale tooltip.
 local function hideTooltip(popup)
     if GameTooltip then
         for _, row in ipairs(popup.rows) do
@@ -16,6 +30,9 @@ local function hideTooltip(popup)
     end
 end
 
+-- Builds the suggestion list frame (twelve rows and a footer) and stores it on `widget` so the next lease of the same
+-- widget reuses it. It sits in the TOOLTIP strata on purpose: it is a list, not a window, so the window registry does
+-- not order it (docs/architecture/window-layering.md).
 local function newPopup(widget)
     local popup = CreateFrame("Frame", nil, UIParent)
     popup:SetFrameStrata("TOOLTIP")
@@ -55,24 +72,36 @@ end
 -- recent casts (newest first) and equipped trinkets. Each entry is
 -- {id=number, context=format string taking the name}. Values the client
 -- marks unreadable, and repeats, are left out.
+
+-- ============================================================================
+-- What the game offers right now
+-- ============================================================================
+
+-- Returns up to ten context entries for `kind` ('spell' or 'item'); see the description above for the shape.
 function addon:GetReferenceContextEntries(kind)
     local entries, seen = {}, {}
     local platform = self.Platform
 
+    -- True for a value the client lets addons read; a restricted-client secret value must never be compared or used
+    -- as a table key, so unreadable ids are dropped before anything else touches them.
     local function readable(value)
         return value ~= nil and (not platform or not platform.CanReadValue or platform:CanReadValue(value))
     end
 
+    -- Adds one entry unless the id is unreadable, not a positive number, already listed, or the list is full.
     local function add(id, context)
         if not readable(id) or type(id) ~= 'number' or id <= 0 or seen[id] or #entries >= 10 then return end
         seen[id] = true
         entries[#entries + 1] = { id = id, context = context }
     end
 
+    -- Drops the pcall status and returns the results only on success.
     local function returned(ok, ...)
         if ok then return ... end
     end
 
+    -- Calls a game function under pcall; returns its results, or nothing when it is missing or errors (an API that is
+    -- absent on one client must not break the menu).
     local function call(fn, ...)
         if type(fn) == 'function' then return returned(pcall(fn, ...)) end
     end
@@ -103,8 +132,15 @@ function addon:GetReferenceContextEntries(kind)
     return entries
 end
 
+-- ============================================================================
+-- The search field
+-- ============================================================================
+
 -- The ordinary field remains compatible with existing data callbacks. Search,
 -- suggestions and exact selection belong to RM, not the shared ID scanner.
+-- `kind` is the field type ('Spell_EditBox', 'Item_EditBox', 'Spec_EditBox', 'Totem_EditBox', ...) and `initialSpell`
+-- an id or name to prime the provider's index. Returns the decorated widget; every script and method changed here is
+-- restored by its OnRelease, and every callback checks `alive` first.
 function addon:CreateReferenceEditBox(kind, initialSpell)
     local provider = self:GetReferenceProvider(kind)
 
@@ -139,12 +175,16 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
 
     local scripts = {}
 
+    -- Replaces a frame script with `handler`, remembering the original so OnRelease can put it back, but only if the
+    -- handler is still the one installed (another owner may have replaced it since).
     local function install(frame, event, handler)
         local binding = { frame = frame, event = event, original = frame:GetScript(event) }
         binding.handler = addon:SetUIScript(frame, event, handler)
         scripts[#scripts + 1] = binding
     end
 
+    -- Search options for this field: the spec for spellbook fields, the totem name filter, the no-rank flag, the
+    -- inventory source and the row limit.
     local function settings()
         return {
             spec = (kind == "Spec_EditBox" or kind == "Totem_EditBox") and widget:GetUserData("spec") or nil,
@@ -157,6 +197,7 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
 
     local blurDeferred = false
 
+    -- Closes the suggestion list and any tooltip it owns, and clears a deferred blur.
     local function hide()
         blurDeferred = false
         hideTooltip(popup)
@@ -197,6 +238,8 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
     local originalSticky = rawget(field, "HasStickyFocus")
     field.HasStickyFocus = function() return alive and overPopup() or false end
 
+    -- Setting the text accepts it: a number or a link becomes the item or spell name, the accepted id and text are
+    -- remembered, and the list closes. `setting` keeps the resulting OnTextChanged from starting a new search.
     widget.SetText = function(self, text)
         local id = type(text) == 'number' and text
             or type(text) == 'string' and (tonumber(text) or tonumber(text:match('|H' .. provider.kind .. ':(%d+)')))
@@ -217,10 +260,12 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
         hide()
     end
 
+    -- The accepted id while the text is still exactly what was accepted; nil once the user has edited it.
     widget.GetReferenceID = function()
         if alive and field:GetText() == acceptedText then return acceptedID end
     end
 
+    -- Marks the selected row (the one Enter would pick).
     local function highlight()
         for index, row in ipairs(popup.rows) do
             if index == selected and matches[index] then
@@ -231,6 +276,8 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
         end
     end
 
+    -- Accepts reference `id`: resolves it through the provider, sets the text and fires OnEnterPressed with the
+    -- resolved id. Returns true when it was accepted.
     local function commit(id)
         if not alive or widget.disabled then return end
         local resolved = provider.resolve(tostring(id), settings())
@@ -243,6 +290,8 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
         return true
     end
 
+    -- Runs the search for the text in the box and fills the suggestion rows and footer. A search with no hits that
+    -- the provider can resolve exactly (an id, link or exact name) is retried by that name. Only runs while focused.
     local function query()
         if not alive or setting or widget.disabled or not field:HasFocus() then return end
 
@@ -330,6 +379,8 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
         popup:Show()
     end
 
+    -- Enter pressed: an empty box clears the field; otherwise an exact reference wins, then the selected suggestion,
+    -- and with neither the list is refreshed. Tab navigation (`navigated`) makes the selected row win.
     local function enter()
         if not alive or widget.disabled then return end
         local text = field:GetText()
@@ -352,6 +403,8 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
         end
     end
 
+    -- Commits typed-but-unaccepted text (as Enter would). Returns true when nothing was pending, true when the text
+    -- was accepted, and nil when it could not be resolved so the caller keeps the page dirty.
     widget.CommitPending = function(self)
         if not alive or self.disabled or not self:IsPending() then return true end
         enter()
@@ -414,6 +467,8 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
         end
     end)
 
+    -- Accepts the spell or item being dragged on the cursor, when its id resolves for this field. The cursor values
+    -- are read under pcall and CanReadValue because a restricted client may hide them.
     local function drag()
         if not alive or type(GetCursorInfo) ~= "function" then return end
         local observed = { pcall(GetCursorInfo) }
@@ -529,6 +584,7 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
 
     -- A deferred blur ends with the press: a row commits, anything else on
     -- the list restores the accepted text as an ordinary blur would.
+    -- Completes a blur that was deferred because the press landed on the list.
     local function finishBlur()
         if alive and blurDeferred and not field:HasFocus() then
             widget:SetText(acceptedID or acceptedText)
@@ -557,6 +613,8 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
         end)
     end
 
+    -- Lease release: marks the field dead so late callbacks do nothing, closes the list, puts back every script and
+    -- method this function replaced, and then runs the original release.
     widget.OnRelease = function(self, ...)
         alive = false
         hide()
@@ -589,10 +647,12 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
     return widget
 end
 
+-- Spell field entry point; the same widget as CreateReferenceEditBox.
 function addon:CreateSpellEditBox(kind, initialSpell)
     return self:CreateReferenceEditBox(kind, initialSpell)
 end
 
+-- Item field entry point; `kind` defaults to 'Item_EditBox'.
 function addon:CreateItemEditBox(kind, initialItem)
     return self:CreateReferenceEditBox(kind or 'Item_EditBox', initialItem)
 end
