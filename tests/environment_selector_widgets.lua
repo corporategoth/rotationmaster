@@ -16,7 +16,8 @@ local function mount(a,tag,value,definition)
     end
     function top:SetStatusText(text) state.statuses=state.statuses+1;assert(state.statuses==state.prints,'status updated before printing');state.status=text end
     parent:SetUserData('top',top);definition.widget(parent,7,value)
-    assert(#parent.children==1 and a:IsConditionWidget(parent.children[1]),'widget did not build one native dropdown')
+    -- INSTANCE builds its mode dropdown first, then the optional difficulty and ID controls.
+    assert(#parent.children>=1 and (#parent.children==1 or tag=='INSTANCE') and a:IsConditionWidget(parent.children[1]),'widget did not build one native dropdown')
     local dropdown=parent.children[1];dropdown.configure();return dropdown,state,parent
 end
 local function rowFor(dropdown,value)
@@ -57,7 +58,7 @@ test('released zone popup rows cannot clear the retired owner or a recycled sele
     stale(row);assert(value.value=='hostile' and nextValue.value=='friendly' and state.prints==0 and nextState.prints==0,'stale popup changed an owner');nextParent:Release()
 end)
 test('exact widget inverses preserve complete module and reject unrelated or duplicate bodies',function()
-    local _,a=fixture();local file=assert(io.open('Conditions/misc.lua'));local text=file:read('*a');file:close()
+    local _,a=fixture();local file=assert(io.open('Conditions/misc.lua'));local text=file:read('*a');file:close();text=dofile('tests/fixtures/restore_instance_details.lua')(text)
     assert(a:FunctionSourceHash(inverse(text))=='ea622a99','misc changed beyond the two exact widget repairs from75f8297')
     for _,tag in ipairs({'ZONEPVP','INSTANCE'}) do
         assert(inverse(repaired[tag],tag)==old[tag]);assert(not pcall(inverse,old[tag],tag));assert(not pcall(inverse,repaired[tag]..' ',tag))
@@ -70,7 +71,8 @@ if arg[1]~='--runtime-only' then
     test('actual exported widget clones clear selectors through current source bindings',function()
         local _,a=fixture()
         for _,tag in ipairs({'ZONEPVP','INSTANCE'}) do
-            local source=assert(a:GetBuiltinConditionSource(tag));assert(source.widget==repaired[tag],'actual '..tag..' widget catalog is stale')
+            local _,_,_,_,instanceWidget=dofile('tests/fixtures/restore_instance_details.lua')
+            local source=assert(a:GetBuiltinConditionSource(tag));assert(source.widget==(tag=='INSTANCE' and instanceWidget or repaired[tag]),'actual '..tag..' widget catalog is stale')
             assert(table.concat(source.parameters.widget,',')=='parent,spec,value','widget parameter identity changed')
             local copy=assert(a:CompileCustomCondition('CLONE_'..tag,source));if tag=='ZONEPVP' then clearZone(a,copy) else clearInstance(a,copy) end
         end

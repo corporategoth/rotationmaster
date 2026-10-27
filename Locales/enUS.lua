@@ -3298,14 +3298,9 @@ L["Flying"] = true
 L["In a Rested Area"] = true
 L["Boss Encounter"] = true
 L["Instance Difficulty"] = true
-L["Specific Instance"] = true
 L["Mythic+ Keystone Level"] = true
-L["Group Size"] = true
-L["Group Role Count"] = true
-L["Dead Group Members"] = true
 L["Hero Talent Tree"] = true
 L["Spell Proc Glow"] = true
-L["Trinket Cooldown"] = true
 L["Trinket 1"] = true
 L["Trinket 2"] = true
 L["Pet Happiness"] = true
@@ -3316,9 +3311,7 @@ L["Stagger"] = true
 L["Eclipse Direction"] = true
 L["a Solar Eclipse"] = true
 L["a Lunar Eclipse"] = true
-L["Eclipse Energy"] = true
 L["Energy"] = true
-L["Ranged Swing Time Remaining"] = true
 L["only Retail has this"] = true
 L["this edition has no pet happiness"] = true
 L["this edition has no Stagger"] = true
@@ -3327,6 +3320,27 @@ L["this client has no assigned group roles"] = true
 
 -- /rm debug timeline (Diagnostics/timeline.lua).
 L["/rm debug timeline [seconds] - Report what the Retail and Forever encounter timeline offers to addons."] = true
+
+L["%d rotations from before version 2 are waiting in an archive and do not run until you adopt them. Open Rotation Master, choose Rotations, then Recover unassigned rotations."] = true
+L["%d rotations from before version 2 are waiting in an archive and do not run until you adopt them."] = true
+L["Dismiss"] = true
+L["Adopt all %d for %s"] = true
+L["Adopt all %d from specialization %d for %s"] = true
+L["Adopt %d unassigned rotations for %s? Each keeps its identifier. A rotation that cannot be adopted stays in the archive."] = true
+L["Adopted %d of %d. These stay in the archive: %s"] = true
+L["Player State"] = true
+L["Group Count"] = true
+L["Eclipse"] = true
+L["your group's main tank"] = true
+L["your group's main tank's"] = true
+L["your group's main assist"] = true
+L["your group's main assist's"] = true
+L["your group's assigned tank"] = true
+L["your group's assigned tank's"] = true
+L["your group's assigned healer"] = true
+L["your group's assigned healer's"] = true
+L["your group's leader"] = true
+L["your group's leader's"] = true
 
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true

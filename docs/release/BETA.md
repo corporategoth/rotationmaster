@@ -9,6 +9,10 @@ a real client. Your reports are what turn it into a release.
 > **Back up first.** 2.0 converts your saved data on first load, and the conversion cannot be undone. Copy your saved
 > variables file (see "Back up and restore") before you install.
 >
+> **Your old rotations wait for you.** Rotations saved by 1.x have no recorded owner, so after the conversion they are in
+> an archive and do not run until you adopt them. Rotation Master says so once in chat and shows a banner in the settings
+> window. Choose Rotations, then Recover unassigned rotations, and adopt them one by one, or all at once for your class.
+>
 > **Install the whole package.** The zip contains 15 folders (`RotationMaster`, one per class `RotationMaster_<Class>`, and
 > `RotationMaster_WowSims`). Copy all of them into `Interface/AddOns`. Without the class folders there are no Built In
 > rotations.

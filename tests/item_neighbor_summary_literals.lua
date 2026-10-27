@@ -2,7 +2,7 @@ local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local inverse,old,repaired,added=dofile('tests/fixtures/restore_item_neighbor_summary_literals.lua')
 local modulePath='Conditions/item.lua'
 local tags={'EQUIPPED','ITEM','ITEM_RANGE','ITEM_COOLDOWN'}
-local expected={EQUIPPED='0894ab4e',ITEM='765ed7a9',ITEM_RANGE='5894423b',ITEM_COOLDOWN='924ed669'}
+local expected={EQUIPPED='0894ab4e',ITEM='765ed7a9',ITEM_RANGE='5894423b',ITEM_COOLDOWN='83461339'}  -- ITEM_COOLDOWN gained an optional trinket slot (this round)
 local keys={EQUIPPED='you {{!have|do not have}} {item} equipped',ITEM='{item} {{!is|is not}} available{carrying}',ITEM_RANGE='{item} {{!is|is not}} in range{carrying}',ITEM_COOLDOWN='the cooldown on {item} {comparison} {duration}{carrying}'}
 local name='Potions {{!READY|SPENT}} 50% {item}'
 local function read(path)local h=assert(io.open(path));local s=h:read('*a');h:close();return s end
@@ -122,7 +122,7 @@ test('actual native field selection refreshes status and nil clears selection wi
  for _,tag in ipairs(tags)do local _,a=prepare(true);local v=node(tag);local parent,item,state=mount(a,v)
   item.events.OnValueChanged(item,'OnValueChanged','global');assert(v.item=='global'and state.status:find(name,1,true))
   item.events.OnValueChanged(item,'OnValueChanged',nil);assert(v.item==nil and state.status:find('<item>',1,true))
-  if tag=='ITEM_COOLDOWN'then local quantity=parent.children[2].children[2];quantity.events.OnEnterPressed(quantity,'OnEnterPressed','');assert(v.value==nil and state.status:find('<value>',1,true)and state.status:find(' seconds',1,true))end
+  if tag=='ITEM_COOLDOWN'then local quantity=parent.children[3].children[2];quantity.events.OnEnterPressed(quantity,'OnEnterPressed','');assert(v.value==nil and state.status:find('<value>',1,true)and state.status:find(' seconds',1,true))end
   parent:Release()
  end
 end)
@@ -132,7 +132,7 @@ test('retired selection callbacks cannot write a released or newly acquired nati
  end
 end)
 test('strict full module inverse preserves completed CARRYING body bindings private sources and getter IDs',function()
- local _,a=prepare(true);local text=read(modulePath);assert(a:FunctionSourceHash(inverse(text))=='50f07ef7','item changed beyond four print bodies and one selected root')
+ local _,a=prepare(true);local text=dofile('tests/fixtures/restore_item_cooldown_slot.lua')(read(modulePath));assert(a:FunctionSourceHash(inverse(text))=='50f07ef7','item changed beyond four print bodies and one selected root')
  assert(not pcall(inverse,text..'\n-- unrelated')and not pcall(inverse,text..text))
  for _,tag in ipairs(tags)do assert(inverse(repaired[tag],tag,true)==old[tag]and not pcall(inverse,old[tag],tag,true)and not pcall(inverse,repaired[tag]..' ',tag,true))end
  assert(a:FunctionSourceHash(a:GetBuiltinConditionSource('CARRYING'))=='5e034bda','completed CARRYING export drifted')

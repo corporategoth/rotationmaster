@@ -116,7 +116,8 @@ local function create(parent)
         self.hasRecovery=rows and #rows>0 or why~=nil
         if self.hasRecovery then recovery:Show() else recovery:Hide() end
     end
-    addon:SetUIScript(recovery,'OnClick',function()
+    -- Also the settings-window banner's way in (UI/legacy_archive_banner.lua).
+    function browser:OpenRecovery()
         if not browser.active or browser.profile~=addon.db.profile then return end
         local serial,profile=browser.serial,browser.profile
         browser:RequestLeave(function()
@@ -127,9 +128,11 @@ local function create(parent)
                 browser:SelectRotation(reference.address.spec,reference,true)
                 if addon.UpdateAutoSwitch then addon:UpdateAutoSwitch() end
                 if addon.SwitchRotation then addon:SwitchRotation() end
+                if addon.RefreshLegacyArchiveBanner then addon:RefreshLegacyArchiveBanner() end
             end)
         end)
-    end)
+    end
+    addon:SetUIScript(recovery,'OnClick',function() browser:OpenRecovery() end)
     function browser:ReleaseDetails()
         addon.configPaneGeneration=(addon.configPaneGeneration or 0)+1
         addon.currentConditionEval=nil

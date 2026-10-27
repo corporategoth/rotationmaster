@@ -42,7 +42,27 @@ local function selectItem(list,cache,equipped,notcarrying)
     end
     return notcarrying and first or nil,0
 end
+-- ITEM_COOLDOWN with a slot: the cooldown left on whatever is equipped in that
+-- trinket slot, so one rotation works for every trinket. The equipped item
+-- comes from the build context (refreshed on equipment changes, so no native
+-- read per evaluation); its cooldown is read fresh through the same reader as
+-- an item named in the condition. An empty slot is false; a trinket with no
+-- on-use effect has no cooldown to read and is unavailable, never a confident zero.
+local function slotCooldown(self,value,cache,now)
+    if not self.GetEquippedSlotInfo then return nil,'build-context-unavailable' end
+    local equipped,reason=self:GetEquippedSlotInfo(value.slot)
+    if equipped==nil then return nil,reason end
+    if equipped==false then return false end
+    local cooldown,problem=read(cache,platform.GetItemCooldown,equipped.itemID)
+    if not cooldown then return nil,problem end
+    if not cooldown.isEnabled then return nil,'trinket-has-no-use-effect' end
+    if not platform:CanReadValue(now) or not finite(now) then return nil,'invalid-time' end
+    local remaining=math.max(0,cooldown.startTime+cooldown.duration-now)
+    if not finite(remaining) then return nil,'invalid-api-result' end
+    return self.Functions.values.compare(value.operator,self.Functions.values.round(remaining,3),value.value)
+end
 function addon:EvaluateItemCondition(tag,value,cache,now)
+    if tag=='ITEM_COOLDOWN' and value.slot~=nil then return slotCooldown(self,value,cache,now) end
     local list,reason=self:GetConditionItemList(value.item);if not list then return nil,reason end
     if tag=='EQUIPPED' then
         for _,entry in ipairs(list) do

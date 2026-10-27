@@ -303,6 +303,15 @@ local function rangeMember(cache,unit,distance)
     if bounds.minimum and (bounds.minimum>distance or bounds.minimum>0 and bounds.minimum==distance) then return false end
     return nil,"range-uncertain"
 end
+-- With `incombat`, only units that are in combat count (UnitAffectingCombat takes
+-- a token and carries no secret annotation; the answer is still read through
+-- booleanRead). nil, reason when it cannot be read.
+local function combatFilter(value,cache,unit)
+    if not value.incombat then return true end
+    local fighting,why=booleanRead(cache,UnitAffectingCombat,unit)
+    if fighting==nil then return nil,why end
+    return fighting
+end
 -- Nameplate tokens reported by NAME_PLATE_UNIT_ADDED/REMOVED on restricted
 -- clients (main.lua). UnitExists, UnitIsEnemy and the range provider carry no
 -- secret annotation; every result is still checked before use.
@@ -318,9 +327,13 @@ local function nameplateDistanceCount(value,cache,plates)
             local enemy,problem=booleanRead(cache,UnitIsEnemy,"player",unit)
             if enemy==nil then return nil,problem end
             if enemy==value.enemy then
-                local member,why=rangeMember(cache,unit,value.distance)
-                if member==nil then return nil,why end
-                if member then count=count+1 end
+                local fighting,combatWhy=combatFilter(value,cache,unit)
+                if fighting==nil then return nil,combatWhy end
+                if fighting then
+                    local member,why=rangeMember(cache,unit,value.distance)
+                    if member==nil then return nil,why end
+                    if member then count=count+1 end
+                end
             end
         end
     end
@@ -330,10 +343,11 @@ end
 addon:RegisterCondition("DISTANCE_COUNT", {
     description = L["Distance Count"],
     icon = addon.Artwork.condition["DISTANCE_COUNT"],
-    fields = { value = "number", operator = "string", distance = "number", enemy = "boolean" },
+    fields = { value = "number", operator = "string", distance = "number", enemy = "boolean", incombat = "boolean" },
     valid = function(_, value)
         return finite(value.value) and value.value >= 0 and
             Functions.values.isin(addon.operators, value.operator) and type(value.enemy)=="boolean" and
+            (value.incombat==nil or type(value.incombat)=="boolean") and
             finite(value.distance) and value.distance >= 0
     end,
     evaluate = function(value, cache)
@@ -364,10 +378,14 @@ addon:RegisterCondition("DISTANCE_COUNT", {
                     local enemy,problem=booleanRead(cache,UnitIsEnemy,"player",entity.unit)
                     if enemy==nil then return nil,problem end
                     if enemy==value.enemy then
-                        local bounds,why=Functions.cache.getCached(cache,addon.Platform.GetRangeCheckBounds,addon.Platform,entity.unit)
-                        if not bounds then return nil,why end
-                        if bounds.maximum and bounds.maximum<=value.distance then count=count+1
-                        elseif not (bounds.minimum and (bounds.minimum>value.distance or bounds.minimum>0 and bounds.minimum==value.distance)) then return nil,"range-uncertain" end
+                        local fighting,combatWhy=combatFilter(value,cache,entity.unit)
+                        if fighting==nil then return nil,combatWhy end
+                        if fighting then
+                            local bounds,why=Functions.cache.getCached(cache,addon.Platform.GetRangeCheckBounds,addon.Platform,entity.unit)
+                            if not bounds then return nil,why end
+                            if bounds.maximum and bounds.maximum<=value.distance then count=count+1
+                            elseif not (bounds.minimum and (bounds.minimum>value.distance or bounds.minimum>0 and bounds.minimum==value.distance)) then return nil,"range-uncertain" end
+                        end
                     end
                 end
             end
@@ -376,7 +394,7 @@ addon:RegisterCondition("DISTANCE_COUNT", {
     end,
     print = function(_, value)
         return Functions.presentation.compareString(value.operator,
-                        string.format(L["Number of %s within %s yards"],
+                        string.format(value.incombat and L["Number of %s in combat within %s yards"] or L["Number of %s within %s yards"],
                             (value.enemy and L["enemies"] or L["allies"]),
                             Functions.presentation.nullable(value.distance, L["<distance>"])),
                         Functions.presentation.nullable(value.value))
@@ -395,6 +413,16 @@ addon:RegisterCondition("DISTANCE_COUNT", {
             top:SetStatusText(funcs:print(root, spec))
         end)
         parent:AddChild(enemy)
+
+        local incombat = addon:CreateConditionCheckBox()
+        incombat:SetWidth(150)
+        incombat:SetLabel(L["In Combat"])
+        incombat:SetValue(value.incombat==true)
+        incombat:SetCallback("OnValueChanged", function(_, _, v)
+            value.incombat = v or nil
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(incombat)
 
         local operator_group = addon:Widget_OperatorWidget(value, L["Count"],
                 function() top:SetStatusText(funcs:print(root, spec)) end)
@@ -417,6 +445,9 @@ addon:RegisterCondition("DISTANCE_COUNT", {
     help = function(frame)
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Enemy"] .. color.RESET .. " - " ..
             L["Count enemies when selected, or non-enemies when cleared."]))
+        frame:AddChild(helpers.Gap())
+        frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["In Combat"] .. color.RESET .. " - " ..
+            L["Help.Conditions.DISTANCE_COUNT_COMBAT"]))
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Distance Count"], L["Count"],
             L["The number of observed units proven within Distance of you."])
@@ -487,6 +518,7 @@ do
         if name=="RangeCheck" then return RangeCheck end
         if name=="booleanRead" then return booleanRead end
         if name=="color" then return color end
+        if name=="combatFilter" then return combatFilter end
         if name=="finite" then return finite end
         if name=="helpers" then return helpers end
         if name=="nameplateDistanceCount" then return nameplateDistanceCount end

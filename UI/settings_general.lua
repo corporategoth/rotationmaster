@@ -28,6 +28,11 @@ function addon:BuildGeneralSettings(p)
         end)
     end)
     p:Choice('rotation_view',L['Default rotation view'],profile.rotation_view or 'diagram',{{value='diagram',text=L['Diagram view']},{value='list',text=L['List view']}},function(v) profile.rotation_view=v end)
+    -- Both options only change what counts as ready for advice (Core/action_policy.lua reads them each poll).
+    local readinessY=p.y
+    p:Check('ignore_mana',L['Ignore Mana'],profile.ignore_mana==true,function(v) profile.ignore_mana=v end)
+    p:Check('ignore_range',L['Ignore Range'],profile.ignore_range==true,function(v) profile.ignore_range=v end)
+    self:LayoutWorkbenchRow({p.fields.ignore_mana,p.fields.ignore_range},0,readinessY,p.width,{text=22});p.y=readinessY+30
     p:Heading(L['History'])
     for _,entry in ipairs({{'spell_history','Spell History Memory (seconds)'},{'combat_history','Combat History Memory (seconds)'},{'damage_history','Damage History Memory (seconds)'}}) do
         local key=entry[1];p:Slider(key,L[entry[2]],profile[key],0,300,1,function(v) profile[key]=v end)

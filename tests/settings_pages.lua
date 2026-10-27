@@ -282,6 +282,22 @@ test('General lists the tooltip options, defaults them on, and applies them thro
     local source=io.open('UI/settings_collections.lua'):read('*a')
     for _,key in ipairs(keys) do assert(source:find("'"..key.."'",1,true),key..' not in the General transaction scope') end
 end)
+test('General offers Ignore Mana and Ignore Range, staged until Apply, with their saved values shown and help that says what a restricted client hides',function()
+    local f,parent=fixture();local a=f.addon
+    a.db.profile.ignore_range=true
+    local p=a:OpenNativeSettings(parent,'General')
+    assert(p.fields.ignore_mana and p.fields.ignore_range,'the options are missing from the General page')
+    assert(not p.fields.ignore_mana:GetChecked() and p.fields.ignore_range:GetChecked(),'a saved value was not shown')
+    p.fields.ignore_mana:Click();p.fields.ignore_range:Click()
+    assert(a.db.profile.ignore_mana==nil or a.db.profile.ignore_mana==false,'staged, not applied')
+    assert(p:SaveSettingsDraft());assert(a.db.profile.ignore_mana==true and a.db.profile.ignore_range==false,'applied')
+    local entries={};for _,entry in ipairs(a:GetGeneralOptionHelp()) do if entry.id then entries[entry.id]=entry end end
+    assert(entries.ignore_mana and entries.ignore_range,'help is missing')
+    local restricted=f.addon.Platform:GetCombatDataPolicy()=='restricted'
+    assert(restricted==(entries.ignore_mana.text:find('hide whether a spell is usable',1,true)~=nil),'the restricted note and the policy disagree')
+    local source=io.open('UI/settings_collections.lua'):read('*a')
+    for _,key in ipairs({'ignore_mana','ignore_range'}) do assert(source:find("'"..key.."'",1,true),key..' not in the General transaction scope') end
+end)
 test('the tooltip options have help text in the General help, after the highlight options and before the debug options',function()
     local f=fixture();local a=f.addon;local order,entries={},{}
     for index,entry in ipairs(a:GetGeneralOptionHelp()) do if entry.id then order[entry.id]=index;entries[entry.id]=entry end end

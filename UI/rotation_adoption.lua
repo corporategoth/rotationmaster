@@ -1,6 +1,10 @@
 local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local function key(selection) return selection.kind..'\0'..selection.spec..'\0'..selection.id end
+local function className(class)
+    local names=type(LOCALIZED_CLASS_NAMES_MALE)=='table' and LOCALIZED_CLASS_NAMES_MALE
+    return names and names[class] or class or ''
+end
 -- Archival inspection is text only. Bounds apply to the report, never to the
 -- saved record or the complete recovery roster.
 local function describe(value)
@@ -106,6 +110,34 @@ function addon:ShowRotationAdoption(owner,onApplied)
             if notify and onApplied then onApplied(addon.RotationData.CopyData(reference)) end
         end)
         if not plan then adopt:Disable();p:Message(string.format(L['Could not adopt this record: %s'],reason or 'missing-archival-body')) end
+        -- Several at once. The choice above names the owner; every record is still
+        -- planned and applied on its own, and one that is refused stays in the archive.
+        local total,group=0,0
+        for _,row in ipairs(rows) do if row.hasBody then total=total+1;if row.spec==selected.spec then group=group+1 end end end
+        if total>1 then
+            local target=scope=='class' and className(context and context.class) or L['This character']
+            local function run(count,options)
+                p:Confirm(string.format(L['Adopt %d unassigned rotations for %s? Each keeps its identifier. A rotation that cannot be adopted stays in the archive.'],count,target),function()
+                    if not valid() then return end
+                    local result,why=addon:AdoptAllUnassignedRotations(scope,options)
+                    if not result then p:Message(string.format(L['Could not adopt this record: %s'],why));return end
+                    local last=result.references[#result.references];local notify=identityCurrent()
+                    if #result.failed==0 then
+                        window:Hide();if notify and onApplied and last then onApplied(addon.RotationData.CopyData(last)) end
+                        return
+                    end
+                    local names={};for _,failure in ipairs(result.failed) do names[#names+1]=failure.name end
+                    p:Draw();p:Message(string.format(L['Adopted %d of %d. These stay in the archive: %s'],result.adopted,result.adopted+#result.failed,table.concat(names,', ')))
+                    if notify and onApplied and last then onApplied(addon.RotationData.CopyData(last)) end
+                end)
+            end
+            local bulkGroup
+            if group>1 and group<total then
+                bulkGroup=p:Button('adoptGroup',string.format(L['Adopt all %d from specialization %d for %s'],group,selected.spec,target),function() if valid() then run(group,{spec=selected.spec}) end end)
+            end
+            local bulk=p:Button('adoptAll',string.format(L['Adopt all %d for %s'],total,target),function() if valid() then run(total) end end)
+            if scope=='character' and (not context or not context.character) then bulk:Disable();if bulkGroup then bulkGroup:Disable() end end
+        end
     end)
     self:SetUIScript(window.frame,'OnUpdate',function() if window.active and window.serial==serial and not valid() then window:Hide() end end)
     self:OpenPopup(window);return window

@@ -9,6 +9,10 @@ local function buildReadiness(platform)
     local spells,spellStamps,items,itemStamps,availability,availableStamps={},{},{},{},{},{}
     local range,resetRange=platform:NewSpellRangeReader()
     local stamp,now=0,nil
+    -- Profile options read once per poll (reset): "Ignore Mana" lets a spell
+    -- the game calls unusable only for want of mana through, "Ignore Range"
+    -- skips the range read of spells and items alike.
+    local ignoreMana,ignoreRange=false,false
     local function validID(id)
         return platform:CanReadValue(id) and type(id)=="number" and id>0 and id<math.huge and id%1==0
     end
@@ -18,8 +22,11 @@ local function buildReadiness(platform)
             if not validID(itemID) then return false end
             if itemStamps[itemID]~=stamp then
                 local ready=platform:IsItemReady(itemID,now)
-                local observed=ready==true and platform:GetItemRangeState(itemID,"target")
-                items[itemID]=type(observed)=="table" and (observed.applicable==false or observed.inRange==true)
+                if ignoreRange then items[itemID]=ready==true
+                else
+                    local observed=ready==true and platform:GetItemRangeState(itemID,"target")
+                    items[itemID]=type(observed)=="table" and (observed.applicable==false or observed.inRange==true)
+                end
                 itemStamps[itemID]=stamp
             end
             return items[itemID]
@@ -46,12 +53,18 @@ local function buildReadiness(platform)
             end
             if known and availableStamps[id]~=stamp then
                 local usable,power=platform:IsSpellUsable(id)
-                availability[id]=usable==true and power==false and platform:IsSpellReady(id,now)==true
+                -- IsUsableSpell answers false, true when only the resource is
+                -- missing (the same pair the action bars color blue), so the
+                -- option accepts that pair as well as a plainly usable spell.
+                -- An unreadable answer (usable is nil) is never accepted.
+                local affordable=usable==true and power==false or ignoreMana and (usable==true or power==true)
+                availability[id]=affordable==true and platform:IsSpellReady(id,now)==true
                 availableStamps[id]=stamp
             end
             local result=false
             if known and availability[id] then
-                if id==6603 and kind~="pet" then
+                if ignoreRange then result=true
+                elseif id==6603 and kind~="pet" then
                     local beyond=platform:IsBeyondMeleeRange("target")
                     result=beyond~=nil and beyond==false
                 else
@@ -70,6 +83,8 @@ local function buildReadiness(platform)
     end
     local function reset(at)
         stamp,now=stamp+1,at
+        local db=addon.db;local profile=db and db.profile
+        ignoreMana,ignoreRange=profile~=nil and profile.ignore_mana==true,profile~=nil and profile.ignore_range==true
         if resetRange then resetRange() end
     end
     return ready,reset

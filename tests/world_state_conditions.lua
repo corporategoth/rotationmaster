@@ -1,6 +1,6 @@
--- The world-state conditions (Conditions/player_state.lua, encounter_state.lua,
--- group_state.lua, hero_talent.lua, proc_glow.lua, trinket.lua) on every client
--- family: which client declares which unsupported (Core/condition_support.lua,
+-- The world-state conditions (PLAYER_STATE, ENCOUNTER, KEYSTONE_LEVEL, GROUP_COUNT,
+-- HERO_TALENT, SPELL_GLOW), the optional difficulty and ID of INSTANCE and the trinket
+-- slot of ITEM_COOLDOWN, on every client family: which client declares which unsupported (Core/condition_support.lua,
 -- which is also what the website's per-edition red X reads), true / false /
 -- unavailable for each reader, secret values (one sentinel stands in for every
 -- secret field, as in tests/restricted_client_conditions.lua), the shared
@@ -22,6 +22,8 @@ local function client(name,class)
     e.IsFalling=function() hit('IsFalling');return s.state.falling end
     e.IsFlying=function() hit('IsFlying');return s.state.flying end
     e.IsResting=function() hit('IsResting');return s.state.resting end
+    e.UnitIsDead=function(unit) assert(unit=='player');hit('UnitIsDead');return s.state.dead end
+    e.IsInInstance=function() return s.inInstance~=false,s.instanceType or 'party' end
     e.C_InstanceEncounter={IsEncounterInProgress=function() hit('IsEncounterInProgress');if s.throw=='encounter' then error('boom') end;return s.encounter end}
     e.IsEncounterInProgress=nil
     e.GetInstanceInfo=function() hit('GetInstanceInfo');return s.name,'party',s.diff,'Heroic',5,0,false,s.instance,5 end
@@ -35,7 +37,16 @@ local function client(name,class)
     e.GetNumGroupMembers=function() hit('GetNumGroupMembers');return s.members end
     e.IsInRaid=function() return s.raid end
     e.UnitGroupRolesAssigned=function(unit) hit('UnitGroupRolesAssigned');return s.roles[unit] or 'NONE' end
-    e.UnitIsDeadOrGhost=function(unit) hit('UnitIsDeadOrGhost');return s.dead[unit] or false end
+    e.UnitIsDeadOrGhost=function(unit)
+        hit('UnitIsDeadOrGhost')
+        local value=s.dead[unit]
+        if value==nil and unit=='player' then
+            if s.state.dead==SECRET then return SECRET end
+            value=(s.state.dead==true or s.state.ghost==true)
+        end
+        if value==nil then return false end
+        return value
+    end
     e.GetInventoryItemID=function(_,slot) return s.slots[slot] end
     e.GetInventoryItemLink=function() return nil end
     e.GetItemInfoInstant=function() return nil end
@@ -56,10 +67,10 @@ end
 local UNSUPPORTED={
     KEYSTONE_LEVEL={forever='retail-only',mists='retail-only',tbc='retail-only',era='retail-only'},
     HERO_TALENT={forever='retail-only',mists='retail-only',tbc='retail-only',era='retail-only'},
-    GROUP_ROLE_COUNT={tbc='no-group-roles',era='no-group-roles'},
 }
-local TAGS={'MOUNTED','SWIMMING','FALLING','FLYING','RESTING','ENCOUNTER','INSTANCE_DIFFICULTY','INSTANCE_ID','KEYSTONE_LEVEL',
-    'GROUP_SIZE','GROUP_ROLE_COUNT','GROUP_DEAD_COUNT','HERO_TALENT','SPELL_GLOW','TRINKET_COOLDOWN'}
+-- Assigned roles exist on Retail, Forever and Mists only; the size and the dead members read everywhere.
+local ROLE_MEASURES={TANK=true,HEALER=true,DAMAGER=true}
+local TAGS={'PLAYER_STATE','ENCOUNTER','KEYSTONE_LEVEL','GROUP_COUNT','HERO_TALENT','SPELL_GLOW','INSTANCE'}
 
 test('every condition registers on every client and is declared supported exactly where the edition has it',function()
     for _,name in ipairs(ORDER) do
@@ -69,47 +80,85 @@ test('every condition registers on every client and is declared supported exactl
             local wanted=UNSUPPORTED[tag] and UNSUPPORTED[tag][name]
             local got=support(a,tag);assert(got==wanted,tag..' on '..name..': '..tostring(got)..', wanted '..tostring(wanted))
         end
+        for measure in pairs({size=true,dead=true,TANK=true,HEALER=true,DAMAGER=true}) do
+            local wanted=ROLE_MEASURES[measure] and (name=='tbc' or name=='era') and 'no-group-roles' or nil
+            local got=support(a,'GROUP_COUNT',{measure=measure});assert(got==wanted,'GROUP_COUNT '..measure..' on '..name..': '..tostring(got)..', wanted '..tostring(wanted))
+        end
     end
 end)
 
 test('a reader the client lacks is declared missing-api, not silently false',function()
     local _,a,e=client('retail')
-    e.IsMounted=nil;assert(support(a,'MOUNTED')=='missing-api')
-    local _,b,f=client('retail');f.GetInstanceInfo=nil;assert(support(b,'INSTANCE_ID')=='missing-api')
+    e.IsMounted=nil;assert(support(a,'PLAYER_STATE',{state='mounted'})=='missing-api')
+    assert(support(a,'PLAYER_STATE',{state='swimming'})==nil,'a state reads only its own API')
+    e.UnitIsDead=nil;assert(support(a,'PLAYER_STATE',{state='dead'})=='missing-api' and support(a,'PLAYER_STATE',{state='ghost'})=='missing-api')
+    assert(support(a,'PLAYER_STATE',{})==nil,'no state chosen yet: listed everywhere')
     local _,c,g=client('retail');g.C_SpellActivationOverlay=nil;assert(support(c,'SPELL_GLOW')=='missing-api')
+    local _,d,h=client('retail');h.UnitGroupRolesAssigned=nil
+    assert(support(d,'GROUP_COUNT',{measure='TANK'})=='missing-api' and support(d,'GROUP_COUNT',{measure='size'})==nil)
+    local _,i,j=client('retail');j.UnitIsDeadOrGhost=nil
+    assert(support(i,'GROUP_COUNT',{measure='dead'})=='missing-api' and support(i,'GROUP_COUNT',{measure='TANK'})==nil)
+    local _,k,l=client('retail');l.C_Container=nil;l.C_Item=nil;l.GetItemCooldown=nil
+    assert(support(k,'ITEM_COOLDOWN',{slot=13})=='missing-api','no cooldown reader')
+    local _,m,n=client('retail');n.GetInventoryItemID=nil
+    assert(support(m,'ITEM_COOLDOWN',{slot=13})=='missing-api' and support(m,'ITEM_COOLDOWN',{item=5512})==nil,'only a slot needs the equipped item API')
 end)
 
--- The five player predicates share one reader.
-local STATES={MOUNTED='mounted',SWIMMING='swimming',FALLING='falling',FLYING='flying',RESTING='resting'}
-test('player predicates are true, false and unavailable on every client, also under NOT',function()
+-- PLAYER_STATE: one reader, a kind per state.
+local STATES={mounted='mounted',swimming='swimming',falling='falling',flying='flying',resting='resting'}
+test('player states are true, false and unavailable on every client, also under NOT',function()
     for _,name in ipairs(ORDER) do
-        local _,a,e,s=client(name)
-        for tag,kind in pairs(STATES) do
-            s.state[kind]=true;expect(a,{type=tag},'match',name..' '..tag)
-            s.state[kind]=false;expect(a,{type=tag},'no-match',name..' '..tag)
+        local _,a,_,s=client(name)
+        for state,kind in pairs(STATES) do
+            local condition={type='PLAYER_STATE',state=state}
+            s.state[kind]=true;expect(a,condition,'match',name..' '..state)
+            s.state[kind]=false;expect(a,condition,'no-match',name..' '..state)
             -- The legacy forms answer 1 or nil.
-            s.state[kind]=1;expect(a,{type=tag},'match',name..' '..tag..' 1')
-            s.state[kind]=nil;expect(a,{type=tag},'no-match',name..' '..tag..' nil')
-            s.state[kind]=SECRET;expect(a,{type=tag},'unavailable',name..' '..tag..' secret')
-            s.state[kind]='yes';expect(a,{type=tag},'unavailable',name..' '..tag..' string')
+            s.state[kind]=1;expect(a,condition,'match',name..' '..state..' 1')
+            s.state[kind]=nil;expect(a,condition,'no-match',name..' '..state..' nil')
+            s.state[kind]=SECRET;expect(a,condition,'unavailable',name..' '..state..' secret')
+            s.state[kind]='yes';expect(a,condition,'unavailable',name..' '..state..' string')
+            s.state[kind]=nil
         end
     end
 end)
 
-test('player predicates survive a missing native and a throwing one',function()
+test('dead is UnitIsDead and ghost is dead-or-ghost without dead, so a ghost is not dead',function()
+    for _,name in ipairs(ORDER) do
+        local _,a,_,s=client(name)
+        local dead,ghost={type='PLAYER_STATE',state='dead'},{type='PLAYER_STATE',state='ghost'}
+        expect(a,dead,'no-match',name..' alive');expect(a,ghost,'no-match',name..' alive')
+        s.state.dead=true;expect(a,dead,'match',name..' a corpse');expect(a,ghost,'no-match',name..' a corpse is not a ghost')
+        s.state.dead=false;s.state.ghost=true;expect(a,dead,'no-match',name..' a ghost is not dead');expect(a,ghost,'match',name..' a ghost')
+        s.state.ghost=false
+        s.state.dead=SECRET;expect(a,dead,'unavailable',name..' secret');expect(a,ghost,'unavailable',name..' either read secret')
+        s.state.dead=false;s.dead.player=SECRET;expect(a,ghost,'unavailable',name..' a secret dead-or-ghost');s.dead.player=nil
+        s.state.dead='x';expect(a,dead,'unavailable',name..' malformed')
+    end
+    -- The older Is Dead or Ghost condition keeps testing any unit.
+    local _,a=client('retail');local released=a.conditionDefinitions.DEAD
+    assert(released and released.fields.unit=='string' and released.valid(0,{unit='target'}),'the released DEAD condition (any unit) is unchanged')
+end)
+
+test('a player state survives a missing native and a throwing one, and rejects what it does not list',function()
     local _,a,e,s=client('retail')
-    e.IsMounted=function() error('boom') end;expect(a,{type='MOUNTED'},'unavailable')
-    e.IsMounted=nil;expect(a,{type='MOUNTED'},'unavailable')
-    s.state.swimming=true;expect(a,{type='SWIMMING'},'match')
+    e.IsMounted=function() error('boom') end;expect(a,{type='PLAYER_STATE',state='mounted'},'unavailable')
+    e.IsMounted=nil;expect(a,{type='PLAYER_STATE',state='mounted'},'unavailable')
+    s.state.swimming=true;expect(a,{type='PLAYER_STATE',state='swimming'},'match')
+    local def=a.conditionDefinitions.PLAYER_STATE
+    for _,state in ipairs({'mounted','swimming','flying','falling','resting','dead','ghost'}) do assert(def.valid(0,{state=state}),state) end
+    assert(not def.valid(0,{}) and not def.valid(0,{state='stealthed'}) and not def.valid(0,{state=7}))
+    for _,state in ipairs({'mounted','swimming','flying','falling','resting','dead','ghost'}) do
+        local text=def.print(0,{state=state});assert(type(text)=='string' and text:find('you ',1,true) and not text:find('<',1,true),state..': '..text)
+    end
 end)
 
 test('one evaluation reads each predicate once, and the cache does not outlive the pass',function()
     local _,a,_,s=client('retail')
     s.state.mounted=true
-    local cache={};local def=a.conditionDefinitions.MOUNTED
-    assert(def.evaluate({},cache)==true and def.evaluate({},cache)==true and s.calls.IsMounted==1)
-    assert(a:evaluateConditionResult({type='AND',value={{type='MOUNTED'},{type='MOUNTED'}}}).status=='match' and s.calls.IsMounted==2)
-    assert(next(a.longtermCache)==nil or true)
+    local cache={};local def=a.conditionDefinitions.PLAYER_STATE
+    assert(def.evaluate({state='mounted'},cache)==true and def.evaluate({state='mounted'},cache)==true and s.calls.IsMounted==1)
+    assert(a:evaluateConditionResult({type='AND',value={{type='PLAYER_STATE',state='mounted'},{type='PLAYER_STATE',state='mounted'}}}).status=='match' and s.calls.IsMounted==2)
 end)
 
 test('ENCOUNTER reads the game encounter state, with the deprecated global as a fallback',function()
@@ -127,24 +176,41 @@ test('ENCOUNTER reads the game encounter state, with the deprecated global as a 
     e.IsEncounterInProgress=nil;expect(a,{type='ENCOUNTER'},'unavailable','no reader')
 end)
 
-test('INSTANCE_DIFFICULTY and INSTANCE_ID compare what GetInstanceInfo reports',function()
+test('INSTANCE adds an optional difficulty and an optional instance ID, and every part given must match',function()
     for _,name in ipairs(ORDER) do
         local _,a,e,s=client(name)
-        s.diff=8;s.instance=2648
-        expect(a,{type='INSTANCE_DIFFICULTY',value=8},'match',name);expect(a,{type='INSTANCE_DIFFICULTY',value=2},'no-match',name)
-        expect(a,{type='INSTANCE_ID',value=2648},'match',name);expect(a,{type='INSTANCE_ID',value=2552},'no-match',name)
-        s.diff=0;expect(a,{type='INSTANCE_DIFFICULTY',value=0},'match',name..' open world')
-        s.diff=SECRET;expect(a,{type='INSTANCE_DIFFICULTY',value=8},'unavailable',name)
-        expect(a,{type='INSTANCE_ID',value=2648},'match',name..' a secret difficulty does not hide the instance ID')
-        s.diff=2;s.instance=SECRET;expect(a,{type='INSTANCE_ID',value=2648},'unavailable',name)
-        expect(a,{type='INSTANCE_DIFFICULTY',value=2},'match',name..' a secret instance ID does not hide the difficulty')
-        s.instance=2648;s.diff='x';expect(a,{type='INSTANCE_DIFFICULTY',value=2},'unavailable',name..' malformed')
-        e.GetInstanceInfo=nil;expect(a,{type='INSTANCE_ID',value=2648},'unavailable',name..' missing')
+        s.diff=8;s.instance=2648;s.inInstance=true;s.instanceType='party'
+        local function inst(extra) local c={type='INSTANCE'};for k,v in pairs(extra) do c[k]=v end;return c end
+        expect(a,inst{value='party'},'match',name..' a released condition keeps its meaning');expect(a,inst{value='raid'},'no-match',name)
+        expect(a,inst{difficulty=8},'match',name);expect(a,inst{difficulty=2},'no-match',name)
+        expect(a,inst{instanceID=2648},'match',name);expect(a,inst{instanceID=2552},'no-match',name)
+        expect(a,inst{value='party',difficulty=8,instanceID=2648},'match',name..' every part')
+        expect(a,inst{value='raid',difficulty=8,instanceID=2648},'no-match',name..' the kind differs')
+        expect(a,inst{value='party',difficulty=2,instanceID=2648},'no-match',name..' the difficulty differs')
+        expect(a,inst{value='party',difficulty=8,instanceID=1},'no-match',name..' the ID differs')
+        s.diff=0;s.inInstance=false;s.instanceType='none'
+        expect(a,inst{value='none',difficulty=0},'match',name..' open world');expect(a,inst{difficulty=0},'match',name)
+        s.inInstance=true;s.instanceType='party';s.diff=SECRET
+        expect(a,inst{difficulty=8},'unavailable',name);expect(a,inst{instanceID=2648},'match',name..' a secret difficulty does not hide the instance ID')
+        expect(a,inst{value='party'},'match',name..' nor the kind')
+        expect(a,inst{value='raid',difficulty=8},'no-match',name..' a wrong kind decides before the unreadable difficulty is asked')
+        s.diff=2;s.instance=SECRET;expect(a,inst{instanceID=2648},'unavailable',name)
+        expect(a,inst{difficulty=2},'match',name..' a secret instance ID does not hide the difficulty')
+        s.instance=2648;s.diff='x';expect(a,inst{difficulty=2},'unavailable',name..' malformed')
+        s.diff=2;e.GetInstanceInfo=nil;expect(a,inst{instanceID=2648},'unavailable',name..' missing')
+        expect(a,inst{value='party'},'match',name..' the kind does not need GetInstanceInfo')
     end
     local _,a,_,s=client('retail');s.diff=8
     local before=s.calls.GetInstanceInfo or 0
-    assert(a:evaluateConditionResult({type='AND',value={{type='INSTANCE_DIFFICULTY',value=8},{type='INSTANCE_ID',value=2552}}}).status=='match')
+    assert(a:evaluateConditionResult({type='AND',value={{type='INSTANCE',difficulty=8},{type='INSTANCE',instanceID=2552}}}).status=='match')
     assert(s.calls.GetInstanceInfo==before+1,'both conditions share one GetInstanceInfo read')
+    local def=a.conditionDefinitions.INSTANCE
+    assert(def.valid(0,{}) and def.valid(0,{value='party'}) and def.valid(0,{difficulty=8}) and def.valid(0,{value='raid',difficulty=0,instanceID=2648}))
+    assert(not def.valid(0,{difficulty=-1}) and not def.valid(0,{difficulty=1.5}) and not def.valid(0,{instanceID='x'}) and not def.valid(0,{value='moon'}))
+    -- A condition saved without the new fields prints as it always did.
+    assert(def.print(0,{value='party'})==string.format('your instance type {{!is|is not}} %s','Dungeon') or def.print(0,{value='party'}):find('your instance type',1,true))
+    local text=def.print(0,{value='party',difficulty=8,instanceID=2648});assert(text:find('2648',1,true) and text:find('you are in an instance',1,true) and not text:find('<',1,true),text)
+    def.help({AddChild=function() end})
 end)
 
 test('KEYSTONE_LEVEL is 0 outside a Mythic+ run and the keystone level inside it',function()
@@ -186,78 +252,110 @@ test('SPELL_GLOW asks the spell and its relatives, and is false only when none g
     assert(def.valid(0,{spell=116858}) and not def.valid(0,{}) and not def.valid(0,{spell=116858,ranked='yes'}))
 end)
 
-test('TRINKET_COOLDOWN reads the equipped trinket whatever it is, and an empty slot is false',function()
+test('ITEM_COOLDOWN with a trinket slot reads the equipped trinket whatever it is, and an empty slot is false',function()
     for _,name in ipairs(ORDER) do
         local _,a,e,s=client(name)
-        local ready={type='TRINKET_COOLDOWN',slot=13,operator='LESSTHANOREQUALS',value=0}
+        local ready={type='ITEM_COOLDOWN',slot=13,operator='LESSTHANOREQUALS',value=0}
         a.GetEquippedSlotInfo=function(_,slot) local id=s.slots[slot];if id==nil then return false end;return {itemID=id} end
         expect(a,ready,'no-match',name..' empty slot')
         s.slots[13]=200;s.cooldown[200]={90,30}   -- ends at 120, 20 s left at time 100
-        expect(a,ready,'no-match',name);expect(a,{type='TRINKET_COOLDOWN',slot=13,operator='LESSTHAN',value=21},'match',name)
+        expect(a,ready,'no-match',name);expect(a,{type='ITEM_COOLDOWN',slot=13,operator='LESSTHAN',value=21},'match',name)
         s.cooldown[200]={0,0};expect(a,ready,'match',name..' ready')
         s.cooldown[200]={0,0,false};expect(a,ready,'unavailable',name..' no use effect')
-        s.slots[14]=201;s.cooldown[201]={95,10};expect(a,{type='TRINKET_COOLDOWN',slot=14,operator='EQUALS',value=5},'match',name..' second slot')
-        s.cooldown[201]={SECRET,10};expect(a,{type='TRINKET_COOLDOWN',slot=14,operator='EQUALS',value=5},'unavailable',name..' secret cooldown')
+        s.slots[14]=201;s.cooldown[201]={95,10};expect(a,{type='ITEM_COOLDOWN',slot=14,operator='EQUALS',value=5},'match',name..' second slot')
+        s.cooldown[201]={SECRET,10};expect(a,{type='ITEM_COOLDOWN',slot=14,operator='EQUALS',value=5},'unavailable',name..' secret cooldown')
         a.GetEquippedSlotInfo=function() return nil,'item-data-pending' end;expect(a,ready,'unavailable',name..' equipment unknown')
+        a.GetEquippedSlotInfo=nil;expect(a,ready,'unavailable',name..' no build context')
     end
-    local _,a=client('retail');local def=a.conditionDefinitions.TRINKET_COOLDOWN
-    assert(def.valid(0,{slot=13,operator='EQUALS',value=0}) and not def.valid(0,{slot=12,operator='EQUALS',value=0}) and not def.valid(0,{slot=13,operator='EQUALS',value=-1}))
+    local _,a=client('retail');local def=a.conditionDefinitions.ITEM_COOLDOWN
+    assert(def.valid(0,{slot=13,operator='EQUALS',value=0}) and def.valid(0,{slot=14,operator='EQUALS',value=0}) and not def.valid(0,{slot=12,operator='EQUALS',value=0}) and not def.valid(0,{slot=13,operator='EQUALS',value=-1}))
+    -- The released shape is untouched: an item (set), no slot.
+    assert(def.valid(0,{item='00000000-0000-0000-0000-000000000001',operator='EQUALS',value=0}) and def.valid(0,{item={5512},operator='EQUALS',value=0}) and not def.valid(0,{operator='EQUALS',value=0}),'an item or a slot is needed')
+    local text=def.print(0,{slot=13,operator='LESSTHAN',value=3});assert(text:find('Trinket 1',1,true) and not text:find('<',1,true),text)
+    assert(def.requiredFields[1]=='operator' and #def.requiredFields==2,'an item is no longer required when a slot is chosen')
 end)
 
 local function party(s,members,roles,dead) s.members=members;s.raid=false;s.roles=roles or {};s.dead=dead or {} end
-test('GROUP_SIZE counts you, and 1 means alone',function()
+local function count(measure,operator,value,percent) return {type='GROUP_COUNT',measure=measure,operator=operator,value=value,percent=percent} end
+test('GROUP_COUNT size counts you, and 1 means alone',function()
     for _,name in ipairs(ORDER) do
         local _,a,_,s=client(name)
-        party(s,0);expect(a,{type='GROUP_SIZE',operator='EQUALS',value=1},'match',name..' alone')
-        party(s,3);expect(a,{type='GROUP_SIZE',operator='EQUALS',value=3},'match',name..' party');expect(a,{type='GROUP_SIZE',operator='GREATERTHAN',value=3},'no-match',name)
-        s.raid=true;s.members=25;expect(a,{type='GROUP_SIZE',operator='GREATERTHANOREQUALS',value=10},'match',name..' raid')
-        s.members=SECRET;expect(a,{type='GROUP_SIZE',operator='EQUALS',value=1},'unavailable',name)
-        s.members=41;expect(a,{type='GROUP_SIZE',operator='EQUALS',value=1},'unavailable',name..' malformed')
+        party(s,0);expect(a,count('size','EQUALS',1),'match',name..' alone')
+        party(s,3);expect(a,count('size','EQUALS',3),'match',name..' party');expect(a,count('size','GREATERTHAN',3),'no-match',name)
+        s.raid=true;s.members=25;expect(a,count('size','GREATERTHANOREQUALS',10),'match',name..' raid')
+        s.members=SECRET;expect(a,count('size','EQUALS',1),'unavailable',name)
+        s.members=41;expect(a,count('size','EQUALS',1),'unavailable',name..' malformed')
     end
 end)
 
-test('GROUP_ROLE_COUNT counts assigned roles in a party (you included) and a raid',function()
+test('GROUP_COUNT counts assigned roles, you included, in a party and a raid',function()
     for _,name in ipairs({'retail','forever','mists'}) do
         local _,a,_,s=client(name)
         party(s,5,{player='TANK',party1='HEALER',party2='DAMAGER',party3='DAMAGER',party4='NONE'})
-        expect(a,{type='GROUP_ROLE_COUNT',role='DAMAGER',operator='EQUALS',value=2},'match',name)
-        expect(a,{type='GROUP_ROLE_COUNT',role='TANK',operator='EQUALS',value=1},'match',name..' you are counted')
-        expect(a,{type='GROUP_ROLE_COUNT',role='HEALER',operator='GREATERTHAN',value=1},'no-match',name)
+        expect(a,count('DAMAGER','EQUALS',2),'match',name)
+        expect(a,count('TANK','EQUALS',1),'match',name..' you are counted')
+        expect(a,count('HEALER','GREATERTHAN',1),'no-match',name)
         s.raid=true;s.members=3;s.roles={raid1='TANK',raid2='TANK',raid3='HEALER'}
-        expect(a,{type='GROUP_ROLE_COUNT',role='TANK',operator='EQUALS',value=2},'match',name..' raid')
+        expect(a,count('TANK','EQUALS',2),'match',name..' raid')
         s.roles={raid1='TANK',raid2=SECRET,raid3='HEALER'}
-        expect(a,{type='GROUP_ROLE_COUNT',role='TANK',operator='EQUALS',value=1},'unavailable',name..' one unreadable member makes the count unavailable')
+        expect(a,count('TANK','EQUALS',1),'unavailable',name..' one unreadable member makes the count unavailable')
+        expect(a,count('size','EQUALS',3),'match',name..' the size does not read roles')
         s.roles={raid1=3,raid2='TANK',raid3='HEALER'}
-        expect(a,{type='GROUP_ROLE_COUNT',role='TANK',operator='EQUALS',value=1},'unavailable',name..' malformed role')
+        expect(a,count('TANK','EQUALS',1),'unavailable',name..' malformed role')
     end
-    local _,a=client('retail');local def=a.conditionDefinitions.GROUP_ROLE_COUNT
-    assert(def.valid(0,{role='TANK',operator='EQUALS',value=1}) and not def.valid(0,{role='NONE',operator='EQUALS',value=1}) and not def.valid(0,{operator='EQUALS',value=1}))
 end)
 
-test('GROUP_DEAD_COUNT never counts you, in a party or a raid',function()
+test('GROUP_COUNT dead counts you too, in a party and a raid',function()
     for _,name in ipairs(ORDER) do
         local _,a,_,s=client(name)
         party(s,4,{},{player=true,party1=true,party3=true})
-        expect(a,{type='GROUP_DEAD_COUNT',operator='EQUALS',value=2},'match',name..' party: you are dead, two others are')
-        -- A raid lists you among raid1-4 (here raid2) as well as under "player".
-        s.raid=true;s.members=4;s.dead={raid1=true,raid2=true,raid4=true,player=true}
-        expect(a,{type='GROUP_DEAD_COUNT',operator='EQUALS',value=2},'match',name..' raid: you are dead, two others are')
+        expect(a,count('dead','EQUALS',3),'match',name..' party: you and two others are dead')
+        -- A raid lists you among raid1-4 (here raid2), so you are counted once.
+        s.raid=true;s.members=4;s.dead={raid1=true,raid2=true,raid4=true}
+        expect(a,count('dead','EQUALS',3),'match',name..' raid: you are one of the three')
         s.dead={raid1=true,raid4=true}
-        expect(a,{type='GROUP_DEAD_COUNT',operator='EQUALS',value=2},'match',name..' raid: you are alive')
-        s.dead={raid1=SECRET};expect(a,{type='GROUP_DEAD_COUNT',operator='EQUALS',value=0},'unavailable',name..' an unreadable member')
-        s.dead={raid1='yes'};expect(a,{type='GROUP_DEAD_COUNT',operator='EQUALS',value=0},'unavailable',name..' a malformed member')
+        expect(a,count('dead','EQUALS',2),'match',name..' raid: you are alive')
+        s.dead={raid1=SECRET};expect(a,count('dead','EQUALS',0),'unavailable',name..' an unreadable member')
+        s.dead={raid1='yes'};expect(a,count('dead','EQUALS',0),'unavailable',name..' a malformed member')
+        expect(a,count('size','EQUALS',4),'match',name..' the size does not read deaths')
     end
 end)
 
-test('the group snapshot is read once per evaluation for all three conditions',function()
+test('GROUP_COUNT compares a percent of the whole group, you included',function()
+    for _,name in ipairs({'retail','mists'}) do
+        local _,a,_,s=client(name)
+        -- "More than half the group is dead and I am not": Run for your lives.
+        party(s,4,{},{party1=true,party2=true,party3=true})
+        expect(a,count('dead','GREATERTHAN',50,true),'match',name..' three of four are dead');expect(a,count('dead','EQUALS',75,true),'match',name)
+        expect(a,{type='AND',value={count('dead','GREATERTHAN',50,true),{type='PLAYER_STATE',state='dead'}}},'no-match',name..' and I am alive: not dead')
+        s.dead.player=true;expect(a,count('dead','EQUALS',100,true),'match',name..' you are part of the whole')
+        party(s,4,{player='TANK',party1='HEALER',party2='DAMAGER',party3='DAMAGER'})
+        expect(a,count('DAMAGER','EQUALS',50,true),'match',name..' two of four');expect(a,count('TANK','LESSTHAN',30,true),'match',name)
+        expect(a,count('TANK','EQUALS',1),'match',name..' the count of the same role')
+        party(s,0,{player='DAMAGER'});expect(a,count('DAMAGER','EQUALS',100,true),'match',name..' alone you are the whole group')
+        party(s,0,{},{player=true});expect(a,count('dead','EQUALS',100,true),'match',name..' alone and dead')
+    end
+    local _,a=client('retail');local def=a.conditionDefinitions.GROUP_COUNT
+    assert(def.valid(0,count('dead','GREATERTHAN',50,true)) and def.valid(0,count('size','EQUALS',5)) and def.valid(0,count('TANK','EQUALS',1,false)))
+    assert(not def.valid(0,count('size','EQUALS',50,true)),'the size is always 100 percent of itself')
+    assert(not def.valid(0,count('dead','EQUALS',101,true)) and def.valid(0,count('dead','EQUALS',101)) and not def.valid(0,count('dead','EQUALS',-1)))
+    assert(not def.valid(0,count('NONE','EQUALS',1)) and not def.valid(0,{type='GROUP_COUNT',operator='EQUALS',value=1}) and not def.valid(0,count('dead','EQUALS',1,'yes')))
+    for _,case in ipairs({count('size','EQUALS',5),count('TANK','GREATERTHAN',1),count('dead','GREATERTHAN',50,true),count('HEALER','LESSTHAN',20,true)}) do
+        local text=def.print(0,case);assert(type(text)=='string' and not text:find('<',1,true),text)
+    end
+    assert(def.print(0,count('dead','GREATERTHAN',50,true)):find('percent',1,true))
+end)
+
+test('the group snapshot reads only what its measure needs, once per evaluation',function()
     local _,a,_,s=client('retail')
     party(s,5,{player='TANK',party1='HEALER'},{party2=true})
     local before=s.calls.GetNumGroupMembers or 0
-    local result=a:evaluateConditionResult({type='AND',value={
-        {type='GROUP_SIZE',operator='EQUALS',value=5},{type='GROUP_ROLE_COUNT',role='HEALER',operator='EQUALS',value=1},
-        {type='GROUP_DEAD_COUNT',operator='EQUALS',value=1}}})
+    local result=a:evaluateConditionResult({type='AND',value={count('size','EQUALS',5),count('HEALER','EQUALS',1),count('dead','EQUALS',1),count('TANK','EQUALS',1)}})
     assert(result.status=='match',result.status..' '..tostring(result.reason))
-    assert(s.calls.GetNumGroupMembers==before+1,'one snapshot')
+    assert(s.calls.GetNumGroupMembers==before+3,'one snapshot per measure kind: size, roles, dead')
+    local rolesBefore=s.calls.UnitGroupRolesAssigned or 0
+    a:evaluateConditionResult(count('size','EQUALS',5));a:evaluateConditionResult(count('dead','EQUALS',1))
+    assert((s.calls.UnitGroupRolesAssigned or 0)==rolesBefore,'a size or death count never asks for roles')
 end)
 
 test('editor round trips: every condition builds its widget and prints a summary',function()
@@ -268,16 +366,16 @@ test('editor round trips: every condition builds its widget and prints a summary
         if def.help then def.help({AddChild=function() end}) end
     end
     local fields={
-        MOUNTED={},ENCOUNTER={},INSTANCE_DIFFICULTY={value=8},INSTANCE_ID={value=2648},KEYSTONE_LEVEL={operator='GREATERTHAN',value=10},
-        GROUP_SIZE={operator='EQUALS',value=5},GROUP_ROLE_COUNT={role='TANK',operator='EQUALS',value=1},GROUP_DEAD_COUNT={operator='GREATERTHAN',value=0},
-        HERO_TALENT={subtree=21},SPELL_GLOW={spell=116858},TRINKET_COOLDOWN={slot=13,operator='LESSTHAN',value=1},
+        PLAYER_STATE={state='ghost'},ENCOUNTER={},KEYSTONE_LEVEL={operator='GREATERTHAN',value=10},
+        GROUP_COUNT={measure='TANK',operator='EQUALS',value=1,percent=false},HERO_TALENT={subtree=21},SPELL_GLOW={spell=116858},
+        INSTANCE={value='party',difficulty=8,instanceID=2648},ITEM_COOLDOWN={slot=13,operator='LESSTHAN',value=1},
     }
     for tag,value in pairs(fields) do
         value.type=tag;assert(a.conditionDefinitions[tag].valid(0,value),tag..' rejects a valid saved value')
         assert(not a.conditionDefinitions[tag].print(0,value):find('<'),tag..' left a placeholder in a complete summary: '..a.conditionDefinitions[tag].print(0,value))
     end
     -- A required field missing is invalid.
-    for _,tag in ipairs({'INSTANCE_DIFFICULTY','INSTANCE_ID','KEYSTONE_LEVEL','GROUP_SIZE','GROUP_ROLE_COUNT','GROUP_DEAD_COUNT','TRINKET_COOLDOWN','SPELL_GLOW'}) do
+    for _,tag in ipairs({'PLAYER_STATE','KEYSTONE_LEVEL','GROUP_COUNT','ITEM_COOLDOWN','SPELL_GLOW'}) do
         assert(not a.conditionDefinitions[tag].valid(0,{type=tag}),tag..' accepts an empty value')
     end
 end)
@@ -290,17 +388,28 @@ test('the conditions join their categories and the Switch picker once per profil
     local db={profile=profile};a:InitializeWorldConditions(nil,db)
     assert(profile.worldConditionsSeeded)
     local function has(list,tag) for _,v in ipairs(list) do if v==tag then return true end end end
-    assert(has(profile.switch_conditions,'ENCOUNTER') and has(profile.switch_conditions,'HERO_TALENT') and not has(profile.switch_conditions,'FALLING'))
-    assert(has(profile.condition_groups[1].conditions,'MOUNTED') and has(profile.condition_groups[1].conditions,'KEYSTONE_LEVEL'))
-    assert(has(profile.condition_groups[2].conditions,'GROUP_SIZE') and has(profile.condition_groups[3].conditions,'TRINKET_COOLDOWN'))
+    assert(has(profile.switch_conditions,'ENCOUNTER') and has(profile.switch_conditions,'HERO_TALENT') and has(profile.switch_conditions,'PLAYER_STATE') and has(profile.switch_conditions,'GROUP_COUNT'))
+    assert(has(profile.condition_groups[1].conditions,'PLAYER_STATE') and has(profile.condition_groups[1].conditions,'KEYSTONE_LEVEL'))
+    assert(has(profile.condition_groups[2].conditions,'GROUP_COUNT') and has(profile.condition_groups[2].conditions,'ECLIPSE'))
     local count=#profile.switch_conditions;a:InitializeWorldConditions(nil,db);assert(#profile.switch_conditions==count,'seeded twice')
     table.remove(profile.switch_conditions,2);a:InitializeWorldConditions(nil,db);assert(#profile.switch_conditions==count-1,'a removed seed came back')
 end)
 
-test('the reason texts exist for every new unsupported reason',function()
+test('a development profile seeded with the merged-away drafts loses exactly those tags',function()
+    local _,a=client('retail')
+    local profile={worldConditionsSeeded=true,switch_conditions={'AND','MOUNTED','ENCOUNTER','GROUP_SIZE','RESTING'},condition_groups={
+        {id='fa10aaf8-bc71-480f-9062-c949fd7c74e9',conditions={'ZONE','MOUNTED','SWIMMING','PLAYER_STATE','INSTANCE_ID'}},
+        {id='fca4ff75-4085-458a-b5bf-27a6b52f2092',conditions={'EQUIPPED','TRINKET_COOLDOWN'}}}}
+    a:InitializeWorldConditions(nil,{profile=profile})
+    assert(table.concat(profile.switch_conditions,',')=='AND,ENCOUNTER',table.concat(profile.switch_conditions,','))
+    assert(table.concat(profile.condition_groups[1].conditions,',')=='ZONE,PLAYER_STATE' and table.concat(profile.condition_groups[2].conditions,',')=='EQUIPPED')
+end)
+
+test('the reason texts exist for every unsupported reason',function()
     local _,a=client('era')
-    for tag,reasons in pairs(UNSUPPORTED) do
-        for _,reason in pairs(reasons) do
+    local reasons={KEYSTONE_LEVEL=UNSUPPORTED.KEYSTONE_LEVEL,HERO_TALENT=UNSUPPORTED.HERO_TALENT,GROUP_COUNT={era='no-group-roles'}}
+    for tag,list in pairs(reasons) do
+        for _,reason in pairs(list) do
             local text=a:DescribeUnsupportedCondition({code='unsupported-condition',condition=tag,reason=reason})
             assert(text and not text:find(reason,1,true),tag..' '..reason..' has no readable reason: '..tostring(text))
         end
@@ -311,7 +420,7 @@ end)
 -- An encounter selects Earth Shock, being mounted Lightning Shield, otherwise
 -- Lightning Bolt; both engines answer alike and follow each change.
 local root=assert(io.popen('pwd'):read('*l'))
-test('whole poll: lean and standard engines agree on ENCOUNTER and MOUNTED',function()
+test('whole poll: lean and standard engines agree on ENCOUNTER and PLAYER_STATE',function()
     local c=assert(loadfile('tests/fixtures/wholepoll_shaman.lua'))('price',root,true,root,true)({target=true,combat=true,buttons=true,poll=.15})
     local a,e=c.a,c.e
     c.load('Platform/world_state.lua')
@@ -322,7 +431,7 @@ test('whole poll: lean and standard engines agree on ENCOUNTER and MOUNTED',func
     local reference={kind='custom',address={scope='class',class='SHAMAN',owner='SHAMAN',spec=0,id='world'}}
     assert(a:CommitRotationDraft(reference,nil,{body={name='World',priority=0,cooldowns={},rotation={
         {id='boss',type='spell',action=8042,conditions={type='ENCOUNTER'}},
-        {id='ride',type='spell',action=324,conditions={type='MOUNTED'}},
+        {id='ride',type='spell',action=324,conditions={type='PLAYER_STATE',state='mounted'}},
         {id='bolt',type='spell',action=403,conditions={}}}}},'class'))
     a:HandleCommand('set World');for _=1,3 do c.tick() end
     for _,engine in ipairs({'lean','standard'}) do

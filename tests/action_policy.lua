@@ -31,10 +31,54 @@ test('all spell banks implicitly require learned state readiness usability and r
     local original=f.env.C_Spell.GetSpellCooldown
     f.env.C_Spell.GetSpellCooldown=function(id) if id==29515 then return {startTime=0,duration=0,isEnabled=true,modRate=1} end;return original(id) end
     assert(not a:NewActionReadiness(100)('spell',403))
-    s.cooldown=0;s.range=false;a.db.profile.ignore_range=true
-    assert(not a:NewActionReadiness(100)('spell',403),'old range override bypassed action availability')
+    s.cooldown=0;s.range=false
+    assert(not a:NewActionReadiness(100)('spell',403),'an out-of-range spell was ready')
     s.range=true;s.usable=false;assert(not a:NewActionReadiness(100)('spell',403))
     s.usable=true;assert(a:NewActionReadiness(100)('spell',403))
+end)
+test('Ignore Range lets an out-of-range spell, pet spell and item through and still requires learned, usable and off cooldown',function()
+    local f,s=fixture();local a=f.addon
+    s.range=false;s.itemRange=false;assert(not a:NewActionReadiness(100)('spell',403) and not a:NewActionReadiness(100)('item',234,5512))
+    a.db.profile.ignore_range=true
+    assert(a:NewActionReadiness(100)('spell',403),'Ignore Range did not skip the spell range check')
+    assert(a:NewActionReadiness(100)('pet',974) and a:NewActionReadiness(100)('any',974))
+    assert(a:NewActionReadiness(100)('item',234,5512),'Ignore Range did not skip the item range check')
+    s.known.spell[403]=nil;assert(not a:NewActionReadiness(100)('spell',403),'an unlearned spell was ready')
+    s.known.spell[403]=true;s.usable=false;assert(not a:NewActionReadiness(100)('spell',403),'an unusable spell was ready')
+    s.usable=true;s.cooldown=6;f.env.C_Spell.GetSpellCooldown=function(id) return {startTime=id==29515 and 0 or 99,duration=id==29515 and 0 or 6,isEnabled=true,modRate=1} end
+    assert(not a:NewActionReadiness(100)('spell',403),'a spell on cooldown was ready')
+    s.cooldown=0;s.count=0;assert(not a:NewActionReadiness(100)('item',234,5512),'an item you do not have was ready')
+    a.db.profile.ignore_range=false;s.cooldown=0;s.count=1
+    f.env.C_Spell.GetSpellCooldown=function() return {startTime=99,duration=0,isEnabled=true,modRate=1} end
+    assert(not a:NewActionReadiness(100)('spell',403),'turning Ignore Range off did not restore the range check')
+end)
+test('Ignore Range does not read the range at all, and an unreadable range cannot hold a spell back',function()
+    local f,s=fixture();local a=f.addon;local reads=0
+    f.env.C_Spell.IsSpellInRange=function() reads=reads+1;return s.range end
+    a.db.profile.ignore_range=true;s.range=nil
+    assert(a:NewActionReadiness(100)('spell',403) and reads==0,'the range was read although it is ignored')
+end)
+test('Ignore Mana accepts the unusable-for-want-of-resource answer and nothing else',function()
+    local f,s=fixture();local a=f.addon
+    s.usable=false;s.power=true
+    assert(not a:NewActionReadiness(100)('spell',403),'a spell without mana was ready by default')
+    a.db.profile.ignore_mana=true
+    assert(a:NewActionReadiness(100)('spell',403),'Ignore Mana did not accept the no-mana answer')
+    s.usable=true;s.power=true;assert(a:NewActionReadiness(100)('spell',403))
+    s.usable=false;s.power=false;assert(not a:NewActionReadiness(100)('spell',403),'an unusable spell with mana was ready')
+    s.usable=false;s.power=true;s.range=false;assert(not a:NewActionReadiness(100)('spell',403),'Ignore Mana also ignored range')
+    s.range=true;f.env.C_Spell.IsSpellUsable=function() return nil end
+    assert(not a:NewActionReadiness(100)('spell',403),'an unreadable usability answer was accepted')
+    local secret={};f.env.canaccessvalue=function(value) return value~=secret end
+    f.env.C_Spell.IsSpellUsable=function() return secret,true end
+    assert(not a:NewActionReadiness(100)('spell',403),'a hidden usability answer was accepted under Ignore Mana')
+end)
+test('both options are read at the start of every poll, including by the shared steady-state memo',function()
+    local f,s=fixture();local a=f.addon;s.range=false;s.usable=false;s.power=true
+    assert(not a:ResetActionReadiness(100)('spell',403))
+    a.db.profile.ignore_mana=true;assert(not a:ResetActionReadiness(101)('spell',403),'range still holds the spell back')
+    a.db.profile.ignore_range=true;assert(a:ResetActionReadiness(102)('spell',403),'the next poll did not see both options')
+    a.db.profile.ignore_mana=false;assert(not a:ResetActionReadiness(103)('spell',403),'the next poll kept a cleared option')
 end)
 test('item availability uses its item ID rather than requiring its use spell to be learned',function()
     local f,s=fixture();local a=f.addon

@@ -21,7 +21,7 @@ test('all reviewed Built In declarations use bundled original semantic icons',fu
         for tag,definition in pairs(f.addon.definitions) do inspect(tag,definition) end
         for _,group in pairs(f.addon.delayed_condition) do for tag,definition in pairs(group) do inspect(tag,definition) end end
     end
-    local count=0;for _ in pairs(seen) do count=count+1 end;assert(count==152,'reviewed icon inventory changed: '..count)
+    local count=0;for _ in pairs(seen) do count=count+1 end;assert(count==141,'reviewed icon inventory changed: '..count)
 end)
 test('category defaults follow stable identity while saved custom choices remain exact',function()
     local f=F.new();local a=f.addon
@@ -44,7 +44,7 @@ test('shared icon chooser exposes all original families and preserves its owner 
     local f=F.new();dofile('tests/fixtures/native_ui.lua')(f.env);f.load('UI/icon_picker.lua');local a=f.addon;local chosen;local alive=true
     local picker=a:ShowWorkbenchIconPicker(nil,function(texture) chosen=texture end,function() return alive end)
     local index
-    for i,category in ipairs(picker.categories) do if category.name=='Rotation Master' then index=i;assert(#category.icons==180);for _,entry in ipairs(category.icons) do packaged(entry.texture) end end end
+    for i,category in ipairs(picker.categories) do if category.name=='Rotation Master' then index=i;assert(#category.icons==169);for _,entry in ipairs(category.icons) do packaged(entry.texture) end end end
     assert(index,'original family category missing');picker.categoryButtons[index]:Click()
     picker.buttons[1]:Click();assert(chosen and chosen:sub(1,#prefix)==prefix,'original choice did not commit its packaged path')
     chosen=nil;picker=a:ShowWorkbenchIconPicker(nil,function(texture) chosen=texture end,function() return alive end);picker.categoryButtons[index]:Click();alive=false;picker.buttons[1]:Click();assert(chosen==nil,'stale owner committed an original icon')

@@ -1,6 +1,6 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local tags={'EQUIPPED','CARRYING','ITEM','ITEM_RANGE','ITEM_COOLDOWN'}
-local expected={EQUIPPED={valid={},print={nullable=1}},CARRYING={valid={isin=1},print={nullable=2}},ITEM={valid={},print={nullable=1}},ITEM_RANGE={valid={},print={nullable=1}},ITEM_COOLDOWN={valid={isin=1},print={nullable=2}}}
+local expected={EQUIPPED={valid={},print={nullable=1}},CARRYING={valid={isin=1},print={nullable=2}},ITEM={valid={},print={nullable=1}},ITEM_RANGE={valid={},print={nullable=1}},ITEM_COOLDOWN={valid={isin=2},print={nullable=4,compareString=1}}}
 local groups={isin='values',nullable='presentation',compareString='presentation'}
 local function fixture(native)
     -- The native shape is Retail's (C_Item with boolean cooldowns, C_Container); no current
@@ -39,7 +39,7 @@ local function copies(a)
 end
 local function count(text,pattern) local _,number=text:gsub(pattern,'');return number end
 
-test('item callbacks select sixteen pure helper calls across their explicit owning roots',function()
+test('item callbacks select twenty pure helper calls across their explicit owning roots',function()
     local f,a=fixture(true);local declared=assert(a.builtinCallbackBindings and a.builtinCallbackBindings['Conditions/item.lua'],'item canonical leaf metadata missing')
     local total=0
     for name,group in pairs(groups) do local path='Functions.'..group..'.'..name;assert(declared[path]=='builtin:utils.lua:'..name and a:ResolveFunctionBinding(declared[path])==a.Functions[group][name]) end
@@ -65,7 +65,7 @@ test('item callbacks select sixteen pure helper calls across their explicit owni
         assert(source.widget:find('"Inventory_EditBox"',1,true),'item reference scope changed')
         assert(source.evaluate=='\n        return addon:EvaluateItemCondition("'..tag..'",value,cache,now)\n    ','evaluation body changed')
     end
-    assert(total==16 and not f.env.Functions)
+    assert(total==20 and not f.env.Functions)
 end)
 test('private item descriptor Help bodies captures and source getter identities remain exact',function()
     local _,a=fixture(true)

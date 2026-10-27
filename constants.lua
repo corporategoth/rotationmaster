@@ -68,9 +68,39 @@ addon.units = {
     mouseovertarget = L["your mouseover target's target"],
 }
 
-if (WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC) then
+-- Focus and its target exist where the client has a focus system
+-- (Platform/focus_unit.lua asks the client). Without a platform (a bare
+-- fixture) the old per-project answer stands: everything but Classic Era.
+local platform = addon.Platform
+local hasFocus
+if platform and platform.IsFocusUnitSupported then hasFocus = platform:IsFocusUnitSupported() end
+if hasFocus == nil then hasFocus = (WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC) end
+if hasFocus then
     addon.units["focus"] = L["your focus target"]
     addon.units["focustarget"] = L["your focus target's target"]
+end
+
+-- Group unit types have no token of their own: Core/group_unit_resolution.lua
+-- swaps in the real token of whoever holds the assignment when a condition is
+-- evaluated. Every kind is recognized (a saved one stays recognized on a client
+-- that cannot resolve it); the picker offers the ones this client can.
+addon.groupUnitKinds = { maintank = true, mainassist = true, assignedtank = true, assignedhealer = true, groupleader = true }
+local groupUnitNames = {
+    maintank = { L["your group's main tank"], L["your group's main tank's"] },
+    mainassist = { L["your group's main assist"], L["your group's main assist's"] },
+    assignedtank = { L["your group's assigned tank"], L["your group's assigned tank's"] },
+    assignedhealer = { L["your group's assigned healer"], L["your group's assigned healer's"] },
+    groupleader = { L["your group's leader"], L["your group's leader's"] },
+}
+local groupUnitOffered = {}
+if platform and platform.GetGroupUnitSupport then
+    for kind in pairs(groupUnitNames) do
+        local ok, reason = pcall(platform.GetGroupUnitSupport, platform, kind)
+        if ok and reason == nil then
+            groupUnitOffered[kind] = true
+            addon.units[kind] = groupUnitNames[kind][1]
+        end
+    end
 end
 
 addon.unitsPossessive = {
@@ -82,11 +112,11 @@ addon.unitsPossessive = {
     targettarget = L["your target's target's"],
     mouseovertarget = L["your mouseover target's target's"],
 }
--- Everything except classic has FOCUS
-if (WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC) then
+if hasFocus then
     addon.unitsPossessive["focus"] = L["your focus target's"]
     addon.unitsPossessive["focustarget"] = L["your focus target's target's"]
 end
+for kind in pairs(groupUnitOffered) do addon.unitsPossessive[kind] = groupUnitNames[kind][2] end
 
 addon.creatures = {
     BEAST = L["Beast"],

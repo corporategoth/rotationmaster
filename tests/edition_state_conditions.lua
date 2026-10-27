@@ -1,10 +1,10 @@
 -- The conditions that belong to particular editions (Conditions/edition_state.lua):
 -- PET_HAPPINESS (Classic Era, Burning Crusade, Wrath), STAGGER (Mists of
--- Pandaria, Retail, Forever), ECLIPSE_DIRECTION and ECLIPSE_ENERGY (Wrath
--- through Mists of Pandaria) and RANGED_SWING_REMAIN (clients that expose the
--- combat log). Which edition has each (the website's red X reads the same
--- table), the values, secrets, the combat log producer in main.lua and the
--- ranged shot timestamp.
+-- Pandaria, Retail, Forever), ECLIPSE (Wrath through Mists of Pandaria) and the
+-- Ranged option of SWING_TIME and SWING_TIME_REMAIN (Conditions/weapon.lua; the
+-- remaining time needs a client that exposes the combat log). Which edition has
+-- each (the website's red X reads the same table), the values, secrets, the
+-- combat log producer in main.lua and the ranged shot timestamp.
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local C=dofile('tests/fixtures/condition_client.lua')
 local SECRET,expect,status,support=C.SECRET,C.expect,C.status,C.support
@@ -27,9 +27,12 @@ end
 local MISSING={
     PET_HAPPINESS={retail='no-pet-happiness',forever='no-pet-happiness',mists='no-pet-happiness',cata='no-pet-happiness'},
     STAGGER={tbc='no-stagger',era='no-stagger',wrath='no-stagger',cata='no-stagger'},
-    ECLIPSE_DIRECTION={retail='no-eclipse',forever='no-eclipse',tbc='no-eclipse',era='no-eclipse'},
-    ECLIPSE_ENERGY={retail='no-eclipse',forever='no-eclipse',tbc='no-eclipse',era='no-eclipse'},
-    RANGED_SWING_REMAIN={retail='combat-log-unavailable',forever='combat-log-unavailable'},
+    ECLIPSE={retail='no-eclipse',forever='no-eclipse',tbc='no-eclipse',era='no-eclipse'},
+}
+-- The same, for a value: the ranged timers read UnitRangedDamage everywhere, and the remaining time needs the combat log.
+local RANGED_MISSING={
+    SWING_TIME={},
+    SWING_TIME_REMAIN={retail='combat-log-unavailable',forever='combat-log-unavailable'},
 }
 test('each edition mechanic is declared available exactly where the edition has it',function()
     for _,name in ipairs({'retail','forever','mists','tbc','era','wrath','cata'}) do
@@ -39,6 +42,20 @@ test('each edition mechanic is declared available exactly where the edition has 
             local got=support(a,tag);assert(got==missing[name],tag..' on '..name..': '..tostring(got)..', wanted '..tostring(missing[name]))
         end
     end
+end)
+
+test('the ranged option of the swing timers is declared available exactly where its readers are',function()
+    for _,name in ipairs({'retail','forever','mists','tbc','era','wrath','cata'}) do
+        local _,a,e=client(name);e.UnitAttackSpeed=function() return 3,2 end
+        for tag,missing in pairs(RANGED_MISSING) do
+            local got=support(a,tag,{ranged=true});assert(got==missing[name],tag..' ranged on '..name..': '..tostring(got)..', wanted '..tostring(missing[name]))
+        end
+        -- The melee hands are unchanged: attack speed everywhere, the remaining time needs the combat log.
+        assert(support(a,'SWING_TIME',{})==nil,'melee SWING_TIME on '..name)
+        assert(support(a,'SWING_TIME_REMAIN',{})==RANGED_MISSING.SWING_TIME_REMAIN[name],'melee SWING_TIME_REMAIN on '..name)
+    end
+    local _,a,e=client('era');e.UnitAttackSpeed=function() return 3,2 end;e.UnitRangedDamage=nil
+    assert(support(a,'SWING_TIME',{ranged=true})=='missing-api' and support(a,'SWING_TIME',{})==nil,'only the ranged option needs UnitRangedDamage')
 end)
 
 test('PET_HAPPINESS reads the Hunter pet mood and is false without a Hunter pet',function()
@@ -75,29 +92,41 @@ test('STAGGER compares the pool as an amount, or as a percent of maximum health 
     assert(def.print(0,{operator='GREATERTHAN',value=5,percent=true}):find('percent',1,true))
 end)
 
-test('ECLIPSE conditions read the Balance bar on a Druid in Wrath through Mists',function()
+test('ECLIPSE reads the Balance bar on a Druid in Wrath through Mists',function()
+    local function dir(value) return {type='ECLIPSE',measure='direction',direction=value} end
+    local function energy(operator,value) return {type='ECLIPSE',measure='energy',operator=operator,value=value} end
     for _,name in ipairs({'mists','wrath','cata'}) do
         local _,a,_,s=client(name,'DRUID')
-        s.direction='sun';expect(a,{type='ECLIPSE_DIRECTION',value='sun'},'match',name);expect(a,{type='ECLIPSE_DIRECTION',value='moon'},'no-match',name)
-        s.direction='none';expect(a,{type='ECLIPSE_DIRECTION',value='sun'},'no-match',name..' no direction matches neither')
-        expect(a,{type='ECLIPSE_DIRECTION',value='moon'},'no-match',name)
-        s.direction=nil;expect(a,{type='ECLIPSE_DIRECTION',value='moon'},'no-match',name..' nil direction is none')
-        s.direction='sideways';expect(a,{type='ECLIPSE_DIRECTION',value='moon'},'unavailable',name..' malformed')
-        s.direction=SECRET;expect(a,{type='ECLIPSE_DIRECTION',value='moon'},'unavailable',name)
-        s.balance=-60;expect(a,{type='ECLIPSE_ENERGY',operator='LESSTHAN',value=0},'match',name..' lunar side')
-        expect(a,{type='ECLIPSE_ENERGY',operator='GREATERTHANOREQUALS',value=-100},'match',name)
-        s.balance=100;expect(a,{type='ECLIPSE_ENERGY',operator='EQUALS',value=100},'match',name..' full solar')
-        s.balance=SECRET;expect(a,{type='ECLIPSE_ENERGY',operator='EQUALS',value=100},'unavailable',name)
-        s.balance=nil;expect(a,{type='ECLIPSE_ENERGY',operator='EQUALS',value=100},'unavailable',name..' no value')
-        s.balance=1/0;expect(a,{type='ECLIPSE_ENERGY',operator='EQUALS',value=100},'unavailable',name..' infinite')
+        s.direction='sun';expect(a,dir('sun'),'match',name);expect(a,dir('moon'),'no-match',name)
+        s.direction='none';expect(a,dir('sun'),'no-match',name..' no direction matches neither')
+        expect(a,dir('moon'),'no-match',name)
+        s.direction=nil;expect(a,dir('moon'),'no-match',name..' nil direction is none')
+        s.direction='sideways';expect(a,dir('moon'),'unavailable',name..' malformed')
+        s.direction=SECRET;expect(a,dir('moon'),'unavailable',name)
+        s.balance=-60;expect(a,energy('LESSTHAN',0),'match',name..' lunar side')
+        expect(a,energy('GREATERTHANOREQUALS',-100),'match',name)
+        s.balance=100;expect(a,energy('EQUALS',100),'match',name..' full solar')
+        s.balance=SECRET;expect(a,energy('EQUALS',100),'unavailable',name)
+        s.balance=nil;expect(a,energy('EQUALS',100),'unavailable',name..' no value')
+        s.balance=1/0;expect(a,energy('EQUALS',100),'unavailable',name..' infinite')
+        s.balance=50;s.direction='sun'
+        local before=s.calls.GetEclipseDirection or 0
+        assert(a:evaluateConditionResult({type='AND',value={dir('sun'),dir('sun')}}).status=='match' and s.calls.GetEclipseDirection==before+1,name..' one read per evaluation')
     end
     local _,a=client('mists','WARRIOR')
-    expect(a,{type='ECLIPSE_DIRECTION',value='sun'},'unavailable','another class has no Eclipse bar')
-    expect(a,{type='ECLIPSE_ENERGY',operator='EQUALS',value=0},'unavailable','another class has no Eclipse bar')
-    local def=a.conditionDefinitions.ECLIPSE_ENERGY
-    assert(def.valid(0,{operator='LESSTHAN',value=-100}) and def.valid(0,{operator='LESSTHAN',value=100}) and not def.valid(0,{operator='LESSTHAN',value=101}) and not def.valid(0,{operator='LESSTHAN',value=-101}))
-    local dir=a.conditionDefinitions.ECLIPSE_DIRECTION
-    assert(dir.valid(0,{value='sun'}) and dir.valid(0,{value='moon'}) and not dir.valid(0,{value='none'}) and not dir.valid(0,{}))
+    expect(a,dir('sun'),'unavailable','another class has no Eclipse bar')
+    expect(a,energy('EQUALS',0),'unavailable','another class has no Eclipse bar')
+    local def=a.conditionDefinitions.ECLIPSE
+    assert(def.valid(0,{measure='energy',operator='LESSTHAN',value=-100}) and def.valid(0,{measure='energy',operator='LESSTHAN',value=100}))
+    assert(not def.valid(0,{measure='energy',operator='LESSTHAN',value=101}) and not def.valid(0,{measure='energy',operator='LESSTHAN',value=-101}))
+    assert(not def.valid(0,{measure='energy',value=1}) and not def.valid(0,{measure='energy',operator='LESSTHAN'}))
+    assert(def.valid(0,{measure='direction',direction='sun'}) and def.valid(0,{measure='direction',direction='moon'}))
+    assert(not def.valid(0,{measure='direction',direction='none'}) and not def.valid(0,{measure='direction'}) and not def.valid(0,{}) and not def.valid(0,{measure='speed'}))
+    -- Each measure needs only its own API.
+    local _,b,e=client('mists','DRUID');e.GetEclipseDirection=nil
+    assert(support(b,'ECLIPSE',{measure='direction'})=='missing-api' and support(b,'ECLIPSE',{measure='energy'})==nil)
+    assert(def.print(0,{measure='direction',direction='sun'}):find('Solar',1,true) or def.print(0,{measure='direction',direction='sun'}):find('solar',1,true))
+    assert(def.print(0,{measure='energy',operator='GREATERTHAN',value=10}):find('Eclipse energy',1,true))
 end)
 
 -- The real combat log producer (main.lua handle_combat_log), driven the way tests/swing_countdown.lua does.
@@ -134,11 +163,11 @@ test('Auto Shot and wand shots start the ranged timer; other ranged casts, melee
     shot(append,'SPELL_DAMAGE',75);assert(a.lastRangedShot==nil)
 end)
 
-test('RANGED_SWING_REMAIN counts down from the last shot and reads the full interval before the first',function()
+test('the ranged swing time remaining counts down from the last shot and reads the full interval before the first',function()
     for _,name in ipairs({'era','tbc','mists'}) do
         local _,a,_,s=client(name,'HUNTER')
         s.speed=2.5;a.lastRangedShot=nil
-        local function remaining(operator,value) return {type='RANGED_SWING_REMAIN',operator=operator,value=value} end
+        local function remaining(operator,value) return {type='SWING_TIME_REMAIN',ranged=true,operator=operator,value=value} end
         expect(a,remaining('EQUALS',2.5),'match',name..' before the first shot');expect(a,remaining('LESSTHAN',2.5),'no-match',name)
         a.lastRangedShot=99;expect(a,remaining('EQUALS',1.5),'match',name..' one second after a shot')
         expect(a,remaining('LESSTHANOREQUALS',1.5),'match',name)
@@ -151,9 +180,29 @@ test('RANGED_SWING_REMAIN counts down from the last shot and reads the full inte
         local before=s.calls.UnitRangedDamage or 0
         assert(a:evaluateConditionResult({type='AND',value={remaining('LESSTHAN',9),remaining('GREATERTHAN',0)}}).status=='match')
         assert(s.calls.UnitRangedDamage==before+1,name..' one speed read for the whole evaluation')
+        -- A cast does not pause the ranged timer the way it pauses a melee swing.
     end
-    local _,a=client('era','HUNTER');local def=a.conditionDefinitions.RANGED_SWING_REMAIN
-    assert(def.valid(0,{operator='LESSTHAN',value=0}) and not def.valid(0,{operator='LESSTHAN',value=-1}) and not def.valid(0,{value=1}))
+    local _,a=client('era','HUNTER');local def=a.conditionDefinitions.SWING_TIME_REMAIN
+    assert(def.valid(0,{ranged=true,operator='LESSTHAN',value=0}) and not def.valid(0,{ranged=true,operator='LESSTHAN',value=-1}) and not def.valid(0,{ranged=true,value=1}))
+    assert(not def.valid(0,{ranged=true,offhand=true,operator='LESSTHAN',value=1}),'one weapon at a time')
+    assert(not def.valid(0,{ranged='yes',operator='LESSTHAN',value=1}))
+    assert(def.print(0,{ranged=true,operator='LESSTHAN',value=1}):find('ranged',1,true))
+end)
+
+test('the ranged option of SWING_TIME reads the Auto Shot or wand interval, and the melee hands stay as they were',function()
+    for _,name in ipairs({'retail','forever','mists','tbc','era'}) do
+        local _,a,e,s=client(name,'HUNTER')
+        e.UnitAttackSpeed=function() return 3.6,1.8 end
+        s.speed=2.5
+        local function speed(operator,value,extra) local c={type='SWING_TIME',operator=operator,value=value};for k,v in pairs(extra or {}) do c[k]=v end;return c end
+        expect(a,speed('EQUALS',2.5,{ranged=true}),'match',name..' ranged interval')
+        expect(a,speed('EQUALS',3.6),'match',name..' main hand is untouched');expect(a,speed('EQUALS',1.8,{offhand=true}),'match',name..' off hand is untouched')
+        s.ranged=false;expect(a,speed('LESSTHAN',99,{ranged=true}),'no-match',name..' no ranged attack')
+        s.ranged=true;s.speed=SECRET;expect(a,speed('LESSTHAN',99,{ranged=true}),'unavailable',name)
+        s.speed=2.5;e.UnitRangedDamage=nil;expect(a,speed('LESSTHAN',99,{ranged=true}),'unavailable',name..' missing')
+    end
+    local _,a=client('era','HUNTER');local def=a.conditionDefinitions.SWING_TIME
+    assert(def.valid(0,{ranged=true,operator='LESSTHAN',value=2}) and not def.valid(0,{ranged=true,offhand=true,operator='LESSTHAN',value=2}))
 end)
 
 test('the ranged timer resets when you leave combat and never on a spell cast or target change',function()
@@ -168,8 +217,8 @@ end)
 
 test('every edition condition builds its editor help and a complete summary',function()
     local _,a=client('mists','DRUID')
-    local fields={PET_HAPPINESS={value=2},STAGGER={operator='LESSTHAN',value=3},ECLIPSE_DIRECTION={value='moon'},ECLIPSE_ENERGY={operator='GREATERTHAN',value=-20},
-        RANGED_SWING_REMAIN={operator='LESSTHAN',value=1}}
+    local fields={PET_HAPPINESS={value=2},STAGGER={operator='LESSTHAN',value=3},ECLIPSE={measure='direction',direction='moon'},
+        SWING_TIME_REMAIN={ranged=true,operator='LESSTHAN',value=1},SWING_TIME={ranged=true,operator='LESSTHAN',value=3}}
     for tag,value in pairs(fields) do
         local def=a.conditionDefinitions[tag];value.type=tag
         assert(def.valid(0,value),tag);def.help({AddChild=function() end})

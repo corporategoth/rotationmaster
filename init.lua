@@ -183,8 +183,8 @@ local default_condition_groups = {
             "MANA", "MANAPCT", "POWER", "POWERPCT", "POINT", "RUNE", "RUNE_COOLDOWN",
             "TOTEM", "TOTEM_SPELL", "TOTEM_REMAIN", "TOTEM_SPELL_REMAIN",
             "STAT", "ECS_STAT", "ECS_STAT_PCT",
-            "HERO_TALENT", "GROUP_SIZE", "GROUP_ROLE_COUNT", "GROUP_DEAD_COUNT",
-            "PET_HAPPINESS", "STAGGER", "ECLIPSE_DIRECTION", "ECLIPSE_ENERGY",
+            "HERO_TALENT", "GROUP_COUNT",
+            "PET_HAPPINESS", "STAGGER", "ECLIPSE",
         }
     },
     {
@@ -203,7 +203,7 @@ local default_condition_groups = {
         id = "fca4ff75-4085-458a-b5bf-27a6b52f2092",
         name = L["Items"],
         conditions = {
-            "EQUIPPED", "CARRYING", "ITEM", "ITEM_RANGE", "ITEM_COOLDOWN", "GLYPH", "WEAPON_TYPE", "TRINKET_COOLDOWN",
+            "EQUIPPED", "CARRYING", "ITEM", "ITEM_RANGE", "ITEM_COOLDOWN", "GLYPH", "WEAPON_TYPE",
         }
     },
     {
@@ -212,7 +212,7 @@ local default_condition_groups = {
         conditions = {
             "BUFF", "BUFF_REMAIN", "BUFF_STACKS", "STEALABLE",
             "DEBUFF", "DEBUFF_REMAIN", "DEBUFF_STACKS", "DISPELLABLE",
-            "WEAPON", "WEAPON_REMAIN", "WEAPON_STACKS", "SWING_TIME", "SWING_TIME_REMAIN", "RANGED_SWING_REMAIN",
+            "WEAPON", "WEAPON_REMAIN", "WEAPON_STACKS", "SWING_TIME", "SWING_TIME_REMAIN",
         }
     },
     {
@@ -222,8 +222,7 @@ local default_condition_groups = {
             "ZONE", "OUTDOORS", "DISTANCE", "BEYOND_MELEE", "DISTANCE_COUNT", "PROXIMITY",
             "PROXIMITY_HEALTH", "PROXIMITY_HEALTH_COUNT", "PROXIMITY_HEALTHPCT", "PROXIMITY_HEALTHPCT_COUNT",
             "PROXIMITY_MANA", "PROXIMITY_MANA_COUNT", "PROXIMITY_MANAPCT", "PROXIMITY_MANAPCT_COUNT",
-            "MOUNTED", "SWIMMING", "FALLING", "FLYING", "RESTING",
-            "INSTANCE_DIFFICULTY", "INSTANCE_ID", "KEYSTONE_LEVEL",
+            "PLAYER_STATE", "KEYSTONE_LEVEL",
         }
     },
 }
@@ -239,8 +238,8 @@ local default_switch_conditions = {
     "STEALTHED", "GROUP", "FORM", "CLASS", "CLASS_GROUP", "CREATURE", "CLASSIFICATION",
     "PET", "PET_NAME", "EQUIPPED", "DISTANCE_COUNT", "THREAT_COUNT", "ROLE", "GLYPH",
     "BOSSMOD_ENCOUNTER", "BOSSMOD_STAGE", "SPECIALIZATION", "WEAPON_TYPE",
-    "ENCOUNTER", "INSTANCE_DIFFICULTY", "INSTANCE_ID", "KEYSTONE_LEVEL", "HERO_TALENT",
-    "GROUP_SIZE", "GROUP_ROLE_COUNT", "MOUNTED", "RESTING",
+    "ENCOUNTER", "KEYSTONE_LEVEL", "HERO_TALENT",
+    "GROUP_COUNT", "PLAYER_STATE",
 }
 
 -- Default 'switch only' conditions
@@ -248,8 +247,50 @@ local default_disabled_conditions = {
     "SELF_LEVEL", "PVP", "ZONEPVP", "INSTANCE",
 }
 
-local function updateRotationData(rot_func, cond_func)
-    if addon.InitializeScopedRotationStorage or addon.db.profile.rotationStore~=nil or not addon.db.profile.rotations then
+-- Every body the old formats can still be in. Before the scoped store, that
+-- was the active profile's rotations. Under it the player's rotations are in
+-- the archive (profile.rotationStore.legacy.rotations, of every profile),
+-- in a character's own pre-2.0 roots (sv.char[*].rotations) and, for anyone
+-- who adopted before these upgrades ran on archives, in owned records. Each
+-- body is visited; the upgrade functions below only touch the old shapes.
+local function eachSavedBody(visit)
+    local function bodies(map)
+        if type(map)~="table" then return end
+        for _,rows in pairs(map) do
+            if type(rows)=="table" then for _,body in pairs(rows) do visit(body) end end
+        end
+    end
+    local function records(map)
+        if type(map)~="table" then return end
+        for _,rows in pairs(map) do
+            if type(rows)=="table" then for _,record in pairs(rows) do
+                if type(record)=="table" then visit(record.body) end
+            end end
+        end
+    end
+    local sv=addon.db.sv
+    local seen={}
+    local function profile(p)
+        if type(p)~="table" or seen[p] then return end
+        seen[p]=true
+        local store=p.rotationStore
+        if type(store)~="table" then return bodies(p.rotations) end
+        if type(store.legacy)=="table" then bodies(store.legacy.rotations) end
+        if type(store.classes)=="table" then for _,map in pairs(store.classes) do records(map) end end
+        if type(store.characters)=="table" then
+            for _,bucket in pairs(store.characters) do if type(bucket)=="table" then records(bucket.specs) end end
+        end
+    end
+    for _,p in pairs(sv and sv.profiles or {}) do profile(p) end
+    profile(addon.db.profile)
+    for _,char in pairs(sv and sv.char or {}) do if type(char)=="table" then bodies(char.rotations) end end
+end
+
+-- opts.activeOnly: the rotations the player runs now (prefetching item data
+-- for archived bodies would be work nobody asked for).
+local function updateRotationData(rot_func, cond_func, opts)
+    local scoped=addon.InitializeScopedRotationStorage~=nil
+    if not scoped and (addon.db.profile.rotationStore~=nil or not addon.db.profile.rotations) then
         return
     end
 
@@ -262,17 +303,23 @@ local function updateRotationData(rot_func, cond_func)
             for _,subcond in pairs(cond.value) do updateConditionData(subcond,func,depth+1) end
         else func(cond) end
     end
+    local function upgradeBody(rotation)
+        local tree=addon.RotationData.IndexRotationSteps(rotation,{allowMissingIds=true})
+        -- Malformed data is retained for inspection, never flattened or
+        -- partially upgraded by a best-effort walk over unknown structure.
+        if tree then for _,row in ipairs(tree.rows) do
+            local step=row.step
+            if rot_func and step.type~="branch" then rot_func(step,row.section=="cooldowns") end
+            if cond_func and step.conditions then updateConditionData(step.conditions,cond_func) end
+        end end
+    end
+    if scoped then
+        if opts and opts.activeOnly then return end
+        eachSavedBody(upgradeBody)
+        return
+    end
     for _,rotations in pairs(addon.db.profile.rotations) do
-        for _,rotation in pairs(rotations) do
-            local tree=addon.RotationData.IndexRotationSteps(rotation,{allowMissingIds=true})
-            -- Malformed data is retained for inspection, never flattened or
-            -- partially upgraded by a best-effort walk over unknown structure.
-            if tree then for _,row in ipairs(tree.rows) do
-                local step=row.step
-                if rot_func and step.type~="branch" then rot_func(step,row.section=="cooldowns") end
-                if cond_func and step.conditions then updateConditionData(step.conditions,cond_func) end
-            end end
-        end
+        for _,rotation in pairs(rotations) do upgradeBody(rotation) end
     end
 end
 
@@ -338,7 +385,7 @@ local function cacheItems()
                 end
             end
         end
-    end)
+    end,{activeOnly=true})
 
     if addon.db.global.itemsets then
         for _,itemset in pairs(addon.db.global.itemsets) do
@@ -407,7 +454,10 @@ local function upgradeEffectsToGUID()
 
     updateRotationData(function(rot, is_cooldown)
         if is_cooldown and rot.effect ~= nil and rot.effect ~= NONE and global.effects[rot.effect] == nil then
-            rot.effect = name2idx[rot.effect]
+            -- An archived body keeps an effect it cannot resolve (it is
+            -- evidence, and the editor reports it); only a name that maps
+            -- to a known effect is rewritten.
+            if name2idx[rot.effect] ~= nil or not addon.InitializeScopedRotationStorage then rot.effect = name2idx[rot.effect] end
         end
     end)
 
@@ -431,7 +481,10 @@ local function upgradeEffectsToGUID()
 end
 
 local function upgradePetSpellToAnySpell()
-    if addon.db.profile.version == nil or addon.db.profile.version < 1 then
+    -- The profile version is no evidence for an archive: the archive step
+    -- sets it before this runs. Archived bodies are always converted; the
+    -- conversion changes nothing that is already current.
+    if addon.InitializeScopedRotationStorage or addon.db.profile.version == nil or addon.db.profile.version < 1 then
         updateRotationData(function(rot)
             if rot.type ~= nil and rot.type == (BOOKTYPE_PET or "pet") then
                 rot.type = "any"

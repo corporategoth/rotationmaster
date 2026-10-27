@@ -114,4 +114,28 @@ test('Distance Count Help explains observed snapshot and unknown counts',functio
     local f,a=fixture();local frame=f.widget('Group');a.conditionDefinitions.DISTANCE_COUNT.help(frame);local text=F.text(frame)
     assert(text:find('observed',1,true) and text:find('unavailable',1,true) and not text:find('addon.units',1,true))
 end)
+test('incombat counts only units that are fighting, in the snapshot route and the nameplate route',function()
+    local f,a=fixture();local u=f.units.nameplate1;u.minimum,u.maximum=0,5
+    local throws=false
+    f.env.UnitAffectingCombat=function(unit) if throws then error('blocked') end;return f.units[unit].combat end
+    local original=a.Platform.CanReadValue;local opaque={}
+    local function count(n,extra) local v=value();v.operator='EQUALS';v.value=n;for k,x in pairs(extra or {}) do v[k]=x end;return v end
+    for _,route in ipairs({'snapshot','nameplates'}) do
+        if route=='nameplates' then a.unitsInRange=nil;a.nameplateUnits={nameplate1=true} end
+        u.combat=false
+        assert(a:evaluateCondition(count(1)),route..': a plate counts without the option')
+        assert(a:evaluateCondition(count(0,{incombat=true})),route..': an idle enemy was counted as in combat')
+        assert(a:evaluateCondition(count(1,{incombat=false})),route..': an explicit false is the plain count')
+        u.combat=true;assert(a:evaluateCondition(count(1,{incombat=true})),route..': a fighting enemy was not counted')
+        u.combat=nil;assert(a:evaluateCondition(count(0,{incombat=true})),route..': nil is not fighting')
+        throws=true;unavailable(a,count(1,{incombat=true}));assert(a:evaluateCondition(count(1)),route..': without the option combat is never read');throws=false
+        a.Platform.CanReadValue=function(_,x) return x~=opaque end
+        u.combat=opaque;unavailable(a,count(1,{incombat=true}));assert(a:evaluateCondition(count(1)),route..': a hidden combat state is not read without the option')
+        a.Platform.CanReadValue=original
+    end
+    local def=a.conditionDefinitions.DISTANCE_COUNT
+    assert(def.valid(0,count(1,{incombat=true})) and def.valid(0,count(1,{incombat=false})) and not def.valid(0,count(1,{incombat='yes'})))
+    assert(def.print(0,count(1,{incombat=true})):find('in combat',1,true) and not def.print(0,count(1)):find('in combat',1,true))
+    def.help({AddChild=function() end})
+end)
 finish()

@@ -17,6 +17,8 @@ function addon:GetGeneralOptionHelp()
         {id="autoswitch_poll",title=L["Auto-Switch Re-check Interval (seconds)"],text=L["Help.General.autoswitch_poll"]},
         {id="live_config_update",title=L["Live Status Update Frequency (seconds)"],text=L["Help.General.live_config_update"]},
         {id="rotation_view",title=L["Default rotation view"],text=L["Help.General.rotation_view"]},
+        {id="ignore_mana",title=L["Ignore Mana"],text=L["Help.General.ignore_mana"]..(self.Platform:GetCombatDataPolicy()=="restricted" and "\n\n"..L["Help.General.ignore_mana_restricted"] or "")},
+        {id="ignore_range",title=L["Ignore Range"],text=L["Help.General.ignore_range"]},
         {id="spell_history",title=L["Spell History Memory (seconds)"],text=L["Help.General.spell_history"]},
         {id="combat_history",title=L["Combat History Memory (seconds)"],text=L["Help.General.combat_history"]},
         {id="damage_history",title=L["Damage History Memory (seconds)"],text=L["Help.General.damage_history"]},

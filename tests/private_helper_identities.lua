@@ -24,7 +24,7 @@ local identities={
     -- Six of the talent picker's helpers changed on purpose: tree names instead of numbers (c584ed30), the icon-left two-row block
     -- (126b58e3), the drawn tree (97274eb1).
     ['Conditions/talent.lua']={dropdown='fc359881',gridWidget='e72d8427',group='d6f4e415',icon='96cba83c',info='06ddaa40',integer='e1bd3b0e',legacySlot='b8bfb514',platform='7a51cfaa',text='6cd18802',treeExists='85703f5a',treeName='7472cbbc',treePicker='6ac3f081',treeShape='f0ba2bf9',treeWidget='0865edd9'},
-    ['Conditions/weapon.lua']={enchantObservation='5abf63f3',numericObservation='02dee6a9',swingSpeed='5af56bab',color='63742be5',helpers='e831a1db'},
+    ['Conditions/weapon.lua']={enchantObservation='5abf63f3',numericObservation='02dee6a9',swingSpeed='cf9027ac',color='63742be5',helpers='e831a1db'},
     ['Conditions/totem.lua']={observe='e59e23eb',remaining='b96f5341',element='5fbfedcc',amount='3bd67a6b',specific='fdeca8ba',findSpecific='f753db9d',platform='c9ee8d33',color='b1a3d66a',helpers='f15cbb60'},
     -- calculateOld changed once on purpose: a legacy health trend returns zero, not NaN (dcd35b9f).
     ['Functions/trends.lua']={calculate='26e53807',calculateOld='04e973c3'},

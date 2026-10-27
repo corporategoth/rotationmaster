@@ -171,6 +171,7 @@ local function newShell()
         if shell.scaleDragging then shell.pendingScale=selected;shell.scaleValue:SetText(tostring(math.floor(selected*100+.5)))
         else shell:ApplyScale(selected,true) end
     end)
+    shell.banner=addon.CreateLegacyArchiveBanner and addon:CreateLegacyArchiveBanner(shell,window) or nil
     local linkPane=CreateFrame("Frame",nil,window);shell.linkPane=linkPane;linkPane:SetSize(520,72);linkPane:SetPoint("BOTTOM",0,28);fill(linkPane,.07,.08,.09)
     shell.linkInput=addon:CreateWorkbenchEditBox(linkPane);shell.linkInput:SetPoint("TOPLEFT",12,-12);shell.linkInput:SetSize(496,24)
     addon:SetUIScript(shell.linkInput,"OnEscapePressed",function() linkPane:Hide() end)
@@ -253,6 +254,7 @@ local function newShell()
             x=x+tabWidth+2
         end
         local top=-y+28
+        if self.banner then top=top+self.banner:Place(12,y-28,width-24) end
         content:ClearAllPoints();content:SetPoint("TOPLEFT",window,"TOPLEFT",12,-top)
         local contentWidth,contentHeight=math.max(1,width-24),math.max(1,height-top-28)
         paneHeader:ClearAllPoints();paneHeader:SetPoint('TOPRIGHT',content,'TOPRIGHT',0,0);paneHeader:SetSize(20,20)
@@ -344,6 +346,7 @@ function addon:ShowConfig(section,selection)
     local shell=self.configWindow
     shell:ApplyScale(self.db.global.uiScale,false)
     shell.rightDown=IsMouseButtonDown and IsMouseButtonDown("RightButton")
+    if shell.banner then shell.banner:Refresh() end
     shell:RefreshTabs();shell:Show();shell:SelectSection(section or "Rotations")
     return shell
 end

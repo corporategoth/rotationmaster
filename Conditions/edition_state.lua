@@ -9,10 +9,11 @@ local helpers = addon.help_funcs
 -- uses one elsewhere is incomplete rather than quietly wrong:
 --   PET_HAPPINESS         hunter pet happiness: Classic Era, Burning Crusade, Wrath
 --   STAGGER               Brewmaster Stagger: Mists of Pandaria, Retail, Forever
---   ECLIPSE_DIRECTION and
---   ECLIPSE_ENERGY        Balance Druid Eclipse: Wrath through Mists of Pandaria
---   RANGED_SWING_REMAIN   Auto Shot and wand timer: clients that expose the
---                         combat log (Era, Burning Crusade, Mists)
+--   ECLIPSE               Balance Druid Eclipse, its direction or its energy:
+--                         Wrath through Mists of Pandaria
+-- The Auto Shot and wand timer is the Ranged option of SWING_TIME and
+-- SWING_TIME_REMAIN (Conditions/weapon.lua), which read
+-- Platform:GetRangedSwingSpeed from this adapter.
 local Functions={
     values={isin=addon.Functions.values.isin,compare=addon.Functions.values.compare},
     presentation={nullable=addon.Functions.presentation.nullable,compareString=addon.Functions.presentation.compareString},
@@ -123,21 +124,41 @@ addon:RegisterCondition("STAGGER", {
     end,
 })
 
-addon:RegisterCondition("ECLIPSE_DIRECTION", {
-    description = L["Eclipse Direction"],
-    icon = addon.Artwork.condition["ECLIPSE_DIRECTION"],
-    requiredFields = { "value" },
-    fields = { value = "string" },
+-- The two things the Eclipse bar tells you, in the order the editor lists them.
+local ECLIPSE_MEASURES_ORDER = { "direction", "energy" }
+local function eclipseMeasures()
+    return { direction = L["Direction"], energy = L["Energy"] }
+end
+
+addon:RegisterCondition("ECLIPSE", {
+    description = L["Eclipse"],
+    icon = addon.Artwork.condition["ECLIPSE"],
+    requiredFields = { "measure" },
+    fields = { measure = "string", direction = "string", operator = "string", value = "number" },
     valid = function(_, value)
-        return value.value ~= nil and Functions.values.isin(ECLIPSES, value.value)
+        if value.measure == "direction" then
+            return value.direction ~= nil and Functions.values.isin(ECLIPSES, value.direction)
+        elseif value.measure == "energy" then
+            return value.operator ~= nil and Functions.values.isin(addon.operators, value.operator)
+                and type(value.value) == "number" and value.value == value.value and value.value >= -100 and value.value <= 100
+        end
+        return false
     end,
     evaluate = function(value, cache)
-        local direction, reason = Functions.cache.getCached(cache, addon.Platform.GetEclipseObservation, addon.Platform, "direction")
-        if direction == nil then return nil, reason end
-        return direction == value.value
+        if value.measure == "direction" then
+            local direction, reason = Functions.cache.getCached(cache, addon.Platform.GetEclipseObservation, addon.Platform, "direction")
+            if direction == nil then return nil, reason end
+            return direction == value.direction
+        end
+        local energy, reason = Functions.cache.getCached(cache, addon.Platform.GetEclipseObservation, addon.Platform, "energy")
+        if energy == nil then return nil, reason end
+        return Functions.values.compare(value.operator, energy, value.value)
     end,
     print = function(_, value)
-        return string.format(L["your Eclipse bar {{!is|is not}} heading toward %s"], Functions.presentation.nullable(ECLIPSES[value.value], L["<Eclipse>"]))
+        if value.measure == "energy" then
+            return Functions.presentation.compareString(value.operator, L["your Eclipse energy"], Functions.presentation.nullable(value.value))
+        end
+        return string.format(L["your Eclipse bar {{!is|is not}} heading toward %s"], Functions.presentation.nullable(ECLIPSES[value.direction], L["<Eclipse>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -145,86 +166,38 @@ addon:RegisterCondition("ECLIPSE_DIRECTION", {
         local funcs = top:GetUserData("funcs")
 
         local direction = addon:CreateConditionDropdown()
+        local operator = addon:Widget_OperatorWidget(value, L["Energy"], function() top:SetStatusText(funcs:print(root, spec)) end)
+
+        local measure = addon:CreateConditionDropdown()
+        measure:SetLabel(L["Measure"])
+        measure:SetCallback("OnValueChanged", function(_, _, v)
+            value.measure = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        measure.configure = function()
+            measure:SetList(eclipseMeasures(), ECLIPSE_MEASURES_ORDER)
+            if value.measure ~= nil then measure:SetValue(value.measure) end
+        end
+        parent:AddChild(measure)
+
         direction:SetLabel(L["Eclipse Direction"])
         direction:SetCallback("OnValueChanged", function(_, _, v)
-            value.value = v
+            value.direction = v
             top:SetStatusText(funcs:print(root, spec))
         end)
         direction.configure = function()
             direction:SetList(ECLIPSES, ECLIPSE_ORDER)
-            if value.value ~= nil then direction:SetValue(value.value) end
+            if value.direction ~= nil then direction:SetValue(value.direction) end
         end
         parent:AddChild(direction)
+
+        parent:AddChild(operator)
     end,
     help = function(frame)
-        frame:AddChild(helpers.CreateText(L["Help.Conditions.ECLIPSE_DIRECTION"]))
-    end,
-})
-
-addon:RegisterCondition("ECLIPSE_ENERGY", {
-    description = L["Eclipse Energy"],
-    icon = addon.Artwork.condition["ECLIPSE_ENERGY"],
-    requiredFields = { "operator", "value" },
-    fields = { operator = "string", value = "number" },
-    valid = function(_, value)
-        return value.operator ~= nil and Functions.values.isin(addon.operators, value.operator)
-            and type(value.value) == "number" and value.value == value.value and value.value >= -100 and value.value <= 100
-    end,
-    evaluate = function(value, cache)
-        local energy, reason = Functions.cache.getCached(cache, addon.Platform.GetEclipseObservation, addon.Platform, "energy")
-        if energy == nil then return nil, reason end
-        return Functions.values.compare(value.operator, energy, value.value)
-    end,
-    print = function(_, value)
-        return Functions.presentation.compareString(value.operator, L["your Eclipse energy"], Functions.presentation.nullable(value.value))
-    end,
-    widget = function(parent, spec, value)
-        local top = parent:GetUserData("top")
-        local root = top:GetUserData("root")
-        local funcs = top:GetUserData("funcs")
-
-        parent:AddChild(addon:Widget_OperatorWidget(value, L["Energy"], function() top:SetStatusText(funcs:print(root, spec)) end))
-    end,
-    help = function(frame)
-        frame:AddChild(helpers.CreateText(L["Help.Conditions.ECLIPSE_ENERGY"]))
+        frame:AddChild(helpers.CreateText(L["Help.Conditions.ECLIPSE"]))
         frame:AddChild(helpers.Gap())
-        addon.layout_condition_operatorwidget_help(frame, L["Eclipse Energy"], L["Energy"],
+        addon.layout_condition_operatorwidget_help(frame, L["Eclipse"], L["Energy"],
             L["The Eclipse bar, from -100 (a full Lunar Eclipse) to 100 (a full Solar Eclipse)."])
-    end,
-})
-
-addon:RegisterCondition("RANGED_SWING_REMAIN", {
-    description = L["Ranged Swing Time Remaining"],
-    icon = addon.Artwork.condition["RANGED_SWING_REMAIN"],
-    requiredFields = { "operator", "value" },
-    fields = { operator = "string", value = "number" },
-    valid = function(_, value)
-        return validCompare(value)
-    end,
-    evaluate = function(value, cache, evalStart)
-        local speed, reason = Functions.cache.getCached(cache, addon.Platform.GetRangedSwingSpeed, addon.Platform)
-        if speed == nil then return nil, reason end
-        if speed == false then return false end
-        local lastShot = addon.lastRangedShot
-        if lastShot == nil then return Functions.values.compare(value.operator, speed, value.value) end
-        return Functions.values.compare(value.operator, math.max(speed - math.max(evalStart - lastShot, 0), 0), value.value)
-    end,
-    print = function(_, value)
-        return Functions.presentation.compareString(value.operator, L["your ranged swing time remaining"],
-            string.format(L["%s seconds"], Functions.presentation.nullable(value.value)))
-    end,
-    widget = function(parent, spec, value)
-        local top = parent:GetUserData("top")
-        local root = top:GetUserData("root")
-        local funcs = top:GetUserData("funcs")
-
-        parent:AddChild(addon:Widget_OperatorWidget(value, L["Seconds"], function() top:SetStatusText(funcs:print(root, spec)) end))
-    end,
-    help = function(frame)
-        frame:AddChild(helpers.CreateText(L["Help.Conditions.RANGED_SWING_REMAIN"]))
-        frame:AddChild(helpers.Gap())
-        addon.layout_condition_operatorwidget_help(frame, L["Ranged Swing Time Remaining"], L["Seconds"],
-            L["The amount of time (in seconds) until your next Auto Shot or wand shot."])
     end,
 })
 
@@ -232,9 +205,11 @@ addon:RegisterCondition("RANGED_SWING_REMAIN", {
 do
     local function sourceGetter(name)
         if name=="ECLIPSES" then return ECLIPSES end
+        if name=="ECLIPSE_MEASURES_ORDER" then return ECLIPSE_MEASURES_ORDER end
         if name=="ECLIPSE_ORDER" then return ECLIPSE_ORDER end
         if name=="MOODS" then return MOODS end
         if name=="MOOD_ORDER" then return MOOD_ORDER end
+        if name=="eclipseMeasures" then return eclipseMeasures end
         if name=="helpers" then return helpers end
         if name=="validCompare" then return validCompare end
     end
