@@ -257,4 +257,71 @@ test('the detached workspace refuses every write and is not listed anywhere',fun
     local candidate=session:Stage('t');assert(session:Preview(candidate.token).body.name=='A')
     session:Clear();local gone,why=session:Preview(candidate.token);assert(gone==nil and why=='stale-import')
 end)
+
+-- The bottom row of the import window (Copy, Clear, Compare/Preview, Check, Import, Cancel) in every locale. The
+-- review buttons grow with their label, and the window grows with them, so Import is never covered. Two width models:
+-- the fixture's own (7 per byte, which over-measures accents and CJK) and a per-character one close to the 10 px game
+-- font (5 for Latin, 6 for Cyrillic, 10 for CJK and Hangul).
+local audit=dofile('tests/fixtures/layout_audit.lua')
+local LOCALES={'enUS','deDE','esES','esMX','frFR','itIT','koKR','ptBR','ruRU','zhCN','zhTW'}
+local function perCharacter(text)
+    local width=0
+    for char in (text or ''):gmatch('[%z\1-\127\194-\244][\128-\191]*') do
+        local byte=char:byte()
+        if byte<0xD0 then width=width+5 elseif byte<0xE0 then width=width+6 else width=width+10 end
+    end
+    return width
+end
+local function openWithLocale(name,model)
+    local f,a=fixture()
+    if name~='enUS' then f.env.GetLocale=function() return name end;f.load('Locales/'..name..'.lua') end
+    if model then
+        local make=a.CreateWorkbenchButton
+        a.CreateWorkbenchButton=function(...)
+            local button=make(...);local get=button.GetFontString
+            button.GetFontString=function(self) local fs=get(self);fs.GetStringWidth=function(this) return model(this.text) end;return fs end
+            return button
+        end
+    end
+    return a,a:ShowRotationTransfer(0,reference(a))
+end
+local function assertRow(name,label,d,model)
+    local resolve=audit.resolver(d.frame)
+    local function rect(button) return assert(resolve(button),name..' '..label..': a bottom-row button has no resolved rectangle') end
+    local order={d.copy,d.clear,d.preview,d.inspect,d.apply,d.cancel}
+    local frameWidth=d.frame:GetWidth()
+    for index,button in ipairs(order) do
+        local r=rect(button)
+        assert(r.left>=0 and r.right<=frameWidth,string.format('%s %s: button %d leaves the window (%g..%g of %g)',name,label,index,r.left,r.right,frameWidth))
+        if index>1 then
+            local previous=rect(order[index-1])
+            assert(previous.right+4<=r.left,string.format('%s %s: button %d (%g..%g) overlaps or touches button %d (%g..%g)',name,label,index,r.left,r.right,index-1,previous.left,previous.right))
+        end
+    end
+    for _,button in ipairs({d.preview,d.inspect}) do
+        local need=model and model(button:GetText()) or #button:GetText()*7
+        assert(rect(button).right-rect(button).left>=need,name..' '..label..': a review button is narrower than its label')
+    end
+    assert(d.scroll:GetWidth()<=frameWidth-12 and d.status:GetWidth()<=frameWidth,name..' '..label..': the text box or status line was not resized with the window')
+end
+test('the import window keeps its bottom row apart in all 11 locales, in Compare and Preview modes, under both width models',function()
+    for _,name in ipairs(LOCALES) do
+        for _,modelName in ipairs({'fixture','character'}) do
+            local model=modelName=='character' and perCharacter or nil
+            local _,d=openWithLocale(name,model)
+            assert(d.mode=='replace')
+            assertRow(name,modelName..'/compare',d,model)
+            d.destination:Click();assert(d.mode=='new')
+            assertRow(name,modelName..'/preview',d,model)
+            if name=='enUS' and model then assert(d.frame:GetWidth()==570,'the common English window grew beyond its default width') end
+        end
+    end
+end)
+test('the window returns to its default width for a transfer without review buttons',function()
+    local _,a=fixture();local d=a:ShowRotationTransfer(0,reference(a));local wide=d.frame:GetWidth()
+    local p=a.rotationTransferForm;assert(p and p.textDialog==d)
+    a:ShowSettingsTextTransfer(p,'Plain','text',function() return true end)
+    assert(d.frame:GetWidth()==570 and d.input:GetWidth()==510 and d.scroll:GetWidth()==520,'a plain box kept the widened size of the review window: '..d.frame:GetWidth()..' after '..wide)
+end)
 finish()
+
