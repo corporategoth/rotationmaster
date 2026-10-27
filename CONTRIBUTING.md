@@ -27,7 +27,7 @@ folder into `Interface/AddOns` as well.
 | Always | `python3 tools/check --static` | 20 s |
 | You touched Lua | `python3 tools/fast_tests.py <files>` (the pre-commit hook does this) | seconds |
 | You touched a generated input (an `Assets/*/provenance.json`, a condition, an integration record) | the generator with `--write`, then commit both | seconds |
-| Before a pull request | `python3 tools/check_all.py --baseline tools/known_failures.txt --skip-slow tools/slow_tests.txt` (never stops at the first failure; CI also runs the six slow commands) | about a quarter of an hour; run it once, at low priority |
+| Before a pull request | `python3 tools/check_all.py --baseline tools/known_failures.txt --skip-slow tools/slow_tests.txt` (never stops at the first failure; CI also runs the five slow commands) | about a quarter of an hour; run it once, at low priority |
 
 The hooks (`.pre-commit-config.yaml`) run: whitespace and file checks, Lua 5.1 syntax, LF line endings, a guard against
 planning documents and local files, a credential scan, the static gate, American spelling, the development tools' tests, and
