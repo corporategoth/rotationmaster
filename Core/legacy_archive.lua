@@ -1,3 +1,10 @@
+-- Player-facing handling of the archive of rotations saved by a release before 2.0 (the upgrade in
+-- Core/rotation_migration.lua parks them unowned). Owns the one-time chat notice, the settings banner state and the
+-- bulk "adopt everything" action. It never decides an owner itself: adoption goes through addon:PlanRotationAdoption
+-- and addon:ApplyRotationAdoption. Flags live in the profile (legacyArchiveNoticed, legacyArchiveBannerDismissed).
+-- Loaded from RotationMaster.toc after Core/rotation_migration.lua; the UI (UI/legacy_archive_banner.lua,
+-- UI/rotation_adoption.lua) is the caller.
+
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
@@ -55,6 +62,8 @@ function addon:GetLegacyArchiveBanner()
     return summary.total
 end
 
+-- Records that the player dismissed the banner; nothing else is touched, so the archive and the chat notice are
+-- unaffected.
 function addon:DismissLegacyArchiveBanner()
     local profile = self.db and self.db.profile
     if type(profile) == 'table' then profile.legacyArchiveBannerDismissed = true end

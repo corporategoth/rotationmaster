@@ -1,3 +1,12 @@
+-- Private executor for the condition trees of the active rotation body (lean engine): compiles a body's condition roots
+-- into nodes, remembers results of stable (event-driven) conditions between polls and invalidates them on level and
+-- aura events, and hands main.lua a per-poll session that proves the plan is still current. Owns the compiled plan, the
+-- declarations of Built In conditions allowed on this path (enrolled by Conditions/*.lua through
+-- addon:DeclareOwnedConditionRuntime) and the event frame; it never evaluates custom conditions (those stay on
+-- Core/conditions.lua) and must retire the plan whenever any proof fails. Restricted and unproven clients never reuse a
+-- fact across polls. Loaded from RotationMaster.toc after Core/condition_support.lua; it takes the engine's pieces once
+-- through addon.ConsumeConditionRuntimeEngine and main.lua takes `prepare` through addon:ConsumeConditionRuntime.
+
 local _, addon = ...
 
 -- Private active-body executor. The active-plan owner supplies the content /
@@ -6,6 +15,7 @@ local _, addon = ...
 ---@type fun(owner:table):table,function,function,function,function,function
 local consumeEngine = addon.ConsumeConditionRuntimeEngine
 local definitions, runLeaf, outcome, engineCurrent, isQuarantined, quarantineVersion = consumeEngine(addon)
+-- Without the engine handoff from Core/conditions.lua this module does nothing and the ordinary evaluator stays in use.
 if not definitions then return end
 addon.ConsumeConditionRuntimeEngine = nil
 
@@ -17,6 +27,12 @@ local getfenv = getfenv
 local declarations, generation = {}, 0
 local sourceWitnesses = {}
 
+-- ============================================================================
+-- Enrolling Built In conditions
+-- ============================================================================
+
+-- Called once per Built In source module as it loads. Returns a function that records each registered definition and
+-- its original `valid` and `evaluate`, so DeclareOwnedConditionRuntime can later prove the definition was not replaced.
 function addon:CreateConditionRuntimeWitness(module)
     if self ~= addon or sourceWitnesses[module] then return end
     local witnesses = {}
@@ -35,6 +51,8 @@ end
 
 local ownedHelpers = {}
 
+-- Records the original public helper `method` under `name` (first declaration wins) so a declaration can prove the
+-- helper is still the shipped one.
 function addon:DeclareConditionRuntimeHelper(name, method)
     if self == addon and ownedHelpers[name] == nil and type(method) == 'function' then ownedHelpers[name] = method end
 end
@@ -53,6 +71,8 @@ local platform = addon.Platform
 local clientInfo = platform.GetClientInfo
 local environment = getfenv(1)
 
+-- Builds the list of { object, name, value, environment, isHost } for each named member, the baseline later compared
+-- with the live values.
 local function references(object, names, host)
     local result = {}
     if type(object) ~= 'table' then return result end
@@ -65,6 +85,7 @@ local function references(object, names, host)
     return result
 end
 
+-- Appends every element of `from` to `to`.
 local function append(to, from)
     for _, value in ipairs(from) do
         to[#to + 1] = value
@@ -75,6 +96,10 @@ end
 -- Enrollment is not inferred from customCode=false or a user supplied tag.
 local enrolled = {}
 
+-- Called at the end of a Built In condition module with a descriptor per condition tag (methods, namespaces, platform
+-- members, natives, `pure`, `fact`). A tag is enrolled only when its registered definition is the untouched one
+-- recorded by the witness and matches the packaged source catalog; anything else keeps the ordinary evaluation path.
+-- Advances the generation so plans compiled earlier are discarded.
 function addon:DeclareOwnedConditionRuntime(module, descriptors)
     if self ~= addon or enrolled[module] then return end
     enrolled[module] = true
@@ -134,6 +159,11 @@ function addon:DeclareOwnedConditionRuntime(module, descriptors)
     generation = generation + 1
 end
 
+-- ============================================================================
+-- Plan lifetime and event subscription
+-- ============================================================================
+
+-- Forgets the cached player level so the next read observes it again.
 local function clearLevel()
     local cache = addon.longtermCache
 
@@ -144,6 +174,7 @@ local function clearLevel()
     end
 end
 
+-- Clears the cached result of a node and of every ancestor that depended on it.
 local function dirty(node)
     node.result = nil
 
@@ -152,6 +183,8 @@ local function dirty(node)
     end
 end
 
+-- Marks every node that depends on `fact` ('level' or 'aura') dirty and advances the plan epoch, which blocks a result
+-- computed during the event from being cached.
 local function invalidate(plan, fact)
     plan.epoch = plan.epoch + 1
     stats.eventInvalidations = stats.eventInvalidations + 1
@@ -161,6 +194,7 @@ local function invalidate(plan, fact)
     end
 end
 
+-- Drops the active plan and session: marks the plan retired, clears the level cache and unregisters its event frame.
 local function retire()
     local plan = active
     active = nil
@@ -187,6 +221,8 @@ local auraEvents = {
     'PLAYER_LEAVING_WORLD',
 }
 
+-- Creates the event frame for the facts the plan depends on. If the frame cannot be created or any event cannot be
+-- registered, that fact is marked unsupported and its nodes are re-evaluated every poll.
 local function subscribe(plan)
     local wanted = false
 
@@ -194,6 +230,7 @@ local function subscribe(plan)
         if plan.support[fact] then wanted = true end
     end
 
+    -- Marks every fact as unsupported, so its nodes are evaluated fresh on each poll.
     local function unavailable()
         for fact in pairs(plan.support) do
             plan.support[fact] = false
@@ -295,6 +332,9 @@ local function subscribe(plan)
     end)
 end
 
+-- Decides whether facts may be reused across polls: only on Classic Era, TBC and the progression clients with the
+-- secret value API either absent or reporting no restrictions. Returns true and the client family, or false. Written to
+-- avoid the full client classifier, which allocates on every call.
 local function securityAllowsFacts()
     if addon.Platform ~= platform or platform.GetClientInfo ~= clientInfo then return false end
     -- The stock client classifier's policy depends on project identity. Avoid
@@ -332,11 +372,14 @@ local function securityAllowsFacts()
     return true, family
 end
 
+-- Returns whether level facts and aura facts may be reused; Classic Era never reuses aura facts.
 local function supportedFacts()
     local safe, family = securityAllowsFacts()
     return safe == true, safe == true and family ~= 'era'
 end
 
+-- True while the enrolled definition, its callbacks and function environments, and every referenced method are still
+-- the originals and the definition is not disabled or quarantined.
 local function declarationCurrent(declaration)
     local d = declaration.definition
 
@@ -371,6 +414,8 @@ local function declarationCurrent(declaration)
     return true
 end
 
+-- True while the engine, the generation and the quarantine version are unchanged and every declaration the plan uses is
+-- still current.
 local function authority(plan)
     if not engineCurrent() or plan.generation ~= generation or plan.quarantineVersion ~= quarantineVersion() then
         return false
@@ -383,8 +428,15 @@ local function authority(plan)
     return true
 end
 
+-- ============================================================================
+-- Compiling a plan
+-- ============================================================================
+
 local noProviders = {}
 
+-- Builds a plan for `body`: walks the rotation and cooldown steps (including branches) and compiles each step's
+-- condition tree into nodes. Returns nil when anything is malformed, too large or deep, or not enrolled, so the body
+-- stays on the ordinary path.
 local function compile(body, token, levelSafe, auraSafe)
     local plan = {
         body = body,
@@ -400,11 +452,14 @@ local function compile(body, token, levelSafe, auraSafe)
 
     local used = {}
 
+    -- Compiles one condition tree into the plan; returns false if any node cannot be compiled.
     local function root(value)
         if value == nil then return true end
         if plan.roots[value] then return true end
         local stack, count = {}, 0
 
+        -- Compiles one condition node (constant, AND/OR, NOT or a Built In leaf) with its parents, fact dependency and
+        -- stability. Returns nil for a malformed or oversize tree.
         local function node(value, parent, depth, path)
             count = count + 1
 
@@ -494,6 +549,7 @@ local function compile(body, token, levelSafe, auraSafe)
 
     local seen = {}
 
+    -- Compiles the conditions of a step list and, recursively, of every branch in it.
     local function steps(list, depth)
         if type(list) ~= 'table' or depth > 64 or seen[list] then return false end
         seen[list] = true
@@ -517,6 +573,10 @@ local function compile(body, token, levelSafe, auraSafe)
     return plan
 end
 
+-- ============================================================================
+-- Evaluating nodes
+-- ============================================================================
+
 -- Certificates describe only providers consulted for the cached result. In
 -- particular an OR prefix never certifies an unreached sibling's producer.
 local function providersCurrent(node, session)
@@ -530,6 +590,7 @@ local function providersCurrent(node, session)
     return session:IsCurrent()
 end
 
+-- Appends the declarations from `source` that `target` does not yet hold.
 local function addProviders(target, seen, source)
     for _, declaration in ipairs(source) do
         if not seen[declaration] then
@@ -539,6 +600,8 @@ local function addProviders(target, seen, source)
     end
 end
 
+-- Evaluates a node and returns an outcome table. A stable node reuses its cached result only while its providers are
+-- still current; AND and OR stop at the first deciding child, and only the providers actually consulted are certified.
 local function evaluate(node, plan, cache, start, context, session)
     if node.stable and node.result and not (node.fact == 'level' and plan.levelPending) then
         if not providersCurrent(node, session) then
@@ -611,9 +674,14 @@ local function evaluate(node, plan, cache, start, context, session)
     return result
 end
 
+-- ============================================================================
+-- Sessions
+-- ============================================================================
+
 local Session = {}
 local sessionMeta = { __index = Session }
 
+-- True while this session is still the active one and the owner's lease still holds.
 function Session:IsCurrent()
     return not self.failed
         and active == self.plan
@@ -622,6 +690,7 @@ function Session:IsCurrent()
         and self.current()
 end
 
+-- Runs the owner's full proof; a failure marks the session failed for the rest of the poll.
 function Session:CheckFull()
     if not self:IsCurrent() then return false end
 
@@ -646,11 +715,15 @@ function Session:CheckDispatch(kind)
     return true
 end
 
+-- Proof asked before continuing after an outside callback: the dispatch guard when the owner gave one, else the full
+-- proof.
 function Session:CheckResume()
     if self.dispatchGuard then return self:CheckDispatch('resume') end
     return self:CheckFull()
 end
 
+-- Evaluates one condition root (nil root matches) inside the session; answers 'unavailable' if the session is no longer
+-- current before or after the evaluation.
 local function rootResult(session, root, context)
     local plan = session.plan
     if not session:IsCurrent() then return outcome('unavailable', 'condition-owner-changed', 'condition') end
@@ -661,12 +734,14 @@ local function rootResult(session, root, context)
     return result
 end
 
+-- Evaluates a condition root and returns a fresh `{ status, reason, path }`.
 function Session:EvaluateResult(root, context)
     local result = rootResult(self, root, context)
     -- Public-shaped results never expose memoized internal outcomes.
     return { status = result.status, reason = result.reason, path = result.path }
 end
 
+-- Evaluates a condition root and returns true only for a match.
 function Session:EvaluateBool(root, context)
     return rootResult(self, root, context).status == 'match'
 end
@@ -688,6 +763,13 @@ function Session:AfterOpaque()
     return self:IsCurrent()
 end
 
+-- ============================================================================
+-- Preparing a poll
+-- ============================================================================
+
+-- Called by main.lua each poll with the active body and the owner's leases. Returns a session when the body can run
+-- from a compiled plan, otherwise nil (counted as a legacy fallback when the engine itself is unusable). Recompiles
+-- when the body, token or fact support changed and retires the plan whenever a proof fails.
 local function prepare(owner, body, token, leaseCurrent, fullCurrent, dispatchGuard)
     if owner ~= addon then return end
 
@@ -802,6 +884,8 @@ local function prepare(owner, body, token, leaseCurrent, fullCurrent, dispatchGu
     return session
 end
 
+-- One-time handoff to main.lua (a second call gets nothing). Returns `prepare`, a retire function that ends the active
+-- plan only when the caller's prior session is still the latest one, and the after-opaque-callback proof for a session.
 function addon:ConsumeConditionRuntime()
     if self ~= addon or consumed then return end
     consumed = true

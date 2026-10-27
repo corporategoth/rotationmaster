@@ -1,8 +1,20 @@
+-- Services for player-written custom conditions that do not depend on any window: the empty-condition template a new
+-- custom condition starts from, the callback signatures, the loadstring-based compiler used for the historical
+-- compatibility path, and registration of a saved custom condition into the condition registry. Must not draw; the
+-- editors (UI/condition_source_pane.lua, UI/custom_condition_editor.lua) are callers. Saved custom conditions store
+-- these callbacks as source text, so the template header text below is matched against saved source and must not
+-- change. Loaded from RotationMaster.toc after Core/custom_authoring.lua, which supplies addon:CompileCustomCondition.
+
 local _, addon = ...
 
 local uuid = addon.uuid
 local pairs = pairs
 
+-- ============================================================================
+-- Callback signatures and the empty template
+-- ============================================================================
+
+-- Parameter list each custom callback is compiled with; also the list of callbacks a custom condition must supply.
 local function_signatures = {
     on_register = "function(tag)",
     on_unregister = "function(tag)",
@@ -13,6 +25,8 @@ local function_signatures = {
     help = "function(frame)",
 }
 
+-- The condition a new custom condition starts from. Each callback text begins with an explanatory comment header; the
+-- loop below moves those headers into `templateHeaders`, so the stored template is the code after the header.
 addon.empty_condition = {
     description = "",
     icon = "Interface\\Icons\\Inv_misc_questionmark",
@@ -79,6 +93,10 @@ local helpers = addon.help_funcs
 ]],
 }
 
+-- ============================================================================
+-- Editor source preparation
+-- ============================================================================
+
 -- Retain exact old template headers only to recognize generated boilerplate in
 -- saved conditions. Arbitrary user comments are preserved.
 local templateHeaders = {}
@@ -102,6 +120,8 @@ for name in pairs(function_signatures) do
     addon.empty_condition[name] = code:sub(offset)
 end
 
+-- Returns a copy of a saved custom condition for editing. Unless `preserveFormatting`, the generated boilerplate header
+-- is stripped from each callback (user comments are kept) and the code is normalized for the editor.
 function addon:PrepareCustomConditionEditorSource(source, preserveFormatting)
     local result = self:CopySettingsData(source)
     if preserveFormatting then return result end
@@ -119,6 +139,12 @@ function addon:PrepareCustomConditionEditorSource(source, preserveFormatting)
     return result
 end
 
+-- ============================================================================
+-- Compiling and registering
+-- ============================================================================
+
+-- Compiles one callback's source text into a function using the signature for `sel`; returns nil when it does not
+-- compile. The chunk runs in the global environment with `addon` and `L` as locals.
 local function compile_function(sel, val)
     local funcid = uuid()
 
@@ -150,6 +176,7 @@ end
     return rv
 end
 
+-- Deep copy of a field schema table, cycle-safe through `seen`.
 local function copy_fields(value, seen)
     if type(value) ~= "table" then return value end
     seen = seen or {}
@@ -164,6 +191,8 @@ local function copy_fields(value, seen)
     return copy
 end
 
+-- Registers a saved custom condition under `key`. Uses addon:CompileCustomCondition when it exists, otherwise compiles
+-- each callback itself; returns false when any callback does not compile, true after registering.
 function addon:register_custom_condition(key, condition)
     if self.CompileCustomCondition then
         local compiled = self:CompileCustomCondition(key, condition, true)

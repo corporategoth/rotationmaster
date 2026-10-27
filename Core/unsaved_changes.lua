@@ -1,5 +1,12 @@
+-- Change detection for the rotation editor: compares a baseline with a working copy so unsaved fields and step cards
+-- can be marked. Pure data comparison; it owns no state and must not write to either table or draw anything.
+-- Loaded from RotationMaster.toc after Core/condition_editor.lua and before Core/rotation_editor.lua; uses
+-- addon.RotationData (Data/) to index steps by their stable ids.
+
 local _, addon = ...
 
+-- Deep structural equality for saved-data tables (cycle-safe through `seen`); true when both sides hold the same keys
+-- and values. Used by the editors to decide whether a working copy differs from its baseline.
 function addon:UnsavedDataEqual(a, b, seen)
     if type(a) ~= type(b) then return false end
     if type(a) ~= 'table' then return a == b end
@@ -18,6 +25,9 @@ function addon:UnsavedDataEqual(a, b, seen)
     return true
 end
 
+-- Compares a rotation before and after editing. Returns a table with a changed flag per field (name, switch,
+-- description, metadata, tags, priority) and `cards[stepId]`, true for a new or modified step, so the editor can mark
+-- exactly what carries unsaved edits.
 function addon:RotationUnsavedState(before, after)
     before = before or {}
     after = after or {}

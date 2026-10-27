@@ -1,3 +1,11 @@
+-- Cached snapshot of the player's build (equipment, item-set pieces, enchants, gems, talents or loadout, season and
+-- ruleset, engraved runes) that conditions, rotation applicability and the UI read instead of the game. Owns the
+-- snapshot, its dirty flags and the notification frame, and rebuilds a section lazily after an event marks it dirty; it
+-- must not read the game per poll and callers must treat the snapshot as read-only. Every game value goes through
+-- `platform:CanReadValue` (restricted clients hide secret values) and every native API is feature-detected per client.
+-- Loaded from RotationMaster.toc after Core/inventory.lua; the long description below the header explains the client
+-- differences.
+
 local _, addon = ...
 
 -- Build context: the player's equipment, enchants, gems, item-set pieces,
@@ -15,6 +23,10 @@ local _, addon = ...
 -- until the client has the item cached. Seasons and game rules exist only
 -- where C_Seasons/C_GameRules do. Season of Discovery runes engraved on the
 -- equipped items (C_Engraving) are read only where that API exists.
+
+-- ============================================================================
+-- Snapshot state and notifications
+-- ============================================================================
 
 local SLOT_FIRST, SLOT_LAST = 1, 19
 local sections = { equipment = true, weapons = true, talents = true, client = true, runes = true }
@@ -34,20 +46,24 @@ local snapshot = {
 local revision = 0
 local frame, watching
 
+-- True when `value` is not a secret value this client refuses to expose.
 local function readable(value)
     return addon.Platform:CanReadValue(value)
 end
 
+-- Returns `value` when it is a readable positive whole number, else nil.
 local function positive(value)
     return readable(value) and type(value) == 'number' and value > 0 and value < math.huge and value % 1 == 0 and value
         or nil
 end
 
+-- pcall wrapper that returns false when `fn` is not a function, so a missing native API reads as a failed call.
 local function call(fn, ...)
     if type(fn) ~= 'function' then return false end
     return pcall(fn, ...)
 end
 
+-- Marks the named sections for rebuilding and advances the revision that consumers use to detect change.
 local function markDirty(...)
     for i = 1, select('#', ...) do
         dirty[(select(i, ...))] = true
@@ -85,6 +101,8 @@ local engravingNotifications = {
     NEW_RECIPE_LEARNED = { 'runes' },
 }
 
+-- Maps a game notification to the sections it dirties. Inventory changes for other units are ignored, and item metadata
+-- arriving only matters while an equipped item's set ID is still pending.
 local function onEvent(_, event, unit)
     local parts = notifications[event] or engravingNotifications[event]
     if not parts then return end
@@ -99,6 +117,9 @@ local function onEvent(_, event, unit)
     markDirty(unpack(parts))
 end
 
+-- Creates the notification frame and registers the events once (lazily, on the first read); each registration is
+-- guarded so an event this client lacks does not block the others. Returns false when no frame can be made, which makes
+-- every read rebuild.
 local function watch()
     if watching ~= nil then return watching end
     watching = false
@@ -126,6 +147,10 @@ local function watch()
     return true
 end
 
+-- ============================================================================
+-- Reading equipment
+-- ============================================================================
+
 -- Item string fields: itemID:enchantID:gem1:gem2:gem3:gem4:suffixID:...
 local function parseLink(link)
     if type(link) ~= 'string' or not readable(link) then return nil end
@@ -152,6 +177,8 @@ local function parseLink(link)
     }
 end
 
+-- Returns the item's set ID, false when it has none, or nil and a reason ('item-data-pending' until the client has
+-- cached the item).
 local function itemSetID(itemID)
     local info = C_Item and C_Item.GetItemInfo or GetItemInfo
     if type(info) ~= 'function' then return nil, 'missing-api' end
@@ -163,6 +190,7 @@ local function itemSetID(itemID)
     return positive(setID) or false
 end
 
+-- Number of empty sockets in the item link's stat table, or nil when the stats cannot be read.
 local function socketCount(link)
     local stats = C_Item and C_Item.GetItemStats or GetItemStats
     if type(stats) ~= 'function' or type(link) ~= 'string' then return nil end
@@ -184,6 +212,7 @@ end
 -- names), read once per equipment change for WEAPON_TYPE.
 local WEAPON_SLOTS = { [16] = true, [17] = true, [18] = true }
 
+-- Fills the record's class, subclass and equip location (or a reason) from the item's instant info.
 local function weaponType(record)
     local reader = addon.Platform and addon.Platform.GetItemInfoInstant
 
@@ -224,6 +253,12 @@ local function rangedSlot()
     return slot
 end
 
+-- ============================================================================
+-- Section builders
+-- ============================================================================
+
+-- Rebuilds slots 1 to 19: item, enchant, gems, sockets, set membership and weapon type. Marks the snapshot pending
+-- while any item's metadata is still loading.
 local function buildEquipment()
     snapshot.rangedSlot, snapshot.rangedReason = rangedSlot()
     local equipment, sets, pending = {}, {}, false
@@ -268,6 +303,7 @@ local function buildEquipment()
     snapshot.equipment, snapshot.sets, snapshot.pending, snapshot.equipmentReason = equipment, sets, pending, nil
 end
 
+-- Rebuilds the temporary main-hand and off-hand enchant state (Retail and Forever compose it from C_PaperDollInfo).
 local function buildWeapons()
     local weapons = {}
     -- Retail/Forever: the global is a loadDeprecationFallbacks alias; the
@@ -290,6 +326,7 @@ local function buildWeapons()
     snapshot.weapons = weapons
 end
 
+-- Active talent group (1 to 4) on clients with talent groups, or nil.
 local function activeGroup()
     local native = C_SpecializationInfo and C_SpecializationInfo.GetActiveSpecGroup
     local fn = type(native) == 'function' and native or GetActiveTalentGroup
@@ -298,6 +335,8 @@ local function activeGroup()
     return group and group <= 4 and group or nil
 end
 
+-- Rebuilds the talent section for this client's layout: tree points, grid picks or trait loadout and node groups, the
+-- player's class, and the specialization and rotation-specialization values conditions compare.
 local function buildTalents()
     local platform = addon.Platform
     local talents = {}
@@ -470,6 +509,10 @@ local function buildTalents()
     snapshot.talents = talents
 end
 
+-- ============================================================================
+-- Rulesets and the client section
+-- ============================================================================
+
 -- Rulesets are the realm's season and game rules: a pack's
 -- applicability.rulesets matches when any listed token is active.
 -- 'standard' (no season, not hardcore), 'hardcore', 'self-found',
@@ -484,6 +527,7 @@ local function seasonName(id)
     end
 end
 
+-- Rebuilds the season facts and the ruleset tokens that premade rotations match against.
 local function buildClient()
     local info = addon.Platform:GetClientInfo()
 
@@ -534,6 +578,10 @@ local function buildRunes()
     if why == 'rune-data-pending' then dirty.runes = true end
 end
 
+-- ============================================================================
+-- Refresh and public readers
+-- ============================================================================
+
 local builders = {
     equipment = buildEquipment,
     weapons = buildWeapons,
@@ -542,6 +590,8 @@ local builders = {
     runes = buildRunes,
 }
 
+-- Rebuilds the dirty sections (or `only` one of them) and returns the snapshot. A builder that errors stays dirty and
+-- its message is kept in `snapshot.<section>Error`. When the frame cannot be created every read rebuilds.
 local function refresh(only)
     local watched = watch()
 
@@ -567,6 +617,7 @@ function addon:GetBuildContext()
     return refresh()
 end
 
+-- Counter that advances whenever any section is marked dirty.
 function addon:GetBuildContextRevision()
     return revision
 end
@@ -580,10 +631,12 @@ function addon:InvalidateBuildContext(section)
     end
 end
 
+-- Set of active ruleset tokens ('standard', 'hardcore', 'season:<id>', ...) for the premade applicability check.
 function addon:GetBuildRulesets()
     return refresh('client').rulesets
 end
 
+-- Equipment record for an inventory slot, false when empty, or nil and a reason.
 function addon:GetEquippedSlotInfo(slot)
     local value = refresh('equipment')
     if value.equipmentReason then return nil, value.equipmentReason end
@@ -599,6 +652,7 @@ function addon:GetEquippedSetPieces(setID)
     return value.sets[setID] or 0
 end
 
+-- Returns the table of equipped piece counts per set ID and whether any item data is still pending.
 function addon:GetEquippedSets()
     local value = refresh('equipment')
     if value.equipmentReason then return nil, value.equipmentReason end
@@ -612,6 +666,11 @@ function addon:GetItemSetName(setID)
     if ok and readable(name) and type(name) == 'string' and name ~= '' then return name end
 end
 
+-- ============================================================================
+-- Specialization, weapon, season and rune readers
+-- ============================================================================
+
+-- The talent section of the snapshot (layout, trees or loadout, specialization values).
 function addon:GetTalentBuild()
     return refresh('talents').talents
 end
@@ -651,6 +710,7 @@ function addon:GetEquippedWeaponSlot(kind)
     return value.equipment[slot] or false
 end
 
+-- The season and game-mode facts of the client section.
 function addon:GetSeasonInfo()
     return refresh('client').season
 end
@@ -665,6 +725,10 @@ function addon:IsRuneEngraved(rune, spell)
     if spell ~= nil then return runes.bySpell[spell] ~= nil end
     return nil, 'invalid-rune'
 end
+
+-- ============================================================================
+-- Trait talents
+-- ============================================================================
 
 -- Trait talents (Retail, Forever): a node's committed rank, or for a choice
 -- node's entry the rank when that entry is the chosen one (else 0).
@@ -783,6 +847,7 @@ function addon:GetTraitTreePoints(tree)
     return record.points
 end
 
+-- Index of the unique tree with the most points spent, or nil and the reason ('no-talents-spent' or ambiguous).
 function addon:GetTraitPrimaryTree()
     local talents = refresh('talents').talents
     if talents.layout ~= 'traits' then return nil, 'talent-layout-mismatch' end

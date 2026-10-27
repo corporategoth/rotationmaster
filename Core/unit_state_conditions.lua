@@ -1,3 +1,9 @@
+-- Profile seeding for the condition categories and the Switch picker: adds conditions that arrived after a profile was
+-- created (action context, set pieces, weapon imbue, Assisted Combat, rune engraving, DEAD and FRIENDLY) to their
+-- categories exactly once, each under its own profile flag, so a later removal by the player stays saved. Owns only
+-- those seeds and the profile callbacks that run them; it must stay idempotent. Loaded from RotationMaster.toc after
+-- the Diagnostics files and before init.lua, whose addon:init() installs it through InstallUnitStateConditions.
+
 local _, addon = ...
 
 -- Cold, one-time profile migration: keep indexed AceDB defaults and custom
@@ -11,9 +17,11 @@ local contextSeeds = {
     { category = 'e618608c-92ec-4ae9-9dde-40a397d7beb9', tags = { 'WEAPON_IMBUE' } },
 }
 
+-- Appends each context seed's tags to its category once, guarded by profile.contextConditionsSeeded.
 local function seedContextConditions(profile)
     if profile.contextConditionsSeeded then return end
 
+    -- Adds each tag to `list` unless it is already there.
     local function append(list, tags)
         if type(list) ~= 'table' then return end
 
@@ -93,6 +101,7 @@ end
 local function seedEngravingConditions(profile)
     if profile.engravingConditionsSeeded then return end
 
+    -- Adds RUNE_ENGRAVED to `list` unless it is already there.
     local function append(list)
         if type(list) ~= 'table' then return end
 
@@ -112,6 +121,8 @@ local function seedEngravingConditions(profile)
     profile.engravingConditionsSeeded = true
 end
 
+-- Runs every seeder for the profile of `db` (the first argument is the callback event name and is ignored). Idempotent,
+-- and the last block seeds DEAD and FRIENDLY into the Switch list and the Action context category under its own flag.
 function addon:InitializeUnitStateConditions(_, db)
     local profile = db.profile
     seedContextConditions(profile)
@@ -120,6 +131,7 @@ function addon:InitializeUnitStateConditions(_, db)
     seedEngravingConditions(profile)
     if profile.unitStateSwitchSeeded then return end
 
+    -- Adds DEAD and FRIENDLY to `list` unless they are already there.
     local function append(list)
         for _, tag in ipairs({ 'DEAD', 'FRIENDLY' }) do
             local found = false
@@ -148,6 +160,7 @@ end
 -- these seeds coexist with existing profile lifecycle handlers on the addon.
 local callbackOwner = {}
 
+-- Seeds the current profile now and again whenever AceDB creates, resets, switches or copies a profile.
 function addon:InstallUnitStateConditions(db)
     for _, event in ipairs({ 'OnNewProfile', 'OnProfileReset', 'OnProfileChanged', 'OnProfileCopied' }) do
         db.RegisterCallback(callbackOwner, event, function(event, currentDB)

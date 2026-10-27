@@ -1,13 +1,29 @@
+-- Via Macro announcements: the `RM_Announce(identifier, unit, spell)` global (and its historical misspelling
+-- `RM_Annouce`) that a player's macro calls to fire one saved announcement synchronously. Owns the lookup of the single
+-- enabled macro announcement by identifier, the target and spell checks, the direct Say/Yell/Whisper/channel send and
+-- the result table `{ chat, sound, chatReason, soundReason }`; it keeps nothing between calls except a call serial that
+-- retires an older call, and it never retries or defers output. Delivery of every other announcement mode goes through
+-- addon:DispatchAnnouncement (Core/announcements.lua). Loaded from RotationMaster.toc after Core/announcements.lua.
+-- Game values (unit existence, GUIDs, names) go through `platform:CanReadValue` because restricted clients hide them.
+
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local platform = addon.Platform
 local request = 0
+-- Announce modes that this file sends directly with the chat API (offered only for Via Macro); every other mode is
+-- delivered by addon:DispatchAnnouncement.
 local restricted = { say = 'SAY', yell = 'YELL', whisper = 'WHISPER' }
 
+-- ============================================================================
+-- Validation and target observation
+-- ============================================================================
+
+-- Builds the result table for a call that produced no output, with the reason chat did not happen.
 local function failure(reason)
     return { chat = false, sound = false, chatReason = reason }
 end
 
+-- True when `value` is a readable, non-empty string of at most `limit` bytes without control characters.
 local function text(value, limit)
     return platform:CanReadValue(value)
         and type(value) == 'string'
@@ -32,6 +48,8 @@ local function target(unit, whisper)
         return nil, nil, 'missing-api'
     end
 
+    -- Reads the unit once: returns its GUID and its name (with realm when it has one), or nothing when the unit is
+    -- absent, unreadable or, for a whisper, not a player.
     local function observe()
         local ok, present = pcall(exists, unit)
         if not ok or not platform:CanReadValue(present) or present ~= true then return end
@@ -57,6 +75,7 @@ local function target(unit, whisper)
     local id, resolved = observe()
     if not id then return nil, nil, 'target-unavailable' end
 
+    -- Proves the game functions read for the unit were not replaced since the observation began.
     local function sameAPI()
         return exists == UnitExists
             and guid == UnitGUID
@@ -65,6 +84,8 @@ local function target(unit, whisper)
             and isPlayer == UnitIsPlayer
     end
 
+    -- True while the unit still has the same GUID and resolved name as when it was observed, under unchanged game
+    -- functions.
     local function current()
         if not sameAPI() then return false end
         local now, nowName = observe()
@@ -102,6 +123,12 @@ local function seriesTarget(unit)
     end
 end
 
+-- ============================================================================
+-- Sending
+-- ============================================================================
+
+-- Sends one output of a series announcement. Say, Yell, Whisper and channel are sent here directly after re-proving the
+-- whisper target and channel with `current()`; other modes go to addon:DispatchAnnouncement. Returns the result table.
 local function seriesSend(view, value, recipient, unit, current, installTargetWitness)
     local destination = restricted[view.announce]
     if view.announce == 'channel' then destination = 'CHANNEL' end
@@ -154,6 +181,8 @@ local function seriesSend(view, value, recipient, unit, current, installTargetWi
     return result
 end
 
+-- Direct chat send for the single-output path; returns `ok` or false and a reason. A completed native call is treated
+-- as an attempt only.
 local function send(textValue, destination, recipient, current)
     if not text(textValue, 16384) or destination == 'WHISPER' and not text(recipient, 512) then
         return false, 'invalid-message'
@@ -169,6 +198,13 @@ local function send(textValue, destination, recipient, current)
     return ok, not ok and 'api-error' or nil
 end
 
+-- ============================================================================
+-- Running one invocation
+-- ============================================================================
+
+-- Runs one Via Macro invocation for `serial`: finds the one matching enabled announcement, validates the unit and spell
+-- arguments, expands the template and delivers it. Every step re-checks `current()` so a newer call, a profile change
+-- or a disabled addon retires this one silently. Always returns a result table.
 local function execute(serial, identifier, unit, spell)
     if not platform:CanReadValue(identifier) or not addon:IsValidMacroAnnouncementIdentifier(identifier) then
         return failure('invalid-identifier')
@@ -204,6 +240,8 @@ local function execute(serial, identifier, unit, spell)
         return failure('announcement-unavailable')
     end
 
+    -- Re-walks the announcement list and proves the chosen entry is still the only macro entry with this identifier at
+    -- the same index, in an unmodified list.
     local function selectionCurrent()
         if getmetatable(list) ~= nil then return false end
         local size, matches = 0, 0
@@ -234,6 +272,7 @@ local function execute(serial, identifier, unit, spell)
     local registry = addon.conditionRegistryVersion
     local lifecycle = addon.IsEnabled
 
+    -- True while the addon is enabled; a replaced or erroring `IsEnabled` counts as not enabled.
     local function enabled()
         if lifecycle ~= addon.IsEnabled then return false end
         if lifecycle == nil then return true end
@@ -244,6 +283,8 @@ local function execute(serial, identifier, unit, spell)
 
     local targetCurrent = function() return true end
 
+    -- Ownership guard passed to PrepareAnnouncementDelivery: true only while this call is still the latest one and the
+    -- database, profile, list, entry and condition registry are the same objects it started with.
     local function owner()
         if
             serial ~= request
@@ -339,6 +380,7 @@ local function execute(serial, identifier, unit, spell)
                     targetCurrent = function() return previous() and whisperCurrent() end
                 end
 
+                -- Adds a channel witness to the current target proof, so the output is retired if the channel changes.
                 local function install(witness)
                     local prior = targetCurrent
                     targetCurrent = function() return prior() and witness() end
@@ -389,6 +431,8 @@ local function execute(serial, identifier, unit, spell)
     return result
 end
 
+-- The function behind both global names: bumps the call serial (retiring any call still running), runs `execute` under
+-- diagnostics when available, and turns an error into an `invocation-error` result.
 local function invoke(identifier, unit, spell)
     request = request + 1
     local serial = request

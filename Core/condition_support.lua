@@ -1,3 +1,11 @@
+-- Declares which Built In conditions can ever work on the running client. A condition lists the capabilities it needs
+-- (combat data policy, client family, native APIs, edition rules, value-dependent gates) and addon:GetConditionSupport
+-- answers `nil` when it can work or a permanent reason code; a rotation using an unsupported condition is incomplete,
+-- which differs from "unavailable this poll". Owns the requirement table and reason texts; it only reads the platform's
+-- cached client facts and global lookups, never evaluates a condition and never caches. Restricted clients (Retail,
+-- Forever) hide secret values: docs/restricted-clients.md classifies each condition. Loaded from RotationMaster.toc
+-- after Core/conditions.lua; the validation stamp (Core/rotation_references.lua) moves when the client facts change.
+
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
@@ -24,9 +32,16 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- unavailable. Only a source that is always secret or removed for addons is
 -- declared unsupported here. docs/restricted-clients.md has the classification
 -- per condition and its evidence.
+
+-- ============================================================================
+-- Secrecy helpers
+-- ============================================================================
+
 local env = getfenv and getfenv(1) or _G
 local POLICY, FAMILY, LISTED, BOSSMOD, LOG = 'policy', 'family', 'listed', 'bossmod', 'log'
 
+-- Resolves a dotted global path such as 'C_Spell.GetSpellCooldown' in the captured environment; nil when any part is
+-- missing.
 local function lookup(path)
     local value = env
 
@@ -112,6 +127,10 @@ local SECRET_POWER = whileRestricted('secret-power', function()
     return true
 end)
 
+-- ============================================================================
+-- Value-dependent gates and edition rules
+-- ============================================================================
+
 -- Value-dependent permanent gates.
 local function talentLayout(value)
     if type(value) ~= 'table' then return nil end
@@ -140,6 +159,7 @@ local function treeLayout()
     if current ~= 'tree' then return 'talent-layout-mismatch' end
 end
 
+-- Reason code when this progression expansion has no known point resource map, else nil.
 local function pointEdition()
     local platform = addon.Platform
     if not platform or type(platform.GetClientInfo) ~= 'function' then return nil end
@@ -172,6 +192,7 @@ local function weaponSlot(value)
     end
 end
 
+-- Reason code when the client's glyph layout is not supported, else nil.
 local function glyphLayout()
     local platform = addon.Platform
     if not platform or type(platform.IsGlyphLayoutSupported) ~= 'function' then return nil end
@@ -191,6 +212,7 @@ local function editionRule(reason, test)
     end
 end
 
+-- True for a progression client whose expansion level is at least `first`.
 local function progressionFrom(info, first)
     return info.family == 'progression' and type(info.expansion) == 'number' and info.expansion >= first
 end
@@ -211,6 +233,10 @@ local GROUP_ROLE_EDITION = editionRule('no-group-roles', function(info)
     return info.family == 'retail' or info.family == 'forever' or info.family == 'progression'
 end)
 
+-- ============================================================================
+-- Requirement building blocks
+-- ============================================================================
+
 -- Defined below the requirement table; requirements that depend on the saved
 -- value (a chosen state, a measure, a hand) call it for the API they need.
 local check
@@ -224,6 +250,7 @@ local SPELL_RANGE = { FAMILY, UNIT, { 'C_Spell.IsSpellInRange', 'IsSpellInRange'
 local SPELL_CURRENT = { { 'C_Spell.IsCurrentSpell', 'IsCurrentSpell' } }
 local KNOWN = { { 'C_SpellBook.IsSpellKnown', 'IsSpellKnown' } }
 
+-- Returns a copy of the requirement list `base` with the extra requirements appended.
 local function with(base, ...)
     local result = {}
 
@@ -275,6 +302,7 @@ local PLAYER_STATE_API = {
     ghost = { { 'UnitIsDead' }, { 'UnitIsDeadOrGhost' } },
 }
 
+-- Requirement for PLAYER_STATE: checks the API that the chosen state reads.
 local function playerState(value)
     local needs = type(value) == 'table' and PLAYER_STATE_API[value.state]
     if not needs then return nil end
@@ -331,6 +359,10 @@ end
 local function swingApi(value)
     return check(type(value) == 'table' and value.ranged and { 'UnitRangedDamage' } or { 'UnitAttackSpeed' }, value)
 end
+
+-- ============================================================================
+-- Requirement table
+-- ============================================================================
 
 local requirements = {
     SELF_LEVEL = { FAMILY, UNIT, { 'UnitLevel' } },
@@ -499,6 +531,13 @@ addon.conditionRequirements = requirements
 local listedFamilies = { retail = true, forever = true, era = true, tbc = true, progression = true }
 local bossmodFamilies = { era = true, tbc = true, progression = true }
 
+-- ============================================================================
+-- Checking requirements
+-- ============================================================================
+
+-- Evaluates one requirement against the client and returns nil when satisfied or a reason code. A requirement is a
+-- function of the condition value, a list of alternative API names (any one existing suffices) or one of the POLICY,
+-- FAMILY, LISTED, BOSSMOD and LOG markers.
 function check(requirement, value)
     local kind = type(requirement)
     if kind == 'function' then return requirement(value) end
@@ -562,6 +601,9 @@ local function groupUnitSupport(value)
     end
 end
 
+-- Returns nil when the condition `tag` can work on this client, else a permanent reason code (see `reasonText`). A
+-- definition's own `supported(value)` wins, custom conditions are always supported here, and a group unit kind in a
+-- unit field is checked first. A support check that errors answers 'support-check-error'.
 function addon:GetConditionSupport(tag, definition, value)
     if type(definition) ~= 'table' then return nil end
 

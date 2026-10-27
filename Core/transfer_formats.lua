@@ -1,3 +1,10 @@
+-- Transfer formats beyond Rotation Master's own export (today WowSims): which formats exist, where each is usable, the
+-- player's last choice, and the bridge to the load-on-demand converter Modules/RotationMaster_WowSims. Owns the format
+-- table, the registry the converter fills through the global `RotationMasterTransferFormats`, and the worded results
+-- the transfer window (UI/transfer_format.lua) shows; it must not convert anything itself and must keep working when
+-- the converter cannot load. Loaded from RotationMaster.toc after Core/imports.lua. Reads the saved
+-- profile.transfer_format.
+
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
@@ -9,6 +16,10 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- conversion and how to turn its answer into what the transfer window shows. docs/quality/wowsims-transport.md
 -- describes the format, the mapping and its fidelity vocabulary.
 local MODULE_NAME = 'RotationMaster_WowSims'
+
+-- ============================================================================
+-- Format registry and availability
+-- ============================================================================
 
 local formats = {
     rm = { id = 'rm' },
@@ -31,6 +42,7 @@ _G.RotationMasterTransferFormats = {
     end,
 }
 
+-- The client family ('era', 'tbc', 'progression', 'forever', 'retail') from the platform, or 'unknown'.
 local function family()
     local platform = addon.Platform
     local value = platform and type(platform.GetClientFamily) == 'function' and platform:GetClientFamily()
@@ -46,12 +58,14 @@ function addon:IsTransferFormatAvailable(id)
     return format.families[family()] == true
 end
 
+-- Display name of a format for the Format menu.
 function addon:GetTransferFormatLabel(id)
     if id == 'wowsims' then return L['WowSims'] end
     return L['Rotation Master']
 end
 
--- The choices for the Format menu: {value,text,disabled}. WowSims is listed, but cannot be picked, where it does not apply.
+-- The choices for the Format menu: {value,text,disabled}. WowSims is listed, but cannot be picked, where it does not
+-- apply.
 function addon:GetTransferFormatChoices()
     local choices = {}
 
@@ -84,6 +98,7 @@ function addon:GetTransferFormat()
     return 'rm'
 end
 
+-- Stores the player's format choice in the profile; returns false for an unknown or unavailable format.
 function addon:SetTransferFormat(id)
     local profile = self.db and self.db.profile
     if type(profile) ~= 'table' or not formats[id] or not self:IsTransferFormatAvailable(id) then return false end
@@ -106,9 +121,14 @@ function addon:LoadTransferFormat(id)
     return nil, tostring(reason or (loaded and 'NO_API') or 'UNKNOWN_ERROR')
 end
 
+-- True once the converter add-on has registered its API (nothing is loaded just by asking).
 function addon:IsTransferFormatLoaded(id)
     return registry[id] ~= nil
 end
+
+-- ============================================================================
+-- Support probes for the converter
+-- ============================================================================
 
 -- ---- what the conversion needs from the game ------------------------------------------------------------------
 -- Can this condition run on this client? The editor refuses what cannot; the converter imports such a step disabled
@@ -135,6 +155,7 @@ local function spellKnownToClient(id)
     return nil
 end
 
+-- Item counterpart of spellKnownToClient: true, false, or nil when item data cannot tell.
 local function itemKnownToClient(id)
     local platform = addon.Platform
     if not platform or type(platform.GetItemInfoInstant) ~= 'function' then return nil end
@@ -182,11 +203,13 @@ local function describeLoadFailure(reason)
     )
 end
 
+-- Localized (male) class name for a class token, or the token itself when the game table is missing.
 local function className(token)
     local names = LOCALIZED_CLASS_NAMES_MALE
     return type(names) == 'table' and type(names[token]) == 'string' and names[token] or token
 end
 
+-- Replaces `{name}` placeholders in `text` from `params`; a placeholder with no value is left as written.
 local function format(text, params)
     return (text:gsub('{([%w_]+)}', function(key)
         local value = params[key]
@@ -194,6 +217,10 @@ local function format(text, params)
         return tostring(value)
     end))
 end
+
+-- ============================================================================
+-- Import, export and reports
+-- ============================================================================
 
 -- A converter's report in words, for the report window. direction is 'import' or 'export'.
 function addon:RenderTransferFormatReport(id, report, direction)

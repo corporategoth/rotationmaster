@@ -1,6 +1,14 @@
+-- Condition category helpers: validating a category icon, picking the icon a category shows, and parsing a category
+-- import (either an "RM-ConditionCategory" envelope or a plain comma/space separated tag list). Pure data: it owns no
+-- saved state and must not draw; the settings windows (UI/settings_conditions.lua) call it and do the writing. Loaded
+-- from RotationMaster.toc after Core/reference_catalog.lua; needs addon.Artwork (Data/artwork.lua, generated) and the
+-- condition registry (addon.conditionDefinitions, addon.conditionSpecials) at call time.
+
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- True when `value` can be used as a category icon: a texture path string up to 1024 bytes, or a positive whole file
+-- id.
 function addon:IsCategoryIcon(value)
     return type(value) == 'string' and #value > 0 and #value <= 1024
         or type(value) == 'number' and value > 0 and value < math.huge and value % 1 == 0
@@ -8,6 +16,8 @@ end
 
 local packagedCategoryIcons = addon.Artwork.category
 
+-- Returns the icon a category shows: its own explicit choice, else the packaged icon for its stable id, else the icon
+-- of its first condition that has one, else the DEFAULT icon. A nil `group` yields the DEFAULT icon.
 function addon:GetConditionCategoryIcon(group)
     if type(group) == 'table' then
         if self:IsCategoryIcon(group.icon) then return group.icon end
@@ -25,6 +35,9 @@ function addon:GetConditionCategoryIcon(group)
     return packagedCategoryIcons.DEFAULT
 end
 
+-- Parses pasted text (at most 128 KiB) into `{ conditions = {tags...}, metadata, name, icon }` with duplicate tags
+-- removed, or returns nil and a localized reason. Every tag must name a registered condition or special; the envelope's
+-- `codec` is supplied by the caller.
 function addon:ParseConditionCategoryImport(text, codec)
     if type(text) ~= 'string' or #text > 131072 then return nil, L['Invalid import.'] end
     local decoded = codec and codec:Decode(text)

@@ -1,11 +1,28 @@
+-- Symbol documentation and completion for the Lua editors: builds the table of names (the addon helpers, the bound and
+-- bindable custom and Built In functions, the callback's parameters and `value.*` fields) that the optional
+-- LuaWorkbench engine shows for a custom function or condition, and patches that engine's API help, name list,
+-- autocomplete and navigation to include them. Owns only the overlay on the engine (marked `rm*` fields so it is
+-- applied once and stripped before reapplying); it never edits saved functions and must not break the engine when it is
+-- absent or limited. Loaded from RotationMaster.toc after Core/custom_condition_services.lua; callers are
+-- Integrations/lua_workbench.lua and UI/lua_completion.lua.
+
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- ============================================================================
+-- Building the symbol table
+-- ============================================================================
+
+-- Returns `{ [name] = symbol }` for an editing context (`kind`, `callback`, `id`, `source` with its args, fields,
+-- bindings and parameters). A symbol carries LuaWorkbench-style `info` documentation, its `origin` ('builtin', 'custom'
+-- or 'context') and, for a function not yet bound, `requiresBinding`. Aliases kept for saved callbacks are
+-- `documentationOnly`: documented and navigable but never offered in completion.
 function addon:LuaContextSymbols(context)
     context = context or {}
     local source = context.source or {}
     local symbols = {}
 
+    -- Registers one symbol with its documentation (description, type line, arguments and returns) under `name`.
     local function add(name, kind, description, typeName, args, returns, id)
         local info = {
             Name = name,
@@ -204,6 +221,7 @@ function addon:LuaContextSymbols(context)
         )
     end
 
+    -- Registers a placeholder for each parent namespace of a dotted binding path ('a.b.c' adds 'a' and 'a.b').
     local function addNamespace(path)
         local parent = path:match('^(.*)%.')
         local prefix = ''
@@ -252,6 +270,9 @@ function addon:LuaContextSymbols(context)
 
     local candidates = {}
 
+    -- Considers one function as a completion that would need binding: skipped when disabled, in an invalid namespace,
+    -- the function being edited, or when binding it would clash or fail validation. A name offered by two functions is
+    -- dropped as ambiguous.
     local function candidate(id, entry)
         if
             type(entry) ~= 'table'
@@ -300,9 +321,18 @@ function addon:LuaContextSymbols(context)
     return symbols
 end
 
+-- ============================================================================
+-- Overlaying the Lua editor engine
+-- ============================================================================
+
+-- Overlays the context's symbols onto a LuaWorkbench `engine`: API help text, the symbol index and catalog, the checks
+-- for documented globals, autocomplete names and the accept step that binds a function before inserting its name.
+-- Patches are installed once per engine and re-read `engine.rmSymbols` afterwards, so calling it again for a new
+-- context only refreshes the symbols. `limited` marks the small embedded editor, which gets no deferred loading.
 function addon:ApplyLuaContextSymbols(engine, context, limited)
     local api = engine.APIHelp
 
+    -- Copies the first level of a table, so an overlay can be stripped without touching the engine's own tables.
     local function shallow(value)
         local result = {}
 
@@ -316,6 +346,9 @@ function addon:ApplyLuaContextSymbols(engine, context, limited)
     if not api.rmSyncSymbols then
         local describe = api.FullDescription
 
+        -- Wraps the engine's hover text: a Rotation Master symbol gets its own heading (custom function, built-in
+        -- function or value), and a native global the client has no signature documentation for says so rather than
+        -- inventing arguments.
         function api:FullDescription(name, rich, links)
             local symbol = engine.rmSymbols and engine.rmSymbols[name]
             local text = describe(self, name, rich, links)
@@ -341,6 +374,8 @@ function addon:ApplyLuaContextSymbols(engine, context, limited)
             return text
         end
 
+        -- Rebuilds the engine's index and catalog: strips only this overlay's previous entries, keeps any documentation
+        -- the engine loaded since (combat can defer its loading), then adds the current symbols and bumps the revision.
         function api:rmSyncSymbols()
             -- Documentation can arrive after the editor opens (combat defers
             -- upstream loading). Strip only our previous overlay, retain newly
@@ -379,6 +414,7 @@ function addon:ApplyLuaContextSymbols(engine, context, limited)
 
         local load = api.Load
 
+        -- Runs the engine's loader and resyncs the overlay when the loader changed the documentation revision.
         function api:Load(...)
             local revision = self.revision
             load(self, ...)
@@ -387,6 +423,8 @@ function addon:ApplyLuaContextSymbols(engine, context, limited)
 
         local paths = api.Paths
 
+        -- Wraps the engine's semantic path analysis so tokens that resolve to a Rotation Master symbol, or to an
+        -- undocumented readable global function, are marked for hover and navigation. Secret values are never indexed.
         function api:Paths(source, force)
             local result = paths(self, source, force)
             if not force and not self:Enabled() then return result end
@@ -394,6 +432,8 @@ function addon:ApplyLuaContextSymbols(engine, context, limited)
             local chain, previous, declaration
             self.rmUndocumented = self.rmUndocumented or {}
 
+            -- True when the dotted `name` resolves to a readable global function; secret values and addon-private names
+            -- never count.
             local function globalFunction(name)
                 if self.rmLimited or name:match('^addon[.:]') or name:match('^functions[.:]') then return false end
                 local value = _G
@@ -448,12 +488,15 @@ function addon:ApplyLuaContextSymbols(engine, context, limited)
 
     if limited then
         api.ready = true
+        -- The limited editor never loads the engine's own documentation, so loading does nothing there.
         function api:Load() end
     end
 
     if not engine.Autocomplete.rmNames then
         engine.Autocomplete.rmNames = engine.Autocomplete.Names
 
+        -- Name list for completion with documentation-only aliases removed; recomputed only when the engine's list or
+        -- the symbols change.
         function engine.Autocomplete:Names()
             local names = self:rmNames()
 
@@ -479,6 +522,9 @@ function addon:ApplyLuaContextSymbols(engine, context, limited)
     if engine.Autocomplete.Accept and not engine.Autocomplete.rmAccept then
         engine.Autocomplete.rmAccept = engine.Autocomplete.Accept
 
+        -- Accepting a suggestion that requires a binding first asks the owning editor to bind the function in a
+        -- transaction, commits it when the engine accepted the text and rolls it back otherwise. Nothing is bound when
+        -- the suggestion list is stale or the editor is read-only.
         function engine.Autocomplete:Accept(input)
             -- Mirror upstream's source/cursor/read-only guard before creating a
             -- dependency. Merely displaying or cancelling suggestions is inert.
@@ -531,6 +577,13 @@ function addon:ApplyLuaContextSymbols(engine, context, limited)
     engine.Autocomplete:Hide()
 end
 
+-- ============================================================================
+-- Navigation
+-- ============================================================================
+
+-- Ctrl-click navigation: finds the name under `cursor` in `source`. A Rotation Master function opens its source,
+-- anything else is handed to the engine's own navigation (not in the limited editor). Returns true when navigation
+-- happened.
 function addon:NavigateLuaSymbol(engine, input, source, cursor)
     local first = cursor
 

@@ -1,3 +1,12 @@
+-- Observes what a rotation's validity depends on (the condition registry and its version, item sets, effects, the
+-- profile and global tables) and hands the validator copies of those maps plus a stamp that changes whenever any of
+-- them does. Owns the observation state, the validation stamp and the check that a body references no disabled
+-- condition; it must never write to SavedVariables and must not materialize AceDB defaults (it reads with rawget where
+-- a missing key could). With a managed dependency reader (Core/dependency_revisions.lua) observation is constant time;
+-- without one it compares entry identities. Loaded from RotationMaster.toc after Core/itemset_services.lua; the private
+-- proof helpers are handed once to Core/rotation_library.lua through addon:BindRotationValidationReader and to CPU
+-- diagnostics at the end.
+
 local _, addon = ...
 local observed, stamp
 local dependencyReader
@@ -21,10 +30,18 @@ local proofPairs, proofRawget, proofRawequal, proofType, proofGetmetatable = pai
 local proofGetfenv = getfenv
 local proofEnvironment = proofType(proofGetfenv) == 'function' and proofGetfenv(1) or nil
 
+-- ============================================================================
+-- Entry maps and comparison helpers
+-- ============================================================================
+
+-- Stable marker for a map entry: the table itself, or false for anything else, so malformed entries compare equal each
+-- time.
 local function normalized(value)
     return type(value) == 'table' and value or false
 end
 
+-- Copies a map into `{ key = table-or-false }` and returns the copy and the number of entries, never touching the
+-- source.
 local function entries(value)
     local result, count = {}, 0
 
@@ -38,6 +55,7 @@ local function entries(value)
     return result, count
 end
 
+-- True when `value` still holds exactly the `expected` entries recorded in `previous`, compared by identity.
 local function sameEntries(value, previous, expected)
     local count = 0
 
@@ -51,10 +69,13 @@ local function sameEntries(value, previous, expected)
     return count == expected
 end
 
+-- True when each item-set map is absent or a table; anything else is treated as no item sets.
 local function validItemsets(shared, personal)
     return (shared == nil or type(shared) == 'table') and (personal == nil or type(personal) == 'table')
 end
 
+-- Like sameEntries for the merged shared and personal item sets: a personal entry shadows the shared one of the same
+-- key.
 local function sameItemsets(shared, personal, previous, expected)
     if not validItemsets(shared, personal) then return expected == 0 end
     local count = 0
@@ -80,6 +101,7 @@ local function sameItemsets(shared, personal, previous, expected)
     return count == expected
 end
 
+-- Merged copy of shared and personal item sets (personal wins) plus the merged entry count.
 local function itemsetEntries(shared, personal)
     if not validItemsets(shared, personal) then return {}, 0 end
     local result, count = entries(shared)
@@ -94,12 +116,18 @@ local function itemsetEntries(shared, personal)
     return result, count
 end
 
+-- ============================================================================
+-- Observing dependencies
+-- ============================================================================
+
 -- Condition support (Core/condition_support.lua) depends on the client. The
 -- platform recomputes its client facts when GetClientInfo or the project
 -- changes (only test harnesses do either); the same change advances the
 -- condition registry version, so every validation stamp moves with it.
 local clientGetter, clientProject
 
+-- Advances the condition registry version when the platform's client facts changed (only test harnesses do that), so
+-- every validation stamp moves with it.
 local function observeClient(owner)
     local platform = rawget(addon, 'Platform')
     local getter = type(platform) == 'table' and platform.GetClientInfo or nil
@@ -110,6 +138,7 @@ local function observeClient(owner)
     if not first then owner.conditionRegistryVersion = (owner.conditionRegistryVersion or 0) + 1 end
 end
 
+-- Asks Core/condition_support.lua whether a condition works on this client; returns its reason, or nil when supported.
 local function support(tag, definition, value)
     local check = addon.GetConditionSupport
     if type(check) == 'function' then return check(addon, tag, definition, value) end
@@ -210,6 +239,10 @@ end
 
 local ownedValidationStamp = addon.GetRotationValidationStamp
 
+-- ============================================================================
+-- Proofs that observation is callback-free
+-- ============================================================================
+
 -- Even protected metatable metadata can disguise a callback. Only native
 -- primitives stored directly in the owned environment can certify this path.
 local function proofGlobals()
@@ -231,6 +264,7 @@ local function proofGlobals()
         and proofRawequal(proofGetfenv(itemsetEntries), proofEnvironment)
 end
 
+-- True for a table without a metatable, the only layout whose reads are guaranteed callback-free.
 local function proofPlain(value)
     return proofType(value) == 'table' and proofGetmetatable(value) == nil
 end
@@ -286,6 +320,7 @@ local function validationLayout(owner, method)
     return db, profile, global, conditions, shared, personal, effects, version, state
 end
 
+-- Re-runs validationLayout and returns true only when every root it finds is the identical object the caller recorded.
 local function sameValidationLayout(
     owner,
     method,
@@ -313,6 +348,9 @@ local function sameValidationLayout(
         and proofRawequal(l, state)
 end
 
+-- Reads the validation stamp through `method` for Core/rotation_library.lua. When the owned scan can be proved
+-- callback-free it also returns the roots seen before the read, so the caller can confirm afterwards that they did not
+-- change.
 local function readValidationStamp(owner, method, entryMethod)
     if dependencyReader and dependencyIdentity(owner, addon) then
         local value = method(owner)
@@ -351,6 +389,10 @@ function addon:BindRotationValidationReader(bind)
 
     return true
 end
+
+-- ============================================================================
+-- Validator options and disabled-dependency scan
+-- ============================================================================
 
 -- Dependency maps may carry AceDB defaults metatables. Observe their entries,
 -- without copying/traversing definitions or writing into SavedVariables.
@@ -442,6 +484,8 @@ function addon:HasDisabledRotationDependency(body)
     local count = 0
     local condition, declared
 
+    -- Walks a value against its schema (a condition, a list of conditions, a union of schemas or a field table) and
+    -- returns true when a disabled condition is reached or the value is malformed or nested too deeply.
     declared = function(value, schema, depth)
         if value == nil then return false end
         if depth > 64 then return true end
@@ -470,6 +514,8 @@ function addon:HasDisabledRotationDependency(body)
         return false
     end
 
+    -- Checks one condition node: true when it is disabled, malformed, past the depth or node limits, or references a
+    -- disabled condition in any of its declared fields. AND, OR and NOT recurse into their operands.
     condition = function(value, depth)
         if value == nil then return false end
         count = count + 1

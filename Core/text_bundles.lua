@@ -1,3 +1,10 @@
+-- Load-on-demand text: wraps the AceLocale table `L` so a key the main catalog lacks is answered from the text bundle
+-- add-on that owns it (Locales/bundles.json, hash index in Data/text_bundle_index.lua). Owns the lookup, the one-time
+-- load of each bundle and its failed/loaded state; it must not read bundle text while the game is loading and must not
+-- change what `L["English"]` returns for a key the main table holds. Loaded from RotationMaster.toc straight after
+-- locales.xml and the index, before any file that reads text at load. Returns without doing anything if the locale has
+-- no missing-key handler.
+
 local addon_name, addon = ...
 
 -- Load-on-demand text. Most of Rotation Master's English (and its ten translations) is read only when a window is
@@ -32,6 +39,7 @@ local function keyHash(value)
     return h
 end
 
+-- Binary search of a bundle's sorted key-hash string (8 hex digits per key); true when `wanted` is one of its keys.
 local function owns(bundle, wanted)
     local keys, low, high = bundle.keys, 0, bundle.count - 1
 
@@ -51,6 +59,7 @@ local function owns(bundle, wanted)
     return false
 end
 
+-- Returns the bundle record that owns this English text, or nil when it is a key of the main table or of no catalog.
 local function ownerOf(english)
     local wanted = keyHash(english)
 
@@ -62,6 +71,8 @@ end
 -- bundle.state: nil (never asked), "loaded" or "failed". bundle.text is its AceLocale table once loaded.
 local loadedTexts = {}
 
+-- Returns the add-on loader: the test override `addon.textBundleLoader`, else C_AddOns.LoadAddOn, else the older
+-- LoadAddOn.
 local function loader(self)
     local custom = self.textBundleLoader
     if type(custom) == "function" then return custom end

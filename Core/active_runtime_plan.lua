@@ -1,3 +1,12 @@
+-- Runtime half of the lean evaluation engine's compiled plan: it decides, once per poll, whether main.lua may run the
+-- active rotation from a cached plan prepared by Core/rotation_scope.lua, and hands back the leases that prove the plan
+-- is still current while it runs. It owns the cached plan, its execution generation and the route counters; it must
+-- never build or edit rotation data itself and must fall back to the standard engine (return nil) whenever any proof is
+-- missing. Loaded from RotationMaster.toc after Core/rotation_selection.lua. It captures its inputs through cold,
+-- one-time binders (execution generation, scoped plan source, announcement dispatcher, presentation source from
+-- buttons.lua) and deletes the public binder names afterwards, so later code cannot swap them; main.lua takes
+-- acquire/register via addon:ConsumeActiveRuntimePlan once at load.
+
 local _, addon = ...
 local readExecutionGeneration
 ---@type fun(...): any
@@ -37,10 +46,17 @@ function addon:BindActiveRuntimePresentationSource(method, env)
     glowCooldown, presentationEnvironment = method, env
 end
 
+-- ============================================================================
+-- Consumer identity and registration
+-- ============================================================================
+
 local spellIDs, sequence, mainEnvironment, registered
 local request, plan, planGeneration
 local plansBuilt, reused, declined, currentRoute = 0, 0, 0, 'idle'
 
+-- True only while every function this plan depends on (glow, spell-id lookup, sequence evaluator, announcement
+-- dispatch) is still the exact original value with its original environment. Any swapped function means the plan is not
+-- trusted.
 local function consumers(owner)
     return registered
         and identity(owner, addon)
@@ -58,6 +74,8 @@ local function consumers(owner)
         and identity(environment(dispatch), dispatchEnvironment)
 end
 
+-- Called once by main.lua to register its spell-id lookup, sequence evaluator and function environment as consumers of
+-- plans. Returns true on the first valid registration, nothing afterwards.
 local function register(owner, ids, run, env)
     if registered or owner ~= addon or kind(ids) ~= 'function' or kind(run) ~= 'function' or kind(env) ~= 'table' then
         return
@@ -67,10 +85,20 @@ local function register(owner, ids, run, env)
     return true
 end
 
+-- Publication guard handed out for a request that was superseded: it always answers false, so stale work publishes
+-- nothing.
 local function retired()
     return false
 end
 
+-- ============================================================================
+-- Acquiring a plan
+-- ============================================================================
+
+-- Called by main.lua each poll for the selected spec and rotation. Returns `nil, nil, nil, false` when the standard
+-- engine must run, or `body, current, token, true, presentation, conditionLease, notifiedLease, deliveryLease,
+-- dispatchLease` when the plan manages the poll; `body` is nil when the rotation is not allowed now. With handled=true
+-- and a nil body, the guard (`retired`) says the request was superseded.
 local function acquire(owner, spec, key)
     if owner ~= addon then return nil, nil, nil, false end
 
@@ -87,6 +115,8 @@ local function acquire(owner, spec, key)
     local handle, revision, operation
     if kind(readActive) == 'function' then handle, revision, operation = readActive(owner, spec, key) end
 
+    -- A newer acquire replaces `request`, which retires this one; the active handle, revision and operation must also
+    -- be unchanged since the plan was read.
     local function requestCurrent()
         if not identity(request, ticket) then return false end
         if not handle then return true end
@@ -167,6 +197,8 @@ local function acquire(owner, spec, key)
     -- callouts must never bless an old plan with a newer generation.
     planGeneration = executionGeneration
 
+    -- Cheap scalar proof that this acquisition still owns the poll: same ticket, plan, generation, database, profile,
+    -- spec and rotation.
     local function continuationCurrent()
         return request == ticket
             and plan == selected
@@ -178,6 +210,8 @@ local function acquire(owner, spec, key)
             and identity(raw(owner, 'currentRotation'), key)
     end
 
+    -- Full guard returned to main.lua: the scalar proof plus the consumers' identity and the scope's own proof that the
+    -- active handle, revision and operation are the ones read at acquire time.
     local function current()
         if not continuationCurrent() or not consumers(owner) or not continuationCurrent() then return false end
         -- Scope's full proof ends with one callback-free active snapshot. Use
@@ -200,6 +234,8 @@ local function acquire(owner, spec, key)
     if not built then reused = reused + 1 end
     currentRoute = state.allowed and 'managed' or 'unavailable'
 
+    -- Lease for condition evaluation: the request and plan are still ours and the plan's own condition proof still
+    -- holds.
     local function conditionCurrent()
         return identity(request, ticket)
             and identity(plan, selected)
@@ -207,6 +243,7 @@ local function acquire(owner, spec, key)
             and selected.conditionCurrent(state)
     end
 
+    -- Lease that checks only the managed execution clock (no change was notified since acquire).
     local function notifiedCurrent()
         return executionGeneration ~= nil
             and request == ticket
@@ -214,6 +251,7 @@ local function acquire(owner, spec, key)
             and readExecutionGeneration() == executionGeneration
     end
 
+    -- Lease for publishing the result to the glow: ownership holds and the presentation method is still the original.
     local function deliveryCurrent()
         -- Completed scalar/detached output follows the managed mutation clock.
         -- Raw profile/spec/selection remain immediate ownership boundaries;
@@ -230,8 +268,13 @@ local function acquire(owner, spec, key)
         return continuationCurrent() and identity(raw(owner, 'GlowCooldown'), glowCooldown)
     end
 
+    -- Once any ownership check fails the whole dispatch stays failed for this acquisition, so a later receiver cannot
+    -- continue after a partial run.
     local dispatchFailed = false
 
+    -- Lease asked by each receiver ('condition', 'resume', 'step', 'sequence', 'iterator', 'pathcopy') before it runs:
+    -- proves the functions that receiver uses and the globals they read are unchanged. After one failure it answers
+    -- false.
     local function dispatchCurrent(receiver)
         if dispatchFailed then return false end
 
@@ -281,6 +324,12 @@ local function acquire(owner, spec, key)
         dispatchCurrent
 end
 
+-- ============================================================================
+-- Public surface
+-- ============================================================================
+
+-- One-time handoff to main.lua, which keeps `acquire` and `register` locally and clears this public name; any other
+-- caller gets nothing.
 function addon:ConsumeActiveRuntimePlan()
     if self ~= addon then return end
     return acquire, register
