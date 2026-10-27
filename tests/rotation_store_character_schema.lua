@@ -32,7 +32,8 @@ local function allocations(c)
 end
 for _,target in ipairs({false,true})do
  test('character '..tostring(target)..' warm poll retains fresh bucket scans without per-poll allowlist tables',function()
-  local c=make('character',target);local maps,calls=allocations(c);assert(calls==(target and 14 or 15),'character bucket scans per warm poll changed: '..calls)  -- 13/14 before the lean engine and the scope proofs (b55cca0e);assert(maps==0,'character allowlist allocated '..maps..' maps per poll')
+  -- 13/14 scans per poll before the lean engine and the scope proofs (b55cca0e)
+  local c=make('character',target);local maps,calls=allocations(c);assert(calls==(target and 14 or 15),'character bucket scans per warm poll changed: '..calls);assert(maps==0,'character allowlist allocated '..maps..' maps per poll')
  end)
 end
 test('class-scoped control has no character bucket scan or new allowlist map',function()

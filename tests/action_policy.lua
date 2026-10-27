@@ -43,6 +43,10 @@ test('Ignore Range lets an out-of-range spell, pet spell and item through and st
     assert(a:NewActionReadiness(100)('spell',403),'Ignore Range did not skip the spell range check')
     assert(a:NewActionReadiness(100)('pet',974) and a:NewActionReadiness(100)('any',974))
     assert(a:NewActionReadiness(100)('item',234,5512),'Ignore Range did not skip the item range check')
+    -- Ignore Range skips the range read only: an item whose usability cannot be read is still not advised.
+    local usable=f.env.C_Item.IsUsableItem;f.env.C_Item.IsUsableItem=function() return nil end
+    assert(not a:NewActionReadiness(100)('item',234,5512),'an item with an unreadable usability was advised under Ignore Range')
+    f.env.C_Item.IsUsableItem=usable
     s.known.spell[403]=nil;assert(not a:NewActionReadiness(100)('spell',403),'an unlearned spell was ready')
     s.known.spell[403]=true;s.usable=false;assert(not a:NewActionReadiness(100)('spell',403),'an unusable spell was ready')
     s.usable=true;s.cooldown=6;f.env.C_Spell.GetSpellCooldown=function(id) return {startTime=id==29515 and 0 or 99,duration=id==29515 and 0 or 6,isEnabled=true,modRate=1} end

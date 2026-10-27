@@ -76,6 +76,7 @@ test('maintank and mainassist read the raid roster role and resolve to the first
         raid(s,10,{[3]='MAINTANK',[4]='MAINASSIST',[7]='MAINTANK'})
         assert(a.Platform:ResolveGroupUnit('maintank')=='raid3',name);assert(a.Platform:ResolveGroupUnit('mainassist')=='raid4',name)
         raid(s,10,{[5]='maintank',[6]='MainAssist'});assert(a.Platform:ResolveGroupUnit('maintank')=='raid5' and a.Platform:ResolveGroupUnit('mainassist')=='raid6',name..' the role case must not matter')
+        raid(s,40,{[40]='MAINTANK'});assert(a.Platform:ResolveGroupUnit('maintank')=='raid40',name..' a full raid of 40 is still resolved')
         raid(s,10);local token,why=a.Platform:ResolveGroupUnit('maintank');assert(token==nil and why=='no-assigned-unit',name..' nobody is main tank')
         s.raid=false;s.members=5;token,why=a.Platform:ResolveGroupUnit('mainassist');assert(token==nil and why=='no-assigned-unit',name..' a party has no main assist')
         raid(s,3,{[2]=SECRET});token,why=a.Platform:ResolveGroupUnit('maintank');assert(token==nil and why=='restricted-value',name..' an unreadable role')
@@ -194,6 +195,19 @@ test('whole poll: both engines follow a group unit type as its holder changes',f
         state.leader=nil;c.tick();c.tick();assert(a.currentSpell==403,engine..' nobody leads: the step is skipped, not guessed: '..tostring(a.currentSpell))
     end
     assert(a:SetEvaluationEngine('lean'));assert(not a.adviceErrorReport,'evaluation raised an error')
+end)
+
+-- constants.lua builds the unit lists when it loads, from what Platform/focus_unit.lua and Platform/group_units.lua
+-- report, so the TOC has to list those two before it. Loaded the way the client loads the addon, a file moved after
+-- constants.lua silently drops the focus unit (Classic Era) or every group unit type.
+test('the real TOC order gives Classic Era its focus unit and Retail every group unit type',function()
+    local T=dofile('tests/fixtures/toc_addon.lua')
+    local era=T.new{project=2,expansion=1,class='WARRIOR'}.addon.units
+    assert(era.focus,'Classic Era lost its focus unit')
+    assert(era.maintank and era.groupleader,'Classic Era lost its group unit types')
+    local retail=T.new{project=1,class='WARRIOR'}.addon.units
+    for _,kind in ipairs(KINDS) do assert(retail[kind],'Retail lost the '..kind..' unit type') end
+    assert(retail.focus,'Retail lost its focus unit')
 end)
 
 finish()

@@ -283,6 +283,7 @@ test('GROUP_COUNT size counts you, and 1 means alone',function()
         party(s,0);expect(a,count('size','EQUALS',1),'match',name..' alone')
         party(s,3);expect(a,count('size','EQUALS',3),'match',name..' party');expect(a,count('size','GREATERTHAN',3),'no-match',name)
         s.raid=true;s.members=25;expect(a,count('size','GREATERTHANOREQUALS',10),'match',name..' raid')
+        s.members=40;expect(a,count('size','EQUALS',40),'match',name..' a full raid')
         s.members=SECRET;expect(a,count('size','EQUALS',1),'unavailable',name)
         s.members=41;expect(a,count('size','EQUALS',1),'unavailable',name..' malformed')
     end
