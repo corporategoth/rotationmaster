@@ -183,6 +183,8 @@ addon.creatures = {
     OTHER = L["Not specified"],
     TOTEM = L["Totem"],
     NONCOMBAT_PET = L["Non-combat Pet"],
+    -- The misspelling is a saved-data key: CREATURE conditions store it and Core/creature_conditions.lua maps it to
+    -- creature type 13, so renaming it would orphan every saved Gas Cloud condition. Keep it as it is.
     GAS_CLUUD = L["Gas Cloud"],
 }
 
@@ -440,7 +442,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
         },
         MONK = { 87885, 129022, 139339, 87881, 87888, 139338, 87883 },
         DRUID = {44922, 43334, 136825, 143750, 184100, 118061, 184096, 136826, 188164, 139278, 184097},
-        DEMONHUNTRER = {},
+        DEMONHUNTER = {},
     }
 else
     addon.glyphs = {
@@ -495,6 +497,6 @@ else
             50125, 43674, 45622, 40948, 43332, 40914, 40909, 45604, 44922, 40896, 40903, 45602, 43334, 40900, 48720,
             45601, 45603, 46372, 40899, 40920, 40906, 40915, 45623, 43316, 40912, 39584, 40924
         },
-        DEMONHUNTRER = {},
+        DEMONHUNTER = {},
     }
 end
