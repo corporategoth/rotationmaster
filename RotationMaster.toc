@@ -28,6 +28,8 @@ Core/dependency_revisions.lua
 Platform/client.lua
 Platform/rotation_owner.lua
 Platform/groups.lua
+Platform/focus_unit.lua
+Platform/group_units.lua
 Platform/announcement_recipient.lua
 Platform/roster_class.lua
 Platform/role.lua
@@ -158,6 +160,7 @@ Core/builtin_modules.lua
 Core/rotation_scope.lua
 Core/rotation_migration.lua
 Core/legacy_archive.lua
+Core/group_unit_resolution.lua
 Core/rotation_lifecycle.lua
 Core/rotation_tags.lua
 Core/imports.lua

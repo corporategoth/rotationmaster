@@ -852,3 +852,7 @@ L["Help.Conditions.INSTANCE_DETAILS"] = "인스턴스 난이도와 인스턴스 
 L["Help.Conditions.ITEM_COOLDOWN_SLOT"] = "장신구 칸을 고르면 그 칸에 장착된 것이 무엇이든 읽으므로 하나의 로테이션이 모든 장신구에 쓰입니다. 이때 위의 아이템은 무시됩니다. 빈 칸은 거짓이며, 사용 효과가 없는 장신구는 사용할 수 없음으로 처리됩니다."
 -- en: "Measure your Auto Shot or wand shot instead of a melee weapon. Choose Off Hand or Ranged, not both. The time remaining needs the combat log, so it works on Classic Era, Burning Crusade and Mists of Pandaria but not on Retail or Forever."
 L["Help.Conditions.SWING_RANGED"] = "근접 무기 대신 자동 사격이나 지팡이 사격을 측정합니다. 보조장비와 원거리 중 하나만 선택하세요. 남은 시간에는 전투 기록이 필요하므로 Classic Era, 불타는 성전, 판다리아의 안개에서는 작동하지만 리테일과 Forever에서는 작동하지 않습니다."
+-- en: "Number of %s in combat within %s yards"
+L["Number of %s in combat within %s yards"] = "전투 중인 %s의 %s미터 이내 수"
+-- en: "Count only units that are in combat. For enemies that is the ones fighting right now, not every enemy whose nameplate is visible. A unit whose combat state the game will not report makes the count unavailable."
+L["Help.Conditions.DISTANCE_COUNT_COMBAT"] = "전투 중인 유닛만 셉니다. 적의 경우 이름표가 보이는 모든 적이 아니라 지금 싸우고 있는 적입니다. 게임이 전투 상태를 알려 주지 않는 유닛이 있으면 집계를 사용할 수 없음으로 처리합니다."

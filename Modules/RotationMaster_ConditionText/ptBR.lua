@@ -852,3 +852,7 @@ L["Help.Conditions.INSTANCE_DETAILS"] = "A dificuldade da instância e o ID da i
 L["Help.Conditions.ITEM_COOLDOWN_SLOT"] = "Escolha um espaço de berloque para ler o que estiver equipado nele, de modo que uma rotação sirva para qualquer berloque; o item acima é então ignorado. Um espaço vazio é falso, e um berloque sem efeito de uso fica indisponível."
 -- en: "Measure your Auto Shot or wand shot instead of a melee weapon. Choose Off Hand or Ranged, not both. The time remaining needs the combat log, so it works on Classic Era, Burning Crusade and Mists of Pandaria but not on Retail or Forever."
 L["Help.Conditions.SWING_RANGED"] = "Mede o seu Tiro Automático ou o tiro de varinha em vez de uma arma corpo a corpo. Escolha Mão Secundária ou À distância, não ambas. O tempo restante precisa do registro de combate, então funciona no Classic Era, Burning Crusade e Mists of Pandaria, mas não no Retail nem no Forever."
+-- en: "Number of %s in combat within %s yards"
+L["Number of %s in combat within %s yards"] = "Número de %s em combate a até %s metros"
+-- en: "Count only units that are in combat. For enemies that is the ones fighting right now, not every enemy whose nameplate is visible. A unit whose combat state the game will not report makes the count unavailable."
+L["Help.Conditions.DISTANCE_COUNT_COMBAT"] = "Conta apenas as unidades que estão em combate. No caso de inimigos, são os que estão lutando agora, não todos os inimigos com plaqueta de nome visível. Uma unidade cujo estado de combate o jogo não informa torna a contagem indisponível."

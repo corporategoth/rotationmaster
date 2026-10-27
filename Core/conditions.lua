@@ -61,6 +61,14 @@ local function callCondition(definition, stage, value, cache, start, path, conte
             else stats.leafEvaluations=stats.leafEvaluations+1 end
         end
         if stage == "valid" then return definition.valid(addon.currentSpec, value) end
+        -- A group unit type (the main tank, the group leader, ...) is replaced by
+        -- the token of whoever holds it now; nobody holding it is unavailable.
+        local kinds=addon.groupUnitKinds
+        if kinds and (kinds[value.unit] or kinds[value.otherunit]) then
+            local resolved,why=addon:ResolveConditionUnits(value,cache)
+            if not resolved then return nil,why end
+            return definition.evaluate(resolved, cache, start)
+        end
         return definition.evaluate(value, cache, start)
     end
     if not addon.Diagnostics then
@@ -122,11 +130,18 @@ local function switchUnitWitness(value,definition,state)
     -- Player and legacy omitted-unit fields need identity fences, no presence API.
     if unit==nil or unit=='player'then return current end
     if type(unit)~='string' or not addon.units or addon.units[unit]==nil then return nil,'switch-unit-unavailable' end
+    -- A group unit type is present when someone holds it; ask about that member.
+    local presenceUnit=unit
+    if addon.groupUnitKinds and addon.groupUnitKinds[unit] then
+        local token=platform and platform.ResolveGroupUnit and platform:ResolveGroupUnit(unit)
+        if type(token)~='string' then return nil,'switch-unit-unavailable' end
+        presenceUnit=token
+    end
     local method=platform.GetUnitPresenceObservation
     if type(method)~='function'then return nil,'switch-unit-unavailable' end
     local function present()
         if not current() or platform.GetUnitPresenceObservation~=method or state.switchCurrent and not state.switchCurrent() then return false end
-        local ok,exists=pcall(method,platform,unit)
+        local ok,exists=pcall(method,platform,presenceUnit)
         return ok and switchReadable(platform,exists,state.switchCurrent) and exists==true and current()
             and platform.GetUnitPresenceObservation==method and (not state.switchCurrent or state.switchCurrent())
     end
@@ -681,6 +696,12 @@ local function evaluatePlan(node, cache, start, stepId)
             if not definition.customCode then node.validFor=definition end
         end
         planLeafContext.conditionPath, planLeafContext.conditionTag, planLeafContext.stepId=node.path, tag, stepId
+        local kinds=addon.groupUnitKinds
+        if kinds and (kinds[value.unit] or kinds[value.otherunit]) then
+            local resolved=addon:ResolveConditionUnits(value,cache)
+            if not resolved then return "unavailable" end
+            value=resolved
+        end
         local ok, matched, reason=planCall(definition, planLeafContext, definition.evaluate, value, cache, start)
         if not ok then return "unavailable" end
         if matched == nil and reason ~= nil then return "unavailable" end

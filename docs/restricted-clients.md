@@ -140,7 +140,7 @@ Combat, ranged slot, Season of Discovery runes) are listed in
 | `DEBUFF_STACKS` | aura `applications` | C | C | `SecretWhenUnitAuraRestricted` | unavailable |
 | `DISPELLABLE` | aura `dispelName` (dispellable filter) | C | C | `SecretWhenUnitAuraRestricted` | unavailable |
 | `DISTANCE` | LibRangeCheck (item/interact/spell range) | N | N | no annotation on the range APIs | n/a |
-| `DISTANCE_COUNT` | `NAME_PLATE_UNIT_ADDED/REMOVED` tokens, `UnitExists`, `UnitIsEnemy`, LibRangeCheck, `nameplateMaxDistance` | C (nameplate tokens; an NPC GUID is secret, so no GUID is read) | C | events carry no annotation; `UnitGUID` `SecretWhenUnitIdentityRestricted` | unavailable |
+| `DISTANCE_COUNT` | `NAME_PLATE_UNIT_ADDED/REMOVED` tokens, `UnitExists`, `UnitIsEnemy`, LibRangeCheck, `nameplateMaxDistance`; with In Combat, `UnitAffectingCombat` of each counted token | C (nameplate tokens; an NPC GUID is secret, so no GUID is read) | C | events carry no annotation; `UnitGUID` `SecretWhenUnitIdentityRestricted`; `UnitAffectingCombat` is `SecretArguments` only, its answer plain (still read through `CanReadValue`; unverified in game) | unavailable |
 | `ECLIPSE` | `GetEclipseDirection` (direction), `UnitPower("player", Enum.PowerType.Balance)` (energy), `UnitClass` | n/a (edition gate) | n/a (edition gate) | `no-eclipse`: Wrath through Mists only | n/a |
 | `ENCOUNTER` | `C_InstanceEncounter.IsEncounterInProgress` | N | N | no annotation; returns a non-nilable bool | n/a |
 | `ENEMY` | `UnitIsEnemy` | N | N | no annotation | n/a |
@@ -238,6 +238,19 @@ Combat, ranged slot, Season of Discovery runes) are listed in
 | `WEAPON_TYPE` | equipped item class | N (no ranged slot on Retail) | N | edition gate | n/a |
 | `ZONE` | `GetZoneText`, `GetSubZoneText` | N | N | no annotation | n/a |
 | `ZONEPVP` | `C_PvP.GetZonePVPInfo` | N | N | no annotation | n/a |
+
+## Unit types
+
+| Unit type | APIs | Retail | Forever | Source | When a value is secret |
+|---|---|---|---|---|---|
+| `focus`, `focustarget` | probe: `C_EventUtils.IsEventValid("PLAYER_FOCUS_CHANGED")`, `FocusUnit`, `FocusFrame` | N | N | not read, only probed | n/a |
+| `maintank`, `mainassist` | `GetRaidRosterInfo` role field over `raid1-40` (raids only) | N (group members) | N | undocumented, unannotated | an unreadable member: the unit is unavailable |
+| `assignedtank`, `assignedhealer` | `UnitGroupRolesAssigned` over `player`/`party1-4`/`raid1-40` | C (identity; a group member is readable) | C | `SecretWhenUnitIdentityRestricted`; not Classic Era or Burning Crusade (`no-group-roles`) | an unreadable member: the unit is unavailable |
+| `groupleader` | `UnitIsGroupLeader` over the same tokens | C (identity; a group member is readable) | C | `SecretWhenUnitIdentityRestricted` | an unreadable member: the unit is unavailable |
+
+A condition on a resolved unit then reads what that condition always reads of a
+unit token, so on Retail and Forever only the non-secret facts of a group member
+are usable (docs/unit-types.md).
 
 ## Settings that read game data
 

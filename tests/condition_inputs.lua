@@ -68,13 +68,13 @@ test('opening the real Distance Count declaration never fills a missing numeric 
     local value={operator='GREATERTHAN',value=0};local parent,top=f.widget('Group'),f.widget('Frame')
     parent:SetUserData('top',top);top:SetUserData('root',value);top:SetUserData('funcs',{print=function() return 'Updated' end})
     a.definitions.DISTANCE_COUNT.widget(parent,0,value)
-    local slider=parent.children[3]
+    local slider=parent.children[4]
     assert(value.enemy==nil and value.distance==nil and slider:GetValue()==nil and slider.editbox:GetText()=='','opening the field manufactured a saved distance')
     enter(slider,'25','OnEnterPressed');assert(value.distance==25)
     f.env.C_CVar=nil
     local unavailable={operator='GREATERTHAN',value=0,distance=25};local other=f.widget('Group');other:SetUserData('top',top)
     a.definitions.DISTANCE_COUNT.widget(other,0,unavailable)
-    assert(unavailable.enemy==nil and unavailable.distance==25 and other.children[3].disabled,'unavailable setting mutated the draft or left an invented range enabled')
+    assert(unavailable.enemy==nil and unavailable.distance==25 and other.children[4].disabled,'unavailable setting mutated the draft or left an invented range enabled')
 end)
 test('real Distance field commits notify its owning detached editor',function()
     local f=fixture();local a=f.addon

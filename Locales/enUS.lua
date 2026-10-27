@@ -3331,6 +3331,16 @@ L["Adopted %d of %d. These stay in the archive: %s"] = true
 L["Player State"] = true
 L["Group Count"] = true
 L["Eclipse"] = true
+L["your group's main tank"] = true
+L["your group's main tank's"] = true
+L["your group's main assist"] = true
+L["your group's main assist's"] = true
+L["your group's assigned tank"] = true
+L["your group's assigned tank's"] = true
+L["your group's assigned healer"] = true
+L["your group's assigned healer's"] = true
+L["your group's leader"] = true
+L["your group's leader's"] = true
 
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true

@@ -233,6 +233,11 @@ local function itemCooldownSlot(value)
     if type(value)~='table' or value.slot==nil then return nil end
     return check({'GetInventoryItemID'},value)
 end
+-- DISTANCE_COUNT with `incombat` also asks whether each counted unit is in combat.
+local function distanceCountCombat(value)
+    if type(value)~='table' or not value.incombat then return nil end
+    return check({'UnitAffectingCombat'},value)
+end
 -- Eclipse: the direction and the energy each read their own API.
 local function eclipse(value)
     local measure=type(value)=='table' and value.measure
@@ -262,7 +267,8 @@ local requirements={
     ITEM_COOLDOWN={{'C_Item.GetItemCooldown','C_Container.GetItemCooldown','GetItemCooldown'},itemCooldownSlot},
     SET_PIECES={{'GetInventoryItemID'}},
     WEAPON_IMBUE=WEAPON,WEAPON=WEAPON,WEAPON_REMAIN=WEAPON,WEAPON_STACKS=WEAPON,
-    SWING_TIME={swingApi},SWING_TIME_REMAIN={swingApi,LOG},
+    -- The first entry names both APIs so test fixtures can stub them; swingApi then requires the one the hand needs.
+    SWING_TIME={{'UnitAttackSpeed','UnitRangedDamage'},swingApi},SWING_TIME_REMAIN={{'UnitAttackSpeed','UnitRangedDamage'},swingApi,LOG},
     BUFF=AURA,BUFF_REMAIN=AURA,BUFF_STACKS=AURA,STEALABLE=AURA,
     DEBUFF=AURA,DEBUFF_REMAIN=AURA,DEBUFF_STACKS=AURA,DISPELLABLE=AURA,
     TOTEM=TOTEM,TOTEM_REMAIN=TOTEM,TOTEM_SPELL=TOTEM_SPELL,TOTEM_SPELL_REMAIN=TOTEM_SPELL,
@@ -323,10 +329,10 @@ local requirements={
     ASSISTED_AVAILABLE={{'C_AssistedCombat.IsAvailable'}},
     TALENT={talentLayout},TALENT_TREE_POINTS={treeLayout,TREES},PRIMARY_TALENT_TREE={treeLayout,TREES},
     DISTANCE={FAMILY,UNIT},
-    DISTANCE_COUNT={POLICY,UNIT,{'UnitIsEnemy'},{'UnitGUID'},{'C_CVar.GetCVar','GetCVar'}},
+    DISTANCE_COUNT={POLICY,UNIT,{'UnitIsEnemy'},{'UnitGUID'},{'C_CVar.GetCVar','GetCVar'},distanceCountCombat},
     RUNE_ENGRAVED={{'C_Engraving.IsEngravingEnabled'}},
     WEAPON_TYPE={weaponSlot},
-    PLAYER_STATE={POLICY,playerState},
+    PLAYER_STATE={POLICY,{'IsMounted','IsSwimming','IsFalling','IsFlying','IsResting','UnitIsDead'},playerState},
     ENCOUNTER={POLICY,{'C_InstanceEncounter.IsEncounterInProgress','IsEncounterInProgress'}},
     KEYSTONE_LEVEL={POLICY,RETAIL_ONLY,{'C_ChallengeMode.IsChallengeModeActive'},{'C_ChallengeMode.GetActiveKeystoneInfo'}},
     HERO_TALENT={POLICY,RETAIL_ONLY,{'C_ClassTalents.GetActiveHeroTalentSpec'}},
@@ -377,6 +383,20 @@ end
 -- Never evaluates the condition and never caches: client facts are cached by
 -- the platform, and validation results are keyed by the validation stamp,
 -- which advances when the client changes (Core/rotation_references.lua).
+-- A group unit type (the main tank, an assigned healer, ...) in a unit field needs
+-- the client to resolve it (Platform/group_units.lua). Applies to any condition.
+local function groupUnitSupport(value)
+    local kinds=addon.groupUnitKinds
+    local platform=addon.Platform
+    if type(value)~='table' or not kinds or not platform or type(platform.GetGroupUnitSupport)~='function' then return nil end
+    for _,field in ipairs({'unit','otherunit'}) do
+        local kind=value[field]
+        if kinds[kind] then
+            local reason=platform:GetGroupUnitSupport(kind)
+            if reason then return reason end
+        end
+    end
+end
 function addon:GetConditionSupport(tag,definition,value)
     if type(definition)~='table' then return nil end
     if type(definition.supported)=='function' then
@@ -385,6 +405,8 @@ function addon:GetConditionSupport(tag,definition,value)
         return type(reason)=='string' and reason or nil
     end
     if definition.customCode then return nil end
+    local unitReason=groupUnitSupport(value)
+    if unitReason then return unitReason end
     local list=requirements[tag]
     if not list then return nil end
     for _,requirement in ipairs(list) do

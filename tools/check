@@ -643,6 +643,8 @@ def main():
             ['luajit', 'tests/legacy_archive.lua'],
             ['lua5.1', 'tests/legacy_archive_ui.lua'],
             ['luajit', 'tests/legacy_archive_ui.lua'],
+            ['lua5.1', 'tests/unit_types.lua'],
+            ['luajit', 'tests/unit_types.lua'],
             ['lua5.1', 'tests/defaults_ui.lua'],
             ['lua5.1', 'tests/defaults_tbc_mage.lua'],
             ['luajit', 'tests/defaults_tbc_mage.lua'],

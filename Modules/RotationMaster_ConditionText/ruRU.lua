@@ -852,3 +852,7 @@ L["Help.Conditions.INSTANCE_DETAILS"] = "Сложность подземелья
 L["Help.Conditions.ITEM_COOLDOWN_SLOT"] = "Выберите ячейку аксессуара, чтобы считывать то, что в ней надето, — тогда одна ротация подходит для любого аксессуара; предмет выше при этом игнорируется. Пустая ячейка даёт ложь, а аксессуар без эффекта при использовании недоступен."
 -- en: "Measure your Auto Shot or wand shot instead of a melee weapon. Choose Off Hand or Ranged, not both. The time remaining needs the combat log, so it works on Classic Era, Burning Crusade and Mists of Pandaria but not on Retail or Forever."
 L["Help.Conditions.SWING_RANGED"] = "Измеряет ваш автоматический выстрел или выстрел из жезла вместо оружия ближнего боя. Выберите «Левая рука» или «Дальний бой», но не оба сразу. Для оставшегося времени нужен журнал боя, поэтому оно работает в Classic Era, Burning Crusade и Mists of Pandaria, но не в Retail и не в Forever."
+-- en: "Number of %s in combat within %s yards"
+L["Number of %s in combat within %s yards"] = "Число (%s) в бою в пределах %s м"
+-- en: "Count only units that are in combat. For enemies that is the ones fighting right now, not every enemy whose nameplate is visible. A unit whose combat state the game will not report makes the count unavailable."
+L["Help.Conditions.DISTANCE_COUNT_COMBAT"] = "Считаются только юниты, находящиеся в бою. Для врагов это те, кто сражается прямо сейчас, а не все враги с видимой табличкой имени. Если игра не сообщает о состоянии боя юнита, подсчёт считается недоступным."

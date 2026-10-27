@@ -852,3 +852,7 @@ L["Help.Conditions.INSTANCE_DETAILS"] = "副本难度和副本 ID 都是可选�
 L["Help.Conditions.ITEM_COOLDOWN_SLOT"] = "选择一个饰品栏位即可读取该栏位中装备的任何饰品，这样一个循环就适用于所有饰品；此时上方的物品会被忽略。空栏位为假，没有使用效果的饰品为不可用。"
 -- en: "Measure your Auto Shot or wand shot instead of a melee weapon. Choose Off Hand or Ranged, not both. The time remaining needs the combat log, so it works on Classic Era, Burning Crusade and Mists of Pandaria but not on Retail or Forever."
 L["Help.Conditions.SWING_RANGED"] = "测量你的自动射击或魔杖射击，而不是近战武器。请在“副手”和“远程”中二选一，不能同时选择。剩余时间需要战斗日志，因此可用于经典怀旧服、燃烧的远征和熊猫人之谜，但不适用于正式服和 Forever。"
+-- en: "Number of %s in combat within %s yards"
+L["Number of %s in combat within %s yards"] = "%s在战斗中且在 %s 码内的数量"
+-- en: "Count only units that are in combat. For enemies that is the ones fighting right now, not every enemy whose nameplate is visible. A unit whose combat state the game will not report makes the count unavailable."
+L["Help.Conditions.DISTANCE_COUNT_COMBAT"] = "只统计处于战斗中的单位。对敌人来说，是指此刻正在战斗的敌人，而不是所有姓名板可见的敌人。若游戏不报告某个单位的战斗状态，则该统计为不可用。"
