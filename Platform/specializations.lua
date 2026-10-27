@@ -1,33 +1,64 @@
-local _,addon=...
-local platform=addon.Platform
+-- Platform adapter for specializations and talent groups (C_SpecializationInfo with legacy globals as fallback:
+-- GetSpecialization, GetSpecializationInfo, GetActiveTalentGroup, GetNumTalentGroups, GetSpecializationInfoForClassID,
+-- GetSpecializationInfoByID). Owns the rotation storage key (GetRotationSpecialization) and what that key means on each
+-- client family. Readers return `value, nil` or `nil, reason`; game values pass platform:CanReadValue first. Must not
+-- guess a specialization the client has not reported. Loaded from RotationMaster.toc after
+-- Platform/loss_of_control.lua and before Platform/talents.lua; Core/build_context.lua, Core/imports.lua and the
+-- editors consume it.
 
-local function integer(value,minimum,maximum)
-    return platform:CanReadValue(value) and type(value)=="number" and value>=minimum
-        and value<math.huge and value<=maximum and value%1==0
+local _, addon = ...
+local platform = addon.Platform
+
+-- ============================================================================
+-- Query helpers
+-- ============================================================================
+
+-- True when value is readable and is an integer within [minimum, maximum].
+local function integer(value, minimum, maximum)
+    return platform:CanReadValue(value)
+        and type(value) == "number"
+        and value >= minimum
+        and value < math.huge
+        and value <= maximum
+        and value % 1 == 0
 end
 
+-- Returns how this client addresses specializations: "specialization" (Retail, Forever), "single" (Era, TBC: one
+-- namespace), or "group" (progression clients from expansion 2, which key by talent group); nil and a reason when the
+-- family is unknown.
 local function mode()
-    local client=platform:GetClientInfo()
-    if client.family=="retail" or client.family=="forever" then return "specialization" end
-    if client.family=="era" or client.family=="tbc" then return "single" end
-    if client.family=="progression" and integer(client.expansion,2,100) then return "group" end
-    return nil,"unsupported-client"
+    local client = platform:GetClientInfo()
+    if client.family == "retail" or client.family == "forever" then return "specialization" end
+    if client.family == "era" or client.family == "tbc" then return "single" end
+    if client.family == "progression" and integer(client.expansion, 2, 100) then return "group" end
+    return nil, "unsupported-client"
 end
 
-local function method(name,legacy)
-    if C_SpecializationInfo and type(C_SpecializationInfo[name])=="function" then return C_SpecializationInfo[name] end
+-- Returns C_SpecializationInfo[name] when the client has that function, otherwise the legacy global passed in (which
+-- may be nil). Feature detection, not a client-version branch.
+local function method(name, legacy)
+    if C_SpecializationInfo and type(C_SpecializationInfo[name]) == "function" then
+        return C_SpecializationInfo[name]
+    end
+
     return legacy
 end
 
-local function queryInteger(fn,maximum,...)
-    if type(fn)~="function" then return nil,"missing-api" end
-    local ok,value=pcall(fn,...)
-    if not ok then return nil,"api-error" end
-    if not platform:CanReadValue(value) then return nil,"restricted-value" end
-    if value==nil then return nil,"specialization-unavailable" end
-    if not integer(value,1,maximum) then return nil,"invalid-api-result" end
+-- Calls fn(...) under pcall and returns the result when it is a readable integer from 1 to maximum, otherwise nil and
+-- a reason ("missing-api", "api-error", "restricted-value", "specialization-unavailable" or "invalid-api-result").
+local function queryInteger(fn, maximum, ...)
+    if type(fn) ~= "function" then return nil, "missing-api" end
+    local ok, value = pcall(fn, ...)
+    if not ok then return nil, "api-error" end
+    if not platform:CanReadValue(value) then return nil, "restricted-value" end
+    if value == nil then return nil, "specialization-unavailable" end
+    if not integer(value, 1, maximum) then return nil, "invalid-api-result" end
     return value
 end
+
+-- ============================================================================
+-- Active specialization and the rotation storage key
+-- ============================================================================
 
 -- Retail: a character who has not chosen a specialization (new characters
 -- start without one) has none.
@@ -36,23 +67,41 @@ end
 -- (SpecializationID "Initial" rows, Gethe/wow-ui-source and wago.tools
 -- ChrSpecialization), keyed here by class ID. Rotations for that stage are
 -- saved under this ID like any other specialization.
-local INITIAL_SPECS={[1]=1446,[2]=1451,[3]=1448,[4]=1453,[5]=1452,[6]=1455,[7]=1444,[8]=1449,[9]=1454,[10]=1450,[11]=1447,[12]=1456,[13]=1465}
+local INITIAL_SPECS = {
+    [1] = 1446,
+    [2] = 1451,
+    [3] = 1448,
+    [4] = 1453,
+    [5] = 1452,
+    [6] = 1455,
+    [7] = 1444,
+    [8] = 1449,
+    [9] = 1454,
+    [10] = 1450,
+    [11] = 1447,
+    [12] = 1456,
+    [13] = 1465,
+}
 
 -- key is the saved rotation namespace; index is the native API selector.
+-- Returns { kind = "single"|"group"|"specialization", index = n, key = n } for the player's current selection, or nil
+-- and a reason. "single" clients always answer index 0 and key 0.
 function platform:GetRotationSpecialization()
-    local kind,reason=mode()
-    if not kind then return nil,reason end
-    if kind=="single" then return {kind=kind,index=0,key=0} end
-    if kind=="group" then
-        local group,why=queryInteger(method("GetActiveSpecGroup",GetActiveTalentGroup),4,false,false)
-        if not group then return nil,why end
-        return {kind=kind,index=group,key=group}
+    local kind, reason = mode()
+    if not kind then return nil, reason end
+    if kind == "single" then return { kind = kind, index = 0, key = 0 } end
+
+    if kind == "group" then
+        local group, why = queryInteger(method("GetActiveSpecGroup", GetActiveTalentGroup), 4, false, false)
+        if not group then return nil, why end
+        return { kind = kind, index = group, key = group }
     end
-    local index,why=queryInteger(method("GetSpecialization",GetSpecialization),16)
-    if not index then return nil,why end
-    local id,unavailable=queryInteger(method("GetSpecializationInfo",GetSpecializationInfo),math.huge,index)
-    if not id then return nil,unavailable end
-    return {kind=kind,index=index,key=id}
+
+    local index, why = queryInteger(method("GetSpecialization", GetSpecialization), 16)
+    if not index then return nil, why end
+    local id, unavailable = queryInteger(method("GetSpecializationInfo", GetSpecializationInfo), math.huge, index)
+    if not id then return nil, unavailable end
+    return { kind = kind, index = index, key = id }
 end
 
 -- The player's active specialization INDEX (1..4), for an observation that
@@ -63,47 +112,76 @@ end
 -- (Gethe/wow-ui-source classic 45eb466ddb, Blizzard_FrameXMLBase/Classic/
 -- Constants.lua; Blizzard_UnitFrame/Mists/ShardBar.lua, PriestBar.lua).
 -- No specialization yet (below level 10) is unavailable, never index 1.
+-- Returns the integer index, or nil and a reason.
 function platform:GetPlayerSpecializationIndex()
-    return queryInteger(method("GetSpecialization",GetSpecialization),16)
+    return queryInteger(method("GetSpecialization", GetSpecialization), 16)
 end
 
+-- Returns the storage choices for a class as a fresh list of { id, name?, initial? }: one entry on "single" clients,
+-- one per talent group on "group" clients, and the class's specializations on "specialization" clients (plus Retail's
+-- initial "no specialization" entry). Returns nil and a reason when the client cannot answer.
 function platform:GetRotationSpecializations(classID)
-    local kind,reason=mode()
-    if not kind then return nil,reason end
-    if kind=="single" then return {{id=0}} end
-    if kind=="group" then
-        local count,why=queryInteger(GetNumTalentGroups,4,false,false)
-        if not count then return nil,why end
-        local choices={}
-        for index=1,count do choices[index]={id=index} end
+    local kind, reason = mode()
+    if not kind then return nil, reason end
+    if kind == "single" then return { { id = 0 } } end
+
+    if kind == "group" then
+        local count, why = queryInteger(GetNumTalentGroups, 4, false, false)
+        if not count then return nil, why end
+        local choices = {}
+
+        for index = 1, count do
+            choices[index] = { id = index }
+        end
+
         return choices
     end
-    if not integer(classID,1,math.huge) then return nil,"invalid-class" end
-    local count,why=queryInteger(method("GetNumSpecializationsForClassID",GetNumSpecializationsForClassID),16,classID)
-    if not count then return nil,why end
-    if type(GetSpecializationInfoForClassID)~="function" then return nil,"missing-api" end
-    local choices,seen={},{}
-    for index=1,count do
-        local ok,id,name=pcall(GetSpecializationInfoForClassID,classID,index)
-        if not ok then return nil,"api-error" end
-        if not self:CanReadValue(id) or not self:CanReadValue(name) then return nil,"restricted-value" end
-        if not integer(id,1,math.huge) or type(name)~="string" or name=="" or seen[id] then return nil,"invalid-api-result" end
-        seen[id]=true
-        choices[index]={id=id,name=name}
+
+    if not integer(classID, 1, math.huge) then return nil, "invalid-class" end
+
+    local count, why = queryInteger(
+        method("GetNumSpecializationsForClassID", GetNumSpecializationsForClassID),
+        16,
+        classID
+    )
+
+    if not count then return nil, why end
+    if type(GetSpecializationInfoForClassID) ~= "function" then return nil, "missing-api" end
+    local choices, seen = {}, {}
+
+    for index = 1, count do
+        local ok, id, name = pcall(GetSpecializationInfoForClassID, classID, index)
+        if not ok then return nil, "api-error" end
+        if not self:CanReadValue(id) or not self:CanReadValue(name) then return nil, "restricted-value" end
+
+        if not integer(id, 1, math.huge) or type(name) ~= "string" or name == "" or seen[id] then
+            return nil, "invalid-api-result"
+        end
+
+        seen[id] = true
+        choices[index] = { id = id, name = name }
     end
+
     -- Retail offers the class's initial spec too ("No specialization"). The live
     -- selection names it when the player is in it; otherwise the known ID.
-    if self:GetClientFamily()=="retail" then
-        local initial=INITIAL_SPECS[classID]
-        local current=self:GetRotationSpecialization()
-        if current and current.kind=="specialization" and current.index>count and type(UnitClass)=="function" then
-            local ok,_,_,playerClass=pcall(UnitClass,"player")
-            if ok and self:CanReadValue(playerClass) and playerClass==classID then initial=current.key end
+    if self:GetClientFamily() == "retail" then
+        local initial = INITIAL_SPECS[classID]
+        local current = self:GetRotationSpecialization()
+
+        if current and current.kind == "specialization" and current.index > count and type(UnitClass) == "function" then
+            local ok, _, _, playerClass = pcall(UnitClass, "player")
+            if ok and self:CanReadValue(playerClass) and playerClass == classID then initial = current.key end
         end
-        if initial and not seen[initial] then choices[#choices+1]={id=initial,initial=true} end
+
+        if initial and not seen[initial] then choices[#choices + 1] = { id = initial, initial = true } end
     end
+
     return choices
 end
+
+-- ============================================================================
+-- Specialization kinds and editor choices
+-- ============================================================================
 
 -- A rotation's specializations (body.specs) hold one kind of value per
 -- client, a static fact of the client family (and Classic Progression's
@@ -118,63 +196,83 @@ end
 --             Season of Discovery, TBC Anniversary, Wrath and Cataclysm
 --             Classic (progression, expansions 2-3) and Forever.
 -- Exports drop slot values; imports fill them in (Core/imports.lua).
-local SPEC_KINDS={retail='portable',era='slot',tbc='slot',forever='slot'}
+local SPEC_KINDS = { retail = 'portable', era = 'slot', tbc = 'slot', forever = 'slot' }
+
 -- Mists of Pandaria and later progression clients name real specializations.
+-- True when LE_EXPANSION_LEVEL_CURRENT is a readable integer of 4 or more.
 local function mistsOrLater()
-    local expansion=LE_EXPANSION_LEVEL_CURRENT
-    return integer(expansion,4,100)
+    local expansion = LE_EXPANSION_LEVEL_CURRENT
+    return integer(expansion, 4, 100)
 end
+
+-- Returns "portable" or "slot" for this client (see SPEC_KINDS above), or nil and "unsupported-client".
 function platform:GetRotationSpecKind()
-    local family=self:GetClientFamily()
-    local kind=SPEC_KINDS[family]
+    local family = self:GetClientFamily()
+    local kind = SPEC_KINDS[family]
     if kind then return kind end
-    if family=='progression' then return mistsOrLater() and 'portable' or 'slot' end
-    return nil,'unsupported-client'
+    if family == 'progression' then return mistsOrLater() and 'portable' or 'slot' end
+    return nil, 'unsupported-client'
 end
+
 -- Whether the saved-rotation namespace (GetRotationSpecialization().key) is
 -- itself a specialization value: Retail keys by specialization ID and Wrath
 -- or Cataclysm Classic by talent group; Mists Classic keys by talent group
 -- but its values are specialization IDs, and Era, TBC and Forever keep one
 -- namespace per class.
+-- Returns true or false; an unidentified client family is false.
 function platform:RotationKeyIsSpecValue()
-    local family=self:GetClientFamily()
-    if family=='retail' then return true end
-    return family=='progression' and not mistsOrLater()
+    local family = self:GetClientFamily()
+    if family == 'retail' then return true end
+    return family == 'progression' and not mistsOrLater()
 end
+
 -- The character's current specialization value (see GetRotationSpecKind).
 -- Slot clients answer the active talent group, 1 when the client has a
 -- single one; Mists Classic without a specialization yet is unavailable.
+-- Returns the value as an integer, or nil and a reason.
 function platform:GetRotationSpecValue()
-    local kind,reason=self:GetRotationSpecKind()
-    if not kind then return nil,reason end
-    if kind=='slot' then
-        local native=method("GetActiveSpecGroup",GetActiveTalentGroup)
-        if type(native)~='function' then return 1 end
-        return queryInteger(native,4,false,false)
+    local kind, reason = self:GetRotationSpecKind()
+    if not kind then return nil, reason end
+
+    if kind == 'slot' then
+        local native = method("GetActiveSpecGroup", GetActiveTalentGroup)
+        if type(native) ~= 'function' then return 1 end
+        return queryInteger(native, 4, false, false)
     end
-    if self:GetClientFamily()=='retail' then
-        local selection,why=self:GetRotationSpecialization()
-        if not selection then return nil,why end
+
+    if self:GetClientFamily() == 'retail' then
+        local selection, why = self:GetRotationSpecialization()
+        if not selection then return nil, why end
         return selection.key
     end
+
     return self:GetPlayerSpecializationID()
 end
+
 -- The values a rotation can be restricted to on this client, as a fresh list
 -- of {id,name,initial,slot}. Slot clients always offer both talent groups.
 function platform:GetRotationSpecChoices(classID)
-    local kind,reason=self:GetRotationSpecKind()
-    if not kind then return nil,reason end
-    if kind=='slot' then return {{id=1,slot=true},{id=2,slot=true}} end
-    if self:GetClientFamily()=='retail' then return self:GetRotationSpecializations(classID) end
+    local kind, reason = self:GetRotationSpecKind()
+    if not kind then return nil, reason end
+    if kind == 'slot' then return { { id = 1, slot = true }, { id = 2, slot = true } } end
+    if self:GetClientFamily() == 'retail' then return self:GetRotationSpecializations(classID) end
     return self:GetClassSpecializationChoices(classID)
 end
 
--- Whether a Retail spec ID is a class's initial spec ("No specialization").
+-- Whether a Retail spec ID is a class's initial spec ("No specialization"). False on every other client family.
 function platform:IsInitialSpecialization(specID)
-    if self:GetClientFamily()~="retail" or type(specID)~="number" then return false end
-    for _,id in pairs(INITIAL_SPECS) do if id==specID then return true end end
+    if self:GetClientFamily() ~= "retail" or type(specID) ~= "number" then return false end
+
+    for _, id in pairs(INITIAL_SPECS) do
+        if id == specID then return true end
+    end
+
     return false
 end
+
+-- ============================================================================
+-- Specialization identity and display data
+-- ============================================================================
 
 -- The player's specialization ID (Retail, Mists of Pandaria Classic), for the
 -- SPECIALIZATION condition. Forever's specialization API reports one ID per
@@ -183,47 +281,75 @@ end
 -- primary talent tree instead (Core/build_context.lua). No specialization yet
 -- is unavailable, never a guessed index.
 function platform:GetPlayerSpecializationID()
-    local family=self:GetClientFamily()
-    if family=="forever" then return nil,"specialization-unsupported" end
-    if family~="retail" and family~="progression" then return nil,"unsupported-client" end
-    local index,why=queryInteger(method("GetSpecialization",GetSpecialization),16)
-    if not index then return nil,why end
-    return queryInteger(method("GetSpecializationInfo",GetSpecializationInfo),math.huge,index)
+    local family = self:GetClientFamily()
+    if family == "forever" then return nil, "specialization-unsupported" end
+    if family ~= "retail" and family ~= "progression" then return nil, "unsupported-client" end
+    local index, why = queryInteger(method("GetSpecialization", GetSpecialization), 16)
+    if not index then return nil, why end
+    return queryInteger(method("GetSpecializationInfo", GetSpecializationInfo), math.huge, index)
 end
 
 -- One class's specializations as the client names them, for editors. Only
 -- clients whose specialization API names real specs answer (not Forever).
 -- Returns a fresh list of {id,name,icon}.
 function platform:GetClassSpecializationChoices(classID)
-    local family=self:GetClientFamily()
-    if family~="retail" and family~="progression" then return nil,"unsupported-client" end
-    if not integer(classID,1,64) then return nil,"invalid-class" end
-    local count,why=queryInteger(method("GetNumSpecializationsForClassID",GetNumSpecializationsForClassID),16,classID)
-    if not count then return nil,why end
-    if type(GetSpecializationInfoForClassID)~="function" then return nil,"missing-api" end
-    local choices={}
-    for index=1,count do
-        local ok,id,name,_,icon=pcall(GetSpecializationInfoForClassID,classID,index)
-        if not ok then return nil,"api-error" end
-        if not self:CanReadValue(id) or not self:CanReadValue(name) or not self:CanReadValue(icon) then return nil,"restricted-value" end
-        if not integer(id,1,math.huge) or type(name)~="string" or name=="" then return nil,"invalid-api-result" end
-        if type(icon)~="number" and type(icon)~="string" then icon=nil end
-        choices[#choices+1]={id=id,name=name,icon=icon}
+    local family = self:GetClientFamily()
+    if family ~= "retail" and family ~= "progression" then return nil, "unsupported-client" end
+    if not integer(classID, 1, 64) then return nil, "invalid-class" end
+
+    local count, why = queryInteger(
+        method("GetNumSpecializationsForClassID", GetNumSpecializationsForClassID),
+        16,
+        classID
+    )
+
+    if not count then return nil, why end
+    if type(GetSpecializationInfoForClassID) ~= "function" then return nil, "missing-api" end
+    local choices = {}
+
+    for index = 1, count do
+        local ok, id, name, _, icon = pcall(GetSpecializationInfoForClassID, classID, index)
+        if not ok then return nil, "api-error" end
+
+        if not self:CanReadValue(id) or not self:CanReadValue(name) or not self:CanReadValue(icon) then
+            return nil, "restricted-value"
+        end
+
+        if not integer(id, 1, math.huge) or type(name) ~= "string" or name == "" then
+            return nil, "invalid-api-result"
+        end
+
+        if type(icon) ~= "number" and type(icon) ~= "string" then icon = nil end
+        choices[#choices + 1] = { id = id, name = name, icon = icon }
     end
+
     return choices
 end
 
 -- Display name, icon and class token of a specialization ID, where the
 -- client can name it (Retail order: id, name, description, icon, role, class).
+-- Returns { id, name, icon?, class? } or nil and a reason; icon and class are nil when the client reports another type.
 function platform:GetSpecializationDisplay(specID)
-    local family=self:GetClientFamily()
-    if family~="retail" and family~="progression" then return nil,"unsupported-client" end
-    if not integer(specID,1,math.huge) or type(GetSpecializationInfoByID)~="function" then return nil,"missing-api" end
-    local ok,id,name,_,icon,_,classFile=pcall(GetSpecializationInfoByID,specID)
-    if not ok then return nil,"api-error" end
-    if not self:CanReadValue(id) or not self:CanReadValue(name) or not self:CanReadValue(icon)
-        or not self:CanReadValue(classFile) then return nil,"restricted-value" end
-    if id~=specID or type(name)~="string" or name=="" then return nil,"specialization-unavailable" end
-    if type(icon)~="number" and type(icon)~="string" then icon=nil end
-    return {id=id,name=name,icon=icon,class=type(classFile)=="string" and classFile or nil}
+    local family = self:GetClientFamily()
+    if family ~= "retail" and family ~= "progression" then return nil, "unsupported-client" end
+
+    if not integer(specID, 1, math.huge) or type(GetSpecializationInfoByID) ~= "function" then
+        return nil, "missing-api"
+    end
+
+    local ok, id, name, _, icon, _, classFile = pcall(GetSpecializationInfoByID, specID)
+    if not ok then return nil, "api-error" end
+
+    if
+        not self:CanReadValue(id)
+        or not self:CanReadValue(name)
+        or not self:CanReadValue(icon)
+        or not self:CanReadValue(classFile)
+    then
+        return nil, "restricted-value"
+    end
+
+    if id ~= specID or type(name) ~= "string" or name == "" then return nil, "specialization-unavailable" end
+    if type(icon) ~= "number" and type(icon) ~= "string" then icon = nil end
+    return { id = id, name = name, icon = icon, class = type(classFile) == "string" and classFile or nil }
 end

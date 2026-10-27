@@ -1,129 +1,647 @@
-local addon_name,addon=...
-local invalidateDependencies=addon.InvalidateRotationDependencies
-if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
-local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
-local types={{value='texture',text=L['Texture']},{value='pixel',text=L['Pixel']},{value='autocast',text=L['Auto Cast']},{value='blizzard',text=L['Glow']},{value='proc',text=L['Proc Glow']},{value='dazzle',text=L['Dazzle']},{value='animate',text=L['Animate']},{value='pulse',text=L['Pulse']},{value='rotate',text=L['Rotate']},{value='custom',text=L['Custom']}}
-local schemas={proc={{'duration','Loop duration',1,.1,5,.05}},pixel={{'lines','Lines',8,1,20,1},{'frequency','Frequency',.25,-1.5,1.5,.05},{'length','Length',2,1,20,1},{'thickness','Thickness',2,1,5,1}},autocast={{'particles','Particles',4,1,4,1},{'frequency','Frequency',.125,-1.5,1.5,.05},{'scale','Scale',1,.25,5,.25}},blizzard={{'frequency','Frequency',.125,0,1.5,.05}},dazzle={{'frequency','Frequency',.25,.1,5,.05}},animate={{'frequency','Frequency',.25,.1,5,.05}},pulse={{'frequency','Frequency',.25,.1,5,.05}},custom={{'frequency','Frequency',.25,.1,5,.05}},rotate={{'frequency','Frequency',.25,.1,5,.05},{'steps','Steps',4,2,36,1}}}
+-- The Effects settings page: a roster of the global highlight effects (db.global.effects) with a live glow preview,
+-- per-type sliders, an ordered sequence editor for the animated types, duplicate, import/export and delete. Edits and
+-- new effects go through the settings form's draft (p:SettingsData()); deletion is confirmed and then removes the saved
+-- effect and calls addon:InvalidateRotationDependencies so the lean engine drops plans that used it. Also owns the
+-- effect schema (types, numeric ranges) that draft validation reuses. Loaded from RotationMaster.toc after
+-- UI/settings_announces.lua; registered as the Effects page in UI/settings_collections.lua.
+
+local addon_name, addon = ...
+-- Captured at load (and discarded if absent) so a later replacement of the public name cannot redirect it.
+local invalidateDependencies = addon.InvalidateRotationDependencies
+if type(invalidateDependencies) ~= 'function' then invalidateDependencies = nil end
+local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
+
+-- ============================================================================
+-- Effect schema
+-- ============================================================================
+
+-- The effect kinds in menu order; `value` is the saved `type`.
+local types = {
+    { value = 'texture', text = L['Texture'] },
+    { value = 'pixel', text = L['Pixel'] },
+    { value = 'autocast', text = L['Auto Cast'] },
+    { value = 'blizzard', text = L['Glow'] },
+    { value = 'proc', text = L['Proc Glow'] },
+    { value = 'dazzle', text = L['Dazzle'] },
+    { value = 'animate', text = L['Animate'] },
+    { value = 'pulse', text = L['Pulse'] },
+    { value = 'rotate', text = L['Rotate'] },
+    { value = 'custom', text = L['Custom'] },
+}
+
+-- Numeric settings each type offers, as { key, label, default, minimum, maximum, step }. Used for the sliders, for
+-- repairing out-of-range saved values (defaults) and for validation (validEffect); the label is also an L[] key.
+local schemas = {
+    proc = { { 'duration', 'Loop duration', 1, .1, 5, .05 } },
+    pixel = {
+        { 'lines', 'Lines', 8, 1, 20, 1 },
+        { 'frequency', 'Frequency', .25, -1.5, 1.5, .05 },
+        { 'length', 'Length', 2, 1, 20, 1 },
+        { 'thickness', 'Thickness', 2, 1, 5, 1 },
+    },
+    autocast = {
+        { 'particles', 'Particles', 4, 1, 4, 1 },
+        { 'frequency', 'Frequency', .125, -1.5, 1.5, .05 },
+        { 'scale', 'Scale', 1, .25, 5, .25 },
+    },
+    blizzard = { { 'frequency', 'Frequency', .125, 0, 1.5, .05 } },
+    dazzle = { { 'frequency', 'Frequency', .25, .1, 5, .05 } },
+    animate = { { 'frequency', 'Frequency', .25, .1, 5, .05 } },
+    pulse = { { 'frequency', 'Frequency', .25, .1, 5, .05 } },
+    custom = { { 'frequency', 'Frequency', .25, .1, 5, .05 } },
+    rotate = { { 'frequency', 'Frequency', .25, .1, 5, .05 }, { 'steps', 'Steps', 4, 2, 36, 1 } },
+}
+
+-- Fills missing or out-of-range numeric settings of `effect` with their defaults and gives sequence types an empty
+-- list.
 local function defaults(effect)
-    for _,entry in ipairs(schemas[effect.type] or {}) do local v=effect[entry[1]];if type(v)~='number' or v~=v or v<entry[4] or v>entry[5] then effect[entry[1]]=entry[3] end end
-    if effect.type=='dazzle' or effect.type=='animate' or effect.type=='pulse' or effect.type=='custom' then effect.sequence=effect.sequence or {} end
+    for _, entry in ipairs(schemas[effect.type] or {}) do
+        local v = effect[entry[1]]
+        if type(v) ~= 'number' or v ~= v or v < entry[4] or v > entry[5] then effect[entry[1]] = entry[3] end
+    end
+
+    if effect.type == 'dazzle' or effect.type == 'animate' or effect.type == 'pulse' or effect.type == 'custom' then
+        effect.sequence = effect.sequence or {}
+    end
 end
+
+-- True when `effect` is a well-formed definition: named, of a known type, numeric settings in range, and a sequence of
+-- at most 256 entries in the shape its type needs. Used for new, imported and loaded effects, so it must stay strict.
 local function validEffect(effect)
-    if type(effect)~='table' or type(effect.name)~='string' or not effect.name:find('%S') then return false end
-    local known=false;for _,entry in ipairs(types) do known=known or entry.value==effect.type end;if not known then return false end
-    for _,entry in ipairs(schemas[effect.type] or {}) do local v=effect[entry[1]];if v~=nil and (type(v)~='number' or v~=v or v<entry[4] or v>entry[5]) then return false end end
-    if effect.type=='proc' and effect.startAnim~=nil and type(effect.startAnim)~='boolean' then return false end
-    if effect.texture~=nil and type(effect.texture)~='string' and type(effect.texture)~='number' then return false end
-    if effect.sequence~=nil then
-        if type(effect.sequence)~='table' or #effect.sequence>256 then return false end
-        for _,entry in ipairs(effect.sequence) do
-            if effect.type=='pulse' then if type(entry)~='number' or entry~=entry or entry<.1 or entry>2 then return false end
-            elseif effect.type=='animate' then if type(entry)~='string' and type(entry)~='number' then return false end
-            elseif effect.type=='dazzle' or effect.type=='custom' then
-                local color=effect.type=='custom' and type(entry)=='table' and entry.color or entry
-                if type(color)~='table' then return false end;for _,key in ipairs({'r','g','b','a'}) do if type(color[key])~='number' or color[key]~=color[key] or color[key]<0 or color[key]>1 then return false end end
-                if effect.type=='custom' and ((type(entry.texture)~='string' and type(entry.texture)~='number') or type(entry.angle or 0)~='number' or (entry.angle or 0)~=(entry.angle or 0) or math.abs(entry.angle or 0)==math.huge or type(entry.magnification)~='number' or entry.magnification~=entry.magnification or entry.magnification<.1 or entry.magnification>2) then return false end
+    if type(effect) ~= 'table' or type(effect.name) ~= 'string' or not effect.name:find('%S') then return false end
+    local known = false
+
+    for _, entry in ipairs(types) do
+        known = known or entry.value == effect.type
+    end
+
+    if not known then return false end
+
+    for _, entry in ipairs(schemas[effect.type] or {}) do
+        local v = effect[entry[1]]
+        if v ~= nil and (type(v) ~= 'number' or v ~= v or v < entry[4] or v > entry[5]) then return false end
+    end
+
+    if effect.type == 'proc' and effect.startAnim ~= nil and type(effect.startAnim) ~= 'boolean' then return false end
+
+    if effect.texture ~= nil and type(effect.texture) ~= 'string' and type(effect.texture) ~= 'number' then
+        return false
+    end
+
+    if effect.sequence ~= nil then
+        if type(effect.sequence) ~= 'table' or #effect.sequence > 256 then return false end
+
+        for _, entry in ipairs(effect.sequence) do
+            if effect.type == 'pulse' then
+                if type(entry) ~= 'number' or entry ~= entry or entry < .1 or entry > 2 then return false end
+            elseif effect.type == 'animate' then
+                if type(entry) ~= 'string' and type(entry) ~= 'number' then return false end
+            elseif effect.type == 'dazzle' or effect.type == 'custom' then
+                local color = effect.type == 'custom' and type(entry) == 'table' and entry.color or entry
+                if type(color) ~= 'table' then return false end
+
+                for _, key in ipairs({ 'r', 'g', 'b', 'a' }) do
+                    if type(color[key]) ~= 'number' or color[key] ~= color[key] or color[key] < 0 or color[key] > 1 then
+                        return false
+                    end
+                end
+
+                if
+                    effect.type == 'custom'
+                    and ((type(entry.texture) ~= 'string' and type(entry.texture) ~= 'number')
+                        or type(entry.angle or 0) ~= 'number'
+                        or (entry.angle or 0) ~= (entry.angle or 0)
+                        or math.abs(entry.angle or 0) == math.huge
+                        or type(entry.magnification) ~= 'number'
+                        or entry.magnification ~= entry.magnification
+                        or entry.magnification < .1
+                        or entry.magnification > 2)
+                then
+                    return false
+                end
             end
         end
     end
+
     return true
 end
-function addon:IsValidEffectDefinition(value) return validEffect(value) end
+
+-- Public form of validEffect, for draft validation in UI/settings_draft.lua.
+function addon:IsValidEffectDefinition(value)
+    return validEffect(value)
+end
+
+-- ============================================================================
+-- Page
+-- ============================================================================
+
+-- Builds the Effects page into settings form `p`: the roster, then either the selected effect's editor or the creation
+-- form for a new one, with the collection footer. Runs on every redraw of the page.
 function addon:BuildEffectSettings(p)
-    local store=p:SettingsData()
-    local effects=store.global.effects or {};local entries=self:SettingsEntries(effects)
-    for _,entry in ipairs(entries) do local effect=effects[entry.value];entry.icon=effect.texture or self:ControlTexture('preview');entry.search=effect.type end
-    if not effects[p.selection] and not p.creating then p.selection=entries[1] and entries[1].value end
-    p:UseRoster(entries,p.selection,function(id) p.selection=id;p.creating=false;p:Draw() end,{newText=L['Add effect'],new=function() p.previousSelection=p.selection;p.selection=nil;p.creating=true;p.newEffect=nil;p.emptyDismissed=false;p:Draw() end})
-    local isNew=p.creating or not effects[p.selection] and p:CanAutoCreateCollection('global','effects')
-    if isNew then p.newEffect=p.newEffect or {name='',type='pixel'} end
-    local effect=isNew and p.newEffect or effects[p.selection]
+    local store = p:SettingsData()
+    local effects = store.global.effects or {}
+    local entries = self:SettingsEntries(effects)
+
+    for _, entry in ipairs(entries) do
+        local effect = effects[entry.value]
+        entry.icon = effect.texture or self:ControlTexture('preview')
+        entry.search = effect.type
+    end
+
+    if not effects[p.selection] and not p.creating then p.selection = entries[1] and entries[1].value end
+
+    p:UseRoster(
+        entries,
+        p.selection,
+        function(id)
+            p.selection = id
+            p.creating = false
+            p:Draw()
+        end,
+        {
+            newText = L['Add effect'],
+            new = function()
+                p.previousSelection = p.selection
+                p.selection = nil
+                p.creating = true
+                p.newEffect = nil
+                p.emptyDismissed = false
+                p:Draw()
+            end,
+        }
+    )
+
+    local isNew = p.creating or not effects[p.selection] and p:CanAutoCreateCollection('global', 'effects')
+    if isNew then p.newEffect = p.newEffect or { name = '', type = 'pixel' } end
+    local effect = isNew and p.newEffect or effects[p.selection]
+
     if effect then
-        local id=isNew and 'draft' or p.selection
-        local function refresh() if self.RemoveAllCurrentGlows then self:RemoveAllCurrentGlows() end;if p.preview and self.HideGlow then self:HideGlow(p.preview,'settings-effect') end;if p.preview and self.Glow then self:Glow(p.preview,'settings-effect',effect,{r=1,g=1,b=1,a=1},1,'CENTER',0,0) end end
-        -- The live preview sits in the caption column beside Name and Type,
-        -- so this page keeps the full-width caption column.
-        if p.labelScope then p.labelScope.custom=true end
-        local y=p.y;local preview=p:Acquire('effectPreview',function() return CreateFrame('Frame',nil,p.child) end);preview:ClearAllPoints();preview:SetPoint('TOPLEFT',174,-y-8);preview:SetSize(40,40);p.preview=preview
-        p.cleanups[#p.cleanups+1]=function() if self.HideGlow then self:HideGlow(preview,'settings-effect') end end
-        p:Edit('name',L['Name'],effect.name or '',nil,function(text) effect.name=text;p:UpdateRosterEntry(id,{text=effect.name,search=effect.type,icon=effect.texture or self:ControlTexture('preview')}) end)
-        p:Choice('type',L['Type'],effect.type,types,function(value)
-            if value==effect.type then return end
-            local candidate=self:CopySettingsData(effect);candidate.type=value;candidate.sequence=nil;defaults(candidate)
-            -- A new sequence kind has different entry shapes. Stage its valid
-            -- empty sequence before replacing the saved object or previewing.
-            if isNew then p.newEffect=candidate else effects[id]=candidate end;effect=candidate;refresh();p:Draw()
-        end)
-        if effect.type=='texture' or effect.type=='dazzle' or effect.type=='pulse' or effect.type=='rotate' then p:Texture('texture',L['Texture'],effect.texture or '',function(value) effect.texture=tonumber(value) or value;refresh();p:UpdateRosterEntry(id,{text=effect.name,search=effect.type,icon=effect.texture or self:ControlTexture('preview')}) end,{preview=false}) end
-        for _,entry in ipairs(schemas[effect.type] or {}) do local key=entry[1];p:Slider(key,L[entry[2]],effect[key] or entry[3],entry[4],entry[5],entry[6],function(value) effect[key]=value;refresh() end) end
-        if effect.type=='proc' then
-            p:Check('startAnim',L['Start burst'],effect.startAnim==true,function(value) effect.startAnim=value;refresh() end)
-            if not self.GetProcGlowSupport or not self:GetProcGlowSupport() then p.fields.proc_support=p:Text(L['Proc Glow is unavailable on this client; Pixel glow will be used.']) end
-        end
-        if effect.type=='rotate' then p:Check('reverse',L['Reverse'],effect.reverse,function(value) effect.reverse=value;refresh() end) end
-        if effect.type=='dazzle' or effect.type=='animate' or effect.type=='pulse' or effect.type=='custom' then
-            do
-                local sequence=effect.sequence or {}
-                -- Add step sits on the Sequence header row; a click appends and
-                -- a drag drops into a gap, both through this one insert.
-                local function insertStep(gap)
-                    effect.sequence=effect.sequence or {};local value=effect.type=='pulse' and 1 or effect.type=='animate' and '' or effect.type=='dazzle' and {r=1,g=1,b=1,a=1} or {texture='',angle=0,color={r=1,g=1,b=1,a=1},magnification=1}
-                    table.insert(effect.sequence,math.max(1,math.min(gap,#effect.sequence+1)),value);refresh();p:Draw()
-                end
-                p:OrderedCollection('sequence_'..id,sequence,function() local label;for _,t in ipairs(types) do if t.value==effect.type then label=t.text end end;return label or L['Effect'] end,function(p,i,entry)
-                    if effect.type=='pulse' then p:Slider('seq'..i,L['Magnification'],entry,.1,2,.1,function(v) sequence[i]=v;refresh() end)
-                    elseif effect.type=='animate' then p:Texture('seq'..i,L['Texture'],entry,function(v) sequence[i]=tonumber(v) or v;refresh() end)
-                    elseif effect.type=='dazzle' then p:Color('seq'..i,L['Color'],entry,function(v) sequence[i]=v;refresh() end)
-                    else
-                        p:Texture('seq'..i..'texture',L['Texture'],entry.texture or '',function(v) entry.texture=tonumber(v) or v;refresh() end)
-                        p:Slider('seq'..i..'angle',L['Angle'],entry.angle or 0,0,359,1,function(v) entry.angle=v;refresh() end)
-                        p:Slider('seq'..i..'mag',L['Magnification'],entry.magnification or 1,.1,2,.1,function(v) entry.magnification=v;refresh() end)
-                        p:Color('seq'..i..'color',L['Color'],entry.color,function(v) entry.color=v;refresh() end)
-                    end
-                end,refresh,{prefix='seq',heading=L['Sequence'],add={key='sequence_add',text=L['Add step'],insert=insertStep},dragIcon=function(i) return effect.type=='animate' and sequence[i] or effect.type=='custom' and sequence[i].texture or effect.texture end,endPreview=function(ghost) if ghost.effectPreview and self.HideGlow then self:HideGlow(ghost.effectPreview,'settings-drag') end end,dragPreview=function(ghost,i)
-                    ghost.effectPreview=ghost.effectPreview or CreateFrame('Frame',nil,ghost);ghost.effectPreview:ClearAllPoints();ghost.effectPreview:SetPoint('TOPLEFT',8,-8);ghost.effectPreview:SetSize(28,28);ghost.effectPreview:Show()
-                    if self.HideGlow then self:HideGlow(ghost.effectPreview,'settings-drag') end
-                    if self.Glow then local selected=self:CopySettingsData(effect);selected.sequence={self:CopySettingsData(sequence[i])};self:Glow(ghost.effectPreview,'settings-drag',selected,{r=1,g=1,b=1,a=1},1,'CENTER',0,0) end
-                end,dragSummary=function(i) local e=sequence[i];return effect.type=='pulse' and L['Magnification']..': '..tostring(e) or effect.type=='animate' and L['Texture']..': '..tostring(e) or effect.type=='custom' and L['Texture']..': '..tostring(e.texture)..' / '..L['Magnification']..': '..tostring(e.magnification) or L['Color'] end})
+        local id = isNew and 'draft' or p.selection
+
+        -- Re-shows the preview glow from the edited effect, so every change is visible at once.
+        local function refresh()
+            if self.RemoveAllCurrentGlows then self:RemoveAllCurrentGlows() end
+            if p.preview and self.HideGlow then self:HideGlow(p.preview, 'settings-effect') end
+
+            if p.preview and self.Glow then
+                self:Glow(p.preview, 'settings-effect', effect, { r = 1, g = 1, b = 1, a = 1 }, 1, 'CENTER', 0, 0)
             end
         end
-        local actionEntries={{key='duplicate',text=L['Duplicate'],icon='copy',action=function() local nextId=self:uuid();effects[nextId]=self:CopySettingsData(effect);effects[nextId].name=string.format(L['Copy of %s'],effect.name or id);p.selection=nextId;p:Draw() end},
-            {key='transfer',text=L['Import/Export'],icon='transfer',action=function()
-                local codec=self:NewRotationCodec();local text,why=codec:Encode(effect);if not text then p:Message(why);return end
-                self:ShowSettingsTextTransfer(p,L['Effect'],text,function(input,settings)
-                    local decoded,errorCode=codec:Decode(input);if not decoded or not validEffect(decoded.value) then return false,errorCode or L['Invalid effect.'] end
-                    local value=self:CopySettingsData(decoded.value);local name=settings.mode=='new' and settings.name or effect.name
-                    for other,record in pairs(effects) do if (settings.mode=='new' or other~=id) and record.name==name then return false,L['This name is already in use.'] end end;value.name=name
-                    if settings.mode=='new' then local generated=self:uuid();store.global.effects=store.global.effects or {};store.global.effects[generated]=value;p.selection=generated;p.creating=false;p.newEffect=nil
-                    elseif isNew then p.newEffect=value else effects[id]=value end;refresh();return true
-                end,{canReplace=not isNew,selectedName=effect.name,fallbackName=L['Imported effect'],originalName=function(input) local decoded=codec:Decode(input);return decoded and type(decoded.value)=='table' and decoded.value.name end,
-                    review={kind='effect',parse=function(input) local decoded,errorCode=codec:Decode(input);if not decoded or not validEffect(decoded.value) then return nil,errorCode or L['Invalid effect.'] end;return self:CopySettingsData(decoded.value) end,
-                        current=function() return effect end,
-                        problems=function(candidate,dialog) local name=dialog.mode=='new' and dialog.name:GetText() or effect.name;local list={}
-                            for other,record in pairs(effects) do if (dialog.mode=='new' or other~=id) and record.name==name then list[#list+1]=L['This name is already in use.'];break end end;return list end}})
-            end},
-            {key='delete',text=L['Delete'],icon='trash',action=function()
-                self:ConfirmSettingsDeletion(p,L['Delete this effect? Rotations using it will need another effect.'],function()
-                    if not (self.db.global.effects or {})[id] then return false,'effect-changed' end
-                    self.db.global.effects[id]=nil;if invalidateDependencies then invalidateDependencies(addon,'effect',id) end;return true
-                end)
-            end}}
-        actionEntries[1].enabled=not isNew;self:CollectionFooter(p,'effect',effects,isNew and nil or id,actionEntries[1],actionEntries[2]);if not isNew then self:SettingsTopDelete(p,actionEntries[3].action) end
+
+        -- The live preview sits in the caption column beside Name and Type,
+        -- so this page keeps the full-width caption column.
+        if p.labelScope then p.labelScope.custom = true end
+        local y = p.y
+        local preview = p:Acquire('effectPreview', function() return CreateFrame('Frame', nil, p.child) end)
+        preview:ClearAllPoints()
+        preview:SetPoint('TOPLEFT', 174, -y - 8)
+        preview:SetSize(40, 40)
+        p.preview = preview
+
+        p.cleanups[#p.cleanups + 1] = function()
+            if self.HideGlow then self:HideGlow(preview, 'settings-effect') end
+        end
+
+        p:Edit('name', L['Name'], effect.name or '', nil, function(text)
+            effect.name = text
+
+            p:UpdateRosterEntry(id, {
+                text = effect.name,
+                search = effect.type,
+                icon = effect.texture or self:ControlTexture('preview'),
+            })
+        end)
+
+        p:Choice('type', L['Type'], effect.type, types, function(value)
+            if value == effect.type then return end
+            local candidate = self:CopySettingsData(effect)
+            candidate.type = value
+            candidate.sequence = nil
+            defaults(candidate)
+
+            -- A new sequence kind has different entry shapes. Stage its valid
+            -- empty sequence before replacing the saved object or previewing.
+            if isNew then
+                p.newEffect = candidate
+            else
+                effects[id] = candidate
+            end
+
+            effect = candidate
+            refresh()
+            p:Draw()
+        end)
+
+        if effect.type == 'texture' or effect.type == 'dazzle' or effect.type == 'pulse' or effect.type == 'rotate' then
+            p:Texture(
+                'texture',
+                L['Texture'],
+                effect.texture or '',
+                function(value)
+                    effect.texture = tonumber(value) or value
+                    refresh()
+
+                    p:UpdateRosterEntry(id, {
+                        text = effect.name,
+                        search = effect.type,
+                        icon = effect.texture or self:ControlTexture('preview'),
+                    })
+                end,
+                { preview = false }
+            )
+        end
+
+        for _, entry in ipairs(schemas[effect.type] or {}) do
+            local key = entry[1]
+
+            p:Slider(key, L[entry[2]], effect[key] or entry[3], entry[4], entry[5], entry[6], function(value)
+                effect[key] = value
+                refresh()
+            end)
+        end
+
+        if effect.type == 'proc' then
+            p:Check('startAnim', L['Start burst'], effect.startAnim == true, function(value)
+                effect.startAnim = value
+                refresh()
+            end)
+
+            if not self.GetProcGlowSupport or not self:GetProcGlowSupport() then
+                p.fields.proc_support = p:Text(L['Proc Glow is unavailable on this client; Pixel glow will be used.'])
+            end
+        end
+
+        if effect.type == 'rotate' then
+            p:Check('reverse', L['Reverse'], effect.reverse, function(value)
+                effect.reverse = value
+                refresh()
+            end)
+        end
+
+        if effect.type == 'dazzle' or effect.type == 'animate' or effect.type == 'pulse' or effect.type == 'custom' then
+            do
+                local sequence = effect.sequence or {}
+
+                -- Add step sits on the Sequence header row; a click appends and
+                -- a drag drops into a gap, both through this one insert.
+                -- Inserts a default step for the effect's type at position `gap` (clamped to the end).
+                local function insertStep(gap)
+                    effect.sequence = effect.sequence or {}
+
+                    local value = effect.type == 'pulse' and 1
+                        or effect.type == 'animate' and ''
+                        or effect.type == 'dazzle' and { r = 1, g = 1, b = 1, a = 1 }
+                        or { texture = '', angle = 0, color = { r = 1, g = 1, b = 1, a = 1 }, magnification = 1 }
+
+                    table.insert(effect.sequence, math.max(1, math.min(gap, #effect.sequence + 1)), value)
+                    refresh()
+                    p:Draw()
+                end
+
+                p:OrderedCollection(
+                    'sequence_' .. id,
+                    sequence,
+                    function()
+                        local label
+
+                        for _, t in ipairs(types) do
+                            if t.value == effect.type then label = t.text end
+                        end
+
+                        return label or L['Effect']
+                    end,
+                    function(p, i, entry)
+                        if effect.type == 'pulse' then
+                            p:Slider('seq' .. i, L['Magnification'], entry, .1, 2, .1, function(v)
+                                sequence[i] = v
+                                refresh()
+                            end)
+                        elseif effect.type == 'animate' then
+                            p:Texture('seq' .. i, L['Texture'], entry, function(v)
+                                sequence[i] = tonumber(v) or v
+                                refresh()
+                            end)
+                        elseif effect.type == 'dazzle' then
+                            p:Color('seq' .. i, L['Color'], entry, function(v)
+                                sequence[i] = v
+                                refresh()
+                            end)
+                        else
+                            p:Texture('seq' .. i .. 'texture', L['Texture'], entry.texture or '', function(v)
+                                entry.texture = tonumber(v) or v
+                                refresh()
+                            end)
+
+                            p:Slider('seq' .. i .. 'angle', L['Angle'], entry.angle or 0, 0, 359, 1, function(v)
+                                entry.angle = v
+                                refresh()
+                            end)
+
+                            p:Slider(
+                                'seq' .. i .. 'mag',
+                                L['Magnification'],
+                                entry.magnification or 1,
+                                .1,
+                                2,
+                                .1,
+                                function(v)
+                                    entry.magnification = v
+                                    refresh()
+                                end
+                            )
+
+                            p:Color('seq' .. i .. 'color', L['Color'], entry.color, function(v)
+                                entry.color = v
+                                refresh()
+                            end)
+                        end
+                    end,
+                    refresh,
+                    {
+                        prefix = 'seq',
+                        heading = L['Sequence'],
+                        add = { key = 'sequence_add', text = L['Add step'], insert = insertStep },
+                        dragIcon = function(i)
+                            return effect.type == 'animate' and sequence[i]
+                                or effect.type == 'custom' and sequence[i].texture
+                                or effect.texture
+                        end,
+                        endPreview = function(ghost)
+                            if ghost.effectPreview and self.HideGlow then
+                                self:HideGlow(ghost.effectPreview, 'settings-drag')
+                            end
+                        end,
+                        dragPreview = function(ghost, i)
+                            ghost.effectPreview = ghost.effectPreview or CreateFrame('Frame', nil, ghost)
+                            ghost.effectPreview:ClearAllPoints()
+                            ghost.effectPreview:SetPoint('TOPLEFT', 8, -8)
+                            ghost.effectPreview:SetSize(28, 28)
+                            ghost.effectPreview:Show()
+                            if self.HideGlow then self:HideGlow(ghost.effectPreview, 'settings-drag') end
+
+                            if self.Glow then
+                                local selected = self:CopySettingsData(effect)
+                                selected.sequence = { self:CopySettingsData(sequence[i]) }
+
+                                self:Glow(
+                                    ghost.effectPreview,
+                                    'settings-drag',
+                                    selected,
+                                    { r = 1, g = 1, b = 1, a = 1 },
+                                    1,
+                                    'CENTER',
+                                    0,
+                                    0
+                                )
+                            end
+                        end,
+                        dragSummary = function(i)
+                            local e = sequence[i]
+
+                            return effect.type == 'pulse' and L['Magnification'] .. ': ' .. tostring(e)
+                                or effect.type == 'animate' and L['Texture'] .. ': ' .. tostring(e)
+                                or effect.type == 'custom' and L['Texture']
+                                    .. ': '
+                                    .. tostring(e.texture)
+                                    .. ' / '
+                                    .. L['Magnification']
+                                    .. ': '
+                                    .. tostring(e.magnification)
+                                or L['Color']
+                        end,
+                    }
+                )
+            end
+        end
+
+        local actionEntries = {
+            {
+                key = 'duplicate',
+                text = L['Duplicate'],
+                icon = 'copy',
+                action = function()
+                    local nextId = self:uuid()
+                    effects[nextId] = self:CopySettingsData(effect)
+                    effects[nextId].name = string.format(L['Copy of %s'], effect.name or id)
+                    p.selection = nextId
+                    p:Draw()
+                end,
+            },
+            {
+                key = 'transfer',
+                text = L['Import/Export'],
+                icon = 'transfer',
+                action = function()
+                    local codec = self:NewRotationCodec()
+                    local text, why = codec:Encode(effect)
+
+                    if not text then
+                        p:Message(why)
+                        return
+                    end
+
+                    self:ShowSettingsTextTransfer(
+                        p,
+                        L['Effect'],
+                        text,
+                        function(input, settings)
+                            local decoded, errorCode = codec:Decode(input)
+
+                            if not decoded or not validEffect(decoded.value) then
+                                return false, errorCode or L['Invalid effect.']
+                            end
+
+                            local value = self:CopySettingsData(decoded.value)
+                            local name = settings.mode == 'new' and settings.name or effect.name
+
+                            for other, record in pairs(effects) do
+                                if (settings.mode == 'new' or other ~= id) and record.name == name then
+                                    return false, L['This name is already in use.']
+                                end
+                            end
+
+                            value.name = name
+
+                            if settings.mode == 'new' then
+                                local generated = self:uuid()
+                                store.global.effects = store.global.effects or {}
+                                store.global.effects[generated] = value
+                                p.selection = generated
+                                p.creating = false
+                                p.newEffect = nil
+                            elseif isNew then
+                                p.newEffect = value
+                            else
+                                effects[id] = value
+                            end
+
+                            refresh()
+                            return true
+                        end,
+                        {
+                            canReplace = not isNew,
+                            selectedName = effect.name,
+                            fallbackName = L['Imported effect'],
+                            originalName = function(input)
+                                local decoded = codec:Decode(input)
+                                return decoded and type(decoded.value) == 'table' and decoded.value.name
+                            end,
+                            review = {
+                                kind = 'effect',
+                                parse = function(input)
+                                    local decoded, errorCode = codec:Decode(input)
+
+                                    if not decoded or not validEffect(decoded.value) then
+                                        return nil, errorCode or L['Invalid effect.']
+                                    end
+
+                                    return self:CopySettingsData(decoded.value)
+                                end,
+                                current = function() return effect end,
+                                problems = function(candidate, dialog)
+                                    local name = dialog.mode == 'new' and dialog.name:GetText() or effect.name
+                                    local list = {}
+
+                                    for other, record in pairs(effects) do
+                                        if (dialog.mode == 'new' or other ~= id) and record.name == name then
+                                            list[#list + 1] = L['This name is already in use.']
+                                            break
+                                        end
+                                    end
+
+                                    return list
+                                end,
+                            },
+                        }
+                    )
+                end,
+            },
+            {
+                key = 'delete',
+                text = L['Delete'],
+                icon = 'trash',
+                action = function()
+                    self:ConfirmSettingsDeletion(
+                        p,
+                        L['Delete this effect? Rotations using it will need another effect.'],
+                        function()
+                            if not (self.db.global.effects or {})[id] then return false, 'effect-changed' end
+                            self.db.global.effects[id] = nil
+                            if invalidateDependencies then invalidateDependencies(addon, 'effect', id) end
+                            return true
+                        end
+                    )
+                end,
+            },
+        }
+
+        actionEntries[1].enabled = not isNew
+        self:CollectionFooter(p, 'effect', effects, isNew and nil or id, actionEntries[1], actionEntries[2])
+        if not isNew then self:SettingsTopDelete(p, actionEntries[3].action) end
         refresh()
     end
+
     if isNew then
-        p.fields.new_name=p.fields.name;p.fields.new_type=p.fields.type
+        p.fields.new_name = p.fields.name
+        p.fields.new_type = p.fields.type
+
         p:CreationActions(function()
-            if not self:SettingsNonempty(p.newEffect.name) then p:Message(L['Enter a name first.']);return end
-            if not validEffect(p.newEffect) then p:Message(L['Complete the effect settings before applying.']);return end
-            for _,value in pairs(effects) do if value.name==p.newEffect.name then p:Message(L['This name is already in use.']);return end end
-            local id=self:uuid();store.global.effects=store.global.effects or {};store.global.effects[id]=self:CopySettingsData(p.newEffect);defaults(store.global.effects[id]);p.selection=id;p.creating=false;p.newEffect=nil;p:Draw()
-        end,function() p.creating=false;p.selection=p.previousSelection;p.newEffect=nil;p.emptyDismissed=true;p:Draw() end)
+            if not self:SettingsNonempty(p.newEffect.name) then
+                p:Message(L['Enter a name first.'])
+                return
+            end
+
+            if not validEffect(p.newEffect) then
+                p:Message(L['Complete the effect settings before applying.'])
+                return
+            end
+
+            for _, value in pairs(effects) do
+                if value.name == p.newEffect.name then
+                    p:Message(L['This name is already in use.'])
+                    return
+                end
+            end
+
+            local id = self:uuid()
+            store.global.effects = store.global.effects or {}
+            store.global.effects[id] = self:CopySettingsData(p.newEffect)
+            defaults(store.global.effects[id])
+            p.selection = id
+            p.creating = false
+            p.newEffect = nil
+            p:Draw()
+        end, function()
+            p.creating = false
+            p.selection = p.previousSelection
+            p.newEffect = nil
+            p.emptyDismissed = true
+            p:Draw()
+        end)
     elseif not effect then
-        self:CollectionFooter(p,'effect',effects,nil,{key='duplicate',text=L['Duplicate'],icon='copy',enabled=false,action=function() end},{key='transfer',text=L['Import/Export'],icon='transfer',action=function()
-            local codec=self:NewRotationCodec();self:ShowSettingsTextTransfer(p,L['Effect'],'',function(input,settings) local decoded,why=codec:Decode(input);if not decoded or not validEffect(decoded.value) then return false,why or L['Invalid effect.'] end;p.newEffect=decoded.value;p.newEffect.name=settings.name;p.creating=true;return true end,{fallbackName=L['Imported effect'],originalName=function(input) local decoded=codec:Decode(input);return decoded and type(decoded.value)=='table' and decoded.value.name end,
-                review={kind='effect',parse=function(input) local decoded,why=codec:Decode(input);if not decoded or not validEffect(decoded.value) then return nil,why or L['Invalid effect.'] end;return self:CopySettingsData(decoded.value) end,
-                    problems=function(candidate,dialog) local list={};for _,record in pairs(effects) do if record.name==dialog.name:GetText() then list[#list+1]=L['This name is already in use.'];break end end;return list end}})
-        end})
+        self:CollectionFooter(
+            p,
+            'effect',
+            effects,
+            nil,
+            { key = 'duplicate', text = L['Duplicate'], icon = 'copy', enabled = false, action = function() end },
+            {
+                key = 'transfer',
+                text = L['Import/Export'],
+                icon = 'transfer',
+                action = function()
+                    local codec = self:NewRotationCodec()
+
+                    self:ShowSettingsTextTransfer(
+                        p,
+                        L['Effect'],
+                        '',
+                        function(input, settings)
+                            local decoded, why = codec:Decode(input)
+
+                            if not decoded or not validEffect(decoded.value) then
+                                return false, why or L['Invalid effect.']
+                            end
+
+                            p.newEffect = decoded.value
+                            p.newEffect.name = settings.name
+                            p.creating = true
+                            return true
+                        end,
+                        {
+                            fallbackName = L['Imported effect'],
+                            originalName = function(input)
+                                local decoded = codec:Decode(input)
+                                return decoded and type(decoded.value) == 'table' and decoded.value.name
+                            end,
+                            review = {
+                                kind = 'effect',
+                                parse = function(input)
+                                    local decoded, why = codec:Decode(input)
+
+                                    if not decoded or not validEffect(decoded.value) then
+                                        return nil, why or L['Invalid effect.']
+                                    end
+
+                                    return self:CopySettingsData(decoded.value)
+                                end,
+                                problems = function(candidate, dialog)
+                                    local list = {}
+
+                                    for _, record in pairs(effects) do
+                                        if record.name == dialog.name:GetText() then
+                                            list[#list + 1] = L['This name is already in use.']
+                                            break
+                                        end
+                                    end
+
+                                    return list
+                                end,
+                            },
+                        }
+                    )
+                end,
+            }
+        )
     end
 end

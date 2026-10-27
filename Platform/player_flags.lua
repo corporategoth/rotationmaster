@@ -1,8 +1,14 @@
-local _,addon=...
-local platform=addon.Platform
+-- Platform adapter for three zero-argument player predicates: IsStealthed, HasFullControl and IsOutdoors.
+-- Owns platform:GetPlayerFlagObservation (the `value or nil, reason` reader); it must not combine the flags or
+-- infer anything from them. Runs under the probe and restricted policies. The reader is a Built In helper whose body
+-- is recorded in the generated block at the end of the file and must keep its exact text.
+-- Loaded from RotationMaster.toc after Platform/unit_states.lua.
+local _, addon = ...
+local platform = addon.Platform
 
 -- These predicates are independent, zero-argument observations of the player.
 -- Keep their native facts distinct from existence, instances or spell usability.
+-- kind is "stealthed", "control" or "outdoors"; returns the boolean answer, or nil and a reason code.
 function platform:GetPlayerFlagObservation(kind)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end

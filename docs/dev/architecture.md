@@ -48,11 +48,39 @@ and has not been verified in a real client is in `docs/quality/client-support.md
 | `Modules/` | Load-on-demand add-ons: 13 class modules of Built In rotations, `RotationMaster_WowSims` (the converter and its text) and four text bundles (`RotationMaster_HelpText`, `_ConditionText`, `_DiagnosticsText`, `_IntegrationsText`) |
 | `Libs/`, `LibsAugment/` | Vendored libraries (hash-pinned in `Libs/UPSTREAM.json`) and local additions |
 | `Locales/` | `enUS.lua` (source) and ten generated translations for the text read at startup; `bundles.json` names the load-on-demand text bundles that hold the rest (see "Text bundles") |
-| `Assets/`, `Fonts/`, `textures/` | Icons and overlays (`Assets/*/provenance.json` records each one), the monospace font, minimap and chat textures |
+| `Assets/`, `Fonts/`, `textures/` | Icons and overlays (`Assets/*/provenance.json` records each one), the monospace font, the two `.blp` textures the help and condition pages still draw |
 | `tests/` | Headless suites (Lua 5.1 and LuaJIT) and Python checks; `tests/fixtures/` holds client models and frozen predecessor sources |
 | `tools/` | Generators, checkers, the package builder, translation tools (`docs/dev/running-things.md`) |
 | `docs/` | Human documentation: `dev/`, `translators/`, `release/`, and the topic documents |
 | `.gitea/`, `.claude/`, `.pre-commit-config.yaml` | CI, agent instructions and personas, hooks. None of these ship. |
+
+### Where a new file goes
+
+A game-facing file lives in the folder named for what it does (the roles above) and is listed in `RotationMaster.toc` (or
+the XML it includes) in load order; `tests/verify.py` fails on a file the TOC names but the tree lacks. Nothing in the
+addon folders is unreferenced: a file no TOC, test, tool or document names is dead and is removed (`git grep` for its name
+first). Generators write only the generated files in the table below; a hand-edited generated file fails
+`python3 tools/check --static`. Dev-only material stays out of the package (`.pkgmeta`, `tools/package_release.py --check`).
+Planning documents are never committed.
+
+### Byte-pinned text
+
+No source file is pinned to its exact bytes any more: the suites that rebuilt an earlier version of a file from its
+current text were retired, so every authored Lua file can be reformatted and commented
+(`docs/dev/formatting.md`). What stays fixed is text that saved data binds to:
+
+- **Built In helper and callback bodies.** Saved custom copies and exported bundles hash the text between a function's
+  parameter list and its `end` (`tests/private_helper_identities.lua` records 64 helper hashes; `Core/function_data.lua`
+  puts them in a bundle's requirements), and the Built In source browser shows the callback text from
+  `Data/builtin_sources.lua`. `tools/format_lua.py` prints every body recorded there verbatim, so those functions keep
+  their older, denser layout, and no comment may be added inside one. After changing a Built In module run
+  `python3 tools/generate_builtin_sources.py --write` and `python3 tools/bytecode_equal.py --catalog`.
+- **The Built In composition ledger** (`tests/fixtures/builtin_composition_ledger.lua`) and the premade rotation data under
+  `Modules/`, whose revisions and digests are values, not layout.
+- A few suites still slice a source file by pattern (`tests/edition_state_conditions.lua` and
+  `tests/combat_history_time_conditions.lua` cut `handle_combat_log` and the `UNIT_COMBAT` handler out of `main.lua`,
+  `tests/rotation_scope_init.lua` cuts `init.lua` up to `function addon:augmentDefaults`, `tests/settings_metadata.lua`
+  and `tests/talent_trees.lua` read other files). Keep the shape those patterns expect or update the pattern with the file.
 
 ## Load order and namespaces
 
@@ -65,8 +93,7 @@ created. `tests/verify.py` walks this graph (TOC and XML includes, exact filenam
 
 Every file starts `local addon_name, addon = ...`: the addon table is passed by the client. Platform adapters are
 methods on `addon.Platform` (`function platform:GetUnitHealthObservation(unit)`), other modules hang functions on `addon`.
-Several files capture `addon.X` into a local at load and delete the public name so later code cannot swap it; the byte
-predecessor fixtures below depend on that style being stable.
+Several files capture `addon.X` into a local at load and delete the public name so later code cannot swap it.
 
 ## Load-on-demand Built In modules
 
@@ -162,17 +189,16 @@ knowing:
 - **Class scenario suites** (`defaults_<edition>_<class>.lua`) run each premade through the real predicates and sequence
   executor with modeled observations. `default_corpus.lua` checks every pack of every module against five synthetic client
   families and thirteen class tokens and is by far the slowest test (minutes).
-- **Predecessor fixtures.** A suite that proves a refactor kept behavior can rebuild a predecessor of a file from the
-  current text (`tests/fixtures/restore_*.lua`: a recorded "before" and "after") and run both. The restore asserts the
-  current file equals the recorded "after" byte for byte and fails with `unrelated ... source change: <path>` when it does
-  not, so **editing a file a live restore covers fails it by design**: record the change in the fixture on purpose (a
-  layered restore, as in `restore_window_layering.lua`), never to turn a red run green. Prefer not to add them. A proof that
-  "this refactor changed nothing else" is established when the refactor lands and git keeps it; what lasts is a test of the
-  behavior. About a hundred such byte-exact proofs of past commits were retired for that reason (suites that only compared
-  old and new text were removed with their `tools/check` entries; behavior suites kept their behavior tests).
-  `tests/private_helper_identities.lua` is the one deliberate pin: the identity of the private helpers saved copies and
-  exported bundles bind to (`builtin:<module>:<name>`, whose source hash `Core/function_data.lua` carries in a bundle's
-  requirements). Where a helper changes on purpose, record its new hash there, against the commit that changed it.
+- **Predecessor fixtures.** Some suites rebuilt an earlier version of a file from its current text
+  (`tests/fixtures/restore_*.lua`: a recorded "before" and "after") and ran both. A proof that "this refactor changed
+  nothing else" is established when the refactor lands and git keeps it; what lasts is a test of the behavior, so these
+  were retired: the whole-file pins first (about a hundred), then the last ones that stopped the sources from being
+  formatted (suites that only compared old and new text were removed with their `tools/check` entries; behavior suites kept
+  their behavior tests). Do not add a test that compares a file's text with an earlier version. Fixtures named `restore_*`
+  that remain only rebuild small, still-valid shapes; if one fails after an edit, find out what it guards before
+  touching it. `tests/private_helper_identities.lua` is the deliberate pin: the identity of the private helpers saved
+  copies and exported bundles bind to (`builtin:<module>:<name>`, whose source hash `Core/function_data.lua` carries in a
+  bundle's requirements). Where a helper changes on purpose, record its new hash there, against the commit that changed it.
 - **Client model suites** (`client_api_surface.lua`, `client_baseline.lua`) guard against fixtures that define globals the
   real client removed.
 

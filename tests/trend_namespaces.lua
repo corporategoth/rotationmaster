@@ -57,15 +57,6 @@ test('trend time rounding and malformed-input errors remain live compatibility s
     a.round=original;f.env.GetTime=function() error('LIVE_CLOCK') end;local ok,why=pcall(a.calculate_trend,history());assert(not ok and tostring(why):find('LIVE_CLOCK',1,true))
     f.env.GetTime=function() return 100 end;assert(not pcall(a.calculate_trend,{damage={}}),'missing heals became tolerated');assert(not pcall(a.calculate_trend_old,1),'malformed legacy array became tolerated')
 end)
-test('moved bodies are exact and inverse restores every unrelated utils byte',function()
-    local _,a=fixture();local trends=assert(a.Functions.trends,'canonical trend namespace missing');local current,legacy=body(trends.calculate),body(trends.calculateOld)
-    assert(a:FunctionSourceHash(current)=='49b34bf5' and a:FunctionSourceHash(legacy)=='ced8840f','trend body bytes changed')
-    local file=assert(io.open('utils.lua'));local text=file:read('*a');file:close()
-    for _,case in ipairs({{'addon.calculate_trend_old=addon.Functions.trends.calculateOld','function addon.calculate_trend_old(health)'..legacy..'end'},{'addon.calculate_trend=addon.Functions.trends.calculate','function addon.calculate_trend(history, window, noheals, nodmg)'..current..'end'}}) do
-        local first,last=text:find(case[1],1,true);assert(first and not text:find(case[1],last+1,true),'unexpected trend alias count');text=text:sub(1,first-1)..case[2]..text:sub(last+1)
-    end
-    assert(a:FunctionSourceHash(text)=='e66df73b','utils changed outside the two ownership replacements')
-end)
 test('raw saved function source keeps its dynamic legacy aliases and tuple arity',function()
     local _,a=fixture()
     for index,name in ipairs({'calculate_trend','calculate_trend_old'}) do

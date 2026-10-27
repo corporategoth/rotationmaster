@@ -1,48 +1,85 @@
-local addon_name,addon=...
-local L=LibStub("AceLocale-3.0"):GetLocale(addon_name)
-local platform=addon.Platform
+-- Built In talent conditions: TALENT (the rank of one talent, or whether a Mists talent is chosen),
+-- TALENT_TREE_POINTS (points spent in a Classic tree) and PRIMARY_TALENT_TREE (the Classic tree with the most points).
+-- Three client layouts exist (platform:GetTalentLayout): "tree" (Era, TBC, Wrath, Cataclysm), "grid" (Mists) and
+-- "traits" (Retail, Forever, where ranks come from Core/build_context.lua). All game reads go through addon.Platform
+-- (GetTreeTalentInfo, GetGridTalentInfo, GetTalentTreeInfo, GetTraitTalents ...), so restricted-value handling stays
+-- there; a value saved for another layout is kept and reported unavailable, never converted. Loaded from
+-- RotationMaster.toc after Conditions/character.lua and before Conditions/engraving.lua. The condition callbacks and
+-- every helper recorded in the generated block at the end are frozen Built In source: never edit inside a body.
+local addon_name, addon = ...
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
+local platform = addon.Platform
+
 -- Select the pure implementations privately; saved custom source retains its
 -- original addon APIs and the collector verifies these stable helper leaves.
-local Functions={
-    cache={getCached=addon.Functions.cache.getCached},
-    values={isin=addon.Functions.values.isin,compare=addon.Functions.values.compare},
-    presentation={compareString=addon.Functions.presentation.compareString,nullable=addon.Functions.presentation.nullable},
+local Functions = {
+    cache = { getCached = addon.Functions.cache.getCached },
+    values = { isin = addon.Functions.values.isin, compare = addon.Functions.values.compare },
+    presentation = {
+        compareString = addon.Functions.presentation.compareString,
+        nullable = addon.Functions.presentation.nullable,
+    },
 }
-addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
-addon.builtinCallbackBindings["Conditions/talent.lua"]={
-    ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
-    ["Functions.values.isin"]="builtin:utils.lua:isin",
-    ["Functions.values.compare"]="builtin:utils.lua:compare",
-    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
-    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
+
+addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
+
+addon.builtinCallbackBindings["Conditions/talent.lua"] = {
+    ["Functions.cache.getCached"] = "builtin:utils.lua:getCached",
+    ["Functions.values.isin"] = "builtin:utils.lua:isin",
+    ["Functions.values.compare"] = "builtin:utils.lua:compare",
+    ["Functions.presentation.compareString"] = "builtin:utils.lua:compareString",
+    ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
 }
-local function integer(value,minimum,maximum)
+
+-- ============================================================================
+-- Saved-value shapes and talent lookup
+-- ============================================================================
+
+-- True when `value` is a whole number within [minimum, maximum]. Works on saved data, which is never a secret value.
+local function integer(value, minimum, maximum)
     return type(value)=="number" and value>=minimum and value<=maximum and value%1==0
 end
+
+-- True for a Classic tree reference: a tree index and a talent index (the layout field may be absent on old saves).
 local function treeShape(value)
     return (value.layout==nil or value.layout=="tree") and value.tree~=nil and value.talent~=nil
 end
+
+-- True for the oldest saved shape, a bare slot number 1-21 with no layout. It names no talent today, so TALENT reports
+-- it unavailable ("historical-talent-layout") and it is preserved rather than converted.
 local function legacySlot(value)
     return value.layout==nil and value.tree==nil and value.talent==nil and integer(value.value,1,21)
 end
+
 -- Trait talents (Retail, Forever) name a node and, for a choice node, the
 -- chosen entry; the rank comes from Core/build_context.lua, which reads each
 -- node once per talent change.
 local function traitShape(value) return value.layout=="traits" end
+
+-- True on the clients that use trait talents (Retail, Forever); the tree-point conditions branch on it.
 local function traitFamily()
     local family=platform:GetClientFamily()
     return family=="retail" or family=="forever"
 end
+
+-- The talent group (1-4, the dual-spec slot) to query for a rotation's spec. Only progression clients have talent
+-- groups; elsewhere it returns nil, which the Platform reads as the active group.
 local function group(spec)
     if platform:GetClientInfo().family=="progression" and integer(spec,1,4) then return spec end
 end
+
 -- Whether the trees being edited are the player's class's (so the game can
 -- name their talents), as opposed to another class's rotation.
 local function ownTrees()
     local context=addon.TalentTrees.ContextClass()
     return context==nil or addon.TalentTrees.IsPlayerClass(context)
 end
-local function info(value,spec)
+
+-- Looks up the talent a saved value names (its name and icon) for the editor and the summary, through the Platform
+-- for the value's layout. Returns the record, or nil when the value names nothing or the game cannot say.
+-- Classic trees are queried only for the player's own class, because another class's index would name one of the
+-- player's talents instead.
+local function info(value, spec)
     if traitShape(value) then return integer(value.node,1,2147483647) and platform:GetTraitTalentIdentity(value.node,value.entry,value.spell) or nil end
     if value.layout=="grid" then return platform:GetGridTalentInfo(value.value,group(spec)) end
     if treeShape(value) then
@@ -52,24 +89,39 @@ local function info(value,spec)
         return platform:GetTreeTalentInfo(value.tree,value.talent,group(spec))
     end
 end
-local function text(parent,message)
+
+-- ============================================================================
+-- Editor widgets
+-- ============================================================================
+
+-- Adds a full-width explanatory label to the editor.
+local function text(parent, message)
     local label=addon:CreateConditionLabel();label:SetFullWidth(true);label:SetText(message);parent:AddChild(label)
 end
-local function dropdown(parent,title,changed)
+
+-- Adds a full-width dropdown that calls changed(value) on selection, and returns it so the caller can fill its list in
+-- a `configure` hook.
+local function dropdown(parent, title, changed)
     local widget=addon:CreateConditionDropdown();widget:SetFullWidth(true);widget:SetLabel(title)
     widget:SetCallback("OnValueChanged",function(_,_,value) changed(value) end);parent:AddChild(widget)
     return widget
 end
+
 -- Every talent picker is one block: the talent's icon on the left, spanning two
 -- rows, and a list on each row to its right (what the talent belongs to, then
 -- the talent). The icon shows the chosen talent, a question mark before one is
 -- chosen. UI/condition_layout.lua lays the block out.
-local PLACEHOLDER="Interface\\Icons\\INV_Misc_QuestionMark"
+local PLACEHOLDER = "Interface\\Icons\\INV_Misc_QuestionMark"
+
+-- Adds the icon-plus-two-rows group that holds one talent picker, and returns it.
 local function block(parent)
     local widget=addon:CreateConditionGroup();widget:SetFullWidth(true);widget:SetLayout("RM-IconRows");parent:AddChild(widget)
     return widget
 end
-local function icon(parent,value,spec)
+
+-- Adds the talent icon (the question mark until a talent is chosen) with a tooltip for the chosen talent, and returns
+-- it so the pickers can swap the image when the choice changes.
+local function icon(parent, value, spec)
     local widget=addon:CreateConditionIcon();widget:SetWidth(64);widget:SetImageSize(60,60)
     local current=info(value,spec);widget:SetImage(current and current.icon or PLACEHOLDER)
     widget:SetCallback("OnEnter",function()
@@ -84,7 +136,11 @@ local function icon(parent,value,spec)
     parent:AddChild(widget)
     return widget
 end
-local function treeWidget(parent,spec,value,update)
+
+-- Editor for the Classic tree layout: a tree dropdown, a talent dropdown for the chosen tree and the points operator.
+-- Changing the tree clears the talent, and a reference saved in another layout is replaced only once a tree is picked.
+-- `update` re-prints the condition's summary after every change.
+local function treeWidget(parent, spec, value, update)
     local trees,treeOrder={},{}
     -- Names, never positions: the game's for the player's class, the shipped
     -- table's for another class's rotation or before the game has the data.
@@ -121,11 +177,16 @@ local function treeWidget(parent,spec,value,update)
     talentPicker.configure=function() talentPicker:SetList(talents,talentOrder);talentPicker:SetValue(value.talent) end
     parent:AddChild(addon:Widget_OperatorWidget(value,L["Points"],update))
 end
+
 -- Mists of Pandaria: six tiers, one of three talents in each. The tier is the
 -- upper list, the three talents of that tier the lower; the reference stays
 -- the slot, 1-18.
-local GRID_TIER_LEVELS={15,30,45,60,75,90}
-local function gridWidget(parent,spec,value,update)
+local GRID_TIER_LEVELS = { 15, 30, 45, 60, 75, 90 }
+
+-- Editor for the Mists grid layout: a tier dropdown and a dropdown for the three talents of the shown tier. Choosing
+-- a talent saves slot (tier - 1) * 3 + column in `value` and clears the tree fields, because a grid reference has no
+-- operator. `update` re-prints the condition's summary.
+local function gridWidget(parent, spec, value, update)
     local tiers,tierOrder={},{}
     for tier,level in ipairs(GRID_TIER_LEVELS) do tiers[tier]=string.format(L["Tier %d (level %d)"],tier,level);tierOrder[tier]=tier end
     local chosen=value.layout=="grid" and integer(value.value,1,18) and value.value or nil
@@ -160,6 +221,7 @@ local function gridWidget(parent,spec,value,update)
     picker:SetDisabled(#order==0)
     picker.configure=function() picker:SetList(choices,order);picker:SetValue(chosen and math.ceil(chosen/3)==shownTier and (chosen-1)%3+1 or nil) end
 end
+
 -- The specializations of the player's class (Retail), for the list of talents
 -- to show; nil where the client has one talent tree per class.
 local function classSpecs()
@@ -169,6 +231,7 @@ local function classSpecs()
     local choices=platform:GetClassSpecializationChoices(classID)
     return choices and #choices>1 and choices or nil
 end
+
 -- What a group of the talent list is called.
 local function groupLabel(candidate)
     if candidate.kind=="class" then return L["Class talents"] end
@@ -177,7 +240,13 @@ local function groupLabel(candidate)
     if candidate.kind=="hero" then return candidate.name and string.format(L["Hero talents: %s"],candidate.name) or L["Hero Talents"] end
     return candidate.name or L["Talents"]
 end
-local function traitsWidget(parent,spec,value,update)
+
+-- Editor for the trait layout (Retail, Forever): an optional specialization list, a talent list grouped by class,
+-- specialization and hero tree, a button for the drawn talent tree, and boxes for a node ID and a choice-node entry ID
+-- that stay valid when the lists cannot be filled (another class, in combat). Picking from the list also saves the
+-- talent's spell so the reference survives a renumbered tree. Every handler keeps the lists, the open tree window and
+-- the boxes in step through closures local to this function. `update` re-prints the condition's summary.
+local function traitsWidget(parent, spec, value, update)
     -- Retail: the talents of the rotation's specialization, which need not be
     -- the one being played (shown can be switched). Forever: the loadout.
     local specs=classSpecs()
@@ -366,10 +435,32 @@ local function traitsWidget(parent,spec,value,update)
     operators=addon:Widget_OperatorWidget(value,L["Rank"],update);parent:AddChild(operators)
     show()
 end
-addon:RegisterCondition("TALENT",{
-    description=L["Talent"],icon = addon.Artwork.condition["TALENT"],
-    fields={layout="string",tree="number",talent="number",node="number",entry="number",spell="number",operator="string",value="number"},
-    valid=function(_,value)
+
+-- ============================================================================
+-- Talent conditions
+-- ============================================================================
+
+-- TALENT: compares the rank (points) of one talent with `value` using `operator`; for a Mists talent it is true when
+-- the talent is chosen. Which fields are saved depends on `layout`: "tree" saves tree, talent, operator and value;
+-- "grid" saves value (the slot 1-18); "traits" saves node, optional entry and spell, operator and value. A bare legacy
+-- slot or a reference from another client's layout is kept but unavailable ("historical-talent-layout" or
+-- "talent-layout-mismatch" from Core/condition_support.lua). Returns `nil, reason` when the Platform or the build
+-- context cannot read the talent.
+addon:RegisterCondition("TALENT", {
+    description = L["Talent"],
+    icon = addon.Artwork.condition["TALENT"],
+    fields = {
+        layout = "string",
+        tree = "number",
+        talent = "number",
+        node = "number",
+        entry = "number",
+        spell = "number",
+        operator = "string",
+        value = "number",
+    },
+    -- Accepts a complete reference in exactly one layout; a mixed or partly filled shape is invalid.
+    valid = function(_, value)
         if traitShape(value) then
             return integer(value.node,1,2147483647) and (value.entry==nil or integer(value.entry,1,2147483647))
                 and (value.spell==nil or integer(value.spell,1,2147483647)) and value.tree==nil and value.talent==nil
@@ -383,7 +474,9 @@ addon:RegisterCondition("TALENT",{
         return treeShape(value) and integer(value.tree,1,16) and integer(value.talent,1,256)
             and Functions.values.isin(addon.operators,value.operator) and integer(value.value,0,64)
     end,
-    evaluate=function(value,cache)
+    -- Unavailable for a legacy slot, before the build context exists ("build-context-unavailable"), when the node
+    -- rank is unreadable, and when the Platform cannot read the Classic or grid talent.
+    evaluate = function(value, cache)
         if legacySlot(value) then return nil,"historical-talent-layout" end
         if traitShape(value) then
             if not addon.GetTraitNodeRank then return nil,"build-context-unavailable" end
@@ -401,7 +494,8 @@ addon:RegisterCondition("TALENT",{
         if not talent then return nil,reason end
         return Functions.values.compare(value.operator,talent.rank,value.value)
     end,
-    print=function(spec,value)
+    -- Readable summary per layout; names the talent when the game can, else a placeholder or the node number.
+    print = function(spec, value)
         local talent=info(value,spec)
         if legacySlot(value) then return string.format(L["Historical talent slot %s (unavailable)"],value.value) end
         if traitShape(value) then
@@ -413,7 +507,8 @@ addon:RegisterCondition("TALENT",{
         return Functions.presentation.compareString(value.operator,string.format(L["the number of talent points in %s (%s)"],
             talent and talent.name or L["<talent>"],tree or L["<talent tree>"]),Functions.presentation.nullable(value.value))
     end,
-    widget=function(parent,spec,value)
+    -- Editor: picks the widget for this client's talent layout; an unknown layout shows a notice and keeps the value.
+    widget = function(parent, spec, value)
         local top=parent:GetUserData("top")
         local function update() top:SetStatusText(top:GetUserData("funcs"):print(top:GetUserData("root"),spec)) end
         local current=platform:GetTalentLayout()
@@ -422,7 +517,8 @@ addon:RegisterCondition("TALENT",{
         elseif current=="traits" then traitsWidget(parent,spec,value,update)
         else text(parent,L["This client uses a different talent system. This reference is preserved but cannot be evaluated."]) end
     end,
-    help=function(frame)
+    -- Help page text; the tree-window paragraph appears only when the client can draw the tree.
+    help = function(frame)
         frame:AddChild(addon.help_funcs.CreateText(L["Classic conditions compare points spent in a tree talent. Mists selections use six tiers with three choices. Historical references from another talent system remain unavailable and are never automatically converted."]))
         frame:AddChild(addon.help_funcs.Gap())
         frame:AddChild(addon.help_funcs.CreateText(L["Retail and Forever compare the rank of a talent in your active loadout. Pick it from the talents of the rotation's specialization (the Specialization list shows another specialization's, outside combat), or enter the node ID (and, for a choice node, the entry ID of the choice) to share a rotation. A choice node's entry has rank zero unless it is the chosen one, a hero talent outside your chosen hero tree has rank zero, and so does a talent of a specialization you are not playing. A talent picked from the list also remembers its spell, and is found again by it if Blizzard renumbers the talent tree. Ranks are read again after any talent change; an unreadable node is unavailable, including under NOT."]))
@@ -433,11 +529,20 @@ addon:RegisterCondition("TALENT",{
     end,
 })
 
-local function treeName(value,spec)
+-- ============================================================================
+-- Talent tree conditions
+-- ============================================================================
+
+-- The display name of the tree a value names (the game's name for your class, the shipped list for another class's
+-- rotation), or a generic "Talent tree N" / placeholder label when none is known.
+local function treeName(value, spec)
     local name=integer(value.tree,1,16) and addon.TalentTrees.Name(value.tree,addon.TalentTrees.ContextClass(),group(spec))
     return name or value.tree and string.format(L['Talent tree %s'],tostring(value.tree)) or L['<talent tree>']
 end
-local function treePicker(parent,spec,value,update)
+
+-- Adds the tree dropdown shared by the two tree conditions, filled from the class's tree list; it is disabled when no
+-- list exists, and the saved tree reference is kept either way. `update` re-prints the summary.
+local function treePicker(parent, spec, value, update)
     local choices,order={},{}
     local listed=addon.TalentTrees.Choices(addon.TalentTrees.ContextClass(),group(spec))
     if listed then choices,order=listed.choices,listed.order
@@ -446,17 +551,34 @@ local function treePicker(parent,spec,value,update)
     picker:SetDisabled(#order==0 or value.disabled==true)
     picker.configure=function() picker:SetList(choices,order);picker:SetValue(value.tree) end
 end
-local function treeExists(value,cache)
+
+-- True when the client has at least `value.tree` Classic talent trees; otherwise nil and a reason (the tree count is
+-- unreadable, or "talent-tree-unavailable" when the saved index is beyond the client's trees).
+local function treeExists(value, cache)
     local count,reason=addon.getCached(cache,platform.GetTalentTreeCount,platform)
     if count==nil then return nil,reason end
     if value.tree>count then return nil,'talent-tree-unavailable' end
     return true
 end
-addon:RegisterCondition('TALENT_TREE_POINTS',{
-    description=L['Talent Tree Points'],icon = addon.Artwork.condition["TALENT_TREE_POINTS"],requiredFields={'tree','operator','value'},
-    fields={tree='number',operator='string',value='number'},
-    valid=function(_,value) return integer(value.tree,1,16) and Functions.values.isin(addon.operators,value.operator) and integer(value.value,0,512) end,
-    evaluate=function(value,cache)
+
+-- TALENT_TREE_POINTS: compares the points spent in one tree (index 1-16, saved by position in the talent window's
+-- order) with `value`. On trait clients the count comes from the build context (Forever's three trees); on Classic
+-- clients from Platform:GetTalentTreeInfo. Returns `nil, reason` when the build context, the tree or the points are
+-- unreadable. Stores `tree`, `operator` and `value`.
+addon:RegisterCondition('TALENT_TREE_POINTS', {
+    description = L['Talent Tree Points'],
+    icon = addon.Artwork.condition["TALENT_TREE_POINTS"],
+    -- All three fields are needed; a partly filled condition is incomplete.
+    requiredFields = { 'tree', 'operator', 'value' },
+    fields = { tree = 'number', operator = 'string', value = 'number' },
+    -- A tree index 1-16, a known operator and 0-512 points.
+    valid = function(
+        _,
+        value
+    ) return integer(value.tree,1,16) and Functions.values.isin(addon.operators,value.operator) and integer(value.value,0,512) end,
+    -- Unavailable when the build context is missing, the tree index is beyond the client's trees, or the spent points
+    -- are missing, restricted or out of range.
+    evaluate = function(value, cache)
         if traitFamily() then
             if not addon.GetTraitTreePoints then return nil,"build-context-unavailable" end
             local points,why=addon:GetTraitTreePoints(value.tree)
@@ -469,22 +591,38 @@ addon:RegisterCondition('TALENT_TREE_POINTS',{
         if not integer(tree.pointsSpent,0,512) then return nil,'talent-points-unavailable' end
         return Functions.values.compare(value.operator,tree.pointsSpent,value.value)
     end,
-    print=function(spec,value) return Functions.presentation.compareString(value.operator,string.format(L['the number of points spent in %s'],treeName(value,spec)),Functions.presentation.nullable(value.value)) end,
-    widget=function(parent,spec,value)
+    -- Readable summary naming the tree.
+    print = function(
+        spec,
+        value
+    ) return Functions.presentation.compareString(value.operator,string.format(L['the number of points spent in %s'],treeName(value,spec)),Functions.presentation.nullable(value.value)) end,
+    -- Editor: the tree dropdown and the points operator.
+    widget = function(parent, spec, value)
         local top=parent:GetUserData('top');local function update() top:SetStatusText(top:GetUserData('funcs'):print(top:GetUserData('root'),spec)) end
         treePicker(parent,spec,value,update);parent:AddChild(addon:Widget_OperatorWidget(value,L['Points'],update))
     end,
-    help=function(frame)
+    -- Help page text.
+    help = function(frame)
         frame:AddChild(addon.help_funcs.CreateText(L['Talent tree selects the Classic tree whose spent points are compared. Public points are read again on the next evaluation; missing or restricted points are unavailable, including under NOT. Grids and trait trees are unsupported.']))
         frame:AddChild(addon.help_funcs.Gap());frame:AddChild(addon.help_funcs.CreateText(L["Talent trees are named, never numbered: the list shows each tree by name, in the order the talent window shows them, for the class the rotation is for. Your own class takes the names the game gives its trees; another class's rotation uses Rotation Master's own list of that class's trees. The rotation saves the tree's position in that order, so it keeps its meaning when you share it."]))
         frame:AddChild(addon.help_funcs.Gap());frame:AddChild(addon.help_funcs.CreateText(L['Forever is the exception: Talent tree is one of the three talent trees of your active loadout (in the order the talent window shows them); their points are read again after any talent change. Retail has no such trees.']))
         frame:AddChild(addon.help_funcs.Gap());addon.layout_condition_operatorwidget_help(frame,L['Talent Tree Points'],L['Points'],L['Compare whole points spent from zero to 512. An explicit comparison with zero can describe an unspent tree.'])
     end,
 })
-addon:RegisterCondition('PRIMARY_TALENT_TREE',{
-    description=L['Primary Talent Tree'],icon = addon.Artwork.condition["PRIMARY_TALENT_TREE"],requiredFields={'tree'},fields={tree='number'},
-    valid=function(_,value) return integer(value.tree,1,16) end,
-    evaluate=function(value,cache)
+
+-- PRIMARY_TALENT_TREE: true when the chosen tree is the one with the most spent points (on trait clients, the build
+-- context's primary tree). Ties, no spent points and unreadable records are unavailable rather than false. Stores
+-- `tree`.
+addon:RegisterCondition('PRIMARY_TALENT_TREE', {
+    description = L['Primary Talent Tree'],
+    icon = addon.Artwork.condition["PRIMARY_TALENT_TREE"],
+    requiredFields = { 'tree' },
+    fields = { tree = 'number' },
+    -- A tree index 1-16.
+    valid = function(_, value) return integer(value.tree,1,16) end,
+    -- Unavailable when the build context is missing, the tree index is beyond the client's trees, or the Platform
+    -- cannot name a unique primary tree (equal maxima, no points, restricted points).
+    evaluate = function(value, cache)
         if traitFamily() then
             if not addon.GetTraitPrimaryTree then return nil,"build-context-unavailable" end
             local primary,why=addon:GetTraitPrimaryTree()
@@ -496,11 +634,17 @@ addon:RegisterCondition('PRIMARY_TALENT_TREE',{
         if not primary then return nil,reason end
         return primary.index==value.tree
     end,
-    print=function(spec,value) return string.format(L['your primary talent tree {{!is|is not}} %s'],treeName(value,spec)) end,
-    widget=function(parent,spec,value)
+    -- Readable summary naming the tree.
+    print = function(
+        spec,
+        value
+    ) return string.format(L['your primary talent tree {{!is|is not}} %s'],treeName(value,spec)) end,
+    -- Editor: the tree dropdown only.
+    widget = function(parent, spec, value)
         local top=parent:GetUserData('top');treePicker(parent,spec,value,function() top:SetStatusText(top:GetUserData('funcs'):print(top:GetUserData('root'),spec)) end)
     end,
-    help=function(frame)
+    -- Help page text.
+    help = function(frame)
         frame:AddChild(addon.help_funcs.CreateText(L['Talent tree selects the unique Classic tree with the most positive spent points. Equal maxima, no spent points, missing records and restricted points are unavailable, including under NOT.']))
         frame:AddChild(addon.help_funcs.Gap());frame:AddChild(addon.help_funcs.CreateText(L["Talent trees are named, never numbered: the list shows each tree by name, in the order the talent window shows them, for the class the rotation is for. Your own class takes the names the game gives its trees; another class's rotation uses Rotation Master's own list of that class's trees. The rotation saves the tree's position in that order, so it keeps its meaning when you share it."]))
         frame:AddChild(addon.help_funcs.Gap());frame:AddChild(addon.help_funcs.CreateText(L['The primary tree is derived from readable points, not the saved rotation slot. Hybrid builds may need tree-point or individual-talent conditions instead; the primary tree does not assign a tank or healer role. Grids and trait trees are unsupported.']))

@@ -1,13 +1,22 @@
-local _,addon=...
-local platform=addon.Platform
+-- Platform adapter for unit health (UnitExists, UnitHealth, UnitHealthMax). Returns a record or `nil, reason`; game
+-- values pass platform:CanReadValue and canaccessvalue before any comparison, because Retail and Forever make health
+-- secret in combat (docs/restricted-clients.md) and a secret value is unavailable, never a number. Only the probe and
+-- restricted combat-data policies read. Loaded from RotationMaster.toc after Platform/casting.lua.
+-- The generated bindings block at the end is owned by tools/generate_builtin_sources.py; finite and the reader are
+-- Built In helpers, so their bodies are frozen.
+local _, addon = ...
+local platform = addon.Platform
 
+-- True for a number that is neither NaN nor infinite.
 local function finite(value)
     return type(value)=='number' and value==value and value<math.huge and value>-math.huge
 end
 
 -- Request maximum only for predicates that need it. A readable false existence
 -- is ordinary absence; nil or unreadable data never establishes absence.
-function platform:GetUnitHealthObservation(unit,includeMaximum)
+-- Returns { exists = false }, or { exists = true, current = n } plus maximum = n when includeMaximum is true, or nil
+-- and a reason. Callers cache the result per evaluation pass.
+function platform:GetUnitHealthObservation(unit, includeMaximum)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(includeMaximum) then return nil,'restricted-value' end

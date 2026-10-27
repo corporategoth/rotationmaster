@@ -1,7 +1,16 @@
+-- The unit dropdown widget that Built In condition editors share (Conditions/*.lua call addon:Widget_UnitWidget).
+-- Owns only the dropdown that edits one unit field of a condition's saved table; it does not read game state.
+-- Loaded from the UI section of RotationMaster.toc after UI/condition_inputs.lua, before any Conditions/ file runs.
+-- The widget is recorded as a Built In helper (see the generated bindings block at the end of the file), so the body
+-- of Widget_UnitWidget is frozen: saved custom copies hash its exact text. Do not edit inside it.
+
 local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
+-- Builds a condition dropdown that edits value[field] (default "unit") from the choice table units, and returns it.
+-- When the owning window is an announcement editor (or the value already holds "announcementtarget") the list gains
+-- an "Announcement target" choice. The list is rebuilt by unit.configure each time the editor lays the widget out.
 function addon:Widget_UnitWidget(value, units, update, field)
     if field == nil then
         field = "unit"

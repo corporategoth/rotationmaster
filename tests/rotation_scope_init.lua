@@ -5,7 +5,7 @@ local function fixture(profile,char)
     a.db.SetProfile=function() error('scoped initialization changed profile') end
     local file=assert(io.open('init.lua'));local source=file:read('*a');file:close()
     local actual=assert(source:match('(local function moveProfileItems%(%).-)%s*function addon:augmentDefaults'))
-    local fn=assert(loadstring('local addon,L=... '..actual..' return moveProfileItems'))
+    local fn=assert(loadstring('local addon,L=... '..actual..'\nreturn moveProfileItems'))
     local run=fn(a,setmetatable({},{__index=function(_,k) return k end}))
     return a,run
 end

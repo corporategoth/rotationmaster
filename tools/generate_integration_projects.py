@@ -23,10 +23,10 @@ def nonempty(value):
 
 
 def supported_ids(source):
-    match = re.search(r'local providers=\{\n(.*?)\n\}', source, re.S)
+    match = re.search(r'local providers\s*=\s*\{\n(.*?)\n\}', source, re.S)
     if not match:
         raise ValueError('supported integration identities declaration missing')
-    ids = re.findall(r"^\s*\{'([^']+)'", match[1], re.M)
+    ids = re.findall(r"^\s*\{\s*'([^']+)'", match[1], re.M)
     if not ids or len(ids) != len(set(ids)):
         raise ValueError('supported integration identities empty or duplicated')
     return set(ids)

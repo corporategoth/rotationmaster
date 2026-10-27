@@ -1,9 +1,16 @@
-local _,addon=...
-local platform=addon.Platform
+-- Platform adapter for "are these two unit tokens the same unit" (UnitExists on the first, then UnitIsUnit). Returns
+-- `boolean, nil` or `nil, reason`; game values pass platform:CanReadValue first. Only the probe and restricted
+-- combat-data policies read. Loaded from RotationMaster.toc after Platform/runes.lua; consumed by the unit-identity
+-- condition in Conditions/character.lua.
+-- The generated bindings block at the end is owned by tools/generate_builtin_sources.py; the reader is a Built In
+-- helper, so its body is frozen.
+local _, addon = ...
+local platform = addon.Platform
 
 -- Preserve the original first-unit existence check and ordered comparison.
 -- The second token is passed to UnitIsUnit without an extra existence query.
-function platform:GetUnitIdentityObservation(unit,otherunit)
+-- Returns false when the first unit does not exist, otherwise the UnitIsUnit result, or nil and a reason.
+function platform:GetUnitIdentityObservation(unit, otherunit)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(otherunit) then return nil,'restricted-value' end

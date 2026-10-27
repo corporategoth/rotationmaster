@@ -1,6 +1,15 @@
-local _,addon=...
+-- The condition editor's image widget: a button holding one texture and an optional caption, used for spell, item and
+-- talent icons in condition editors and help pages (UI/spell_icon.lua, Conditions/talent.lua, Help/common.lua).
+-- Owns the widget definition only; callers get an instance from addon:CreateConditionIcon and never build one directly.
+-- Loaded from the UI/ block of RotationMaster.toc after UI/condition_widgets.lua, which supplies the lease and
+-- acquire/release machinery this widget plugs into. This is a generated-binding file: constructor and
+-- CreateConditionIcon are recorded as Built In helpers, so their bodies are frozen and the generated block at the end
+-- is never edited.
+local _, addon = ...
 
 -- Shared native image primitive with owned callback and input leases.
+-- constructor builds one widget (a Button frame plus its texture and caption) for the widget pool and registers it
+-- with the lease machinery. Its click and hover scripts fire only while the widget's lease is still the live one.
 ---@class RMConditionIcon: RMConditionWidget
 ---@field image Texture
 ---@field label FontString
@@ -52,6 +61,8 @@ local function constructor()
     end
     return addon:RegisterConditionWidget(w)
 end
+
+-- Returns a pooled icon widget from the condition widget registry; release it through the owning container.
 ---@return RMConditionIcon
 function addon:CreateConditionIcon()
     return self:AcquireConditionWidget('RM-ConditionIcon',constructor)

@@ -1,12 +1,21 @@
-local _,addon=...
-local platform=addon.Platform
+-- Platform adapter for a unit's effective primary stat or armor (UnitExists, UnitStat, UnitArmor). Returns a record or
+-- `nil, reason`; game values pass platform:CanReadValue and canaccessvalue first. Only the probe and restricted
+-- combat-data policies read. Loaded from RotationMaster.toc after Platform/unit_health.lua.
+-- The generated bindings block at the end is owned by tools/generate_builtin_sources.py; finite and the reader are
+-- Built In helpers, so their bodies are frozen.
+local _, addon = ...
+local platform = addon.Platform
+
+-- True for a number that is neither NaN nor infinite.
 local function finite(value)
     return type(value)=='number' and value==value and value~=math.huge and value~=-math.huge
 end
 
 -- The selector range is RM's six authored choices. Only native return two is
 -- consumed; its signed/fractional finite domain is not narrowed by UI display.
-function platform:GetUnitStatObservation(unit,stat)
+-- stat is an integer from 1 to 5 (the UnitStat index) or 6 (UnitArmor). Returns { exists = false } or
+-- { exists = true, value = effective stat }, or nil and a reason.
+function platform:GetUnitStatObservation(unit, stat)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(stat) then return nil,'restricted-value' end

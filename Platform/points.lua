@@ -1,5 +1,12 @@
-local _,addon=...
-local platform=addon.Platform
+-- Platform adapter for point resources (combo points, runes, soul shards, holy power, chi, arcane charges, essence,
+-- Burning Embers) behind the POINT condition. Wraps UnitExists, UnitClass, UnitPower, UnitPowerMax and GetComboPoints;
+-- every reader returns `value, nil` or `nil, reason` and passes each game value through platform:CanReadValue before
+-- comparing it, so a secret value is unavailable and never a number. Must not choose the primary power bar or
+-- redirect the unit. Loaded from RotationMaster.toc after Platform/client.lua (which defines addon.Platform).
+-- The generated bindings block at the end is owned by tools/generate_builtin_sources.py; the readers are Built In
+-- helpers, so their bodies are frozen.
+local _, addon = ...
+local platform = addon.Platform
 
 -- Retail and Forever make UnitPower and GetComboPoints SecretWhenUnitPowerRestricted:
 -- "secret values for power types not explicitly flagged as being never secret,
@@ -18,26 +25,41 @@ local platform=addon.Platform
 -- stay secret, and GetComboPoints follows the combo-point rule. Under the
 -- restricted policy POINT reads only these types, by Enum name, and every
 -- value still passes CanReadValue: a secret one is unavailable, never a number.
-local neverSecretPointPowers={'ComboPoints','Runes','SoulShards','HolyPower','Chi','ArcaneCharges','Essence'}
+local neverSecretPointPowers = { 'ComboPoints', 'Runes', 'SoulShards', 'HolyPower', 'Chi', 'ArcaneCharges', 'Essence' }
+
+-- Returns true when powerType is one of the secondary resources Blizzard no longer makes secret (see the list above).
+-- Matches by Enum.PowerType name so a client that renumbers the enum still works; any unreadable input is false.
 function platform:IsNeverSecretPointPower(powerType)
     if not self:CanReadValue(powerType) then return false end
     if canaccessvalue and not canaccessvalue(powerType) then return false end
-    if type(powerType)~='number' then return false end
-    local enum=Enum
-    if not self:CanReadValue(enum) or type(enum)~='table' then return false end
-    local types=rawget(enum,'PowerType')
-    if not self:CanReadValue(types) or type(types)~='table' then return false end
-    for _,name in ipairs(neverSecretPointPowers) do
-        local id=rawget(types,name)
-        if self:CanReadValue(id) and (not canaccessvalue or canaccessvalue(id)) and type(id)=='number' and id==powerType then return true end
+    if type(powerType) ~= 'number' then return false end
+    local enum = Enum
+    if not self:CanReadValue(enum) or type(enum) ~= 'table' then return false end
+    local types = rawget(enum, 'PowerType')
+    if not self:CanReadValue(types) or type(types) ~= 'table' then return false end
+
+    for _, name in ipairs(neverSecretPointPowers) do
+        local id = rawget(types, name)
+
+        if
+            self:CanReadValue(id)
+            and (not canaccessvalue or canaccessvalue(id))
+            and type(id) == 'number'
+            and id == powerType
+        then
+            return true
+        end
     end
+
     return false
 end
 
 -- POINT has its own explicit secondary-resource selection policy. These reads
 -- neither choose the primary power bar nor redirect the configured unit.
 -- Identity is guarded value by value, so the restricted policy reads it too.
-function platform:GetUnitPointIdentityObservation(unit,includeClass)
+-- Returns { exists = false }, { exists = true } or { exists = true, class = <class file name> } (class only when
+-- includeClass is true), or nil and a reason. Runs on the poll path; callers cache it per evaluation pass.
+function platform:GetUnitPointIdentityObservation(unit, includeClass)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(includeClass) then return nil,'restricted-value' end
@@ -73,22 +95,40 @@ end
 -- expressible. The divisor is Blizzard's constant, not a global an addon may
 -- have replaced. The type is captured at load on progression clients only, so
 -- every other client keeps its exact reads.
-local pointFragmentsPerWhole=10
+local pointFragmentsPerWhole = 10
 local pointFragmentType
+
 do
-    local project=WOW_PROJECT_ID
-    if type(project)=='number' and (project==WOW_PROJECT_MISTS_CLASSIC or project==WOW_PROJECT_CATACLYSM_CLASSIC or project==WOW_PROJECT_WRATH_CLASSIC) then
-        local enum=Enum
-        if platform:CanReadValue(enum) and type(enum)=='table' then
-            local types=rawget(enum,'PowerType')
-            if platform:CanReadValue(types) and type(types)=='table' then
-                local id=rawget(types,'BurningEmbers')
-                if platform:CanReadValue(id) and type(id)=='number' and id>=0 and id%1==0 and id<math.huge then pointFragmentType=id end
+    local project = WOW_PROJECT_ID
+
+    if
+        type(project) == 'number'
+        and (project == WOW_PROJECT_MISTS_CLASSIC
+            or project == WOW_PROJECT_CATACLYSM_CLASSIC
+            or project == WOW_PROJECT_WRATH_CLASSIC)
+    then
+        local enum = Enum
+
+        if platform:CanReadValue(enum) and type(enum) == 'table' then
+            local types = rawget(enum, 'PowerType')
+
+            if platform:CanReadValue(types) and type(types) == 'table' then
+                local id = rawget(types, 'BurningEmbers')
+
+                if
+                    platform:CanReadValue(id) and type(id) == 'number' and id >= 0 and id % 1 == 0 and id < math.huge
+                then
+                    pointFragmentType = id
+                end
             end
         end
     end
 end
-function platform:GetUnitPointFragmentObservation(unit,powerType,kind)
+
+-- Reads UnitPower or UnitPowerMax with the unmodified-fragments flag and returns the value in whole units (fragments
+-- divided by pointFragmentsPerWhole), or nil and a reason. Probe policy only; reached through
+-- GetUnitPointPowerObservation when powerType is the Burning Embers type. kind is "current" or "maximum".
+function platform:GetUnitPointFragmentObservation(unit, powerType, kind)
     if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(powerType) or not self:CanReadValue(kind) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end
@@ -106,7 +146,10 @@ function platform:GetUnitPointFragmentObservation(unit,powerType,kind)
     return result/pointFragmentsPerWhole
 end
 
-function platform:GetUnitPointPowerObservation(unit,powerType,kind)
+-- Returns the current or maximum quantity of one explicitly chosen point resource, or nil and a reason. kind is
+-- "current" (UnitPower) or "maximum" (UnitPowerMax). Probe clients read any type; restricted clients only the types
+-- IsNeverSecretPointPower accepts. The sign and fraction of the result are kept as the client reported them.
+function platform:GetUnitPointPowerObservation(unit, powerType, kind)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and (policy~='restricted' or not self:IsNeverSecretPointPower(powerType)) then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(powerType) or not self:CanReadValue(kind) then return nil,'restricted-value' end
@@ -127,7 +170,9 @@ function platform:GetUnitPointPowerObservation(unit,powerType,kind)
 end
 
 -- Explicit player/target combo transport. Other units/resources use the observer above.
-function platform:GetPlayerComboPointObservation(powerType,kind)
+-- Only the "tbc" client family on the probe policy has this path: "current" is GetComboPoints("player", "target") and
+-- "maximum" is UnitPowerMax("player", powerType). Returns the number, or nil and a reason.
+function platform:GetPlayerComboPointObservation(powerType, kind)
     local info=self:GetClientInfo()
     if info.combatDataPolicy~='probe' then return nil,'unsupported-policy' end
     local family

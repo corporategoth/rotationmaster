@@ -1,3 +1,11 @@
+-- SPECIALIZATION: the condition that tests the player's talent specialization, plus the specialization tables and name
+-- lookups other modules use (addon:GetSpecializationName and addon:GetSpecializationClassToken, called by
+-- Core/rotation_selection.lua and Core/imports.lua), and the one-time seeding that adds SPECIALIZATION and WEAPON_TYPE
+-- to existing profiles (addon:InstallLoadoutConditions, called from addon:init in init.lua). The player's
+-- specialization is not read here: addon:GetPlayerSpecializationObservation (Core/build_context.lua) caches it until a
+-- talent or specialization notification. Loaded from the Conditions group of RotationMaster.toc, after
+-- Conditions/engraving.lua. The callback and helper bodies are frozen: saved custom conditions bind to their exact
+-- text, and the generated block at the end is written by tools/generate_builtin_sources.py.
 local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
@@ -14,54 +22,126 @@ local helpers = addon.help_funcs
 -- yet, tied or unspent trees and unreadable values are unavailable, including
 -- under NOT. The observation is cached by Core/build_context.lua until a
 -- talent or specialization notification, so evaluation reads no native API.
-local Functions={
-    presentation={nullable=addon.Functions.presentation.nullable},
+local Functions = {
+    presentation = { nullable = addon.Functions.presentation.nullable },
 }
-addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
-addon.builtinCallbackBindings["Conditions/specialization.lua"]={
-    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
+
+addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
+
+addon.builtinCallbackBindings["Conditions/specialization.lua"] = {
+    ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
 }
+
+-- ============================================================================
+-- Specialization tables
+-- ============================================================================
 
 -- Game specialization IDs: class token, talent tree on tree clients (nil
 -- where the class or spec has no tree), and the English name used where the
 -- client cannot name the specialization itself.
-local SPECS={
-    [71]={"WARRIOR",1,"Arms"},[72]={"WARRIOR",2,"Fury"},[73]={"WARRIOR",3,"Protection"},
-    [65]={"PALADIN",1,"Holy"},[66]={"PALADIN",2,"Protection"},[70]={"PALADIN",3,"Retribution"},
-    [253]={"HUNTER",1,"Beast Mastery"},[254]={"HUNTER",2,"Marksmanship"},[255]={"HUNTER",3,"Survival"},
-    [259]={"ROGUE",1,"Assassination"},[260]={"ROGUE",2,"Combat"},[261]={"ROGUE",3,"Subtlety"},
-    [256]={"PRIEST",1,"Discipline"},[257]={"PRIEST",2,"Holy"},[258]={"PRIEST",3,"Shadow"},
-    [250]={"DEATHKNIGHT",1,"Blood"},[251]={"DEATHKNIGHT",2,"Frost"},[252]={"DEATHKNIGHT",3,"Unholy"},
-    [262]={"SHAMAN",1,"Elemental"},[263]={"SHAMAN",2,"Enhancement"},[264]={"SHAMAN",3,"Restoration"},
-    [62]={"MAGE",1,"Arcane"},[63]={"MAGE",2,"Fire"},[64]={"MAGE",3,"Frost"},
-    [265]={"WARLOCK",1,"Affliction"},[266]={"WARLOCK",2,"Demonology"},[267]={"WARLOCK",3,"Destruction"},
-    [268]={"MONK",nil,"Brewmaster"},[269]={"MONK",nil,"Windwalker"},[270]={"MONK",nil,"Mistweaver"},
-    [102]={"DRUID",1,"Balance"},[103]={"DRUID",2,"Feral"},[104]={"DRUID",2,"Guardian"},[105]={"DRUID",3,"Restoration"},
-    [577]={"DEMONHUNTER",nil,"Havoc"},[581]={"DEMONHUNTER",nil,"Vengeance"},[1480]={"DEMONHUNTER",nil,"Devourer"},
-    [1467]={"EVOKER",nil,"Devastation"},[1468]={"EVOKER",nil,"Preservation"},[1473]={"EVOKER",nil,"Augmentation"},
+local SPECS = {
+    [71] = { "WARRIOR", 1, "Arms" },
+    [72] = { "WARRIOR", 2, "Fury" },
+    [73] = { "WARRIOR", 3, "Protection" },
+    [65] = { "PALADIN", 1, "Holy" },
+    [66] = { "PALADIN", 2, "Protection" },
+    [70] = { "PALADIN", 3, "Retribution" },
+    [253] = { "HUNTER", 1, "Beast Mastery" },
+    [254] = { "HUNTER", 2, "Marksmanship" },
+    [255] = { "HUNTER", 3, "Survival" },
+    [259] = { "ROGUE", 1, "Assassination" },
+    [260] = { "ROGUE", 2, "Combat" },
+    [261] = { "ROGUE", 3, "Subtlety" },
+    [256] = { "PRIEST", 1, "Discipline" },
+    [257] = { "PRIEST", 2, "Holy" },
+    [258] = { "PRIEST", 3, "Shadow" },
+    [250] = { "DEATHKNIGHT", 1, "Blood" },
+    [251] = { "DEATHKNIGHT", 2, "Frost" },
+    [252] = { "DEATHKNIGHT", 3, "Unholy" },
+    [262] = { "SHAMAN", 1, "Elemental" },
+    [263] = { "SHAMAN", 2, "Enhancement" },
+    [264] = { "SHAMAN", 3, "Restoration" },
+    [62] = { "MAGE", 1, "Arcane" },
+    [63] = { "MAGE", 2, "Fire" },
+    [64] = { "MAGE", 3, "Frost" },
+    [265] = { "WARLOCK", 1, "Affliction" },
+    [266] = { "WARLOCK", 2, "Demonology" },
+    [267] = { "WARLOCK", 3, "Destruction" },
+    [268] = { "MONK", nil, "Brewmaster" },
+    [269] = { "MONK", nil, "Windwalker" },
+    [270] = { "MONK", nil, "Mistweaver" },
+    [102] = { "DRUID", 1, "Balance" },
+    [103] = { "DRUID", 2, "Feral" },
+    [104] = { "DRUID", 2, "Guardian" },
+    [105] = { "DRUID", 3, "Restoration" },
+    [577] = { "DEMONHUNTER", nil, "Havoc" },
+    [581] = { "DEMONHUNTER", nil, "Vengeance" },
+    [1480] = { "DEMONHUNTER", nil, "Devourer" },
+    [1467] = { "EVOKER", nil, "Devastation" },
+    [1468] = { "EVOKER", nil, "Preservation" },
+    [1473] = { "EVOKER", nil, "Augmentation" },
     -- Retail's initial specializations ("No specialization", Platform/specializations.lua INITIAL_SPECS),
     -- so the Built In premades for that stage can switch on them without a client lookup.
-    [1446]={"WARRIOR",nil,"Initial"},[1451]={"PALADIN",nil,"Initial"},[1448]={"HUNTER",nil,"Initial"},
-    [1453]={"ROGUE",nil,"Initial"},[1452]={"PRIEST",nil,"Initial"},[1455]={"DEATHKNIGHT",nil,"Initial"},
-    [1444]={"SHAMAN",nil,"Initial"},[1449]={"MAGE",nil,"Initial"},[1454]={"WARLOCK",nil,"Initial"},
-    [1450]={"MONK",nil,"Initial"},[1447]={"DRUID",nil,"Initial"},[1456]={"DEMONHUNTER",nil,"Initial"},
-    [1465]={"EVOKER",nil,"Initial"},
+    [1446] = { "WARRIOR", nil, "Initial" },
+    [1451] = { "PALADIN", nil, "Initial" },
+    [1448] = { "HUNTER", nil, "Initial" },
+    [1453] = { "ROGUE", nil, "Initial" },
+    [1452] = { "PRIEST", nil, "Initial" },
+    [1455] = { "DEATHKNIGHT", nil, "Initial" },
+    [1444] = { "SHAMAN", nil, "Initial" },
+    [1449] = { "MAGE", nil, "Initial" },
+    [1454] = { "WARLOCK", nil, "Initial" },
+    [1450] = { "MONK", nil, "Initial" },
+    [1447] = { "DRUID", nil, "Initial" },
+    [1456] = { "DEMONHUNTER", nil, "Initial" },
+    [1465] = { "EVOKER", nil, "Initial" },
 }
-local SPEC_ORDER={71,72,73,65,66,70,253,254,255,259,260,261,256,257,258,250,251,252,262,263,264,
-    62,63,64,265,266,267,268,269,270,102,103,104,105,577,581,1480,1467,1468,1473}
-local CLASS_IDS={WARRIOR=1,PALADIN=2,HUNTER=3,ROGUE=4,PRIEST=5,DEATHKNIGHT=6,SHAMAN=7,MAGE=8,
-    WARLOCK=9,MONK=10,DRUID=11,DEMONHUNTER=12,EVOKER=13}
 
+-- The order the editor lists specializations in when the client cannot list them itself. The Initial entries are not in
+-- it, so the editor never offers them as a choice.
+local SPEC_ORDER = {
+    71, 72, 73, 65, 66, 70, 253, 254, 255, 259, 260, 261, 256, 257, 258, 250, 251, 252, 262, 263, 264, 62, 63, 64, 265,
+    266, 267, 268, 269, 270, 102, 103, 104, 105, 577, 581, 1480, 1467, 1468, 1473
+}
+
+-- Class token to the numeric class ID the client's specialization-choice reader takes.
+local CLASS_IDS = {
+    WARRIOR = 1,
+    PALADIN = 2,
+    HUNTER = 3,
+    ROGUE = 4,
+    PRIEST = 5,
+    DEATHKNIGHT = 6,
+    SHAMAN = 7,
+    MAGE = 8,
+    WARLOCK = 9,
+    MONK = 10,
+    DRUID = 11,
+    DEMONHUNTER = 12,
+    EVOKER = 13,
+}
+
+-- ============================================================================
+-- Specialization helpers
+-- ============================================================================
+
+-- True for a positive whole number that could be a specialization ID.
 local function specID(value)
     return type(value)=="number" and value>0 and value<math.huge and value%1==0
 end
+
 -- The class a specialization belongs to: the table, else the client.
+-- Returns the class token, or nil when neither knows the ID.
 local function specClass(id)
     local known=SPECS[id]
     if known then return known[1] end
     local display=addon.Platform.GetSpecializationDisplay and addon.Platform:GetSpecializationDisplay(id)
     return display and display.class
 end
+
+-- The display name for a specialization ID, and its icon when the client supplies one. Retail's "Initial" entries read
+-- "No specialization"; otherwise the client's own name wins, then the English table name, then a generic label. Returns
+-- nil for something that is not a specialization ID.
 local function specName(id)
     if not specID(id) then return nil end
     local listed=SPECS[id]
@@ -72,12 +152,16 @@ local function specName(id)
     if known then return L[known[3]] end
     return string.format(L["specialization %d"],id)
 end
+
+-- The player's class token, or nil when UnitClass fails or the value is hidden.
 local function playerClass()
     local ok,_,class=pcall(UnitClass,"player")
     if ok and addon.Platform:CanReadValue(class) and type(class)=="string" then return class end
 end
+
 -- The specializations of one class for the editor: the client's own names
 -- and icons where it has them, else the table.
+-- Returns the choices (id to name, or to {text, icon}) and the ids in display order.
 local function classChoices(class)
     local choices,order={},{}
     local listed=CLASS_IDS[class] and addon.Platform.GetClassSpecializationChoices
@@ -95,15 +179,35 @@ local function classChoices(class)
     return choices,order
 end
 
--- For rotation specializations (Core/rotation_selection.lua, Core/imports.lua).
-function addon:GetSpecializationName(id) return (specName(id)) end
-function addon:GetSpecializationClassToken(id) if specID(id) then return specClass(id) end end
+-- ============================================================================
+-- Name and class lookups
+-- ============================================================================
 
+-- For rotation specializations (Core/rotation_selection.lua, Core/imports.lua).
+-- Returns the display name of a specialization ID, without the icon, or nil when the value is not an ID.
+function addon:GetSpecializationName(id)
+    return (specName(id))
+end
+
+-- Returns the class token that owns a specialization ID, or nil when the value is not an ID or the class is unknown.
+function addon:GetSpecializationClassToken(id)
+    if specID(id) then return specClass(id) end
+end
+
+-- ============================================================================
+-- SPECIALIZATION condition
+-- ============================================================================
+
+-- SPECIALIZATION tests the player's talent specialization. Returns false for a specialization of another class, and
+-- nil and a reason when the specialization cannot be read (build-context-unavailable, class-unavailable,
+-- unknown-specialization, or the observation's own reason such as no specialization chosen yet or tied trees). Stores
+-- spec (a specialization ID).
 addon:RegisterCondition("SPECIALIZATION", {
     description = L["Specialization"],
     icon = addon.Artwork.condition["SPECIALIZATION"],
     requiredFields = { "spec" },
     fields = { spec = "number" },
+    -- Valid with a whole-number specialization ID.
     valid = function(_, value)
         return specID(value.spec)
     end,
@@ -117,6 +221,9 @@ addon:RegisterCondition("SPECIALIZATION", {
         if class == nil or (canaccessvalue and not canaccessvalue(class)) then return nil end
         if specClass(value.spec) == class then return "specialization-unsupported" end
     end,
+    -- Unavailable: build-context-unavailable (the context module is absent), unknown-specialization (no class, or no
+    -- tree for the ID on a tree client), class-unavailable, or the reason the observation gives. On tree clients the
+    -- saved ID is mapped to its tree index; elsewhere the IDs are compared directly.
     evaluate = function(value)
         if not addon.GetPlayerSpecializationObservation then return nil, "build-context-unavailable" end
         local mode, current, reason, class = addon:GetPlayerSpecializationObservation()
@@ -132,10 +239,12 @@ addon:RegisterCondition("SPECIALIZATION", {
         end
         return current == value.spec
     end,
+    -- Summary line for the condition list.
     print = function(_, value)
         return string.format(L["your specialization {{!is|is not}} %s"],
             Functions.presentation.nullable((specName(value.spec)), L["<specialization>"]))
     end,
+    -- Editor: a class dropdown that filters the specialization dropdown; changing the class clears the specialization.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -172,44 +281,71 @@ addon:RegisterCondition("SPECIALIZATION", {
         end
         parent:AddChild(specPicker)
     end,
+    -- Help page: the general text, then the per-edition notes.
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Help.Conditions.SPECIALIZATION"]))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(L["Help.Conditions.SPECIALIZATION.editions"]))
-    end
+    end,
 })
+
+-- ============================================================================
+-- Profile seeding
+-- ============================================================================
 
 -- Cold, one-time seed for profiles created before these predicates existed:
 -- SPECIALIZATION joins Character, WEAPON_TYPE (Conditions/equipment.lua)
 -- joins Items, and both join the Switch picker, once per profile under their
 -- own flag. Removing them later stays saved; new and reset profiles get them
 -- from the packaged defaults.
-local loadoutSeeds={
-    {category="b8136123-2bda-4230-a77a-89ea2aed3a1a",tag="SPECIALIZATION"},
-    {category="fca4ff75-4085-458a-b5bf-27a6b52f2092",tag="WEAPON_TYPE"},
+-- Each category value is the id of the condition group in the profile's condition_groups.
+local loadoutSeeds = {
+    { category = "b8136123-2bda-4230-a77a-89ea2aed3a1a", tag = "SPECIALIZATION" },
+    { category = "fca4ff75-4085-458a-b5bf-27a6b52f2092", tag = "WEAPON_TYPE" },
 }
+
+-- Adds each seeded tag to the profile's Switch picker list and its condition group, once: the flag
+-- profile.loadoutConditionsSeeded is set afterwards and makes later calls do nothing. `db` is the AceDB object; the
+-- first argument is the callback event name and is unused. A malformed profile is skipped rather than repaired.
 function addon:InitializeLoadoutConditions(_, db)
     local profile = db and db.profile
     if type(profile) ~= "table" or profile.loadoutConditionsSeeded then return end
+
     local function append(list, tag)
         if type(list) ~= "table" then return end
-        for _, existing in ipairs(list) do if existing == tag then return end end
+
+        for _, existing in ipairs(list) do
+            if existing == tag then return end
+        end
+
         list[#list + 1] = tag
     end
+
     for _, seed in ipairs(loadoutSeeds) do
         append(profile.switch_conditions, seed.tag)
+
         for _, category in ipairs(type(profile.condition_groups) == "table" and profile.condition_groups or {}) do
             if type(category) == "table" and category.id == seed.category then append(category.conditions, seed.tag) end
         end
     end
+
     profile.loadoutConditionsSeeded = true
 end
+
+-- The key under which this module registers its AceDB callbacks.
 local seedOwner = {}
+
+-- Seeds the current profile now and again whenever a profile is created, reset, switched or copied, so every profile
+-- gets the loadout conditions exactly once. Called once from addon:init with the AceDB object.
 function addon:InstallLoadoutConditions(db)
     if type(db) ~= "table" or type(db.RegisterCallback) ~= "function" then return end
-    for _, event in ipairs({"OnNewProfile", "OnProfileReset", "OnProfileChanged", "OnProfileCopied"}) do
-        db.RegisterCallback(seedOwner, event, function(_, currentDB) addon:InitializeLoadoutConditions(nil, currentDB) end)
+
+    for _, event in ipairs({ "OnNewProfile", "OnProfileReset", "OnProfileChanged", "OnProfileCopied" }) do
+        db.RegisterCallback(seedOwner, event, function(_, currentDB)
+            addon:InitializeLoadoutConditions(nil, currentDB)
+        end)
     end
+
     self:InitializeLoadoutConditions(nil, db)
 end
 

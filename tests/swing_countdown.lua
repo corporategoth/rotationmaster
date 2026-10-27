@@ -7,7 +7,7 @@ local oldLine='        return Functions.values.compare(value.operator,speed-math
 local newLine='        return Functions.values.compare(value.operator,math.max(speed-math.max(evalStart-lastSwing,0),0),value.value)'
 local function replaceOne(text,from,to)local i,j=assert(text:find(from,1,true));assert(not text:find(from,j+1,true));return text:sub(1,i-1)..to..text:sub(j+1)end
 local function evaluator()
- local text=read('Conditions/weapon.lua');local first=assert(text:find('addon:RegisterCondition("SWING_TIME_REMAIN", {',1,true));local section=text:sub(first);local signature='    evaluate = function(value, cache, evalStart)';local _,start=assert(section:find(signature,1,true));assert(not section:find(signature,start+1,true));local ending=assert(section:find('    end,\n    print = function',start+1,true));local body=section:sub(start+1,ending+3);assert(body:sub(1,1)=='\n'and body:sub(-5)=='\n    ');return body
+ local text=read('Conditions/weapon.lua');local first=assert(text:find('addon:RegisterCondition("SWING_TIME_REMAIN", {',1,true));local section=text:sub(first);local signature='    evaluate = function(value, cache, evalStart)';local _,start=assert(section:find(signature,1,true));assert(not section:find(signature,start+1,true));local ending=assert(section:find('\n    end,\n',start+1,true)+1);local body=section:sub(start+1,ending+3);assert(body:sub(1,1)=='\n'and body:sub(-5)=='\n    ');return body
 end
 local authored=evaluator()
 -- The producer is the handler up to the registration below it (a comment now sits between them).

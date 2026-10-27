@@ -123,6 +123,7 @@ python3 tools/locales.py check
 | --- | --- |
 | `tools/check`, `tools/check_all.py` | The command list of every check; fail-fast and run-everything runners |
 | `tools/fast_tests.py` | Suites named after changed Lua files |
+| `tools/format_lua.py`, `tools/bytecode_equal.py`, `tools/readability_report.py` | Reformat Lua without changing what it compiles to, prove a formatting-only commit, report long lines and uncommented functions (`docs/dev/formatting.md`) |
 | `tools/test_devtools.py` | Tests of the tools in this table |
 | `tools/setup_lint.py`, `tools/lint.py`, `tools/lint-tool.json`, `tools/lint-baseline.json` | Pinned wowlua-ls: download once, run against the baseline |
 | `tools/catalog_check.py` | Literal `L["key"]` definitions and reads; raw-prose inventory (`docs/quality/localization-inventory.json`) |

@@ -1,13 +1,20 @@
-local addon_name,addon=...
-local L=LibStub("AceLocale-3.0"):GetLocale(addon_name)
-local color=color
-local operators=addon.operators
+-- Display helpers (nullable, nullable_value, playerize, compareString, phrase, predicate) that condition print()
+-- callbacks use to build the readable summary of a condition, painting missing values red.
+-- This file owns the canonical bodies; utils.lua re-exports them as addon.nullable and friends for saved custom source.
+-- Loaded from RotationMaster.toc with the other Functions/ files; needs the global color table (globals.lua), the
+-- locale and addon.operators (constants.lua). phrase and predicate delegate to the summary manager in Core/.
+-- The function bodies are recorded as Built In helpers and are frozen: saved copies hash their exact text.
+local addon_name, addon = ...
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
+local color = color
+local operators = addon.operators
 
 -- Preserve the shared colors, captured positive map and live legacy dispatch.
-local presentation={}
-addon.Functions=addon.Functions or {}
-addon.Functions.presentation=presentation
+local presentation = {}
+addon.Functions = addon.Functions or {}
+addon.Functions.presentation = presentation
 
+-- Returns the value, or a red placeholder (the default text, else "<value>") when it is nil.
 presentation.nullable = function(value, default)
     if value == nil then
         if default ~= nil then
@@ -19,6 +26,8 @@ presentation.nullable = function(value, default)
     return value
 end
 
+-- Looks the value up in a label table and returns the label, or the red placeholder when the value or the table is
+-- missing or the table has no entry for it.
 presentation.nullable_value = function(value, array, default)
     if value == nil or array == nil or type(array) ~= "table" then
         if default ~= nil then
@@ -30,6 +39,7 @@ presentation.nullable_value = function(value, array, default)
     return addon.nullable(array[value], default)
 end
 
+-- Picks the wording for the player ("you") or another unit when a summary reads differently for each.
 presentation.playerize = function(unit, player, nonplayer)
     if (unit == "player") then
         return player
@@ -38,6 +48,8 @@ presentation.playerize = function(unit, player, nonplayer)
     end
 end
 
+-- Returns "left <operator text> right" for a stored operator. When the operator has a negated form the text carries a
+-- {{positive|negative}} alternative (marked with "!" when primary) that the summary renderer picks from.
 presentation.compareString = function(operator, left, right, primary)
     local positive=addon.nullable(operators[operator], L["<operator>"])
     local negative=(addon.negatedOperators or {})[operator]
@@ -46,10 +58,12 @@ presentation.compareString = function(operator, left, right, primary)
 end
 
 -- Named summaries delegate to one canonical manager, including editable clones.
+-- Expands a summary phrase template with its values through the condition summary manager.
 presentation.phrase = function(template, values)
     return addon:CreateConditionSummaryPhrase(template, values)
 end
 
+-- Returns the summary predicate text for a stored operator, with its negated alternative when one exists.
 presentation.predicate = function(operator, primary)
     local positive=addon.nullable(operators[operator], L["<operator>"])
     return addon:CreateConditionSummaryPredicate(positive, (addon.negatedOperators or {})[operator], primary)

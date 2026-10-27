@@ -1,12 +1,23 @@
-local _,addon=...
+-- Counting of tracked enemies by threat status, for the Built In threat count condition (Conditions/combat.lua).
+-- Owns the count over the unit snapshot (probe clients) and over live nameplate tokens (restricted clients, where an
+-- enemy GUID is secret); it must not cache, modify the snapshot or invent members. Every value read goes through
+-- platform:CanReadValue. Loaded from RotationMaster.toc after Core/health_forecast_conditions.lua; the nameplate
+-- tokens are maintained by main.lua. The helpers here are Built In helpers that saved custom conditions bind to by
+-- text: do not edit a function body. The block at the end is generated; never hand-edit it.
 
-local function finite(platform,value)
+local _, addon = ...
+
+-- Checks that a threat value is readable and a finite number. Returns true, or false and a reason; NaN and infinities
+-- are rejected so a comparison against the minimum can never silently misbehave.
+local function finite(platform, value)
     if not platform:CanReadValue(value) then return false,'restricted-value' end
     if type(value)~='number' or value~=value or value>=math.huge or value<=-math.huge then return false,'invalid-threat-count-number' end
     return true
 end
 
-local function readField(platform,object,key)
+-- Reads object[key] defensively: returns the value, or nil and a reason when the object or value is restricted, the
+-- object is not a table, or the index raises. Used for fields of the unit snapshot the addon itself keeps.
+local function readField(platform, object, key)
     if not platform:CanReadValue(object) then return nil,'restricted-value' end
     if type(object)~='table' then return nil,'invalid-unit-snapshot' end
     local ok,value=pcall(function() return object[key] end)
@@ -15,9 +26,10 @@ local function readField(platform,object,key)
     return value
 end
 
--- Count only observed membership, using current facts for the same identity.
+-- Returns how many tracked enemies have threat status at or above the minimum, or nil and a reason when any required
+-- fact is unavailable. Count only observed membership, using current facts for the same identity.
 -- Neither the snapshot nor the complete count is cached or changed here.
-function addon:GetConditionThreatCount(minimum,cache)
+function addon:GetConditionThreatCount(minimum, cache)
     local platform=self.Platform
     local policy=platform:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
@@ -63,7 +75,8 @@ function addon:GetConditionThreatCount(minimum,cache)
     return count
 end
 
--- Restricted clients make an enemy NPC's GUID secret
+-- Restricted-client branch of GetConditionThreatCount: counts nameplate units instead of GUID-keyed membership.
+-- Returns the count, or nil and a reason. Restricted clients make an enemy NPC's GUID secret
 -- (UnitGUID: SecretWhenUnitIdentityRestricted, "when the unit isn't
 -- player-controlled or in the party/raid"), so the GUID-keyed snapshot above
 -- cannot exist there. The nameplate unit tokens NAME_PLATE_UNIT_ADDED/REMOVED
@@ -71,26 +84,29 @@ end
 -- reads absent, a reused one is the unit now on that plate. Threat between the
 -- player and a nameplate is "generally not secret"
 -- (SecretWhenUnitThreatStateRestricted); a secret reading is unavailable.
-function addon:GetConditionNameplateThreatCount(minimum,cache)
-    local platform=self.Platform
-    local units,why=readField(platform,self,'nameplateUnits')
-    if why then return nil,why end
-    if type(units)~='table' then return nil,'unit-snapshot-unavailable' end
-    local observeThreat=platform.GetUnitThreatObservation
-    if type(observeThreat)~='function' then return nil,'missing-api' end
-    local count=0
+function addon:GetConditionNameplateThreatCount(minimum, cache)
+    local platform = self.Platform
+    local units, why = readField(platform, self, 'nameplateUnits')
+    if why then return nil, why end
+    if type(units) ~= 'table' then return nil, 'unit-snapshot-unavailable' end
+    local observeThreat = platform.GetUnitThreatObservation
+    if type(observeThreat) ~= 'function' then return nil, 'missing-api' end
+    local count = 0
+
     for unit in pairs(units) do
-        if not platform:CanReadValue(unit) then return nil,'restricted-value' end
-        if type(unit)~='string' or unit=='' then return nil,'invalid-unit-snapshot' end
-        local status,threatReason=addon.Functions.cache.getCached(cache,observeThreat,platform,unit)
-        if not platform:CanReadValue(status) then return nil,'restricted-value' end
-        if status==nil then return nil,threatReason or 'threat-data-unavailable' end
-        if status~=false then
-            local readable,problem=finite(platform,status)
-            if not readable then return nil,problem end
-            if status>=minimum then count=count+1 end
+        if not platform:CanReadValue(unit) then return nil, 'restricted-value' end
+        if type(unit) ~= 'string' or unit == '' then return nil, 'invalid-unit-snapshot' end
+        local status, threatReason = addon.Functions.cache.getCached(cache, observeThreat, platform, unit)
+        if not platform:CanReadValue(status) then return nil, 'restricted-value' end
+        if status == nil then return nil, threatReason or 'threat-data-unavailable' end
+
+        if status ~= false then
+            local readable, problem = finite(platform, status)
+            if not readable then return nil, problem end
+            if status >= minimum then count = count + 1 end
         end
     end
+
     return count
 end
 

@@ -1,3 +1,10 @@
+-- Load-on-demand text: wraps the AceLocale table `L` so a key the main catalog lacks is answered from the text bundle
+-- add-on that owns it (Locales/bundles.json, hash index in Data/text_bundle_index.lua). Owns the lookup, the one-time
+-- load of each bundle and its failed/loaded state; it must not read bundle text while the game is loading and must not
+-- change what `L["English"]` returns for a key the main table holds. Loaded from RotationMaster.toc straight after
+-- locales.xml and the index, before any file that reads text at load. Returns without doing anything if the locale has
+-- no missing-key handler.
+
 local addon_name, addon = ...
 
 -- Load-on-demand text. Most of Rotation Master's English (and its ten translations) is read only when a window is
@@ -24,22 +31,38 @@ local HEX = 8
 -- The 32-bit hash tools/locales.py computes for the index (h = h * 31 + byte, modulo 2^32).
 local function keyHash(value)
     local h = 0
-    for i = 1, value:len() do h = (h * 31 + value:byte(i)) % 4294967296 end
+
+    for i = 1, value:len() do
+        h = (h * 31 + value:byte(i)) % 4294967296
+    end
+
     return h
 end
 
+-- Binary search of a bundle's sorted key-hash string (8 hex digits per key); true when `wanted` is one of its keys.
 local function owns(bundle, wanted)
     local keys, low, high = bundle.keys, 0, bundle.count - 1
+
     while low <= high do
         local middle = math.floor((low + high) / 2)
         local value = tonumber(keys:sub(middle * HEX + 1, middle * HEX + HEX), 16)
-        if value == wanted then return true elseif value < wanted then low = middle + 1 else high = middle - 1 end
+
+        if value == wanted then
+            return true
+        elseif value < wanted then
+            low = middle + 1
+        else
+            high = middle - 1
+        end
     end
+
     return false
 end
 
+-- Returns the bundle record that owns this English text, or nil when it is a key of the main table or of no catalog.
 local function ownerOf(english)
     local wanted = keyHash(english)
+
     for _, bundle in ipairs(bundles) do
         if owns(bundle, wanted) then return bundle end
     end
@@ -48,6 +71,8 @@ end
 -- bundle.state: nil (never asked), "loaded" or "failed". bundle.text is its AceLocale table once loaded.
 local loadedTexts = {}
 
+-- Returns the add-on loader: the test override `addon.textBundleLoader`, else C_AddOns.LoadAddOn, else the older
+-- LoadAddOn.
 local function loader(self)
     local custom = self.textBundleLoader
     if type(custom) == "function" then return custom end
@@ -62,11 +87,13 @@ local function attach(bundle)
     local ok, loaded, reason = false, false, "no-loader"
     if type(load) == "function" then ok, loaded, reason = pcall(load, bundle.module) end
     local text = ok and ace:GetLocale(bundle.module, true) or nil
+
     if text then
         bundle.state, bundle.text = "loaded", text
         loadedTexts[#loadedTexts + 1] = text
         return true
     end
+
     bundle.state, bundle.reason = "failed", ok and (reason or loaded) or loaded
     return false
 end
@@ -78,7 +105,9 @@ setmetatable(L, {
                 local value = rawget(loadedTexts[i], key)
                 if value ~= nil then return value end
             end
+
             local bundle = ownerOf(key)
+
             if bundle then
                 if attach(bundle) then
                     local value = rawget(bundle.text, key)
@@ -89,6 +118,7 @@ setmetatable(L, {
                 end
             end
         end
+
         return reportMissing(self, key)
     end,
 })
@@ -98,6 +128,7 @@ function addon:LoadTextBundle(id)
     for _, bundle in ipairs(bundles) do
         if bundle.id == id then return attach(bundle) end
     end
+
     return false, "unknown-bundle"
 end
 
@@ -110,6 +141,10 @@ end
 --- The state of every bundle: { id = "idle" | "loaded" | "failed" }, for diagnostics and tests.
 function addon:GetTextBundleStates()
     local states = {}
-    for _, bundle in ipairs(bundles) do states[bundle.id] = bundle.state or "idle" end
+
+    for _, bundle in ipairs(bundles) do
+        states[bundle.id] = bundle.state or "idle"
+    end
+
     return states
 end

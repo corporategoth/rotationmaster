@@ -1,15 +1,27 @@
-local _,addon=...
-local forecast={}
-addon.Functions=addon.Functions or {}
-addon.Functions.forecast=forecast
+-- Checked health-history forecast: forecast.calculate turns damage and heal history into a signed rate per second
+-- for the health-forecast conditions (Core/health_forecast_conditions.lua), returning nil plus a reason instead of a
+-- guess when anything cannot be read, is not finite or exceeds the work budget (docs/health-forecasting.md).
+-- Loaded from RotationMaster.toc after Functions/trends.lua. It must not touch the profile or the clock: the window and
+-- the time are arguments. Restricted clients: every consumed value goes through platform:CanReadValue first.
+-- The older Functions/trends.lua formulas stay untouched because saved custom source binds to them.
+-- The function bodies are recorded as Built In helpers and are frozen: saved copies hash their exact text.
+local _, addon = ...
+local forecast = {}
+addon.Functions = addon.Functions or {}
+addon.Functions.forecast = forecast
 
-local function finite(platform,value)
+-- Returns true when the value is a readable, finite number; otherwise false and a reason code ('restricted-value' or
+-- 'invalid-forecast-number'). Guards every number before arithmetic so a secret or NaN value cannot reach it.
+local function finite(platform, value)
     if not platform:CanReadValue(value) then return false,'restricted-value' end
     if type(value)~='number' or value~=value or value>=math.huge or value<=-math.huge then return false,'invalid-forecast-number' end
     return true
 end
 
-local function readField(platform,object,key)
+-- Reads object[key] under pcall after checking both the table and the value are readable. Returns the value, or nil and
+-- a reason code ('restricted-value', 'invalid-forecast-history' or 'forecast-history-error'). A metatable that throws
+-- therefore becomes an unavailable result instead of an error.
+local function readField(platform, object, key)
     if not platform:CanReadValue(object) then return nil,'restricted-value' end
     if type(object)~='table' then return nil,'invalid-forecast-history' end
     local ok,value=pcall(function() return object[key] end)
@@ -20,7 +32,11 @@ end
 
 -- A new checked kernel. Published trends.calculate and its aliases remain
 -- untouched for saved source. Work bounds are RM policy, not a native limit.
-function forecast.calculate(platform,history,window,noheals,nodmg,now)
+-- Takes the platform (readability authority), the history table with damage and heals rows of time/value, the
+-- weighting window, the two skip flags (a skipped stream is never read) and the clock snapshot. Returns rate and the
+-- larger stream age, or nil, nil and a reason code. The inner scan visits at most 4096 rows plus accumulation bins
+-- across both streams combined.
+function forecast.calculate(platform, history, window, noheals, nodmg, now)
     if type(platform)~='table' or type(platform.CanReadValue)~='function' then return nil,nil,'invalid-forecast-platform' end
     if not platform:CanReadValue(history) or not platform:CanReadValue(noheals) or not platform:CanReadValue(nodmg) then return nil,nil,'restricted-value' end
     if type(history)~='table' then return nil,nil,'invalid-forecast-history' end

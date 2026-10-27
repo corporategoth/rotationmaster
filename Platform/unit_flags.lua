@@ -1,13 +1,28 @@
-local _,addon=...
-local platform=addon.Platform
-local function readClientPolicy(current)return current:GetClientInfo().combatDataPolicy end
+-- Platform adapter for three Boolean unit flags: in combat (UnitAffectingCombat), enemy of the player (UnitIsEnemy)
+-- and PvP flagged (UnitIsPVP), selected by a closed `kind`. Returns `boolean, nil` or `nil, reason`; game values pass
+-- platform:CanReadValue first. Only the probe and restricted combat-data policies read. Loaded from
+-- RotationMaster.toc after Platform/unit_attackability.lua.
+-- The generated bindings block at the end is owned by tools/generate_builtin_sources.py; readClientPolicy and the
+-- reader are Built In helpers, so their bodies are frozen.
+local _, addon = ...
+local platform = addon.Platform
+
+-- Returns the combat data policy ("probe", "restricted" or other) for the platform; replaced just below by the
+-- allocation-free reader that Platform/client.lua hands over.
+local function readClientPolicy(current)
+    return current:GetClientInfo().combatDataPolicy
+end
+
+-- Takes the private client-policy reader from addon:ConsumeClientPolicyReader (Platform/client.lua), which hands it to
+-- the addon table alone; buttons.lua removes that method once the consumers have loaded.
 ---@type fun(...): any
-local consumeClientPolicy=addon.ConsumeClientPolicyReader
-if type(consumeClientPolicy)=='function' then readClientPolicy=consumeClientPolicy(addon) end
+local consumeClientPolicy = addon.ConsumeClientPolicyReader
+if type(consumeClientPolicy) == 'function' then readClientPolicy = consumeClientPolicy(addon) end
 
 -- Closed flag kinds preserve the existing native query and selected unit.
 -- Only readable false existence establishes absence; required unknowns do not.
-function platform:GetUnitFlagObservation(unit,kind)
+-- kind is "combat", "enemy" or "pvp". Returns the flag, false for a unit that does not exist, or nil and a reason.
+function platform:GetUnitFlagObservation(unit, kind)
     local policy=readClientPolicy(self)
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(kind) then return nil,'restricted-value' end

@@ -1,15 +1,29 @@
+-- Shared editor widgets for the Built In conditions: the spell, item, operator and rank pickers that the other
+-- Conditions/ files call as addon:Widget_*. Each builds a condition editor group bound to a field of the saved `value`
+-- table and calls update() after every change, so the caller re-validates and re-prints the condition.
+-- Loaded first of the Conditions/ block in RotationMaster.toc, after the UI widget set it builds on. It reads no game
+-- values (spell and item data come through SpellCatalog and Platform), and every function here is part of the saved
+-- custom-condition bindings: never edit inside a function body, and leave the generated block at the end alone.
 local addon_name, addon = ...
 
 local SpellData = addon.SpellCatalog
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
--- Portable condition fields contain ordinary saved data, never live secrets.
+-- ============================================================================
+-- Spell widgets
+-- ============================================================================
+
+-- True for a positive whole-number spell id. Portable condition fields contain ordinary saved data, never live
+-- secrets.
 function addon.IsConditionSpellID(value)
-    return type(value)=="number" and value>0 and value<math.huge and value%1==0
+    return type(value) == "number" and value > 0 and value < math.huge and value % 1 == 0
 end
 
+-- Tooltip text shared by every rank checkbox.
 local RANK_TIP = L["Unticked, any rank of the spell matches. Ticked, only the rank you chose matches."]
 
+-- Resolves a saved spell value to an id for display. On non-Retail clients and when not ranked, it maps to the
+-- spell catalog's canonical id; returns the id, or nil and a reason if the catalog cannot answer.
 function addon:Widget_GetSpellId(spellid, ranked)
     if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
         if not ranked then
@@ -20,22 +34,28 @@ function addon:Widget_GetSpellId(spellid, ranked)
     return spellid
 end
 
+-- Returns a chat link (with the rank appended when ranked and known) or a plain label for a spell value, or nil
+-- for no spell.
 function addon:Widget_GetSpellLink(spellid, ranked)
     if spellid ~= nil then
         if ranked then
             local rank = SpellData:SpellRank(spellid)
+
             if rank then
-               return (SpellData:SpellLink(spellid) or self:SpellLabel(spellid)) .. "|cFF888888 (" .. rank .. ")|r"
+                return (SpellData:SpellLink(spellid) or self:SpellLabel(spellid)) .. "|cFF888888 (" .. rank .. ")|r"
             end
         else
             spellid = self:Widget_GetSpellId(spellid, ranked)
         end
+
         return SpellData:SpellLink(spellid) or self:SpellLabel(spellid)
     end
 
     return nil
 end
 
+-- Spell picker: an icon box and a name edit box (and an exact-rank checkbox on clients with ranks) that write
+-- value.spell as a spell id. nametoid converts typed text to an id and isvalid accepts or rejects it.
 function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, update)
     local spell_group = addon:CreateConditionGroup()
     spell_group:SetLayout('RM-SpellField')
@@ -126,26 +146,38 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
     return spell_group
 end
 
+-- Spell picker like Widget_SpellWidget, but with a labeled field and no rank checkbox. It stores the id when storeId
+-- is set and the spell name otherwise.
 function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update, storeId)
     local spell_group = addon:CreateConditionGroup()
     spell_group:SetLayout("Table")
     spell_group:SetUserData("table", { columns = { 44, 1 } })
 
-    local spell = addon:CreateSpellEditBox(editbox,value.spell)
-    local initialSpell=type(value.spell)=="string" and SpellData:GetSpellId(value.spell) or value.spell
-    local spellIcon = addon:CreateSpellActionIcon(spec == (BOOKTYPE_PET or "pet") and "pet" or "spell",initialSpell,isvalid)
+    local spell = addon:CreateSpellEditBox(editbox, value.spell)
+    local initialSpell = type(value.spell) == "string" and SpellData:GetSpellId(value.spell) or value.spell
+
+    local spellIcon = addon:CreateSpellActionIcon(
+        spec == (BOOKTYPE_PET or "pet") and "pet" or "spell",
+        initialSpell,
+        isvalid
+    )
+
     spellIcon:SetWidth(44)
     spellIcon:SetHeight(44)
+
     if value.spell then
         spellIcon:SetText(initialSpell)
     end
+
     spellIcon:SetCallback("OnEnterPressed", function(_, _, v)
         v = tonumber(v)
+
         if v and isvalid(v) then
             local name = SpellData:SpellName(v, not storeId)
             value.spell = storeId and v or name
             spellIcon:SetText(v)
             spell:SetText(storeId and v or name)
+
             if GameTooltip:IsOwned(spellIcon.frame) and GameTooltip:IsVisible() then
                 GameTooltip:SetHyperlink("spell:" .. v)
             end
@@ -153,24 +185,30 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update, sto
             value.spell = nil
             spellIcon:SetText(nil)
             spell:SetText(nil)
+
             if GameTooltip:IsOwned(spellIcon.frame) and GameTooltip:IsVisible() then
                 GameTooltip:Hide()
             end
         end
+
         update()
     end)
+
     spellIcon:SetCallback("OnEnter", function()
-        local id=spellIcon:GetUserData("spell")
+        local id = spellIcon:GetUserData("spell")
+
         if id then
             GameTooltip:SetOwner(spellIcon.frame, "ANCHOR_BOTTOMRIGHT", 3)
             GameTooltip:SetHyperlink("spell:" .. id)
         end
     end)
+
     spellIcon:SetCallback("OnLeave", function()
         if GameTooltip:IsOwned(spellIcon.frame) then
             GameTooltip:Hide()
         end
     end)
+
     spellIcon:SetDisabled(value.disabled)
     spell_group:AddChild(spellIcon)
 
@@ -179,6 +217,7 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update, sto
     spell:SetText(value.spell)
     spell:SetUserData("norank", not (storeId or value.ranked))
     spell:SetUserData("spec", spec)
+
     spell:SetCallback("OnEnterPressed", function(_, _, v)
         local spellid = SpellData:ResolveSelection(v)
         local name = SpellData:SpellName(spellid, not storeId)
@@ -192,8 +231,10 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update, sto
             spell:SetText(nil)
             spellIcon:SetText(nil)
         end
+
         update()
     end)
+
     spell:SetDisabled(value.disabled)
     spell_group:AddChild(spell)
 
@@ -205,49 +246,96 @@ end
 -- `anyrank`: unticked (anyrank=true) matches every rank, ticked (anyrank unset,
 -- the meaning of every saved condition) matches only the chosen ID. Hidden on
 -- clients without spell ranks; the stored value still applies there.
-function addon:Widget_AuraRankWidget(value,update)
+function addon:Widget_AuraRankWidget(value, update)
     if not self:ClientHasSpellRanks() then return nil end
-    local check=self:CreateConditionCheckBox();check:SetLabel(L["Use this exact spell rank"]);check:SetWidth(170);check:SetValue(value.anyrank~=true);check:SetDisabled(value.disabled)
-    check.button.tooltip=RANK_TIP
-    check:SetCallback('OnValueChanged',function(_,_,exact) value.anyrank=(not exact) and true or nil;update() end)
+    local check = self:CreateConditionCheckBox()
+    check:SetLabel(L["Use this exact spell rank"])
+    check:SetWidth(170)
+    check:SetValue(value.anyrank ~= true)
+    check:SetDisabled(value.disabled)
+    check.button.tooltip = RANK_TIP
+
+    check:SetCallback('OnValueChanged', function(_, _, exact)
+        value.anyrank = (not exact) and true or nil
+        update()
+    end)
+
     return check
 end
 
 -- Exact-rank choice for a spell picked by ID where any rank matches by
 -- default (casts, channels). Hidden on clients without spell ranks.
-function addon:Widget_SpellRankWidget(value,update)
+function addon:Widget_SpellRankWidget(value, update)
     if not self:ClientHasSpellRanks() then return nil end
-    local check=self:CreateConditionCheckBox();check:SetLabel(L["Use this exact spell rank"]);check:SetValue(value.ranked==true);check:SetDisabled(value.disabled)
-    check.button.tooltip=RANK_TIP
-    check:SetCallback('OnValueChanged',function(_,_,enabled) value.ranked=enabled and true or nil;update() end)
+    local check = self:CreateConditionCheckBox()
+    check:SetLabel(L["Use this exact spell rank"])
+    check:SetValue(value.ranked == true)
+    check:SetDisabled(value.disabled)
+    check.button.tooltip = RANK_TIP
+
+    check:SetCallback('OnValueChanged', function(_, _, enabled)
+        value.ranked = enabled and true or nil
+        update()
+    end)
+
     return check
 end
 
+-- ============================================================================
+-- Item widgets
+-- ============================================================================
+
+-- Item set picker: an icon, a dropdown of item sets (or Custom) and an edit button that opens the item list popup.
+-- Writes value.item as an item set id or as a list of items. top is the owning condition window, hidden while the
+-- popup is open (nil when the widget is not inside one). The popup callbacks check that this widget and the
+-- saved tables are still the live ones before writing, since either can be released while the popup is open.
 function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
     local itemsets = addon.db.profile.itemsets
     local global_itemsets = addon.db.global.itemsets
 
     local item_group = addon:CreateConditionGroup()
-    local lease=item_group.rmLease;local profile,global=addon.db.profile,addon.db.global
-    local function ownerAlive() return item_group.rmActive and item_group.rmLease==lease and not item_group:IsReleasing() and addon.db.profile==profile and addon.db.global==global end
+    local lease = item_group.rmLease
+    local profile, global = addon.db.profile, addon.db.global
+
+    local function ownerAlive()
+        return item_group.rmActive
+            and item_group.rmLease == lease
+            and not item_group:IsReleasing()
+            and addon.db.profile == profile
+            and addon.db.global == global
+    end
+
     local function closePopup(widget)
         addon:ReleaseConditionWidget(widget)
+
         if top then
-            if type(top.rmResumeFromChild)=='function' then top.rmResumeFromChild()
-            elseif ownerAlive() then addon.LayoutConditionFrame(top);top:Show() end
+            if type(top.rmResumeFromChild) == 'function' then
+                top.rmResumeFromChild()
+            elseif ownerAlive() then
+                addon.LayoutConditionFrame(top)
+                top:Show()
+            end
         end
     end
+
     item_group:SetLayout("Table")
     item_group:SetUserData("table", { columns = { 44, 1, 24 } })
 
     local itemIcon = addon:CreateConditionIcon()
+
     local update_action_image = function()
         if value.item ~= nil then
             if type(value.item) == "string" then
-                local itemid = addon:FindFirstItemOfItemSet({}, value.item, true) or addon:FindFirstItemInItemSet(value.item)
+                local itemid = addon:FindFirstItemOfItemSet({}, value.item, true) or addon:FindFirstItemInItemSet(
+                    value.item
+                )
+
                 addon:UpdateItem_ID_Image(itemid, nil, itemIcon)
             elseif #value.item > 0 then
-                local itemid = addon:FindFirstItemOfItems({}, value.item, true) or addon:FindFirstItemInItems(value.item)
+                local itemid = addon:FindFirstItemOfItems({}, value.item, true) or addon:FindFirstItemInItems(
+                    value.item
+                )
+
                 addon:UpdateItem_ID_Image(itemid, nil, itemIcon)
             else
                 addon:UpdateItem_ID_Image(nil, nil, itemIcon)
@@ -256,25 +344,31 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
             addon:UpdateItem_ID_Image(nil, nil, itemIcon)
         end
     end
+
     update_action_image()
     itemIcon:SetImageSize(36, 36)
+
     itemIcon:SetCallback("OnEnter", function()
         local itemid
+
         if type(value.item) == "string" then
             itemid = addon:FindFirstItemOfItemSet({}, value.item, true) or addon:FindFirstItemInItemSet(value.item)
         else
             itemid = addon:FindFirstItemOfItems({}, value.item, true) or addon:FindFirstItemInItems(value.item)
         end
+
         if itemid then
             GameTooltip:SetOwner(itemIcon.frame, "ANCHOR_BOTTOMRIGHT", 3)
             GameTooltip:SetHyperlink("item:" .. itemid)
         end
     end)
+
     itemIcon:SetCallback("OnLeave", function()
         if GameTooltip:IsOwned(itemIcon.frame) then
             GameTooltip:Hide()
         end
     end)
+
     itemIcon:SetDisabled(value.disabled)
     item_group:AddChild(itemIcon)
 
@@ -283,6 +377,7 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
     local item = addon:CreateConditionDropdown()
     item:SetFullWidth(true)
     item:SetLabel(L["Item Set"])
+
     item:SetCallback("OnValueChanged", function(_, _, val)
         if val ~= nil then
             if val == "" then
@@ -290,6 +385,7 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
             else
                 value.item = val
             end
+
             edit_button:SetDisabled(false)
             edit_button:SetImage("Interface\\FriendsFrame\\UI-FriendsList-Large-Up")
         else
@@ -297,13 +393,17 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
             edit_button:SetDisabled(true)
             edit_button:SetImage("Interface\\AddOns\\" .. addon_name .. "\\textures\\UI-FriendsList-Large-Disabled")
         end
+
         update_action_image()
         update()
     end)
+
     item:SetDisabled(value.disabled)
+
     item.configure = function()
         local selects, sorted = addon:get_item_list(L["Custom"])
         item:SetList(selects, sorted)
+
         if value.item then
             if type(value.item) == "string" then
                 item:SetValue(value.item)
@@ -312,12 +412,14 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
             end
         end
     end
+
     item_group:AddChild(item)
 
     edit_button:SetImageSize(24, 24)
     edit_button:SetImage("Interface\\FriendsFrame\\UI-FriendsList-Large-Up")
     edit_button:SetUserData("cell", { alignV = "bottom" })
     addon.AddTooltip(edit_button, EDIT)
+
     if value.item == nil or value.disabled then
         edit_button:SetDisabled(true)
         edit_button:SetImage("Interface\\AddOns\\" .. addon_name .. "\\textures\\UI-FriendsList-Large-Disabled")
@@ -325,19 +427,26 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
         edit_button:SetDisabled(false)
         edit_button:SetImage("Interface\\FriendsFrame\\UI-FriendsList-Large-Up")
     end
+
     edit_button:SetUserData("cell", { alignV = "bottom" })
+
     edit_button:SetCallback("OnClick", function()
         if not ownerAlive() then return end
+
         local edit_callback = function()
             if not ownerAlive() then return end
             update_action_image()
+
             if type(value.item) == "string" then
                 addon:UpdateBoundButton(value.item)
             end
+
             update()
         end
+
         if type(value.item) == "string" then
             local itemset
+
             if itemsets[value.item] ~= nil then
                 itemset = itemsets[value.item]
             elseif global_itemsets[value.item] ~= nil then
@@ -349,91 +458,117 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
                     top:SetCallback("OnClose", function() end)
                     top:Hide()
                 end
-                local selected,expected,items=value.item,itemset,itemset.items
+
+                local selected, expected, items = value.item, itemset, itemset.items
+
                 local function current()
-                    if not ownerAlive() or value.item~=selected or expected.items~=items then return false end
-                    local personal=addon.db.profile.itemsets;local shared=addon.db.global.itemsets
-                    local entry=type(personal)=='table' and personal[selected]
-                    if entry==nil then entry=type(shared)=='table' and shared[selected] end
-                    return entry==expected
+                    if not ownerAlive() or value.item ~= selected or expected.items ~= items then return false end
+                    local personal = addon.db.profile.itemsets
+                    local shared = addon.db.global.itemsets
+                    local entry = type(personal) == 'table' and personal[selected]
+                    if entry == nil then entry = type(shared) == 'table' and shared[selected] end
+                    return entry == expected
                 end
-                addon:item_list_popup(itemset.name, editbox, items, isvalid, edit_callback, top and closePopup or nil,{valid=current})
+
+                addon:item_list_popup(itemset.name, editbox, items, isvalid, edit_callback, top and closePopup or nil, {
+                    valid = current,
+                })
             end
         else
             if top then
                 top:SetCallback("OnClose", function() end)
                 top:Hide()
             end
-            local items=value.item
-            addon:item_list_popup(L["Custom"], editbox, items, isvalid, edit_callback, top and closePopup or nil,{valid=function() return ownerAlive() and value.item==items end})
+
+            local items = value.item
+
+            addon:item_list_popup(L["Custom"], editbox, items, isvalid, edit_callback, top and closePopup or nil, {
+                valid = function() return ownerAlive() and value.item == items end,
+            })
         end
     end)
+
     item_group:AddChild(edit_button)
 
     return item_group
 end
 
+-- Single item picker: an icon box and a name edit box that write one item id or name to value.item.
 function addon:Widget_SingleItemWidget(spec, editbox, value, isvalid, update)
     local item_group = addon:CreateConditionGroup()
     item_group:SetLayout("Table")
 
     item_group:SetUserData("table", { columns = { 44, 1 } })
 
-    local item = addon:CreateItemEditBox(editbox,value.item)
-    local itemIcon = addon:CreateItemActionIcon(value.item,isvalid)
+    local item = addon:CreateItemEditBox(editbox, value.item)
+    local itemIcon = addon:CreateItemActionIcon(value.item, isvalid)
     itemIcon:SetWidth(44)
     itemIcon:SetHeight(44)
+
     itemIcon:SetCallback("OnEnterPressed", function(_, _, v)
         v = tonumber(v)
+
         if v and isvalid(v) then
             value.item = v
+
             if GameTooltip:IsOwned(itemIcon.frame) and GameTooltip:IsVisible() then
                 GameTooltip:SetHyperlink("item:" .. v)
             end
         else
             value.item = nil
+
             if GameTooltip:IsOwned(itemIcon.frame) and GameTooltip:IsVisible() then
                 GameTooltip:Hide()
             end
         end
+
         addon:UpdateItem_Name_ID(value.item, item, itemIcon)
         update()
     end)
+
     itemIcon:SetCallback("OnEnter", function()
         if value.item then
             local itemid = addon.Platform:GetItemID(value.item)
+
             if itemid then
                 GameTooltip:SetOwner(itemIcon.frame, "ANCHOR_BOTTOMRIGHT", 3)
                 GameTooltip:SetHyperlink("item:" .. itemid)
             end
         end
     end)
+
     itemIcon:SetCallback("OnLeave", function()
         if GameTooltip:IsOwned(itemIcon.frame) then
             GameTooltip:Hide()
         end
     end)
+
     itemIcon:SetDisabled(value.disabled)
     item_group:AddChild(itemIcon)
 
     item:SetFullWidth(true)
     item:SetLabel(L["Item"])
     item:SetUserData("spec", spec)
+
     item:SetCallback("OnEnterPressed", function(_, _, v)
         local itemid
+
         if not addon.Functions.values.isint(v) then
             itemid = addon.Platform:GetItemID(v)
         else
             itemid = tonumber(v)
         end
+
         if isvalid(itemid or v) then
             value.item = itemid or v
         else
             value.item = nil
         end
+
         addon:UpdateItem_Name_ID(value.item, item, itemIcon)
         update()
     end)
+
     item:SetDisabled(value.disabled)
     item_group:AddChild(item)
 
@@ -442,6 +577,12 @@ function addon:Widget_SingleItemWidget(spec, editbox, value, isvalid, update)
     return item_group
 end
 
+-- ============================================================================
+-- Operator widgets
+-- ============================================================================
+
+-- Operator dropdown plus a numeric edit box labeled name. Stores into value[op_field or "operator"] and
+-- value[val_field or "value"]; the returned group has a Refresh() for callers that fill the fields themselves.
 function addon:Widget_OperatorWidget(value, name, update, op_field, val_field)
     local operator_group = addon:CreateConditionGroup()
     operator_group:SetLayout("Table")
@@ -450,25 +591,31 @@ function addon:Widget_OperatorWidget(value, name, update, op_field, val_field)
     local operator = addon:CreateConditionDropdown()
     operator:SetFullWidth(true)
     operator:SetLabel(L["Operator"])
+
     operator:SetCallback("OnValueChanged", function(_, _, v)
         value[op_field or "operator"] = v
         update()
     end)
+
     operator:SetDisabled(value.disabled)
+
     operator.configure = function()
         operator:SetList(addon.operators, addon.Functions.collections.keys(addon.operators))
         operator:SetValue(value[op_field or "operator"])
     end
+
     operator_group:AddChild(operator)
 
     local edit = addon:CreateConditionEditBox()
     edit:SetFullWidth(true)
     edit:SetLabel(name)
     edit:SetText(value[val_field or "value"])
+
     edit:SetCallback("OnEnterPressed", function(_, _, v)
         value[val_field or "value"] = tonumber(v)
         update()
     end)
+
     edit:SetDisabled(value.disabled)
     operator_group:AddChild(edit)
 
@@ -482,6 +629,8 @@ function addon:Widget_OperatorWidget(value, name, update, op_field, val_field)
     return operator_group
 end
 
+-- Operator dropdown plus a 0 to 100 percent slider (stored as a 0 to 1 fraction), with the same field names as
+-- Widget_OperatorWidget.
 function addon:Widget_OperatorPercentWidget(value, name, update, op_field, val_field)
     local operator_group = addon:CreateConditionGroup()
     operator_group:SetLayout("Table")
@@ -490,29 +639,37 @@ function addon:Widget_OperatorPercentWidget(value, name, update, op_field, val_f
     local operator = addon:CreateConditionDropdown()
     operator:SetFullWidth(true)
     operator:SetLabel(L["Operator"])
+
     operator:SetCallback("OnValueChanged", function(_, _, v)
         value[op_field or "operator"] = v
         update()
     end)
+
     operator:SetDisabled(value.disabled)
+
     operator.configure = function()
         operator:SetList(addon.operators, addon.Functions.collections.keys(addon.operators))
         operator:SetValue(value[op_field or "operator"])
     end
+
     operator_group:AddChild(operator)
 
     local edit = addon:CreateConditionSlider()
     edit:SetFullWidth(true)
     edit:SetLabel(name)
+
     if (value[val_field or "value"] ~= nil) then
         edit:SetValue(value[val_field or "value"])
     end
+
     edit:SetSliderValues(0, 1, 0.01)
     edit:SetIsPercent(true)
+
     edit:SetCallback("OnValueChanged", function(_, _, v)
         value[val_field or "value"] = tonumber(v)
         update()
     end)
+
     edit:SetDisabled(value.disabled)
     operator_group:AddChild(edit)
 

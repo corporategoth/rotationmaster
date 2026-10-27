@@ -1,12 +1,21 @@
-local _,addon=...
-local platform=addon.Platform
+-- Platform adapter for a unit's actual level (UnitExists, UnitLevel). Returns a record or `nil, reason`; game values
+-- pass platform:CanReadValue and canaccessvalue first. Works on any identified client family, not only the probe and
+-- restricted policies. Must not return effective or scaled levels. Loaded from RotationMaster.toc after
+-- Platform/health_forecast.lua; the level conditions in Core/level_conditions.lua and Conditions/character.lua use it.
+-- The generated bindings block at the end is owned by tools/generate_builtin_sources.py; finite and the reader are
+-- Built In helpers, so their bodies are frozen.
+local _, addon = ...
+local platform = addon.Platform
 
+-- True for a number that is neither NaN nor infinite.
 local function finite(value)
     return type(value)=='number' and value==value and value<math.huge and value>-math.huge
 end
 
 -- Actual public unit levels are distinct from effective/scaled levels. Negative
 -- sentinels do not reveal an exact level and must not enter numeric predicates.
+-- Returns { exists = false } or { exists = true, level = n } with a positive integer level, or nil and a reason (a
+-- negative level, which UnitLevel reports for unknown-level units, is "level-data-unavailable").
 function platform:GetUnitLevelObservation(unit)
     if not self:CanReadValue(unit) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end

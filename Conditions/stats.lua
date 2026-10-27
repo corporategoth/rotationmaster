@@ -1,5 +1,23 @@
+-- Built In conditions on unit statistics: HEALTH, HEALTHPCT, MANA, MANAPCT, POWER, POWERPCT, POINT, RUNE,
+-- RUNE_COOLDOWN, TT_HEALTH and TT_HEALTHPCT. Values come from addon.Platform observation readers and the forecast and
+-- point services in Core/. A negative absolute value means "deficit from maximum"; percentage values are saved as
+-- fractions from 0 to 1. Restricted clients (Retail, Forever): health, mana and power are secret while restrictions
+-- apply, so Core/condition_support.lua declares those conditions unsupported there (docs/restricted-clients.md); any
+-- value that still reaches a callback passes platform:CanReadValue first. Loaded from RotationMaster.toc after
+-- Conditions/specialization.lua and before Conditions/ext_stats.lua. Callback bodies are recorded by
+-- tools/generate_builtin_sources.py and saved copies bind to their exact text.
 local addon_name, addon = ...
-local runtimeCondition=addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness('Conditions/stats.lua') or function(_,definition)return definition end
+
+-- ============================================================================
+-- Shared setup
+-- ============================================================================
+
+-- Records each definition with the lean-engine witness when Core/condition_runtime.lua is loaded, so the declaration at
+-- the end of the file can prove it was not replaced; otherwise it passes the definition through unchanged.
+local runtimeCondition = addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness(
+    'Conditions/stats.lua'
+)
+    or function(_, definition) return definition end
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color, tonumber = color, tonumber
@@ -7,29 +25,44 @@ local helpers = addon.help_funcs
 
 -- Canonical callback leaves preserve the native observations, resource keys,
 -- arithmetic and cache lifetimes of these existing statistic predicates.
-local Functions={
-    values={isin=addon.Functions.values.isin,compare=addon.Functions.values.compare},
-    cache={getCached=addon.Functions.cache.getCached},
-    presentation={nullable=addon.Functions.presentation.nullable,compareString=addon.Functions.presentation.compareString},
-}
-addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
-addon.builtinCallbackBindings["Conditions/stats.lua"]={
-    ["Functions.values.isin"]="builtin:utils.lua:isin",
-    ["Functions.values.compare"]="builtin:utils.lua:compare",
-    ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
-    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
-    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
+local Functions = {
+    values = { isin = addon.Functions.values.isin, compare = addon.Functions.values.compare },
+    cache = { getCached = addon.Functions.cache.getCached },
+    presentation = {
+        nullable = addon.Functions.presentation.nullable,
+        compareString = addon.Functions.presentation.compareString,
+    },
 }
 
+-- Declares the stable Built In identity of each leaf above so saved copies and the source collector can resolve it.
+addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
+
+addon.builtinCallbackBindings["Conditions/stats.lua"] = {
+    ["Functions.values.isin"] = "builtin:utils.lua:isin",
+    ["Functions.values.compare"] = "builtin:utils.lua:compare",
+    ["Functions.cache.getCached"] = "builtin:utils.lua:getCached",
+    ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
+    ["Functions.presentation.compareString"] = "builtin:utils.lua:compareString",
+}
+
+-- ============================================================================
+-- Health
+-- ============================================================================
+
+-- HEALTH: compares the unit's current health with the saved amount; a negative amount compares the deficit (maximum
+-- minus current) with its absolute value instead. False when the unit does not exist. Returns nil and a reason when the
+-- health cannot be read. Stores unit, operator and value.
 addon:RegisterCondition("HEALTH", {
     description = L["Health"],
     icon = addon.Artwork.condition["HEALTH"],
     fields = { unit = "string", operator = "string", value = "number" },
+    -- Configuration check: a known operator, a selectable unit and a number.
     valid = function(_, value)
         return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.value ~= nil)
     end,
+    -- Reads health once per poll through the evaluation cache; the maximum is requested only for a deficit.
     evaluate = function(value, cache)
         local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitHealthObservation,addon.Platform,value.unit,value.value<0)
         if not record then return nil,reason end
@@ -40,6 +73,7 @@ addon:RegisterCondition("HEALTH", {
             return Functions.values.compare(value.operator, record.current, value.value)
         end
     end,
+    -- Rule summary, worded as a deficit when the saved amount is negative.
     print = function(_, value)
         if value.value ~= nil and value.value < 0 then
             return Functions.presentation.compareString(value.operator, string.format(L["%s health deficit"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), -value.value)
@@ -47,6 +81,7 @@ addon:RegisterCondition("HEALTH", {
             return Functions.presentation.compareString(value.operator, string.format(L["%s health"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(value.value))
         end
     end,
+    -- Editor controls: the unit selector and the comparison with the health amount.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -60,24 +95,30 @@ addon:RegisterCondition("HEALTH", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Help page: the unit, then the health amount and the deficit convention.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Health"], L["Health"],
             "The raw health value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ". " ..
             "If this number is negative, it means the health deficit (from max health).")
-    end
+    end,
 })
 
-addon:RegisterCondition("HEALTHPCT", runtimeCondition('HEALTHPCT',{
+-- HEALTHPCT: compares the unit's health as a percentage of its maximum with the saved fraction (0 to 1, compared as
+-- percent). False when the unit does not exist. Returns nil and a reason when health cannot be read, the maximum is not
+-- positive ("invalid-health-maximum") or the percentage is not finite. Stores unit, operator and value.
+addon:RegisterCondition("HEALTHPCT", runtimeCondition('HEALTHPCT', {
     description = L["Health Percentage"],
     icon = addon.Artwork.condition["HEALTHPCT"],
     fields = { unit = "string", operator = "string", value = "number" },
+    -- Configuration check: a known operator, a selectable unit and a fraction from 0 to 1.
     valid = function(_, value)
         return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.value ~= nil and value.value >= 0.00 and value.value <= 1.00)
     end,
+    -- Reads current and maximum health once per poll through the evaluation cache.
     evaluate = function(value, cache)
         local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitHealthObservation,addon.Platform,value.unit,true)
         if not record then return nil,reason end
@@ -87,6 +128,7 @@ addon:RegisterCondition("HEALTHPCT", runtimeCondition('HEALTHPCT',{
         if health~=health or health==math.huge or health==-math.huge then return nil,"invalid-health-percentage" end
         return Functions.values.compare(value.operator, health, value.value * 100)
     end,
+    -- Rule summary with the fraction shown as a percentage.
     print = function(_, value)
         local v = value.value
         if v ~= nil then
@@ -94,6 +136,7 @@ addon:RegisterCondition("HEALTHPCT", runtimeCondition('HEALTHPCT',{
         end
         return Functions.presentation.compareString(value.operator, string.format(L["%s health"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(v) .. "%")
     end,
+    -- Editor controls: the unit selector and the comparison with a health percentage.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -107,24 +150,34 @@ addon:RegisterCondition("HEALTHPCT", runtimeCondition('HEALTHPCT',{
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Help page: the unit, then the health percentage.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorpercentwidget_help(frame, L["Health Percentage"], L["Health"],
             "The health value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " as a percentage of their " ..
             "total health.")
-    end
+    end,
 }))
 
+-- ============================================================================
+-- Mana and power
+-- ============================================================================
+
+-- MANA: compares the unit's current mana with the saved amount; a negative amount compares the deficit (maximum minus
+-- current) with its absolute value instead. Mana is read explicitly, whatever power bar the unit shows. False when the
+-- unit does not exist. Returns nil and a reason when mana cannot be read. Stores unit, operator and value.
 addon:RegisterCondition("MANA", {
     description = L["Mana"],
     icon = addon.Artwork.condition["MANA"],
     fields = { unit = "string", operator = "string", value = "number" },
+    -- Configuration check: a known operator, a selectable unit and a number.
     valid = function(_, value)
         return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.value ~= nil)
     end,
+    -- Reads mana once per poll through the evaluation cache; the maximum is requested only for a deficit.
     evaluate = function(value, cache)
         local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitPowerObservation,addon.Platform,value.unit,"mana",value.value<0)
         if not record then return nil,reason end
@@ -135,6 +188,7 @@ addon:RegisterCondition("MANA", {
             return Functions.values.compare(value.operator, record.current, value.value)
         end
     end,
+    -- Rule summary, worded as a deficit when the saved amount is negative.
     print = function(_, value)
         if value.value ~= nil and value.value < 0 then
             return Functions.presentation.compareString(value.operator, string.format(L["%s mana deficit"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), -value.value)
@@ -142,6 +196,7 @@ addon:RegisterCondition("MANA", {
             return Functions.presentation.compareString(value.operator, string.format(L["%s mana"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(value.value))
         end
     end,
+    -- Editor controls: the unit selector and the comparison with the mana amount.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -155,24 +210,30 @@ addon:RegisterCondition("MANA", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Help page: the unit, then the mana amount and the deficit convention.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Mana"], L["Mana"],
             "The raw mana value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ". " ..
             "If this number is negative, it means the mana deficit (from max mana).")
-    end
+    end,
 })
 
+-- MANAPCT: compares the unit's mana as a percentage of its maximum mana with the saved fraction (0 to 1, compared as
+-- percent). False when the unit does not exist. Returns nil and a reason when mana cannot be read, the maximum is not
+-- positive ("invalid-power-maximum") or the percentage is not finite. Stores unit, operator and value.
 addon:RegisterCondition("MANAPCT", {
     description = L["Mana Percentage"],
     icon = addon.Artwork.condition["MANAPCT"],
     fields = { unit = "string", operator = "string", value = "number" },
+    -- Configuration check: a known operator, a selectable unit and a fraction from 0 to 1.
     valid = function(_, value)
         return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.value ~= nil and value.value >= 0.00 and value.value <= 1.00)
     end,
+    -- Reads current and maximum mana once per poll through the evaluation cache.
     evaluate = function(value, cache)
         local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitPowerObservation,addon.Platform,value.unit,"mana",true)
         if not record then return nil,reason end
@@ -182,6 +243,7 @@ addon:RegisterCondition("MANAPCT", {
         if percentage~=percentage or percentage==math.huge or percentage==-math.huge then return nil,"invalid-power-percentage" end
         return Functions.values.compare(value.operator, percentage, value.value * 100)
     end,
+    -- Rule summary with the fraction shown as a percentage.
     print = function(_, value)
         local v = value.value
         if v ~= nil then
@@ -189,6 +251,7 @@ addon:RegisterCondition("MANAPCT", {
         end
         return Functions.presentation.compareString(value.operator, string.format(L["%s mana"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(v) .. "%")
     end,
+    -- Editor controls: the unit selector and the comparison with a mana percentage.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -202,24 +265,31 @@ addon:RegisterCondition("MANAPCT", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Help page: the unit, then the mana percentage.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorpercentwidget_help(frame, L["Mana Percentage"], L["Mana"],
             "The mana value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " as a percentage of their " ..
             "total mana.")
-    end
+    end,
 })
 
+-- POWER: compares the unit's current value of whatever power type it uses (rage, energy, ...) with the saved amount; a
+-- negative amount compares the deficit (maximum minus current) with its absolute value instead. False when the unit
+-- does not exist. Returns nil and a reason when power cannot be read or the deficit is not finite. Stores unit,
+-- operator and value.
 addon:RegisterCondition("POWER", {
     description = L["Power"],
     icon = addon.Artwork.condition["POWER"],
     fields = { unit = "string", operator = "string", value = "number" },
+    -- Configuration check: a known operator, a selectable unit and a number.
     valid = function(_, value)
         return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.value ~= nil)
     end,
+    -- Reads power once per poll through the evaluation cache; the maximum is requested only for a deficit.
     evaluate = function(value, cache)
         local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitPowerObservation,addon.Platform,value.unit,"current",value.value<0)
         if not record then return nil,reason end
@@ -232,6 +302,7 @@ addon:RegisterCondition("POWER", {
             return Functions.values.compare(value.operator, record.current, value.value)
         end
     end,
+    -- Rule summary, worded as a deficit when the saved amount is negative.
     print = function(_, value)
         if value.value ~= nil and value.value < 0 then
             return Functions.presentation.compareString(value.operator, string.format(L["%s power deficit"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), -value.value)
@@ -239,6 +310,7 @@ addon:RegisterCondition("POWER", {
             return Functions.presentation.compareString(value.operator, string.format(L["%s power"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(value.value))
         end
     end,
+    -- Editor controls: the unit selector and the comparison with the power amount.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -252,6 +324,7 @@ addon:RegisterCondition("POWER", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Help page: the unit, then the power amount and the deficit convention.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
@@ -259,18 +332,24 @@ addon:RegisterCondition("POWER", {
             "The raw power value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ".  Power is a statistic " ..
             "that is class (and sometimes spec or form) specific (eg. Warriors have Rage). " ..
             "If this number is negative, it means the power deficit (from max power).")
-    end
+    end,
 })
 
+-- POWERPCT: compares the unit's power (of whatever type it uses) as a percentage of its maximum with the saved fraction
+-- (0 to 1, compared as percent). False when the unit does not exist. Returns nil and a reason when power cannot be
+-- read, the maximum is not positive ("invalid-power-maximum") or the percentage is not finite. Stores unit, operator
+-- and value.
 addon:RegisterCondition("POWERPCT", {
     description = L["Power Percentage"],
     icon = addon.Artwork.condition["POWERPCT"],
     fields = { unit = "string", operator = "string", value = "number" },
+    -- Configuration check: a known operator, a selectable unit and a fraction from 0 to 1.
     valid = function(_, value)
         return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.value ~= nil and value.value >= 0.00 and value.value <= 1.00)
     end,
+    -- Reads current and maximum power once per poll through the evaluation cache.
     evaluate = function(value, cache)
         local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitPowerObservation,addon.Platform,value.unit,"current",true)
         if not record then return nil,reason end
@@ -280,6 +359,7 @@ addon:RegisterCondition("POWERPCT", {
         if percentage~=percentage or percentage==math.huge or percentage==-math.huge then return nil,"invalid-power-percentage" end
         return Functions.values.compare(value.operator, percentage, value.value * 100)
     end,
+    -- Rule summary with the fraction shown as a percentage.
     print = function(_, value)
         local v = value.value
         if v ~= nil then
@@ -287,6 +367,7 @@ addon:RegisterCondition("POWERPCT", {
         end
         return Functions.presentation.compareString(value.operator, string.format(L["%s power"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(v) .. "%")
     end,
+    -- Editor controls: the unit selector and the comparison with a power percentage.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -300,6 +381,7 @@ addon:RegisterCondition("POWERPCT", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Help page: the unit, then the power percentage.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
@@ -307,18 +389,30 @@ addon:RegisterCondition("POWERPCT", {
             "The power value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " as a percentage of their " ..
             "total power.  Power is a statistic that is class (and sometimes spec or form) specific (eg. Warriors " ..
             "have Rage.)")
-    end
+    end,
 })
 
-addon:RegisterCondition("POINT", runtimeCondition('POINT',{
+-- ============================================================================
+-- Class points and runes
+-- ============================================================================
+
+-- POINT: compares the unit's points in its class resource (combo points, holy power, arcane charges and so on) with
+-- the saved amount; a negative amount compares the deficit (maximum minus current) with its absolute value. Which
+-- resource that is comes from addon:GetConditionPointResourceV2 (Core/point_conditions.lua), by edition, class and
+-- specialization; the target's combo points are read from the player. False when the unit does not exist. Returns nil
+-- and a reason when the resource or its value cannot be read, which on Retail and Forever covers every power type that
+-- is not flagged never secret. Stores unit, operator and value.
+addon:RegisterCondition("POINT", runtimeCondition('POINT', {
     description = L["Points"],
     icon = addon.Artwork.condition["POINT"],
     fields = { unit = "string", operator = "string", value = "number" },
+    -- Configuration check: a known operator, a selectable unit and a number.
     valid = function(_, value)
         return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.value ~= nil)
     end,
+    -- Resolves the resource, then reads its current value (and the maximum for a deficit) through the evaluation cache.
     evaluate = function(value, cache)
         local point,reason,transport=addon:GetConditionPointResourceV2(value.unit,cache)
         if point==nil then return nil,reason end
@@ -345,6 +439,7 @@ addon:RegisterCondition("POINT", runtimeCondition('POINT',{
             return Functions.values.compare(value.operator, cur, value.value)
         end
     end,
+    -- Rule summary, worded as a deficit when the saved amount is negative.
     print = function(_, value)
         if value.value ~= nil and value.value < 0 then
             return Functions.presentation.compareString(value.operator, string.format(L["%s point deficit"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), -value.value)
@@ -352,6 +447,7 @@ addon:RegisterCondition("POINT", runtimeCondition('POINT',{
             return Functions.presentation.compareString(value.operator, string.format(L["%s point total"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(value.value))
         end
     end,
+    -- Editor controls: the unit selector and the comparison with the point amount.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -365,6 +461,7 @@ addon:RegisterCondition("POINT", runtimeCondition('POINT',{
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Help page: the unit, then the point amount and the deficit convention.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
@@ -373,20 +470,28 @@ addon:RegisterCondition("POINT", runtimeCondition('POINT',{
             "Combo points are a statistic that is class (and sometimes spec or form) specific (eg. Mages have " ..
             "Arcane Charges).  " ..
             "If this number is negative, it means the point deficit (from max points).")
-    end
+    end,
 }))
 
-if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 and
-    select(2, UnitClass("player")) == "DEATHKNIGHT") then
+-- The two rune conditions exist only for a Death Knight on a client that is not Retail (WOW_PROJECT_ID) and is at
+-- expansion level 2 or later, so they are not registered anywhere else.
+if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
+    and LE_EXPANSION_LEVEL_CURRENT >= 2
+    and select(2, UnitClass("player")) == "DEATHKNIGHT") then
+    -- RUNE: counts the player's six runes of the chosen type that are ready and compares the count with the saved
+    -- value (0 to 2). Returns nil and a reason when a rune's type or readiness cannot be read. Stores rune (the rune
+    -- type), operator and value.
     addon:RegisterCondition("RUNE", {
         description = L["Runes"],
         icon = addon.Artwork.condition["RUNE"],
         fields = { rune = "number", operator = "string", value = "number" },
+        -- Configuration check: a known operator, a count from 0 to 2 and a known rune type.
         valid = function(_, value)
             return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                     value.value ~= nil and value.value >= 0 and value.value <= 2 and
                     value.rune ~= nil and Functions.values.isin(addon.runes, value.rune))
         end,
+        -- Reads each rune's type and, for matching runes, its readiness through the evaluation cache.
         evaluate = function(value, cache)
             local count = 0
             for i=1,6 do
@@ -401,11 +506,13 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 a
             end
             return Functions.values.compare(value.operator, count, value.value)
         end,
+        -- Rule summary naming the rune type, or a placeholder while none is chosen.
         print = function(_, value)
             local rune_type = value.rune and addon.runes[value.rune] or L["<rune type>"]
             return Functions.presentation.compareString(value.operator, string.format(L["the number of %s runes available"], rune_type),
                         Functions.presentation.nullable(value.value))
         end,
+        -- Editor controls: the rune type dropdown and the comparison with the rune count.
         widget = function(parent, spec, value)
             local top = parent:GetUserData("top")
             local root = top:GetUserData("root")
@@ -427,6 +534,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 a
                     function() top:SetStatusText(funcs:print(root, spec)) end)
             parent:AddChild(operator_group)
         end,
+        -- Help page: the rune types, then the rune count.
         help = function(frame)
             frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Rune Type"] .. color.RESET .. " - " ..
                     "Which type of runes you wish to check."))
@@ -437,18 +545,24 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 a
             frame:AddChild(helpers.Gap())
             addon.layout_condition_operatorwidget_help(frame, L["Runes"], L["Runes"],
                     "The number of runes currently available.")
-        end
+        end,
     })
 
+    -- RUNE_COOLDOWN: compares the seconds until the next rune of the chosen type is ready (the smallest remaining time
+    -- among those runes, rounded to three decimals and never below 0) with the saved value. False when the player has
+    -- no rune of that type. Returns nil and a reason when a rune's type, timing or the evaluation time cannot be read,
+    -- or a remaining time is not finite. Stores rune (the rune type), operator and value (seconds).
     addon:RegisterCondition("RUNE_COOLDOWN", {
         description = L["Rune Cooldown"],
         icon = addon.Artwork.condition["RUNE_COOLDOWN"],
         fields = { rune = "number", operator = "string", value = "number" },
+        -- Configuration check: a known operator, a non-negative number of seconds and a known rune type.
         valid = function(_, value)
             return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                     value.value ~= nil and value.value >= 0 and
                     value.rune ~= nil and Functions.values.isin(addon.runes, value.rune))
         end,
+        -- Reads each rune's type and, for matching runes, its start and duration through the evaluation cache.
         evaluate = function(value, cache)
             local now,timeReason=addon.Platform:GetRuneEvaluationTime()
             local lowest_remain
@@ -474,12 +588,14 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 a
             if lowest_remain==nil then return false end
             return Functions.values.compare(value.operator, lowest_remain, value.value)
         end,
+        -- Rule summary naming the rune type, or a placeholder while none is chosen.
         print = function(_, value)
             local rune_type = value.rune and addon.runes[value.rune] or L["<rune type>"]
             return string.format(L["the %s"],
                     Functions.presentation.compareString(value.operator, string.format(L["cooldown on your next %s rune"], rune_type),
                     string.format(L["%s seconds"], Functions.presentation.nullable(value.value))))
         end,
+        -- Editor controls: the rune type dropdown and the seconds comparison.
         widget = function(parent, spec, value)
             local top = parent:GetUserData("top")
             local root = top:GetUserData("root")
@@ -501,6 +617,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 a
                     function() top:SetStatusText(funcs:print(root, spec)) end)
             parent:AddChild(operator_group)
         end,
+        -- Help page: the rune types, then the seconds until a rune is available.
         help = function(frame)
             frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Rune Type"] .. color.RESET .. " - " ..
                     "Which type of runes you wish to check."))
@@ -512,20 +629,32 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 a
             addon.layout_condition_operatorwidget_help(frame, L["Rune Cooldown"], L["Seconds"],
                     "The number of seconds until a " .. color.BLIZ_YELLOW .. L["Rune Type"] .. color.RESET ..
                     " rune becomes available.")
-        end
+        end,
     })
 end
 
+-- ============================================================================
+-- Time until health
+-- ============================================================================
+
+-- TT_HEALTH: compares the estimated seconds until the unit's health reaches the saved amount (negative means that much
+-- below maximum) with the saved seconds. The estimate is addon:GetConditionHealthForecast
+-- (Core/health_forecast_conditions.lua), from the unit's recent damage and healing history, and mode chooses whether
+-- heals count. False when the unit is gone or no estimate exists yet. Returns nil and a reason when a value is secret,
+-- not a finite number, or the forecast cannot be read; on Retail and Forever the combat log it needs is unavailable, so
+-- Core/condition_support.lua declares it unsupported there. Stores unit, operator, value (seconds), health and mode.
 addon:RegisterCondition("TT_HEALTH", {
     description = L["Time Until Health"],
     icon = addon.Artwork.condition["TT_HEALTH"],
     fields = { unit = "string", operator = "string", value = "number", health = "number", mode = "string" },
+    -- Configuration check: a known operator, a selectable unit, non-negative seconds and a target health amount.
     valid = function(_, value)
         return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.value ~= nil and value.value >= 0.00 and
                 value.health ~= nil)
     end,
+    -- Asks the forecast for the ETA (false means no estimate), then checks it and the threshold before comparing.
     evaluate = function(value, cache)
         local eta,reason=addon:GetConditionHealthForecast(value.unit,value.health,false,value.mode,cache)
         if not addon.Platform:CanReadValue(eta) then return nil,'restricted-value' end
@@ -537,6 +666,7 @@ addon:RegisterCondition("TT_HEALTH", {
         if type(threshold)~='number' or threshold~=threshold or threshold>=math.huge or threshold<=-math.huge then return nil,'invalid-health-forecast-threshold' end
         return Functions.values.compare(value.operator,eta,threshold)
     end,
+    -- Rule summary, worded as a deficit for a negative target and ending with the burn-rate mode.
     print = function(_, value)
         local conditionstr
         if value.health ~= nil and value.health < 0 then
@@ -550,6 +680,7 @@ addon:RegisterCondition("TT_HEALTH", {
             Functions.presentation.compareString(value.operator, conditionstr,
             string.format(L["%s seconds"], Functions.presentation.nullable(value.value))), addon.trendmode[value.mode or "both"])
     end,
+    -- Editor controls: the unit selector, the target health, the seconds comparison and the burn-rate mode.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -585,6 +716,7 @@ addon:RegisterCondition("TT_HEALTH", {
         end
         parent:AddChild(mode)
     end,
+    -- Help page: the unit, the target health, the seconds comparison and the burn-rate modes.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
@@ -608,19 +740,24 @@ addon:RegisterCondition("TT_HEALTH", {
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Heals Only"] .. color.RESET .. " - " ..
                 "Only heals on " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " will be factored into the " ..
                 "'burn rate', essentially pretending they are not being hit at all.")))
-    end
+    end,
 })
 
+-- TT_HEALTHPCT: like TT_HEALTH, but the target health is a fraction of the unit's maximum health (0 to 1) instead of an
+-- amount, so the forecast is asked for a percentage. Same results, unavailable cases and restricted-client support as
+-- TT_HEALTH. Stores unit, operator, value (seconds), health (the fraction) and mode.
 addon:RegisterCondition("TT_HEALTHPCT", {
     description = L["Time Until Health Percentage"],
     icon = addon.Artwork.condition["TT_HEALTHPCT"],
     fields = { unit = "string", operator = "string", value = "number", health = "number", mode = "string" },
+    -- Configuration check: a known operator, a selectable unit, non-negative seconds and a health fraction from 0 to 1.
     valid = function(_, value)
         return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.value ~= nil and value.value >= 0.00 and
                 value.health ~= nil and value.health >= 0.00 and value.health <= 1.00)
     end,
+    -- Asks the forecast for the ETA (false means no estimate), then checks it and the threshold before comparing.
     evaluate = function(value, cache)
         local eta,reason=addon:GetConditionHealthForecast(value.unit,value.health,true,value.mode,cache)
         if not addon.Platform:CanReadValue(eta) then return nil,'restricted-value' end
@@ -632,6 +769,7 @@ addon:RegisterCondition("TT_HEALTHPCT", {
         if type(threshold)~='number' or threshold~=threshold or threshold>=math.huge or threshold<=-math.huge then return nil,'invalid-health-forecast-threshold' end
         return Functions.values.compare(value.operator,eta,threshold)
     end,
+    -- Rule summary with the target fraction shown as a percentage, ending with the burn-rate mode.
     print = function(_, value)
         local v = value.health
         if v ~= nil then
@@ -644,6 +782,8 @@ addon:RegisterCondition("TT_HEALTHPCT", {
                             addon.trendmode[value.mode or "both"])
 
     end,
+    -- Editor controls: the unit selector, a percentage slider for the target health, the seconds comparison and the
+    -- burn-rate mode.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -683,6 +823,7 @@ addon:RegisterCondition("TT_HEALTHPCT", {
         end
         parent:AddChild(mode)
     end,
+    -- Help page: the unit, the target health percentage, the seconds comparison and the burn-rate modes.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
@@ -705,12 +846,18 @@ addon:RegisterCondition("TT_HEALTHPCT", {
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Heals Only"] .. color.RESET .. " - " ..
                 "Only heals on " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " will be factored into the " ..
                 "'burn rate', essentially pretending they are not being hit at all.")))
-    end
+    end,
 })
 
+-- ============================================================================
+-- Lean-engine declarations
+-- ============================================================================
+
 -- Source-owned volatile observations; only configuration-only validators memoize.
+-- `pure = true` says the condition's valid callback depends only on the saved fields. Only HEALTHPCT and POINT are
+-- declared here, and they are the two registered through runtimeCondition above.
 if addon.DeclareOwnedConditionRuntime then
-    addon:DeclareOwnedConditionRuntime('Conditions/stats.lua',{ HEALTHPCT={pure=true},POINT={pure=true} })
+    addon:DeclareOwnedConditionRuntime('Conditions/stats.lua', { HEALTHPCT = { pure = true }, POINT = { pure = true } })
 end
 
 -- BEGIN GENERATED RM SOURCE BINDINGS

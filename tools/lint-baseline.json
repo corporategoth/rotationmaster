@@ -609,7 +609,7 @@
       "message": "expected `table` for parameter 'stream', got `string`",
       "path": "Data/codec.lua",
       "severity": "warning",
-      "source": "local expected,errorCode=decompressedSize(stream)",
+      "source": "local expected, errorCode = decompressedSize(stream)",
       "count": 1
     },
     {
@@ -617,7 +617,7 @@
       "message": "expected `table` for parameter 'stream', got `string`",
       "path": "Data/codec.lua",
       "severity": "warning",
-      "source": "local expected,why=decompressedSize(stream)",
+      "source": "local expected, why = decompressedSize(stream)",
       "count": 1
     },
     {

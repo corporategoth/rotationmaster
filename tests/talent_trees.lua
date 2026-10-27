@@ -32,7 +32,7 @@ end)
 -- The SPECIALIZATION condition maps a specialization to its tree on these clients; it must agree.
 test('the specialization table and the tree table agree on which tree is which',function()
     local source=read('Conditions/specialization.lua');local families=data().families;local seen=0
-    for class,tree,name in source:gmatch('%[%d+%]={"(%u+)",(%d+),"([%a ]+)"}') do
+    for class,tree,name in source:gmatch('%[%d+%]%s*=%s*{%s*"(%u+)",%s*(%d+),%s*"([%a ]+)"%s*}') do
         tree=tonumber(tree);local listed=families.wrath.classes[class]
         assert(listed,class);seen=seen+1
         local want=listed[tree]

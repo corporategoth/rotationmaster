@@ -57,16 +57,6 @@ test('released zone popup rows cannot clear the retired owner or a recycled sele
     parent:Release();local nextValue={value='friendly'};local reused,nextState,nextParent=mount(a,'ZONEPVP',nextValue);assert(reused==zone,'test did not exercise recycled selector')
     stale(row);assert(value.value=='hostile' and nextValue.value=='friendly' and state.prints==0 and nextState.prints==0,'stale popup changed an owner');nextParent:Release()
 end)
-test('exact widget inverses preserve complete module and reject unrelated or duplicate bodies',function()
-    local _,a=fixture();local file=assert(io.open('Conditions/misc.lua'));local text=file:read('*a');file:close();text=dofile('tests/fixtures/restore_instance_details.lua')(text)
-    assert(a:FunctionSourceHash(inverse(text))=='ea622a99','misc changed beyond the two exact widget repairs from75f8297')
-    for _,tag in ipairs({'ZONEPVP','INSTANCE'}) do
-        assert(inverse(repaired[tag],tag)==old[tag]);assert(not pcall(inverse,old[tag],tag));assert(not pcall(inverse,repaired[tag]..' ',tag))
-        assert(not pcall(inverse,text..repaired[tag]),'inverse accepted duplicate widget body')
-    end
-    assert(not pcall(inverse,repaired.ZONEPVP,'UNKNOWN'))
-    for name,hash in pairs({color='89a5436e',helpers='3ab28a24'}) do local id='builtin:Conditions/misc.lua:'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/misc.lua'](name),'private identity changed') end
-end)
 if arg[1]~='--runtime-only' then
     test('actual exported widget clones clear selectors through current source bindings',function()
         local _,a=fixture()

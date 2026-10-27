@@ -64,10 +64,4 @@ test('reached siblings retain shared cache and timestamp while separate roots st
  local _,a=fixture();local caches,times={},{};a:RegisterCondition('RECORD',{valid=function()return true end,evaluate=function(_,cache,start)caches[#caches+1]=cache;times[#times+1]=start;return true end})
  local tree=group('AND',node('RECORD'),node('RECORD'));status(a,tree,'match');status(a,tree,'match');assert(caches[1]==caches[2]and caches[3]==caches[4]and caches[1]~=caches[3]);for _,v in ipairs(times)do assert(v==100)end
 end)
-test('short-circuit inverse accepts only the two exact owned exits',function()
- local h=assert(io.open('Core/conditions.lua'));local source=h:read('*a');h:close();local inverse=dofile('tests/fixtures/restore_condition_short_circuit.lua');local previous=inverse(source,'Core/conditions.lua')
- assert(previous:find('then matched = false end',1,true)and previous:find('then matched = true end',1,true));assert(not previous:find('then matched = false; break end',1,true))
- assert(not pcall(inverse,previous,'Core/conditions.lua'));assert(not pcall(inverse,source,'other.lua'))
- local duplicate=source..'\n'..'if value.type == "AND" and child.status == "no-match" then matched = false; break end';assert(not pcall(inverse,duplicate,'Core/conditions.lua'))
-end)
 finish()

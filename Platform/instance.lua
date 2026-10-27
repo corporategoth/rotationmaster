@@ -1,7 +1,14 @@
-local _,addon=...
-local platform=addon.Platform
+-- Platform adapter for IsInInstance: whether the player is inside an instance, and of which type.
+-- Owns the `value or nil, reason` reader platform:GetInstanceObservation; it must not interpret the type (party, raid,
+-- pvp) for a rotation. Supported on every known client family; "unknown" is refused. GetInstanceObservation is a Built
+-- In helper whose body is recorded in the generated block at the end of the file and must keep its exact text.
+-- Loaded from RotationMaster.toc after Platform/threat.lua; needs Platform/client.lua for CanReadValue.
+local _, addon = ...
+local platform = addon.Platform
 
 -- One public world-state tuple; membership and type have independent readiness.
+-- Returns { inInstance = false }, or { inInstance = true } carrying either instanceType or instanceTypeReason when the
+-- type alone is unreadable; nil and a reason code when membership itself cannot be read.
 function platform:GetInstanceObservation()
     local family=self:GetClientFamily()
     if family~='retail' and family~='forever' and family~='era' and family~='tbc' and family~='progression' then return nil,'unsupported-policy' end

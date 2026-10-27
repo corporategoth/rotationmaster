@@ -1,7 +1,15 @@
-local _,addon=...
-local platform=addon.Platform
+-- Platform adapter for the PvP classification of the current zone (C_PvP.GetZonePVPInfo, falling back to the global
+-- GetZonePVPInfo). Returns a record or `nil, reason`; every value, including the namespace and the function itself,
+-- passes platform:CanReadValue and canaccessvalue first. Only identified client families read. Loaded from
+-- RotationMaster.toc after Platform/edition_state.lua.
+-- The generated bindings block at the end is owned by tools/generate_builtin_sources.py; the reader is a Built In
+-- helper, so its body is frozen.
+local _, addon = ...
+local platform = addon.Platform
 
 -- Successful empty zone classification differs from an unavailable observation.
+-- Returns { pvpType = <string> } for a classified zone (for example "sanctuary" or "contested"), an empty table when
+-- the client reports no classification, or nil and a reason.
 function platform:GetZonePVPObservation()
     local family=self:GetClientFamily()
     if family~='retail' and family~='forever' and family~='era' and family~='tbc' and family~='progression' then return nil,'unsupported-policy' end

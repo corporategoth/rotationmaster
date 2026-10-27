@@ -1,12 +1,23 @@
-local _,addon=...
+-- Health forecast reader for the health-until-target conditions in Conditions/stats.lua. Owns
+-- addon:GetConditionHealthForecast, which turns a unit's current health, a target and the recorded damage history into
+-- an ETA in seconds; the arithmetic itself lives in Functions/forecast.lua. Draws nothing and stores nothing. Runs only
+-- under the 'probe' and 'restricted' combat-data policies, and every game value passes platform:CanReadValue before it
+-- is compared, so a hidden value gives nil and a reason, never a guess. Loaded from the Core condition-service group of
+-- RotationMaster.toc. The helpers and the function body are frozen: saved custom conditions bind to their exact text,
+-- so only the comments outside function bodies may change, and the generated block at the end is not edited by hand.
+local _, addon = ...
 
-local function finite(platform,value)
+-- Returns true when `value` is a readable, finite number, otherwise false and a reason code ('restricted-value' when
+-- the client hides it). Does not test the sign; callers reject negatives themselves.
+local function finite(platform, value)
     if not platform:CanReadValue(value) then return false,'restricted-value' end
     if type(value)~='number' or value~=value or value>=math.huge or value<=-math.huge then return false,'invalid-health-forecast-number' end
     return true
 end
 
-local function readField(platform,object,key)
+-- Reads object[key] under pcall after checking both the table and the result are readable. Returns the value (which may
+-- be nil), or nil and a reason; a missing key is not an error, so callers test the reason, not the value.
+local function readField(platform, object, key)
     if not platform:CanReadValue(object) then return nil,'restricted-value' end
     if type(object)~='table' then return nil,'invalid-health-forecast-data' end
     local ok,value=pcall(function() return object[key] end)
@@ -15,7 +26,9 @@ local function readField(platform,object,key)
     return value
 end
 
-local function nativeValue(self,unit,kind,cache)
+-- Reads a unit's 'current' or 'maximum' health through the cached Platform observation. Returns a finite non-negative
+-- number, or nil and a reason ('missing-api' when this client has no such adapter).
+local function nativeValue(self, unit, kind, cache)
     local platform=self.Platform
     if type(platform.GetHealthForecastValueObservation)~='function' then return nil,'missing-api' end
     local value,why=addon.Functions.cache.getCached(cache,platform.GetHealthForecastValueObservation,platform,unit,kind)
@@ -27,7 +40,13 @@ local function nativeValue(self,unit,kind,cache)
     return value
 end
 
-function addon:GetConditionHealthForecast(unit,healthTarget,percentage,mode,cache)
+-- Estimates the seconds until `unit` reaches `healthTarget` at its recent damage/healing rate. `healthTarget` is an
+-- absolute amount (negative means that much below maximum), or a fraction of maximum when `percentage` is true; `mode`
+-- is 'noheals', 'nodmg' or anything else for both; `cache` is the evaluation-pass cache (nil reads afresh). Returns the
+-- ETA (0 when already at the target or when the rate is flat or moves away from it), false when the unit is gone or
+-- no estimate exists (no history, or 2 seconds or less of it), or nil and a reason when a required value is
+-- unavailable.
+function addon:GetConditionHealthForecast(unit, healthTarget, percentage, mode, cache)
     local platform=self.Platform
     local policy=platform:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end

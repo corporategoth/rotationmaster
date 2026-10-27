@@ -1,8 +1,15 @@
-local _,addon=...
-local platform=addon.Platform
+-- Platform adapter for group membership: IsInGroup, IsInRaid, UnitInParty and UnitInRaid.
+-- Owns the `value or nil, reason` readers for "is the player (or a named unit) in my party or raid"; it must not
+-- decide what a rotation does with the answer. Roster membership is public state, so these readers do not depend on
+-- the combat data policy. Both readers are Built In helpers: their bodies are recorded in the generated block at the
+-- end of the file and must keep their exact text. Loaded early in RotationMaster.toc, right after
+-- Platform/rotation_owner.lua.
+local _, addon = ...
+local platform = addon.Platform
 
 -- Public roster membership is readable state, independent of enemy-combat
 -- observation policy. A false selected result must not invoke another query.
+-- Returns true or false for the player (raid only when raidOnly is true), or nil and a reason code.
 function platform:GetGroupMembership(raidOnly)
     if not self:CanReadValue(raidOnly) then return nil,'restricted-value' end
     if raidOnly~=nil and type(raidOnly)~='boolean' then return nil,'invalid-group-query' end
@@ -19,7 +26,9 @@ function platform:GetGroupMembership(raidOnly)
 end
 
 -- Explicit unit/name observation is separate from the legacy player query.
-function platform:GetUnitGroupMembership(unit,raidOnly)
+-- Returns true when unit is in the party or raid (raid only when raidOnly is true), false when it is in neither, or
+-- nil and a reason code; a unit string of any other shape is rejected before a native call is made.
+function platform:GetUnitGroupMembership(unit, raidOnly)
     if not self:CanReadValue(unit) or not self:CanReadValue(raidOnly) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' or #unit>512 or unit:find('[%z\1-\31\127]') then return nil,'invalid-unit' end
     if raidOnly~=nil and type(raidOnly)~='boolean' then return nil,'invalid-group-query' end

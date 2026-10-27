@@ -1,7 +1,15 @@
-local _,addon=...
-local platform=addon.Platform
+-- Platform adapter for unit and talent-group roles: GetInspectSpecialization (C_SpecializationInfo first, global as
+-- fallback), GetSpecializationInfoByID and the legacy GetTalentGroupRole. Readers return `value, nil` or
+-- `nil, reason`, never issue an inspection request and never infer a role; every game value passes
+-- platform:CanReadValue first. Loaded from RotationMaster.toc after Platform/roster_class.lua.
+-- The generated bindings block at the end is owned by tools/generate_builtin_sources.py; everything in this file is
+-- referenced from it (readField, roleValue and both readers), so every function body is frozen.
+local _, addon = ...
+local platform = addon.Platform
 
-local function readField(self,object,key)
+-- Returns object[key] read under pcall, or nil and a reason when object is restricted, not a table, the read throws or
+-- the value is restricted. A missing key is a readable nil, not an error.
+local function readField(self, object, key)
     if not self:CanReadValue(object) then return nil,'restricted-value' end
     if type(object)~='table' then return nil,'invalid-api-result' end
     local ok,value=pcall(function() return object[key] end)
@@ -10,7 +18,9 @@ local function readField(self,object,key)
     return value
 end
 
-local function roleValue(self,value)
+-- Validates a role result: returns the readable non-empty string unchanged, or nil and a reason. Unknown future role
+-- strings are passed through rather than matched against TANK/HEALER/DAMAGER.
+local function roleValue(self, value)
     if not self:CanReadValue(value) then return nil,'restricted-value' end
     if canaccessvalue and not canaccessvalue(value) then return nil,'restricted-value' end
     if value==nil then return nil,'role-unavailable' end
@@ -20,6 +30,8 @@ end
 
 -- No inspection requests or inferred roles. A chosen modern capability's
 -- failure never falls through to the legacy global capability.
+-- Returns the role string for the unit's inspected specialization, false when the unit does not exist, or nil and a
+-- reason. Works on probe and restricted policies only.
 function platform:GetInspectRoleObservation(unit)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
@@ -61,6 +73,7 @@ end
 
 -- Keep the live legacy group argument exactly, including readable nil. Its
 -- historical declaration is incomplete; no group-domain inference is added.
+-- Returns the first result of GetTalentGroupRole(group) as a role string, or nil and a reason.
 function platform:GetTalentGroupRoleObservation(group)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end

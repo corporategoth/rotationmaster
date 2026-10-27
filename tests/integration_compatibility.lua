@@ -3,7 +3,7 @@ local function fixture(scopes)
  local f=F.new()
  if scopes then
   local h=assert(io.open('Integrations/catalog.lua'));local source=h:read('*a');h:close()
-  local count;source,count=source:gsub('local scopes=%b{}',function()return 'local scopes='..scopes end,1);assert(count==1)
+  local count;source,count=source:gsub('local scopes%s*=%s*%b{}',function()return 'local scopes='..scopes end,1);assert(count==1)
   local fn=assert(loadstring(source,'@actual-catalog-fixture'));setfenv(fn,f.env);fn('rotationmaster',f.addon)
  else f.load('Integrations/catalog.lua')end
  return f,f.addon

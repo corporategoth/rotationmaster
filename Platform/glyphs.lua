@@ -1,9 +1,20 @@
-local _,addon=...
-local platform=addon.Platform
-local function integer(value,minimum)
+-- Platform adapter for glyphs on the progression clients: GetNumGlyphSockets, GetGlyphSocketInfo and the glyph item
+-- class of GetItemInfoInstant.
+-- Owns the `value or nil, reason` readers for a glyph item and for the socket snapshot, and the table of verified
+-- GlyphUI layouts per build; an unverified build is refused rather than guessed. It must not decide which glyph a
+-- rotation wants. The readers and helpers in the generated block at the end of the file are Built In helpers and must
+-- keep their exact text. Loaded from RotationMaster.toc after Platform/items.lua.
+local _, addon = ...
+local platform = addon.Platform
+
+-- True for a finite whole number at or above minimum.
+local function integer(value, minimum)
     return type(value)=='number' and value==value and value>=minimum and value<math.huge and value%1==0
 end
-function platform:GetGlyphItemInfo(itemID,classID)
+
+-- Returns the item record of a glyph item when it is a glyph of the given class id (default: the player's class), or
+-- nil and a reason code ("invalid-glyph-item" when the item is not a glyph of that class).
+function platform:GetGlyphItemInfo(itemID, classID)
     if not self:CanReadValue(itemID) or not self:CanReadValue(classID) then return nil,'restricted-value' end
     if not integer(itemID,1) then return nil,'invalid-item' end
     if classID==nil then
@@ -24,6 +35,8 @@ end
 -- Verified published Blizzard GlyphUI layouts: Wrath uses return three;
 -- Cata/Mists insert glyphTooltipIndex before glyphSpellID. Future editions
 -- require verification rather than interpreting a tooltip index as a spell.
+-- Takes the table from GetClientInfo and returns the position of the glyph spell id among the GetGlyphSocketInfo
+-- returns, or nil when this exact client version is not a verified layout.
 local function layout(info)
     local editions={
         [11]={expansion=2,prefix='3.4.',last=3,base=30400,position=3},
@@ -36,7 +49,10 @@ local function layout(info)
         if info.version==edition.prefix..patch and info.interface==edition.base+patch then return edition.position end
     end
 end
-local function socket(self,fn,index,position)
+
+-- Reads one glyph socket through fn and returns { slot, active, spellID } or { slot, reason }; a socket that cannot be
+-- read is reported with its reason instead of failing the whole snapshot.
+local function socket(self, fn, index, position)
     local ok,tuple=pcall(function() return {fn(index)} end)
     if not ok then return {slot=index,reason='api-error'} end
     local enabled,kind,spell=tuple[1],tuple[2],tuple[position]
@@ -49,11 +65,15 @@ local function socket(self,fn,index,position)
     if not integer(spell,1) then return {slot=index,reason='invalid-api-result'} end
     return {slot=index,active=true,spellID=spell}
 end
+
 -- Whether this client build has a verified glyph layout; a fact of the
 -- client, read by condition support without observing sockets.
 function platform:IsGlyphLayoutSupported()
-    return layout(self:GetClientInfo())~=nil
+    return layout(self:GetClientInfo()) ~= nil
 end
+
+-- Returns { slots, complete } for every glyph socket, where complete is false if any socket could not be read, or nil
+-- and a reason code when the layout is unverified or the socket count cannot be read.
 function platform:GetGlyphSocketSnapshot()
     local position=layout(self:GetClientInfo())
     if not position then return nil,'unsupported-glyph-layout' end

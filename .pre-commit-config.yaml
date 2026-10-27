@@ -29,7 +29,7 @@ repos:
       # and other suites hash their bytes, so they stay as they are; every other file, and every new one, is held to it.
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
-        exclude: &whitespace_legacy '^(\.github/|Assets/Controls/.*\.svg$|init\.lua$|locales\.xml$|LICENSE$|TODO$|constants\.lua$|globals\.lua$|custom_casting_remain\.txt$|docs/architecture/condition-modernization-audit\.md$)'
+        exclude: &whitespace_legacy '^(\.github/|Assets/Controls/.*\.svg$|init\.lua$|locales\.xml$|LICENSE$|constants\.lua$|globals\.lua$|docs/architecture/condition-modernization-audit\.md$)'
       - id: end-of-file-fixer
         exclude: *whitespace_legacy
       - id: check-yaml

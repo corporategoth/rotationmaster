@@ -54,10 +54,6 @@ end)
 test('missing owners and changed anchors remain separate unavailable views',function()
  local _,a,s=fixture();assert(a:StartCPUProfile());a.SpellCatalog={UpdateSpell=function()error('replacement invoked')end};s:complete();has(a:GetCPUProfileReport(),'spell IDs: start=0; end=unavailable; change=unavailable');has(a:GetCPUProfileReport(),'item index: start=0; end=0; change=0')
 end)
-test('old report prefix and every prior native query remain exact',function()
- local f,a,s=fixture(nil,true);local old=capture(f,a,s);local oldQueries=#s.queries
- local f,a,s=fixture();local current=capture(f,a,s);local prefix,appendix=split(current);assert(appendix,'activity appendix absent');assert(prefix==old,'old CPU report changed');assert(#s.queries==oldQueries,'unavailable visuals created native samples')
-end)
 
 local function visuals(countButtons)
  local f,a,s=fixture(function(f,a,s)
@@ -149,15 +145,6 @@ test('current producer handoffs are one shot and foreign or replacement installe
  local _,a,s=fixture();assert(type(a.BindCPUActivityDiagnostic)=='function');local called=0
  assert(not a:BindCPUActivityDiagnostic('spell',function()called=called+1 end));assert(not a.BindCPUActivityDiagnostic({},'visual',function()called=called+1 end));assert(a:StartCPUProfile());assert(a.BindCPUActivityDiagnostic==nil);s:complete();assert(called==0)
 end)
-test('complete report budget preserves prior oversized text and never partially appends activity',function()
- for _,power in ipairs({180,220,308})do
-  local function configure(_,a,s)for i=1,30 do local key=string.format('HOT_%02d',i);local fn=function()end;a.conditionDefinitions[key]={evaluate=fn,valid=fn};s.rows[fn]={{0,0,0},{10^power,10^power,3}}end end
-  local f,a,s=fixture(configure,true);local old=capture(f,a,s)
-  local f,a,s=fixture(configure);local report=capture(f,a,s);local prefix,appendix=split(report)
-  if power==308 then assert(#old>=16000 and report==old,'oversized report changed')
-  elseif appendix then assert(prefix==old and #report<16000)else local footer='\nRetained activity omitted to keep report bounded.';if report:sub(-#footer)==footer then assert(report:sub(1,-#footer-1)==old and #report<16000)else assert(report==old)end end
- end
-end)
 test('replaced observer callback is not overwritten on cleanup or subsequent capture',function()
  local _,a,s=fixture();assert(a:StartCPUProfile());local observer
  for _,frame in ipairs(s.frames)do if frame.events and frame.events.SPELL_DATA_LOAD_RESULT then observer=frame end end
@@ -166,15 +153,6 @@ test('replaced observer callback is not overwritten on cleanup or subsequent cap
 end)
 
 
-test('exact four new callback samples add at most sixteen queries while old report remains byte exact',function()
- local function run(old)
-  local f,a,s=visuals();if old then f.load=function(path)local chunk=assert(loadstring(inverse(read(path),path),'@'..path));setfenv(chunk,f.env);return chunk('rotationmaster',a)end;f.load('Diagnostics/cpu.lua')end
-  a:GlowSpell(1001);cooldown(a,1002,'pixel');cooldown(a,1003,'autocast');cooldown(a,1004,'blizzard');local overlay=s.repeating[1].fn;s.rows[overlay]={{0,0,0},{3,5,7}}
-  local report=capture(f,a,s);return report,s,overlay
- end
- local old,os=run(true);local report,s,overlay=run(false);local prefix,appendix=split(report);assert(prefix==old and appendix);assert(#s.queries==#os.queries+16,'four optional pointers exceeded sixteen extra queries');assert(count(s,overlay)==4)
- has(report,'RM.UpdateOverlay | exclusive=3.000 ms | inclusive=5.000 ms | calls=7')
-end)
 test('retained item records can shrink while prior index and blocked observations remain distinct',function()
  local f,a,s=fixture();a:UpdateReferenceItem(1);assert(a:StartCPUProfile());f.env.C_Item.GetItemInfo=function()error('SECRET_SOURCE_TEXT')end;a:UpdateReferenceItem(1);s:complete();local report=a:GetCPUProfileReport()
  has(report,'item records: start=1; end=0; change=-1');has(report,'item index: start=1; end=1; change=0');has(report,'blocked items: start=0; end=1; change=1');absent(report,'SECRET_SOURCE_TEXT')

@@ -1,10 +1,18 @@
-local _,addon=...
-local platform=addon.Platform
+-- Platform adapter for announcements: group membership of a cast recipient, and the chat channels a message can go to.
+-- Owns the `value or nil, reason` readers over UnitExists, UnitName, UnitGUID, GetNormalizedRealmName and
+-- GetChannelName; it must not send anything or cache a roster. Both channel readers return an "ownership" check that
+-- reports whether the answer still holds. GetAnnouncementRecipientGroupMembership is a Built In helper: its body is
+-- recorded in the generated block at the end of the file and must keep its exact text.
+-- Loaded from RotationMaster.toc after Platform/group_units.lua; needs Platform/groups.lua.
+local _, addon = ...
+local platform = addon.Platform
 
 -- Cast receipts contain names; membership APIs consume unit tokens. Resolve
 -- only at a matching announcement event, never from the selected target and
 -- never into a cache shared by polls or casts.
-function platform:GetAnnouncementRecipientGroupMembership(recipient,raidOnly)
+-- Returns true or false when the named recipient is in the party or raid (raid only when raidOnly is true), or nil and
+-- a reason code; an ambiguous name, an unreadable roster or a roster that changed during the read is nil.
+function platform:GetAnnouncementRecipientGroupMembership(recipient, raidOnly)
     if not self:CanReadValue(recipient) or not self:CanReadValue(raidOnly) then return nil,'restricted-value' end
     if type(recipient)~='string' or recipient=='' or #recipient>256 then return nil,'cast-recipient-unavailable' end
     if raidOnly~=nil and type(raidOnly)~='boolean' then return nil,'invalid-group-query' end
@@ -80,65 +88,123 @@ function platform:GetAnnouncementRecipientGroupMembership(recipient,raidOnly)
 end
 
 -- Joined names are configuration; local IDs are fresh invocation-only addresses.
-local function channelScan(self,current)
-    local query=GetChannelName
-    local readable=self.CanReadValue
-    if type(query)~='function' or type(readable)~='function' then return nil,'missing-api' end
+-- Returns the list of { id, value, text } for the joined channels (slots 1 to 20), or nil and a reason code. current,
+-- when given, is polled between native calls and ends the scan with "announcement-retired" once it stops saying true.
+local function channelScan(self, current)
+    local query = GetChannelName
+    local readable = self.CanReadValue
+    if type(query) ~= 'function' or type(readable) ~= 'function' then return nil, 'missing-api' end
+
     local function owned()
-        if current then local ok,live=pcall(current);if not ok or live~=true then return false end end
-        return query==GetChannelName and readable==self.CanReadValue
+        if current then
+            local ok, live = pcall(current)
+            if not ok or live ~= true then return false end
+        end
+
+        return query == GetChannelName and readable == self.CanReadValue
     end
+
     local function read(value)
-        return readable(self,value) and (not canaccessvalue or canaccessvalue(value))
+        return readable(self, value) and (not canaccessvalue or canaccessvalue(value))
     end
-    local rows={}
-    for slot=1,20 do
-        if not owned() then return nil,'announcement-retired' end
-        local ok,id,name=pcall(query,slot)
-        if not ok or not read(id) or not read(name) or not owned() then return nil,'channel-unavailable' end
-        if id~=0 and id~=nil then
-            if type(id)~='number' or id%1~=0 or id<1 or id>20 or type(name)~='string' or name=='' or #name>256 or name:find('[%z\1-\31\127]') then return nil,'channel-unavailable' end
-            rows[#rows+1]={id=id,value=name,text=name}
+
+    local rows = {}
+
+    for slot = 1, 20 do
+        if not owned() then return nil, 'announcement-retired' end
+        local ok, id, name = pcall(query, slot)
+        if not ok or not read(id) or not read(name) or not owned() then return nil, 'channel-unavailable' end
+
+        if id ~= 0 and id ~= nil then
+            if
+                type(id) ~= 'number'
+                or id % 1 ~= 0
+                or id < 1
+                or id > 20
+                or type(name) ~= 'string'
+                or name == ''
+                or #name > 256
+                or name:find('[%z\1-\31\127]')
+            then
+                return nil, 'channel-unavailable'
+            end
+
+            rows[#rows + 1] = { id = id, value = name, text = name }
         end
     end
-    if not owned() then return nil,'announcement-retired' end
+
+    if not owned() then return nil, 'announcement-retired' end
     return rows
 end
+
+-- Returns the joined channels as { value, text } rows for the settings picker (no channel numbers, which change), or
+-- nil and a reason code.
 function platform:GetJoinedAnnouncementChannels(current)
-    local rows,why=channelScan(self,current)
-    if not rows then return nil,why end
-    local result={}
-    for _,row in ipairs(rows) do result[#result+1]={value=row.value,text=row.text} end
+    local rows, why = channelScan(self, current)
+    if not rows then return nil, why end
+    local result = {}
+
+    for _, row in ipairs(rows) do
+        result[#result + 1] = { value = row.value, text = row.text }
+    end
+
     return result
 end
-function platform:ResolveAnnouncementChannel(name,current)
-    if not self:CanReadValue(name) or type(name)~='string' or name=='' or #name>256 or name:find('[%z\1-\31\127]') then return nil,nil,'invalid-channel' end
-    local query,readable=GetChannelName,self.CanReadValue
+
+-- Turns a configured channel name into its current numeric id at the moment of use. Returns the id and a function that
+-- re-resolves and reports whether the id is still the same, or nil, nil and a reason code when the name is invalid,
+-- absent or joined twice. The numeric id must never be stored: a channel's number changes when others are joined.
+function platform:ResolveAnnouncementChannel(name, current)
+    if not self:CanReadValue(name) or type(name) ~= 'string' or name == '' or #name > 256 or name:find(
+        '[%z\1-\31\127]'
+    ) then
+        return nil, nil, 'invalid-channel'
+    end
+
+    local query, readable = GetChannelName, self.CanReadValue
+
     local function resolve()
-        if query~=GetChannelName or readable~=self.CanReadValue then return nil end
-        local rows=channelScan(self,current)
+        if query ~= GetChannelName or readable ~= self.CanReadValue then return nil end
+        local rows = channelScan(self, current)
         if not rows then return nil end
         local selected
-        for _,row in ipairs(rows) do if row.value==name then if selected then return nil end;selected=row.id end end
-        if not selected or query~=GetChannelName or readable~=self.CanReadValue then return nil end
-        if current then local ok,live=pcall(current);if not ok or live~=true then return nil end end
+
+        for _, row in ipairs(rows) do
+            if row.value == name then
+                if selected then return nil end
+                selected = row.id
+            end
+        end
+
+        if not selected or query ~= GetChannelName or readable ~= self.CanReadValue then return nil end
+
+        if current then
+            local ok, live = pcall(current)
+            if not ok or live ~= true then return nil end
+        end
+
         -- A later slot or owner callback can change an earlier address. Finish
         -- with that selected slot, not the old row from the complete scan.
-        local ok,id,fresh=pcall(query,selected)
-        if not ok or not readable(self,id) or not readable(self,fresh) then return nil end
-        if query~=GetChannelName or readable~=self.CanReadValue then return nil end
+        local ok, id, fresh = pcall(query, selected)
+        if not ok or not readable(self, id) or not readable(self, fresh) then return nil end
+        if query ~= GetChannelName or readable ~= self.CanReadValue then return nil end
         -- Readability is an extension boundary too. The final native read has
         -- only native restricted-value guards before its exact comparison.
-        local got,finalID,finalName=pcall(query,selected)
+        local got, finalID, finalName = pcall(query, selected)
         if not got then return nil end
         if canaccessvalue and (not canaccessvalue(finalID) or not canaccessvalue(finalName)) then return nil end
         if issecretvalue and (issecretvalue(finalID) or issecretvalue(finalName)) then return nil end
-        if query~=GetChannelName or readable~=self.CanReadValue or finalID~=selected or finalName~=name then return nil end
+
+        if query ~= GetChannelName or readable ~= self.CanReadValue or finalID ~= selected or finalName ~= name then
+            return nil
+        end
+
         return selected
     end
-    local id=resolve()
-    if not id then return nil,nil,'channel-unavailable' end
-    return id,function()return resolve()==id end
+
+    local id = resolve()
+    if not id then return nil, nil, 'channel-unavailable' end
+    return id, function() return resolve() == id end
 end
 
 -- BEGIN GENERATED RM SOURCE BINDINGS

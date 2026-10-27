@@ -1,9 +1,17 @@
-local _,addon=...
-local platform=addon.Platform
+-- Platform adapter for two Boolean unit states, dead or ghost (UnitIsDeadOrGhost) and friendly to the player
+-- (UnitIsFriend), selected by a closed `kind`. Returns `boolean, nil` or `nil, reason`; game values pass
+-- platform:CanReadValue first. Only the probe and restricted combat-data policies read. Loaded from
+-- RotationMaster.toc after Platform/unit_flags.lua.
+-- The generated bindings block at the end is owned by tools/generate_builtin_sources.py; the reader is a Built In
+-- helper, so its body is frozen.
+local _, addon = ...
+local platform = addon.Platform
 
 -- Unit absence is unavailable, including under NOT: never infer a living or
 -- friendly recipient from a missing mouseover. Observations expire each pass.
-function platform:GetUnitStateObservation(unit,kind)
+-- kind is "dead" or "friendly". Returns the state, or nil and a reason; a unit that does not exist is the
+-- "unit-data-unavailable" reason, unlike Platform/unit_flags.lua where absence is false.
+function platform:GetUnitStateObservation(unit, kind)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(kind) then return nil,'restricted-value' end

@@ -1,7 +1,13 @@
-local _,addon=...
-local platform=addon.Platform
+-- Platform adapter for UnitCreatureType: the numeric creature type of a unit.
+-- Owns platform:GetUnitCreatureTypeID (the `value or nil, reason` reader); it must not translate the id to a name,
+-- because the localized caption is a different return of the same native call. Runs under the probe and restricted
+-- policies. The reader is a Built In helper whose body is recorded in the generated block at the end of the file and
+-- must keep its exact text. Loaded from RotationMaster.toc after Platform/unit_metadata.lua.
+local _, addon = ...
+local platform = addon.Platform
 
 -- Identity is native return two, independent of the localized caption in one.
+-- Returns the creature type id, false when the unit does not exist, or nil and a reason code.
 function platform:GetUnitCreatureTypeID(unit)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end

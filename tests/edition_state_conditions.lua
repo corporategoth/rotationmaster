@@ -131,7 +131,7 @@ end)
 
 -- The real combat log producer (main.lua handle_combat_log), driven the way tests/swing_countdown.lua does.
 local function readFile(path) local h=assert(io.open(path));local text=h:read('*a');h:close();return text end
-local producer=assert(readFile('main.lua'):match('(local function handle_combat_log%(_.-\nend)\n%-%- Classic reads'))
+local producer=assert(readFile('main.lua'):match('(local function handle_combat_log%(_.-\nend)\n+%-%- Classic reads'))
 local function shooter(name)
     local f,a,e,s=client(name,'HUNTER')
     a.damageHistory={}

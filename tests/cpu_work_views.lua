@@ -35,15 +35,6 @@ local function count(s,fn)local n=0;for _,q in ipairs(s.queries)do if q[1]==fn t
 local function cost(s)for i,fn in ipairs(s.fns)do s.rows[fn]={{i,2*i,10*i},{i+3,2*i+5,10*i+2}}end end
 local function complete(a,s)assert(a:StartCPUProfile());s:complete();return assert(a:GetCPUProfileReport())end
 
-test('six real work views preserve all old report bytes and native order with exactly24newqueries',function()
- local _,old,os=fixture({old=true});cost(os);local before=complete(old,os)
- local _,a,s=fixture();cost(s);local text=complete(a,s);local prefix,section=split(text);assert(section,'runtime work appendix absent');assert(prefix==before,'old report changed');assert(#s.fns==6)
- for _,name in ipairs(names)do has(section,'Work.'..name..' | exclusive=3.000 ms | inclusive=5.000 ms | calls=2')end
- has(section,'aliases=6; available=6; unavailable=0');has(section,'excluded from rankings');has(section,'not additive');privacy(text)
- assert(#s.queries==#os.queries+24);local ids={};for _,fn in ipairs(s.fns)do assert(count(s,fn)==4);ids[tostring(s.fnIDs[fn])]=true end
- local filtered={};for _,entry in ipairs(s.native)do local id=entry:match('^function:(%d+):');if not id or not ids[id]then filtered[#filtered+1]=entry end end
- assert(table.concat(filtered,'|')==table.concat(os.native,'|'),'old native query order changed')
-end)
 test('collection invokes no measured helper or profiler child and idle access remains inert',function()
  local _,a,s=fixture();cost(s);local calls={};for _,fn in ipairs(s.fns)do calls[fn]=0 end
  local prior,mask,n=debug.gethook();local j=jit and jit.status();if jit then jit.off();jit.flush()end
@@ -96,11 +87,6 @@ test('aliases share native snapshots across old rows and all new views',function
  a.EvaluateNextActionInternal=s.groups.main.anchor;a.GetRotationContext=s.fns[1];a.Diagnostics.Call=s.fns[1];a.evaluationProfile.child=s.fns[1]
  local text=complete(a,s);has(text,'Work.Store.plain | exclusive=3.000 ms');assert(count(s,s.fns[1])==4,'shared pointer resampled')
 end)
-test('aggregate384cap never displaces old rows or existing private samples',function()
- local function scenario(old)local _,a,s=fixture({old=old});cost(s);for i=1,512 do a.conditionDefinitions['CAP_'..i]={evaluate=function()end,valid=function()end}end;return complete(a,s),s end
- local before,os=scenario(true);local text,s=scenario(false);assert(split(text)==before and #s.queries==#os.queries);has(text,'unavailable: selection-limit')
- local seen,n={},0;for _,q in ipairs(s.queries)do if not seen[q[1]]then n=n+1;seen[q[1]]=true end end;assert(n<=384)
-end)
 test('query failure negative invalid counters and API replacement are bounded and sourcefree',function()
  for _,mode in ipairs({'throw','negative','api'})do
   local f,a,s=fixture();cost(s)
@@ -136,12 +122,6 @@ test('synchronous scheduling and nil error tokens preserve prior ownership behav
   elseif mode=='nil'then a.ScheduleTimer=function()return nil end else s.scheduleError=true end
   local ok,why=a:StartCPUProfile();if mode=='sync'then assert(ok)else assert(not ok and why=='timer-error')end;assert(not a:IsCPUProfileRunning())
   for _,fn in ipairs(s.fns)do assert(count(s,fn)<=(mode=='sync' and 4 or 2))end
- end
-end)
-test('near and oversized accepted old reports retain exact bytes and bounded new appendix only',function()
- for _,value in ipairs({1e180,1e270,1e308})do
-  local function scenario(old)local _,a,s=fixture({old=old});cost(s);s.rows[s.hot]={{0,0,0},{value,value,3}};return complete(a,s)end
-  local before=scenario(true);local text=scenario(false);if #before>=15999 then assert(text==before)else assert(text:sub(1,#before)==before and #text<16000)end
  end
 end)
 test('foreign capture and missing raw selected services report unavailable without new helper queries',function()

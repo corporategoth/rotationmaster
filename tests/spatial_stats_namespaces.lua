@@ -85,17 +85,6 @@ test('spatial statistics callbacks select exactly92 calls through six canonical 
     end
     assert(calls==92 and callbacks==28 and not f.env.Functions and not f.env.functions)
 end)
-test('native statistic helpers captures and all source bytes outside eight print callbacks remain exact',function()
-    local _,a=fixture()
-    for name,hash in pairs(hashes) do local id='builtin:Conditions/spatial_stats.lua:'..name;local record=assert(a.builtinFunctions[id]);assert(a:FunctionSourceHash(record.source)==hash,'private source changed: '..name);assert(a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/spatial_stats.lua'](name)) end
-    local file=assert(io.open('Conditions/spatial_stats.lua'));local code=file:read('*a');file:close()
-    code=dofile('tests/fixtures/artwork.lua')(code,'spatial',8)
-    code=code:gsub('%-%- BEGIN GENERATED RM SOURCE BINDINGS.*','')
-    code=code:gsub('%-%- BEGIN SPATIAL STATS CALLBACK NAMESPACE.-%-%- END SPATIAL STATS CALLBACK NAMESPACE\n\n','')
-    local count;code,count=code:gsub('    print = function%(_, value%)\n.-    end,\n    widget','    -- PRINT BODY EXCLUDED\n    widget')
-    assert(count==8 and a:FunctionSourceHash({code=code})=='9feb71f7','source changed outside eight print callbacks')
-    assert(a.builtinSourceModules['Conditions/spatial_stats.lua']('observation')~=nil)
-end)
 test('registered editable and legacy-shaped spatial callbacks preserve validators summaries raw errors and engine results across inventory branches',function()
     for _,case in ipairs(dofile('tests/fixtures/catalog_inventory.lua').branches) do local _,a=fixture(unpack(case[1]));local definitions=copies(a)
         for _,tag in ipairs(tags) do

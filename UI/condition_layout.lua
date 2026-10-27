@@ -1,4 +1,12 @@
-local _,addon=...
+-- Condition layout container: the native group widget (RM-ConditionGroup) that the condition editor and the help
+-- cards use to stack, tabulate and wrap child widgets, with the List, Table, RM-SpellField and RM-IconRows layouts.
+-- It owns child parenting, ownership checks and width/height propagation; it must not know what the children are.
+-- Loaded from RotationMaster.toc after UI/condition_inputs.lua and before UI/condition_table.lua, on top of the pool in
+-- UI/condition_widgets.lua. The function bodies are recorded as Built In helpers (see the generated bindings at the
+-- end), so only the comments outside functions may change.
+
+local _, addon = ...
+
 ---@class RMConditionGroup: RMConditionWidget
 ---@field children table[]
 ---@field rmLease table
@@ -11,6 +19,8 @@ local _,addon=...
 ---@field ReleaseChildren fun(self: RMConditionGroup)
 
 -- Native compact rows share rich Table and spell-field geometry with RM controls.
+-- Maps a table cell's alignV option ('start'/'top', 'middle'/'center', 'end'/'bottom') to a 0, .5 or 1 fraction of the
+-- row's spare height; nil means unset (top), and an unrecognized string returns nil as well.
 local function verticalAlignment(value)
     if value==nil then return 0 end
     if type(value)~='string' then return nil end
@@ -19,14 +29,18 @@ local function verticalAlignment(value)
     if value=='end' or value:sub(1,6)=='bottom' then return 1 end
     if value=='middle' or value:sub(1,6)=='center' then return .5 end
 end
+
 -- An icon spanning the rows of the controls beside it: children[1] is the
 -- icon, the controls that follow are its rows, top to bottom, and a control
 -- marked userdata "side" (a button) sits right of the last row when the row
 -- has the room, else on a line of its own under the rows. The icon's frame is
 -- centered on the rows.
-local ICON_ROWS_GAP=4
-local ICON_ROWS_MINIMUM=190
-local function layoutIconRows(content,children,width)
+local ICON_ROWS_GAP = 4
+local ICON_ROWS_MINIMUM = 190
+
+-- Lays the children out as described above inside `content` at `width` and returns the total height used, or 0 when
+-- there is no icon or no row. Called by the group's DoLayout for the RM-IconRows layout only.
+local function layoutIconRows(content, children, width)
     local icon,side,rows=children[1],nil,{}
     for index=2,#children do
         local child=children[index]
@@ -61,6 +75,10 @@ local function layoutIconRows(content,children,width)
     end
     return total
 end
+
+-- Constructor for a pooled group. The methods defined inside are the whole widget contract: DoLayout is re-entrancy
+-- guarded (layingOut) and pausable, children must be live widgets owned by no other parent (cycles are rejected), and
+-- ReleaseChildren hands every child back to the pool and reports the first release error after releasing them all.
 local function constructor()
     local group={type='RM-ConditionGroup',children={}}
     local frame=CreateFrame('Frame',nil,UIParent);group.frame=frame;group.content=frame
@@ -170,6 +188,8 @@ local function constructor()
     ---@cast group RMConditionWidget
     return addon:RegisterConditionWidget(group)
 end
+
+-- Acquires a group from the pool. The caller owns it and its children until it is released.
 ---@return RMConditionGroup
 function addon:CreateConditionGroup()
     local group=addon:AcquireConditionWidget('RM-ConditionGroup',constructor)

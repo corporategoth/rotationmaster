@@ -34,8 +34,6 @@ ignore:
   - .gitattributes
   - README.md
   - CONTRIBUTING.md
-  - TODO
-  - custom_casting_remain.txt
   - Modules/README.md
   - Data/talent_trees.json
   - Data/wowsims/ids.json

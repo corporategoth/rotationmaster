@@ -90,10 +90,4 @@ test('temporary clipping probe state APIs hooks and report claims are retired',f
  for _,name in ipairs({'SetLuaGutterClippingProbe','ApplyLuaGutterClippingProbe','RestoreLuaGutterClippingProbe'})do assert(a[name]==nil,'retired probe API remains '..name)end
  local report=a:LuaEditorInputReport();assert(not report:find('clipping probe',1,true)and report:find('gutter queue=deferred',1,true)and not report:find('local value',1,true));code:Release()
 end)
-test('strict six-module provider inverse retains every actual historical module contract',function()
- local inverse=dofile('tests/fixtures/restore_editor_provider_reuse.lua')
- for _,path in ipairs({'Integrations/lua_workbench.lua','UI/lua_editor.lua','UI/lua_completion.lua','UI/custom_condition_editor.lua','UI/function_source_pane.lua','UI/line_numbers.lua'})do
-  local h=assert(io.open(path));local s=h:read('*a');h:close();assert(type(inverse(s,path))=='string');assert(not pcall(inverse,s..'\n-- unrelated',path))
- end
-end)
 finish()

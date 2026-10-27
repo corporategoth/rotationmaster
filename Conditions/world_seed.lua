@@ -1,3 +1,8 @@
+-- One-time migration seed for profiles created before the world-state and edition conditions existed: adds those
+-- condition tags to the profile's condition categories and Switch picker, and drops tags from an abandoned draft.
+-- Loaded last among the Conditions/ files in RotationMaster.toc; addon:InstallWorldConditions is called from init.lua
+-- with the AceDB object. It edits only profile.switch_conditions, profile.condition_groups and the
+-- worldConditionsSeeded flag; it registers no conditions itself and never removes a tag the user saved.
 local addon_name, addon = ...
 
 -- Cold, one-time seed for profiles created before the world-state and
@@ -13,50 +18,95 @@ local worldSeeds = {
     ["b8136123-2bda-4230-a77a-89ea2aed3a1a"] = { "HERO_TALENT", "GROUP_COUNT", "PET_HAPPINESS", "STAGGER", "ECLIPSE" },
     ["8034819e-26f5-4f4e-9153-d8cab5e65f31"] = { "SPELL_GLOW" },
 }
+
 local switchSeeds = { "ENCOUNTER", "KEYSTONE_LEVEL", "HERO_TALENT", "GROUP_COUNT", "PLAYER_STATE" }
+
 -- Conditions of an earlier draft that were folded into the ones above before
 -- any release (MOUNTED and its four siblings into PLAYER_STATE, the group and
 -- Eclipse pairs into GROUP_COUNT and ECLIPSE, and so on). A development
 -- profile that was seeded with them loses the dead tags; a tag nobody saved is
 -- untouched, and nothing else is ever removed.
 local retiredTags = {
-    MOUNTED = true, SWIMMING = true, FALLING = true, FLYING = true, RESTING = true, INSTANCE_DIFFICULTY = true,
-    INSTANCE_ID = true, TRINKET_COOLDOWN = true, GROUP_SIZE = true, GROUP_ROLE_COUNT = true, GROUP_DEAD_COUNT = true,
-    ECLIPSE_DIRECTION = true, ECLIPSE_ENERGY = true, RANGED_SWING_REMAIN = true,
+    MOUNTED = true,
+    SWIMMING = true,
+    FALLING = true,
+    FLYING = true,
+    RESTING = true,
+    INSTANCE_DIFFICULTY = true,
+    INSTANCE_ID = true,
+    TRINKET_COOLDOWN = true,
+    GROUP_SIZE = true,
+    GROUP_ROLE_COUNT = true,
+    GROUP_DEAD_COUNT = true,
+    ECLIPSE_DIRECTION = true,
+    ECLIPSE_ENERGY = true,
+    RANGED_SWING_REMAIN = true,
 }
+
+-- Removes every retired tag from list in place; ignores anything that is not a table.
 local function dropRetired(list)
     if type(list) ~= "table" then return end
-    for index = #list, 1, -1 do if retiredTags[list[index]] then table.remove(list, index) end end
+
+    for index = #list, 1, -1 do
+        if retiredTags[list[index]] then table.remove(list, index) end
+    end
 end
 
+-- Applies the seed to db's current profile: always strips retired tags, and appends the new tags once per profile
+-- (guarded by profile.worldConditionsSeeded). The first argument is unused so it can serve as an AceDB-style callback.
 function addon:InitializeWorldConditions(_, db)
     local profile = db and db.profile
     if type(profile) ~= "table" then return end
     dropRetired(profile.switch_conditions)
+
     for _, category in ipairs(type(profile.condition_groups) == "table" and profile.condition_groups or {}) do
         if type(category) == "table" then dropRetired(category.conditions) end
     end
+
     if profile.worldConditionsSeeded then return end
+
+    -- Adds each tag missing from list to its end, preserving the user's order; a list that is not a table is skipped.
     local function append(list, tags)
         if type(list) ~= "table" then return end
+
         for _, tag in ipairs(tags) do
             local found = false
-            for _, existing in ipairs(list) do if existing == tag then found = true; break end end
+
+            for _, existing in ipairs(list) do
+                if existing == tag then
+                    found = true
+                    break
+                end
+            end
+
             if not found then list[#list + 1] = tag end
         end
     end
+
     append(profile.switch_conditions, switchSeeds)
+
     for _, category in ipairs(type(profile.condition_groups) == "table" and profile.condition_groups or {}) do
-        if type(category) == "table" and worldSeeds[category.id] then append(category.conditions, worldSeeds[category.id]) end
+        if type(category) == "table" and worldSeeds[category.id] then
+            append(category.conditions, worldSeeds[category.id])
+        end
     end
+
     profile.worldConditionsSeeded = true
 end
 
+-- Identity token AceDB keys the callbacks below under, so they do not collide with any other registrant.
 local seedOwner = {}
+
+-- Seeds the current profile and re-seeds on every profile event that can bring in an unseeded profile (new, reset,
+-- switched, copied). Does nothing if db is not an AceDB object.
 function addon:InstallWorldConditions(db)
     if type(db) ~= "table" or type(db.RegisterCallback) ~= "function" then return end
-    for _, event in ipairs({"OnNewProfile", "OnProfileReset", "OnProfileChanged", "OnProfileCopied"}) do
-        db.RegisterCallback(seedOwner, event, function(_, currentDB) addon:InitializeWorldConditions(nil, currentDB) end)
+
+    for _, event in ipairs({ "OnNewProfile", "OnProfileReset", "OnProfileChanged", "OnProfileCopied" }) do
+        db.RegisterCallback(seedOwner, event, function(_, currentDB)
+            addon:InitializeWorldConditions(nil, currentDB)
+        end)
     end
+
     self:InitializeWorldConditions(nil, db)
 end
