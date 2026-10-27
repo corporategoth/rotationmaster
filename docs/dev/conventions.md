@@ -4,14 +4,17 @@ Read from the code as it is. When a file you edit differs from this page, match 
 
 ## Lua
 
-**Layout.** Four-space indentation, no tabs (only `buttons.lua`, `main.lua` and a few legacy files still have some; do not
-add more). No trailing whitespace, LF endings, a final newline, UTF-8. `tools/precommit_hygiene.py endings` and the
-whitespace hooks enforce this outside `Libs/`.
+**Layout.** Four-space indentation, no tabs (only `main.lua`, `Bindings.xml` and one line of `Functions/collections.lua`
+still have some; do not add more). No trailing whitespace, LF endings, a final newline, UTF-8.
+`tools/precommit_hygiene.py endings` and the whitespace hooks enforce this outside `Libs/`.
 
-**Spacing.** New and heavily edited code is compact: `local x=value`, `a==b`, `if x then return y end` on one line when it
-reads as a sentence. The older `Conditions/` and root files use spaced style (`local x = value`). Do not reformat a file
-to change its style: the byte-freeze suites (`docs/dev/architecture.md`, "Tests") hash many files, so a whitespace-only
-diff can break them.
+**Spacing and line shape.** One statement per line, spaces around operators and after commas (`local x = value`,
+`a == b`, `{ key = value }`), lines wrapped at 120 columns, a blank line around every multi-line statement. A single
+plain guard clause (`if x then return end`) may stay on one line. `docs/dev/formatting.md` has the whole standard and
+`python3 tools/format_lua.py` applies it without changing what the file compiles to. Older files still carry the compact
+style (`local x=value`, `;`-joined statements): a handful are pinned to their exact bytes by the byte-freeze suites
+(`docs/dev/architecture.md`, "Byte-pinned files") and keep it; every other file is formatted, so match the file you edit
+and run the formatter on a file you change heavily. Do not hand-reformat a pinned file.
 
 **File header.** `local addon_name,addon=...` (or `local _,addon=...` when the name is not needed), then
 `local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)` where text is shown. Platform files start
@@ -41,11 +44,14 @@ version for something the client can tell you.
 `nil, reason` for what cannot be read, and let the caller decide. Do not swallow an error silently when the player could
 act on it: print one message (`addon:warn(L["..."], ...)`).
 
-**Comments.** Comments say *why*, in full sentences, above the code. State the contract at the top of a module: what it
-owns, what it must not do, what loads before it. Comment non-obvious client behavior with the evidence (client, date, probe
-output). Document a trap where it will bite (`-- /rm perf engine standard turns this off.`). No commented-out code, no
-change-log comments, no TODO that is not also in an issue. LuaLS annotations (`---@type fun(f: number|function): table`)
-are used where the static checker needs them; keep them valid.
+**Comments.** Comments say *why*, in full sentences, above the code. Every file starts with a header (purpose, what it
+owns and must not do, what loads it, the dependencies that matter); every function has a comment above it stating what it
+does in terms of inputs and result and the assumption a caller must keep; files longer than about 150 lines have section
+headers. Comment non-obvious client behavior with the evidence (client, date, probe output). Document a trap where it will
+bite (`-- /rm perf engine standard turns this off.`). No commented-out code, no change-log comments, no TODO that is not
+also in an issue. LuaLS annotations (`---@type fun(f: number|function): table`) are used where the static checker needs
+them; keep them valid. The exact standard, with examples, is `docs/dev/formatting.md`. The text of a Built In helper or
+condition callback is hashed (`tests/private_helper_identities.lua`): never add a comment inside one.
 
 **Text.** User-facing text is American English (color, behavior, gray, -ize) and goes through `L["literal"]`. The key is the
 English; do not build keys by concatenation (the tools find literal keys only). No sentence assembled from fragments.

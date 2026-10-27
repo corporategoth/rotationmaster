@@ -48,11 +48,42 @@ and has not been verified in a real client is in `docs/quality/client-support.md
 | `Modules/` | Load-on-demand add-ons: 13 class modules of Built In rotations, `RotationMaster_WowSims` (the converter and its text) and four text bundles (`RotationMaster_HelpText`, `_ConditionText`, `_DiagnosticsText`, `_IntegrationsText`) |
 | `Libs/`, `LibsAugment/` | Vendored libraries (hash-pinned in `Libs/UPSTREAM.json`) and local additions |
 | `Locales/` | `enUS.lua` (source) and ten generated translations for the text read at startup; `bundles.json` names the load-on-demand text bundles that hold the rest (see "Text bundles") |
-| `Assets/`, `Fonts/`, `textures/` | Icons and overlays (`Assets/*/provenance.json` records each one), the monospace font, minimap and chat textures |
+| `Assets/`, `Fonts/`, `textures/` | Icons and overlays (`Assets/*/provenance.json` records each one), the monospace font, the two `.blp` textures the help and condition pages still draw |
 | `tests/` | Headless suites (Lua 5.1 and LuaJIT) and Python checks; `tests/fixtures/` holds client models and frozen predecessor sources |
 | `tools/` | Generators, checkers, the package builder, translation tools (`docs/dev/running-things.md`) |
 | `docs/` | Human documentation: `dev/`, `translators/`, `release/`, and the topic documents |
 | `.gitea/`, `.claude/`, `.pre-commit-config.yaml` | CI, agent instructions and personas, hooks. None of these ship. |
+
+### Where a new file goes
+
+A game-facing file lives in the folder named for what it does (the roles above) and is listed in `RotationMaster.toc` (or
+the XML it includes) in load order; `tests/verify.py` fails on a file the TOC names but the tree lacks. Nothing in the
+addon folders is unreferenced: a file no TOC, test, tool or document names is dead and is removed (`git grep` for its name
+first). Generators write only the generated files in the table below; a hand-edited generated file fails
+`python3 tools/check --static`. Dev-only material stays out of the package (`.pkgmeta`, `tools/package_release.py --check`).
+Planning documents are never committed.
+
+### Byte-pinned files
+
+A few authored files cannot be reformatted or commented freely, because a suite rebuilds an earlier version of the file from
+its current bytes or hashes pieces of it (see "Tests" below). Measured by formatting every authored file and running the
+suite:
+
+- **Whole-file predecessor pins**: `main.lua`, `utils.lua`, `Core/conditions.lua`, `Data/plain.lua`, `Data/rotation_tree.lua`,
+  `Diagnostics/cpu.lua`, `Platform/analytics_casts.lua`, `UI/analytics_capture.lua`, `UI/settings_integrations.lua`,
+  `Integrations/catalog.lua`, `Integrations/lua_workbench.lua`, `UI/custom_condition_editor.lua`,
+  `UI/function_source_pane.lua`, `UI/line_numbers.lua`, `UI/lua_completion.lua`, `UI/lua_editor.lua` (suites:
+  `cpu*.lua`, `analytics_start_witness.lua`, `condition_short_circuit.lua`, `parser_string_operations.lua`,
+  `questie_settings.lua`, `integration_compatibility.lua`, `native_gutter_clipping.lua`, `editor_provider_reuse.lua`,
+  `trend_namespaces.lua`, `edition_state_conditions.lua`).
+- **The 33 `Conditions/<area>.lua` modules** that define Built In conditions: the condition suites compare whole modules and
+  the callback text in `Data/builtin_sources.lua` with recorded earlier versions.
+- **Built In helper and callback bodies** in every other file that ends with the generated binding block: saved copies and
+  exported bundles hash the text between a function's parameter list and its `end`. `tools/format_lua.py` prints those
+  bodies verbatim; `python3 tools/bytecode_equal.py --catalog` proves they are intact.
+
+Retiring one of these proofs is a decision about a whole suite (the "Predecessor fixtures" paragraph says why none is added);
+when it is made the file can be formatted with `tools/format_lua.py`.
 
 ## Load order and namespaces
 
