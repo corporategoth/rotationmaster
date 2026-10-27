@@ -782,12 +782,12 @@ local profileMarkers={'rotationSpecsMigrated','unitStateSwitchSeeded','contextCo
     'legacyArchiveNoticed','legacyArchiveBannerDismissed','previewHeaderlessGeometry'}
 local function bootWithMessages(saved)
     local messages={}
-    local env,a,scripts=persistentFixture(saved,nil,true,function(_,e,load)
+    local env,a,scripts,load=persistentFixture(saved,nil,true,function(_,e,load)
         e.LibStub('AceConsole-3.0').Printf=function(_,text,...) messages[#messages+1]=string.format(text,...) end
         for _,file in ipairs({'Conditions/world_seed.lua','Conditions/specialization.lua','Conditions/bossmod.lua','Conditions/channeling.lua','Core/legacy_archive.lua'}) do load(file) end
     end)
     assert(not a.initializationErrorReport,'initialization failed')
-    return env,a,scripts,messages
+    return env,a,scripts,messages,load
 end
 local function extraFields(messages)
     local found={};for _,text in ipairs(messages) do if text:find('Extra Field',1,true) then found[#found+1]=text end end
@@ -815,6 +815,98 @@ test('every profile marker declared in the defaults is accepted when saved true'
     local _,a,_,messages=bootWithMessages({RotationMasterDB={profiles={Default=saved},global={legacyBodyUpgrade='1:0'}}})
     assert(extraFields(messages)=='','a saved marker was warned about:\n'..extraFields(messages))
     for _,name in ipairs(profileMarkers) do assert(a.db.sv.profiles.Default[name]==true,name..' was dropped') end
+end)
+
+-- The markers above are only the keys the boot writes. A player also saves keys from the settings pages and commands, and
+-- each of them must be known to validate.lua too, or login prints "Extra Field" and /rm repair deletes the choice. The
+-- profile keys are read from the transfer schema in Core/profile_data.lua (the scalar table and the keys
+-- ValidateProfileTransfer special-cases), so a key added there without a default or a validation placeholder fails here.
+local function profileSchemaKeys(a,load)
+    load('UI/settings_draft.lua');load('Core/profile_data.lua')
+    local keys,seen,scalar={},{}
+    for index=1,200 do
+        local name,value=debug.getupvalue(a.ValidateProfileTransfer,index)
+        if name==nil then break end
+        if name=='scalar' then scalar=value end
+    end
+    assert(type(scalar)=='table','the transfer schema no longer has a scalar table to read')
+    -- The Format choice is gone: init.lua drops transfer_format at login (tested above), so it is not a key to keep.
+    local function add(key,sample) if not seen[key] and key~='transfer_format' then seen[key]=true;keys[#keys+1]={key=key,value=sample} end end
+    -- A key with a default keeps it as the saved value, so /rm repair's checks of values (a dangling effect id) stay quiet.
+    local defaults=a.db.defaults.profile
+    for key,kind in pairs(scalar) do
+        local sample=defaults[key]
+        if sample==nil then sample=kind=='boolean' and true or kind=='number' and 1 or 'x' end
+        add(key,sample)
+    end
+    local handle=assert(io.open('Core/profile_data.lua'));local source=handle:read('*a');handle:close()
+    local body=source:sub((source:find('function addon:ValidateProfileTransfer',1,true)))
+    for key in body:gmatch("key == '([%w_]+)'") do add(key,{}) end
+    local names={};for _,entry in ipairs(keys) do names[entry.key]=true end
+    assert(names.enable and names.lua_editor_disabled and names.rotationStore,'the transfer schema was read badly')
+    return keys
+end
+
+-- The Lua files that ship, minus the libraries and the Built In rotations.
+local function shippedSources()
+    local files,pipe={},assert(io.popen("find . -name '*.lua' -not -path './.*' -not -path './tests/*' -not -path './tools/*' -not -path './Libs/*' -not -path './LibsAugment/*' -not -path './Modules/*'"))
+    for path in pipe:lines() do files[#files+1]=path end
+    pipe:close()
+    return files
+end
+
+-- Keys that shipped code stores into the profile or global scope, found by the assignment forms it uses. Clearing a key
+-- (`= nil`) is not a write.
+local function writtenKeys(scope)
+    local found={}
+    for _,path in ipairs(shippedSources()) do
+        for line in io.lines(path) do
+            if not line:match('^%s*%-%-') then
+                local key,rhs=line:match(scope..'%.([%a_][%w_]*)%s*=%s*([^=%s]%S*)')
+                if key and rhs~='nil' then found[key]=found[key] or path end
+                key=line:match('rawset%(%s*[%w_%.]*'..scope..'%s*,%s*[\'"]([%w_]+)[\'"]')
+                if key then found[key]=found[key] or path end
+            end
+        end
+    end
+    return found
+end
+
+test('every profile key the transfer schema allows is accepted by boot validation and survives /rm repair',function()
+    local _,probe,_,_,load=bootWithMessages()
+    local keys=profileSchemaKeys(probe,load)
+    local saved={version=1}
+    for _,entry in ipairs(keys) do saved[entry.key]=entry.value end
+    local env,a,_,messages=bootWithMessages({RotationMasterDB={profiles={Default=saved},global={legacyBodyUpgrade='1:0'}}})
+    assert(extraFields(messages)=='','a key the transfer schema allows is not known to validate.lua:\n'..extraFields(messages))
+    env.LibStub('AceConsole-3.0').GetArgs=function(_,text) local word,after=text:match('^(%S*)()');return word~='' and word or nil,after end
+    a.print=function() end;a.warn=function() end;a:HandleCommand('repair')
+    for _,entry in ipairs(keys) do assert(a.db.sv.profiles.Default[entry.key]~=nil,'/rm repair deleted profile.'..entry.key) end
+end)
+
+test('every profile key shipped code writes is in the transfer schema, so export and import carry it',function()
+    local _,probe,_,_,load=bootWithMessages()
+    local schema={}
+    for _,entry in ipairs(profileSchemaKeys(probe,load)) do schema[entry.key]=true end
+    for key,path in pairs(writtenKeys('profile')) do assert(schema[key],'profile.'..key..' is written by '..path..' but is not in the transfer schema') end
+end)
+
+-- Global keys have no transfer schema. These are the ones the code writes that the AceDB defaults leave out because the
+-- absence means something (diagnosticCacheBypass is read as `~= false`, evaluator nil is the lean engine), with a value as
+-- the code stores it. talent_popup_provider is the documented hand-set knob in UI/talent_popup.lua.
+local globalChoices={workbenchSidebarWidth=320,diagnosticCacheBypass=false,evaluator='standard',talent_popup_provider='blizzard'}
+test('every global key shipped code writes is known to boot validation and survives /rm repair',function()
+    local _,probe=bootWithMessages()
+    local written=writtenKeys('global')
+    for key,path in pairs(written) do
+        assert(probe.db.defaults.global[key]~=nil or globalChoices[key]~=nil,'global.'..key..' is written by '..path..' but has no default and no entry in this test')
+    end
+    for key in pairs(globalChoices) do assert(written[key] or key=='talent_popup_provider','global.'..key..' is no longer written by shipped code') end
+    local env,a,_,messages=bootWithMessages({RotationMasterDB={profiles={Default={version=1}},global=globalChoices}})
+    assert(extraFields(messages)=='','a global choice is not known to validate.lua:\n'..extraFields(messages))
+    env.LibStub('AceConsole-3.0').GetArgs=function(_,text) local word,after=text:match('^(%S*)()');return word~='' and word or nil,after end
+    a.print=function() end;a.warn=function() end;a:HandleCommand('repair')
+    for key,value in pairs(globalChoices) do assert(a.db.sv.global[key]==value,'/rm repair changed global.'..key) end
 end)
 
 -- A declared default must read like an absent marker: an old profile without any marker is migrated and seeded once, and a

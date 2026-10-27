@@ -856,6 +856,12 @@ function addon:validate(template, fix)
     local glob_template = addon.Functions.collections.deepcopy(template.global)
     glob_template.itemsets = {}
     glob_template.effects = {}
+    -- Choices a player saves that must have no AceDB default, because an absent value means something (the cache mode
+    -- reads `~= false`, no engine is the lean one); recognized here by type only.
+    glob_template.workbenchSidebarWidth = 0
+    glob_template.diagnosticCacheBypass = false
+    glob_template.evaluator = ""
+    glob_template.talent_popup_provider = ""
     validate_basic("global", DB.global, glob_template, fix)
 
     if DB.global.itemsets then
@@ -950,6 +956,14 @@ function addon:validate(template, fix)
     -- These optional library-owned values are recognized schema, not defaults:
     -- their absence preserves LibDBIcon's own placement and interaction policy.
     local profile_template = addon.Functions.collections.deepcopy(template.profile)
+
+    -- Choices saved from the settings pages and commands. They have no default because absent means "not chosen"
+    -- (lua_native_highlighting is read as `~= nil`), so they are recognized here by type only.
+    profile_template.preview_masque = false
+    profile_template.encounter_provider = ""
+    profile_template.lua_native_highlighting = false
+    profile_template.lua_editor_disabled = {}
+    profile_template.rotationChoicePreferences = {}
 
     if type(profile_template.minimap) == "table" then
         profile_template.minimap = addon.Functions.collections.deepcopy(profile_template.minimap)
