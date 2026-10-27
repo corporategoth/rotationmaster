@@ -127,8 +127,10 @@ else
  source=source:sub(1,hitStart-1).." local tracking=false;local observed={}\n local function hit(name,...)native[name]=(native[name]or 0)+1;if tracking then local row={name};for i=1,select('#',...)do row[#row+1]=type(select(i,...))..':'..tostring(select(i,...))end;observed[#observed+1]=table.concat(row,'|')end end\n"..source:sub(hitEnd)
 end
 source=source.." return {a=a,e=e,tick=tick,load=load,alignReset=function()a.lastCacheReport=clock end,setAura=function(v)auraPresent=v end,setCombat=function(v)combat=v;a.inCombat=v end,setTarget=function(v)target=v end,setEnchant=function(v)enchanted=v end,setLevel=function(v)playerLevel=v end,setClass=function(v)playerClass=v end,setVehicle=function(v)vehicle=v end,setSpellReady=function(v)spellReady=v end,fire=function(event,unit)for _,frame in ipairs(eventFrames)do local callback=frame.GetScript and frame:GetScript('OnEvent');if frame.modelEvents[event]and callback then callback(frame,event,unit)end end end,reset=function(track)native={};observed={};tracking=track end,snapshot=function()return native,observed end}\nend\nreturn make"
-local factory=assert(loadstring('local persistent,productRoot,direct=...\nlocal function fixture()local e,a,_,load=persistent({RotationMasterDB={global={diagnosticCacheBypass=direct}}},nil,true);a.currentSpec=0;e.GetTime=function()return 100 end;a.lastCacheReport=100;return e,a,nil,nil,nil,nil,load end\n'..source,'@external-normalized-shaman-factory'))(makePersistent,productRoot,direct)
+local holder={}
+local factory=assert(loadstring('local persistent,productRoot,direct,holder=...\nlocal function fixture()local e,a,_,load=persistent({RotationMasterDB=holder.saved and holder.saved(direct) or {global={diagnosticCacheBypass=direct}}},nil,true);a.currentSpec=0;e.GetTime=function()return 100 end;a.lastCacheReport=100;return e,a,nil,nil,nil,nil,load end\n'..source,'@external-normalized-shaman-factory'))(makePersistent,productRoot,direct,holder)
 return function(options)
+ holder.saved=options and options.saved
  local ok,c=pcall(factory,options or {});assert(ok,c)
  assert(type(getmetatable(c.a).__tostring)=='function'and tostring(c.a)=='rotationmaster')
  assert(getfenv(c.a.EvaluateRotationSequence)==c.e,'wrong sequence owner environment')

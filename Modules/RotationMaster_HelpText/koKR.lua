@@ -732,3 +732,7 @@ L["Help.General.ignore_mana"] = "지금 주문에 필요한 마나나 다른 자
 L["Help.General.ignore_mana_restricted"] = "리테일과 Forever는 일부 상황에서 주문을 사용할 수 있는지 여부를 애드온에게 숨길 수 있습니다. 이 경우 이 옵션과 관계없이 해당 주문은 건너뜁니다."
 -- en: "Advise a spell or item even when your target is out of its range. Without this, a step whose range check fails is skipped. The spell or item must still be learned or owned, off cooldown and usable, and its conditions still apply."
 L["Help.General.ignore_range"] = "대상이 사거리 밖에 있더라도 주문이나 아이템을 추천합니다. 이 옵션이 꺼져 있으면 사거리 확인에 실패한 단계는 건너뜁니다. 주문이나 아이템은 여전히 배웠거나 가지고 있어야 하고, 재사용 대기 중이 아니어야 하며 사용할 수 있어야 하고, 조건도 계속 적용됩니다."
+-- en: "Adopt several at once"
+L["Adopt several at once"] = "여러 개를 한꺼번에 채택"
+-- en: "Adopt all and Adopt all from specialization adopt every listed record in one step, for the owner chosen under Applies to. Each record is adopted on its own, exactly as a single adoption would be: a record whose destination already exists, or that is incomplete, stays in the archive and is named in the result."
+L["Adopt all and Adopt all from specialization adopt every listed record in one step, for the owner chosen under Applies to. Each record is adopted on its own, exactly as a single adoption would be: a record whose destination already exists, or that is incomplete, stays in the archive and is named in the result."] = "모두 채택과 전문화 전체 채택은 목록의 모든 기록을 적용 대상에서 고른 소유자로 한 번에 채택합니다. 각 기록은 단일 채택과 똑같이 개별적으로 채택됩니다. 대상이 이미 있거나 불완전한 기록은 보관함에 남고 결과에 이름이 표시됩니다."

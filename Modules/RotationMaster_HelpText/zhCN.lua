@@ -732,3 +732,7 @@ L["Help.General.ignore_mana"] = "即使你当前没有该法术所需的法力�
 L["Help.General.ignore_mana_restricted"] = "正式服和 Forever 在某些情况下会向插件隐藏法术是否可用。此时无论是否启用此选项，该法术都会被跳过。"
 -- en: "Advise a spell or item even when your target is out of its range. Without this, a step whose range check fails is skipped. The spell or item must still be learned or owned, off cooldown and usable, and its conditions still apply."
 L["Help.General.ignore_range"] = "即使目标超出射程，也会推荐该法术或物品。未启用时，射程检查未通过的步骤会被跳过。该法术或物品仍须已学会或已拥有、不在冷却中并且可用，其条件也仍然适用。"
+-- en: "Adopt several at once"
+L["Adopt several at once"] = "一次认领多个"
+-- en: "Adopt all and Adopt all from specialization adopt every listed record in one step, for the owner chosen under Applies to. Each record is adopted on its own, exactly as a single adoption would be: a record whose destination already exists, or that is incomplete, stays in the archive and is named in the result."
+L["Adopt all and Adopt all from specialization adopt every listed record in one step, for the owner chosen under Applies to. Each record is adopted on its own, exactly as a single adoption would be: a record whose destination already exists, or that is incomplete, stays in the archive and is named in the result."] = "“全部认领”和“认领该专精的全部”会一步认领列表中的每条记录，归属于“适用于”中选定的所有者。每条记录都单独认领，与单个认领完全相同：目标已存在或不完整的记录会留在存档中，并在结果里列出名称。"

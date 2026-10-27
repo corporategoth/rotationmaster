@@ -157,6 +157,7 @@ Core/rotation_library.lua
 Core/builtin_modules.lua
 Core/rotation_scope.lua
 Core/rotation_migration.lua
+Core/legacy_archive.lua
 Core/rotation_lifecycle.lua
 Core/rotation_tags.lua
 Core/imports.lua
@@ -257,6 +258,7 @@ UI/rotation_comparison.lua
 UI/transfer.lua
 UI/transfer_format.lua
 UI/rotation_adoption.lua
+UI/legacy_archive_banner.lua
 
 
 # Code authoring UI

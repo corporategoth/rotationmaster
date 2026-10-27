@@ -3328,6 +3328,14 @@ L["this client has no assigned group roles"] = true
 -- /rm debug timeline (Diagnostics/timeline.lua).
 L["/rm debug timeline [seconds] - Report what the Retail and Forever encounter timeline offers to addons."] = true
 
+L["%d rotations from before version 2 are waiting in an archive and do not run until you adopt them. Open Rotation Master, choose Rotations, then Recover unassigned rotations."] = true
+L["%d rotations from before version 2 are waiting in an archive and do not run until you adopt them."] = true
+L["Dismiss"] = true
+L["Adopt all %d for %s"] = true
+L["Adopt all %d from specialization %d for %s"] = true
+L["Adopt %d unassigned rotations for %s? Each keeps its identifier. A rotation that cannot be adopted stays in the archive."] = true
+L["Adopted %d of %d. These stay in the archive: %s"] = true
+
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true
 L["All original results, preserving nil positions and return count."] = true
