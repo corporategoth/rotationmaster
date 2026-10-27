@@ -674,15 +674,17 @@ local function newShell()
     end
 
     -- Switches to section `key` (unknown keys fall back to Rotations). A page with unsaved changes is asked first;
-    -- `approved` means that was done. Shows a placeholder pane when the page cannot be built.
-    function shell:SelectSection(key, approved)
+    -- `approved` means that was done. Shows a placeholder pane when the page cannot be built. `after`, when given, is
+    -- called with the new pane once the switch has happened, which is later than this call when a prompt is answered
+    -- first, and never when the player keeps the unsaved page.
+    function shell:SelectSection(key, approved, after)
         if not approved and self.pane and self.nativePane and self.pane.RequestLeave then
             -- Native editors preserve their pending changes at this boundary.
             ---@type any
             local current = self.pane
 
             return current:RequestLeave(function()
-                if self.pane == current and self.frame:IsShown() then self:SelectSection(key, true) end
+                if self.pane == current and self.frame:IsShown() then self:SelectSection(key, true, after) end
             end)
         end
 
@@ -723,6 +725,7 @@ local function newShell()
             self.nativePane = true
             self.pane = addon:CreateRotationBrowser(content, addon.configRotationSelection)
             self:BindPaneHelp()
+            if after then after(self.pane) end
             return
         end
 
@@ -734,6 +737,7 @@ local function newShell()
                 self.pane = pane
                 self.settingsPanes[key] = pane
                 self:BindPaneHelp()
+                if after then after(self.pane) end
                 return
             end
         end
@@ -772,6 +776,7 @@ local function newShell()
         self.nativePane = true
         self.pane = pane
         self:BindPaneHelp()
+        if after then after(self.pane) end
     end
 
     -- The client reports a sizing drag here; lay out with the reported size.

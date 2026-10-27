@@ -64,18 +64,20 @@ test('a record that is refused stays in the archive and the window names it',fun
     assert(a.db.profile.rotationStore.classes.SHAMAN[0].A and w.form.message:GetText():find('Gamma',1,true),'the refused record was not named')
 end)
 
-test('the settings banner follows the archive, opens Recover and can be dismissed',function()
+-- A settings shell with the real config window and banner; General stands in as a page that may hold unsaved edits.
+local function bannerFixture(waiting)
     local f=F.new();local a=f.addon
     local _,create=dofile('tests/fixtures/native_ui.lua')(f.env)
-    local waiting=2;local dismissed=false;local opened=0
-    a.GetLegacyArchiveBanner=function() return not dismissed and waiting>0 and waiting or nil end
-    a.DismissLegacyArchiveBanner=function() dismissed=true end
+    local state={dismissed=false,opened=0}
+    a.GetLegacyArchiveBanner=function() return not state.dismissed and waiting>0 and waiting or nil end
+    a.DismissLegacyArchiveBanner=function() state.dismissed=true end
     a.pretty_name='Rotation Master';a.name='rotationmaster';a.SetupOptions=function() end
     a.OpenNativeSettings=function(_,parent,key)
         local p={frame=create('Frame',nil,parent)}
         function p:SetWidth(v) self.frame:SetWidth(v) end
         function p:SetHeight(v) self.frame:SetHeight(v) end
         function p:Release() self.frame:Hide() end
+        if state.leave then function p:RequestLeave(callback) state.leave(callback);return false end end
         p:SetWidth(parent:GetWidth());p:SetHeight(parent:GetHeight());p.frame:Show();return p
     end
     a.CreateRotationBrowser=function(_,parent)
@@ -83,17 +85,36 @@ test('the settings banner follows the archive, opens Recover and can be dismisse
         function pane:SetWidth(v) self.frame:SetWidth(v) end
         function pane:SetHeight(v) self.frame:SetHeight(v) end
         function pane:Release() self.frame:Hide() end
-        function pane:OpenRecovery() opened=opened+1 end
+        function pane:OpenRecovery() state.opened=state.opened+1 end
         pane:SetWidth(parent:GetWidth());pane:SetHeight(parent:GetHeight());pane.frame:Show();return pane
     end
     f.load('UI/window.lua');f.load('UI/help.lua');f.load('UI/legacy_archive_banner.lua');f.load('UI/config.lua')
+    return a,state
+end
+
+test('the settings banner follows the archive, opens Recover and can be dismissed',function()
+    local a,state=bannerFixture(2)
     local shell=a:ShowConfig('General')
     assert(shell.banner and shell.banner.frame:IsShown() and shell.banner.text:GetText():find('2',1,true),'no banner while rotations wait')
     local without=shell.content:GetHeight()
-    shell.banner.open:Click();assert(shell.section=='Rotations' and opened==1,'the banner did not open Recover')
-    shell.banner.dismiss:Click();assert(not shell.banner.frame:IsShown() and dismissed,'the banner was not dismissed')
+    shell.banner.open:Click();assert(shell.section=='Rotations' and state.opened==1,'the banner did not open Recover')
+    shell.banner.open:Click();assert(state.opened==2,'the banner did not open Recover on the Rotations page itself')
+    shell.banner.dismiss:Click();assert(not shell.banner.frame:IsShown() and state.dismissed,'the banner was not dismissed')
     assert(shell.content:GetHeight()>without,'the content did not take the space back')
-    shell:Hide(true);dismissed=false;waiting=0;a:ShowConfig('General');assert(not shell.banner.frame:IsShown(),'a banner for an empty archive')
+    shell:Hide(true);state.dismissed=false;a.GetLegacyArchiveBanner=function() return nil end;a:ShowConfig('General');assert(not shell.banner.frame:IsShown(),'a banner for an empty archive')
+end)
+
+test('Recover opens after the unsaved-edits prompt is answered, and not when the edits are kept',function()
+    local a,state=bannerFixture(2)
+    local pending
+    state.leave=function(callback) pending=callback end
+    local shell=a:ShowConfig('General')
+    shell.banner.open:Click()
+    assert(pending and shell.section=='General' and state.opened==0,'the page was left without asking about its edits')
+    -- Keeping the edits (the callback never runs) leaves everything as it was.
+    shell.banner.open:Click();assert(shell.section=='General' and state.opened==0)
+    pending()
+    assert(shell.section=='Rotations' and state.opened==1,'Recover did not open once the prompt was answered')
 end)
 
 finish()
