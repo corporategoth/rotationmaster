@@ -1,6 +1,6 @@
 local addon_name, addon = ...
-local invalidateDependencies=addon.InvalidateRotationDependencies
-if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
+local invalidateDependencies = addon.InvalidateRotationDependencies
+if type(invalidateDependencies) ~= 'function' then invalidateDependencies = nil end
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
@@ -13,12 +13,13 @@ local GLOBAL_VERSION = 1
 local classKey = select(2, UnitClass("player"))
 
 local combination_food = {}
-local conjured_food = { 22895, 8076, 8075, 1487, 1114, 1113, 5349, }
-local conjured_water = { 8079, 8078, 8077, 3772, 2136, 2288, 5350, }
-local mana_potions = { 13444, 13443, 6149, 3827, 3385, 2455, }
-local healing_potions = { 13446, 3928, 1710, 929, 858, 118, }
-local bandages = { 14530, 14529, 8545, 8544, 6451, 6450, 3531, 3530, 2581, 1251, }
-local purchased_water = { 8766, 1645, 1708, 1205, 1179, 159, }
+local conjured_food = { 22895, 8076, 8075, 1487, 1114, 1113, 5349 }
+local conjured_water = { 8079, 8078, 8077, 3772, 2136, 2288, 5350 }
+local mana_potions = { 13444, 13443, 6149, 3827, 3385, 2455 }
+local healing_potions = { 13446, 3928, 1710, 929, 858, 118 }
+local bandages = {14530, 14529, 8545, 8544, 6451, 6450, 3531, 3530, 2581, 1251}
+local purchased_water = { 8766, 1645, 1708, 1205, 1179, 159 }
+
 local healthstones = {
     "Major Healthstone",
     "Greater Healthstone",
@@ -28,10 +29,14 @@ local healthstones = {
 }
 
 if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
-    combination_food = { 113509, 80618, 80610, 65499, 43523, 43518, 65517, 65516, 65515, 65500 }
-    multiinsert(mana_potions, { 152495, 127835, 109222, 76098, 57192, 33448, 40067, 31677, 22732, 28101 })
-    multiinsert(healing_potions, { 169451, 152494, 127834, 152615, 109223, 57191, 39671, 22829, 28100 })
-    multiinsert(bandages, { 158382, 158381, 133942, 133940, 111603, 72986, 72985, 53051, 53050, 53049, 34722, 34721, 21991, 21990 })
+    combination_food = {113509, 80618, 80610, 65499, 43523, 43518, 65517, 65516, 65515, 65500}
+    multiinsert(mana_potions, {152495, 127835, 109222, 76098, 57192, 33448, 40067, 31677, 22732, 28101})
+    multiinsert(healing_potions, {169451, 152494, 127834, 152615, 109223, 57191, 39671, 22829, 28100})
+
+    multiinsert(bandages, {
+        158382, 158381, 133942, 133940, 111603, 72986, 72985, 53051, 53050, 53049, 34722, 34721, 21991, 21990
+    })
+
     multiinsert(healthstones, {
         "Legion Healthstone",
         "Fel Healthstone",
@@ -42,21 +47,24 @@ else
     if (LE_EXPANSION_LEVEL_CURRENT >= 1) then
         combination_food = { 34062 }
         multiinsert(conjured_food, { 22019 })
-        multiinsert(conjured_water, { 22018, 30703, })
+        multiinsert(conjured_water, { 22018, 30703 })
         multiinsert(mana_potions, { 31677, 33093, 23823, 22832, 32948, 33935, 28101 })
         multiinsert(healing_potions, { 33092, 23822, 22829, 32947, 28100, 33934 })
         multiinsert(bandages, { 21991, 21990, 23684 })
-        multiinsert(purchased_water, { 33042, 29395, 27860, 32453, 38430, 28399, 29454, 32455, 24007, 24006, 23161 })
+        multiinsert(purchased_water, {33042, 29395, 27860, 32453, 38430, 28399, 29454, 32455, 24007, 24006, 23161})
+
         multiinsert(healthstones, {
             "Master Healthstone",
         })
     end
+
     if (LE_EXPANSION_LEVEL_CURRENT >= 2) then
         multiinsert(combination_food, { 43523, 43518 })
         multiinsert(mana_potions, { 33448, 40067, 31677, 43570 })
         multiinsert(healing_potions, { 33447, 39671, 43569 })
         multiinsert(bandages, { 38640, 34722, 38643, 34721 })
         multiinsert(purchased_water, { 42777 })
+
         multiinsert(healthstones, {
             "Fel Healthstone",
             "Demonic Healthstone",
@@ -132,9 +140,9 @@ local default_effects = {
         ["name"] = "Boom!",
         ["frequency"] = 0.25,
         ["sequence"] = {
-            "Interface\\Cooldown\\star4", -- [1]
-            "Interface\\Cooldown\\starburst", -- [2]
-            "Interface\\Cooldown\\ping4", -- [3]
+            "Interface\\Cooldown\\star4",  -- [1]
+            "Interface\\Cooldown\\starburst",  -- [2]
+            "Interface\\Cooldown\\ping4",  -- [3]
         },
     },
     ["cbd72b0b-e0f4-4f6e-bef4-459776a5d7a9"] = {
@@ -149,15 +157,15 @@ local default_effects = {
         ["name"] = "Pulse",
         ["texture"] = "Interface\\Cooldown\\ping4",
         ["sequence"] = {
-            0.4, -- [1]
-            0.6, -- [2]
-            0.8, -- [3]
-            1, -- [4]
-            1.2, -- [5]
-            1.4, -- [6]
+            0.4,  -- [1]
+            0.6,  -- [2]
+            0.8,  -- [3]
+            1,  -- [4]
+            1.2,  -- [5]
+            1.4,  -- [6]
         },
         ["frequency"] = 0.1,
-    }
+    },
 }
 
 local default_condition_groups = {
@@ -165,86 +173,89 @@ local default_condition_groups = {
         id = "b3d7df2c-f257-4a2d-961e-66e49336d109",
         name = L["Combat"],
         conditions = {
-            "CASTING", "CASTING_SPELL", "CASTING_REMAIN", "CASTING_PROGRESS", "CAST_INTERRUPTABLE",
-            "CHANNELING", "CHANNELING_SPELL", "CHANNELING_REMAIN", "CHANNELING_PROGRESS", "CHANNEL_INTERRUPTABLE",
-            "COMBAT", "STEALTHED", "INCONTROL", "LOC_TYPE", "LOC_BLOCKED",
-            "RUNNER", "RESIST", "IMMUNE", "MOVING", "THREAT", "THREAT_COUNT",
-            "ATTACKABLE", "ENEMY", "COMBAT_HISTORY", "COMBAT_HISTORY_TIME", "TIME_IN_COMBAT",
-            "BOSSMOD_ENCOUNTER", "BOSSMOD_STAGE", "BOSSMOD_TIMER", "ENCOUNTER",
-        }
+            "CASTING", "CASTING_SPELL", "CASTING_REMAIN", "CASTING_PROGRESS", "CAST_INTERRUPTABLE", "CHANNELING",
+            "CHANNELING_SPELL", "CHANNELING_REMAIN", "CHANNELING_PROGRESS", "CHANNEL_INTERRUPTABLE", "COMBAT",
+            "STEALTHED", "INCONTROL", "LOC_TYPE", "LOC_BLOCKED", "RUNNER", "RESIST", "IMMUNE", "MOVING", "THREAT",
+            "THREAT_COUNT", "ATTACKABLE", "ENEMY", "COMBAT_HISTORY", "COMBAT_HISTORY_TIME", "TIME_IN_COMBAT",
+            "BOSSMOD_ENCOUNTER", "BOSSMOD_STAGE", "BOSSMOD_TIMER", "ENCOUNTER"
+        },
     },
     {
         id = "b8136123-2bda-4230-a77a-89ea2aed3a1a",
         name = L["Character"],
         conditions = {
-            "CLASS", "CLASS_GROUP", "CREATURE", "CLASSIFICATION", "LEVEL", "TALENT", "SPECIALIZATION",
-            "ROLE", "GROUP", "FORM", "PET", "PET_NAME",
-            "HEALTH", "HEALTHPCT", "TT_HEALTH", "TT_HEALTHPCT",
-            "MANA", "MANAPCT", "POWER", "POWERPCT", "POINT", "RUNE", "RUNE_COOLDOWN",
-            "TOTEM", "TOTEM_SPELL", "TOTEM_REMAIN", "TOTEM_SPELL_REMAIN",
-            "STAT", "ECS_STAT", "ECS_STAT_PCT",
-            "HERO_TALENT", "GROUP_COUNT",
-            "PET_HAPPINESS", "STAGGER", "ECLIPSE",
-        }
+            "CLASS", "CLASS_GROUP", "CREATURE", "CLASSIFICATION", "LEVEL", "TALENT", "SPECIALIZATION", "ROLE", "GROUP",
+            "FORM", "PET", "PET_NAME", "HEALTH", "HEALTHPCT", "TT_HEALTH", "TT_HEALTHPCT", "MANA", "MANAPCT", "POWER",
+            "POWERPCT", "POINT", "RUNE", "RUNE_COOLDOWN", "TOTEM", "TOTEM_SPELL", "TOTEM_REMAIN", "TOTEM_SPELL_REMAIN",
+            "STAT", "ECS_STAT", "ECS_STAT_PCT", "HERO_TALENT", "GROUP_COUNT", "PET_HAPPINESS", "STAGGER", "ECLIPSE"
+        },
     },
     {
         id = "8034819e-26f5-4f4e-9153-d8cab5e65f31",
         name = L["Spells"],
         conditions = {
-            "SPELL_KNOWN", "SPELL_AVAIL", "SPELL_RANGE", "SPELL_COOLDOWN", "SPELL_REMAIN",
-            "SPELL_CHARGES", "SPELL_ACTIVE", "SPELL_HISTORY", "SPELL_HISTORY_TIME",
-            "PETSPELL_AVAIL", "PETSPELL_RANGE", "PETSPELL_COOLDOWN", "PETSPELL_REMAIN",
-            "PETSPELL_CHARGES", "PETSPELL_ACTIVE", "PETSPELL_HISTORY", "PETSPELL_HISTORY_TIME",
-            "ANYSPELL_AVAIL", "ANYSPELL_RANGE", "ANYSPELL_COOLDOWN", "ANYSPELL_REMAIN",
-            "ANYSPELL_CHARGES", "SPELL_GLOW",
-        }
+            "SPELL_KNOWN", "SPELL_AVAIL", "SPELL_RANGE", "SPELL_COOLDOWN", "SPELL_REMAIN", "SPELL_CHARGES",
+            "SPELL_ACTIVE", "SPELL_HISTORY", "SPELL_HISTORY_TIME", "PETSPELL_AVAIL", "PETSPELL_RANGE",
+            "PETSPELL_COOLDOWN", "PETSPELL_REMAIN", "PETSPELL_CHARGES", "PETSPELL_ACTIVE", "PETSPELL_HISTORY",
+            "PETSPELL_HISTORY_TIME", "ANYSPELL_AVAIL", "ANYSPELL_RANGE", "ANYSPELL_COOLDOWN", "ANYSPELL_REMAIN",
+            "ANYSPELL_CHARGES", "SPELL_GLOW"
+        },
     },
     {
         id = "fca4ff75-4085-458a-b5bf-27a6b52f2092",
         name = L["Items"],
         conditions = {
-            "EQUIPPED", "CARRYING", "ITEM", "ITEM_RANGE", "ITEM_COOLDOWN", "GLYPH", "WEAPON_TYPE",
-        }
+            "EQUIPPED",
+            "CARRYING",
+            "ITEM",
+            "ITEM_RANGE",
+            "ITEM_COOLDOWN",
+            "GLYPH",
+            "WEAPON_TYPE",
+        },
     },
     {
         id = "e618608c-92ec-4ae9-9dde-40a397d7beb9",
         name = L["Buffs"],
         conditions = {
-            "BUFF", "BUFF_REMAIN", "BUFF_STACKS", "STEALABLE",
-            "DEBUFF", "DEBUFF_REMAIN", "DEBUFF_STACKS", "DISPELLABLE",
-            "WEAPON", "WEAPON_REMAIN", "WEAPON_STACKS", "SWING_TIME", "SWING_TIME_REMAIN",
-        }
+            "BUFF", "BUFF_REMAIN", "BUFF_STACKS", "STEALABLE", "DEBUFF", "DEBUFF_REMAIN", "DEBUFF_STACKS",
+            "DISPELLABLE", "WEAPON", "WEAPON_REMAIN", "WEAPON_STACKS", "SWING_TIME", "SWING_TIME_REMAIN"
+        },
     },
     {
         id = "fa10aaf8-bc71-480f-9062-c949fd7c74e9",
         name = L["Spatial"],
         conditions = {
-            "ZONE", "OUTDOORS", "DISTANCE", "BEYOND_MELEE", "DISTANCE_COUNT", "PROXIMITY",
-            "PROXIMITY_HEALTH", "PROXIMITY_HEALTH_COUNT", "PROXIMITY_HEALTHPCT", "PROXIMITY_HEALTHPCT_COUNT",
-            "PROXIMITY_MANA", "PROXIMITY_MANA_COUNT", "PROXIMITY_MANAPCT", "PROXIMITY_MANAPCT_COUNT",
-            "PLAYER_STATE", "KEYSTONE_LEVEL",
-        }
+            "ZONE", "OUTDOORS", "DISTANCE", "BEYOND_MELEE", "DISTANCE_COUNT", "PROXIMITY", "PROXIMITY_HEALTH",
+            "PROXIMITY_HEALTH_COUNT", "PROXIMITY_HEALTHPCT", "PROXIMITY_HEALTHPCT_COUNT", "PROXIMITY_MANA",
+            "PROXIMITY_MANA_COUNT", "PROXIMITY_MANAPCT", "PROXIMITY_MANAPCT_COUNT", "PLAYER_STATE", "KEYSTONE_LEVEL"
+        },
     },
 }
 
 -- Order of other conditions
 local default_other_conditions_order = {
-    "DELETE", "AND", "OR", "NOT", "ISSAME",
+    "DELETE",
+    "AND",
+    "OR",
+    "NOT",
+    "ISSAME",
 }
 
 -- Default switch conditions
 local default_switch_conditions = {
-    "DELETE", "AND", "OR", "NOT", "SELF_LEVEL", "PVP", "ZONEPVP", "ZONE", "INSTANCE", "OUTDOORS",
-    "STEALTHED", "GROUP", "FORM", "CLASS", "CLASS_GROUP", "CREATURE", "CLASSIFICATION",
-    "PET", "PET_NAME", "EQUIPPED", "DISTANCE_COUNT", "THREAT_COUNT", "ROLE", "GLYPH",
-    "BOSSMOD_ENCOUNTER", "BOSSMOD_STAGE", "SPECIALIZATION", "WEAPON_TYPE",
-    "ENCOUNTER", "KEYSTONE_LEVEL", "HERO_TALENT",
-    "GROUP_COUNT", "PLAYER_STATE",
+    "DELETE", "AND", "OR", "NOT", "SELF_LEVEL", "PVP", "ZONEPVP", "ZONE", "INSTANCE", "OUTDOORS", "STEALTHED", "GROUP",
+    "FORM", "CLASS", "CLASS_GROUP", "CREATURE", "CLASSIFICATION", "PET", "PET_NAME", "EQUIPPED", "DISTANCE_COUNT",
+    "THREAT_COUNT", "ROLE", "GLYPH", "BOSSMOD_ENCOUNTER", "BOSSMOD_STAGE", "SPECIALIZATION", "WEAPON_TYPE", "ENCOUNTER",
+    "KEYSTONE_LEVEL", "HERO_TALENT", "GROUP_COUNT", "PLAYER_STATE"
 }
 
 -- Default 'switch only' conditions
 local default_disabled_conditions = {
-    "SELF_LEVEL", "PVP", "ZONEPVP", "INSTANCE",
+    "SELF_LEVEL",
+    "PVP",
+    "ZONEPVP",
+    "INSTANCE",
 }
 
 -- Every body the old formats can still be in. Before the scoped store, that
@@ -255,82 +266,125 @@ local default_disabled_conditions = {
 -- body is visited; the upgrade functions below only touch the old shapes.
 local function eachSavedBody(visit)
     local function bodies(map)
-        if type(map)~="table" then return end
-        for _,rows in pairs(map) do
-            if type(rows)=="table" then for _,body in pairs(rows) do visit(body) end end
+        if type(map) ~= "table" then return end
+
+        for _, rows in pairs(map) do
+            if type(rows) == "table" then
+                for _, body in pairs(rows) do
+                    visit(body)
+                end
+            end
         end
     end
+
     local function records(map)
-        if type(map)~="table" then return end
-        for _,rows in pairs(map) do
-            if type(rows)=="table" then for _,record in pairs(rows) do
-                if type(record)=="table" then visit(record.body) end
-            end end
+        if type(map) ~= "table" then return end
+
+        for _, rows in pairs(map) do
+            if type(rows) == "table" then
+                for _, record in pairs(rows) do
+                    if type(record) == "table" then visit(record.body) end
+                end
+            end
         end
     end
-    local sv=addon.db.sv
-    local seen={}
+
+    local sv = addon.db.sv
+    local seen = {}
+
     local function profile(p)
-        if type(p)~="table" or seen[p] then return end
-        seen[p]=true
-        local store=p.rotationStore
-        if type(store)~="table" then return bodies(p.rotations) end
-        if type(store.legacy)=="table" then bodies(store.legacy.rotations) end
-        if type(store.classes)=="table" then for _,map in pairs(store.classes) do records(map) end end
-        if type(store.characters)=="table" then
-            for _,bucket in pairs(store.characters) do if type(bucket)=="table" then records(bucket.specs) end end
+        if type(p) ~= "table" or seen[p] then return end
+        seen[p] = true
+        local store = p.rotationStore
+        if type(store) ~= "table" then return bodies(p.rotations) end
+        if type(store.legacy) == "table" then bodies(store.legacy.rotations) end
+
+        if type(store.classes) == "table" then
+            for _, map in pairs(store.classes) do
+                records(map)
+            end
+        end
+
+        if type(store.characters) == "table" then
+            for _, bucket in pairs(store.characters) do
+                if type(bucket) == "table" then records(bucket.specs) end
+            end
         end
     end
-    for _,p in pairs(sv and sv.profiles or {}) do profile(p) end
+
+    for _, p in pairs(sv and sv.profiles or {}) do
+        profile(p)
+    end
+
     profile(addon.db.profile)
-    for _,char in pairs(sv and sv.char or {}) do if type(char)=="table" then bodies(char.rotations) end end
+
+    for _, char in pairs(sv and sv.char or {}) do
+        if type(char) == "table" then bodies(char.rotations) end
+    end
 end
 
 -- opts.activeOnly: the rotations the player runs now (prefetching item data
 -- for archived bodies would be work nobody asked for).
 local function updateRotationData(rot_func, cond_func, opts)
-    local scoped=addon.InitializeScopedRotationStorage~=nil
-    if not scoped and (addon.db.profile.rotationStore~=nil or not addon.db.profile.rotations) then
+    local scoped = addon.InitializeScopedRotationStorage ~= nil
+
+    if not scoped and (addon.db.profile.rotationStore ~= nil or not addon.db.profile.rotations) then
         return
     end
 
-    local function updateConditionData(cond,func,depth)
-        depth=depth or 0
-        if type(cond)~="table" or depth>64 then return end
-        if cond.type=="NOT" and type(cond.value)=="table" then
-            updateConditionData(cond.value,func,depth+1)
-        elseif (cond.type=="AND" or cond.type=="OR") and type(cond.value)=="table" then
-            for _,subcond in pairs(cond.value) do updateConditionData(subcond,func,depth+1) end
-        else func(cond) end
+    local function updateConditionData(cond, func, depth)
+        depth = depth or 0
+        if type(cond) ~= "table" or depth > 64 then return end
+
+        if cond.type == "NOT" and type(cond.value) == "table" then
+            updateConditionData(cond.value, func, depth + 1)
+        elseif (cond.type == "AND" or cond.type == "OR") and type(cond.value) == "table" then
+            for _, subcond in pairs(cond.value) do
+                updateConditionData(subcond, func, depth + 1)
+            end
+        else
+            func(cond)
+        end
     end
+
     local function upgradeBody(rotation)
-        local tree=addon.RotationData.IndexRotationSteps(rotation,{allowMissingIds=true})
+        local tree = addon.RotationData.IndexRotationSteps(rotation, { allowMissingIds = true })
+
         -- Malformed data is retained for inspection, never flattened or
         -- partially upgraded by a best-effort walk over unknown structure.
-        if tree then for _,row in ipairs(tree.rows) do
-            local step=row.step
-            if rot_func and step.type~="branch" then rot_func(step,row.section=="cooldowns") end
-            if cond_func and step.conditions then updateConditionData(step.conditions,cond_func) end
-        end end
+        if tree then
+            for _, row in ipairs(tree.rows) do
+                local step = row.step
+                if rot_func and step.type ~= "branch" then rot_func(step, row.section == "cooldowns") end
+                if cond_func and step.conditions then updateConditionData(step.conditions, cond_func) end
+            end
+        end
     end
+
     if scoped then
         if opts and opts.activeOnly then return end
         eachSavedBody(upgradeBody)
         return
     end
-    for _,rotations in pairs(addon.db.profile.rotations) do
-        for _,rotation in pairs(rotations) do upgradeBody(rotation) end
+
+    for _, rotations in pairs(addon.db.profile.rotations) do
+        for _, rotation in pairs(rotations) do
+            upgradeBody(rotation)
+        end
     end
 end
 
 local function upgradeTexturesToEffects()
     if addon.db.global.textures ~= nil then
         addon.db.global.effects = addon.db.global.textures
+
         for _, ent in pairs(addon.db.global.effects) do
             ent["type"] = "texture"
         end
+
         addon.db.global.textures = nil
     end
+
     if addon.db.profile.overlay ~= nil then
         addon.db.profile.effect = addon.db.profile.overlay
         addon.db.profile.overlay = nil
@@ -338,11 +392,15 @@ local function upgradeTexturesToEffects()
 end
 
 local function upgradeGlobalRotationstoPlayer()
-    if addon.InitializeScopedRotationStorage or addon.db.profile.rotationStore~=nil then return end
+    if addon.InitializeScopedRotationStorage or addon.db.profile.rotationStore ~= nil then return end
+
     if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
         -- Upgrade from TBC -> Wrath
-        if (LE_EXPANSION_LEVEL_CURRENT >= 2) and
-            addon.db.profile.rotations ~= nil and addon.db.profile.rotations[0] ~= nil then
+        if
+            (LE_EXPANSION_LEVEL_CURRENT >= 2)
+            and addon.db.profile.rotations ~= nil
+            and addon.db.profile.rotations[0] ~= nil
+        then
             local rot = addon.db.profile.rotations[0]
             addon.db.profile.rotations = {}
             addon.db.profile.rotations[1] = rot
@@ -351,55 +409,84 @@ local function upgradeGlobalRotationstoPlayer()
 end
 
 local function upgradeItemsToItemSets()
-    updateRotationData(function(rot)
-        if rot.type == "item" and (type(rot.action) == "number" or (type(rot.action) == "string" and
-                not string.match(rot.action, "%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x"))) then
-            rot.action = { rot.action }
-        end
-    end, function(cond)
-        if cond.type == "EQUIPPED" or cond.type == "CARRYING" or
-                cond.type == "ITEM" or cond.type == "ITEM_COOLDOWN" or
-                cond.type == "ITEM_RANGE" then
-            if type(cond.item) == "number" or (type(cond.item) == "string" and
-                    not string.match(cond.item, "%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x")) then
-                cond.item = { cond.item }
+    updateRotationData(
+        function(rot)
+            if
+                rot.type == "item"
+                and (type(rot.action) == "number"
+                    or (type(rot.action) == "string"
+                        and not string.match(
+                            rot.action,
+                            "%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x"
+                        )))
+            then
+                rot.action = { rot.action }
             end
-        end
-    end)
-end
-
-local function cacheItems()
-    updateRotationData(function(rot)
-        if rot.type == "item" and rot.action ~= nil and type(rot.action) == "table" then
-            for _,item in pairs(rot.action) do
-                addon.Platform:GetItemDisplayInfo(item)
-            end
-        end
-    end, function(cond)
-        if cond.type == "EQUIPPED" or cond.type == "CARRYING" or
-                cond.type == "ITEM" or cond.type == "ITEM_COOLDOWN" or
-                cond.type == "ITEM_RANGE" then
-            if cond.item ~= nil and type(cond.item) == "table" then
-                for _,item in pairs(cond.item) do
-                    addon.Platform:GetItemDisplayInfo(item)
+        end,
+        function(cond)
+            if
+                cond.type == "EQUIPPED"
+                or cond.type == "CARRYING"
+                or cond.type == "ITEM"
+                or cond.type == "ITEM_COOLDOWN"
+                or cond.type == "ITEM_RANGE"
+            then
+                if
+                    type(cond.item) == "number"
+                    or (type(cond.item) == "string"
+                        and not string.match(
+                            cond.item,
+                            "%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x"
+                        ))
+                then
+                    cond.item = { cond.item }
                 end
             end
         end
-    end,{activeOnly=true})
+    )
+end
+
+local function cacheItems()
+    updateRotationData(
+        function(rot)
+            if rot.type == "item" and rot.action ~= nil and type(rot.action) == "table" then
+                for _, item in pairs(rot.action) do
+                    addon.Platform:GetItemDisplayInfo(item)
+                end
+            end
+        end,
+        function(cond)
+            if
+                cond.type == "EQUIPPED"
+                or cond.type == "CARRYING"
+                or cond.type == "ITEM"
+                or cond.type == "ITEM_COOLDOWN"
+                or cond.type == "ITEM_RANGE"
+            then
+                if cond.item ~= nil and type(cond.item) == "table" then
+                    for _, item in pairs(cond.item) do
+                        addon.Platform:GetItemDisplayInfo(item)
+                    end
+                end
+            end
+        end,
+        { activeOnly = true }
+    )
 
     if addon.db.global.itemsets then
-        for _,itemset in pairs(addon.db.global.itemsets) do
+        for _, itemset in pairs(addon.db.global.itemsets) do
             if itemset.items ~= nil then
-                for _,item in pairs(itemset.items) do
+                for _, item in pairs(itemset.items) do
                     addon.Platform:GetItemDisplayInfo(item)
                 end
             end
         end
     end
+
     if addon.db.profile.itemsets then
-        for _,itemset in pairs(addon.db.profile.itemsets) do
+        for _, itemset in pairs(addon.db.profile.itemsets) do
             if itemset.items ~= nil then
-                for _,item in pairs(itemset.items) do
+                for _, item in pairs(itemset.items) do
                     addon.Platform:GetItemDisplayInfo(item)
                 end
             end
@@ -408,7 +495,7 @@ local function cacheItems()
 end
 
 local function upgradeAddIDToAnnounce()
-    for _,announce in pairs(addon.db.profile.announces) do
+    for _, announce in pairs(addon.db.profile.announces) do
         if announce.id == nil then
             announce.id = addon:uuid()
         end
@@ -423,6 +510,7 @@ local function upgradeLogLevel()
             addon.db.profile.loglevel = 3
         end
     end
+
     addon.db.profile.debug = nil
     addon.db.profile.verbose = nil
 end
@@ -430,24 +518,31 @@ end
 local function upgradeEffectsToGUID()
     local global = addon.db.global
     local name2idx = {}
+
     if #global.effects > 0 then
         local new_effects = {}
-        for _,effect in ipairs(global.effects) do
+
+        for _, effect in ipairs(global.effects) do
             local uuid = addon:uuid()
+
             for k, v in pairs(default_effects) do
                 if effect.name == v.name then
                     uuid = k
                 end
             end
+
             new_effects[uuid] = effect
         end
+
         global.effects = new_effects
     end
-    for k,v in pairs(global.effects) do
+
+    for k, v in pairs(global.effects) do
         if v.name and #v.name > 0 then
             name2idx[v.name] = k
         end
     end
+
     if global.effects[addon.db.profile.effect] == nil then
         addon.db.profile.effect = name2idx[addon.db.profile.effect]
     end
@@ -457,7 +552,9 @@ local function upgradeEffectsToGUID()
             -- An archived body keeps an effect it cannot resolve (it is
             -- evidence, and the editor reports it); only a name that maps
             -- to a known effect is rewritten.
-            if name2idx[rot.effect] ~= nil or not addon.InitializeScopedRotationStorage then rot.effect = name2idx[rot.effect] end
+            if name2idx[rot.effect] ~= nil or not addon.InitializeScopedRotationStorage then
+                rot.effect = name2idx[rot.effect]
+            end
         end
     end)
 
@@ -469,13 +566,14 @@ local function upgradeEffectsToGUID()
             button2 = NO,
             OnAccept = function()
                 addon.db.global.effects = deepcopy(default_effects)
-                if invalidateDependencies then invalidateDependencies(addon,'effect',nil) end
+                if invalidateDependencies then invalidateDependencies(addon, 'effect', nil) end
             end,
             showAlert = 1,
             timeout = 0,
             whileDead = 1,
-            hideOnEscape = 1
+            hideOnEscape = 1,
         }
+
         StaticPopup_Show("ROTATIONMASTER_RESET_EFFECTS")
     end
 end
@@ -485,23 +583,26 @@ local function upgradePetSpellToAnySpell()
     -- sets it before this runs. Archived bodies are always converted; the
     -- conversion changes nothing that is already current.
     if addon.InitializeScopedRotationStorage or addon.db.profile.version == nil or addon.db.profile.version < 1 then
-        updateRotationData(function(rot)
-            if rot.type ~= nil and rot.type == (BOOKTYPE_PET or "pet") then
-                rot.type = "any"
+        updateRotationData(
+            function(rot)
+                if rot.type ~= nil and rot.type == (BOOKTYPE_PET or "pet") then
+                    rot.type = "any"
+                end
+            end,
+            function(cond)
+                if cond.type == "PETSPELL_AVAIL" then
+                    cond.type = "ANYSPELL_AVAIL"
+                elseif cond.type == "PETSPELL_RANGE" then
+                    cond.type = "ANYSPELL_RANGE"
+                elseif cond.type == "PETSPELL_COOLDOWN" then
+                    cond.type = "ANYSPELL_COOLDOWN"
+                elseif cond.type == "PETSPELL_REMAIN" then
+                    cond.type = "ANYSPELL_REMAIN"
+                elseif cond.type == "PETSPELL_CHARGES" then
+                    cond.type = "ANYSPELL_CHARGES"
+                end
             end
-        end, function(cond)
-            if cond.type == "PETSPELL_AVAIL" then
-                cond.type = "ANYSPELL_AVAIL"
-            elseif cond.type == "PETSPELL_RANGE" then
-                cond.type = "ANYSPELL_RANGE"
-            elseif cond.type == "PETSPELL_COOLDOWN" then
-                cond.type = "ANYSPELL_COOLDOWN"
-            elseif cond.type == "PETSPELL_REMAIN" then
-                cond.type = "ANYSPELL_REMAIN"
-            elseif cond.type == "PETSPELL_CHARGES" then
-                cond.type = "ANYSPELL_CHARGES"
-            end
-        end)
+        )
     end
 end
 
@@ -524,10 +625,11 @@ end
 local function upgradeBindingSlots()
     -- Upgrade the exact store AceDB opened; folder casing is not persistence identity.
     local DB = addon.db.sv
+
     if DB.char then
-        for _,char in pairs(DB.char) do
+        for _, char in pairs(DB.char) do
             if char.bindings then
-                for id,val in pairs(char.bindings) do
+                for id, val in pairs(char.bindings) do
                     if type(val) == "number" then
                         char.bindings[id] = { val }
                     end
@@ -544,24 +646,35 @@ function addon:getDefaultItemset(id)
 end
 
 local function moveProfileItems()
-    if addon.InitializeScopedRotationStorage or addon.db.profile.rotationStore~=nil then
+    if addon.InitializeScopedRotationStorage or addon.db.profile.rotationStore ~= nil then
         -- Rotation ownership migration never chooses a different profile or
         -- consumes char archives. Keep the unrelated old settings migration
         -- narrow: only an empty active-profile destination may receive data.
-        for _,kind in ipairs({'itemsets','announces'}) do
-            local source=addon.db.char[kind]
-            if source~=nil and (type(source)~='table' or getmetatable(source)~=nil or next(source)~=nil) then
-                local destination=addon.db.profile[kind]
-                local copied=addon.RotationData.CopyData(source)
-                if type(copied)=='table' and (destination==nil or type(destination)=='table' and next(destination)==nil) then
-                    addon.db.profile[kind]=copied;addon.db.char[kind]=nil
+        for _, kind in ipairs({ 'itemsets', 'announces' }) do
+            local source = addon.db.char[kind]
+
+            if source ~= nil and (type(source) ~= 'table' or getmetatable(source) ~= nil or next(source) ~= nil) then
+                local destination = addon.db.profile[kind]
+                local copied = addon.RotationData.CopyData(source)
+
+                if
+                    type(copied) == 'table'
+                    and (destination == nil or type(destination) == 'table' and next(destination) == nil)
+                then
+                    addon.db.profile[kind] = copied
+                    addon.db.char[kind] = nil
                 elseif addon.warn then
-                    addon:warn(L['Legacy character %s data conflicts with the active profile; character data preserved.'],kind)
+                    addon:warn(
+                        L['Legacy character %s data conflicts with the active profile; character data preserved.'],
+                        kind
+                    )
                 end
             end
         end
+
         return
     end
+
     if not addon.db.profile.version or addon.db.profile.version < 2 then
         local rotations = addon.db.char.rotations
         addon.db.char.rotations = nil
@@ -570,15 +683,16 @@ local function moveProfileItems()
         local announces = addon.db.char.announces
         addon.db.char.announces = nil
 
-        local notempty = ((rotations and next(rotations) ~= nil) or
-                          (itemsets and next(itemsets) ~= nil) or
-                          (announces and next(announces) ~= nil))
+        local notempty = ((rotations and next(rotations) ~= nil)
+            or (itemsets and next(itemsets) ~= nil)
+            or (announces and next(announces) ~= nil))
 
         if addon.db:GetCurrentProfile() == DEFAULT then
             addon.db:SetProfile(classKey)
-            local modified = ((addon.db.profile.rotations and next(addon.db.profile.rotations) ~= nil) or
-                              (addon.db.profile.itemsets and next(addon.db.profile.itemsets) ~= nil) or
-                              (addon.db.profile.announces and next(addon.db.profile.announces) ~= nil))
+
+            local modified = ((addon.db.profile.rotations and next(addon.db.profile.rotations) ~= nil)
+                or (addon.db.profile.itemsets and next(addon.db.profile.itemsets) ~= nil)
+                or (addon.db.profile.announces and next(addon.db.profile.announces) ~= nil))
 
             if modified then
                 if notempty then
@@ -621,44 +735,67 @@ end
 -- Keep indexed AceDB defaults stable: extending them recursively fills numeric
 -- holes in existing customized/reordered lists. Seed new predicates only when
 -- a profile is created or explicitly reset; copying a profile keeps its lists.
-function addon:InitializeTalentTreeConditions(_,db)
-    local profile=db.profile
+function addon:InitializeTalentTreeConditions(_, db)
+    local profile = db.profile
+
     local function append(list)
-        for _,tag in ipairs({'TALENT_TREE_POINTS','PRIMARY_TALENT_TREE'}) do
-            if not addon.Functions.values.isin(list,tag) then list[#list+1]=tag end
+        for _, tag in ipairs({ 'TALENT_TREE_POINTS', 'PRIMARY_TALENT_TREE' }) do
+            if not addon.Functions.values.isin(list, tag) then list[#list + 1] = tag end
         end
     end
+
     append(profile.switch_conditions)
-    for _,category in ipairs(profile.condition_groups) do
-        if category.id=='b8136123-2bda-4230-a77a-89ea2aed3a1a' then append(category.conditions)
-        elseif category.id=='8034819e-26f5-4f4e-9153-d8cab5e65f31' and not addon.Functions.values.isin(category.conditions,'SPELL_AUTOREPEAT') then
-            category.conditions[#category.conditions+1]='SPELL_AUTOREPEAT'
+
+    for _, category in ipairs(profile.condition_groups) do
+        if category.id == 'b8136123-2bda-4230-a77a-89ea2aed3a1a' then
+            append(category.conditions)
+        elseif
+            category.id == '8034819e-26f5-4f4e-9153-d8cab5e65f31'
+            and not addon.Functions.values.isin(category.conditions, 'SPELL_AUTOREPEAT')
+        then
+            category.conditions[#category.conditions + 1] = 'SPELL_AUTOREPEAT'
         end
     end
 end
 
 -- Optional picker preferences have no AceDB defaults: logout must preserve an
 -- explicit empty list. Only absent fields receive this cold, bounded seed.
-local announcementPreferenceOwner={}
-local defaultAnnouncementConditions={'AND','OR','NOT','COMBAT','GROUP','ENEMY','DEAD','FRIENDLY','LEVEL','SELF_LEVEL','PVP','ZONEPVP','ZONE','INSTANCE','OUTDOORS','STEALTHED','FORM','CLASS','CLASS_GROUP','CREATURE','CLASSIFICATION','PET','PET_NAME','ROLE'}
+local announcementPreferenceOwner = {}
+
+local defaultAnnouncementConditions = {
+    'AND', 'OR', 'NOT', 'COMBAT', 'GROUP', 'ENEMY', 'DEAD', 'FRIENDLY', 'LEVEL', 'SELF_LEVEL', 'PVP', 'ZONEPVP', 'ZONE',
+    'INSTANCE', 'OUTDOORS', 'STEALTHED', 'FORM', 'CLASS', 'CLASS_GROUP', 'CREATURE', 'CLASSIFICATION', 'PET',
+    'PET_NAME', 'ROLE'
+}
+
 local function seedAnnouncementPreferences(profile)
-    if type(profile)=='table' and rawget(profile,'announcement_conditions')==nil then
-        profile.announcement_conditions=deepcopy(defaultAnnouncementConditions)
+    if type(profile) == 'table' and rawget(profile, 'announcement_conditions') == nil then
+        profile.announcement_conditions = deepcopy(defaultAnnouncementConditions)
     end
 end
+
 function addon:InstallAnnouncementConditionPreferences()
-    local db=self.db
+    local db = self.db
     if not db then return end
-    if announcementPreferenceOwner.db~=db then
-        announcementPreferenceOwner.db=db
-        local function changed(_,currentDB)
-            if currentDB==addon.db and currentDB==announcementPreferenceOwner.db then seedAnnouncementPreferences(currentDB.profile) end
+
+    if announcementPreferenceOwner.db ~= db then
+        announcementPreferenceOwner.db = db
+
+        local function changed(_, currentDB)
+            if currentDB == addon.db and currentDB == announcementPreferenceOwner.db then
+                seedAnnouncementPreferences(currentDB.profile)
+            end
         end
-        for _,event in ipairs({'OnNewProfile','OnProfileChanged','OnProfileCopied','OnProfileReset'}) do
-            db.RegisterCallback(announcementPreferenceOwner,event,changed)
+
+        for _, event in ipairs({ 'OnNewProfile', 'OnProfileChanged', 'OnProfileCopied', 'OnProfileReset' }) do
+            db.RegisterCallback(announcementPreferenceOwner, event, changed)
         end
     end
-    for _,profile in pairs(db.sv and db.sv.profiles or {}) do seedAnnouncementPreferences(profile) end
+
+    for _, profile in pairs(db.sv and db.sv.profiles or {}) do
+        seedAnnouncementPreferences(profile)
+    end
+
     seedAnnouncementPreferences(db.profile)
 end
 
@@ -666,8 +803,8 @@ function addon:init()
     -- Before anything else touches db.profile: AceDB creates a new character's profile (and fires OnNewProfile) the first
     -- time it is read, and the seeders below read it, so a later registration never saw the first profile of a new
     -- character and its pickers lacked the tree conditions and auto-repeat.
-    self.db.RegisterCallback(self,'OnNewProfile','InitializeTalentTreeConditions')
-    self.db.RegisterCallback(self,'OnProfileReset','InitializeTalentTreeConditions')
+    self.db.RegisterCallback(self, 'OnNewProfile', 'InitializeTalentTreeConditions')
+    self.db.RegisterCallback(self, 'OnProfileReset', 'InitializeTalentTreeConditions')
     self:InstallUnitStateConditions(self.db)
     if self.InstallBossModConditions then self:InstallBossModConditions(self.db) end
     if self.InstallLoadoutConditions then self:InstallLoadoutConditions(self.db) end
@@ -676,7 +813,7 @@ function addon:init()
     self:InstallAnnouncementConditionPreferences()
     moveProfileItems()
 
-    for k,v in pairs(default_itemsets) do
+    for k, v in pairs(default_itemsets) do
         if addon.db.global.itemsets[k] ~= nil and not addon.db.global.itemsets[k].modified then
             addon.db.global.itemsets[k].items = deepcopy(v.items)
         end
@@ -697,9 +834,13 @@ function addon:init()
     upgradeBindingSlots()
 
     addon.db.char.version = CHAR_VERSION
-    if addon.db.profile.rotationStore~=nil then addon.db.profile.version=3
-    elseif not addon.InitializeScopedRotationStorage then addon.db.profile.version=PROFILE_VERSION end
-    addon.db.global.version = GLOBAL_VERSION
-    if invalidateDependencies then invalidateDependencies(addon,'all',nil) end
-end
 
+    if addon.db.profile.rotationStore ~= nil then
+        addon.db.profile.version = 3
+    elseif not addon.InitializeScopedRotationStorage then
+        addon.db.profile.version = PROFILE_VERSION
+    end
+
+    addon.db.global.version = GLOBAL_VERSION
+    if invalidateDependencies then invalidateDependencies(addon, 'all', nil) end
+end

@@ -5,12 +5,14 @@ local addon_name, addon = ...
 function addon:RegisterOptionsCategory(frame)
     if Settings and Settings.RegisterCanvasLayoutCategory then
         local category
+
         if frame.parent then
             category = Settings.RegisterCanvasLayoutSubcategory(Settings.GetCategory(frame.parent), frame, frame.name)
         else
             category = Settings.RegisterCanvasLayoutCategory(frame, frame.name)
             Settings.RegisterAddOnCategory(category)
         end
+
         frame.name = category.ID
     else
         InterfaceOptions_AddCategory(frame)

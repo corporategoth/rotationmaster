@@ -11,11 +11,9 @@ color = {
     BLACK = "|cFF000000",
     GRAY = "|cFF888888",
     RESET = "|r",
-
     DEBUG = "|cFF6E7B84",
     INFO = "|cFF7BC653",
     WARN = "|cFFB212B7",
     ANNOUNCE = "|cFFF8FC03",
-
     BLIZ_YELLOW = NORMAL_FONT_COLOR_CODE,
 }
