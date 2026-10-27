@@ -24,22 +24,36 @@ local HEX = 8
 -- The 32-bit hash tools/locales.py computes for the index (h = h * 31 + byte, modulo 2^32).
 local function keyHash(value)
     local h = 0
-    for i = 1, value:len() do h = (h * 31 + value:byte(i)) % 4294967296 end
+
+    for i = 1, value:len() do
+        h = (h * 31 + value:byte(i)) % 4294967296
+    end
+
     return h
 end
 
 local function owns(bundle, wanted)
     local keys, low, high = bundle.keys, 0, bundle.count - 1
+
     while low <= high do
         local middle = math.floor((low + high) / 2)
         local value = tonumber(keys:sub(middle * HEX + 1, middle * HEX + HEX), 16)
-        if value == wanted then return true elseif value < wanted then low = middle + 1 else high = middle - 1 end
+
+        if value == wanted then
+            return true
+        elseif value < wanted then
+            low = middle + 1
+        else
+            high = middle - 1
+        end
     end
+
     return false
 end
 
 local function ownerOf(english)
     local wanted = keyHash(english)
+
     for _, bundle in ipairs(bundles) do
         if owns(bundle, wanted) then return bundle end
     end
@@ -62,11 +76,13 @@ local function attach(bundle)
     local ok, loaded, reason = false, false, "no-loader"
     if type(load) == "function" then ok, loaded, reason = pcall(load, bundle.module) end
     local text = ok and ace:GetLocale(bundle.module, true) or nil
+
     if text then
         bundle.state, bundle.text = "loaded", text
         loadedTexts[#loadedTexts + 1] = text
         return true
     end
+
     bundle.state, bundle.reason = "failed", ok and (reason or loaded) or loaded
     return false
 end
@@ -78,7 +94,9 @@ setmetatable(L, {
                 local value = rawget(loadedTexts[i], key)
                 if value ~= nil then return value end
             end
+
             local bundle = ownerOf(key)
+
             if bundle then
                 if attach(bundle) then
                     local value = rawget(bundle.text, key)
@@ -89,6 +107,7 @@ setmetatable(L, {
                 end
             end
         end
+
         return reportMissing(self, key)
     end,
 })
@@ -98,6 +117,7 @@ function addon:LoadTextBundle(id)
     for _, bundle in ipairs(bundles) do
         if bundle.id == id then return attach(bundle) end
     end
+
     return false, "unknown-bundle"
 end
 
@@ -110,6 +130,10 @@ end
 --- The state of every bundle: { id = "idle" | "loaded" | "failed" }, for diagnostics and tests.
 function addon:GetTextBundleStates()
     local states = {}
-    for _, bundle in ipairs(bundles) do states[bundle.id] = bundle.state or "idle" end
+
+    for _, bundle in ipairs(bundles) do
+        states[bundle.id] = bundle.state or "idle"
+    end
+
     return states
 end

@@ -1,12 +1,12 @@
-local _,addon=...
+local _, addon = ...
 
-local function finite(platform,value)
+local function finite(platform, value)
     if not platform:CanReadValue(value) then return false,'restricted-value' end
     if type(value)~='number' or value~=value or value>=math.huge or value<=-math.huge then return false,'invalid-threat-count-number' end
     return true
 end
 
-local function readField(platform,object,key)
+local function readField(platform, object, key)
     if not platform:CanReadValue(object) then return nil,'restricted-value' end
     if type(object)~='table' then return nil,'invalid-unit-snapshot' end
     local ok,value=pcall(function() return object[key] end)
@@ -17,7 +17,7 @@ end
 
 -- Count only observed membership, using current facts for the same identity.
 -- Neither the snapshot nor the complete count is cached or changed here.
-function addon:GetConditionThreatCount(minimum,cache)
+function addon:GetConditionThreatCount(minimum, cache)
     local platform=self.Platform
     local policy=platform:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
@@ -71,26 +71,29 @@ end
 -- reads absent, a reused one is the unit now on that plate. Threat between the
 -- player and a nameplate is "generally not secret"
 -- (SecretWhenUnitThreatStateRestricted); a secret reading is unavailable.
-function addon:GetConditionNameplateThreatCount(minimum,cache)
-    local platform=self.Platform
-    local units,why=readField(platform,self,'nameplateUnits')
-    if why then return nil,why end
-    if type(units)~='table' then return nil,'unit-snapshot-unavailable' end
-    local observeThreat=platform.GetUnitThreatObservation
-    if type(observeThreat)~='function' then return nil,'missing-api' end
-    local count=0
+function addon:GetConditionNameplateThreatCount(minimum, cache)
+    local platform = self.Platform
+    local units, why = readField(platform, self, 'nameplateUnits')
+    if why then return nil, why end
+    if type(units) ~= 'table' then return nil, 'unit-snapshot-unavailable' end
+    local observeThreat = platform.GetUnitThreatObservation
+    if type(observeThreat) ~= 'function' then return nil, 'missing-api' end
+    local count = 0
+
     for unit in pairs(units) do
-        if not platform:CanReadValue(unit) then return nil,'restricted-value' end
-        if type(unit)~='string' or unit=='' then return nil,'invalid-unit-snapshot' end
-        local status,threatReason=addon.Functions.cache.getCached(cache,observeThreat,platform,unit)
-        if not platform:CanReadValue(status) then return nil,'restricted-value' end
-        if status==nil then return nil,threatReason or 'threat-data-unavailable' end
-        if status~=false then
-            local readable,problem=finite(platform,status)
-            if not readable then return nil,problem end
-            if status>=minimum then count=count+1 end
+        if not platform:CanReadValue(unit) then return nil, 'restricted-value' end
+        if type(unit) ~= 'string' or unit == '' then return nil, 'invalid-unit-snapshot' end
+        local status, threatReason = addon.Functions.cache.getCached(cache, observeThreat, platform, unit)
+        if not platform:CanReadValue(status) then return nil, 'restricted-value' end
+        if status == nil then return nil, threatReason or 'threat-data-unavailable' end
+
+        if status ~= false then
+            local readable, problem = finite(platform, status)
+            if not readable then return nil, problem end
+            if status >= minimum then count = count + 1 end
         end
     end
+
     return count
 end
 
