@@ -250,6 +250,16 @@ Combat, ranged slot, Season of Discovery runes) are listed in
 | `ZONE` | `GetZoneText`, `GetSubZoneText` | N | N | no annotation | n/a |
 | `ZONEPVP` | `C_PvP.GetZonePVPInfo` | N | N | no annotation | n/a |
 
+## Settings that read game data
+
+| Setting | APIs | Retail | Forever | Source | When a value is secret |
+|---|---|---|---|---|---|
+| Ignore Mana (`ignore_mana`) | `C_Spell.IsSpellUsable` (`usable`, `noMana`) | N | N | no annotation | a hidden answer is never accepted: the spell is skipped, with or without the option (the General help says so on these clients) |
+| Ignore Range (`ignore_range`) | none: the range read is skipped | n/a | n/a | n/a | nothing is read, so nothing can be secret; learned, usable, cooldown and conditions still apply |
+
+`IsUsableSpell` answers `false, true` when only the resource is missing (the pair action bars color blue); the option
+accepts that pair as well as a usable spell. Unverified in game on Retail and Forever.
+
 ## Event sources on restricted clients
 
 `main.lua` registers, under the restricted policy, only the events whose
