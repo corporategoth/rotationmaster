@@ -1017,6 +1017,9 @@ class Printer:
                 parts.append(flat(value))
             parts.append(text(')'))
             options.append(cat(*parts))
+        if len(items) > 1 and len(options) == 1 and all(item.value.kind in ('func', 'table') for item in items):
+            # Several function or table arguments (`wrap(function() ... end, function() ... end)`) share the call's lines.
+            options.append(cat(text('('), join(text(', '), values), text(')')))
         options.append(broken_soft)
         return Cond(options)
 
