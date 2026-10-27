@@ -1,12 +1,31 @@
+-- Optional adapter that embeds the released LuaWorkbench editor, debugger, completion and API knowledge inside RM's
+-- themed panes (docs/architecture/condition-authoring.md, "Optional advanced editing"). CreateLuaWorkbenchEngine builds
+-- an isolated engine from the vendored module factories (Libs/LuaWorkbench-Embed/modules.lua);
+-- CreateLuaWorkbenchControl wraps one in the editor control that UI/lua_editor.lua drives;
+-- DiscoverLuaEditorIntegrations registers it as the 'LuaWorkbench' provider.
+-- It must never use the installed LuaWorkbench addon's workspace, drafts, snippets or debugger: only a whitelist of
+-- scalar editor preferences is copied from it. Release and ResetLease must clear every buffer, panel and callback so a
+-- pooled engine keeps no source of the previous owner.
+-- Loaded in the code-authoring block of RotationMaster.toc, after UI/lua_debug_output.lua and before
+-- UI/lua_completion.lua, UI/line_numbers.lua and UI/lua_editor.lua.
+
 local addon_name, rm = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- ============================================================================
+-- Engine
+-- ============================================================================
+
+-- The order in which the vendored module factories run; each one extends the engine with its own table and may use the
+-- ones before it.
 local moduleOrder = {
     'BufferedPaste', 'LuaEditor', 'Analysis', 'LuaConsole', 'UI', 'Search', 'Organization', 'Helpers', 'Navigation',
     'DebugProbe', 'DebugCompiler', 'Debugger', 'DebugUI', 'APIHelp', 'KnowledgeBase', 'Inspector', 'Autocomplete',
     'EditorActions', 'Snippets', 'Automation'
 }
 
+-- Copies the whitelisted boolean and number editor options (autocomplete, indentation, output limit, ...) from the
+-- installed LuaWorkbench addon, if any. Nothing else crosses over, and the result is a fresh table.
 local function editorPreferences()
     local installed = type(_G.LuaWorkbench) == 'table' and _G.LuaWorkbench.db
     local source = type(installed) == 'table' and type(installed.options) == 'table' and installed.options or {}
@@ -46,10 +65,15 @@ local function cleanup()
     return attempt, finish
 end
 
+-- Stand-in for an owner "valid" callback once the control is released: always false.
 local function inactive()
     return false
 end
 
+-- Builds an isolated embedded engine and returns it, or nil and 'missing-editor-module:<name>' when a vendored module
+-- is absent. options: id and name label the workspace; environment, status, show, help and navigate connect the engine
+-- to its owner; limited builds the reduced editor used for completion only (no API event subscription). The engine has
+-- its own in-memory workspace and never persists anything.
 function rm:CreateLuaWorkbenchEngine(options)
     options = options or {}
     -- Only documented-looking scalar preferences cross this boundary. Never use
@@ -75,29 +99,35 @@ function rm:CreateLuaWorkbenchEngine(options)
     -- Use upstream's own translations rather than translating its UI in RM.
     self.LuaWorkbenchModules.Localization(addon_name, engine)
 
+    -- Passes the console status line to the owner callback, if one was given.
     function W:UpdateStatus()
         if options.status then options.status(engine.Query.Console.statusText, engine.Query.Console.statusFailed) end
     end
 
+    -- Normalizes Windows line endings so stored and edited source compare equal.
     function W:NormalizeSource(text)
         return (text or ''):gsub('\r\n', '\n')
     end
 
+    -- Embedded engines keep source in memory only; this returns the normalized text instead of saving it.
     function W:StoreSource(text)
         return self:NormalizeSource(text)
     end
 
+    -- True when the draft for snippet `id` differs from the saved snippet.
     function W:IsSnippetDirty(id)
         local draft, saved = self.db.drafts[id], self.db.snippets[id]
         return draft and (not saved or draft.source ~= saved.source) or false
     end
 
+    -- Records the console buffer as the current draft and refreshes the dirty flag and status line.
     function W:Capture()
         self.db.drafts[self.current] = { name = self.currentName, source = engine.Query.Console.source }
         self.dirty = self:IsSnippetDirty(self.current)
         self:UpdateStatus()
     end
 
+    -- Hides every engine-owned panel, tooltip and menu except `except`, and cancels object picking.
     function W:HidePanels(except)
         if engine.Inspector then engine.Inspector:StopPicking() end
 
@@ -113,23 +143,28 @@ function rm:CreateLuaWorkbenchEngine(options)
         if self.contextMenu then self.contextMenu:Hide() end
     end
 
+    -- Asks the owner to switch to another snippet or callback (options.navigate); false when it cannot.
     function W:Select(id)
         if options.navigate then return options.navigate(id) end
         return false
     end
 
+    -- Asks the owner to bring the editor window forward.
     function W:Show()
         if options.show then options.show() end
     end
 
+    -- Asks the owner to open the editor help.
     function W:ShowHelp()
         if options.help then options.help() end
     end
 
+    -- Re-lays out the control that owns this engine.
     function W:Layout()
         if engine.control then engine.control:Layout() end
     end
 
+    -- Offers a key to the debugger shortcuts first, then to navigation; true if either used it.
     function W:RunShortcut(key)
         if engine.DebugUI:Shortcut(key) then return true end
         if engine.Navigation:Shortcut(key) then return true end
@@ -144,6 +179,8 @@ function rm:CreateLuaWorkbenchEngine(options)
 
     local make = engine.Debugger.MakeEnvironment
 
+    -- Extends the debugger's sandbox with the owner's environment (addon, L, bindings). Parameter names of the running
+    -- callback resolve to nil rather than to a global of the same name.
     function engine.Debugger:MakeEnvironment(...)
         local environment = make(self, ...)
 
@@ -169,6 +206,8 @@ function rm:CreateLuaWorkbenchEngine(options)
     local eventLease
     local stopDebugger = engine.Debugger.Stop
 
+    -- Takes the engine lease: reloads the editor preferences and, for the full editor, subscribes the API-docs frame to
+    -- PLAYER_REGEN_ENABLED under a lease so a released engine ignores late events. Does nothing if already held.
     function engine:Acquire()
         if self.closing then error('editor-release-in-progress', 0) end
         if self.released == false then return end
@@ -190,10 +229,13 @@ function rm:CreateLuaWorkbenchEngine(options)
     engine:Acquire()
     local refresh = engine.Query.Console.Refresh
 
+    -- Ignores console refreshes after release.
     function engine.Query.Console:Refresh(...)
         if not engine.released then return refresh(self, ...) end
     end
 
+    -- Stops the debugger and probe, hides popups, unsubscribes events and detaches the editor input. Every step runs
+    -- even if an earlier one fails; the first failure is raised at the end.
     function engine:Release()
         if self.released then return end
         self.released = true
@@ -227,6 +269,9 @@ function rm:CreateLuaWorkbenchEngine(options)
         finish()
     end
 
+    -- Empties everything a previous owner left in the engine (source, symbols, caches, breakpoints, debugger and
+    -- inspector state, snippets, panels) so the pooled engine can be reused. Text widgets are cleared without emitting
+    -- live change events. Raises the first failure after finishing the reset.
     function engine:ResetLease()
         self.released = true
         eventLease = nil
@@ -332,6 +377,8 @@ function rm:CreateLuaWorkbenchEngine(options)
             attempt(widget.SetText, widget, '')
         end
 
+        -- Clears an editor input record: its text widgets and every cached field except the overlay, caret and active
+        -- flag.
         local function clearInput(value)
             if not value then return end
             clearText(value.editBox)
@@ -415,6 +462,14 @@ function rm:CreateLuaWorkbenchEngine(options)
     return engine
 end
 
+-- ============================================================================
+-- Editor control
+-- ============================================================================
+
+-- Builds the LuaWorkbench-backed editor control inside `parent` and returns it. `changed(text)` reports user edits and
+-- `valid()` says whether the owner is live. The control has the editor interface of UI/lua_editor.lua (GetText,
+-- SetText, SetReadOnly, SetContext, SetCloseHandler, Acquire, Release) plus Run, Debug and the test-arguments box, and
+-- lays out the debugger toolbar and terminal.
 function rm:CreateLuaWorkbenchControl(parent, changed, valid)
     local frame = CreateFrame('Frame', nil, parent)
     frame:SetSize(600, 300)
@@ -502,12 +557,14 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
     UI.colors.hover = { .15, .17, .18, 1 }
     local baseEditor = UI.Editor
 
+    -- Builds the upstream editor input and switches it to the monospace font RM ships.
     function UI:Editor(owner, label, readonly)
         local input = baseEditor(self, owner, label, readonly)
         input.editBox:SetFont('Interface\\AddOns\\' .. addon_name .. '\\Fonts\\Inconsolata-Regular.ttf', 12, '')
         return input
     end
 
+    -- Uses RM's themed scroll frame instead of the upstream one.
     function UI:Scroll(owner)
         local scroll = rm:CreateWorkbenchScrollFrame(owner)
         scroll.bar = scroll.workbenchBar
@@ -553,12 +610,14 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
     c.output:SetPoint('RIGHT', c.knowledge, 'LEFT', -4, 0)
     c.output.tooltip = L['View and copy full debugger output and errors.']
 
+    -- Opens the copyable Output window with printed text, terminal evaluations and full errors.
     function c:ShowDebugOutput()
         return rm:ShowLuaDebugOutput(self)
     end
 
     rm:SetUIScript(c.output, 'OnClick', function() c:ShowDebugOutput() end)
 
+    -- Turns an error value into text for the Output report. A secret value is shown as "<secret>" and never inspected.
     local function fullError(value)
         if issecretvalue and issecretvalue(value) then return '<secret>' end
         local ok, text = pcall(tostring, value)
@@ -567,6 +626,7 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
 
     local fail = engine.Debugger.Fail
 
+    -- Remembers the full error text with its line for the Output window before the debugger handles the failure.
     function engine.Debugger:Fail(value)
         c.debugError = fullError(value)
             .. (self.line and '\n' .. tostring(W.current) .. ':' .. tostring(self.line) or '')
@@ -576,11 +636,13 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
 
     local report = C.ReportError
 
+    -- Remembers the full error text and stack for the Output window before the console reports it.
     function C:ReportError(value, stack)
         c.debugError = fullError(value) .. (stack and '\n' .. fullError(stack) or '')
         return report(self, value, stack)
     end
 
+    -- Closes the preview surface a widget or help callback is being run against, if one is open.
     function c:CloseDebugSurface()
         if self.debugSurface then
             self.debugSurface:Close()
@@ -590,12 +652,15 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
 
     local stop = engine.Debugger.Stop
 
+    -- Stops the debugger, and closes the preview surface unless a debug session is just being started.
     function engine.Debugger:Stop()
         local result = stop(self)
         if not c.startingDebug then c:CloseDebugSurface() end
         return result
     end
 
+    -- Calls `callback` under pcall; when a preview surface is open, widgets the callback creates are guarded and
+    -- observed so they belong to that surface. Returns pcall results.
     function c:InvokeWithSurface(callback, ...)
         local surface = self.debugSurface
         if not surface then return pcall(callback, ...) end
@@ -604,15 +669,18 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
 
     local resume = engine.Debugger.Resume
 
+    -- Resumes a paused script through the surface-aware caller; an error becomes a debugger failure.
     function engine.Debugger:Resume(...)
         local ok, result = c:InvokeWithSurface(resume, self, ...)
         if not ok then self:Fail(result) end
     end
 
+    -- The toolbar Start button runs the control's own Debug.
     function engine.DebugUI:Start()
         return c:Debug()
     end
 
+    -- The debug dropdown: start, toggle a breakpoint on the cursor line, stop.
     function engine.DebugUI:Menu(owner)
         W:OpenMenu(owner, {
             { text = engine.L.debugStart, action = function() c:Debug() end },
@@ -626,6 +694,10 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
 
     rm:SetUIScript(W.debugButton, 'OnClick', function() c:Debug() end)
 
+    -- Common first step of Run and Debug. Builds the argument list and names for the current callback (from the Test
+    -- values for a condition, from the Test arguments box for a function), rebuilds the private bindings the live
+    -- compiler would give it, and loads them into the control's environment. Returns arguments, names, or false after
+    -- setting a status message. Only the generated binding prelude runs here; user code waits for Run or Debug.
     function c:PrepareExecution()
         if self.released or not valid() then return false end
         engine.Debugger:Stop()
@@ -793,6 +865,8 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
 
     local startInvocation = engine.Debugger.StartInvocation
 
+    -- Supplies only the variadic tail as the chunk arguments, since named parameters already live in the prepared
+    -- environment.
     function engine.Debugger:StartInvocation(item)
         -- Named parameters live in the prepared environment. A chunk's `...`
         -- must contain only the declared variadic tail, not those parameters.
@@ -800,6 +874,8 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
         return startInvocation(self, item)
     end
 
+    -- Starts a debugger session on the current buffer with the prepared arguments. Returns the session result, or false
+    -- after reporting why it could not start.
     function c:Debug()
         local arguments, names = self:PrepareExecution()
         if not arguments then return false end
@@ -834,6 +910,9 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
         return result
     end
 
+    -- Runs the current buffer once without debugging: compiles it, wraps it in a function with the callback parameters,
+    -- runs it in the prepared environment with print and dump going to Output, then shows returns and the status. Never
+    -- applies the source or replaces the live callback.
     function c:Run()
         if self.released or not valid() then return false end
         -- Compile the standalone buffer before creating render resources or
@@ -934,11 +1013,14 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
 
     local updateLabel = C.UpdateEditorLabel
 
+    -- Hides the upstream editor label, which RM does not use.
     function C:UpdateEditorLabel()
         updateLabel(self)
         input.label:Hide()
     end
 
+    -- Updates the Run and Debug tooltips to say when the Test values must be set first. The buttons stay enabled so the
+    -- click can explain the missing prerequisite.
     function c:UpdateDebugAvailability()
         local owner = self.context.testOwner
         local state = owner and owner.conditionTestState
@@ -966,10 +1048,13 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
         end
     end
 
+    -- True when two sizes differ by more than a tenth of a pixel; smaller differences are rounding noise.
     local function differs(current, wanted)
         return math.abs(current - wanted) > .1
     end
 
+    -- Places the debugger toolbar, terminal dock and editor area for the control size and debugger state. Returns true
+    -- when the editor area moved.
     function engine.DebugUI:Layout()
         if not self.toolbar then return end
         local active = engine.Debugger.armed == true
@@ -1014,6 +1099,8 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
         return changed
     end
 
+    -- Sizes the input to the control and lays out the debugger, gutter and test arguments. Re-entrant calls and calls
+    -- with unchanged sizes do almost nothing.
     function c:Layout()
         if self.released or self.layingOut then return end
         self.layingOut = true
@@ -1069,10 +1156,12 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
         if not c.setting and changed then changed(text) end
     end
 
+    -- The current buffer text.
     function c:GetText()
         return input:GetText()
     end
 
+    -- Replaces the buffer without reporting a user change; stops a running debug session first.
     function c:SetText(text)
         if self.released then return end
         self.setting = true
@@ -1085,6 +1174,7 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
         self.setting = false
     end
 
+    -- Switches between editable and read-only (the EditBox is disabled when read-only).
     function c:SetReadOnly(value)
         input.readonly = value == true
 
@@ -1096,10 +1186,13 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
         end
     end
 
+    -- Stores the handler called with `mouse` true on right click, false on Escape.
     function c:SetCloseHandler(callback)
         self.closeRequested = callback
     end
 
+    -- Binds the control to a callback or function: the symbols, the workspace id and name, and the default test
+    -- arguments. Does nothing when the context signature and function registry revision are unchanged.
     function c:SetContext(context)
         self.context = context or {}
         local source = self.context.source or {}
@@ -1136,6 +1229,8 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
     local pendingPaintElapsed = 0
     local attachMouseUp
 
+    -- Takes a pooled control for a new owner: installs the owner callbacks and, if it was released, reacquires the
+    -- engine, reattaches the editor, gutter and API help and lays the control out again.
     function c:Acquire(callback, ownerValid)
         if self.closing then error('editor-release-in-progress', 0) end
         changed, valid = callback, ownerValid
@@ -1165,6 +1260,9 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
         self:Layout()
     end
 
+    -- Returns the control to the pool: drops the owner callbacks and context, releases the engine and gutter, resets
+    -- the engine lease and empties the test arguments, status and Output window. Every step runs even if one fails; the
+    -- first failure is raised at the end.
     function c:Release()
         if self.released then return end
         self.released = true
@@ -1285,6 +1383,8 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
         if c.outputWindow then c.outputWindow:Hide() end
     end)
 
+    -- Wraps the current OnMouseUp so Ctrl+left-click navigates to the symbol under the cursor. Must be called again
+    -- after anything replaces the script.
     attachMouseUp = function()
         local mouseUp = c.edit:GetScript('OnMouseUp')
 
@@ -1311,6 +1411,11 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
     return c
 end
 
+-- ============================================================================
+-- Provider registration
+-- ============================================================================
+
+-- True when the !!!LuaWorkbench addon is loaded and has published its global table. Uses only addon-loaded evidence.
 function rm:IsLuaWorkbenchIntegrationAvailable()
     local loaded = C_AddOns and C_AddOns.IsAddOnLoaded or IsAddOnLoaded
     if type(loaded) ~= 'function' then return false end
@@ -1318,9 +1423,13 @@ function rm:IsLuaWorkbenchIntegrationAvailable()
     return ok and value == true and type(_G.LuaWorkbench) == 'table'
 end
 
+-- The constructor defined above; the provider reports it so a replaced CreateLuaWorkbenchControl is not mistaken for
+-- RM's own and its control is not reused.
 local ownedWorkbenchControl = rm.CreateLuaWorkbenchControl
 local workbenchProvider
 
+-- Registers the 'LuaWorkbench' editor provider when the addon is available. Called each time the editor list or an
+-- editor is requested; registration is idempotent and builds nothing.
 function rm:DiscoverLuaEditorIntegrations()
     if not self.RegisterLuaEditorProvider then return end
 

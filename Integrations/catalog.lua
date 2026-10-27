@@ -1,5 +1,20 @@
+-- The fixed inventory of optional addons Rotation Master consumes or detects (docs/architecture/integrations.md), with
+-- each addon's publisher links and advertised edition scope. Read by the Integrations settings page
+-- (UI/settings_integrations.lua) through ListIntegrationStatus, GetIntegrationProjectLinks and
+-- GetIntegrationClientSupport, and by UI/lua_editor.lua when it resolves an editor.
+-- It never discovers or registers a provider, queries gameplay data or loads another addon: loaded state comes from
+-- bounded addon metadata and the cached status of integrations that already exist. The block between the GENERATED
+-- markers comes from tools/generate_integration_projects.py (input tools/integration_projects.json); never edit it by
+-- hand.
+-- Loaded in the UI and Integrations part of RotationMaster.toc, after Integrations/masque.lua and
+-- Integrations/encounters.lua.
+
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
+
+-- ============================================================================
+-- Supported addon identities
+-- ============================================================================
 
 -- Addon identities are explicit supported consumers, not every loaded addon or
 -- a list of bundled libraries. Listing never discovers/registers providers.
@@ -29,6 +44,10 @@ local providers = {
     { 'FarmingBar', 'FarmingBar', 'Optional action-bar mapping and glow support.' },
     { 'TotemTimers', 'TotemTimers', 'Optional action-bar mapping and glow support.' },
 }
+
+-- ============================================================================
+-- Release channels and edition scope
+-- ============================================================================
 
 -- Official release/source channels and edition evidence checked 2026-10-20;
 -- rows changed on 2026-10-25 were checked again that day.
@@ -82,6 +101,12 @@ local scopes={
 }
 -- END GENERATED INTEGRATION PROJECTS
 
+-- ============================================================================
+-- Project links and client support
+-- ============================================================================
+
+-- Returns the curated release and source links for addon `id` as a list of { label, url, note, primary, families },
+-- with localized text, and as a second value the localized addon name. An unknown id yields an empty list.
 function addon:GetIntegrationProjectLinks(id)
     local result = {}
 
@@ -115,6 +140,9 @@ end
 
 -- Advertised edition scope belongs to this exact addon identity. It is not
 -- native acceptance, and a different-folder successor cannot widen it.
+-- Returns 'supported', 'unsupported' or 'unknown' for addon `id` on the `client` record (family and interface number)
+-- from Platform:GetClientInfo. Only an explicit 'unsupported' hides a row; a missing, malformed or unlisted client or
+-- scope stays 'unknown' and visible. Progression clients are matched by branch (Wrath, Cataclysm, Mists).
 function addon:GetIntegrationClientSupport(id, client)
     local scope = scopes[id]
     if not scope or scope.unknown or type(client) ~= 'table' then return 'unknown' end
@@ -162,6 +190,12 @@ function addon:GetIntegrationClientSupport(id, client)
     return 'supported'
 end
 
+-- ============================================================================
+-- Live status of each integration
+-- ============================================================================
+
+-- Maps the status words of the Questie, boss-mod and Masque adapters to the connection states the settings page
+-- displays. Anything not listed shows as unknown.
 local questieStates = {
     available = 'connected',
     disabled = 'disabled',
@@ -173,6 +207,8 @@ local questieStates = {
     unavailable = 'unknown',
 }
 
+-- True when Platform:CanReadValue accepts `value`; every value that comes from another addon or a game API passes this
+-- before it is inspected.
 local function readable(value)
     local ok, accepted = pcall(function()
         local platform = addon.Platform
@@ -182,6 +218,9 @@ local function readable(value)
     return ok and accepted == true
 end
 
+-- Returns `value` as display text of at most `limit` bytes, or nil if it is unreadable or not a string. Keeps whole
+-- UTF-8 characters, doubles pipes so no color or texture escapes get through, and replaces control and malformed bytes
+-- with '?'. With `complete` set, returns nil instead of a truncated result.
 ---@param value any
 ---@param limit number
 local function text(value, limit, complete)
@@ -252,11 +291,14 @@ local function text(value, limit, complete)
     return table.concat(result)
 end
 
+-- Looks up the localized text for `key` and bounds it to `limit` bytes with text(); falls back to the key itself.
 local function display(key, limit)
     local ok, value = pcall(function() return L[key] end)
     return (ok and text(value, limit)) or text(key, limit) or key
 end
 
+-- Calls a game addon-metadata function (C_AddOns first, then the global) under pcall. Returns its first result, or nil
+-- if it is missing, raised or returned an unreadable value.
 local function native(name, ...)
     local args = { ... }
 
@@ -272,6 +314,9 @@ local function native(name, ...)
     return value
 end
 
+-- Returns the connection state of a loaded addon (connected, disabled, missing, incompatible, loaded or unknown) from
+-- the adapter named by `kind`: 'ecs' and 'editor' look for the objects they register, 'masque', 'encounters' and
+-- 'questie' read the adapter's cached status. For boss mods only the selected provider counts as connected.
 local function connection(kind, id)
     if kind == 'ecs' then
         local definitions = rawget(addon, 'conditionDefinitions')
@@ -334,6 +379,9 @@ local function connection(kind, id)
     return 'loaded'
 end
 
+-- Returns one row per supported addon for the settings page: { id, name, version, loaded, state, detail, projectURL }.
+-- version is metadata and may exist for an addon that is not loaded, so the page shows it only with loaded evidence; a
+-- false loaded flag never proves the addon is not installed. The Masque row also reports the library API level.
 function addon:ListIntegrationStatus()
     if not rawequal(self, addon) then return {} end
     local rows = {}

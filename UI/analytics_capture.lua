@@ -1,7 +1,22 @@
--- Volatile cast-receipt diagnostics, independently of editable settings drafts.
+-- Settings-side controls for the volatile cast-receipt capture (General > Debugging: Capture casts, Stop, Cast report,
+-- Clear). The capture itself is addon.Analytics.NativeCasts (Platform/analytics_casts.lua); this file only starts,
+-- stops, clears and reports it, independently of any pending settings draft, and owns no saved data.
+-- It captures the service and its five methods once at load and later refuses to call anything that was replaced, so a
+-- swapped-in service is never driven. The report is built from detached snapshot data and shows only allowlisted tokens
+-- and numbers, never raw error text, GUIDs or names.
+-- Loaded from the UI section of RotationMaster.toc, after Platform/analytics_casts.lua; used by
+-- UI/settings_general.lua, Help/general.lua and the disable path in Diagnostics/cpu.lua.
+
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local type, rawget, rawequal, pcall = type, rawget, rawequal, pcall
+
+-- ============================================================================
+-- Capture service ownership
+-- ============================================================================
+
+-- The capture service and the methods this file may call, captured once at load. owned() later verifies they are
+-- unchanged.
 local service = addon.Analytics and addon.Analytics.NativeCasts
 local methods = {}
 
@@ -9,8 +24,12 @@ for _, name in ipairs({ 'Start', 'Stop', 'Clear', 'GetStatus', 'GetSnapshot' }) 
     methods[name] = service and service[name]
 end
 
+-- generation counts retirements so an operation that finished after Clear or shutdown can tell its result is stale;
+-- lease is the running capture session; busy is the in-flight action.
 local generation, lease, busy = 0, nil, false
 
+-- True only while addon.Analytics.NativeCasts is still the service captured at load with all five methods unchanged.
+-- Every action checks it first.
 local function owned()
     if not service or not addon.Analytics or not rawequal(addon.Analytics.NativeCasts, service) then return false end
 
@@ -21,22 +40,32 @@ local function owned()
     return true
 end
 
+-- The standard text for every refused or unavailable action.
 local function available()
     return L['Cast capture is unavailable.']
 end
 
+-- Calls a captured service method under pcall. Returns its first result, or nil if it raised; the caller treats nil as
+-- failure.
 local function invoke(name, ...)
     local ok, value = pcall(methods[name], service, ...)
     if not ok then return nil end
     return value
 end
 
+-- Returns the capture phase ("starting", "running", "idle", ...) from GetStatus, or nil when the service is not owned
+-- or the status is malformed.
 local function phase()
     if not owned() then return nil end
     local status = invoke('GetStatus')
     return type(status) == 'table' and rawget(status, 'phase') or nil
 end
 
+-- ============================================================================
+-- Status for the settings page
+-- ============================================================================
+
+-- Returns the localized one-line status shown beside the capture buttons.
 function addon:GetCastCaptureStatusText()
     if not rawequal(self, addon) then return available() end
     local p = phase()
@@ -56,6 +85,8 @@ function addon:GetCastCaptureState(withReport)
     return running, type(invoke('GetSnapshot')) == 'table'
 end
 
+-- Ends the current capture generation and clears the service. Returns true when the service reported a clear. It only
+-- ever calls the originally captured Clear, so shutdown never runs a replacement.
 local function retire()
     generation = generation + 1
     lease = nil
@@ -70,26 +101,37 @@ local function retire()
     return false
 end
 
+-- Called when the addon is disabled (Diagnostics/cpu.lua, after the CPU and memory captures stop): drops any capture and
+-- returns whether the service cleared.
 function addon:ClearCastCaptureForDisable()
     if not rawequal(self, addon) then return false end
     return retire()
 end
 
+-- ============================================================================
+-- Report text
+-- ============================================================================
+
+-- Formats a finite number for the report; NaN, infinities and non-numbers become "?" so nothing unreadable is printed.
 local function number(v)
     if type(v) == 'number' and v == v and v ~= math.huge and v ~= -math.huge then return tostring(v) end
     return '?'
 end
 
+-- Formats client metadata for the report: numbers through number(), strings cut to 64 characters with control
+-- characters and pipes made safe, anything else as "unavailable".
 local function metadata(v)
     if type(v) == 'number' then return number(v) end
     if type(v) ~= 'string' then return L['unavailable'] end
     return (v:sub(1, 64):gsub('[%c]', ' '):gsub('|', '||'))
 end
 
+-- Returns `value` when it is in the allowed set, otherwise "unknown", so only fixed vocabulary reaches the report.
 local function token(value, allowed)
     return type(value) == 'string' and allowed[value] and value or 'unknown'
 end
 
+-- The fixed vocabularies the report accepts for cast kind, actor and receipt signal.
 local kinds = { ordinary = true, channel = true, autorepeat = true, unmodeled = true }
 local actors = { player = true, pet = true, other = true, unknown = true }
 local signals = { sent = true, start = true, success = true, failed = true, interrupted = true, stop = true }
@@ -128,6 +170,9 @@ local reasons = {
     ['decreasing-time'] = true,
 }
 
+-- Builds the copyable cast report text from a detached snapshot. Counts describe receipt rows only and are never
+-- scores; the detail list is capped at 200 rows with an omitted count, and the START witness block between its marker
+-- comments is checked by tests.
 local function report(snapshot)
     local client = type(snapshot.client) == 'table' and snapshot.client or {}
 
@@ -322,6 +367,13 @@ local function report(snapshot)
     return table.concat(lines, '\n')
 end
 
+-- ============================================================================
+-- Actions
+-- ============================================================================
+
+-- Runs "start", "stop", "report" or "clear" and returns ok, message, current. At most one action runs at a time, and an
+-- action that finishes after a Clear or shutdown reports not-current (third value false) so the caller does not act on
+-- it. A start lasts 30 seconds and survives closing the settings window.
 function addon:RunCastCaptureAction(action)
     if not rawequal(self, addon) then return false, available() end
 

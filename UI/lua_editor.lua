@@ -1,5 +1,19 @@
+-- The Lua source editor control for the custom condition and function editors. Owns the registry of editor providers
+-- (native EditBox, plain text, optional ones such as LuaWorkbench), picks one from the profile (lua_editor,
+-- lua_editor_disabled, lua_native_highlighting) and the client scope in Integrations/catalog.lua, and builds the
+-- control that callers drive (GetText, SetText, SetContext, SetReadOnly, Acquire, Release).
+-- A failing optional provider is replaced by the native editor with text, read-only state and context kept; nothing
+-- here may rely on an undocumented third-party global. Controls are pooled per source host and released, not destroyed,
+-- so Release must leave no callbacks, focus or scripts behind.
+-- Loaded after Integrations/lua_workbench.lua, UI/lua_completion.lua and UI/line_numbers.lua, which add completion and
+-- the gutter to the native control; callers are UI/custom_condition_editor.lua and UI/function_source_pane.lua.
+
 local addon_name, addon = ...
 local providers = {}
+
+-- ============================================================================
+-- Provider registry and selection
+-- ============================================================================
 
 -- Saved switches also cover registered extensions; unknown identifiers remain inert.
 local function editorDisabled(self, name)
@@ -8,6 +22,10 @@ local function editorDisabled(self, name)
     return name ~= 'auto' and name ~= 'plain' and type(disabled) == 'table' and disabled[name] == true
 end
 
+-- Maps the preferred provider ('auto', 'native', 'plain' or a registered name) to the provider that will really be
+-- used. A provider that is disabled, unsupported on this client or (for LuaWorkbench) not available falls back to
+-- 'native', and 'native' becomes 'plain' when syntax highlighting is switched off. Reads client information on this
+-- cold path only.
 local function resolveEditor(self, preferred)
     local client, clientRead
 
@@ -58,6 +76,8 @@ local function resolveEditor(self, preferred)
     return preferred
 end
 
+-- Returns the rows { value, text } for the editor preference dropdown: Automatic, Built In highlighting, Plain text,
+-- then every registered provider by name. Runs integration discovery first so late-loading editors appear.
 function addon:ListLuaEditorProviders()
     if self.DiscoverLuaEditorIntegrations then self:DiscoverLuaEditorIntegrations() end
     local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
@@ -83,12 +103,15 @@ function addon:ListLuaEditorProviders()
     return entries
 end
 
+-- Hides a frame inside a pcall; a foreign provider frame may be gone or not a real frame.
 local function hideFrame(frame)
     pcall(function()
         if frame and type(frame.Hide) == 'function' then frame:Hide() end
     end)
 end
 
+-- True when `frame` has the frame methods this file needs (SetParent, SetAllPoints, Hide), checked under pcall because
+-- it may come from a foreign provider.
 local function usableFrame(frame)
     local ok, result = pcall(function()
         return frame
@@ -119,12 +142,23 @@ function addon:RegisterLuaEditorProvider(name, create)
     return true
 end
 
+-- ============================================================================
+-- Editor construction
+-- ============================================================================
+
+-- Builds an editor control inside `parent` and returns it. `changed(text)` is called after user edits and `valid()`
+-- tells the control whether its owner is still live; `preferred` defaults to the profile's lua_editor. A registered
+-- provider is wrapped (with a fallback to the native editor if it fails at any point); otherwise the native EditBox
+-- editor is built, with syntax coloring, completion, diagnostics and the line-number gutter attached when their modules
+-- are loaded.
 function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
     if self.DiscoverLuaEditorIntegrations then self:DiscoverLuaEditorIntegrations() end
     preferred = preferred or self.db.profile.lua_editor or 'auto'
     preferred = resolveEditor(self, preferred)
 
     if preferred and providers[preferred] then
+        -- Points a callback lease at new owner callbacks. A non-function value is passed through unchanged so the
+        -- provider sees exactly what the caller supplied.
         local function setCallbacks(cell, callback, ownerValid)
             cell.changed, cell.valid = callback, ownerValid
             -- Preserve optional nil/false constructor arguments exactly.
@@ -132,6 +166,8 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
             cell.check = type(ownerValid) == 'function' and cell.forwardCheck or ownerValid
         end
 
+        -- Creates the lease the provider is given instead of the owner's callbacks. Retiring the lease (see retire)
+        -- silences a provider that keeps firing after the editor was released or swapped.
         local function callbackLease(callback, ownerValid)
             local cell = { active = true }
 
@@ -148,12 +184,15 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
             return cell
         end
 
+        -- Cuts a lease off from the owner: later change and valid calls from the provider are ignored.
         local function retire(cell)
             cell.active = false
             cell.changed = nil
             cell.valid = nil
         end
 
+        -- True when a provider returned something that honors the editor contract (a usable frame plus GetText, SetText
+        -- and Release).
         local function usable(control)
             return type(control) == 'table'
                 and usableFrame(control.frame)
@@ -162,6 +201,7 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
                 and type(control.Release) == 'function'
         end
 
+        -- Releases a provider control and hides its frame; errors from the foreign code are swallowed.
         local function release(control)
             if type(control) == 'table' then
                 if type(control.Release) == 'function' then pcall(control.Release, control) end
@@ -186,6 +226,9 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
                 preferredInner = control,
             }
 
+            -- Replaces a failing provider with the native editor. Retires the old lease, releases the old control and
+            -- moves text, read-only state, close handler and context across. Bails out if the wrapper was acquired or
+            -- released again meanwhile (c.operation changed).
             local function fallback()
                 local operation = c.operation
                 retire(lease)
@@ -216,6 +259,8 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
                 if c.context then nextControl:SetContext(c.context) end
             end
 
+            -- Reads the current text from the inner control, switching to the native editor if the provider fails to
+            -- answer.
             ---@return string
             function c:GetText()
                 local operation = self.operation
@@ -232,6 +277,8 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
                 return text
             end
 
+            -- Remembers the symbol context and forwards it to the inner control; a provider that errors triggers the
+            -- fallback.
             function c:SetContext(context)
                 self.context = context
                 local operation = self.operation
@@ -246,6 +293,8 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
                 end
             end
 
+            -- Forwards read-only mode. A provider that cannot be read-only is not allowed to stay for a read-only
+            -- source, so the native editor replaces it.
             function c:SetReadOnly(value)
                 self.readOnly = value == true
                 local operation = self.operation
@@ -260,6 +309,7 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
                 end
             end
 
+            -- Forwards the line-number gutter setting to providers that support it.
             function c:SetLineNumbers(visible)
                 local operation = self.operation
                 local current = self.inner
@@ -273,11 +323,13 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
                 end
             end
 
+            -- Stores the handler the owner wants called on Escape or right click and passes it to the inner control.
             function c:SetCloseHandler(callback)
                 self.closeRequested = callback
                 if self.inner.SetCloseHandler then self.inner:SetCloseHandler(callback) end
             end
 
+            -- Replaces the text, keeping a copy in lastText so a fallback or a re-acquire can restore it.
             function c:SetText(text)
                 self.lastText = text or ''
                 local operation = self.operation
@@ -288,6 +340,10 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
                 end
             end
 
+            -- Re-arms the wrapper for a new owner. A held wrapper only swaps callbacks; a released one rebuilds or
+            -- re-acquires its provider (a LuaWorkbench control is reused when its constructor is unchanged), restores
+            -- text, read-only state and context, and shows the control. c.operation guards against a second Acquire or
+            -- Release running during the calls.
             function c:Acquire(callback, ownerValid)
                 if self.closing then error('editor-release-in-progress', 0) end
                 changed, valid = callback, ownerValid
@@ -356,6 +412,8 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
                 if self.operation == operation and not self.released then self.inner.frame:Show() end
             end
 
+            -- Detaches the wrapper from its owner: retires the lease, drops the owner's callbacks and context, keeps
+            -- the last text and releases the inner control.
             function c:Release()
                 if self.released then return end
                 self.operation = {}
@@ -457,6 +515,9 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
         c.measure:SetFont('Interface\\AddOns\\' .. addon_name .. '\\Fonts\\Inconsolata-Regular.ttf', 12, '')
     end
 
+    -- Sizes the scroll frame, EditBox and backing frame for the current width and text height, reserving room for the
+    -- line-number gutter. `origin` only labels the call in the diagnostic counters; unchanged inputs are skipped
+    -- because rewriting equal geometry resets the caret.
     function c:Layout(origin)
         if self.layingOut then return end
         self.layingOut = true
@@ -582,6 +643,7 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
         self.layingOut = nil
     end
 
+    -- Returns the current source, decoded through the syntax module when coloring is on (its cached GetText can lag).
     ---@return string
     function c:GetText()
         -- FAIAP's cached GetText can lag a keystroke until its coloring update.
@@ -594,6 +656,7 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
         return self.edit:GetText() or ''
     end
 
+    -- Replaces the source without reporting a user change, and re-lays out the control.
     function c:SetText(text)
         self.setting = true
         self.edit:SetText(text or '')
@@ -602,11 +665,14 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
         self:Layout('set-text')
     end
 
+    -- Stores the symbol context and lets the completion module refresh its index from it.
     function c:SetContext(context)
         self.context = context
         if self.UpdateSymbols then self:UpdateSymbols(context) end
     end
 
+    -- Switches between editable and read-only. In read-only mode the EditBox is disabled and any edit that still
+    -- arrives is undone.
     function c:SetReadOnly(value)
         self.readOnly = value == true
         self.readOnlyText = self:GetText()
@@ -619,14 +685,18 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
         end
     end
 
+    -- Replaces the callback that receives the new text after a user edit.
     function c:SetChanged(callback)
         self.changed = callback
     end
 
+    -- Stores the handler called with `mouse` true on right click, false on Escape.
     function c:SetCloseHandler(callback)
         self.closeRequested = callback
     end
 
+    -- Takes a pooled control back for a new owner with fresh callbacks. Resets layout caches and read-only state,
+    -- re-enables syntax coloring and reattaches completion and the gutter, which Release removed.
     function c:Acquire(callback, ownerValid)
         if self.closing then error('editor-release-in-progress', 0) end
         self.changed, self.valid = callback, ownerValid
@@ -651,6 +721,9 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
         if self.RefreshLineNumbers then self:RefreshLineNumbers() end
     end
 
+    -- Returns the control to the pool: drops the owner's callbacks, detaches the gutter, completion and syntax
+    -- coloring, restores the EditBox's own GetText, SetText and scripts, and empties the text. Every step runs even if
+    -- one fails; the first failure is raised at the end.
     function c:Release()
         if self.released then return end
         self.released = true
@@ -717,6 +790,7 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
         end
     end)
 
+    -- Asks the owner to close the editor (Escape or right click), but only while the control is live and valid.
     local function closeEditor(mouse)
         if c.released or not c.valid() then return end
         c.edit:ClearFocus()
@@ -791,7 +865,14 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
     return c
 end
 
+-- ============================================================================
+-- Pooled source-host editors
+-- ============================================================================
+
 -- Each source host owns these three slots; parent frames are not identities.
+-- Returns the editor control for `owner` (the host table that holds owner.code): a pooled control for the resolved
+-- provider when one exists, otherwise a new one. Releases the control owner.code held before if the provider changed.
+-- Safe to call again while an earlier call is still running; owner.sourceEditorOperation lets the newer call win.
 function addon:AcquireSourceLuaEditor(owner, parent, changed, valid, preferred)
     local operation = {}
     owner.sourceEditorOperation = operation

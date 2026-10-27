@@ -1,9 +1,26 @@
+-- Line-number gutter for Lua editors. InstallLuaLineNumberControl adapts LuaWorkbench's gutter (its callbacks and
+-- visible-row renderer) to a control, either the embedded LuaWorkbench editor (Integrations/lua_workbench.lua) or the
+-- native reduced editor (InstallNativeLuaLineNumbers, called from UI/lua_editor.lua).
+-- Gutter updates are queued by the provider's callbacks and painted from a later OnUpdate, after the provider's own
+-- frame update has returned, so the EditBox is never read mid-callback. Row heights are measured from the real font so
+-- wrapped lines stay aligned.
+-- The saved setting is profile.lua_line_numbers (default on). Loaded after UI/lua_completion.lua and before
+-- UI/lua_editor.lua; the native path needs control.completionEngine from lua_completion.lua.
+
 local _, addon = ...
 
+-- ============================================================================
+-- Render comparison helpers
+-- ============================================================================
+
+-- True when two geometry numbers differ by no more than a tenth of a pixel, so rounding through the UI scale does not
+-- count as a change.
 local function near(left, right)
     return math.abs(left - right) <= .1
 end
 
+-- The fields of a render snapshot that are pixel measures and are compared with a tolerance; every other field must
+-- match exactly.
 local geometry = {
     width = true,
     textWidth = true,
@@ -17,6 +34,8 @@ local geometry = {
     gutterWidth = true,
 }
 
+-- Compares two render snapshots. Returns true when nothing changed, otherwise false and a sorted comma list of the
+-- changed keys (or "initial" when there is no earlier snapshot); the list feeds the diagnostic counters.
 local function sameRender(before, after)
     if not before then return false, 'initial' end
     local changed = {}
@@ -39,6 +58,8 @@ local function sameRender(before, after)
     return #changed == 0, table.concat(changed, ',')
 end
 
+-- Returns the per-control table of gutter diagnostic counters (calls, skips, renders, flushes, errors), creating it on
+-- first use.
 local function counters(control)
     if not control.lineNumberCounts then
         control.lineNumberCounts = {
@@ -56,6 +77,8 @@ local function counters(control)
     return control.lineNumberCounts
 end
 
+-- Reads the EditBox font, spacing, insets and scale. Returns the metrics table that decides whether row heights must be
+-- measured again, followed by the raw width and the four insets.
 local function metricInput(control, input, options, source)
     local edit = input.editBox
     local width = edit:GetWidth()
@@ -78,18 +101,29 @@ local function metricInput(control, input, options, source)
     return metrics, width, left, right, top, bottom
 end
 
+-- Packs the return values of a call, including nils, so they can be returned later with unpack(values, 1, values.n).
 local function results(...)
     return { n = select('#', ...), ... }
 end
 
+-- ============================================================================
+-- Gutter adapter
+-- ============================================================================
+
 -- Reuse LuaWorkbench's gutter, callbacks and visible-row renderer. Source-line
 -- heights must use the native font's measured glyph metrics, including the
 -- trailing spacing between logical lines and any rows introduced by wrapping.
+-- `console` is the engine's query console and `input` its editor input record; options.native marks the reduced editor.
+-- Adds SetLineNumbers, RefreshLineNumbers, ReleaseLineNumbers and ResetLineNumberQueue to `control`, and wraps its
+-- Acquire and Release.
 function addon:InstallLuaLineNumberControl(control, console, input, options)
     options = options or {}
     local update = console.UpdateLineNumbers
     control.lineNumberInput = input
 
+    -- Paints the gutter for the console's current source: measures each logical line with the real font (cached until
+    -- font, width, spacing or text change), hands the upstream renderer those exact heights, and skips the paint when
+    -- nothing visible changed since the last one. Returns the upstream result.
     local function render(self, state, counts)
         if state then
             local edit = input.editBox
@@ -221,6 +255,8 @@ function addon:InstallLuaLineNumberControl(control, console, input, options)
         end
     end
 
+    -- Drops the pending gutter work of this control (pending flag, repaint retry and navigation request); safe to call
+    -- at any time.
     function control:ResetLineNumberQueue()
         local queue = self.lineNumberQueue
 
@@ -233,6 +269,8 @@ function addon:InstallLuaLineNumberControl(control, console, input, options)
         self.lineNumberQueue = nil
     end
 
+    -- Replaces the console's UpdateLineNumbers with a queue entry that only records that a repaint is wanted. The
+    -- OnUpdate hook below does the painting. A stale or detached queue ignores later callbacks.
     local function bindQueue()
         control:ResetLineNumberQueue()
         local queue = { edit = input.editBox, pending = false }
@@ -269,6 +307,8 @@ function addon:InstallLuaLineNumberControl(control, console, input, options)
         local paint = editor.Paint
         retryPaint = function() return paint(editor, input) end
 
+        -- Wraps the upstream Paint so a paint that the gutter blocked (missing or stale viewport rows) can be retried
+        -- once from the queue; paints for other editors pass straight through.
         function editor:Paint(target, ...)
             if self ~= editor or target ~= input then return paint(self, target, ...) end
             local queue = control.lineNumberQueue
@@ -305,11 +345,15 @@ function addon:InstallLuaLineNumberControl(control, console, input, options)
         local position, scrollTo = navigation.Position, navigation.ScrollTo
         local positioning
 
+        -- Swallows the scroll of a Position call that this attachment is handling, so the scroll can wait until row
+        -- geometry is current.
         function navigation:ScrollTo(target, ...)
             if self == navigation and target == input and positioning then return end
             return scrollTo(self, target, ...)
         end
 
+        -- Ctrl-click and go-to navigation: runs the upstream Position, and when row metrics are stale defers only its
+        -- scroll until the gutter has been measured.
         function navigation:Position(target, cursor, ...)
             local queue = control.lineNumberQueue
             local state = input.queryLineNumbers
@@ -346,6 +390,8 @@ function addon:InstallLuaLineNumberControl(control, console, input, options)
         end
     end
 
+    -- Runs one queued gutter paint, then the deferred navigation scroll and the single paint retry if their captured
+    -- state is still current.
     local function flush(queue, counts)
         render(console, queue.state, counts)
         local request = queue.navigation
@@ -432,6 +478,8 @@ function addon:InstallLuaLineNumberControl(control, console, input, options)
     local acquire = control.Acquire
 
     if acquire then
+        -- Reacquire hook: keeps the existing queue when it is still attached to this input and console, otherwise
+        -- rebuilds it and repaints.
         function control:Acquire(...)
             if not self.released then
                 local state, queue = input.queryLineNumbers, self.lineNumberQueue
@@ -465,6 +513,7 @@ function addon:InstallLuaLineNumberControl(control, console, input, options)
     local release = control.Release
 
     if release then
+        -- Release hook: drops queued gutter work before the control is released.
         function control:Release(...)
             self:ResetLineNumberQueue()
             return release(self, ...)
@@ -473,6 +522,8 @@ function addon:InstallLuaLineNumberControl(control, console, input, options)
 
     bindQueue()
 
+    -- Shows or hides the gutter. Hiding detaches it; showing attaches it and, for the native editor, anchors the gutter
+    -- beside the text and asks for a new layout.
     function control:SetLineNumbers(visible)
         visible = visible ~= false
         if self.lineNumbersVisible == visible then return end
@@ -499,6 +550,8 @@ function addon:InstallLuaLineNumberControl(control, console, input, options)
         if options.native and not self.layingOut then self:Layout() end
     end
 
+    -- Applies a change of the line-number setting, then repaints the gutter from the current text. Called on every
+    -- layout.
     function control:RefreshLineNumbers()
         if self.released then return end
         local wanted = addon.db.profile.lua_line_numbers ~= false
@@ -512,12 +565,20 @@ function addon:InstallLuaLineNumberControl(control, console, input, options)
         if self.lineNumbersVisible then console:UpdateLineNumbers() end
     end
 
+    -- Hides the gutter and forgets the applied setting, so the next acquisition reads it again.
     function control:ReleaseLineNumbers()
         self:SetLineNumbers(false)
         self.lineNumberSetting = nil
     end
 end
 
+-- ============================================================================
+-- Native editor entry point
+-- ============================================================================
+
+-- Attaches the gutter to a native reduced editor `control`. Requires control.completionEngine (from
+-- UI/lua_completion.lua) and returns without doing anything when it is missing. The reduced editor has no debugger, so
+-- the debugger's gutter buttons are disabled.
 function addon:InstallNativeLuaLineNumbers(control)
     local engine = control.completionEngine
     if not engine then return end

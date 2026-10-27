@@ -1,7 +1,24 @@
+-- The custom (and read-only Built In) condition source editor: metadata fields, one code buffer per callback, test and
+-- transfer buttons, and the staged Apply/Cancel flow (docs/custom-conditions.md,
+-- docs/architecture/condition-authoring.md). addon:condition_edit_box builds it either as a stand-alone window or
+-- embedded in the settings Conditions pane (UI/condition_source_pane.lua passes the `embedded` table).
+-- The whole definition and every callback buffer are one staged edit held in a draft (Core/custom_authoring.lua);
+-- nothing is saved or registered until Apply, which goes through InstallCustomCondition. This file never executes the
+-- user's callbacks: syntax checks compile only, and Test lives in UI/condition_source_preview.lua.
+-- Loaded last in the code-authoring block of RotationMaster.toc, after UI/lua_editor.lua, Integrations/catalog.lua and
+-- UI/custom_source_fields.lua; its code control comes from UI/lua_editor.lua.
+
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
+
+-- ============================================================================
+-- Callback labels
+-- ============================================================================
+
+-- The callbacks in tab order. Their names and argument lists come from addon.CustomConditionCallbacks.
 local order = { 'evaluate', 'valid', 'print', 'widget', 'help', 'on_register', 'on_unregister' }
 
+-- Localized tab and message names for each callback.
 local labels = {
     evaluate = L['Evaluate'],
     valid = L['Validate'],
@@ -12,6 +29,8 @@ local labels = {
     on_unregister = L['On unregister'],
 }
 
+-- Formats a validation failure `why` ({ callback or field, detail or reason }) as the one-line message shown under the
+-- form.
 local function reason(why)
     return string.format(
         L['Check %s: %s'],
@@ -20,6 +39,15 @@ local function reason(why)
     )
 end
 
+-- ============================================================================
+-- Editor dialog
+-- ============================================================================
+
+-- Opens the condition editor and returns the dialog `d` and its lifetime owner. `update(identifier)` is called after a
+-- successful Apply. `key` and `source` select the condition to edit (both nil for a new one); `saveAllowed()` may veto
+-- saving while the surrounding page is not current. `embedded` makes the dialog a pane inside another window (fields:
+-- parent, width, height, x, readOnly, resume, footer and the hooks initialize, fields, category, save, discard, dirty,
+-- updateActions, closeOwner). An already open dialog for the same host is brought forward instead of rebuilt.
 function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
     local d
 
@@ -57,6 +85,8 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
     d.codeHistory = {}
     d.update = update
     d.selected = 'evaluate'
+    -- A new session number invalidates every callback that an earlier opening of this reused dialog captured through
+    -- valid().
     d.session = (d.session or 0) + 1
     local session = d.session
     local frame = d.frame
@@ -100,6 +130,8 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
     p:SetHeight(d.body:GetHeight())
     local profile, global = self.db.profile, self.db.global
 
+    -- True while this opening of the dialog is the live one: same session, not closed, owner still active, the same
+    -- saved profile and global tables, and saving still allowed. Every callback checks it first.
     local function valid()
         return d.session == session
             and not d.closed
@@ -113,6 +145,8 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
     d.OwnerValid = valid
     d.owner = self:OwnCustomConditionDialog(d, nil, valid)
     d.originalKey = key
+    -- What the draft started from: the registered definition and its saved source. Apply compares them again to refuse
+    -- an overwrite of a change made elsewhere.
     d.expected = (self.conditionDefinitions or {})[key]
     d.expectedSource = key and self:CopySettingsData((global.custom_conditions or {})[key])
 
@@ -137,10 +171,12 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
         embedded.initialize(d.model)
     end
 
+    -- Stores an event callback on the dialog.
     function d:SetCallback(event, callback)
         self[event] = callback
     end
 
+    -- Shows or hides the Apply, Cancel, View changes and Test buttons and the message line together.
     function d:ShowFooter(shown)
         for _, button in ipairs({ self.apply, self.cancel, self.viewChanges, self.test, self.form.message }) do
             if shown then
@@ -151,6 +187,7 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
         end
     end
 
+    -- Brings the dialog back after a child dialog closed; does nothing if the session is no longer valid.
     function d:Show()
         if valid() then
             self.suspended = nil
@@ -160,12 +197,15 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
         end
     end
 
+    -- Hides the dialog and its footer while a child dialog (schema editor, test, transfer) is open, without ending the
+    -- session.
     function d:HideForChild()
         self.suspended = true
         self:ShowFooter(false)
         self.frame:Hide()
     end
 
+    -- Returns the buffer state of the selected callback: its text and its undo and redo stacks, created on first use.
     function d:CodeState()
         local state = self.codeHistory[self.selected]
 
@@ -177,6 +217,8 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
         return state
     end
 
+    -- The code control reports an edit: records the previous text on the undo stack (bounded to 100 entries and 4 MiB),
+    -- clears redo and refreshes the buttons. Ignored while text is being loaded programmatically.
     function d:CodeChanged()
         if self.loadingCode or self.readOnly or not self.code then return end
         local state = self:CodeState()
@@ -190,6 +232,7 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
 
             state.text = text
 
+            -- Byte size of an undo entry, which is either text or a function-completion record.
             local function length(value)
                 return #(type(value) == 'table' and value.text or value)
             end
@@ -208,6 +251,7 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
         self:UpdateActions()
     end
 
+    -- Loads `text` into the code control without recording an edit; a read-only view shows the formatted display text.
     function d:SetCode(text)
         self.loadingCode = true
         self.code:SetText(self.readOnly and addon:FormatLuaSourceDisplay(text) or text)
@@ -215,6 +259,8 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
         self:CodeState().text = text
     end
 
+    -- Undo (or redo) on the selected callback buffer, including function-completion entries that restore binding
+    -- changes.
     function d:TravelCode(redo)
         local state = self:CodeState()
         local from = redo and state.redo or state.undo
@@ -232,10 +278,13 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
         self:UpdateActions()
     end
 
+    -- Copies the visible code text into the buffer state so a pending edit is not lost.
     function d:FlushCode()
         if self.code and not self.readOnly then self:CodeState().text = self.code:GetText() end
     end
 
+    -- Returns a copy of the whole definition with every callback replaced by its current buffer text; the draft model
+    -- itself is not changed.
     function d:PendingSource()
         self:FlushCode()
         local source = addon:CopySettingsData(self.model.value)
@@ -247,6 +296,8 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
         return source
     end
 
+    -- Snapshots the unsaved state (model, buffers, selection, raw field text, open schema draft, Test values) so the
+    -- pane can be rebuilt and resumed with the user's edits intact.
     function d:CaptureDraft()
         self:FlushCode()
         local raw = {}
@@ -278,6 +329,7 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
         }
     end
 
+    -- Writes every callback buffer into the draft model; done once the save has succeeded.
     function d:CommitCode()
         local source = self:PendingSource()
 
@@ -286,6 +338,8 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
         end
     end
 
+    -- Undo or redo on the metadata draft, carrying along any callback buffer that was not edited separately. Returns
+    -- false if there is nothing to travel.
     function d:TravelModel(redo)
         local before = addon:CopySettingsData(self.model.value)
         if not self.model:Travel(redo) then return false end
@@ -297,12 +351,16 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
         return true
     end
 
+    -- Commits pending field edits and code text before an action; false when the session is invalid or a field rejects
+    -- its value.
     function d:Flush()
         if not valid() or not p:FlushEdits() then return false end
         self:FlushCode()
         return true
     end
 
+    -- True when anything differs from the saved definition: a pending new condition, the schema draft, the embedding
+    -- owner, the source or any uncommitted field.
     function d:IsDirty()
         if self.model.creationPending then return true end
         if self.schemaEditor and self.schemaEditor.active and self.schemaEditor:IsDirty() then return true end
@@ -323,6 +381,8 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
         return false
     end
 
+    -- Re-checks the identifier, the whole definition and each callback's syntax when the inputs changed since the last
+    -- check, marking the offending fields and tabs. Compiles only; no callback is run.
     function d:UpdateValidation()
         if not self.code or self.readOnly then return end
         local schemaDirty = false
@@ -414,6 +474,8 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
         end
     end
 
+    -- Gives the code control the symbols of the selected callback (arguments, fields, bindings) for completion, hover
+    -- and the debugger, when they changed.
     function d:SyncFunctionContext()
         if not self.code or not self.code.SetContext then return end
         local source = self:PendingSource()
@@ -443,6 +505,9 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
         })
     end
 
+    -- Refreshes everything derived from the draft: undo, redo, reset and Apply availability, unsaved markers on fields
+    -- and tabs, binding markers, the function context and validation. Runs from the dialog OnUpdate as well as after
+    -- edits.
     function d:UpdateActions()
         if self.closed then return end
 
@@ -543,6 +608,8 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
         self:UpdateValidation()
     end
 
+    -- Ends the session: rolls back a pending binding, closes child dialogs, releases the code control and form and
+    -- drops every reference to the draft so the dialog can be reused or collected.
     function d:Close()
         if self.closed then return end
         if self.pendingFunctionBinding then self.pendingFunctionBinding:rollback() end
@@ -597,6 +664,9 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
         end
     end
 
+    -- Saves the staged definition. Refuses when the schema draft fails, when the saved source changed elsewhere, or
+    -- when installation fails (the reason is shown). On success it commits the buffers, closes the dialog and calls
+    -- update(identifier). Returns true when saved.
     function d:Apply()
         if self.schemaEditor and self.schemaEditor.active and not self.schemaEditor:Apply() then return false end
         if self.suspended then return false end
@@ -652,6 +722,7 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
         return true
     end
 
+    -- Closes immediately when nothing changed; otherwise asks to Apply, Discard or Cancel.
     function d:Hide()
         if self.closed then return end
 
@@ -670,6 +741,8 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
         addon:OpenPopup(p.prompt, d)
     end
 
+    -- Switches the code control to another callback tab, keeping the buffer of the previous one and updating the
+    -- signature, documentation and context.
     function d:SelectFunction(name)
         if not valid() or not addon.CustomConditionCallbacks[name] then return end
         self:FlushCode()
@@ -697,6 +770,8 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
         self:UpdateActions()
     end
 
+    -- Opens the graphical schema editor on the given fields. Applying it stages the fields, order and required list in
+    -- the draft. Not available when the editor is read-only.
     function d:OpenSchema(fields, fieldOrder, childResume)
         if self.readOnly then return end
 
@@ -1106,6 +1181,8 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
             form.fields.function_bindings:SetParent(form.child)
         end
 
+        -- Positions the callback documentation, the action buttons, the binding panel, the signature and the code area
+        -- from top to bottom. The documentation shortens when the window is too short for the code area.
         function d:LayoutDocumentation()
             self.documentation:ClearAllPoints()
             self.documentation:SetPoint('TOPLEFT', 0, -self.documentationTop)
@@ -1239,6 +1316,7 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
         end
     end)
 
+    -- Changes the dialog height (embedded use) and lays the form out again; ignores changes below a tenth of a pixel.
     function d:ResizeHeight(height)
         if math.abs(self.frame:GetHeight() - height) < .1 then return end
         self.frame:SetHeight(height)
@@ -1314,6 +1392,12 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
     return d, d.owner
 end
 
+-- ============================================================================
+-- Reuse for import
+-- ============================================================================
+
+-- Loads another definition (an import result) into the open editor `parent` as a staged edit under `key`, discarding
+-- the callback undo history, and redraws. Does nothing if `parent` is not this editor.
 function addon:LayoutCustomConditionEditor(parent, update, key, source)
     if not parent.nativeCustomEditor then return end
     parent:FlushCode()

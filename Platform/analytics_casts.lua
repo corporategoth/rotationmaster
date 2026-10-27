@@ -1,23 +1,48 @@
--- Explicit, volatile TBC player-event receipts. No advice or ordinary-cast proof.
+-- addon.Analytics.NativeCasts: an explicit, volatile TBC player-cast receipt capture
+-- (docs/architecture/analytics-replay.md). Start registers one owned frame and one duration timer and feeds
+-- UNIT_SPELLCAST_* receipts into the bounded Analytics.NewCapture builder; Stop, Clear, the timeout or a world/control
+-- change ends it. Nothing is saved and loading registers no events or timers.
+-- Every native call goes through call() and read(), so a Clear or a secret value during the call retires the session
+-- instead of publishing. It must not run off capture, score casts or keep raw GUIDs, names or error text.
+-- Loaded from the Platform section of RotationMaster.toc after Analytics/capture.lua; UI/analytics_capture.lua drives
+-- it, and main.lua and UI/preview.lua bind their capture sinks to it at startup. The BEGIN/END ANALYTICS comment pairs
+-- delimit regions that tests rebuild: keep them in place. Function bodies here are frozen.
+
 local _, addon = ...
 
+-- ============================================================================
+-- Module state
+-- ============================================================================
+
+-- Local copies of the globals this file calls, so later changes to the globals cannot redirect the capture.
 local type, next, rawget, rawequal, getmetatable, pcall, error =
     type, next, rawget, rawequal, getmetatable, pcall, error
 
 local huge = math.huge
+-- analytics is the shared Analytics table; service is the public NativeCasts object, installed immediately so
+-- UI/analytics_capture.lua can capture its methods.
 local analytics = addon.Analytics or {}
 addon.Analytics = analytics
 local newCapture = analytics.NewCapture
 local platform = addon.Platform
 local service = {}
 analytics.NativeCasts = service
+-- active is the running session, last the retained completed or failed capture (at most one), frame and methods the
+-- single owned event frame and its original methods, unusable a latch set when a frame could not be released, cleaning
+-- a reentrancy guard.
 local active, last, frame, methods, unusable, cleaning
+-- generation changes on every Start and Clear so a late callback can tell its session was retired; retiring and
+-- resourceCalls count teardowns and frame calls still in flight.
 local generation, retiring, resourceCalls = 0, 0, 0
+-- The public phase reported by GetStatus: idle, starting, running, stopping or unusable, with the reason of the last
+-- end.
 local phase, reason = 'idle', nil
 -- BEGIN ANALYTICS PREVIEW HANDOFF
 -- Two fixed source producers, consumed during normal TOC startup. No listeners.
 local installAdvice, installPreview, armed
 
+-- Startup handoff used by main.lua: accepts the install function for the advice sink once, then removes itself. The
+-- sink is armed only while a capture runs.
 function addon:BindAnalyticsAdviceCapture(install)
     if not rawequal(self, addon) or installAdvice or type(install) ~= 'function' then return false end
     installAdvice = install
@@ -25,6 +50,8 @@ function addon:BindAnalyticsAdviceCapture(install)
     return true
 end
 
+-- Startup handoff used by UI/preview.lua: accepts the install function for the preview-delivery sink once, then removes
+-- itself.
 function addon:BindAnalyticsPreviewCapture(install)
     if not rawequal(self, addon) or installPreview or type(install) ~= 'function' then return false end
     installPreview = install
@@ -32,6 +59,7 @@ function addon:BindAnalyticsPreviewCapture(install)
     return true
 end
 
+-- Removes both producer sinks and the session advice, but only when `s` is the session that armed them.
 local function disarm(s)
     if armed ~= s then return end
     armed = nil
@@ -41,6 +69,7 @@ local function disarm(s)
 end
 
 -- END ANALYTICS PREVIEW HANDOFF
+-- The cast events the capture records; the handler ignores any other event that reaches the frame.
 local castEvents = {
     UNIT_SPELLCAST_SENT = true,
     UNIT_SPELLCAST_START = true,
@@ -52,28 +81,37 @@ local castEvents = {
     UNIT_SPELLCAST_CHANNEL_STOP = true,
 }
 
+-- Every event the owned frame registers: the cast events plus the two context changes (entering world, losing control)
+-- that end a capture.
 local events = {
     'UNIT_SPELLCAST_SENT', 'UNIT_SPELLCAST_START', 'UNIT_SPELLCAST_STOP', 'UNIT_SPELLCAST_SUCCEEDED',
     'UNIT_SPELLCAST_FAILED', 'UNIT_SPELLCAST_INTERRUPTED', 'UNIT_SPELLCAST_CHANNEL_START',
     'UNIT_SPELLCAST_CHANNEL_STOP', 'PLAYER_ENTERING_WORLD', 'PLAYER_CONTROL_LOST'
 }
 
+-- The end reasons a caller may pass to Stop.
 local reasons = { stop = true, context = true, disabled = true, error = true, ['end'] = true, unknown = true }
+-- Identity token that marks an error table as one raised by fail(), as opposed to a native error.
 local fault = {}
 
+-- Raises a capture failure carrying a fixed reason token; issue() reads it back.
 local function fail(why)
     error({ owner = fault, reason = why }, 0)
 end
 
+-- Returns the reason token of an error raised by fail(), and "native-error" for anything else so raw error text never
+-- escapes.
 local function issue(value)
     if type(value) == 'table' and rawequal(rawget(value, 'owner'), fault) then return rawget(value, 'reason') end
     return 'native-error'
 end
 
+-- True for a real number that is neither NaN nor infinite.
 local function finite(v)
     return type(v) == 'number' and v == v and v ~= huge and v ~= -huge
 end
 
+-- Deep copies plain data, used so callers never receive a table the capture keeps.
 local function copy(v)
     if type(v) ~= 'table' then return v end
     local out = {}
@@ -85,14 +123,18 @@ local function copy(v)
     return out
 end
 
+-- True while session `s` has not been superseded by Clear or a newer Start.
 local function current(s)
     return generation == s.generation
 end
 
+-- Raises "retired-operation" when `s` is no longer current; call it after anything that could have run foreign code.
 local function fence(s)
     if not current(s) then fail('retired-operation') end
 end
 
+-- Runs a native or foreign function under pcall for session `s`. Raises "retired-operation" if the session was retired
+-- or changed phase during the call and "native-error" if the call raised; otherwise returns its first result.
 local function call(s, fn, ...)
     local before = s.phase
     local ok, value = pcall(fn, ...)
@@ -112,12 +154,16 @@ local function resourceCall(s, fn, ...)
     return value
 end
 
+-- Returns `value` after asking Platform:CanReadValue whether it can be used; raises "unreadable-value" for a secret
+-- value. Required before comparing or indexing any game value.
 local function read(s, value)
     local ok = call(s, s.read, platform, value)
     if ok ~= true then fail('unreadable-value') end
     return value
 end
 
+-- Reads GetTime for session `s` and returns it, raising "invalid-time" if it is not a finite number, goes backwards or
+-- passes 600 seconds from the start. Updates s.elapsed.
 local function clock(s)
     local now = read(s, call(s, s.clock))
     if not finite(now) then fail('invalid-time') end
@@ -131,6 +177,8 @@ local function clock(s)
     return now
 end
 
+-- Builds the retained capture record: status, reason, client identity, and the fixed labels that state what the capture
+-- does not prove (native acceptance, ordinary casts, damage). `capture` is the builder result for a completed capture.
 local function wrapper(s, status, why, capture)
     return {
         format = 1,
@@ -224,10 +272,12 @@ local function cleanup(s)
     return good
 end
 
+-- Moves the public phase back to idle (or unusable) once nothing is active, being torn down or in flight.
 local function settle()
     if not active and not cleaning and retiring == 0 then phase = unusable and 'unusable' or 'idle' end
 end
 
+-- Marks session `s` as stopping and disarms its producers; the first step of every stop path.
 local function retire(s)
     -- BEGIN ANALYTICS PREVIEW RETIRE
     disarm(s)
@@ -237,6 +287,8 @@ local function retire(s)
     phase = 'stopping'
 end
 
+-- Ends session `s` with failure reason `why`: retires it, releases the frame and timer, clears the builder and keeps an
+-- unavailable record. A cleanup failure replaces the reason with "cleanup-failed".
 local function abort(s, why)
     retiring = retiring + 1
     retire(s)
@@ -253,12 +305,15 @@ local function abort(s, why)
     settle()
 end
 
+-- Reads object[key] for session `s` with both the object and the value checked for readability.
 local function field(s, object, key)
     read(s, object)
     local value = call(s, function() return object[key] end)
     return read(s, value)
 end
 
+-- Validates the client record and stores a trimmed copy in s.client. Raises "unsupported-client" unless the client is
+-- TBC with the probe policy, and "invalid-client-info" for malformed fields.
 local function clientInfo(s)
     local info = read(s, call(s, s.clientReader, platform))
     if type(info) ~= 'table' then fail('unsupported-client') end
@@ -284,6 +339,8 @@ local function clientInfo(s)
     s.client = out
 end
 
+-- Looks up the platform reader, clock, frame factory and timer functions once per Start and raises "missing-dependency"
+-- if any is not a function.
 local function loadDependencies(s)
     if type(platform) ~= 'table' or type(newCapture) ~= 'function' then fail('missing-dependency') end
 
@@ -316,6 +373,8 @@ local function loadDependencies(s)
     end
 end
 
+-- Ends session `s` normally with reason `why`: finalizes the builder trace, releases the frame and timer, stores the
+-- result as the retained capture and returns a copy of it, or nil and "retired-operation" if a Clear raced it.
 local function stop(s, why)
     retiring = retiring + 1
     retire(s)
@@ -352,7 +411,13 @@ local function stop(s, why)
     return copy(last)
 end
 
+-- ============================================================================
+-- Advice and presentation receipts
+-- ============================================================================
+
 -- BEGIN ANALYTICS PREVIEW RECEIPTS
+-- Adds one advice, presentation or retire row to the builder for session `s`. Raises if the session ended or the
+-- builder refused the row, with the builder reason when it gave one.
 local function pushEvidence(s, row)
     local seq, why = s.builder:Push(s.builderLease, s.elapsed, row)
     fence(s)
@@ -361,6 +426,8 @@ local function pushEvidence(s, row)
     return seq
 end
 
+-- Retires the current advice (bumping the session epoch) and records a "context" retire row, unless the advice already
+-- changed while the clock was read.
 local function retireEvidence(s)
     local a = s.advice
     clock(s)
@@ -370,6 +437,8 @@ local function retireEvidence(s)
     pushEvidence(s, { type = 'retire', reason = 'context' })
 end
 
+-- Before an attempt is recorded, re-checks that the advice is still current and its preview still visible; retires it
+-- otherwise so a stale advice cannot be matched to the cast.
 local function checkAdvice(s)
     local a = s.advice
     if not a then return end
@@ -388,6 +457,9 @@ local function checkAdvice(s)
     end
 end
 
+-- The sink that main.lua and UI/preview.lua call during a capture. Events: "retire" (advice withdrawn), "advice" (a
+-- spell was advised) and "delivery" (the preview showed it). Each is re-validated through witness callbacks around
+-- clock reads, and any failure aborts the capture rather than guessing.
 local function producer(s, event, window, witness, kind, spell)
     if active ~= s or s.phase ~= 'running' then return end
 
@@ -469,6 +541,8 @@ local function producer(s, event, window, witness, kind, spell)
     if not ok and current(s) and active == s then abort(s, issue(why)) end
 end
 
+-- Hands the producer sink to the advice and preview installers when a capture begins; without an advice installer
+-- nothing is armed.
 local function arm(s)
     if not installAdvice then return end
     armed = s
@@ -545,7 +619,13 @@ local function startWitness(s, key, spell)
     return ok and result or 'unknown'
 end
 
+-- ============================================================================
+-- Cast event receipts
+-- ============================================================================
+
 -- END ANALYTICS START WITNESS
+-- Records one player UNIT_SPELLCAST_* event as an attempt or result row. The session check comes before any payload is
+-- read; unreadable or malformed payloads abort the capture. Events for other units are ignored.
 local function receipt(s, event, unit, key, spell)
     -- The lease check is before native readability or any payload operation.
     if not rawequal(active, s) or s.phase ~= 'running' then return end
@@ -608,6 +688,13 @@ local function receipt(s, event, unit, key, spell)
     if not ok and current(s) and rawequal(active, s) then abort(s, issue(why)) end
 end
 
+-- ============================================================================
+-- Public service
+-- ============================================================================
+
+-- Begins a capture. options may only hold duration in seconds (default 30, at most 600). Returns the session lease, or
+-- nil and a reason such as "busy", "unusable", "invalid-options" or the failure token. Creates the owned frame the
+-- first time, refuses a frame or handler it does not own, and schedules the end of the capture.
 function service:Start(options)
     if not rawequal(self, service) then return nil, 'foreign-receiver' end
     if active or cleaning or retiring > 0 or resourceCalls > 0 or phase == 'stopping' then return nil, 'busy' end
@@ -793,6 +880,8 @@ function service:Start(options)
     return s.lease
 end
 
+-- Ends the capture identified by `lease` with an allowlisted reason (default "stop") and returns a copy of the stored
+-- result, or nil and a reason for a stale lease or invalid reason.
 function service:Stop(lease, why)
     if not rawequal(self, service) then return nil, 'foreign-receiver' end
     if not active or not rawequal(lease, active.lease) then return nil, 'retired-lease' end
@@ -802,6 +891,8 @@ function service:Stop(lease, why)
     return stop(active, why)
 end
 
+-- Retires any capture, releases its frame and timer and drops the retained result. Always returns true; also the
+-- shutdown path.
 function service:Clear()
     if not rawequal(self, service) then return nil, 'foreign-receiver' end
     generation = generation + 1
@@ -825,6 +916,7 @@ function service:Clear()
     return true
 end
 
+-- Returns a small status table (phase, reason and the fixed "unverified/unavailable" labels) without any capture data.
 function service:GetStatus()
     if not rawequal(self, service) then return nil, 'foreign-receiver' end
 
@@ -841,6 +933,8 @@ function service:GetStatus()
     }
 end
 
+-- Returns a copy of the retained capture, or nil with "running" while a capture is active and "no-session" when none
+-- has finished.
 function service:GetSnapshot()
     if not rawequal(self, service) then return nil, 'foreign-receiver' end
     if active then return nil, 'running' end

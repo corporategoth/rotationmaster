@@ -1,7 +1,18 @@
+-- Completion, hover and navigation for RM's reduced Lua editor. addon:InstallRMCodeCompletion attaches a limited
+-- LuaWorkbench engine ('RM-native', RM's own declared arguments, fields and functions only) to one native editor
+-- control `c` made by UI/lua_editor.lua; it never loads Blizzard API docs and holds no event frame of its own.
+-- It owns the engine, the editor-input shim and the script wrappers on c.edit, and removes them again in
+-- c:ReleaseCompletion; it must not touch the user's LuaWorkbench workspace or saved state.
+-- Loaded after Integrations/lua_workbench.lua (which supplies CreateLuaWorkbenchEngine) and before UI/lua_editor.lua
+-- calls it; a no-op when that integration or Core/lua_symbols.lua is missing.
+
 local _, addon = ...
 
 -- The reduced editor uses the same released parser/completion component, but
 -- only RM's declared arguments, fields and functions enter its knowledge index.
+-- Called once while a native editor control `c` is built; adds c.UpdateSymbols, c.ReleaseCompletion,
+-- c.AcquireCompletion and c.completionEngine to it. Returns nothing, and leaves `c` untouched when the LuaWorkbench
+-- engine is unavailable.
 function addon:InstallRMCodeCompletion(c)
     if not self.CreateLuaWorkbenchEngine or not self.ApplyLuaContextSymbols then return end
     local ok, engine = pcall(self.CreateLuaWorkbenchEngine, self, { id = 'RM-native', limited = true })
@@ -29,12 +40,17 @@ function addon:InstallRMCodeCompletion(c)
 
     engine.Query.Console.input = input
 
+    -- Source text the engine reads for this editor, taken from the control so it matches what the user sees.
     function input:GetText()
         return c:GetText()
     end
 
+    -- Painting is replaced by a no-op: the native control already renders and colors the text, so the engine must not
+    -- draw over it.
     function E:Paint() end
 
+    -- Rebuilds the identifier and call spans the engine uses for hover hit-testing, from the control's hidden measuring
+    -- string. Skips the work when the text is unchanged since the last call.
     local function updateHoverGeometry(text)
         local state = input.queryEditor
         if state.renderSource == text then return end
@@ -61,6 +77,9 @@ function addon:InstallRMCodeCompletion(c)
         end
     end
 
+    -- Called by the engine when it rewrites the source (for example after accepting a completion). Writes it back to
+    -- the control, restores the cursor and reports the change to the owner like a keystroke, unless the control is
+    -- released or the owner says it is no longer valid.
     function E:SetSource(_, text, cursor)
         c:SetText(text)
         c.edit:SetCursorPosition(cursor or #text)
@@ -68,6 +87,7 @@ function addon:InstallRMCodeCompletion(c)
         if not c.released and c.valid() and c.changed then c.changed(text) end
     end
 
+    -- Autocomplete is live only for this editor while it is held, writable and the owner still considers itself valid.
     function A:Enabled(value)
         return value == input and not c.released and not c.readOnly and c.valid()
     end
@@ -75,12 +95,16 @@ function addon:InstallRMCodeCompletion(c)
     local originals = {}
     local attached = false
 
+    -- Replaces the EditBox script for `event` with callback(original, ...), remembering the previous script (or false)
+    -- so ReleaseCompletion can restore it exactly.
     local function wrap(event, callback)
         local original = c.edit:GetScript(event)
         originals[event] = original or false
         addon:SetUIScript(c.edit, event, function(...) return callback(original, ...) end)
     end
 
+    -- Installs the key, mouse and update wrappers once per acquisition. Each wrapper lets autocomplete consume the
+    -- event first and otherwise falls through to the control's own handler.
     local function attachedHandler()
         if attached then return end
         attached = true
@@ -172,6 +196,8 @@ function addon:InstallRMCodeCompletion(c)
         end)
     end
 
+    -- Pushes the owner's context (kind, id, callback, args, returns, bindings, fields) into the engine. Does nothing
+    -- when that signature and the function registry revision are unchanged.
     function c:UpdateSymbols(context)
         self.context = context
         local source = context and context.source or {}
@@ -194,6 +220,8 @@ function addon:InstallRMCodeCompletion(c)
         addon:ApplyLuaContextSymbols(engine, context, true)
     end
 
+    -- Detaches the engine from the control: hides popups, restores every wrapped script and resets the engine lease.
+    -- Every step runs even if an earlier one fails; the first failure is raised at the end.
     function c:ReleaseCompletion()
         self.context = nil
         self.symbolSignature = nil
@@ -218,6 +246,8 @@ function addon:InstallRMCodeCompletion(c)
         if failed then error(why, 0) end
     end
 
+    -- Takes the engine lease again and reattaches the wrappers; used on first install and when a released editor is
+    -- reused.
     function c:AcquireCompletion()
         engine:Acquire()
         attachedHandler()
