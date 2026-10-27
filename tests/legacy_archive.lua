@@ -165,4 +165,55 @@ test('end to end: nothing runs until adopted, then the 1.4.3e rotation is chosen
     assert(a.currentSpell==8042,'the adopted rotation did not advise its spell, got '..tostring(a.currentSpell))
 end)
 
+test('a current-format rotation the player owns is never run through the old-format upgrades',function()
+    local a,env,scripts=start()
+    assert(a:AdoptAllUnassignedRotations('class').adopted==3)
+    local record
+    for _,specs in pairs(a.db.profile.rotationStore.classes) do for _,rows in pairs(specs) do for _,r in pairs(rows) do
+        if not record and type(r.body)=='table' and r.body.rotation and r.body.rotation[1] then record=r end
+    end end end
+    assert(record,'no owned record to plant a step in')
+    -- Pet Spell is a current step type and PETSPELL_* are current conditions.
+    local step=record.body.rotation[1]
+    step.type='pet';step.action=3110;step.conditions={type='AND',value={{type='PETSPELL_AVAIL',spell=3110},{type='PETSPELL_RANGE',spell=3110}}}
+    local cooldown=record.body.cooldowns[1] or {type='pet',action=3110,conditions={}}
+    cooldown.type='pet';cooldown.conditions={type='PETSPELL_COOLDOWN',spell=3110};record.body.cooldowns[1]=cooldown
+    local planted=serialized(record.body)
+    local b,env2,scripts2=restart(env,scripts)
+    local after
+    for _,specs in pairs(b.db.profile.rotationStore.classes) do for _,rows in pairs(specs) do for id,r in pairs(rows) do
+        if same(r.body.name,record.body.name) then after=r.body end
+    end end end
+    assert(after and same(after,planted),'an owned rotation was rewritten at startup (pet step or PETSPELL_* condition)')
+    local c=restart(env2,scripts2)
+    for _,specs in pairs(c.db.profile.rotationStore.classes) do for _,rows in pairs(specs) do for id,r in pairs(rows) do
+        if r.body.name==record.body.name then assert(same(r.body,planted),'an owned rotation changed on a later start') end
+    end end end
+end)
+
+test('archived bodies are walked once; a later legacy body is still upgraded',function()
+    local a,env,scripts=start()
+    local marker=a.db.global.legacyBodyUpgrade
+    assert(type(marker)=='string' and marker:match('^%d+:%d+$'),'the upgrade left no marker')
+    scripts.OnEvent(nil,'PLAYER_LOGOUT')
+    local saved=serialized(env.RotationMasterDB)
+    local function bodies(root) local map=saved.profiles.SHAMAN.rotationStore.legacy.rotations;for _,rows in pairs(map) do return rows end end
+    local rows=bodies()
+    local petStep=function() return {id=uuid(7001),type='pet',action=3110,conditions={type='PETSPELL_AVAIL',spell=3110}} end
+    -- Same count: the marker says the archive is as the last walk left it.
+    rows.Default.rotation[#rows.Default.rotation+1]=petStep()
+    local b,env2,scripts2=start(saved)
+    local after=archive(b).Default.rotation
+    assert(after[#after].type=='pet' and b.db.global.legacyBodyUpgrade==marker,'a settled archive was walked again')
+    -- A new legacy body changes the count: it is upgraded (and so is the rest).
+    scripts2.OnEvent(nil,'PLAYER_LOGOUT')
+    local saved2=serialized(env2.RotationMasterDB)
+    local rows2;for _,r in pairs(saved2.profiles.SHAMAN.rotationStore.legacy.rotations) do rows2=r end
+    rows2[uuid(99)]={name='Imported old',switch={},cooldowns={},rotation={petStep()}}
+    local c=start(saved2)
+    local imported=archive(c)[uuid(99)]
+    assert(imported.rotation[1].type=='any' and imported.rotation[1].conditions.type=='ANYSPELL_AVAIL','a legacy body that arrived later was not upgraded')
+    assert(c.db.global.legacyBodyUpgrade~=marker,'the marker did not follow the archive')
+end)
+
 finish()

@@ -23,8 +23,8 @@ in-game check is `/focus` then `/run print(UnitExists("focus"))`.
 
 | Type | Resolves to | API | Editions |
 |---|---|---|---|
-| `maintank` | the raid's Main Tank | the `role` field of `GetRaidRosterInfo` (`"maintank"`) | all; raids only, a party has none |
-| `mainassist` | the raid's Main Assist | the same field (`"mainassist"`) | all; raids only |
+| `maintank` | the raid's Main Tank | the `role` field of `GetRaidRosterInfo` (`"MAINTANK"`) | all; raids only, a party has none |
+| `mainassist` | the raid's Main Assist | the same field (`"MAINASSIST"`) | all; raids only |
 | `assignedtank` | the first member whose assigned role is Tank | `UnitGroupRolesAssigned` | Retail, Forever, Wrath through Mists (not Classic Era or Burning Crusade: `no-group-roles`) |
 | `assignedhealer` | the first member whose assigned role is Healer | `UnitGroupRolesAssigned` | as above |
 | `groupleader` | the party or raid leader | `UnitIsGroupLeader` | all |
@@ -40,6 +40,10 @@ or a missing API is *unavailable* with its reason (`no-assigned-unit`,
 `restricted-value`, `missing-api`), also under NOT, and a rotation that uses a
 type the client cannot resolve is incomplete (`Core/condition_support.lua`). A
 type is offered in the unit picker only where the client can resolve it.
+
+The roster role is spelled in capitals (`MAINTANK`, `MAINASSIST`) and is compared
+case-insensitively. Not yet confirmed in game; a mismatch makes the two types
+resolve to nobody (`no-assigned-unit`), never to a wrong unit.
 
 `GetPartyAssignment("MAINTANK", unit)` answers the same question as the roster
 role but is not in the generated client manifests (`tools/generate_client_api.py`

@@ -174,4 +174,17 @@ test('namespace metadata remains significant for custom dependency requirement h
     local _,target=fixture();utility=target:CopySettingsData(utility);utility.namespace='custom.new';assert(target:InstallCustomFunction('HELPER',utility))
     local review=assert(target:PlanFunctionBundleImport(bundle));assert(not review.valid and review.requirements[1].status=='incompatible-function')
 end)
+test('the explicit-binding scan is linear in the source and an oversized body is refused before it',function()
+    local _,a=fixture()
+    local function took(code) local start=os.clock();local bundle,why=a:BuildFunctionBundle('function','BIG',source(code));return os.clock()-start,bundle,why end
+    for _,size in ipairs({65536,200000}) do
+        local seconds,bundle=took(string.rep(';',size))
+        assert(seconds<0.4,string.format('a %d byte body took %.2fs',size,seconds))
+        if size>65536 then assert(bundle==nil,'an oversized body was exported') end
+    end
+    local seconds=took('return value '..string.rep('--[[x]] ',7000)..'+ 1');assert(seconds<0.4,'a comment-heavy body took '..seconds)
+    assert(select(3,took('return addon["x"]'))=='explicit-function-binding-required','a computed namespace access was missed')
+    assert(select(3,took("return addon:RequireFunctionBinding('x')"))=='explicit-function-binding-required','a handwritten resolver call was missed')
+    assert(select(3,took("return '--[[ addon[1] ]]'..[==[ x ]==] --[[ addon['y'] ]]"))~='explicit-function-binding-required','a comment or string was read as code')
+end)
 finish()

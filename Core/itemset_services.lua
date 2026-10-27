@@ -110,6 +110,8 @@ function addon:UpdateItemSetButtons(id)
         end
 
         for key, _ in pairs(units) do
+          -- Group unit types (maintank ...) are not unit tokens a macro can target.
+          if not (addon.groupUnitKinds and addon.groupUnitKinds[key]) then
             local button = addon.itemSetButtons[id][key]
             if button and button:GetName() ~= prefix .. "_" .. key then
                 button:SetParent(nil)
@@ -126,9 +128,15 @@ function addon:UpdateItemSetButtons(id)
 
             local macrotext = ""
             for _, item in pairs(itemset.items) do
-                macrotext = macrotext .. "/use [@" .. key .. "] item:" .. item .. "\n"
+                -- Item strings are data (imports, saved variables): one line each,
+                -- and no control character, separator or bracket that could end it.
+                if type(item) == "number" or type(item) == "string" then
+                    local safe = tostring(item):gsub("[%z\1-\31\127;%[%]|\\]", "")
+                    if safe ~= "" then macrotext = macrotext .. "/use [@" .. key .. "] item:" .. safe .. "\n" end
+                end
             end
             button:SetAttribute("macrotext", macrotext)
+          end
         end
     end
 end

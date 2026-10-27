@@ -73,4 +73,14 @@ test('the report works on Forever, whose trees are node groups, and needs no Bli
     assert(find(lines,'C_Traits.GetGroupDisplayInfoByTreeID=present'))
 end)
 
+test('the report is stamped with a real date and time, not seconds in the month slot',function()
+    local state={spec=FIRE};local f,a,e=client(state);e.date=os.date
+    local lines=a:RunTalentDiagnostic()
+    local stamp=find(lines,'^Rotation Master talent diagnostic ')
+    assert(stamp and stamp:match('^Rotation Master talent diagnostic %d%d%d%d%-%d%d%-%d%d %d%d:%d%d:%d%d$'),'bad stamp: '..tostring(stamp))
+    local saved=e.RotationMasterDB;local reports
+    for _,value in pairs(saved) do if type(value)=='table' then for _,list in pairs(value) do if type(list)=='table' and list[1] and list[1].at then reports=list end end end end
+    assert(not reports or tostring(reports[#reports].at):match('^%d%d%d%d%-%d%d%-%d%d %d%d:%d%d:%d%d$'),'bad saved stamp')
+end)
+
 finish()

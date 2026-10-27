@@ -94,7 +94,7 @@ function addon:ValidateProfileTransfer(value)
         elseif key=='stockTargets' then
             -- Retired desired-stock data: plain tables only, carried unread.
         elseif key=='itemsets' then
-            if type(item)~='table' then return false end;for id,set in pairs(item) do if type(id)~='string' or not fields(set,{name='string',items='table',modified='boolean'}) or type(set.name)~='string' or not dense(set.items,function(v) return type(v)=='string' and #v>0 or type(v)=='number' and v>0 and v%1==0 end) then return false end end
+            if type(item)~='table' then return false end;for id,set in pairs(item) do if type(id)~='string' or not fields(set,{name='string',items='table',modified='boolean'}) or type(set.name)~='string' or not dense(set.items,function(v) return type(v)=='string' and #v>0 and not v:find('[%z\1-\31\127]') or type(v)=='number' and v>0 and v%1==0 end) then return false end end
         elseif key=='rotations' then
             if type(item)~='table' then return false end
             for spec,rotations in pairs(item) do

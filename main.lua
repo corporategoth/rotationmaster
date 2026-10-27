@@ -1514,8 +1514,10 @@ local function prepareEvaluation(self)
     for k in pairs(unitsHandled) do unitsHandled[k] = nil end
     for k in pairs(unitsGUID) do unitsGUID[k] = nil end
     local verbose = (tonumber(self.db.profile.loglevel) or 2) >= 4
+    local groupKinds = addon.groupUnitKinds or {}
     for unit, _ in pairs(addon.units) do
-        unitsGUID[unit] = getCached(cache, UnitGUID, unit)
+        -- Group unit types are resolved from the roster, not unit tokens.
+        if not groupKinds[unit] then unitsGUID[unit] = getCached(cache, UnitGUID, unit) end
     end
     for guid, entity in pairs(self.unitsInRange) do
         if isin(addon.units, entity.unit) then
@@ -2911,7 +2913,7 @@ local function nameplateChanges(self,snapshot,ticket,unit,keep)
     end
     if #changes==0 then return changes end
     local units,aliases={},{}
-    for alias in pairs(addon.units) do units[#units+1]=alias end
+    for alias in pairs(addon.units) do if not (addon.groupUnitKinds and addon.groupUnitKinds[alias]) then units[#units+1]=alias end end
     for _,alias in ipairs(units) do
         local readable=nameplateReadable(self,snapshot,ticket,alias)
         if readable==nil then return nil end
@@ -2991,7 +2993,7 @@ reconcileNameplateResume=function(self,change)
         end
         local aliases={}
         local units={}
-        for unit in nextEntry,addon.units do units[#units+1]=unit end
+        for unit in nextEntry,addon.units do if not (addon.groupUnitKinds and addon.groupUnitKinds[unit]) then units[#units+1]=unit end end
         local function guidFor(unit)
             local guid=observe(UnitGUID,unit)
             if guid~=nil and (kind(guid)~="string" or guid=="") then raise("unknown nameplate GUID",0) end

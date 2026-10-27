@@ -44,11 +44,12 @@ function addon:FunctionSourceHash(source)
 end
 -- Explicit bindings are the only remappable helper reference. Ignore comments
 -- and strings when detecting handwritten resolver calls, without executing Lua.
+-- Linear in the source: nothing here copies the remainder of the code.
 local function manualReference(code)
     local tokens,i={},1
     while i<=#code do
-        local rest=code:sub(i);local prefix=rest:match('^%-%-%[(=*)%[')
-        local long=rest:match('^%[(=*)%[')
+        local prefix=code:match('^%-%-%[(=*)%[',i)
+        local long=code:match('^%[(=*)%[',i)
         if prefix~=nil or long~=nil then
             local equal=prefix or long;local start=i+(prefix~=nil and 4 or 2)+#equal
             local first,last=code:find(']'..equal..']',start,true)
@@ -57,15 +58,15 @@ local function manualReference(code)
                 tokens[#tokens+1]=(literal=='RequireFunctionBinding' or literal=='ResolveFunctionBinding') and 'resolver-string' or 'string'
             end
             i=last and last+1 or #code+1
-        elseif rest:sub(1,2)=='--' then local last=code:find('\n',i+2,true);i=last or #code+1
-        elseif rest:sub(1,1)=='"' or rest:sub(1,1)=="'" then
-            local quote=rest:sub(1,1);local start=i;i=i+1
+        elseif code:sub(i,i+1)=='--' then local last=code:find('\n',i+2,true);i=last or #code+1
+        elseif code:sub(i,i)=='"' or code:sub(i,i)=="'" then
+            local quote=code:sub(i,i);local start=i;i=i+1
             while i<=#code do local ch=code:sub(i,i);i=i+1;if ch=='\\' then i=i+1 elseif ch==quote then break end end
             local literal=code:sub(start+1,i-2)
             if literal=='RequireFunctionBinding' or literal=='ResolveFunctionBinding' then tokens[#tokens+1]='resolver-string' else tokens[#tokens+1]='string' end
         else
-            local word=rest:match('^[A-Za-z_][A-Za-z_0-9]*')
-            if word then tokens[#tokens+1]=word;i=i+#word else local ch=rest:sub(1,1);if not ch:match('%s') then tokens[#tokens+1]=ch end;i=i+1 end
+            local word=code:match('^[A-Za-z_][A-Za-z_0-9]*',i)
+            if word then tokens[#tokens+1]=word;i=i+#word else local ch=code:sub(i,i);if not ch:match('%s') then tokens[#tokens+1]=ch end;i=i+1 end
         end
     end
     local receivers={addon=true}
@@ -79,7 +80,7 @@ end
 local function checkSource(self,kind,id,source)
     if type(source)~='table' then return nil,'invalid-bundle-source' end
     if kind=='function' then
-        if type(source.code)=='string' and manualReference(source.code) then return nil,'explicit-function-binding-required' end
+        if type(source.code)=='string' and #source.code<=65536 and manualReference(source.code) then return nil,'explicit-function-binding-required' end
         return self:ValidateCustomFunctionSource(builtin(id) and 'IMPORTED_BUILTIN' or id,source)
     end
     if kind~='condition' then return nil,'invalid-bundle-kind' end

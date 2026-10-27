@@ -1,5 +1,7 @@
 local _,addon=...
 local data=addon.RotationData
+-- Linear trim. A '^%s*(.-)%s*$' (or '%s+$') pattern is quadratic on a long run of spaces inside pasted text.
+local function trim(s) local a=s:find('%S');if not a then return '' end;return s:sub(a,s:match('^.*()%S')) end
 local function characters(text)
     local i,n=1,0
     while i<=#text do
@@ -20,7 +22,8 @@ function data.NormalizeRotationTags(tags)
     local normalized,seen={},{}
     for _,tag in ipairs(tags) do
         if type(tag)~='string' or tag:find('%c') then return nil,'invalid-tag' end
-        local text=tag:match('^%s*(.-)%s*$');local length=characters(text);if not length or length==0 or length>64 then return nil,'tag-length' end
+        if #tag>1024 then return nil,'tag-length' end
+        local text=trim(tag);local length=characters(text);if not length or length==0 or length>64 then return nil,'tag-length' end
         local key=text:lower();if not seen[key] then normalized[#normalized+1]=text;seen[key]=true end
     end
     return normalized
@@ -29,7 +32,7 @@ function data.ParseRotationTags(text)
     if type(text)~='string' or #text>32768 then return nil,'tag-limit' end
     local tags,parts={},{};local quoted,closed=false,false;local i=1
     local function finish()
-        local value=table.concat(parts):match('^%s*(.-)%s*$');if value~='' then tags[#tags+1]=value end;parts={};closed=false
+        local value=trim(table.concat(parts));if value~='' then tags[#tags+1]=value end;parts={};closed=false
     end
     while i<=#text do
         local ch=text:sub(i,i)
