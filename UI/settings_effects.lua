@@ -1,8 +1,21 @@
+-- The Effects settings page: a roster of the global highlight effects (db.global.effects) with a live glow preview,
+-- per-type sliders, an ordered sequence editor for the animated types, duplicate, import/export and delete. Edits and
+-- new effects go through the settings form's draft (p:SettingsData()); deletion is confirmed and then removes the saved
+-- effect and calls addon:InvalidateRotationDependencies so the lean engine drops plans that used it. Also owns the
+-- effect schema (types, numeric ranges) that draft validation reuses. Loaded from RotationMaster.toc after
+-- UI/settings_announces.lua; registered as the Effects page in UI/settings_collections.lua.
+
 local addon_name, addon = ...
+-- Captured at load (and discarded if absent) so a later replacement of the public name cannot redirect it.
 local invalidateDependencies = addon.InvalidateRotationDependencies
 if type(invalidateDependencies) ~= 'function' then invalidateDependencies = nil end
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- ============================================================================
+-- Effect schema
+-- ============================================================================
+
+-- The effect kinds in menu order; `value` is the saved `type`.
 local types = {
     { value = 'texture', text = L['Texture'] },
     { value = 'pixel', text = L['Pixel'] },
@@ -16,6 +29,8 @@ local types = {
     { value = 'custom', text = L['Custom'] },
 }
 
+-- Numeric settings each type offers, as { key, label, default, minimum, maximum, step }. Used for the sliders, for
+-- repairing out-of-range saved values (defaults) and for validation (validEffect); the label is also an L[] key.
 local schemas = {
     proc = { { 'duration', 'Loop duration', 1, .1, 5, .05 } },
     pixel = {
@@ -37,6 +52,8 @@ local schemas = {
     rotate = { { 'frequency', 'Frequency', .25, .1, 5, .05 }, { 'steps', 'Steps', 4, 2, 36, 1 } },
 }
 
+-- Fills missing or out-of-range numeric settings of `effect` with their defaults and gives sequence types an empty
+-- list.
 local function defaults(effect)
     for _, entry in ipairs(schemas[effect.type] or {}) do
         local v = effect[entry[1]]
@@ -48,6 +65,8 @@ local function defaults(effect)
     end
 end
 
+-- True when `effect` is a well-formed definition: named, of a known type, numeric settings in range, and a sequence of
+-- at most 256 entries in the shape its type needs. Used for new, imported and loaded effects, so it must stay strict.
 local function validEffect(effect)
     if type(effect) ~= 'table' or type(effect.name) ~= 'string' or not effect.name:find('%S') then return false end
     local known = false
@@ -107,10 +126,17 @@ local function validEffect(effect)
     return true
 end
 
+-- Public form of validEffect, for draft validation in UI/settings_draft.lua.
 function addon:IsValidEffectDefinition(value)
     return validEffect(value)
 end
 
+-- ============================================================================
+-- Page
+-- ============================================================================
+
+-- Builds the Effects page into settings form `p`: the roster, then either the selected effect's editor or the creation
+-- form for a new one, with the collection footer. Runs on every redraw of the page.
 function addon:BuildEffectSettings(p)
     local store = p:SettingsData()
     local effects = store.global.effects or {}
@@ -152,6 +178,7 @@ function addon:BuildEffectSettings(p)
     if effect then
         local id = isNew and 'draft' or p.selection
 
+        -- Re-shows the preview glow from the edited effect, so every change is visible at once.
         local function refresh()
             if self.RemoveAllCurrentGlows then self:RemoveAllCurrentGlows() end
             if p.preview and self.HideGlow then self:HideGlow(p.preview, 'settings-effect') end
@@ -257,6 +284,7 @@ function addon:BuildEffectSettings(p)
 
                 -- Add step sits on the Sequence header row; a click appends and
                 -- a drag drops into a gap, both through this one insert.
+                -- Inserts a default step for the effect's type at position `gap` (clamped to the end).
                 local function insertStep(gap)
                     effect.sequence = effect.sequence or {}
 

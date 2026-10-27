@@ -1,6 +1,14 @@
+-- Undo and redo for the draft-based settings form (item sets and effects): snapshots the draft before and after each
+-- wrapped edit, keeps bounded undo/redo stacks (100 entries or 8 MiB) and draws the Undo/Redo buttons. Edits reach it
+-- through p:WithSettingsHistory, called from the form's Guard (UI/settings_form.lua). Works on the draft only, never on
+-- saved data; nothing is written until the form saves. Loaded from RotationMaster.toc after UI/settings_draft.lua;
+-- settings_form.lua calls addon:InstallSettingsHistory(p) to add these methods to the form class.
+
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- Deep structural equality of two plain data values (no metatables, no cycles); decides whether an edit changed
+-- anything.
 local function equal(a, b)
     if type(a) ~= type(b) then return false end
     if type(a) ~= 'table' then return a == b end
@@ -16,6 +24,7 @@ local function equal(a, b)
     return true
 end
 
+-- Rough byte cost of a value (strings by length, tables recursively), used only to cap the undo stack's memory.
 local function size(value)
     if type(value) == 'string' then return #value + 32 end
     if type(value) ~= 'table' then return 16 end
@@ -28,7 +37,9 @@ local function size(value)
     return n
 end
 
+-- Adds the history methods to the settings form class `p`; called once when the form class is built.
 function addon:InstallSettingsHistory(p)
+    -- Drops both stacks and bumps the epoch, so an edit still in flight is not recorded against the old draft.
     function p:ClearSettingsHistory()
         self.historyEpoch = (self.historyEpoch or 0) + 1
         self.historyUndo = {}
@@ -36,6 +47,7 @@ function addon:InstallSettingsHistory(p)
         self.historyBytes = 0
     end
 
+    -- Returns a deep copy of the undoable state (item-set drafts, effects, selection), or nil when history is off.
     function p:HistorySnapshot()
         if not self.historyEnabled or not self.draft then return end
 
@@ -47,6 +59,7 @@ function addon:InstallSettingsHistory(p)
         })
     end
 
+    -- Enables each button only while its stack has an entry.
     function p:UpdateHistoryActions()
         if self.fields.undo then
             if #(self.historyUndo or {}) > 0 then
@@ -65,6 +78,10 @@ function addon:InstallSettingsHistory(p)
         end
     end
 
+    -- Runs `callback(...)` and records a pre-edit snapshot when it changed the draft; returns the callback's result.
+    -- Nested calls run unrecorded (one user action is one undo step), and an epoch change during the call (draft
+    -- replaced or cleared) discards the snapshot instead of recording it. Errors are rethrown after the depth flag
+    -- clears.
     function p:WithSettingsHistory(callback, ...)
         if not self.historyEnabled or self.historyDepth then return callback(...) end
         local before = self:HistorySnapshot()
@@ -96,6 +113,8 @@ function addon:InstallSettingsHistory(p)
         return result
     end
 
+    -- Moves one step back (or forward when `redo`): pushes the current state on the opposite stack, restores the
+    -- popped snapshot into the draft and redraws. Pending field edits are flushed first; does nothing if that fails.
     function p:TravelSettingsHistory(redo)
         if not self:FlushEdits() then return end
         local from = redo and self.historyRedo or self.historyUndo
@@ -111,6 +130,7 @@ function addon:InstallSettingsHistory(p)
         self:Draw()
     end
 
+    -- Lays out the Undo and Redo buttons on a new row of the form.
     function p:HistoryActions()
         local y = self:Row(nil, 28)
 

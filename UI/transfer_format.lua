@@ -1,12 +1,17 @@
-local addon_name, addon = ...
-local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
-
 -- The Format choice of a rotation transfer window: Rotation Master (the default) or WowSims. Everything pasted into
 -- the window is read as the chosen format, and what the window shows for export is written in it. The conversion
 -- happens before the usual Preview / Compare / Check flow, which then runs on an ordinary rotation: nothing in the
 -- import path is weakened. Item sets, announcements and the other kinds of transfer have no WowSims form and show
 -- no such choice. The converter itself is the load-on-demand add-on RotationMaster_WowSims (Core/transfer_formats.lua),
 -- not loaded until this window needs it.
+-- Loaded from RotationMaster.toc right after UI/transfer.lua, whose rotation transfer window attaches these controls.
+
+local addon_name, addon = ...
+local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
+
+-- ============================================================================
+-- Per-window state
+-- ============================================================================
 
 -- Per-window state: the chosen format, the codec the import session reads through, and the conversions made.
 -- codec is the Rotation Master codec; source is the rotation being exported; spec is the list the window belongs to.
@@ -21,6 +26,8 @@ function addon:NewTransferFormatState(codec, source, spec, exported)
         lastImport = nil,
     }
 
+    -- True when the text starts like a JSON object or array, used to hint that WowSims JSON was pasted as Rotation
+    -- Master.
     local function looksLikeJson(text)
         local first = type(text) == 'string' and text:match('^%s*(.)') or nil
         return first == '{' or first == '['
@@ -83,8 +90,8 @@ function addon:NewTransferFormatState(codec, source, spec, exported)
         end,
     }
 
-    -- The text the window shows for export in the chosen format, and the report on how it was made.
-    -- limit: how many characters the box takes. The pretty JSON is shown when it fits, the compact form when only that does.
+    -- The text the window shows for export in the chosen format, and the report on how it was made. limit: how many
+    -- characters the box takes. The pretty JSON is shown when it fits, the compact form when only that does.
     function state:ExportFor(format, limit)
         if format == 'rm' then return self.exportText.rm end
         local conversion = self.conversions[format]
@@ -114,6 +121,7 @@ function addon:NewTransferFormatState(codec, source, spec, exported)
         return text, nil, conversion
     end
 
+    -- Drops the cached import conversion and its report; called when the format changes or the text is cleared.
     function state:Forget()
         cache = nil
         self.lastImport = nil
@@ -130,6 +138,10 @@ function addon:NewTransferFormatState(codec, source, spec, exported)
 
     return state
 end
+
+-- ============================================================================
+-- Report window and Format row
+-- ============================================================================
 
 -- The window that shows a conversion report: the same themed, copyable text surface the other reports use.
 function addon:ShowTransferReport(title, text)
@@ -179,6 +191,7 @@ function addon:AttachTransferFormatControls(dialog, state, options)
     controls.state = state
     controls.options = options
 
+    -- True while these controls still belong to the visible dialog, state and option table (guards late callbacks).
     local function live()
         return dialog.formatControls == controls
             and controls.state == state
@@ -186,6 +199,7 @@ function addon:AttachTransferFormatControls(dialog, state, options)
             and frame:IsShown()
     end
 
+    -- True when the text box still holds exactly what this window last wrote into it (so it is safe to replace).
     local function shownIsExport()
         local text = dialog.input:GetText()
         return text == dialog.formatShown
@@ -199,10 +213,12 @@ function addon:AttachTransferFormatControls(dialog, state, options)
         dialog.scroll.workbenchBar:SetValue(0)
     end
 
+    -- The menu label for the current format.
     local function labelText()
         return self:GetTransferFormatLabel(state.format)
     end
 
+    -- The edit box's character limit, or nil when it reports none; bounds how long an export can be shown.
     local function boxLimit()
         local input = dialog.input
 
@@ -212,6 +228,8 @@ function addon:AttachTransferFormatControls(dialog, state, options)
         end
     end
 
+    -- Updates the menu label, the lossy-conversion note and the Check export button to match the current format and
+    -- box.
     local function refresh()
         if not live() then return end
         local wowsims = state.format == 'wowsims'
@@ -258,6 +276,8 @@ function addon:AttachTransferFormatControls(dialog, state, options)
 
     controls.refresh = refresh
 
+    -- Switches format when allowed. An export in the box is rewritten in the new format; pasted text is kept and read
+    -- in the new format from the next Preview on.
     local function choose(format)
         if not live() or format == state.format or not self:IsTransferFormatAvailable(format) then return end
         -- The box holds an export when it is exactly what this window put there (or nothing): that is rewritten in
@@ -338,7 +358,8 @@ function addon:AttachTransferFormatControls(dialog, state, options)
         if text then
             showExport(text, false)
         else
-            -- The converter cannot be used (not loadable, nothing to convert): fall back to Rotation Master and say why.
+            -- The converter cannot be used (not loadable, nothing to convert): fall back to Rotation Master and say
+            -- why.
             state.format = 'rm'
             showExport(state:ExportFor('rm') or '', true)
             dialog.status:SetText(message or '')

@@ -1,5 +1,14 @@
+-- Condition-editor check box widget (type 'RM-CheckBox'): a 180x24 frame around one workbench check box that speaks the
+-- condition-widget contract (SetLabel/SetValue/GetValue/SetDisabled, fires OnValueChanged on a user click). Loaded from
+-- RotationMaster.toc after UI/selector.lua and before UI/condition_inputs.lua; needs UI/controls.lua
+-- (addon:CreateWorkbenchCheckBox) and UI/condition_widgets.lua (acquire/release pooling). The constructor is a recorded
+-- Built In helper (see the generated bindings at the end of the file): its body is frozen, so comments live only above
+-- it, never inside it.
+
 local _, addon = ...
 
+-- Builds one pooled check box widget the first time the pool is empty; registered with the widget registry so release,
+-- reuse and leak tracking work. Callers never call this directly: they go through addon:CreateConditionCheckBox.
 ---@class RMConditionCheckBox: RMConditionWidget
 ---@field button Button
 ---@field SetLabel fun(self: RMConditionCheckBox, text: string)
@@ -25,6 +34,7 @@ local function constructor()
     return addon:RegisterConditionWidget(w)
 end
 
+-- Returns a check box acquired from the widget pool (OnAcquire has reset it to unchecked, enabled, 180x24).
 ---@return RMConditionCheckBox
 function addon:CreateConditionCheckBox()
     local widget=addon:AcquireConditionWidget('RM-CheckBox',constructor)

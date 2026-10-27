@@ -1,7 +1,18 @@
+-- Condition-editor text and numeric input widgets ('RM-ConditionEditBox' and 'RM-ConditionSlider'): a caption, a
+-- workbench edit box and, for the numeric kind, a slider that shares the value. Owns the pending-input protocol: typed
+-- text is only "pending" until Enter or focus loss commits it, and IsPending/CommitPending let a window block closing
+-- on unsaved or invalid text. Loaded from RotationMaster.toc after UI/checkbox.lua; needs UI/controls.lua and
+-- UI/condition_widgets.lua. The constructor and finite are recorded Built In helpers (generated bindings at the end of
+-- the file): their bodies are frozen, so comments live only above them, never inside.
+
 local _, addon = ...
+-- True only for a real, finite number (rejects nil, NaN and both infinities); used to validate typed and slider values.
 local function finite(value) return type(value)=='number' and value==value and value>-math.huge and value<math.huge end
 
 -- Native visuals and pending-input protocol shared by condition fields.
+-- Builds one widget; `numeric` selects the slider-plus-percent variant, otherwise it is a plain text field. The
+-- widget's value is a number (numeric) or its text; events are OnValueChanged / OnEnterPressed on commit and
+-- OnPendingChanged while typing.
 ---@class RMConditionInput: RMConditionWidget
 ---@field editbox EditBox
 ---@field SetFocus fun(self: RMConditionInput)
@@ -128,6 +139,7 @@ local function constructor(numeric)
     return addon:RegisterConditionWidget(w)
 end
 
+-- Returns a pooled text input acquired from the widget registry.
 ---@return RMConditionInput
 function addon:CreateConditionEditBox()
     local w=addon:AcquireConditionWidget('RM-ConditionEditBox',function() return constructor(false) end)
@@ -135,6 +147,7 @@ function addon:CreateConditionEditBox()
     return w
 end
 
+-- Returns a pooled slider-with-number-box acquired from the widget registry.
 ---@return RMConditionInput
 function addon:CreateConditionSlider()
     local w=addon:AcquireConditionWidget('RM-ConditionSlider',function() return constructor(true) end)

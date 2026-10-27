@@ -1,4 +1,16 @@
+-- The native widget set every RM window is built from: flat buttons, icon buttons, pills, check boxes, edit boxes,
+-- sliders, scroll frames and bars, the drag card and drop-zone helpers, the deferred reflow scheduler, the shared
+-- layout constants (addon.WorkbenchLayout) and the splitter, position pad and edit-suggestion helpers. Pure
+-- construction and geometry: it owns no saved data and no window, and depends on no other addon's frames. Everything
+-- hangs off `addon` as addon:CreateWorkbench...; the first UI file in RotationMaster.toc, so every later UI file may
+-- use it. Frames RM sizes answer GetWidth/GetHeight from the size RM last assigned (TrackWorkbenchSize), because the
+-- client reports a stale rect until its next layout pass.
+
 local addon_name, addon = ...
+
+-- ============================================================================
+-- Size tracking
+-- ============================================================================
 
 -- Native controls with the compact flat-button conventions used by modern
 -- addon workbenches. No dependency on another installed addon's frames.
@@ -20,17 +32,20 @@ function addon:TrackWorkbenchSize(frame)
     local setWidth, setHeight, setSize, getWidth, getHeight =
         frame.SetWidth, frame.SetHeight, frame.SetSize, frame.GetWidth, frame.GetHeight
 
+    -- Records a numeric width before passing the call on, so GetWidth can answer before the client lays the frame out.
     function frame:SetWidth(value, ...)
         if type(value) == 'number' then self.rmWidth = value end
         return setWidth(self, value, ...)
     end
 
+    -- Records a numeric height before passing the call on.
     function frame:SetHeight(value, ...)
         if type(value) == 'number' then self.rmHeight = value end
         return setHeight(self, value, ...)
     end
 
     if setSize then
+        -- Records numeric width and height before passing the call on.
         function frame:SetSize(width, height, ...)
             if type(width) == 'number' then self.rmWidth = width end
             if type(height) == 'number' then self.rmHeight = height end
@@ -38,12 +53,14 @@ function addon:TrackWorkbenchSize(frame)
         end
     end
 
+    -- Answers the width RM last assigned (or the client last reported), else the client's own value.
     function frame:GetWidth(...)
         local value = self.rmWidth
         if value then return value end
         return getWidth(self, ...)
     end
 
+    -- Answers the height RM last assigned (or the client last reported), else the client's own value.
     function frame:GetHeight(...)
         local value = self.rmHeight
         if value then return value end
@@ -53,6 +70,7 @@ function addon:TrackWorkbenchSize(frame)
     if frame.SetScript and frame.HookScript and frame.HasScript and frame:HasScript('OnSizeChanged') then
         local setScript = frame.SetScript
 
+        -- Wraps OnSizeChanged handlers so the reported size is noted before the handler reads it.
         function frame:SetScript(event, handler, ...)
             if event == 'OnSizeChanged' and handler then
                 local inner = handler
@@ -79,6 +97,7 @@ end
 
 -- Pooled builders may return any region or a plain table; only regions
 -- with their own geometry are tracked.
+-- Wraps `value` with TrackWorkbenchSize when it looks like a sized region and returns it; other values pass through.
 function addon:TrackWorkbenchRegion(value)
     if
         type(value) == 'table'
@@ -92,12 +111,19 @@ function addon:TrackWorkbenchRegion(value)
     return value
 end
 
+-- Records a size the client reported (positive numbers only) on a tracked frame; ignored for untracked frames.
 function addon:NoteWorkbenchSize(frame, width, height)
     if not frame.rmTracksSize then return end
     if type(width) == 'number' and width > 0 then frame.rmWidth = width end
     if type(height) == 'number' and height > 0 then frame.rmHeight = height end
 end
 
+-- ============================================================================
+-- Buttons and toggles
+-- ============================================================================
+
+-- Creates the flat button every other control builds on: a 20 px tall hit area, centered caption, dim background art, a
+-- hover tooltip from `button.tooltip` and a dimmed look while disabled. Returns the button.
 function addon:CreateWorkbenchButton(parent, label, width)
     local button = CreateFrame("Button", nil, parent)
     self:TrackWorkbenchSize(button)
@@ -111,6 +137,7 @@ function addon:CreateWorkbenchButton(parent, label, width)
     background:SetAllPoints(button)
     button.art = background
 
+    -- Paints the resting background, lighter while the button is selected.
     local function rest()
         if button.selected then
             background:SetColorTexture(.24, .24, .24, .8)
@@ -119,6 +146,7 @@ function addon:CreateWorkbenchButton(parent, label, width)
         end
     end
 
+    -- Marks the button selected (lighter background) or not.
     function button:SetSelected(value)
         self.selected = value == true
         rest()
@@ -145,10 +173,12 @@ function addon:CreateWorkbenchButton(parent, label, width)
     return button
 end
 
+-- Returns the path of the control texture `name` in Assets/Controls (generated by tools/generate_control_icons.py).
 function addon:ControlTexture(name)
     return "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Controls\\" .. name .. ".tga"
 end
 
+-- Creates a 20 px button showing control icon `name` (the trash icon is tinted red) with `tooltip` on hover.
 ---@class RMIconButton: RMWorkbenchButton
 ---@field icon Texture
 ---@return RMIconButton
@@ -166,6 +196,7 @@ function addon:CreateWorkbenchIconButton(parent, name, tooltip)
     return button
 end
 
+-- Creates the gold round "?" button used for help.
 ---@return RMIconButton
 function addon:CreateWorkbenchHelpButton(parent, tooltip)
     local button = self:CreateWorkbenchIconButton(parent, 'help', tooltip)
@@ -175,6 +206,7 @@ function addon:CreateWorkbenchHelpButton(parent, tooltip)
     return button
 end
 
+-- Creates an icon-plus-caption button (Undo/Redo style); `direction` names the icon.
 function addon:CreateWorkbenchHistoryButton(parent, direction, label)
     local button = self:CreateWorkbenchIconButton(parent, direction, label)
     button:SetSize(68, 20)
@@ -192,12 +224,14 @@ function addon:CreateWorkbenchHistoryButton(parent, direction, label)
     return button
 end
 
+-- Creates an icon-plus-caption button of the given width (default 100).
 function addon:CreateWorkbenchLabeledIconButton(parent, icon, label, width)
     local button = self:CreateWorkbenchHistoryButton(parent, icon, label)
     button:SetWidth(width or 100)
     return button
 end
 
+-- Shows a selector's current choice on `button`: the caption (or the entry text) and, when the entry has one, its icon.
 function addon:PaintSelectorSelection(button, entry, caption)
     button:SetText(caption or entry and entry.text or '')
 
@@ -234,6 +268,7 @@ local function refitAlignedText(button)
     button.rmAlignWidth = width
 end
 
+-- Left-aligns a button's caption `inset` pixels in and sizes it to the button; later resizes of the button refit it.
 function addon:AlignWorkbenchTextLeft(button, inset)
     local label = button:GetFontString()
     self:TrackWorkbenchSize(label)
@@ -249,11 +284,13 @@ function addon:AlignWorkbenchTextLeft(button, inset)
         button.rmAlignFollows = true
         local setWidth, setSize = button.SetWidth, button.SetSize
 
+        -- Resizing the button refits its aligned caption to the new width.
         function button:SetWidth(...)
             setWidth(self, ...)
             refitAlignedText(self)
         end
 
+        -- Resizing the button refits its aligned caption to the new size.
         function button:SetSize(...)
             setSize(self, ...)
             refitAlignedText(self)
@@ -261,6 +298,7 @@ function addon:AlignWorkbenchTextLeft(button, inset)
     end
 end
 
+-- Creates a small rounded toggle (Enabled, If/Unless, All/Any); SetSelected lights it and SetAccent sets its color.
 ---@class RMWorkbenchPill: RMWorkbenchButton
 ---@field SetAccent fun(self: RMWorkbenchPill, r: number, g: number, b: number, alpha?: number)
 ---@return RMWorkbenchPill
@@ -272,6 +310,7 @@ function addon:CreateWorkbenchPill(parent, label, width)
     local accent = { .35, .65, .4 }
     local accentAlpha = .7
 
+    -- Repaints the pill border and fill for the selected and hover states.
     local function paint(hover)
         local color = button.selected and accent or { .48, .48, .48 }
 
@@ -284,11 +323,13 @@ function addon:CreateWorkbenchPill(parent, label, width)
         )
     end
 
+    -- Marks the pill selected (accent border and fill) or not.
     function button:SetSelected(value)
         self.selected = value == true
         paint(false)
     end
 
+    -- Sets the border color and opacity used while the pill is selected.
     function button:SetAccent(r, g, b, a)
         accent = { r, g, b }
         accentAlpha = a or .7
@@ -314,6 +355,7 @@ function addon:CreateWorkbenchPill(parent, label, width)
     return button
 end
 
+-- Creates a check box button: a 16 px box with a gold check, SetChecked/GetChecked, and the label to its right.
 ---@class RMWorkbenchCheckBox: RMWorkbenchButton
 ---@field SetChecked fun(self: RMWorkbenchCheckBox, value: boolean)
 ---@field GetChecked fun(self: RMWorkbenchCheckBox): boolean
@@ -337,6 +379,7 @@ function addon:CreateWorkbenchCheckBox(parent, label, width)
     text:SetWidth(math.max(1, (width or 150) - 22))
     text:SetJustifyH('LEFT')
 
+    -- Shows or hides the check mark; only a literal `true` counts as checked.
     function button:SetChecked(value)
         self.checked = value == true
 
@@ -347,6 +390,7 @@ function addon:CreateWorkbenchCheckBox(parent, label, width)
         end
     end
 
+    -- Returns the stored checked state (nil before the first SetChecked).
     function button:GetChecked()
         return self.checked
     end
@@ -356,6 +400,7 @@ function addon:CreateWorkbenchCheckBox(parent, label, width)
     return button
 end
 
+-- Returns the icon for condition `tag`: an override, else the definition's icon, else the question-mark icon.
 function addon:GetConditionIcon(tag)
     local replacement = self.conditionIcons and self.conditionIcons[tag]
     local definition = (self.conditionDefinitions or {})[tag] or (self.conditionSpecials or {})[tag]
@@ -363,6 +408,8 @@ function addon:GetConditionIcon(tag)
     return (type(icon) == "string" or type(icon) == "number") and icon or "Interface\\Icons\\INV_Misc_QuestionMark"
 end
 
+-- Adds a nine-slice rounded fill and border to `frame` and returns a decoration whose SetColors(r, g, b, alpha,
+-- fillAlpha) recolors it. Used by cards, pills and panels.
 function addon:CreateRoundedCardDecoration(frame)
     local decoration = { fill = {}, border = {} }
 
@@ -423,6 +470,7 @@ function addon:CreateRoundedCardDecoration(frame)
     return decoration
 end
 
+-- Creates the card expand/collapse arrow; PointState('compact' | 'expanded' | other) picks the icon and rotation.
 ---@class RMConditionChevron: RMIconButton
 ---@field PointDown fun(self: RMConditionChevron, down: boolean)
 ---@field PointState fun(self: RMConditionChevron, state: string)
@@ -431,10 +479,12 @@ function addon:CreateConditionChevron(parent)
     local button = self:CreateWorkbenchIconButton(parent, "chevron-right")
     button:SetSize(18, 18)
 
+    -- Shows the chevron pointing down (expanded) or right (collapsed).
     function button:PointDown(down)
         self.icon:SetTexture(addon:ControlTexture(down and "chevron-down" or "chevron-right"))
     end
 
+    -- Shows the chevron for a card state: 'compact' (rotated), 'expanded' (double) or normal.
     function button:PointState(state)
         self.icon:SetRotation(state == 'compact' and math.pi or 0)
 
@@ -460,7 +510,10 @@ function addon:PlainWorkbenchName(value)
     ):gsub('|T.-|t', ''))
 end
 
+-- Makes an inline name edit box call `finish` when it loses focus or the player clicks anywhere outside it, which the
+-- client would not otherwise report for a click on a non-focusable area.
 function addon:BindWorkbenchInlineName(input, finish)
+    -- True while either mouse button is held (used to detect a click outside the name box).
     local function down()
         return IsMouseButtonDown and (IsMouseButtonDown('LeftButton') or IsMouseButtonDown('RightButton')) or false
     end
@@ -553,12 +606,14 @@ function addon:SetWorkbenchNotice(control, shown, strong)
     end
 end
 
+-- Creates a list row button (default 32 px tall).
 function addon:CreateWorkbenchListRow(parent, width, height)
     local row = self:CreateWorkbenchButton(parent, '', width)
     row:SetHeight(height or 32)
     return row
 end
 
+-- Highlights or clears a list row's selection tint.
 function addon:SetWorkbenchListSelection(control, selected)
     if control.SetSelected then control:SetSelected(selected) end
 
@@ -576,6 +631,11 @@ function addon:SetWorkbenchListSelection(control, selected)
     end
 end
 
+-- ============================================================================
+-- Text and number inputs
+-- ============================================================================
+
+-- Creates a flat single-line edit box (24 px, dark background, underline); callers set multi-line, limits and scripts.
 function addon:CreateWorkbenchEditBox(parent)
     local input = CreateFrame("EditBox", nil, parent)
     self:TrackWorkbenchSize(input)
@@ -595,6 +655,8 @@ function addon:CreateWorkbenchEditBox(parent)
     return input
 end
 
+-- Shows gray hint text (default "Search...") inside an empty, unfocused edit box. Idempotent; returns the hint. Call
+-- input.RefreshWorkbenchSearchHint after setting the text from code.
 function addon:AttachWorkbenchSearchHint(input, text)
     if input.searchHint then return input.searchHint end
     local hint = input:CreateFontString(nil, 'OVERLAY', 'GameFontDisableSmall')
@@ -604,6 +666,7 @@ function addon:AttachWorkbenchSearchHint(input, text)
     hint:SetText(text or LibStub('AceLocale-3.0'):GetLocale(addon_name)['Search...'])
     local focused = false
 
+    -- Shows the hint only while the box is empty and unfocused, sized to the box.
     local function refresh()
         hint:SetWidth(math.max(1, input:GetWidth() - 12))
 
@@ -637,6 +700,7 @@ function addon:AttachWorkbenchSearchHint(input, text)
     return hint
 end
 
+-- Creates a flat horizontal slider that obeys its step while dragging.
 function addon:CreateWorkbenchSlider(parent, minimum, maximum, step, width)
     local slider = CreateFrame("Slider", nil, parent)
     self:TrackWorkbenchSize(slider)
@@ -656,6 +720,10 @@ function addon:CreateWorkbenchSlider(parent, minimum, maximum, step, width)
     slider:SetThumbTexture(thumb)
     return slider
 end
+
+-- ============================================================================
+-- Scrolling
+-- ============================================================================
 
 -- Flat, narrow tracks and proportional rectangular thumbs follow the modern
 -- Details/Plater convention. These frames belong to RM, without a provider.
@@ -694,6 +762,7 @@ function addon:CreateWorkbenchScrollBar(parent, orientation)
         addon:SetUIScript(control, 'OnClick', function() bar:SetValue((bar:GetValue() or 0) + direction * 40) end)
     end
 
+    -- Moves the thumb to match the bar's value within its travel.
     local function placeThumb()
         local length = horizontal and bar:GetWidth() or bar:GetHeight()
         local travel = math.max(0, length - (bar.thumbLength or 18))
@@ -711,6 +780,7 @@ function addon:CreateWorkbenchScrollBar(parent, orientation)
     -- Reflow can clamp the native value before its value-change hook runs.
     local nativeSetValue = bar.SetValue
 
+    -- Sets the scroll value and moves the thumb in the same call.
     function bar:SetValue(value)
         nativeSetValue(self, value)
         placeThumb()
@@ -726,6 +796,7 @@ function addon:CreateWorkbenchScrollBar(parent, orientation)
         bar.dragStart = { position = horizontal and x or y, value = bar:GetValue() }
     end)
 
+    -- Ends a thumb drag.
     local function stop()
         bar.dragStart = nil
     end
@@ -787,6 +858,9 @@ function addon:CreateWorkbenchScrollBar(parent, orientation)
     addon:SetUIScript(bar, 'OnEnter', function() thumb:SetColorTexture(.7, .7, .7, 1) end)
     addon:SetUIScript(bar, 'OnLeave', function() thumb:SetColorTexture(.48, .48, .48, .9) end)
 
+    -- Sets the scroll range from the `content` and `visible` lengths, clamps the value, sizes the thumb and shows the
+    -- bar only when there is something to scroll. Re-entrancy safe: a nested update (from a value-change callback)
+    -- wins.
     function bar:UpdateExtent(content, visible)
         self.extentRevision = (self.extentRevision or 0) + 1
         local revision = self.extentRevision
@@ -823,6 +897,8 @@ function addon:CreateWorkbenchScrollBar(parent, orientation)
     return bar
 end
 
+-- Creates a scroll frame with its own vertical bar (frame.workbenchBar). Scroll size follows the child, and
+-- UpdateWorkbenchScroll re-measures after the child changes height.
 function addon:CreateWorkbenchScrollFrame(parent)
     local scroll = CreateFrame('ScrollFrame', nil, parent)
     self:TrackWorkbenchSize(scroll)
@@ -831,6 +907,7 @@ function addon:CreateWorkbenchScrollFrame(parent)
     scroll.workbenchBar = bar
     local setScrollChild = scroll.SetScrollChild
 
+    -- Tracks the child's size, then installs it as the scroll child.
     function scroll:SetScrollChild(child, ...)
         addon:TrackWorkbenchSize(child)
         return setScrollChild(self, child, ...)
@@ -848,6 +925,7 @@ function addon:CreateWorkbenchScrollFrame(parent)
         end
     end)
 
+    -- Re-measures the child against the viewport and refits the column width.
     function scroll:UpdateWorkbenchScroll()
         local child = self:GetScrollChild()
         if not child then return end
@@ -863,6 +941,8 @@ function addon:CreateWorkbenchScrollFrame(parent)
         self:FitWorkbenchColumn()
     end
 
+    -- Resizes the viewport and child to the column width, minus the bar's reserve only while the bar shows; tells the
+    -- owner.
     function scroll:FitWorkbenchColumn()
         local column = self.workbenchColumnWidth
         if not column or self.fittingColumn then return end
@@ -896,6 +976,8 @@ function addon:CreateWorkbenchGroupViewport(parent)
     empty:SetSize(1, 1)
     scroll:SetScrollChild(empty)
 
+    -- Detaches the hosted condition group and releases it if this viewport still holds its lease; resets to an empty
+    -- child.
     function scroll:ReleaseConditionContent()
         local root, lease, finish = self.contentWidget, self.contentLease, self.originalLayoutFinished
         self.contentWidget = nil
@@ -911,6 +993,8 @@ function addon:CreateWorkbenchGroupViewport(parent)
         self:UpdateWorkbenchScroll()
     end
 
+    -- Hosts the native condition group `root` (must be an active RM widget): restores its layout callback on release
+    -- and re-measures the scroll extent after each layout. Replaces any previous content.
     function scroll:SetConditionContent(root)
         if root then assert(root.rmWidget and root.rmActive and root.DoLayout, 'native-condition-group-required') end
 
@@ -961,10 +1045,17 @@ function addon:CreateWorkbenchGroupViewport(parent)
     return scroll
 end
 
+-- ============================================================================
+-- Drag and drop
+-- ============================================================================
+
+-- True when the pointer is inside both `zone` and `viewport`, using cursor geometry where the client allows it and
+-- mouse-over otherwise. Zones that scrolled out of the viewport must not accept a drop.
 function addon:IsWorkbenchDropZoneUnderPointer(zone, viewport)
     if GetCursorPosition and zone.GetLeft and zone.GetRight and zone.GetTop and zone.GetBottom then
         local x, y = GetCursorPosition()
 
+        -- True when the cursor lies within `frame`'s rectangle, in that frame's own scale.
         local function inside(frame)
             local left, right, top, bottom = frame:GetLeft(), frame:GetRight(), frame:GetTop(), frame:GetBottom()
             if not left or not right or not top or not bottom then return false end
@@ -980,6 +1071,8 @@ function addon:IsWorkbenchDropZoneUnderPointer(zone, viewport)
     return over and over(zone) and (not viewport or over(viewport)) or false
 end
 
+-- Creates the floating card that follows the pointer during a drag (title, summary, optional count and stacked layers).
+-- Returns the frame; Present shows it and FollowPointer tracks the cursor.
 function addon:CreateWorkbenchDragCard()
     local frame = CreateFrame('Frame', nil, UIParent)
     frame:SetSize(340, 76)
@@ -1015,6 +1108,7 @@ function addon:CreateWorkbenchDragCard()
     frame.summary:SetJustifyH('LEFT')
     frame.summary:SetMaxLines(3)
 
+    -- Moves the card next to the cursor.
     function frame:FollowPointer()
         if GetCursorPosition then
             local x, y = GetCursorPosition()
@@ -1024,6 +1118,7 @@ function addon:CreateWorkbenchDragCard()
         end
     end
 
+    -- Fills and shows the card above `source`; a `count` over 1 adds the stacked look and "N cards" label.
     function frame:Present(title, summary, source, count)
         self:SetFrameStrata('TOOLTIP')
         self:SetFrameLevel((source and source:GetFrameLevel() or 0) + 500)
@@ -1080,6 +1175,8 @@ function addon:CanReorderWorkbenchRange(items, from, gap, tail)
         and (tail and gap < from or not tail and gap ~= from and gap ~= from + 1)
 end
 
+-- Moves entry `from` (or it and every later entry when `tail`) to gap `gap` of `items` in place. Returns false,
+-- changing nothing, when CanReorderWorkbenchRange refuses the move.
 function addon:ReorderWorkbenchRange(items, from, gap, tail)
     if not self:CanReorderWorkbenchRange(items, from, gap, tail) then return false end
     local count = tail and #items - from + 1 or 1
@@ -1135,8 +1232,13 @@ function addon:BindWorkbenchDragSource(control, start, stop)
     end
 end
 
--- Explicit boundary for native RM scripts; no global handler or frame API is
--- replaced. Clear callbacks using the native API as usual.
+-- ============================================================================
+-- Scripts and deferred reflow
+-- ============================================================================
+
+-- Explicit boundary for native RM scripts; no global handler or frame API is replaced. Clear callbacks using the native
+-- API as usual. Sets (or with nil clears) a frame script, wrapping a handler in the diagnostics boundary when it
+-- exists. Returns the handler actually installed.
 function addon:SetUIScript(frame, event, callback)
     local handler = callback
 
@@ -1161,12 +1263,14 @@ end
 -- rendered frames: the full drawing after a drag that reflowed cheaply.
 local reflowQueue, settleQueue, reflowDriver = {}, {}, nil
 
+-- Seconds from the best clock the client offers (a monotonic profile clock, else game time).
 local function reflowClock()
     if type(debugprofilestop) == 'function' then return debugprofilestop() / 1000 end
     if type(GetTime) == 'function' then return GetTime() end
     return 0
 end
 
+-- True when a queued owner's frame is visible; an invisible owner is dropped and redraws when it opens again.
 local function reflowVisible(frame)
     if not frame then return true end
     if frame.IsVisible then return frame:IsVisible() and true or false end
@@ -1188,6 +1292,9 @@ local function reflowFailure(why)
     return ok and type(stack) == 'string' and why .. '\n' .. stack or why
 end
 
+-- The per-frame driver: runs each pending owner at most once (respecting its cost-based wait), then the settle requests
+-- whose quiet period is over, and stops itself when both queues are empty. Errors go to the game's error handler, not
+-- the caller.
 local function driveReflow(driver)
     local batch = reflowQueue
     reflowQueue = {}
@@ -1237,6 +1344,7 @@ local function driveReflow(driver)
     if next(reflowQueue) == nil and next(settleQueue) == nil then driver:SetScript('OnUpdate', nil) end
 end
 
+-- Queues `run()` as `owner`'s relayout for the next rendered frame; a newer request from the same owner replaces it.
 function addon:RequestWorkbenchReflow(owner, frame, run)
     if type(owner) ~= 'table' or type(run) ~= 'function' then return end
     reflowQueue[owner] = { frame = frame, run = run }
@@ -1244,6 +1352,8 @@ function addon:RequestWorkbenchReflow(owner, frame, run)
     if not reflowDriver:GetScript('OnUpdate') then reflowDriver:SetScript('OnUpdate', driveReflow) end
 end
 
+-- Queues `run()` to fire once `owner` has made no reflow request for `frames` rendered frames (default 6): the full
+-- drawing after a drag that only reflowed cheaply.
 function addon:RequestWorkbenchSettle(owner, frame, run, frames)
     if type(owner) ~= 'table' or type(run) ~= 'function' then return end
     settleQueue[owner] = { frame = frame, run = run, wait = frames or 6 }
@@ -1276,9 +1386,14 @@ function addon:CancelWorkbenchReflow(owner)
     if type(owner) == 'table' then owner.rmReflowAfter = nil end
 end
 
+-- True when `owner` has a reflow or settle request queued.
 function addon:IsWorkbenchReflowPending(owner)
     return reflowQueue[owner] ~= nil or settleQueue[owner] ~= nil
 end
+
+-- ============================================================================
+-- Canvas helpers
+-- ============================================================================
 
 -- Box selection on a card canvas. The pointer in a canvas child's own
 -- coordinates (x right, y down from its top-left, zoom included), or nil when
@@ -1298,6 +1413,7 @@ function addon:WorkbenchPointerIn(child)
     local scale = child:GetEffectiveScale()
     local left, top = child:GetLeft(), child:GetTop()
 
+    -- True only for a real, finite number.
     local function finite(value)
         return type(value) == 'number' and value == value and value > -math.huge and value < math.huge
     end
@@ -1319,6 +1435,7 @@ end
 
 -- The drawn box: a faint gold fill with a 1px outline, placed in child
 -- coordinates with :Place(x1,y1,x2,y2).
+-- Creates the rubber-band rectangle for box selection; frame:Place(x1, y1, x2, y2) shows it between two corners.
 function addon:CreateWorkbenchSelectionBox(child)
     local frame = CreateFrame('Frame', nil, child)
     frame:EnableMouse(false)
@@ -1345,6 +1462,7 @@ function addon:CreateWorkbenchSelectionBox(child)
         end
     end
 
+    -- Shows the box between two corners given in child coordinates (any corner order).
     function frame:Place(x1, y1, x2, y2)
         self:ClearAllPoints()
         self:SetPoint('TOPLEFT', child, 'TOPLEFT', math.min(x1, x2), -math.min(y1, y2))
@@ -1357,6 +1475,8 @@ function addon:CreateWorkbenchSelectionBox(child)
 end
 
 -- One tightly packed position pad for profile and per-card highlight settings.
+-- Creates the 3x3 nudge pad (up, down, left, right, center). pad:Bind(change, valid, readOnly) wires it; a click calls
+-- change(dx, dy, center, step), where Shift makes the step 10.
 function addon:CreateWorkbenchPositionPad(parent)
     local pad = CreateFrame('Frame', nil, parent)
     pad:SetSize(48, 48)
@@ -1384,6 +1504,7 @@ function addon:CreateWorkbenchPositionPad(parent)
         end)
     end
 
+    -- Sets the click callback and its validity check; disables every button when `readOnly`.
     function pad:Bind(change, valid, readOnly)
         self.change = change
         self.valid = valid
@@ -1408,6 +1529,10 @@ function addon:GetWorkbenchVisibleRowRange(count, pitch, offset, height, margin)
     )
 end
 
+-- ============================================================================
+-- Layout constants and geometry
+-- ============================================================================
+
 -- Shared workbench sizing. The window minimum is the smallest width at which
 -- every page keeps its controls inside the pane; list/detail pages share one
 -- divider position, which each page clamps to its own width.
@@ -1429,6 +1554,7 @@ addon.WorkbenchLayout = {
 addon.WorkbenchHeaderFont = 'GameFontNormal'
 addon.WorkbenchHeaderColor = { 1, .82, 0 }
 
+-- Applies the shared section-header font and gold color to `label` and returns it.
 function addon:StyleWorkbenchHeader(label)
     if not label then return label end
     local color = self.WorkbenchHeaderColor
@@ -1438,6 +1564,7 @@ function addon:StyleWorkbenchHeader(label)
     return label
 end
 
+-- Returns the width the parent content frame reserves for the help "?" in its corner (0 when it reserves none).
 function addon:GetWorkbenchHelpReserve(frame)
     local parent = frame and frame.GetParent and frame:GetParent()
     return parent and parent.rmHelpReserve or 0
@@ -1454,12 +1581,15 @@ function addon:ReserveWorkbenchHelpCorner(owner, scroll, scrollTop)
     bar:SetPoint('BOTTOMLEFT', scroll, 'BOTTOMRIGHT', 4, 10)
 end
 
+-- Returns the smallest and largest allowed list-column width for a pane of `width`: at most half the pane, and always
+-- leaving the detail pane its minimum.
 function addon:GetWorkbenchSidebarBounds(width)
     local layout = self.WorkbenchLayout
     local maximum = math.min(math.floor(width * .5), width - layout.splitGap - layout.detailMin)
     return layout.sidebarMin, math.max(layout.sidebarMin, maximum)
 end
 
+-- Returns the saved divider position (db.global.workbenchSidebarWidth) when it is a sane number, else nil (automatic).
 function addon:GetWorkbenchSidebarPreference()
     local global = self.db and self.db.global
     local value = global and global.workbenchSidebarWidth
@@ -1478,16 +1608,21 @@ function addon:SetWorkbenchSidebarPreference(value)
     end
 end
 
+-- Returns the list-column width to use for a pane of `width`: the saved preference or an automatic 210 to 270, clamped
+-- to bounds.
 function addon:GetWorkbenchSidebarWidth(width)
     local minimum, maximum = self:GetWorkbenchSidebarBounds(width)
     local value = self:GetWorkbenchSidebarPreference() or math.max(210, math.min(270, width * .26))
     return math.max(minimum, math.min(maximum, value))
 end
 
+-- Returns the list column's height below `top` (at least 1).
 function addon:GetWorkbenchSidebarHeight(height, top)
     return math.max(1, height - (top or 0))
 end
 
+-- Returns the shared list/detail geometry { sidebarWidth, sidebarHeight, detailX, detailWidth, ... } every roster page
+-- uses.
 function addon:GetWorkbenchRosterGeometry(width, height, top)
     local side = self:GetWorkbenchSidebarWidth(width)
     local gap = self.WorkbenchLayout.splitGap
@@ -1501,6 +1636,10 @@ function addon:GetWorkbenchRosterGeometry(width, height, top)
         detailWidth = math.max(1, width - side - gap),
     }
 end
+
+-- ============================================================================
+-- Splitter and row layout
+-- ============================================================================
 
 -- The draggable divider between a list column and its detail pane. It lives in
 -- the gap between them; dragging stores the shared preference and asks the
@@ -1516,6 +1655,7 @@ function addon:CreateWorkbenchSplitter(parent, changed)
     line:SetPoint('BOTTOM', splitter, 'BOTTOM', 0, 0)
     splitter.line = line
 
+    -- Repaints the divider line for the idle, hover and dragging states.
     local function paint()
         if splitter.drag then
             line:SetColorTexture(.9, .75, .3, 1)
@@ -1529,6 +1669,7 @@ function addon:CreateWorkbenchSplitter(parent, changed)
         end
     end
 
+    -- Positions the divider in the gap of the given roster geometry and remembers that geometry.
     function splitter:Place(geometry)
         self.geometry = geometry
         self:ClearAllPoints()
@@ -1558,12 +1699,14 @@ function addon:CreateWorkbenchSplitter(parent, changed)
         return true
     end
 
+    -- Returns the divider to its automatic position and notifies the owner.
     function splitter:Reset()
         local previous = addon:GetWorkbenchSidebarPreference()
         addon:SetWorkbenchSidebarPreference(nil)
         changed(previous)
     end
 
+    -- Ends a divider drag and restores the resting look.
     local function stop()
         if not splitter.drag then return end
         splitter.drag = nil
@@ -1661,8 +1804,10 @@ function addon:FitWorkbenchPrompt(frame, owner, preferred)
     return width
 end
 
--- Shared value-field/checkbox geometry for cards and settings. Labels remain
--- outside this region; a wrapped option starts exactly under the value field.
+-- Shared value-field/checkbox geometry for cards and settings. Labels remain outside this region; a wrapped option
+-- starts exactly under the value field. Places a value `field` and its check box `option` on one line when `width`
+-- allows (`minimum` is the least field width), otherwise stacks the option under the field. Returns the height used,
+-- the field width and whether it went inline.
 function addon:LayoutWorkbenchFieldOption(field, option, parent, x, y, width, minimum)
     local label = option:GetFontString()
     local desired = math.ceil(label:GetStringWidth()) + 26
@@ -1684,8 +1829,9 @@ function addon:LayoutWorkbenchFieldOption(field, option, parent, x, y, width, mi
     return inline and math.max(24, optionHeight) or 28 + optionHeight, inputWidth, inline
 end
 
--- The old condition declaration adapter retains widget ownership, while all
--- sizing uses the same native rule as action cards and settings fields.
+-- The old condition declaration adapter retains widget ownership, while all sizing uses the same native rule as action
+-- cards and settings fields. Lays out a spell condition field group (icon, spell input and optional rank) inside
+-- `content`; returns the height used.
 function addon:LayoutWorkbenchSpellGroup(content, children)
     local icon, spell, rank = children[1], children[2], children[3]
     if not icon or not spell then return 0 end
@@ -1718,10 +1864,13 @@ function addon:AttachWorkbenchEditSuggestions(form, input, entries, changed, val
     local menu = input.suggestions or self:CreateWorkbenchSelector()
     input.suggestions = menu
 
+    -- True while the owner has not withdrawn the menu (no validity check means always).
     local function alive()
         return not valid or valid()
     end
 
+    -- Opens the suggestion menu with the entries that contain the typed text (all entries when `all`); hides it when
+    -- none match.
     local function suggest(all)
         if not alive() or not input:IsEnabled() then
             menu:Hide()

@@ -1,6 +1,18 @@
+-- The read-only page for a Built In (premade) rotation: name, applicability, availability, an Enable toggle, Clone and
+-- Export buttons and the rotation reference (UI/rotation_reference.lua). addon:CreateDefaultRotationOptions fills any
+-- legacy option container; addon:ShowDefaultRotation opens it in its own window. Writes nothing itself: enabling goes
+-- through addon:SetDefaultRotationEnabled and cloning through addon:CloneDefaultRotation (Core/). Also publishes the
+-- eligibility-reason texts (addon.BuiltinEligibilityReasons) the rotation browser reuses. Loaded from
+-- RotationMaster.toc after UI/rotation_reference.lua. The Built In rows come from Core, never from saved data.
+
 local addon_name, addon = ...
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
+-- ============================================================================
+-- Text and small helpers
+-- ============================================================================
+
+-- Maps a Built In eligibility reason code (from addon:ListDefaultRotations) to the sentence shown to the player.
 local reasons = {
     ["disabled"] = L["Disabled"],
     ["invalid-or-unsupported"] = L["Unavailable conditions or unsupported data"],
@@ -19,6 +31,7 @@ local reasons = {
 
 addon.BuiltinEligibilityReasons = reasons
 
+-- Adds a full-width text label to `parent`; kind 'Heading' uses the workbench header font and color. Returns it.
 local function label(parent, text, kind)
     local widget = addon:CreateConditionLabel()
 
@@ -33,6 +46,8 @@ local function label(parent, text, kind)
     return widget
 end
 
+-- Builds the scrollable body for one Built In row: the rotation reference followed by its Sources. Returns the group
+-- widget; if building fails the half-built group is released before the error is rethrown, so no widget leaks.
 local function referenceContent(row, spec)
     local root = addon:CreateConditionGroup()
     root:SetFullWidth(true)
@@ -60,6 +75,8 @@ end
 
 -- Legacy option containers still need an inner scroll area. Borrow a normal
 -- native group as its lease and restore every decorated method on release.
+-- Adds `root` (the reference content) to `frame`, inside a viewport sized to the frame, unless the frame was tagged
+-- 'defaultWholeScroll' (the standalone window, which scrolls the whole page itself).
 local function addReference(frame, root)
     if frame:GetUserData('defaultWholeScroll') then
         frame:AddChild(root)
@@ -104,12 +121,21 @@ local function addReference(frame, root)
     frame:AddChild(holder)
 end
 
+
+-- ============================================================================
+-- Options page and window
+-- ============================================================================
+
+-- Fills `frame` with the Built In page for rotation `id` of `spec`. `onClone(newId)` runs after a successful clone and
+-- `onRefresh()` after the enable toggle changes. Every callback re-checks valid(), so a profile change, release or a
+-- newer call on the same frame turns a late click into a no-op instead of a write to the wrong profile.
 function addon:CreateDefaultRotationOptions(frame, spec, id, onClone, onRefresh)
     local token = {}
     frame.rmDefaultOptionsToken = token
     local profile, global = self.db.profile, self.db.global
     local lease = frame.rmLease
 
+    -- True while this page is still the live one for its frame, profile and widget lease.
     local function valid()
         return frame.rmDefaultOptionsToken == token
             and addon.db.profile == profile
@@ -137,6 +163,7 @@ function addon:CreateDefaultRotationOptions(frame, spec, id, onClone, onRefresh)
     local paused = frame.paused or frame.LayoutPaused
     if frame.PauseLayout then frame:PauseLayout() end
 
+    -- Adds every row of the page; run under pcall so layout is always resumed even when a builder errors.
     local function build()
         label(frame, row.name, 'Heading')
         label(frame, L['Built In · read-only'])
@@ -232,6 +259,8 @@ function addon:CreateDefaultRotationOptions(frame, spec, id, onClone, onRefresh)
     if not ok then error(why, 0) end
 end
 
+-- Opens (or reuses) the standalone Built In window for rotation `id` of `spec` and returns the window table. The window
+-- closes itself if the profile changes underneath it, and a clone hands over to the Rotations settings page.
 function addon:ShowDefaultRotation(spec, id)
     local window = self.defaultRotationWindow
 
@@ -252,6 +281,7 @@ function addon:ShowDefaultRotation(spec, id)
         window.viewport:SetPoint('TOPLEFT', 12, -40)
         window.viewport:SetSize(830, 612)
 
+        -- Drops the page contents and marks the window inactive; runs on every hide and before every reuse.
         function window:Clear()
             self.active = false
             self.root = nil
@@ -259,6 +289,7 @@ function addon:ShowDefaultRotation(spec, id)
             self.viewport:ReleaseConditionContent()
         end
 
+        -- Hides the frame; Clear() follows through the frame's OnHide script.
         function window:Hide()
             self.frame:Hide()
         end
@@ -280,6 +311,7 @@ function addon:ShowDefaultRotation(spec, id)
     window.active = true
     local lease = root.rmLease
 
+    -- True while this showing of the window is current and the profile it was opened on is still active.
     local function valid()
         return window.active
             and window.serial == serial
@@ -292,12 +324,14 @@ function addon:ShowDefaultRotation(spec, id)
     window.chrome:SetContext(L['Built In rotation reference'], L['Built In · read-only'], self.pretty_name)
     window.viewport:SetConditionContent(root)
 
+    -- A clone succeeded: closes this window and opens the new copy in the Rotations settings page.
     local function cloned(generated)
         if not valid() then return end
         window:Hide()
         addon:ShowConfig('Rotations', { spec = spec, id = generated })
     end
 
+    -- Rebuilds the page after the enable toggle changes the row's state.
     local function refresh()
         if valid() then addon:CreateDefaultRotationOptions(root, spec, id, cloned, refresh) end
     end

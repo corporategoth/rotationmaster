@@ -1,6 +1,13 @@
+-- The "Field schema" block of the custom condition editor: a compact list of the schema's top-level fields that opens
+-- the schema editor, plus an Advanced toggle that swaps the list for the raw schema text. Both views edit the same
+-- owner.model.value.fields; Advanced changes presentation, never the saved format. Parsing and formatting live in
+-- Core/custom_authoring.lua and Core/schema_authoring.lua. Called by UI/custom_condition_editor.lua. Loaded from
+-- RotationMaster.toc after UI/schema_editor.lua.
+
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- Display names for the schema field kinds; also the set of strings treated as bare type names by recoveryText.
 local types = {
     string = L['Text'],
     number = L['Number'],
@@ -11,9 +18,12 @@ local types = {
     union = L['Allowed types / list alternatives'],
 }
 
+-- Serializes `value` as a Lua-like literal for the raw schema box when the schema cannot be formatted normally (it is
+-- invalid). Bounded to 512 nodes, depth 16 and 32 KiB, with cycles marked, so a corrupt saved value cannot hang the UI.
 local function recoveryText(value)
     local active, nodes = {}, 0
 
+    -- Renders one value; keys are sorted so the text is stable between redraws.
     local function render(v, depth)
         nodes = nodes + 1
         if nodes > 512 or depth > 16 then return '"<limit>"' end
@@ -40,6 +50,8 @@ end
 
 -- Source metadata shows its schema directly. The same schema draft/editor
 -- handles every entry; Advanced changes its presentation, never its format.
+-- Adds the schema row to `form` for the custom condition editor `owner`. An invalid schema still shows (as raw text in
+-- a red frame) so it can be repaired; the field list is built from a draft that ignores fieldOrder when that is stale.
 function addon:BuildCustomSourceFields(form, owner)
     local graph, why = self:NewFieldSchemaDraft(
         owner.model.value.fields,
@@ -114,6 +126,7 @@ function addon:BuildCustomSourceFields(form, owner)
     schema:SetAllPoints(content)
     schema:SetText(raw)
 
+    -- Sizes the raw-text content to its wrapped height so the scroll frame covers exactly the text.
     local function layoutRaw()
         local innerWidth = math.max(1, width - 18)
         measure:SetWidth(math.max(1, innerWidth - 12))

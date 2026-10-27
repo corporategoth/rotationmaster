@@ -1,6 +1,18 @@
+-- The condition canvas: the scrolling surface of the condition editor that shows a condition tree as cards joined by
+-- connector lines. Owns card pooling and virtualization (past 200 cards only the visible viewport is bound), click,
+-- shift/ctrl and box selection, and drag-and-drop with its drop zones. It owns no condition data: every change goes
+-- through owner:Command(...) on the editor session, and layout comes from owner:Scene(). Cards are built by
+-- UI/condition_cards.lua. Loaded from RotationMaster.toc after UI/condition_cards.lua and before
+-- UI/condition_editor.lua.
+
 local addon_name, addon = ...
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
+-- ============================================================================
+-- Path helpers
+-- ============================================================================
+
+-- Returns a shallow copy of a condition path (a list of keys and indexes) so callers can keep it across edits.
 local function pathCopy(path)
     local result = {}
 
@@ -11,6 +23,7 @@ local function pathCopy(path)
     return result
 end
 
+-- True when path `a` is `b` itself or an ancestor of it.
 local function prefix(a, b)
     if #a > #b then return false end
 
@@ -21,6 +34,7 @@ local function prefix(a, b)
     return true
 end
 
+-- True when two paths are numbered entries of the same parent list (the only case a range selection spans).
 local function sibling(a, b)
     if #a ~= #b or type(a[#a]) ~= "number" or type(b[#b]) ~= "number" then return false end
 
@@ -31,6 +45,8 @@ local function sibling(a, b)
     return true
 end
 
+-- True when a field widget (or any child) holds typed-but-uncommitted input or keyboard focus. Such a card must not be
+-- recycled, or the typing would be lost.
 local function pendingOrFocused(widget)
     if not widget then return false end
     if widget.IsPending and widget:IsPending() then return true end
@@ -46,6 +62,9 @@ local function pendingOrFocused(widget)
     return false
 end
 
+-- Builds a canvas inside `parent` for the condition editor `owner` (which supplies .active, .view, :Scene(), :Command()
+-- and the other hooks used below) and returns it. Call canvas:Render() to draw and canvas:Release() when the editor
+-- closes. Only valid while a window is open: the canvas keeps no state of its own beyond the pooled frames.
 function addon:CreateConditionCanvas(parent, owner)
     local canvas = {
         frame = addon:CreateWorkbenchScrollFrame(parent),
@@ -59,6 +78,12 @@ function addon:CreateConditionCanvas(parent, owner)
     canvas.child = CreateFrame("Frame", nil, canvas.frame)
     canvas.frame:SetScrollChild(canvas.child)
 
+
+    -- ============================================================================
+    -- Selection
+    -- ============================================================================
+
+    -- Returns the selected condition paths in tree order; empty when no condition is open.
     function canvas:Selection()
         local result = {}
         if not owner.active then return result end
@@ -70,6 +95,8 @@ function addon:CreateConditionCanvas(parent, owner)
         return result
     end
 
+    -- Applies a click to the selection: shift extends a range among siblings (with ctrl, adds to it), ctrl toggles one
+    -- entry (an entry and its ancestors or descendants are never selected together), a plain click replaces it.
     function canvas:Select(path, control, shift)
         if not owner.active or not owner:SyncWorking() then return end
         local key = addon.ConditionPathKey(path)
@@ -121,9 +148,16 @@ function addon:CreateConditionCanvas(parent, owner)
         end
     end
 
+
+    -- ============================================================================
+    -- Drag and drop
+    -- ============================================================================
+
     local ghost = addon:CreateWorkbenchDragCard()
     canvas.ghost = ghost
 
+    -- Ends any drag or box selection without dropping: hides the ghost and zones, then redraws the cards a drag had
+    -- hidden. Safe to call when nothing is dragging, and re-entrantly from Render and Release.
     function canvas:CancelDrag()
         local moving = self.drag
         self.drag = nil
@@ -148,6 +182,8 @@ function addon:CreateConditionCanvas(parent, owner)
         end
     end
 
+    -- True when the dragged paths (or inserted node) can legally land on `target`, proven on a draft copy of the
+    -- session; results are cached per destination for the life of the drag. A drop that changes nothing is refused.
     function canvas:CanDrop(target)
         local drag = self.drag
 
@@ -197,6 +233,7 @@ function addon:CreateConditionCanvas(parent, owner)
         return ok == true
     end
 
+    -- Highlights the valid drop zone under the pointer and returns it, or nil. Runs every frame while dragging.
     function canvas:HoverTarget()
         local selected
 
@@ -222,6 +259,8 @@ function addon:CreateConditionCanvas(parent, owner)
         return selected
     end
 
+    -- Starts a drag. `state` is { paths, tail } to move conditions, or { insert, source } to insert a new node. Shows
+    -- the ghost, reveals the drop zones and polls the pointer, ending the drag when the mouse button is released.
     function canvas:BeginDrag(state)
         if owner.active and owner.active.readOnly then return end
         self:CancelDrag()
@@ -316,6 +355,8 @@ function addon:CreateConditionCanvas(parent, owner)
         end)
     end
 
+    -- Drag-source callback for a card. `token` is the generation the card was bound under; a stale token (the canvas
+    -- rendered since) is ignored. Ctrl drags this entry and every later sibling ("tail"), else the selection.
     function canvas:StartDrag(path, token)
         if token ~= self.generation or not owner.active then return end
         local paths
@@ -341,6 +382,7 @@ function addon:CreateConditionCanvas(parent, owner)
         self:BeginDrag({ generation = self.generation, session = owner.active.session, paths = paths, tail = tail })
     end
 
+    -- Starts a drag that inserts a copy of `node` (from the condition picker) instead of moving existing entries.
     function canvas:StartInsert(node, source)
         if not owner.active or not owner:SyncWorking() then return end
 
@@ -352,6 +394,7 @@ function addon:CreateConditionCanvas(parent, owner)
         })
     end
 
+    -- Ends the drag on `target`: runs the Insert or Transfer command when the drop is valid, else just cancels.
     function canvas:Drop(target)
         local drag = self.drag
         local valid = self:CanDrop(target)
@@ -371,6 +414,7 @@ function addon:CreateConditionCanvas(parent, owner)
         return owner:Command("Transfer", drag.paths, target.destination)
     end
 
+    -- Mouse released: drops on the hovered zone if there is one, otherwise cancels.
     function canvas:EndDrag()
         if not self.drag then return end
         local selected = self:HoverTarget()
@@ -378,9 +422,14 @@ function addon:CreateConditionCanvas(parent, owner)
         self:CancelDrag()
     end
 
+
+    -- ============================================================================
+    -- Box selection
+    -- ============================================================================
+
     -- Shift-drag on empty canvas draws a box selecting the cards it touches
     -- (Ctrl+Shift adds to the selection); a card inside another touched card
-    -- travels with it, as with Ctrl-click.
+    -- travels with it, as with Ctrl-click. Coordinates are in canvas child space.
     function canvas:SelectBox(left, top, right, bottom, additive)
         if not owner.active or not self.scene or not owner:SyncWorking() then return end
         local touched = {}
@@ -433,6 +482,8 @@ function addon:CreateConditionCanvas(parent, owner)
         end
     end
 
+    -- Starts a rubber-band selection at the pointer; returns false when a drag is active or the pointer is off the
+    -- canvas.
     function canvas:BeginBoxSelect()
         if not owner.active or self.drag then return false end
         local x, y = addon:WorkbenchPointerIn(self.child)
@@ -471,6 +522,7 @@ function addon:CreateConditionCanvas(parent, owner)
         return true
     end
 
+    -- Finishes the rubber band and applies it as a selection.
     function canvas:EndBoxSelect()
         local box = self.box
         if not box then return end
@@ -500,12 +552,21 @@ function addon:CreateConditionCanvas(parent, owner)
         canvas.frame:SetHorizontalScroll(value)
     end)
 
+    -- Anchors the horizontal scroll bar under the scroll frame at the frame's current width.
     function canvas:LayoutScrollBar()
         horizontal:ClearAllPoints()
         horizontal:SetPoint("TOPLEFT", self.frame, "BOTTOMLEFT", 0, -4)
         horizontal:SetWidth(self.frame:GetWidth())
     end
 
+
+    -- ============================================================================
+    -- Card binding and rendering
+    -- ============================================================================
+
+    -- Fills a pooled card from a scene `model`: measures label and summary widths, places it and wires every script.
+    -- Each handler checks alive() first, so a card that was released or re-rendered since cannot act on its old
+    -- condition. Returns true when a measured size changed, meaning the layout must be recomputed.
     function canvas:BindCard(card, model)
         local beforeWidth = (owner.view.labelWidths or {})[model.key]
         local beforeSummary = (owner.view.summaryHeights or {})[model.key]
@@ -513,6 +574,7 @@ function addon:CreateConditionCanvas(parent, owner)
         local token = { generation = self.generation }
         card.token = token
 
+        -- True while this binding is the card's current one (same canvas generation, card not rebound).
         local function alive()
             return owner.active and token.generation == self.generation and card.token == token
         end
@@ -750,6 +812,8 @@ function addon:CreateConditionCanvas(parent, owner)
             or beforeDetails ~= (owner.view.detailsHeights or {})[model.key]
     end
 
+    -- True when a card must stay bound even though it scrolled out of view: a name or field being edited, a card being
+    -- dragged, an open picker, keyboard focus inside it, or the editor closing with unsaved input.
     function canvas:IsPinned(card)
         if card.name:HasFocus() or pendingOrFocused(card.pane) or card.frame:GetParent() == ghost then return true end
         if owner.closeOverride and not owner.frame:IsShown() then return true end
@@ -765,6 +829,8 @@ function addon:CreateConditionCanvas(parent, owner)
         return false
     end
 
+    -- Redraws the connector lines and drop zones. With more than 200 cards only the lines of the bound cards and the
+    -- zones near the viewport are materialized, found by binary search over the Y-sorted drop targets.
     function canvas:RefreshDecorations(models)
         local scene = self.scene
         local lines = {}
@@ -891,6 +957,9 @@ function addon:CreateConditionCanvas(parent, owner)
         end
     end
 
+    -- Binds the cards that should exist (all of them, or just the viewport plus margin past 200) and releases the rest,
+    -- then draws decorations. Runs on every scroll; re-entrancy guarded by self.refreshing and self.reflowing. If a
+    -- bind changed a measured size it schedules a Reflow (deferred until a drag ends).
     function canvas:RefreshVisibleCards()
         if not owner.active or not self.scene or self.refreshing or self.reflowing then return end
         self.refreshing = true
@@ -982,6 +1051,9 @@ function addon:CreateConditionCanvas(parent, owner)
         end
     end
 
+    -- Recomputes the scene layout and scroll extents, keeping the card at the top of the viewport in place, then
+    -- rebinds cards. A call made while a refresh is running only flags needsMeasure, so layout never nests inside
+    -- binding.
     function canvas:Reflow()
         if not owner.active then return end
 
@@ -1054,6 +1126,7 @@ function addon:CreateConditionCanvas(parent, owner)
         self:RefreshVisibleCards()
     end
 
+    -- Full redraw: invalidates every bound card (new generation, so old handlers die) and lays out again.
     function canvas:Render()
         if owner.active and not owner:SyncWorking() then return end
         self.rendering = true
@@ -1070,6 +1143,7 @@ function addon:CreateConditionCanvas(parent, owner)
         if owner.active then self:Reflow() end
     end
 
+    -- Tears the canvas down when the editor closes: cancels drags, releases every card and drops the scene.
     function canvas:Release()
         self.releasing = true
         self:CancelDrag()

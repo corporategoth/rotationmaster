@@ -1,6 +1,18 @@
+-- The main Rotation Master window ("config window"): title bar with version and client, UI scale control, one tab per
+-- settings section, the page area that hosts the active pane, a footer with links, the page help, and the resize grip.
+-- Owns the window shell only; each page is built elsewhere (addon:CreateRotationBrowser for Rotations,
+-- addon:OpenNativeSettings for the rest) and is released whenever the section changes. Persists only
+-- db.global.uiScale. addon:ShowConfig is the entry point (slash command, minimap, settings launcher). Loaded from
+-- RotationMaster.toc after UI/function_bundle_transfer.lua and before UI/rotation_browser.lua.
+
 local addon_name, addon = ...
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
+-- ============================================================================
+-- Small helpers
+-- ============================================================================
+
+-- The settings tabs in display order; `value` is the section key every page lookup uses.
 local sections = {
     { value = "Rotations", text = L["Rotations"] },
     { value = "General", text = L["General"] },
@@ -13,11 +25,13 @@ local sections = {
     { value = "Integrations", text = L["Integrations"] },
 }
 
+-- Normalizes a saved UI scale to 0.70 to 1.30 in 0.01 steps; anything else (nil, NaN, out of range) becomes 1.
 local function scale(value)
     if type(value) ~= "number" or value ~= value or value < .7 or value > 1.3 then return 1 end
     return math.floor(value * 100 + .5) / 100
 end
 
+-- Paints the whole frame with a solid color texture on the background layer and returns the texture.
 local function fill(frame, r, g, b, a)
     local texture = frame:CreateTexture(nil, "BACKGROUND")
     texture:SetAllPoints(frame)
@@ -25,18 +39,22 @@ local function fill(frame, r, g, b, a)
     return texture
 end
 
+-- Creates a left-justified font string on `parent` (default small highlight font).
 local function text(parent, font)
     local result = parent:CreateFontString(nil, "OVERLAY", font or "GameFontHighlightSmall")
     result:SetJustifyH("LEFT")
     return result
 end
 
+-- A workbench button; the name keeps call sites short.
 local function flatButton(parent, label, width)
     return addon:CreateWorkbenchButton(parent, label, width)
 end
 
--- Geometry alone includes windows underneath other addons. Only a focused
--- descendant can originate a content click when the client exposes focus.
+-- Geometry alone includes windows underneath other addons. Only a focused descendant can originate a content click when
+-- the client exposes focus. True when the pointer is over `content` itself (or a descendant of it) rather than a window
+-- stacked above it. Uses the mouse-focus API of whichever client generation is running, falling back to a plain
+-- geometry test.
 local function contentHasFocus(content)
     local focus
 
@@ -58,6 +76,7 @@ local function contentHasFocus(content)
     return false
 end
 
+-- Reads a field from the addon's TOC (Version, Author, X-Website, ...); returns nil when missing or empty.
 local function metadata(key)
     local getter = C_AddOns and C_AddOns.GetAddOnMetadata or GetAddOnMetadata
 
@@ -67,6 +86,7 @@ local function metadata(key)
     end
 end
 
+-- Draws a one-pixel gray border over `button` (the selected-tab outline) and returns the border frame.
 local function outline(button)
     local border = CreateFrame("Frame", nil, button)
     border:SetAllPoints(button)
@@ -93,6 +113,7 @@ local function outline(button)
     return border
 end
 
+-- The one-line description of each section, shown beside the tab title and as the tab's help tooltip.
 local descriptions = {
     Rotations = L["Browse, view and edit rotations."],
     General = L["Configure recommendations and display."],
@@ -106,6 +127,12 @@ local descriptions = {
     About = L["Rotation Master information and credits."],
 }
 
+-- ============================================================================
+-- The window shell
+-- ============================================================================
+
+-- Builds the window, its controls and every shell method once; addon:ShowConfig keeps the result in addon.configWindow.
+-- Returns the shell table ({ frame, tabs, pane, ... }). The window is a peer window in the shared layering.
 local function newShell()
     local window = addon:TrackWorkbenchSize(CreateFrame("Frame", nil, UIParent))
     window:SetSize(1120, 760)
@@ -121,6 +148,8 @@ local function newShell()
     -- Sizing stays within the supported minimum and the visible screen. Older
     -- clients only provide SetMinResize, and a size restored or set by another
     -- addon is corrected on the next layout as well.
+    -- Sets the resize limits (minimum from the layout table, maximum the visible screen) and clamps the current size.
+    -- Returns true when the size had to change.
     function shell:ApplySizeBounds()
         local scale = window:GetScale() or 1
         if scale <= 0 then scale = 1 end
@@ -150,7 +179,7 @@ local function newShell()
         return self:ClampSize()
     end
 
-    -- Returns true when the size had to be corrected.
+    -- Resizes the window into the current bounds. Returns true when the size had to be corrected.
     function shell:ClampSize()
         local width, height = window:GetWidth(), window:GetHeight()
         local wantedWidth = math.max(minimumWidth, self.maximumWidth and math.min(width, self.maximumWidth) or width)
@@ -165,14 +194,17 @@ local function newShell()
         return true
     end
 
-    -- The main window is a peer window: opening it (or opening it again) brings it, and anything it opened, to the front.
+    -- The main window is a peer window: opening it (or opening it again) brings it, and anything it opened, to the
+    -- front.
     shell.rmLayerKind = "window"
 
+    -- Shows the window and raises it above other peer windows.
     function shell:Show()
         self.frame:Show()
         addon:RaiseWindow(self)
     end
 
+    -- Hides the window. A settings form with unsaved changes is asked first (RequestLeave); `approved` skips the ask.
     function shell:Hide(approved)
         local pane = self.pane
 
@@ -318,6 +350,7 @@ local function newShell()
     shell.scaleSlider = addon:CreateWorkbenchSlider(window, 70, 130, 1, 116)
     shell.scaleSlider:SetPoint("TOPLEFT", 12, -22)
 
+    -- Applies a UI scale to this window and all other workbench windows; `persist` also saves it to db.global.uiScale.
     function shell:ApplyScale(value, persist)
         local selected = scale(value)
         window:SetScale(selected)
@@ -353,6 +386,7 @@ local function newShell()
         if button == "LeftButton" then shell.scaleDragging = true end
     end)
 
+    -- Applies the scale chosen while dragging the slider; during the drag only the number box is updated.
     local function finishScale()
         local selected = shell.pendingScale
         shell.pendingScale = nil
@@ -397,6 +431,7 @@ local function newShell()
     linkPane:Hide()
     addon:OpenPopup({ frame = linkPane }, window)
 
+    -- Opens the copy box with `url` selected, because an addon cannot open a browser.
     function shell:ShowLink(url)
         linkPane:Show()
         self.linkInput:SetText(url)
@@ -435,6 +470,7 @@ local function newShell()
         linkX = linkX + link:GetWidth() + 6
     end
 
+    -- Closes the help dialog and invalidates any help request still in flight.
     function shell:CloseHelp()
         self.helpRequest = nil
         local dialog = self.helpDialog
@@ -442,6 +478,8 @@ local function newShell()
         if dialog then dialog:Hide() end
     end
 
+    -- Opens the help dialog for a page `topic` (nil for the window help). `valid()` lets the page withdraw the request,
+    -- for example when its pane was replaced; the request is dropped if a newer one starts first.
     function shell:ShowHelp(topic, valid)
         local request = {}
         self.helpRequest = request
@@ -489,10 +527,13 @@ local function newShell()
     addon:SetUIScript(grip, "OnMouseUp", function() window:StopMovingOrSizing() end)
     shell.grip = grip
 
+    -- Wires the page "?" button to the pane that was just opened. The captured profile, pane and generation make a
+    -- stale click (profile switched, section changed) do nothing.
     function shell:BindPaneHelp()
         local pane, key, generation = self.pane, self.section, addon.configPaneGeneration
         local profile, global, char = addon.db.profile, addon.db.global, addon.db.char
 
+        -- True while the pane, section, generation and profile this button was bound for are still the live ones.
         local function current()
             return self.frame:IsShown()
                 and self.pane == pane
@@ -525,6 +566,7 @@ local function newShell()
         self:Layout()
     end
 
+    -- Retires the current page: bumps the pane generation (invalidating its callbacks) and releases it.
     function shell:ReleasePane()
         self.pageHelp:Hide()
         addon.configPaneGeneration = (addon.configPaneGeneration or 0) + 1
@@ -541,6 +583,7 @@ local function newShell()
         end
     end
 
+    -- Wraps the tabs onto rows, then sizes the page area, header, status text and the pane to the window.
     function shell:Layout()
         local width, height = window:GetWidth(), window:GetHeight()
         local x, y = 12, -42
@@ -580,6 +623,7 @@ local function newShell()
         end
     end
 
+    -- Rebuilds the tab buttons from `sections`, reusing pooled buttons, and lays them out.
     function shell:RefreshTabs()
         self.tabGeneration = (self.tabGeneration or 0) + 1
         local generation = self.tabGeneration
@@ -608,6 +652,7 @@ local function newShell()
             text:ClearAllPoints()
             text:SetPoint('LEFT', 8, 0)
 
+            -- True while the tab strip is the one that built this tab (a rebuild invalidates old help requests).
             local function current()
                 return self.frame:IsShown() and self.tabGeneration == generation
             end
@@ -625,6 +670,8 @@ local function newShell()
         self:Layout()
     end
 
+    -- Switches to section `key` (unknown keys fall back to Rotations). A page with unsaved changes is asked first;
+    -- `approved` means that was done. Shows a placeholder pane when the page cannot be built.
     function shell:SelectSection(key, approved)
         if not approved and self.pane and self.nativePane and self.pane.RequestLeave then
             -- Native editors preserve their pending changes at this boundary.
@@ -698,15 +745,18 @@ local function newShell()
             pane.message:SetPoint('TOPLEFT', 8, -8)
             pane.message:SetWordWrap(true)
 
+            -- The placeholder implements just the pane interface the shell calls: SetWidth, SetHeight, Release.
             function pane:SetWidth(width)
                 self.frame:SetWidth(width)
                 self.message:SetWidth(math.max(1, width - 16))
             end
 
+            -- Sets the placeholder frame's height.
             function pane:SetHeight(height)
                 self.frame:SetHeight(height)
             end
 
+            -- Hides the placeholder when the section changes.
             function pane:Release()
                 self.frame:Hide()
             end
@@ -740,7 +790,12 @@ local function newShell()
     return shell
 end
 
--- Built-in tabs use native settings forms and owned editor panes.
+-- ============================================================================
+-- Public entry points
+-- ============================================================================
+
+-- Built-in tabs use native settings forms and owned editor panes. Opens the window on `section` (default Rotations);
+-- `selection` ({ spec, id }) preselects a rotation. Returns the shell.
 function addon:ShowConfig(section, selection)
     self.configRotationSelection = selection
     self:SetupOptions()
@@ -755,6 +810,7 @@ function addon:ShowConfig(section, selection)
     return shell
 end
 
+-- Redraws the open window (tabs and current page) on the next UI update; does nothing when it is closed.
 function addon:RefreshConfiguration()
     local shell = self.configWindow
     if not shell or not shell.frame:IsShown() then return end
@@ -773,9 +829,12 @@ end
 
 local showConfig = addon.ShowConfig
 
+-- Re-declares ShowConfig so the call runs under the diagnostics wrapper when it exists: an error opening the window is
+-- recorded instead of propagating to the caller (a slash command or button).
 function addon:ShowConfig(...)
     if not self.Diagnostics then return showConfig(self, ...) end
 
+    -- Returns the call's results on success and nothing when the protected call failed (the error is already reported).
     local function result(ok, ...)
         if ok then return ... end
     end

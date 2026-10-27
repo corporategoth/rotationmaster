@@ -1,7 +1,13 @@
+-- The standalone "Rotation Master errors" window: a read-only, copyable view of the captured diagnostics reports
+-- (addon.Diagnostics), one per page with previous/next, a redacted or original-text toggle and a clear button. Built
+-- from raw frames on purpose, with none of the editor widgets, so it still opens when the main editor is what failed.
+-- Owns no saved data; the reports belong to Diagnostics/. Loaded from RotationMaster.toc after UI/talent_popup.lua.
+
 local addon_name, addon = ...
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
 -- Errors in the main editor must not hide this independent native report.
+-- Opens the window (building it on first use), always at the newest report with the redacted text selected.
 function addon:ShowErrors()
     local window = self.errorsWindow
 
@@ -36,6 +42,7 @@ function addon:ShowErrors()
             L["Review the report, then select Copy and press Ctrl+C. Reload after fixing a paused callback."]
         )
 
+        -- Creates one bottom-row push button at horizontal offset `x`.
         local function button(label, width, x)
             local b = CreateFrame("Button", nil, window, "UIPanelButtonTemplate")
             b:SetSize(width, 24)
@@ -83,6 +90,7 @@ function addon:ShowErrors()
         scroll:SetScrollChild(edit)
         local setting = false
 
+        -- Fits the edit box height to its wrapped lines so the scroll frame can scroll the whole report.
         local function sizeText()
             local _, fontHeight = edit:GetFont()
             edit:SetHeight(math.max(24, edit:GetNumLines() * (fontHeight or 12) + 16))
@@ -111,6 +119,8 @@ function addon:ShowErrors()
             instructions:SetWidth(math.max(100, window:GetWidth() - 32))
         end)
 
+        -- Re-reads the report list and redraws the current page; clamps the index, so a cleared or shorter list is
+        -- safe.
         window.Refresh = function()
             local reports = addon.Diagnostics:GetReports()
             local index = window.reportIndex or #reports

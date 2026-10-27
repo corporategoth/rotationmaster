@@ -1,6 +1,13 @@
+-- The condition card: one reusable frame (header summary, type and name buttons, toggle pills, move/remove/help
+-- buttons, expand chevron and a field area) that the condition canvas places for each visible condition or group.
+-- Cards are pooled by UI/condition_canvas.lua: this file builds a card once, Place() restyles it from a layout model,
+-- and Release() strips every script so a recycled card cannot fire a stale handler. It owns no condition data and wires
+-- no behavior except what Place draws. Loaded from RotationMaster.toc after UI/condition_picker.lua.
+
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- Creates a left-justified, word-wrapping small label on `parent`.
 local function text(parent)
     local label = parent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
     label:SetJustifyH('LEFT')
@@ -8,6 +15,8 @@ local function text(parent)
     return label
 end
 
+-- Builds one card parented to `parent` (the canvas child frame) and returns it. The caller wires the click, drag and
+-- edit scripts after Place(); Release() clears them again before the card goes back to the pool.
 function addon:CreateConditionCard(parent)
     local card = { frame = CreateFrame('Frame', nil, parent), controls = {} }
     local frame = card.frame
@@ -82,7 +91,10 @@ function addon:CreateConditionCard(parent)
     card.controls.operator.tooltip = L['Switch All / Any']
     card.fields = CreateFrame('Frame', nil, frame)
 
+    -- Positions and restyles the card from a canvas layout `model` (x, y, width, height, group, expanded, compact,
+    -- negated, disabled, invalid, ...). Safe to call repeatedly on the same card; keeps an in-progress name edit open.
     function card:Place(model, title, summary)
+        -- Re-placing the card must not cancel a name edit in progress; the edit box is restored at the end of Place.
         local editingName = self.name:HasFocus()
         frame:ClearAllPoints()
         frame:SetPoint('TOPLEFT', parent, 'TOPLEFT', model.x, -model.y)
@@ -234,6 +246,8 @@ function addon:CreateConditionCard(parent)
         frame:Show()
     end
 
+    -- Detaches the card from its condition: releases the embedded field pane and picker and clears every script the
+    -- canvas attached, so a pooled card never acts on the previous condition.
     function card:Release()
         self.token = nil
         if self.helpText then self.helpText:Hide() end

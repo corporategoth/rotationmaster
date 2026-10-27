@@ -1,3 +1,11 @@
+-- The on-screen recommendation preview: a small movable, resizable strip of 1 to 5 icons showing the spells or items
+-- the poll currently recommends (addon.nextWindow). Owns the frame, its icons, the unlocked drag and grip, the right-
+-- click menu, the sample icons mode and the saved position and size (profile.preview_window, preview_icon_size);
+-- visibility follows the Preview Spells setting alone. The poll drives it through the window interface
+-- (ReleaseChildren, PauseLayout, AddRecommendation, ResumeLayout). The ANALYTICS PREVIEW blocks hand delivery facts to
+-- Analytics/ and are pinned by predecessor fixtures. Loaded from RotationMaster.toc after UI/rotation_editor.lua;
+-- Masque skins the icons.
+
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- BEGIN ANALYTICS PREVIEW HANDOFF
@@ -12,8 +20,10 @@ if addon.BindAnalyticsPreviewCapture then
 end
 
 -- END ANALYTICS PREVIEW HANDOFF
+-- The profile the sample-icons mode is on for (nil when off). Per session and per profile; never saved.
 local sampleProfile
 
+-- Fixed placeholder icons painted in sample mode, so a player can size and place the window without a rotation.
 local sampleTextures = {
     'Interface\\Icons\\Spell_Fire_FlameBolt',
     'Interface\\Icons\\Spell_Frost_FrostBolt02',
@@ -22,11 +32,18 @@ local sampleTextures = {
     'Interface\\Icons\\INV_Misc_QuestionMark',
 }
 
+
+-- ============================================================================
+-- Helpers and sample mode
+-- ============================================================================
+
+-- True while sample icons are on for the current profile; a profile switch silently turns them off.
 function addon:IsPreviewSampleEnabled()
     if sampleProfile ~= self.db.profile then sampleProfile = nil end
     return sampleProfile ~= nil
 end
 
+-- `value` limited to lo..hi, or `fallback` when it is not a real number (nil, NaN, wrong type).
 local function clamp(value, lo, hi, fallback)
     return type(value) == 'number' and value == value and math.max(lo, math.min(hi, value)) or fallback
 end
@@ -36,6 +53,14 @@ local function sameGeometry(a, b)
     return type(a) == 'number' and type(b) == 'number' and math.abs(a - b) <= .1
 end
 
+
+-- ============================================================================
+-- The preview window
+-- ============================================================================
+
+-- Builds (once) and re-activates the preview window for the current profile, restoring its saved position, and returns
+-- the window table. Each call starts a new generation, so callbacks captured by an older showing go inert. The window
+-- is also published as addon.nextWindow, where the poll finds it.
 ---@class RMRecommendationPreview
 ---@field ReleaseChildren fun(self: RMRecommendationPreview)
 ---@field PauseLayout fun(self: RMRecommendationPreview)
@@ -70,12 +95,14 @@ function addon:CreateNativePreviewWindow()
         grip:SetTexture('Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up')
         window.grip:SetAlpha(0)
 
+        -- True while this is the live window of the active profile; every late callback checks it first.
         function window:Valid()
             return self.active and addon.db.profile == self.profile and addon.nextWindow == self
         end
 
         local nativeValid = window.Valid
 
+        -- Returns icon button number `index`, creating it with its drag, menu and tooltip wiring on first use.
         function window:EnsureIcon(index)
             local icon = self.icons[index]
 
@@ -100,6 +127,7 @@ function addon:CreateNativePreviewWindow()
             return icon
         end
 
+        -- Clears every recommendation icon (the poll calls this before a new set); repaints samples if that mode is on.
         function window:ReleaseChildren()
             self.count = 0
             self.sampleCount = 0
@@ -119,6 +147,7 @@ function addon:CreateNativePreviewWindow()
             end
         end
 
+        -- Hides only the placeholder icons, leaving real recommendations alone.
         function window:ClearSampleIcons()
             for _, icon in ipairs(self.icons) do
                 if icon.sample then
@@ -133,6 +162,7 @@ function addon:CreateNativePreviewWindow()
             self.sampleCount = 0
         end
 
+        -- Fills every slot with a placeholder icon when sample mode is on and no real recommendation is showing.
         function window:PaintSamples()
             if not self:Valid() or self.sampleBatch or self.count ~= 0 or not addon:IsPreviewSampleEnabled() then
                 return
@@ -169,6 +199,8 @@ function addon:CreateNativePreviewWindow()
             self.sampleCount = self.slots
         end
 
+        -- Sizes the frame to its icons and anchors each icon; writes only values that changed, to avoid resize
+        -- feedback.
         function window:DoLayout()
             if not self.active then return end
             local n = self.slots or 1
@@ -213,6 +245,7 @@ function addon:CreateNativePreviewWindow()
             end
         end
 
+        -- Re-reads the profile (slot count, icon size, orientation, lock, opacity), applies it and lays out again.
         function window:Configure()
             if not self.active then return end
             local profile = self.profile
@@ -247,6 +280,7 @@ function addon:CreateNativePreviewWindow()
             self:DoLayout()
         end
 
+        -- Turns a dragged frame size into an icon size (24 to 160), saves it to the profile and reconfigures.
         function window:Resize(width, height)
             if not self:Valid() or self.locked then
                 self:DoLayout()
@@ -263,6 +297,8 @@ function addon:CreateNativePreviewWindow()
 
         local nativeAddRecommendation
 
+        -- Shows the next recommended spell (or item, when `itemId` is set) in the first free slot. Called by the poll
+        -- for each result; ignored when the window is stale or full. The first icon also reports delivery to analytics.
         function window:AddRecommendation(spellId, itemId)
             if not self:Valid() or self.count >= self.slots then return end
             if (self.sampleCount or 0) > 0 then self:ClearSampleIcons() end
@@ -371,20 +407,25 @@ function addon:CreateNativePreviewWindow()
 
         nativeAddRecommendation = window.AddRecommendation
 
+        -- Starts a publication batch: no sample icons are painted until ResumeLayout.
         function window:PauseLayout()
             self.sampleBatch = true
             if (self.sampleCount or 0) > 0 then self:ClearSampleIcons() end
         end
 
+        -- Ends a publication batch and repaints samples if nothing real was shown.
         function window:ResumeLayout()
             self.sampleBatch = false
             if sampleProfile == self.profile then self:PaintSamples() end
         end
 
+        -- Shows the frame if the window is still the live one.
         function window:Show()
             if self:Valid() then self.frame:Show() end
         end
 
+        -- Hides the frame; analytics is told the preview retired first, and a retire that replaces the window stops
+        -- here.
         function window:Hide()
             if previewCapture then
                 local generation, profile = self.generation, self.profile
@@ -395,6 +436,8 @@ function addon:CreateNativePreviewWindow()
             self.frame:Hide()
         end
 
+        -- Deactivates the window: retires analytics delivery, clears icons and sample mode, hides the frame and Masque
+        -- skin.
         function window:Release()
             if previewCapture then
                 local generation, profile = self.generation, self.profile
@@ -411,11 +454,13 @@ function addon:CreateNativePreviewWindow()
             if addon.ReleaseMasquePreview then addon:ReleaseMasquePreview(self) end
         end
 
+        -- Tracks pointer hover over the body or grip; the resize grip is visible only while hovered.
         function window:SetHover(over)
             self.hovered = over == true
             self.grip:SetAlpha((self.hovered or self.gripHovered) and 1 or 0)
         end
 
+        -- Starts dragging the frame; refused while locked or stale.
         function window:BeginMove()
             if self:Valid() and not self.locked then
                 self.moving = true
@@ -423,6 +468,7 @@ function addon:CreateNativePreviewWindow()
             end
         end
 
+        -- Stops the drag and saves the new anchor as the profile's headerless position.
         function window:EndMove()
             local moving = self.moving
             self.moving = nil
@@ -439,6 +485,7 @@ function addon:CreateNativePreviewWindow()
             if not self:Valid() then return nil end
             local locked, generation = self.locked == true, self.generation
 
+            -- True while the menu was built for the live window generation.
             local function current()
                 return self:Valid() and self.generation == generation
             end
@@ -461,6 +508,7 @@ function addon:CreateNativePreviewWindow()
             }
         end
 
+        -- Pops the right-click menu at the cursor using the shared dropdown API.
         function window:OpenMenu()
             local entries = self:MenuEntries()
             if not entries then return end
@@ -508,22 +556,28 @@ function addon:CreateNativePreviewWindow()
             end
         end
 
+        -- SetWidth, SetHeight, ClearAllPoints, SetPoint and GetPoint let the poll treat this window like a layout
+        -- container: sizes arrive as Resize requests, points go to the frame.
         function window:SetWidth(width)
             self:Resize(width, self.frame:GetHeight())
         end
 
+        -- Container-style height request from the poll; becomes a Resize.
         function window:SetHeight(height)
             self:Resize(self.frame:GetWidth(), height)
         end
 
+        -- Forwards to the frame.
         function window:ClearAllPoints()
             self.frame:ClearAllPoints()
         end
 
+        -- Forwards to the frame.
         function window:SetPoint(...)
             self.frame:SetPoint(...)
         end
 
+        -- Forwards to the frame.
         function window:GetPoint(...)
             return self.frame:GetPoint(...)
         end
@@ -616,6 +670,12 @@ function addon:MigratePreviewHeaderGeometry(profile, opacity)
     profile.previewHeaderlessGeometry = true
 end
 
+
+-- ============================================================================
+-- Settings entry points
+-- ============================================================================
+
+-- Saves the lock state, tells the settings page, and refreshes the window. Returns the stored boolean.
 function addon:SetPreviewLocked(locked)
     locked = locked == true
     self.db.profile.preview_locked = locked
@@ -624,6 +684,8 @@ function addon:SetPreviewLocked(locked)
     return locked
 end
 
+-- Brings the window in line with the profile: releases it at zero preview spells (unless in sample mode), updates it in
+-- place when it is live, otherwise replaces whatever window is current with a native preview window.
 function addon:RefreshPreviewWindow()
     local count = self.db.profile.preview_spells or 0
 

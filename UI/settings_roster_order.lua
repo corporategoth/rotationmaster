@@ -1,10 +1,23 @@
+-- Reordering for the settings form's roster (the scrolling, searchable list of entries such as item sets): which rows
+-- show Move Up/Down buttons and a drag handle, the drag ghost and the gap drop zones between rows, and the commit of a
+-- move into `roster.options.order`, followed by options.orderChanged. Changes only the draft order list the owner
+-- passes in; saving is the form's job. Rows are 34 px apart, which every gap calculation here assumes.
+-- settings_form.lua installs these methods on the form class; UI/settings_layout.lua calls them while it builds the
+-- roster. Loaded from RotationMaster.toc after UI/settings_setup.lua and before UI/settings_layout.lua.
+
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- ============================================================================
+-- Helpers
+-- ============================================================================
+
+-- The id of an order entry, which may be a bare id or a table with an `id` field.
 local function identity(value)
     return type(value) == 'table' and value.id or value
 end
 
+-- Maps each entry id of an order list to its first index; later duplicates are ignored.
 local function indices(items)
     local result = {}
 
@@ -16,7 +29,15 @@ local function indices(items)
     return result
 end
 
+-- ============================================================================
+-- Row binding
+-- ============================================================================
+
+-- Adds the roster-order methods to the settings form class `p`; called once when the form class is built.
 function addon:InstallSettingsRosterOrder(p)
+    -- Wires one roster row after it is drawn: ordered entries get Move Up/Down buttons and drag-to-reorder; unordered
+    -- rows may drag out of the page (options.dragOut). Handlers capture the row lease and `revision`, so a reused row
+    -- or a rebuilt roster ignores late clicks.
     function p:BindRosterOrderRow(row, entry, revision)
         local r = self.roster
         local items = r.options.order
@@ -37,7 +58,8 @@ function addon:InstallSettingsRosterOrder(p)
         -- An unordered roster may let its rows be dragged out of the page
         -- (Item Sets: drag a set onto an action bar slot).
         if not index and r.options.dragOut then
-            local function current()
+            -- Drag-out variant of valid(): the row must still show this entry in this roster build.
+        local function current()
                 return r.active and r.revision == revision and row.rosterLease == lease and p:Valid(r.generation)
             end
 
@@ -88,6 +110,7 @@ function addon:InstallSettingsRosterOrder(p)
             row.down:Enable()
         end
 
+        -- True while the row still belongs to this roster build and entry.
         local function valid()
             return r.active and r.revision == revision and row.rosterLease == lease and p:Valid(r.generation)
         end
@@ -139,6 +162,14 @@ function addon:InstallSettingsRosterOrder(p)
         end
     end
 
+
+    -- ============================================================================
+    -- Order view
+    -- ============================================================================
+
+    -- Builds the per-roster order view (`r.orderView`: ghost, zones, drag state) and the table of gap positions between
+    -- ordered rows; clears the view when the roster has no order. Called on every roster rebuild, so it first cancels
+    -- any drag still in flight.
     function p:PrepareRosterOrder(revision)
         local r = self.roster
         if r.orderView then r.orderView:Cancel() end
@@ -169,14 +200,17 @@ function addon:InstallSettingsRosterOrder(p)
 
         if last then r.logicalGaps[#r.logicalGaps + 1] = last end
 
+        -- True while this view still belongs to the live roster build.
         local function valid()
             return r.active and p:Valid(token) and r.revision == revision
         end
 
+        -- The current index of the dragged entry in the order list.
         function view:Index()
             return r.orderIndex[self.drag]
         end
 
+        -- Ends a drag without moving anything; hides the ghost and zones and redraws the rows the drag had hidden.
         function view:Cancel()
             local moving = self.drag
             self.drag = nil
@@ -197,6 +231,7 @@ function addon:InstallSettingsRosterOrder(p)
             end
         end
 
+        -- True when `entry` moves with the current drag (itself, or it and every later entry in tail mode).
         function view:Carries(entry)
             local index = r.orderIndex[entry.value]
 
@@ -205,10 +240,14 @@ function addon:InstallSettingsRosterOrder(p)
                 and (self.tail and index >= self.from or not self.tail and entry.value == self.drag)
         end
 
+        -- True when the dragged range may be dropped before order index `gap`.
         function view:CanDrop(gap)
             return valid() and addon:CanReorderWorkbenchRange(items, self:Index(), gap, self.tail)
         end
 
+        -- Moves the dragged range before order index `gap` and redraws. Returns true when the order changed. Pending
+        -- field edits are flushed first, and identities are resolved again afterward because that flush can rebuild
+        -- the roster.
         function view:Drop(gap)
             local id, tail = self.drag, self.tail
             local before = items[gap] and identity(items[gap])
@@ -226,6 +265,7 @@ function addon:InstallSettingsRosterOrder(p)
             return true
         end
 
+        -- Highlights the valid drop zone under the pointer and returns it, or nil.
         function view:Hover()
             local selected
 
@@ -252,6 +292,7 @@ function addon:InstallSettingsRosterOrder(p)
             return selected
         end
 
+        -- Mouse released: drops on the hovered zone, else cancels.
         function view:EndDrag()
             local zone = self:Hover()
 
@@ -262,6 +303,8 @@ function addon:InstallSettingsRosterOrder(p)
             end
         end
 
+        -- Starts dragging entry `id` (with every later entry when `tail`, which defaults to the Ctrl key). Shows the
+        -- ghost and the zones that would be legal drops, and polls the pointer until the button is released.
         function view:Begin(id, title, tail)
             if tail == nil then tail = IsControlKeyDown and IsControlKeyDown() or false end
             self:Cancel()
@@ -330,6 +373,13 @@ function addon:InstallSettingsRosterOrder(p)
         self.cleanups[#self.cleanups + 1] = function() view:Cancel() end
     end
 
+
+    -- ============================================================================
+    -- Drop zones
+    -- ============================================================================
+
+    -- Creates and positions the 12 px drop zones for the gaps near the visible part of the roster (binary search over
+    -- the sorted gap positions), and recycles zones that scrolled away. Runs on every scroll.
     function p:BuildRosterOrderZones()
         local r = self.roster
         local view = r.orderView

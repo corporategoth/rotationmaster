@@ -1,10 +1,24 @@
+-- Read-only rotation comparison: the plain-text diagnostic report (addon:FormatRotationComparison), the side-by-side
+-- card view of a comparison (addon:RenderRotationComparison, also used by the transfer window) and the "Compare
+-- rotations" window (addon:ShowRotationComparison). It only displays results computed by addon.RotationData and the
+-- scoped rotation coordinator; it never merges, writes or reads live game values. Loaded from RotationMaster.toc after
+-- UI/defaults.lua and before UI/transfer.lua.
+
 local addon_name, addon = ...
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
+-- ============================================================================
+-- Diagnostic text
+-- ============================================================================
+
 -- Consumes trusted results from RotationData, never live observations or Lua.
+-- Returns the comparison as plain text for the copy box. Every value is cut to a fixed length, the whole report stays
+-- under 65,000 bytes, and "|" is doubled so no stored text can inject color or hyperlink escapes; a closing line says
+-- when anything was truncated.
 function addon:FormatRotationComparison(result)
     local lines, bytes, truncated = {}, 0, false
 
+    -- tostring(value) cut to `limit` characters, with "|" escaped; flags the report as truncated when it cuts.
     local function safe(value, limit)
         local text = tostring(value)
 
@@ -16,6 +30,7 @@ function addon:FormatRotationComparison(result)
         return (text:gsub("|", "||"))
     end
 
+    -- Adds one line unless it would pass the size cap (then flags truncation and returns false).
     local function append(text)
         if bytes + #text + 1 > 65000 then
             truncated = true
@@ -27,9 +42,11 @@ function addon:FormatRotationComparison(result)
         return true
     end
 
+    -- Renders a stored value as a bounded Lua-like literal (at most 100 nodes, depth 8 and 8 KiB), keys sorted.
     local function value(v)
         local count = 0
 
+        -- Recursive step; numbers sort before strings so the key order is stable.
         local function render(current, depth)
             count = count + 1
 
@@ -79,6 +96,7 @@ function addon:FormatRotationComparison(result)
         return text
     end
 
+    -- Writes one titled block: its status line, then each change and diagnostic of `part`.
     local function section(title, part)
         append(title)
 
@@ -143,6 +161,11 @@ function addon:FormatRotationComparison(result)
     return table.concat(lines, "\n")
 end
 
+-- ============================================================================
+-- Side-by-side view
+-- ============================================================================
+
+-- Adds a full-width text label to `parent`; kind 'Heading' uses the workbench header font and color. Returns it.
 local function label(parent, text, kind)
     local widget = addon:CreateConditionLabel()
 
@@ -157,12 +180,15 @@ local function label(parent, text, kind)
     return widget
 end
 
+-- Names for the comparison views a result can offer, keyed by view.key.
 local directionNames = {
     current = L["Selected rotation → your rotation"],
     source = L["Built In updates since cloning"],
     custom = L["Your edits since cloning"],
 }
 
+-- Fills `parent` with the cards of one comparison `view`: notices, a "show unchanged" toggle and, for each changed
+-- part (names, tags, priority, switch, cooldown and rotation steps), left and right columns with status tags.
 local function renderComparison(self, parent, view, spec, showUnchanged)
     parent:ReleaseChildren()
     local model = self.RotationData.BuildVisualComparison(view)
@@ -213,6 +239,7 @@ local function renderComparison(self, parent, view, spec, showUnchanged)
 
     if view.key == "import" then leftTitle = L["Your rotation"] end
 
+    -- Adds a two-column row, titled with the side names, and calls render(column, entry) for each side that has one.
     local function pair(left, right, render)
         local row = addon:CreateConditionGroup()
         row:SetFullWidth(true)
@@ -307,6 +334,8 @@ local function renderComparison(self, parent, view, spec, showUnchanged)
     end
 end
 
+-- Public wrapper for renderComparison: pauses the parent's layout while it rebuilds and always resumes it, even if the
+-- build errors (the error is rethrown afterward).
 function addon:RenderRotationComparison(parent, view, spec, showUnchanged)
     local paused = type(parent.PauseLayout) == 'function' and type(parent.ResumeLayout) == 'function'
     if paused then parent:PauseLayout() end
@@ -315,6 +344,11 @@ function addon:RenderRotationComparison(parent, view, spec, showUnchanged)
     if not ok then error(why, 0) end
 end
 
+-- ============================================================================
+-- Windows
+-- ============================================================================
+
+-- Shows the copyable diagnostic text in the shared report window (created on first use) and returns it.
 function addon:ShowComparisonReport(report)
     local d = self.rotationComparisonReport
 
@@ -327,6 +361,9 @@ function addon:ShowComparisonReport(report)
     return d
 end
 
+-- Opens the Compare rotations window for rotation `id` of `spec`: the open rotation against a chosen other one, with a
+-- view selector and a diagnostics button. Returns the window, or nil and a reason (unknown rotation, no snapshot). The
+-- window closes itself when the profile, owner or any rotation token it was built on goes stale (see valid()).
 function addon:ShowRotationComparison(spec, id)
     local reference, reason = self:ResolveRotationReference(spec, id)
     if not reference then return nil, reason end
@@ -359,10 +396,12 @@ function addon:ShowRotationComparison(spec, id)
         d.scroll:SetPoint('TOPLEFT', 12, -154)
         d.scroll:SetSize(1030, 518)
 
+        -- Hides the frame; Clear() follows through the frame's OnHide script.
         function d:Hide()
             self.frame:Hide()
         end
 
+        -- Releases the content and every widget this window created; runs on each hide and before each reuse.
         function d:Clear()
             self.active = false
             self.scroll:ReleaseConditionContent()
@@ -385,6 +424,7 @@ function addon:ShowRotationComparison(spec, id)
     local serial = d.serial
     local profile = self.db.profile
 
+    -- True only while this showing is current: same profile, ready coordinator, same owner and unchanged record tokens.
     local function valid()
         if
             not d.active
@@ -408,6 +448,7 @@ function addon:ShowRotationComparison(spec, id)
             and (not targetToken or coordinator:TokenCurrent(targetToken))
     end
 
+    -- Places a condition widget on the window frame at (x, y) and tracks it for release.
     local function control(widget, x, y, width)
         widget.frame:SetParent(d.frame)
         widget.frame:ClearAllPoints()
@@ -487,6 +528,7 @@ function addon:ShowRotationComparison(spec, id)
     d.scroll:SetConditionContent(graph)
     local result, report
 
+    -- Draws view number `index` of the current comparison result.
     local function show(index)
         if not valid() then return end
         local view = result and result.views and result.views[index]
@@ -501,6 +543,7 @@ function addon:ShowRotationComparison(spec, id)
         d.scroll:UpdateWorkbenchScroll()
     end
 
+    -- Compares against target number `index`: builds the result and report text and repopulates the view selector.
     local function refresh(index)
         if not valid() then return end
         local target = targets[index]
