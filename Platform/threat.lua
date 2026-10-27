@@ -1,8 +1,15 @@
+-- Platform adapter for the player's threat status against a unit (UnitExists, UnitIsEnemy, UnitThreatSituation).
+-- Returns `status, nil`, `false` for known absence, non-enemy or no threat, or `nil, reason`; game values pass
+-- platform:CanReadValue first. Only the probe and restricted combat-data policies read. Loaded from RotationMaster.toc
+-- after Platform/pet.lua.
+-- The generated bindings block at the end is owned by tools/generate_builtin_sources.py; the reader is a Built In
+-- helper, so its body is frozen.
 local _, addon = ...
 local platform = addon.Platform
 
 -- Preserve the ordered native threat predicate, including optional nil status.
 -- False is known absence/nonenemy/no-threat; unavailable required facts are nil.
+-- On success returns the numeric UnitThreatSituation("player", unit) status (0 to 3).
 function platform:GetUnitThreatObservation(unit)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end

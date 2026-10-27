@@ -1,16 +1,26 @@
+-- Platform adapter for death knight runes: GetRuneType, GetRuneCooldown and GetTime. Readers return
+-- `value, nil` or `nil, reason` (the cooldown reader returns a record whose fields carry their own reasons); game
+-- values pass platform:CanReadValue first. Only the probe and restricted combat-data policies read. Loaded from
+-- RotationMaster.toc after Platform/points.lua; the RUNE conditions in Conditions/stats.lua consume it.
+-- The generated bindings block at the end is owned by tools/generate_builtin_sources.py; every function here is a
+-- Built In helper, so every body is frozen.
 local _, addon = ...
 local platform = addon.Platform
 
+-- True for a number that is neither NaN nor infinite.
 local function finite(value)
     return type(value)=='number' and value==value and value<math.huge and value>-math.huge
 end
 
+-- Returns true when index is a readable integer rune slot from 1 to 6, otherwise nil and a reason.
 local function validIndex(self, index)
     if not self:CanReadValue(index) then return nil,'restricted-value' end
     if not finite(index) or index%1~=0 or index<1 or index>6 then return nil,'invalid-rune-index' end
     return true
 end
 
+-- Returns value when it is a readable finite number; a nil value yields nil and the caller's `missing` reason so each
+-- field reports why it is absent.
 local function numberField(self, value, missing)
     if not self:CanReadValue(value) then return nil,'restricted-value' end
     if canaccessvalue and not canaccessvalue(value) then return nil,'restricted-value' end
@@ -19,6 +29,7 @@ local function numberField(self, value, missing)
     return value
 end
 
+-- Returns the rune type (a positive integer) for slot index, or nil and a reason.
 function platform:GetRuneTypeObservation(index)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
@@ -36,6 +47,8 @@ end
 
 -- A single native tuple supports independent ready and timing predicates.
 -- Missing optional fields do not invalidate another readable field.
+-- Returns a record { start, duration, ready } where each field is nil when unreadable, with startReason,
+-- durationReason and readyReason saying why; or nil and a reason when the call itself cannot be made.
 function platform:GetRuneCooldownObservation(index)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
@@ -57,6 +70,7 @@ function platform:GetRuneCooldownObservation(index)
 end
 
 -- This clock is deliberately not a per-pass cached observation.
+-- Returns GetTime() as a finite number, or nil and a reason; used to turn rune start and duration into remaining time.
 function platform:GetRuneEvaluationTime()
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end

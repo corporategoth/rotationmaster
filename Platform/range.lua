@@ -1,8 +1,17 @@
+-- Platform adapter for distance questions: native spell range (C_Spell.IsSpellInRange / IsSpellInRange with the
+-- Attack spell), the nameplateMaxDistance CVar, and the optional LibRangeCheck-3.0 library as a fallback. Readers
+-- return `value, nil` or `nil, reason`; game values pass platform:CanReadValue first. Must not claim an exact
+-- distance from an interval or treat a missing result as "outside". Loaded from RotationMaster.toc near the end of
+-- the Platform group.
+-- The generated bindings block at the end is owned by tools/generate_builtin_sources.py; the two published readers
+-- are Built In helpers, so their bodies are frozen.
 local _, addon = ...
 local platform = addon.Platform
 
 -- Native Attack range, when the client supports that query, includes the game's
 -- melee geometry. An invalid nil result may use a conservative public estimate.
+-- Returns true when the unit is beyond melee range, false when within it, plus a nil reason and the source used
+-- ("native-attack-range" or "estimated-five-yard-range"); or nil and a reason when it cannot be decided.
 function platform:IsBeyondMeleeRange(unit)
     if type(unit) ~= "string" or unit == "" then return nil, "invalid-unit" end
     local fn, spell
@@ -52,6 +61,7 @@ function platform:IsBeyondMeleeRange(unit)
 end
 
 -- This setting limits nameplate visibility, not the completeness of any scan.
+-- Returns the nameplateMaxDistance CVar as a positive number of yards, or nil and a reason.
 function platform:GetNameplateMaxDistance()
     local query=C_CVar and C_CVar.GetCVar or GetCVar
     if type(query)~='function' then return nil,'missing-api' end
@@ -66,6 +76,7 @@ end
 
 -- Public LibRangeCheck intervals retain their bounds. Never invent an exact
 -- distance from either bound or turn an absent result into an outside result.
+-- Returns { minimum = n or nil, maximum = n or nil } with at least one bound present, or nil and a reason.
 function platform:GetRangeCheckBounds(unit)
     if not self:CanReadValue(unit) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end

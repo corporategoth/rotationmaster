@@ -1,5 +1,14 @@
+-- Platform adapter for player, encounter, instance, Mythic+, hero talent, spell glow and group state. Readers return
+-- `value, nil` or `nil, reason` (or a record carrying per-field reasons), never throw, and pass every game value
+-- through platform:CanReadValue first. Must not cache anything except hero tree names, which cannot change in a
+-- session. Loaded from RotationMaster.toc after Platform/pet.lua and Platform/instance.lua; consumed by the
+-- condition files named below. This file has no generated bindings block.
 local _, addon = ...
 local platform = addon.Platform
+
+-- ============================================================================
+-- Protected-call helpers
+-- ============================================================================
 
 -- Player, instance, encounter and group state read through the platform
 -- adapter, for PLAYER_STATE (Conditions/player_state.lua), ENCOUNTER and
@@ -20,20 +29,24 @@ local platform = addon.Platform
 --   carry no secret annotation on their returns. UnitGroupRolesAssigned is
 --   SecretWhenUnitIdentityRestricted, which a group member never meets.
 
+-- True for a number that is neither NaN nor infinite.
 local function finite(value)
     return type(value) == 'number' and value == value and value < math.huge and value > -math.huge
 end
 
+-- True for a finite integer.
 local function whole(value)
     return finite(value) and value % 1 == 0
 end
 
--- A protected call whose results must all be readable: the results from index
--- 2 on (index 1 is the pcall status), with n their count including nils.
+-- Packs varargs into a table with n set to the count, so trailing nils from a pcall are not lost. In a call()
+-- result, index 1 is the pcall status and the API's results start at index 2.
 local function pack(...)
     return { n = select('#', ...), ... }
 end
 
+-- A protected call whose results must all be readable: returns the pack() of pcall(api, ...) (results from index 2 on,
+-- n counting nils), or nil and "missing-api", "api-error" or "restricted-value".
 local function call(self, api, ...)
     if type(api) ~= 'function' then return nil, 'missing-api' end
     local results = pack(pcall(api, ...))
@@ -45,6 +58,10 @@ local function call(self, api, ...)
 
     return results
 end
+
+-- ============================================================================
+-- Player, encounter, instance and keystone state
+-- ============================================================================
 
 -- The player predicates PLAYER_STATE chooses from. The legacy form of the
 -- zero-argument functions answers 1 or nil rather than true or false, and they
@@ -62,6 +79,8 @@ local stateKinds = {
     ghost = true,
 }
 
+-- Calls a Boolean predicate and returns true or false, treating nil and 0 as false and 1 as true (legacy answers), or
+-- nil and a reason for anything else.
 local function flag(self, api, ...)
     local results, reason = call(self, api, ...)
     if not results then return nil, reason end
@@ -72,6 +91,8 @@ local function flag(self, api, ...)
     return result
 end
 
+-- kind is one of the stateKinds names. Returns the player's state as a Boolean, or nil and a reason. Probe and
+-- restricted policies only.
 function platform:GetPlayerStateObservation(kind)
     local policy = self:GetCombatDataPolicy()
     if policy ~= 'probe' and policy ~= 'restricted' then return nil, 'unsupported-policy' end
@@ -106,6 +127,7 @@ function platform:GetPlayerStateObservation(kind)
 end
 
 -- Whether a boss encounter is in progress, from the game rather than a boss mod.
+-- Returns true or false, or nil and a reason. Prefers C_InstanceEncounter and falls back to the legacy global.
 function platform:GetEncounterObservation()
     local policy = self:GetCombatDataPolicy()
     if policy ~= 'probe' and policy ~= 'restricted' then return nil, 'unsupported-policy' end
@@ -126,6 +148,7 @@ end
 -- field left nil when its value could not be read (reasons[field] says why).
 -- In the open world the difficulty is 0 and the instance ID is the map ID of
 -- the continent.
+-- Returns the record described above (always, once the API ran), or nil and a reason when the API cannot be called.
 function platform:GetInstanceDetails()
     local policy = self:GetCombatDataPolicy()
     if policy ~= 'probe' and policy ~= 'restricted' then return nil, 'unsupported-policy' end
@@ -138,6 +161,7 @@ function platform:GetInstanceDetails()
 
     local record, reasons = {}, {}
 
+    -- Stores value in record[field] when it is readable, present and passes valid(); otherwise records the reason.
     local function take(field, value, valid)
         if not self:CanReadValue(value) then
             reasons[field] = 'restricted-value'
@@ -169,6 +193,7 @@ end
 -- The active Mythic+ keystone: {active, level, affixes}. level is 0 when no
 -- keystone is running. Retail only; where the API is absent the reason is
 -- missing-api.
+-- Affix IDs the client reports that are not whole numbers are dropped rather than failing the read.
 function platform:GetKeystoneObservation()
     local policy = self:GetCombatDataPolicy()
     if policy ~= 'probe' and policy ~= 'restricted' then return nil, 'unsupported-policy' end
@@ -198,6 +223,10 @@ function platform:GetKeystoneObservation()
     return { active = true, level = level, affixes = list }
 end
 
+-- ============================================================================
+-- Hero talents and spell glow
+-- ============================================================================
+
 -- The hero talent tree (subtree ID) the player has chosen: a number, false
 -- when none is chosen (below the level that offers one, or not chosen yet), or
 -- nil with a reason. Retail only.
@@ -214,11 +243,13 @@ function platform:GetActiveHeroTree()
     return id
 end
 
+-- Hero tree names already read, by subtree ID; also filled by GetHeroTreeChoices.
+local heroNames = {}
+
 -- The name the game gives a hero tree, remembered once read (a name does not
 -- change within a session). Needs the active talent config, so it is nil while
 -- the config is unavailable.
-local heroNames = {}
-
+-- Returns the name string, or nil and a reason.
 function platform:GetHeroTreeName(subTreeID)
     if not whole(subTreeID) or subTreeID <= 0 then return nil, 'invalid-talent-query' end
     local known = heroNames[subTreeID]
@@ -248,6 +279,8 @@ end
 -- The hero trees a specialization (default: the one being played) can choose,
 -- for the editor: a list of {id, name}. Listed from the talent tree reader, so
 -- another specialization's trees need the view loadout and not being in combat.
+-- Returns the list, or nil and a reason ("hero-trees-unavailable" when the specialization has none). Depends on
+-- platform:GetTraitTalents from Platform/talents.lua, which loads later, so it is looked up at call time.
 function platform:GetHeroTreeChoices(specID)
     if type(self.GetTraitTalents) ~= 'function' then return nil, 'missing-api' end
     local groups, reason = self:GetTraitTalents(specID)
@@ -268,6 +301,7 @@ end
 -- Whether a spell currently shows its activation (proc) glow. The game answers
 -- for the spell ID the action shows, so the spell and its base and override
 -- relatives are each asked by the caller.
+-- Returns true or false, or nil and a reason.
 function platform:IsSpellGlowing(spellID)
     local policy = self:GetCombatDataPolicy()
     if policy ~= 'probe' and policy ~= 'restricted' then return nil, 'unsupported-policy' end
@@ -282,6 +316,10 @@ function platform:IsSpellGlowing(spellID)
     if type(result) ~= 'boolean' then return nil, 'invalid-api-result' end
     return result
 end
+
+-- ============================================================================
+-- Group
+-- ============================================================================
 
 -- Group size, assigned roles or dead members over the party or raid tokens:
 -- {size, roles={TANK,HEALER,DAMAGER,NONE}, dead}. Everything counts you: size

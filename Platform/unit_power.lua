@@ -1,12 +1,23 @@
+-- Platform adapter for a unit's mana or current primary power (UnitExists, UnitPowerType, UnitPower, UnitPowerMax,
+-- Enum.PowerType). Returns a record or `nil, reason`; game values pass platform:CanReadValue and canaccessvalue first,
+-- because Retail and Forever make primary power secret (docs/restricted-clients.md). Secondary point resources live
+-- in Platform/points.lua instead. Only the probe and restricted combat-data policies read. Loaded from
+-- RotationMaster.toc after Platform/unit_level.lua.
+-- The generated bindings block at the end is owned by tools/generate_builtin_sources.py; finite and the reader are
+-- Built In helpers, so their bodies are frozen.
 local _, addon = ...
 local platform = addon.Platform
 
+-- True for a number that is neither NaN nor infinite.
 local function finite(value)
     return type(value)=='number' and value==value and value<math.huge and value>-math.huge
 end
 
 -- Mana is an explicit resource even while another bar is active. Current mode
 -- follows the numeric native type and preserves signed quantities such as Balance.
+-- resource is "mana" (Enum.PowerType.Mana) or "current" (whatever UnitPowerType reports for the unit). Returns
+-- { exists = false }, or { exists = true, powerType = id, current = n } plus maximum = n when includeMaximum is
+-- true, or nil and a reason.
 function platform:GetUnitPowerObservation(unit, resource, includeMaximum)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end

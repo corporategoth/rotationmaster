@@ -1,8 +1,16 @@
+-- Platform adapter for unit metadata strings: class file name (UnitClass), creature type name (UnitCreatureType) and
+-- classification token (UnitClassification), selected by a closed `kind`. Returns `string, nil`, `false` for an
+-- absent unit, or `nil, reason`; game values pass platform:CanReadValue first. Only the probe and restricted
+-- combat-data policies read. Loaded from RotationMaster.toc after Platform/unit_identity.lua.
+-- The generated bindings block at the end is owned by tools/generate_builtin_sources.py; the reader is a Built In
+-- helper, so its body is frozen.
 local _, addon = ...
 local platform = addon.Platform
 
 -- Keep native metadata identities: class token, localized creature name, or
 -- classification token. Unused tuple fields do not determine availability.
+-- kind is "class", "creature" or "classification". Returns the readable non-empty string, false when the unit does
+-- not exist, or nil and a reason.
 function platform:GetUnitMetadataObservation(unit, kind)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end

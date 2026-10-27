@@ -1,3 +1,10 @@
+-- Platform adapter for point resources (combo points, runes, soul shards, holy power, chi, arcane charges, essence,
+-- Burning Embers) behind the POINT condition. Wraps UnitExists, UnitClass, UnitPower, UnitPowerMax and GetComboPoints;
+-- every reader returns `value, nil` or `nil, reason` and passes each game value through platform:CanReadValue before
+-- comparing it, so a secret value is unavailable and never a number. Must not choose the primary power bar or
+-- redirect the unit. Loaded from RotationMaster.toc after Platform/client.lua (which defines addon.Platform).
+-- The generated bindings block at the end is owned by tools/generate_builtin_sources.py; the readers are Built In
+-- helpers, so their bodies are frozen.
 local _, addon = ...
 local platform = addon.Platform
 
@@ -20,6 +27,8 @@ local platform = addon.Platform
 -- value still passes CanReadValue: a secret one is unavailable, never a number.
 local neverSecretPointPowers = { 'ComboPoints', 'Runes', 'SoulShards', 'HolyPower', 'Chi', 'ArcaneCharges', 'Essence' }
 
+-- Returns true when powerType is one of the secondary resources Blizzard no longer makes secret (see the list above).
+-- Matches by Enum.PowerType name so a client that renumbers the enum still works; any unreadable input is false.
 function platform:IsNeverSecretPointPower(powerType)
     if not self:CanReadValue(powerType) then return false end
     if canaccessvalue and not canaccessvalue(powerType) then return false end
@@ -48,6 +57,8 @@ end
 -- POINT has its own explicit secondary-resource selection policy. These reads
 -- neither choose the primary power bar nor redirect the configured unit.
 -- Identity is guarded value by value, so the restricted policy reads it too.
+-- Returns { exists = false }, { exists = true } or { exists = true, class = <class file name> } (class only when
+-- includeClass is true), or nil and a reason. Runs on the poll path; callers cache it per evaluation pass.
 function platform:GetUnitPointIdentityObservation(unit, includeClass)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
@@ -114,6 +125,9 @@ do
     end
 end
 
+-- Reads UnitPower or UnitPowerMax with the unmodified-fragments flag and returns the value in whole units (fragments
+-- divided by pointFragmentsPerWhole), or nil and a reason. Probe policy only; reached through
+-- GetUnitPointPowerObservation when powerType is the Burning Embers type. kind is "current" or "maximum".
 function platform:GetUnitPointFragmentObservation(unit, powerType, kind)
     if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(powerType) or not self:CanReadValue(kind) then return nil,'restricted-value' end
@@ -132,6 +146,9 @@ function platform:GetUnitPointFragmentObservation(unit, powerType, kind)
     return result/pointFragmentsPerWhole
 end
 
+-- Returns the current or maximum quantity of one explicitly chosen point resource, or nil and a reason. kind is
+-- "current" (UnitPower) or "maximum" (UnitPowerMax). Probe clients read any type; restricted clients only the types
+-- IsNeverSecretPointPower accepts. The sign and fraction of the result are kept as the client reported them.
 function platform:GetUnitPointPowerObservation(unit, powerType, kind)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and (policy~='restricted' or not self:IsNeverSecretPointPower(powerType)) then return nil,'unsupported-policy' end
@@ -153,6 +170,8 @@ function platform:GetUnitPointPowerObservation(unit, powerType, kind)
 end
 
 -- Explicit player/target combo transport. Other units/resources use the observer above.
+-- Only the "tbc" client family on the probe policy has this path: "current" is GetComboPoints("player", "target") and
+-- "maximum" is UnitPowerMax("player", powerType). Returns the number, or nil and a reason.
 function platform:GetPlayerComboPointObservation(powerType, kind)
     local info=self:GetClientInfo()
     if info.combatDataPolicy~='probe' then return nil,'unsupported-policy' end

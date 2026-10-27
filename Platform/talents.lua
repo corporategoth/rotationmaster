@@ -1,6 +1,18 @@
+-- Platform adapter for talents on every client family. Three layouts (platform:GetTalentLayout): "tree" (Era, TBC,
+-- Wrath and Cataclysm Classic talent tabs), "grid" (Mists of Pandaria Classic tiers and columns) and "traits" (Retail
+-- and Forever trait nodes, C_Traits and C_ClassTalents). Readers return `value, nil` or `nil, reason`, never throw,
+-- and pass every game value through platform:CanReadValue first. Must not change talents or select a specialization;
+-- Platform/specializations.lua owns that. Loaded from RotationMaster.toc after Platform/specializations.lua and before
+-- Platform/talent_tree.lua; the talent conditions, Core/build_context.lua and UI/talent_popup.lua consume it.
+
 local _, addon = ...
 local platform = addon.Platform
 
+-- ============================================================================
+-- Shared helpers
+-- ============================================================================
+
+-- True when value is readable and is an integer within [minimum, maximum].
 local function integer(value, minimum, maximum)
     return platform:CanReadValue(value)
         and type(value) == "number"
@@ -9,10 +21,13 @@ local function integer(value, minimum, maximum)
         and value % 1 == 0
 end
 
+-- A talent group argument is valid when it is nil (the active group) or an integer from 1 to 4.
 local function groupValid(group)
     return group == nil or integer(group, 1, 4)
 end
 
+-- Returns "tree", "grid" or "traits" for this client, or nil and "unsupported-talent-layout". Every other reader
+-- here checks it first and answers "talent-layout-mismatch" when called on the wrong layout.
 function platform:GetTalentLayout()
     local client = self:GetClientInfo()
     if client.family == "era" or client.family == "tbc" then return "tree" end
@@ -26,11 +41,14 @@ function platform:GetTalentLayout()
     return nil, "unsupported-talent-layout"
 end
 
+-- Returns true when the client's talent layout is `wanted`, otherwise nil and "talent-layout-mismatch".
 local function layout(wanted)
     if platform:GetTalentLayout() ~= wanted then return nil, "talent-layout-mismatch" end
     return true
 end
 
+-- Calls fn(...) under pcall and returns the result when it is a readable integer from 0 to maximum, otherwise nil and
+-- a reason.
 local function count(fn, maximum, ...)
     if type(fn) ~= "function" then return nil, "missing-api" end
     local ok, value = pcall(fn, ...)
@@ -40,14 +58,20 @@ local function count(fn, maximum, ...)
     return value
 end
 
+-- ============================================================================
+-- Talent trees (tab layout, and Forever's trait node groups)
+-- ============================================================================
+
 -- Forever's classic trees are trait node groups (GetTraitTreeGroups below);
 -- the tree count, tree names and points read them there. Retail has none.
+-- True when this client is Forever or Retail and has C_Traits.GetGroupDisplayInfoByTreeID.
 local function traitTrees()
     local family = platform:GetClientFamily()
     if family ~= "forever" and family ~= "retail" then return false end
     return type(C_Traits) == "table" and type(C_Traits.GetGroupDisplayInfoByTreeID) == "function"
 end
 
+-- Returns how many talent trees the class has (Forever: its node groups), or nil and a reason.
 function platform:GetTalentTreeCount()
     if traitTrees() then
         local groups, why = self:GetTraitTreeGroups()
@@ -60,6 +84,7 @@ function platform:GetTalentTreeCount()
     return count(GetNumTalentTabs, 16, false, false)
 end
 
+-- Returns how many talents tree `tree` (1 to 16) holds on a "tree" layout client, or nil and a reason.
 function platform:GetTreeTalentCount(tree)
     local supported, reason = layout("tree")
     if not supported then return nil, reason end
@@ -67,6 +92,7 @@ function platform:GetTreeTalentCount(tree)
     return count(GetNumTalents, 256, tree, false, false)
 end
 
+-- Validates a tree's name, icon and points-spent values and returns { name, icon, pointsSpent }, or nil and a reason.
 local function treeMetadata(name, icon, points)
     for _, value in pairs({ name = name, icon = icon, points = points }) do
         if not platform:CanReadValue(value) then return nil, "restricted-value" end
@@ -82,6 +108,8 @@ local function treeMetadata(name, icon, points)
     return { name = name, icon = icon, pointsSpent = points }
 end
 
+-- Returns { name, icon, pointsSpent } for tree `tree` (1 to 16) in talent group `group` (nil for the active one), or
+-- nil and a reason. Handles both return orders of the legacy GetTalentTabInfo (see the comment inside).
 function platform:GetTalentTreeInfo(tree, group)
     if traitTrees() then
         if not integer(tree, 1, 16) or not groupValid(group) then return nil, "invalid-talent-query" end
@@ -114,6 +142,8 @@ function platform:GetTalentTreeInfo(tree, group)
     return nil, "talent-data-unavailable"
 end
 
+-- Returns the tree with the most points spent (the GetTalentTreeInfo record plus its index), or nil and a reason:
+-- "no-talents-spent" when every tree is at zero and "ambiguous-primary-talent-tree" on a tie for the lead.
 function platform:GetPrimaryTalentTree(group)
     if not groupValid(group) then return nil, 'invalid-talent-query' end
     local count, reason = self:GetTalentTreeCount()
@@ -140,6 +170,12 @@ function platform:GetPrimaryTalentTree(group)
     return best
 end
 
+-- ============================================================================
+-- Individual talents (tree and grid layouts)
+-- ============================================================================
+
+-- Validates a talent record's name, icon, talentID and spellID and returns { name, icon, talentID?, spellID? } (an ID
+-- of zero is dropped), or nil and a reason.
 local function identity(data)
     if not platform:CanReadValue(data) then return nil, "restricted-value" end
     if type(data) ~= "table" then return nil, "talent-data-unavailable" end
@@ -168,11 +204,15 @@ local function identity(data)
     return result
 end
 
+-- Calls the legacy multi-return GetTalentInfo and names the fields the modern record would carry (positions 1, 2, 5,
+-- 6 and 12 of the tuple). Run under pcall by the caller.
 local function legacyTreeRecord(fn, ...)
     local tuple = { fn(...) }
     return { name = tuple[1], icon = tuple[2], rank = tuple[5], maxRank = tuple[6], talentID = tuple[12] }
 end
 
+-- Returns { name, icon, talentID?, spellID?, rank, maxRank } for talent `talent` of tree `tree` on a "tree" layout
+-- client, or nil and a reason.
 function platform:GetTreeTalentInfo(tree, talent, group)
     local supported, reason = layout("tree")
     if not supported then return nil, reason end
@@ -211,6 +251,8 @@ function platform:GetTreeTalentInfo(tree, talent, group)
     return result
 end
 
+-- Returns { name, icon, talentID, spellID, selected } for grid slot `index` (1 to 18, three columns per tier) on a
+-- "grid" layout client, or nil and a reason.
 function platform:GetGridTalentInfo(index, group)
     local supported, reason = layout("grid")
     if not supported then return nil, reason end
@@ -238,8 +280,10 @@ function platform:GetGridTalentInfo(index, group)
     return result
 end
 
--- Trait talents (Retail and Forever: the "traits" layout).
---
+-- ============================================================================
+-- Trait talents (Retail and Forever: the "traits" layout)
+-- ============================================================================
+
 -- Contract (Blizzard's generated API documentation, Gethe/wow-ui-source
 -- forever ca8368f2 (1.60.1) and live, Blizzard_APIDocumentationGenerated/
 -- ClassTalentsDocumentation.lua and SharedTraitsDocumentation.lua, read
@@ -262,6 +306,7 @@ end
 --     skillLineID, orderIndex, displayName, icon}[]
 -- showing GetGroupCurrencyInfo(configID, groupIDs)[i].currencyInfos[1].spent
 -- as the points spent in that tree.
+-- True for a readable positive integer below 2^31, the range of trait IDs.
 local function traitID(value)
     return platform:CanReadValue(value)
         and type(value) == 'number'
@@ -274,10 +319,12 @@ end
 -- TraitConstantsDocumentation.lua) has a negative ID; every other config is positive.
 local VIEW_CONFIG = -3
 
+-- True for a trait config ID: a positive ID or the negative view-loadout config.
 local function traitConfig(value)
     return traitID(value) or (platform:CanReadValue(value) and value == VIEW_CONFIG)
 end
 
+-- Calls C_Traits[name](...) under pcall. Returns true and the readable result, or false and a reason.
 local function traits(name, ...)
     local namespace = C_Traits
     local fn = type(namespace) == 'table' and namespace[name] or nil
@@ -288,6 +335,7 @@ local function traits(name, ...)
     return true, value
 end
 
+-- Returns true on Retail and Forever, otherwise nil and "talent-layout-mismatch".
 local function traitsLayout()
     local family = platform:GetClientFamily()
     if family ~= 'retail' and family ~= 'forever' then return nil, 'talent-layout-mismatch' end
@@ -295,6 +343,7 @@ local function traitsLayout()
 end
 
 -- The active trait config and its talent tree.
+-- Returns configID, treeID, or nil and a reason.
 function platform:GetActiveTraitConfig()
     local supported, reason = traitsLayout()
     if not supported then return nil, reason end
@@ -317,6 +366,7 @@ end
 
 -- Forever's trees: the node groups of the class trait tree in display order,
 -- each {groupID, name, icon, pointsSpent}. Retail has no such groups.
+-- config and tree default to the active ones. Returns the list, or nil and a reason.
 function platform:GetTraitTreeGroups(config, tree)
     local supported, reason = traitsLayout()
     if not supported then return nil, reason end
@@ -404,6 +454,7 @@ end
 -- subtree is not chosen), the active entry and the maximum rank. With
 -- withEntries the node's entry IDs come back too (a fresh list), for matching
 -- a saved spell ID against the node.
+-- Returns { rank, entry, maxRanks, entries? } or nil and a reason.
 function platform:GetTraitNodeState(config, node, withEntries)
     local supported, reason = traitsLayout()
     if not supported then return nil, reason end
@@ -454,8 +505,13 @@ function platform:GetTraitNodeState(config, node, withEntries)
     return state
 end
 
+-- ============================================================================
+-- Trait entries and identities
+-- ============================================================================
+
 -- A trait entry's definition: the spell ID it teaches and its display
 -- overrides. Two C_Traits reads, no spell lookup.
+-- Returns the entry info and the definition info tables, or nil and a reason.
 local function entryDefinition(config, entry)
     if not traitConfig(config) or not traitID(entry) then return nil, 'invalid-talent-query' end
     local ok, info = traits('GetEntryInfo', config, entry)
@@ -492,6 +548,7 @@ end
 -- A trait entry's display identity: name, icon and spell ID. The name and icon
 -- are the talent window's own: the definition's override, else the spell's name
 -- and (original) icon (TalentUtil.GetTalentName, TalentButtonUtil.CalculateIconTexture).
+-- Returns { name, icon, spellID?, maxRanks?, entryType? } or nil and a reason.
 function platform:GetTraitEntryIdentity(config, entry)
     local info, definition = entryDefinition(config, entry)
     if not info then return nil, definition end
@@ -524,6 +581,7 @@ end
 
 -- A node's display identity (its chosen entry, else the given or first one).
 -- A saved spell ID names the talent when the node is gone from the tree.
+-- Returns the GetTraitEntryIdentity record (or { name, icon, spellID } from the saved spell), or nil and a reason.
 function platform:GetTraitTalentIdentity(node, entry, spell)
     local config, why = self:GetActiveTraitConfig()
     if not config then return nil, why end
@@ -568,13 +626,11 @@ function platform:GetTraitTalentIdentity(node, entry, spell)
     return nil, reason
 end
 
--- Where a specialization's talents are read. The specialization being played
--- (or any, on a client with one tree per class) is the active config. Another
--- specialization of the class is read from Blizzard's view loadout, the config
--- the talent window fills to show a shared build
--- (C_ClassTalents.InitializeViewLoadout(specID, level), tree from
--- C_ClassTalents.GetTraitTreeForSpec(specID); Blizzard_ClassTalentImportExport.lua
--- ViewLoadout). Returns config, tree and "active" or "view".
+-- ============================================================================
+-- Reading a specialization's tree
+-- ============================================================================
+
+-- Calls C_ClassTalents[name](...) under pcall. Returns true and the readable result, or false and a reason.
 local function classTalents(name, ...)
     local namespace = C_ClassTalents
     local fn = type(namespace) == 'table' and namespace[name] or nil
@@ -585,6 +641,8 @@ local function classTalents(name, ...)
     return true, value
 end
 
+-- The level a view loadout is built for: the expansion maximum, else the player's level, else 80. Same rule as
+-- platform:GetTraitViewLevel in Platform/talent_tree.lua, which cannot be called from here because it loads later.
 local function viewLevel()
     for _, name in ipairs({ 'GetMaxLevelForPlayerExpansion', 'GetMaxLevelForLatestExpansion' }) do
         local fn = rawget(_G, name)
@@ -604,6 +662,7 @@ end
 -- Blizzard's talent window shows a linked or inspected build from: it is left
 -- alone while that window is on screen showing such a build. Nothing here
 -- opens, loads or needs the window; it is only looked at when it already exists.
+-- Returns true only when PlayerSpellsFrame exists, is shown and is inspecting another build.
 local function talentWindowInspecting()
     local frame = rawget(_G, 'PlayerSpellsFrame')
 
@@ -616,6 +675,15 @@ local function talentWindowInspecting()
     return okShown and okInspecting and shown == true and inspecting == true
 end
 
+-- Where a specialization's talents are read. The specialization being played
+-- (or any, on a client with one tree per class) is the active config. Another
+-- specialization of the class is read from Blizzard's view loadout, the config
+-- the talent window fills to show a shared build
+-- (C_ClassTalents.InitializeViewLoadout(specID, level), tree from
+-- C_ClassTalents.GetTraitTreeForSpec(specID); Blizzard_ClassTalentImportExport.lua
+-- ViewLoadout). Returns config, tree and "active" or "view".
+-- A view read refuses ("in-combat", "talent-window-inspecting") rather than disturb the shared view config; set
+-- options.ignoreInspect to skip the window check. Returns nil and a reason when no tree can be read.
 function platform:GetTraitSpecTree(specID, options)
     local supported, reason = traitsLayout()
     if not supported then return nil, reason end
@@ -657,6 +725,7 @@ end
 -- columns the talent window puts them in (class tree left, specialization tree
 -- right, a gap between). nil when there is no clean gap: the caller then keeps
 -- them as one group rather than guess.
+-- columns is a list of node x positions (tenths of a pixel); returns the x midpoint of the widest gap or nil.
 local function classSpecBoundary(columns)
     local distinct, seen = {}, {}
 
@@ -703,6 +772,7 @@ end
 -- "view"), hero (the subtree IDs the specialization can choose, when the
 -- client says), nodes, visible, skipped (entries that could not be named)}.
 -- Nothing listed is a reason, never an empty list.
+-- Reads many C_Traits records and allocates freely, so it is for editors and diagnostics, not the poll path.
 function platform:GetTraitTalents(specID, options)
     local config, tree, source = self:GetTraitSpecTree(specID, options)
     if not config then return nil, tree end
@@ -793,6 +863,7 @@ function platform:GetTraitTalents(specID, options)
     local selection = 2  -- Enum.TraitNodeType.Selection
     local groups, byKey = {}, {}
 
+    -- Returns the group registered under key, creating it (in first-seen order) when needed.
     local function groupFor(key, name, hero, kind)
         local group = byKey[key]
 
@@ -983,6 +1054,7 @@ end
 -- (choice nodes only), visible}. Built on demand by the build context when a
 -- saved node ID no longer holds its talent (node IDs can change between
 -- patches; spell IDs do not).
+-- Returns the index table, or nil and a reason. A visible node wins over a hidden one that teaches the same spell.
 function platform:GetTraitSpellIndex(config, tree)
     if not traitID(config) or not traitID(tree) then return nil, 'invalid-talent-query' end
     local ok, nodes = traits('GetTreeNodes', tree)

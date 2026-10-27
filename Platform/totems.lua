@@ -1,14 +1,22 @@
+-- Platform adapter for totem slots (GetNumTotemSlots, GetTotemInfo). Readers return `value, nil` or `nil, reason`;
+-- every tuple field passes platform:CanReadValue before it is compared, because totem slots can be secret on
+-- restricted clients. Must not decide which totem a spell makes; the TOTEM conditions in Conditions/totem.lua do
+-- that. Loaded from RotationMaster.toc after Platform/inventory.lua. Not a Built In helper source, so it has no
+-- generated bindings block.
 local _, addon = ...
 local platform = addon.Platform
 
+-- True for a number that is neither NaN nor infinite.
 local function finite(value)
     return type(value) == "number" and value == value and value < math.huge and value > -math.huge
 end
 
+-- True when value is an integer slot number from 1 to 64.
 local function slotNumber(value)
     return finite(value) and value >= 1 and value <= 64 and value % 1 == 0
 end
 
+-- Returns the number of totem slots the client has (0 to 64), or nil and a reason.
 function platform:GetTotemSlotCount()
     if type(GetNumTotemSlots) ~= "function" then return nil, "missing-api" end
     local ok, count = pcall(GetNumTotemSlots)
@@ -20,6 +28,9 @@ end
 
 -- Keep observation transport separate from validation, as with spell/aura
 -- records. No tuple field is compared before its readability check.
+-- Turns one GetTotemInfo tuple into { slot, active, name, startTime, duration, iconID, modRate, spellID }. An empty
+-- slot (have == false) is an inactive record with zeroed times; otherwise nil and a reason when any field is
+-- restricted or malformed.
 local function normalize(slot, have, name, start, duration, icon, rate, id)
     if not platform:CanReadValue(have) then return nil, "restricted-value" end
     if have == nil then return nil, "totem-data-unavailable" end
@@ -50,6 +61,7 @@ local function normalize(slot, have, name, start, duration, icon, rate, id)
     }
 end
 
+-- Returns the normalized record for totem slot (1 to 64) as described above normalize, or nil and a reason.
 function platform:GetTotemInfo(slot)
     if not slotNumber(slot) then return nil, "invalid-totem-slot" end
     if type(GetTotemInfo) ~= "function" then return nil, "missing-api" end

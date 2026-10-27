@@ -1,5 +1,15 @@
+-- Platform adapter for showing a talent tree: a registry of talent tree providers (the UI picks the first one that can
+-- open) and the trait-API reader that builds a drawable view of a specialization's tree and encodes a loadout string
+-- for Blizzard's view-loadout window (C_Traits, C_ClassTalents, PlayerUtil). Reads are `ok, value` or `nil, reason`
+-- and every game value passes platform:CanReadValue first. Must not change the player's talents or touch the talent
+-- window while it shows an inspected build. Loaded from RotationMaster.toc after Platform/talents.lua; the UI side is
+-- UI/talent_popup.lua.
 local _, addon = ...
 local platform = addon.Platform
+
+-- ============================================================================
+-- Provider registry
+-- ============================================================================
 
 -- Talent tree providers: the part of the talent selector that SHOWS a tree for
 -- a class and specialization and hands back the talent the player clicked.
@@ -20,6 +30,8 @@ local platform = addon.Platform
 -- why and the next one gets its turn.
 local providers = {}
 
+-- Registers or replaces (same id, keeping its place in the registration order) a provider table; asserts when the
+-- table lacks an id, an open function or a families table.
 function platform:RegisterTalentTreeProvider(id, provider)
     assert(
         type(id) == 'string'
@@ -44,6 +56,8 @@ function platform:RegisterTalentTreeProvider(id, provider)
 end
 
 -- The providers that can serve this client right now, in the order to try them.
+-- Returns a fresh list sorted by priority (lower first), then registration order. A provider whose available() or
+-- priority() throws is treated as unavailable or default priority.
 function platform:GetTalentTreeProviders()
     local family = self:GetClientFamily()
     local list = {}
@@ -61,6 +75,7 @@ function platform:GetTalentTreeProviders()
         end
     end
 
+    -- Resolves a provider's priority (a number, or a function returning one) to a number, 100 when missing or invalid.
     local function rank(provider)
         local priority = provider.priority
 
@@ -82,19 +97,27 @@ function platform:GetTalentTreeProviders()
 end
 
 -- Whether the editors should offer the "Show talent tree" button.
+-- True when at least one registered provider is available on this client right now.
 function platform:HasTalentTreeProvider()
     return #self:GetTalentTreeProviders() > 0
 end
 
--- Trait tree view (Retail and Forever) ---------------------------------------
+-- ============================================================================
+-- Trait tree view (Retail and Forever)
+-- ============================================================================
+
+-- Short alias for platform:CanReadValue.
 local function readable(value)
     return platform:CanReadValue(value)
 end
 
+-- True for a readable positive integer below 2^31, the range of trait node, entry, tree and specialization IDs.
 local function traitID(value)
     return readable(value) and type(value) == 'number' and value > 0 and value < 2147483648 and value % 1 == 0
 end
 
+-- Calls namespace[name](...) under pcall. Returns true and the readable result, or false and a reason ("missing-api",
+-- "api-error" or "restricted-value").
 local function call(namespace, name, ...)
     local fn = type(namespace) == 'table' and namespace[name] or nil
     if type(fn) ~= 'function' then return false, 'missing-api' end
@@ -104,10 +127,12 @@ local function call(namespace, name, ...)
     return true, value
 end
 
+-- call() against C_Traits.
 local function traits(name, ...)
     return call(C_Traits, name, ...)
 end
 
+-- call() against C_ClassTalents.
 local function classTalents(name, ...)
     return call(C_ClassTalents, name, ...)
 end
@@ -127,15 +152,17 @@ local function has(namespace, names)
 end
 
 -- Blizzard's talent window can be shown a build: view loadouts and loadout strings.
+-- Feature test only; reads no game values.
 function platform:CanShowTraitViewLoadout()
     return has(C_ClassTalents, { 'InitializeViewLoadout' }) and has(C_Traits, { 'GetLoadoutSerializationVersion' })
 end
 
--- A tree can be read from the trait API for drawing.
+-- A tree can be read from the trait API for drawing. Feature test only; reads no game values.
 function platform:CanReadTraitTree()
     return has(C_Traits, { 'GetNodeInfo', 'GetTreeNodes' })
 end
 
+-- Returns the specialization ID for a loadout header, or nil and "specialization-unsupported".
 -- The specialization ID the loadout header names. Retail: the one asked for,
 -- else the one being played. Forever has no specialization API of its own, so
 -- Blizzard's PlayerUtil answers for the character.
@@ -323,10 +350,15 @@ function platform:GetTraitView(specID, options)
     return view
 end
 
+-- ============================================================================
+-- Selections and loadout strings
+-- ============================================================================
+
 -- Where a saved selection {node, entry, spell} sits in the view: the node, the
 -- 1-based entry position (choice nodes) and the hero subtree it belongs to.
 -- A node that no longer holds the saved talent is found again by its spell, the
 -- way evaluation does (GetTraitSpellIndex).
+-- Returns { node, entry, position, hero } or nil when the selection cannot be placed in the view.
 function platform:FindTraitViewSelection(view, selection)
     if type(view) ~= 'table' or type(selection) ~= 'table' then return nil end
     local node, entry = selection.node, selection.entry
@@ -382,6 +414,8 @@ end
 -- significant bit first (Blizzard_SharedXMLBase/ExportUtil.lua).
 local BASE64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 
+-- Packs a list of { bitCount, value } pairs into Blizzard's base64 text, least significant bit first, six bits per
+-- character, with the last character zero-padded.
 local function pack(values)
     local bits, count = {}, 0
 
@@ -412,6 +446,8 @@ local function pack(values)
 end
 
 -- picks: { {node=nodeID, position=entry position (selection nodes)} ... }
+-- Returns the loadout string for the picked nodes of a view built by GetTraitView, or nil and a reason (no
+-- specialization in the view, a node or entry that is not in the view, or an unreadable serialization version).
 function platform:EncodeTraitView(view, picks)
     if type(view) ~= 'table' or type(picks) ~= 'table' then return nil, 'invalid-talent-query' end
     local okVersion, version = traits('GetLoadoutSerializationVersion')
@@ -466,6 +502,7 @@ function platform:EncodeTraitView(view, picks)
 end
 
 -- The level a view loadout is built for: maximum, so hero nodes exist.
+-- Returns the expansion maximum level, or the player's level, or 80 when neither can be read.
 function platform:GetTraitViewLevel()
     for _, name in ipairs({ 'GetMaxLevelForPlayerExpansion', 'GetMaxLevelForLatestExpansion' }) do
         local fn = rawget(_G, name)
