@@ -1,4 +1,14 @@
+-- Spell and item readiness for the poll, and the implicit auto-attack fallback. It owns the per-poll readiness memo
+-- (known, usable, off cooldown, in range) that conditions and both evaluation engines share; it must not decide what to
+-- recommend, only whether something can be used now. Every game value goes through addon.Platform, which applies the
+-- restricted-client rules; an unreadable answer reads as not ready. Loaded from RotationMaster.toc after
+-- Core/custom_condition_owner.lua; main.lua and Diagnostics/glow.lua call into it and tests/action_policy.lua tests it.
+
 local _, addon = ...
+
+-- ============================================================================
+-- Readiness memo
+-- ============================================================================
 
 -- Observations live for one evaluation only. Conditions can still inspect
 -- other spells; a condition never overrides the action's own availability.
@@ -14,10 +24,14 @@ local function buildReadiness(platform)
     -- skips the range read of spells and items alike.
     local ignoreMana, ignoreRange = false, false
 
+    -- True for a readable positive whole number; restricted or malformed ids are never ready.
     local function validID(id)
         return platform:CanReadValue(id) and type(id) == "number" and id > 0 and id < math.huge and id % 1 == 0
     end
 
+    -- The readiness answer handed to conditions and the sequence executor: true when the spell (kind spell, pet, any,
+    -- ranged or assisted) or item can be used right now, honoring Ignore Mana and Ignore Range. Memoized per poll by
+    -- id, so the platform is read at most once per id per poll; every unreadable answer reads as not ready.
     local function ready(kind, id, itemID)
         if not validID(id) then return false end
 
@@ -119,6 +133,8 @@ local function buildReadiness(platform)
         return results[id]
     end
 
+    -- Starts a new poll on the same memo: bumping the stamp invalidates every entry without reallocating, and the
+    -- profile options are re-read so a settings change takes effect on the next poll.
     local function reset(at)
         stamp, now = stamp + 1, at
         local db = addon.db
@@ -133,6 +149,8 @@ local function buildReadiness(platform)
     return ready, reset
 end
 
+-- Returns a fresh readiness function with its own memo for one evaluation at time now. Callers that evaluate outside
+-- the steady poll (previews, glow diagnostics) use this so they never disturb the shared poll memo.
 function addon:NewActionReadiness(now)
     local ready, reset = buildReadiness(self.Platform)
     reset(now)
@@ -142,6 +160,8 @@ end
 -- Steady-state polling keeps one memo and starts a new poll on it.
 local shared
 
+-- Returns the shared readiness function after starting a new poll on it. The memo is rebuilt only when the platform
+-- object is replaced (tests do this); steady-state polls reuse the same tables to avoid per-poll allocation.
 function addon:ResetActionReadiness(now)
     if not shared or shared.platform ~= self.Platform then
         shared = { platform = self.Platform }
@@ -151,6 +171,23 @@ function addon:ResetActionReadiness(now)
     shared.reset(now)
     return shared.ready
 end
+
+-- Ranged auto-attacks in preference order: Auto Shot, then wand Shoot.
+local RANGED_ATTACKS = { 75, 5019 }
+local scratch = {}
+
+-- Asks addon:FindSpell (buttons.lua) whether the spell id is on the action bars and returns its answer, nil when it
+-- is not. Reuses one scratch table so the poll path does not allocate.
+local function bound(self, id)
+    scratch[1] = id
+    local found = self:FindSpell(scratch)
+    scratch[1] = nil
+    return found
+end
+
+-- ============================================================================
+-- Implicit auto-attack
+-- ============================================================================
 
 -- The implicit auto-attack (Attack or Shoot), for a poll whose rotation
 -- recommends nothing and whose Stop (if any) did not suppress it. Both
@@ -163,16 +200,6 @@ end
 --   Melee range unknown (unreadable, uncertain or unsupported): nothing.
 -- IsMeleeAttackNeeded gates the client policy and the target (combat,
 -- attackable, alive, no vehicle), so restricted clients never get here.
-local RANGED_ATTACKS = { 75, 5019 }
-local scratch = {}
-
-local function bound(self, id)
-    scratch[1] = id
-    local found = self:FindSpell(scratch)
-    scratch[1] = nil
-    return found
-end
-
 function addon:ResolveImplicitAttack(ready)
     local platform = self.Platform
     local need, _, why = platform:IsMeleeAttackNeeded("target")

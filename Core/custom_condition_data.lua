@@ -1,6 +1,13 @@
+-- Pure validation of custom condition data: legal tags, field schemas and the import envelope.
+-- It owns the rules about what a stored or imported custom condition may contain; it must not compile or run the code
+-- text a condition carries, and it saves nothing. Loaded from RotationMaster.toc after Core/collection_data.lua. The
+-- Normalize* helpers ParseCustomConditionImport calls (Core/custom_authoring.lua, Core/functions.lua,
+-- Core/schema_authoring.lua) load after it and are resolved at call time, so they only matter once an import is parsed.
+
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- The code-valued members of a custom condition: each is stored as source text and must be present on import.
 local functions = {
     valid = true,
     evaluate = true,
@@ -11,9 +18,12 @@ local functions = {
     on_unregister = true,
 }
 
+-- Field types a custom condition schema may name; `legacy` is the one old compound type spelled as a string.
 local kinds = { string = true, number = true, boolean = true, condition = true, ['condition[]'] = true }
 local legacy = '{ string, { string, number } }'
 
+-- True when key is a legal custom condition tag: only letters, digits and underscore, not a grammar keyword, and at
+-- most 256 characters unless compatibility is set (loading data saved before the limit existed).
 function addon:IsCustomConditionIdentifier(key, compatibility)
     return type(key) == 'string'
         and (compatibility or #key <= 256)
@@ -21,10 +31,15 @@ function addon:IsCustomConditionIdentifier(key, compatibility)
         and not ({ AND = true, OR = true, NOT = true, DELETE = true })[key]
 end
 
+-- Validates a custom condition field schema and returns a fresh normalized copy, or nil and a reason code
+-- (schema-limit, unknown-field-type, invalid-schema, invalid-field-name, invalid-schema-shape). The copy never shares
+-- tables with the input. compatibility raises the size limits so existing saved schemas keep loading.
 function addon:NormalizeCustomFieldSchema(fields, compatibility)
     local active, nodes = {}, 0
     local visit
 
+    -- Validates one schema node and returns a normalized copy, or nil and a reason. Counts nodes and tracks the tables
+    -- on the current path, so size limits and cycles are refused.
     visit = function(value, depth, root)
         nodes = nodes + 1
 
@@ -78,6 +93,9 @@ function addon:NormalizeCustomFieldSchema(fields, compatibility)
     return visit(fields, 0, true)
 end
 
+-- Decodes and validates a pasted custom condition (bare, or in the RM-CustomCondition envelope). Returns
+-- { name = ..., condition = copy }, or nil and a localized reason. Nothing is saved or executed here, and every
+-- member is checked, so unknown keys and non-string code are refused.
 function addon:ParseCustomConditionImport(text, codec)
     local decoded, why = codec:Decode(text)
     if not decoded then return nil, why end

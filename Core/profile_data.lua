@@ -1,5 +1,19 @@
+-- Pure validation and wire conversion of whole profile tables for profile export, import and copy. It owns what a valid
+-- transferred profile looks like and the saved-to-wire spec key conversion; it must not read or write the live
+-- database, and it reports failure as false or nil without a reason. The rotation store check is delegated to
+-- addon.RotationData (Data/rotation_store.lua, Data/validation.lua). Loaded from RotationMaster.toc after
+-- Core/macro_announcements.lua; UI/settings_profiles.lua is its caller. Saved-data shape:
+-- docs/architecture/storage-scopes.md.
+
 local _, addon = ...
 
+-- ============================================================================
+-- Validation helpers
+-- ============================================================================
+
+-- The top-level profile keys whose value is a single scalar, with the Lua type each must have. A key that is not here,
+-- and has no special case in ValidateProfileTransfer, makes a transferred profile invalid, so a new profile setting
+-- must be added here.
 local scalar = {
     rotationSpecsMigrated = 'boolean',
     legacyArchiveNoticed = 'boolean',
@@ -56,6 +70,7 @@ local scalar = {
     tooltip_limit = 'number',
 }
 
+-- True when value is a gap-free array (keys 1..n only) and every element passes validate.
 local function dense(value, validate)
     if type(value) ~= 'table' then return false end
     local n = 0
@@ -68,6 +83,8 @@ local function dense(value, validate)
     return n == #value
 end
 
+-- True when value is a table and every one of its keys exists in schema with a value of the named type; extra keys
+-- fail.
 local function fields(value, schema)
     if type(value) ~= 'table' then return false end
 
@@ -78,6 +95,8 @@ local function fields(value, schema)
     return true
 end
 
+-- Converts one specialization key between its saved form (a non-negative whole number) and its wire form (the canonical
+-- decimal string). Returns nil for anything that is not exactly such a number or string.
 local function specKey(key, encode)
     local number = type(key) == 'string' and not encode and key:match('^%d+$') and tonumber(key) or key
     if type(number) ~= 'number' or number < 0 or number == math.huge or number % 1 ~= 0 then return nil end
@@ -86,6 +105,8 @@ local function specKey(key, encode)
     return encode and text or number
 end
 
+-- Returns a copy of a spec-keyed map with its keys converted by specKey, or nil when it has a metatable, a bad key or
+-- two keys that collapse to one.
 local function specMap(map, encode)
     if type(map) ~= 'table' or getmetatable(map) then return nil end
     local result = {}
@@ -99,10 +120,18 @@ local function specMap(map, encode)
     return result
 end
 
+-- ============================================================================
+-- Rotation store conversion
+-- ============================================================================
+
 -- Preserve the whole reference graph while converting only structural spec-map
 -- keys. A map aliased through another owner or payload must remain aliased for
 -- the pure store validator to reject it; conversion must never hide that defect.
+-- Converts the rotation store between saved and wire form (see specKey) and returns the converted copy, or nil when the
+-- state is not plain data, the store fails validation, or a key cannot be converted. Encoding validates before
+-- converting and decoding validates after, so an invalid store never leaves this function.
 local function scopedStore(addon, state, encode)
+    -- True for a table with no metatable.
     local function plain(v)
         return type(v) == 'table' and getmetatable(v) == nil
     end
@@ -136,6 +165,8 @@ local function scopedStore(addon, state, encode)
     local seen = {}
     local failed = false
 
+    -- Copies a store node, converting the keys of the spec maps and keeping shared tables shared, so aliasing stays
+    -- visible to validation. Sets failed when the node is not plain data or a key cannot be converted.
     local function copy(value)
         if type(value) ~= 'table' then return value end
 
@@ -168,6 +199,10 @@ local function scopedStore(addon, state, encode)
     return result
 end
 
+-- ============================================================================
+-- Profile transfer
+-- ============================================================================
+
 -- The desired-stock feature is retired. An existing saved stockTargets map
 -- is inert data: copies, transfers and validation carry it unread as long as
 -- it is plain table data.
@@ -177,6 +212,7 @@ local function validStockTargets(_, profile)
     return plan == nil or type(plan) == 'table' and getmetatable(plan) == nil
 end
 
+-- True when the profile carries no rotation choice preferences, or the owner can validate them and they pass.
 local function validRotationChoices(owner, profile)
     local value = type(profile) == 'table' and rawget(profile, 'rotationChoicePreferences')
 
@@ -185,12 +221,16 @@ local function validRotationChoices(owner, profile)
             and owner:ValidateRotationChoicePreferences(value) == true
 end
 
+-- Returns true when a profile table (an import candidate or a copy about to be applied) is wholly valid: every key is
+-- known, each value has the right type and range, and nested rotations, the rotation store and the library are well
+-- formed. Nothing is changed. Returns false at the first problem, with no reason.
 function addon:ValidateProfileTransfer(value)
     if type(value) ~= 'table' then return false end
     if not validStockTargets(self, value) or not validRotationChoices(self, value) then return false end
     local wire = self:ProfileToPortable(value)
     if not wire or not self.RotationData.CheckPortable(wire) then return false end
 
+    -- True for a string.
     local function stringValue(v)
         return type(v) == 'string'
     end
@@ -480,6 +520,7 @@ function addon:ProfileToPortable(profile)
     if not validStockTargets(self, profile) or not validRotationChoices(self, profile) then return nil end
     local copy = self:CopySettingsData(profile)
 
+    -- Converts a spec map's keys to wire form, or returns nil.
     local function encode(map)
         return specMap(map, true)
     end
@@ -508,10 +549,14 @@ function addon:ProfileToPortable(profile)
     return copy
 end
 
+-- The inverse of ProfileToPortable: returns a copy with the spec keys restored to numbers, or nil when a map or the
+-- store is malformed. An empty rotation body from an older export gets its missing empty lists unless
+-- options.preserveLegacyBodies is set. The caller still validates the result with ValidateProfileTransfer.
 function addon:ProfileFromPortable(profile, options)
     if not validStockTargets(self, profile) or not validRotationChoices(self, profile) then return nil end
     local copy = self:CopySettingsData(profile)
 
+    -- Converts a spec map's keys back to numbers, or returns nil.
     local function decode(map)
         return specMap(map, false)
     end

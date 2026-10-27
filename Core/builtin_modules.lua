@@ -1,3 +1,10 @@
+-- Names the load-on-demand Built In rotation modules and loads the current character's class module.
+-- It owns the edition/class tables (also read by tools/builtin_modules.lua), the RotationMasterBuiltIns.Bind global the
+-- modules' bind.lua calls, and the one-shot module load; it never reads rotation data itself. Class and client family
+-- come through addon.Platform and are checked with CanReadValue. Loaded from RotationMaster.toc right after
+-- Core/rotation_library.lua; main.lua calls LoadBuiltInModule at startup, just before the rotation library builds its
+-- catalog.
+
 local addon_name, addon = ...
 
 -- Packaged Built In rotations ship as load-on-demand addons, one per class
@@ -40,6 +47,8 @@ addon.BuiltInModules = {
     },
 }
 
+-- Returns the load-on-demand module addon name for a class token (for example "RotationMaster_Mage"), or nil for an
+-- unknown class or a non-string.
 function addon:GetBuiltInModuleName(class)
     local className = type(class) == "string" and addon.BuiltInModules.classes[class]
     return className and "RotationMaster_" .. className or nil
@@ -51,6 +60,8 @@ end
 -- forwarded to this addon, so pack sources stay `local _,addon=...` unchanged.
 -- The global has a fixed name because the main addon's own global follows
 -- its folder name, which an install may spell in any case.
+-- Gives a module's private namespace the two registration methods packs call. Returns true when the namespace was
+-- bound, false for a non-table or for this addon's own namespace (which already has them).
 local function bind(namespace)
     if type(namespace) ~= "table" or namespace == addon then return false end
     namespace.RegisterDefaultBlock = function(_, block) return addon:RegisterDefaultBlock(block) end
@@ -60,10 +71,13 @@ end
 
 _G.RotationMasterBuiltIns = { Bind = bind }
 
+-- True when a value from the client may be inspected: platform:CanReadValue allows it and, where the client has
+-- canaccessvalue, that agrees. Guards the class token read from UnitClass.
 local function readable(platform, value)
     return platform and platform:CanReadValue(value) and (not canaccessvalue or canaccessvalue(value))
 end
 
+-- Memo of the one load attempt: whether it ran, the module name that loaded, and the reason nothing loaded.
 local attempted, outcome, outcomeReason
 
 -- Loads this character's module once, before the rotation library builds its

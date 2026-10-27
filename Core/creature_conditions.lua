@@ -1,5 +1,12 @@
+-- Creature-type matching for the Built In creature type condition (Conditions/character.lua calls it).
+-- Owns the key-to-creature-type-id map and the platform read; it holds no state and must not cache anything itself.
+-- Loaded from RotationMaster.toc between Core/class_group_conditions.lua and Core/health_forecast_conditions.lua.
+-- The functions here are Built In helpers that saved custom conditions bind to by text: do not edit a function body.
+-- Reads game data, so it goes through platform:CanReadValue. The block at the end is generated; never hand-edit it.
+
 local _, addon = ...
 
+-- Maps a stored creature-type key to the numeric creature type id the client reports, or nil for an unknown key.
 -- Existing stored keys retain their identities, including GAS_CLUUD's spelling.
 -- This is one executable map; no mutable caption table enters gameplay matching.
 local function configuredID(key)
@@ -18,6 +25,9 @@ local function configuredID(key)
     elseif key=='GAS_CLUUD' then return 13 end
 end
 
+-- Answers whether the unit's creature type is the one selected by a stored key. Returns true or false, or nil and a
+-- reason (restricted-value, invalid-unit, invalid-creature-type-selection, or the platform's own reason). The unit and
+-- key are checked with CanReadValue first because a restricted client can hand back secret values.
 function addon:GetConditionCreatureTypeMatch(unit, key, cache)
     if not self.Platform:CanReadValue(unit) or not self.Platform:CanReadValue(key) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end

@@ -1,21 +1,38 @@
+-- Reference providers for item, glyph and spell pickers: what a typed value resolves to, how a search matches, and what
+-- name and icon to show. It owns the item metadata caches and nothing else; spell answers come from addon.SpellCatalog
+-- (Core/spell_catalog.lua). Every game value is read through addon.Platform and checked with CanReadValue first.
+-- Loaded from RotationMaster.toc after Core/spell_search.lua. The CPU ACTIVITY HANDOFF block at the end lets a CPU
+-- capture count the caches and is verified by tests/cpu_retained_activity.lua.
+
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
+-- ============================================================================
+-- Value checks and presentation records
+-- ============================================================================
+
+-- Caches for item metadata. `items` holds the latest readable record per item id, `indexed` the last readable record
+-- ever seen (it survives a transient miss), and `blocked` marks ids whose latest observation was a real failure.
 local items, indexed, blocked = {}, {}, {}
 
+-- True when the value may be inspected on this client (restricted-client rule); every game value is checked first.
 local function readable(value)
     return addon.Platform:CanReadValue(value)
 end
 
+-- Normalizes a number or numeric string to a positive whole number id, or returns nil.
 local function id(value)
     if not readable(value) or (type(value) ~= 'number' and type(value) ~= 'string') then return end
     local n = tonumber(value)
     if n and n > 0 and n < math.huge and n % 1 == 0 then return n end
 end
 
+-- Strips color escapes from a string so names and queries compare as plain text.
 local function plain(value)
     return value:gsub('|c%x%x%x%x%x%x%x%x', ''):gsub('|r', '')
 end
 
+-- Returns the search text for a typed value: '' for nil, the digits of a valid id, or the plain text of a short string;
+-- nil for anything else or unreadable input.
 local function queryText(value)
     if not readable(value) then return end
     if value == nil then return '' end
@@ -23,6 +40,7 @@ local function queryText(value)
     if type(value) == 'string' and #value <= 256 then return plain(value) end
 end
 
+-- True when the optional icon (texture id or path) and link are readable and well formed.
 local function optionalFields(icon, link)
     if not readable(icon) or not readable(link) then return false end
 
@@ -38,12 +56,19 @@ local function optionalFields(icon, link)
     return true
 end
 
+-- Builds the row the pickers show for an item, or returns nil when the name or optional fields are not usable.
 local function presentation(key, name, icon, link)
     if not readable(name) or not optionalFields(icon, link) then return end
     if type(name) ~= 'string' or name == '' then return end
     return { id = key, name = name, display = name, icon = icon, link = link }
 end
 
+-- ============================================================================
+-- Item records and the inventory
+-- ============================================================================
+
+-- Returns a set of the item ids the player has: carried bags (addon.bagContents, kept by Core/inventory.lua) and the
+-- equipped slots.
 local function inventory()
     local result = {}
     local bags = addon.bagContents
@@ -75,6 +100,9 @@ local function inventory()
     return result
 end
 
+-- Looks one item up through the platform and updates the caches. Returns its presentation row, or nil when the value is
+-- not an item id or the item is not (yet) known. A real failure blocks the id until a later observation succeeds; an
+-- item whose data has not loaded keeps any earlier readable index entry.
 local function itemInfo(value)
     local key = id(value)
     if not key then return end
@@ -89,6 +117,8 @@ local function itemInfo(value)
     return record and presentation(key, record.name, record.icon, record.link)
 end
 
+-- Returns the id-to-row map the search matches against: everything indexed so far plus a fresh look at the owned and
+-- blocked ids. Blocked ids are left out. `owned` is the inventory set, computed when not given.
 local function indexedItems(owned)
     local result = {}
 
@@ -119,15 +149,20 @@ local function indexedItems(owned)
     return result
 end
 
+-- Public entry that records an item's metadata in the caches (used when an item is first seen); returns its row or nil.
 function addon:UpdateReferenceItem(value)
     return itemInfo(value)
 end
 
+-- Returns the settings table (an empty one for nil), or nil when it is unreadable or not a table.
 local function options(settings)
     if settings == nil then return {} end
     if readable(settings) and type(settings) == 'table' then return settings end
 end
 
+-- Resolves typed text (id, item link, item: string, or exact name) to an item id. `accept` may veto an id by returning
+-- false and a reason. Returns the id, or nil with a reason such as item-not-in-inventory, or nil alone when no item
+-- matches.
 local function itemResolve(input, settings, accept)
     settings = options(settings)
     local text = queryText(input)
@@ -162,6 +197,9 @@ local function itemResolve(input, settings, accept)
     end
 end
 
+-- Searches the indexed item names for a picker. Returns up to settings.limit (default 30, at most 100) rows sorted by
+-- name, plus { coverage, more }; or nil and invalid-search-options / invalid-search-query. Only names the client has
+-- already loaded can match, hence the coverage tag.
 local function itemSearch(input, settings, accept)
     settings = options(settings)
     if not settings then return nil, 'invalid-search-options' end
@@ -204,10 +242,12 @@ local function itemSearch(input, settings, accept)
     return result, { coverage = 'indexed-metadata', more = #matches > limit }
 end
 
+-- Asks the platform whether the id is a glyph item (an acceptance test for the glyph provider).
 local function glyphItem(value)
     return addon.Platform:GetGlyphItemInfo(value)
 end
 
+-- Like itemInfo, but only for glyph items; returns the row, or nil and the platform's reason.
 local function glyphInfo(value)
     local key = id(value)
     if not key then return end
@@ -216,6 +256,13 @@ local function glyphInfo(value)
     return itemInfo(key)
 end
 
+-- ============================================================================
+-- Providers
+-- ============================================================================
+
+-- Returns the provider table the reference editboxes use for an edit box kind: functions index, info, resolve, search
+-- and name plus the missing-data text. Glyph and item kinds use the item caches above; anything else falls through to
+-- the spell catalog provider. Providers are built fresh on every call.
 function addon:GetReferenceProvider(kind)
     if kind == 'Glyph_EditBox' then
         return {
@@ -270,6 +317,7 @@ do
     local raw, nextKey, kind, equal = rawget, next, type, rawequal
     local ownedUpdate, ownedProvider = addon.UpdateReferenceItem, addon.GetReferenceProvider
 
+    -- Counts the keys of a map, stopping at 4096 so a capture never walks a huge table.
     local function count(map)
         local n, key = 0, nil
 

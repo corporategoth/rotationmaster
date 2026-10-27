@@ -1,11 +1,21 @@
+-- Pure layout for the rotation editor's diagram and list views: given a rotation body and a view description it
+-- computes card, connector, drop target and arm label geometry as plain data. It owns the scene shape the canvas
+-- widgets draw; it must not create frames, read live combat state or run condition printers. Loaded from
+-- RotationMaster.toc after Core/condition_description.lua; UI/rotation_editor.lua asks for the scene and
+-- UI/rotation_canvas.lua draws it. addon.RotationCardNoticeHeight is the one constant the card widgets
+-- (UI/rotation_cards.lua) share with it.
+
 local _, addon = ...
 local data = addon.RotationData
+-- Fixed card geometry in layout units: card width, the header height, the vertical gap between cards, the gap between
+-- the two arms of a branch, and the lead and join lengths of the arm connectors.
 local cardWidth, headerHeight, gap, armGap, armLead, armJoin = 340, 84, 24, 40, 40, 24
 -- A normal card whose action is on no action bar shows one warning row
 -- (view.unbound, filled by the editor from the button index).
 local noticeHeight = 30
 addon.RotationCardNoticeHeight = noticeHeight
 
+-- Returns a copy of a path (a list of keys), so a scene never aliases the body's own tables.
 local function copy(path)
     local result = {}
 
@@ -16,16 +26,27 @@ local function copy(path)
     return result
 end
 
+-- Returns a copy of a path with one more key.
 local function extend(path, key)
     local result = copy(path)
     result[#result + 1] = key
     return result
 end
 
+-- Returns a measured height clamped to 0..800, or 0 when the value is not a positive number; heights come from the UI
+-- and are not trusted.
 local function height(value)
     return type(value) == "number" and value == value and value > 0 and math.min(value, 800) or 0
 end
 
+-- ============================================================================
+-- Scene builder
+-- ============================================================================
+
+-- Lays a rotation body out as a scene of cards, connectors, drop targets, groups and arm labels. Returns the scene, or
+-- nil and a reason when the body's steps cannot be indexed. view selects the section (rotation, cooldowns or both), the
+-- layout (diagram or list) and carries the per-card state and measured heights the editor feeds back, so a layout
+-- depends only on its arguments.
 -- Plain geometry only. No live combat observation, callback, native frame or
 -- custom printer is involved. Both evaluated arms stay visible while editing.
 function addon:BuildRotationCanvas(body, view)
@@ -56,6 +77,8 @@ function addon:BuildRotationCanvas(body, view)
         rows[row.step] = row
     end
 
+    -- Returns a card's display mode: the explicit card state if any, else compact (collapsed, or in the list view's
+    -- rotation section), expanded (it has measured details) or normal.
     local function state(step)
         return (view.cardStates or {})[step.id]
             or (collapsed[step.id] and 'compact')
@@ -64,6 +87,7 @@ function addon:BuildRotationCanvas(body, view)
             or 'normal'
     end
 
+    -- Returns the step list of a branch arm and whether the editor has folded that arm away.
     local function armList(step, arm)
         local folded = (view.hiddenArms or {})[step.id] and view.hiddenArms[step.id][arm]
         local source = step[arm == 'true' and 'onTrue' or 'onFalse']
@@ -72,6 +96,8 @@ function addon:BuildRotationCanvas(body, view)
 
     local measureList
 
+    -- First pass: computes a step's own header height and, for an open branch, the sizes of both arms, so placement can
+    -- center the card above them. Returns the measured node.
     local function measureNode(step)
         local row = rows[step]
         local mode = state(step)
@@ -141,6 +167,8 @@ function addon:BuildRotationCanvas(body, view)
         return node
     end
 
+    -- Measures a list of sibling steps and returns the combined width, left and right extents and height; the left and
+    -- right extents are what let a branch center itself over its arms.
     measureList = function(list, path, parentId)
         local result = {
             nodes = {},
@@ -190,6 +218,7 @@ function addon:BuildRotationCanvas(body, view)
         "cooldowns",
     })
 
+    -- Adds a drop target for inserting at an index of a list.
     local function target(list, indexValue, x, y, width)
         scene.dropTargets[#scene.dropTargets + 1] = {
             x = x,
@@ -201,6 +230,8 @@ function addon:BuildRotationCanvas(body, view)
         }
     end
 
+    -- Adds a connector polyline between two cards (or to an open end), toned by the arm it belongs to or gray when
+    -- inactive.
     local function line(from, to, points, arm, inactive, label, owner)
         scene.connectors[#scene.connectors + 1] = {
             from = from,
@@ -216,6 +247,8 @@ function addon:BuildRotationCanvas(body, view)
 
     local placeList
 
+    -- Second pass: positions one measured node at x, y, adds its card, and for a branch also its arm groups, labels,
+    -- connectors and drop targets. Returns the entry and exit points that the caller wires to its neighbors.
     local function placeNode(node, x, y)
         local step, row = node.step, node.row
         local branch = step.type == "branch"
@@ -403,6 +436,8 @@ function addon:BuildRotationCanvas(body, view)
         return entry, exit
     end
 
+    -- Places every node of a list top to bottom, adding drop targets and the connectors between neighbors. Returns the
+    -- first entry point and the last exit point; an empty list returns a point at its own center.
     placeList = function(list, x, y, section)
         local cursor = y
         local first, last

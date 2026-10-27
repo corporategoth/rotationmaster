@@ -1,4 +1,15 @@
+-- The spell metadata index (name, rank, icon, link per spell id) and the spellbook snapshot of which spells each
+-- specialization can use. It owns addon.SpellCatalog and addon.specSpells; it never decides what to cast. Every game
+-- value comes from addon.Platform (GetSpellInfo, GetSpellLink, GetSpellBookSnapshot), which applies the
+-- restricted-client rules. Loaded from RotationMaster.toc after Core/action_policy.lua; Core/reference_catalog.lua
+-- serves it to the pickers. The CPU ACTIVITY HANDOFF block at the end lets a CPU capture count the index and is
+-- verified by tests/cpu_retained_activity.lua.
+
 local _, addon = ...
+
+-- ============================================================================
+-- Spell metadata index
+-- ============================================================================
 
 -- This index belongs to RM. Metadata is useful for reference/search even when
 -- a spell is not learned; only a fresh spellbook snapshot populates specSpells.
@@ -9,11 +20,14 @@ local entries, byName = {}, {}
 -- observes the provider; only ordering/membership changes retire this view.
 local ordered, groupVersion, memberNames = {}, {}, {}
 
+-- Retires the cached ordering of a name group and bumps its version, so a sort being built while the group changes is
+-- discarded instead of published.
 local function invalidateGroup(key)
     ordered[key] = nil
     groupVersion[key] = (groupVersion[key] or 0) + 1
 end
 
+-- Returns a new array with the same ids, so callers never hold the cached ordering.
 local function copyIDs(ids)
     local result = {}
 
@@ -24,16 +38,24 @@ local function copyIDs(ids)
     return result
 end
 
+-- Returns the numeric part of a spell's rank text ("Rank 3" gives 3), or 0 when it has none.
 local function rankNumber(entry)
     return tonumber((entry.rank or ""):match("%d+")) or 0
 end
 
+-- Sort order for ids that share a name: higher rank first, then the higher id.
 local function preferred(left, right)
     local a, b = rankNumber(entries[left]), rankNumber(entries[right])
     if a ~= b then return a > b end
     return left > right
 end
 
+-- ============================================================================
+-- Catalog queries
+-- ============================================================================
+
+-- Reads the spell's metadata from the platform into the index and returns true, or nil and a reason when the id is
+-- invalid or unknown. Replaces the entry and re-files it when the name changed. Safe to call repeatedly.
 function catalog:UpdateSpell(id)
     if type(id) ~= "number" or id < 1 or id == math.huge or id % 1 ~= 0 then return nil end
     local info, reason = addon.Platform:GetSpellInfo(id)
@@ -69,6 +91,8 @@ function catalog:UpdateSpell(id)
     return true
 end
 
+-- Returns every indexed id that shares the name of a spell id or name string, best rank first, or nil when nothing
+-- matches. The result is a private copy; the sorted view is cached until the group's membership changes.
 function catalog:GetAllSpellIds(spell)
     local name
 
@@ -98,6 +122,8 @@ function catalog:GetAllSpellIds(spell)
     return result
 end
 
+-- Resolves a spell id or name to one id. Without a rank it asks the native name resolver which id is current; with a
+-- rank it returns the id whose rank text matches. Returns nil, reason when the platform could not answer.
 function catalog:GetSpellId(spell, rank)
     local ids = self:GetAllSpellIds(spell)
 
@@ -133,6 +159,7 @@ function catalog:GetSpellId(spell, rank)
     end
 end
 
+-- Returns the spell's display name, with its rank appended in gray unless norank is set; nil when unknown.
 function catalog:SpellName(id, norank)
     if not entries[id] then self:UpdateSpell(id) end
     local entry = entries[id]
@@ -146,20 +173,27 @@ function catalog:SpellName(id, norank)
     end
 end
 
+-- Returns the spell link, from the index when present, else straight from the platform.
 function catalog:SpellLink(id)
     if not entries[id] then self:UpdateSpell(id) end
     return entries[id] and entries[id].link or addon.Platform:GetSpellLink(id)
 end
 
+-- Returns the rank text of an indexed spell, or nil.
 function catalog:SpellRank(id)
     if not entries[id] then self:UpdateSpell(id) end
     return entries[id] and entries[id].rank
 end
 
+-- Returns the numeric rank of an indexed spell, or 0.
 function catalog:SpellRankNum(id)
     if not entries[id] then self:UpdateSpell(id) end
     return entries[id] and rankNumber(entries[id]) or 0
 end
+
+-- ============================================================================
+-- Spellbook snapshot
+-- ============================================================================
 
 -- Rotation keys a spec-agnostic spellbook entry also belongs to. On clients
 -- whose rotations are keyed by specialization ID (Retail, Forever), the General
@@ -198,6 +232,9 @@ local function sharedSpecs(self)
     return { list = list, set = set }
 end
 
+-- Rebuilds addon.specSpells and addon.specSpellsReverse (spec key to spell id set, and spec key to name to best id)
+-- from a fresh spellbook snapshot and returns addon.spellBookStatus (per bank completeness, reason and coverage). A
+-- bank whose observation was incomplete contributes nothing, and nothing of the old snapshot is carried over.
 function addon:RefreshSpellCatalog()
     local snapshot = self.Platform:GetSpellBookSnapshot()
     local petKey = BOOKTYPE_PET or "pet"
@@ -210,6 +247,7 @@ function addon:RefreshSpellCatalog()
 
     local shared = sharedSpecs(self)
 
+    -- Files a spell id under a specialization key and remembers the best id for its name.
     local function add(spec, id)
         spells[spec] = spells[spec] or {}
         reverse[spec] = reverse[spec] or {}
@@ -222,6 +260,8 @@ function addon:RefreshSpellCatalog()
         end
     end
 
+    -- Files a spellbook entry under a specialization key, along with the base of an active override, which is the same
+    -- book entry.
     local function attribute(spec, entry)
         add(spec, entry.spellID)
 
@@ -305,6 +345,7 @@ do
     local raw, nextKey, kind, equal = rawget, next, type, rawequal
     local ownedUpdate = catalog.UpdateSpell
 
+    -- Counts the keys of a map, stopping at 4096 so a capture never walks a huge table.
     local function count(map)
         local n, key = 0, nil
 

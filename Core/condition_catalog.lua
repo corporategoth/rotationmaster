@@ -1,3 +1,10 @@
+-- The live condition catalog: which condition tags exist, how pickers group, order and filter them, and how a tag is
+-- described to the editor. It reads the registry tables Core/conditions.lua owns (addon.conditionDefinitions and
+-- addon.conditionSpecials) and the active profile's grouping and disabled lists; it registers nothing and draws
+-- nothing.
+-- Whether a condition works on this client is decided by Core/condition_support.lua, which listConditions consults.
+-- Loaded from RotationMaster.toc right after Core/condition_runtime.lua.
+
 local _, addon = ...
 local pairs = pairs
 
@@ -6,6 +13,12 @@ local pairs = pairs
 local conditions = addon.conditionDefinitions
 local special = addon.conditionSpecials
 
+-- ============================================================================
+-- Picker groups and lists
+-- ============================================================================
+
+-- Returns the id of the user-defined picker group that lists the condition tag, or "DEFAULT" when no group does (and
+-- nil for a nil tag). Groups come from the current profile, so the answer follows the active profile.
 function addon:findConditionGroup(value)
     if not value then
         return nil
@@ -26,6 +39,10 @@ function addon:findConditionGroup(value)
     return "DEFAULT"
 end
 
+-- Returns the ordered list of condition tags a picker shows for a group: "SWITCH" and "ANNOUNCEMENT" (the profile's
+-- chosen subsets plus every special), "CUSTOM" (the user's custom conditions), "ALL", "DEFAULT" (conditions in no
+-- group) or a group id. Unless nohide is set, conditions this client cannot support and user-disabled ones are left
+-- out. store defaults to the live database; the list is rebuilt on every call and not cached.
 function addon:listConditions(group, nohide, store)
     store = store or addon.db
     local profile = store.profile
@@ -139,6 +156,12 @@ function addon:listConditions(group, nohide, store)
     return rv
 end
 
+-- ============================================================================
+-- Describing a condition
+-- ============================================================================
+
+-- Returns icon, description, help and field schema for a condition tag (special or registered), or nothing when the
+-- tag is nil or unknown; callers use the empty result to tell whether a tag still exists.
 function addon:describeCondition(type)
     if type ~= nil then
         if special[type] then
@@ -151,6 +174,8 @@ function addon:describeCondition(type)
     end
 end
 
+-- Lets a condition draw its own extra widget into the editor pane. Does nothing for a condition without a widget
+-- (the common case) or an unknown tag.
 function addon:widgetCondition(parent, spec, value)
     if
         value ~= nil and value.type ~= nil and conditions[value.type] ~= nil and conditions[value.type].widget ~= nil

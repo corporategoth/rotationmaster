@@ -1,7 +1,17 @@
+-- The runtime snapshot of what the player carries in bags (addon.bagContents), kept in the legacy shape that custom
+-- conditions and the UI still read. It owns only that snapshot; it never queries the bag APIs itself, every read goes
+-- through addon.Platform (GetBagSnapshot, GetItemUseSpell), so restricted-client rules are already applied.
+-- Loaded from RotationMaster.toc after Core/item_sets.lua; main.lua refreshes it on bag events and before a poll.
+-- Item predicates in the conditions query Platform directly and do not use this table.
+
 local _, addon = ...
 
 -- Keep the legacy snapshot shape for custom/UI consumers while publishing only
 -- complete, normalized bag observations. Runtime item predicates query Platform.
+-- Rebuilds addon.bagContents from the carried-bag snapshot, keyed by item id with count, use-spell name, and the slot
+-- and bag/slot locations. Returns true on success. On failure it clears the table, records the reason in
+-- addon.bagContentsUnavailable and returns false, reason, so a stale snapshot is never read. The snapshot is session
+-- data and is never saved. Runs on the poll path, so the shared evaluation cache is passed through.
 function addon:UpdateBagContents(cache)
     local snapshot, reason = self.Functions.cache.getCached(cache, self.Platform.GetBagSnapshot, self.Platform)
 
