@@ -319,7 +319,7 @@ L["the time remaining on your %s weapon buff"] = "el tiempo restante del benefic
 -- en: "the number of stacks of your %s weapon buff"
 L["the number of stacks of your %s weapon buff"] = "el número de acumulaciones del beneficio de tu arma de %s"
 -- en: "Your %s weapon %s"
-L["Your %s weapon %s"] = "Tu arma de %s %s"
+L["Your %s weapon %s"] = "Tu arma (%s): %s"
 -- en: "off hand"
 L["off hand"] = "mano secundaria"
 -- en: "main hand"

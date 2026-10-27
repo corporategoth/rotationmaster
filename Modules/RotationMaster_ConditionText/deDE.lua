@@ -319,7 +319,7 @@ L["the time remaining on your %s weapon buff"] = "die Restzeit der Waffenverzaub
 -- en: "the number of stacks of your %s weapon buff"
 L["the number of stacks of your %s weapon buff"] = "die Stapelanzahl der Waffenverzauberung in Ihrer %s"
 -- en: "Your %s weapon %s"
-L["Your %s weapon %s"] = "Waffe in der %s: %s"
+L["Your %s weapon %s"] = "Waffe (%s): %s"
 -- en: "off hand"
 L["off hand"] = "Schildhand"
 -- en: "main hand"
