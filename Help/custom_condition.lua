@@ -1,3 +1,9 @@
+-- Help layout for the custom condition editor page: what a custom condition is, then each editor field (icon, key,
+-- description, validity, evaluation, print, widget and help functions), the Import/Export button and the Add and Save
+-- buttons, with the parameters each function receives.
+-- Loaded from RotationMaster.toc with the other Help/ files, after Help/common.lua (addon.help_funcs) and UI/. It only
+-- builds help widgets; it never touches saved custom conditions. Most paragraphs are plain English literals rather than
+-- L[...] keys, so they are not localized.
 local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
@@ -8,6 +14,8 @@ local helpers = addon.help_funcs
 local CreateText, CreatePictureText, CreateButtonText, Gap, Indent =
     helpers.CreateText, helpers.CreatePictureText, helpers.CreateButtonText, helpers.Gap, helpers.Indent
 
+-- Lays the whole custom condition help page out in the given help frame, top to bottom in the order of the editor's
+-- fields. The Evaluation Function text also documents the per-poll cache (getCached) the function receives.
 function addon.layout_custom_condition_options_help(frame)
     local group = frame
 

@@ -1,3 +1,9 @@
+-- Help layouts for the cooldown and rotation step pages: layout_cooldown_help and layout_rotation_help, built from
+-- shared sections (name and list-order buttons, highlight effect, action requirements, announce, conditions) that are
+-- parameterized by the singular and plural noun ("cooldown", "rotation").
+-- Loaded from RotationMaster.toc with the other Help/ files, after Help/common.lua (addon.help_funcs) and UI/. It only
+-- builds help widgets and never reads rotation data. Many paragraphs here are plain English literals rather than
+-- L[...] keys, so they are not localized.
 local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
@@ -8,6 +14,12 @@ local helpers = addon.help_funcs
 local CreateText, CreatePictureText, Indent, Gap =
     helpers.CreateText, helpers.CreatePictureText, helpers.Indent, helpers.Gap
 
+-- ============================================================================
+-- Shared sections
+-- ============================================================================
+
+-- Adds the help for the name field and the list-order buttons (move to top, up, down, to bottom, duplicate, delete)
+-- for one kind of entry.
 local function help_top_buttons(group, singular, plural)
     group:AddChild(
         CreateText(
@@ -129,6 +141,8 @@ local function help_top_buttons(group, singular, plural)
     )
 end
 
+-- Adds the help for the highlight effect control of one kind of entry (the Default effect follows the General
+-- settings). Callers pass a plural noun as well; it is not used here.
 local function help_effect_group(group, singular)
     group:AddChild(
         CreateText(
@@ -246,6 +260,8 @@ local function help_effect_group(group, singular)
     )
 end
 
+-- Adds the help for the action fields of one kind of entry: automatic requirements (learned, usable, ready, in range,
+-- on an action bar), the action type choices and their options. The plural noun callers pass is not used.
 local function help_action_group(group, singular)
     group:AddChild(
         CreateText(
@@ -441,6 +457,8 @@ local function help_action_group(group, singular)
     )
 end
 
+-- Adds the help for the conditions summary of one kind of entry, including the live satisfied/not satisfied marker.
+-- The plural noun callers pass is not used.
 local function help_conditions(group, singular)
     group:AddChild(
         CreateText(
@@ -594,6 +612,12 @@ local function help_conditions(group, singular)
     )
 end
 
+-- ============================================================================
+-- Page layouts
+-- ============================================================================
+
+-- Lays out the cooldown help page: what cooldowns are, then the shared sections, plus the cooldown's own Announce
+-- options.
 function addon.layout_cooldown_help(frame)
     local group = frame
 
@@ -717,6 +741,8 @@ function addon.layout_cooldown_help(frame)
     help_conditions(group, "cooldown", "cooldowns")
 end
 
+-- Lays out the rotation help page: what a rotation is, how one is chosen (priority, specializations, identifier, list
+-- markers), the implicit auto-attack fallback, then the shared sections.
 function addon.layout_rotation_help(frame)
     local group = frame
 

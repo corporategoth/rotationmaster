@@ -1,8 +1,15 @@
+-- Shared builders for the Help/ files and the condition help callbacks: text blocks, picture and button rows, an
+-- indent and a gap, built from the condition widget set (addon:CreateCondition*), plus the plain-data field-help
+-- sections used by the settings pages. Exposed as addon.help_funcs and addon:SettingsHelpSections.
+-- Loaded first of the Help/ files (RotationMaster.toc), after UI/ has defined the widget constructors; each helper
+-- must only build widgets when called, never at load. Help text itself lives in the locale tables, not here.
 local _, addon = ...
 
 local helpers = {}
 local color = color
 
+-- Builds a full-width group holding one wrapped label of help text. font is a font object name, or a font file when
+-- fontheight is also given. Returns the group.
 function helpers.CreateText(text, font, fontheight)
     local t = addon:CreateConditionGroup()
     t:SetFullWidth(true)
@@ -24,6 +31,7 @@ function helpers.CreateText(text, font, fontheight)
     return t
 end
 
+-- Builds a two-column row with an icon (texture plus optional texcoords) at the left and help text at the right.
 function helpers.CreatePictureText(texture, width, height, text, font, fontheight, ...)
     local group = addon:CreateConditionGroup()
     group:SetFullWidth(true)
@@ -42,6 +50,7 @@ function helpers.CreatePictureText(texture, width, height, text, font, fontheigh
     return group
 end
 
+-- Builds a two-column row with a button labeled like the real control at the left and its explanation at the right.
 function helpers.CreateButtonText(name, text, font, fontheight, ...)
     local group = addon:CreateConditionGroup()
     group:SetFullWidth(true)
@@ -57,6 +66,7 @@ function helpers.CreateButtonText(name, text, font, fontheight, ...)
     return group
 end
 
+-- Wraps a widget in a row with an empty left column of the given width, so it appears indented.
 function helpers.Indent(size, target)
     local group = addon:CreateConditionGroup()
     group:SetFullWidth(true)
@@ -73,6 +83,7 @@ function helpers.Indent(size, target)
     return group
 end
 
+-- Returns a one-line blank label used as vertical spacing between help paragraphs.
 function helpers.Gap()
     local rv = addon:CreateConditionLabel()
     rv:SetText(" ")
@@ -82,6 +93,8 @@ end
 addon.help_funcs = helpers
 
 -- Authored field documentation is data, independent of any renderer.
+-- Turns a list of "Title - text" help strings into { title, text } rows with the color codes stripped; a string with no
+-- " - " separator becomes a row with an empty title.
 function addon:SettingsHelpSections(values)
     local rows = {}
 

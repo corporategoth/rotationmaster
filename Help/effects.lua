@@ -1,3 +1,8 @@
+-- Help document for the Effects settings page: the effect types (texture, pixel, auto cast, glow, proc glow, dazzle,
+-- animate, pulse, rotate, custom), each type's tuning fields, the sequence settings, Apply/Cancel, Delete and the
+-- collection buttons, plus the renderer that lays them out in a help frame. Paragraphs live in the locale tables under
+-- Help.Effects.*; this file only orders them.
+-- Loaded from RotationMaster.toc with the other Help/ files, after Help/common.lua (addon.help_funcs) and UI/.
 local addon_name, addon = ...
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
@@ -6,6 +11,7 @@ local CreateText, Gap = helpers.CreateText, helpers.Gap
 
 -- Whole paragraphs preserve translation word order and retain distinct units
 -- for library glow rates versus RM texture/sequence timer intervals.
+-- Returns the Effects page help sections { id, title, text }.
 function addon:GetDocument_layout_effects_options_help()
     return {
         { id = "overview", title = L["Effects"], text = L["Help.Effects.overview"] },
@@ -55,6 +61,7 @@ function addon:GetDocument_layout_effects_options_help()
     }
 end
 
+-- Lays the Effects help document out in a frame as a yellow title followed by its paragraph, one gap between each.
 function addon.layout_effects_options_help(frame)
     for _, entry in ipairs(addon:GetDocument_layout_effects_options_help()) do
         frame:AddChild(Gap())

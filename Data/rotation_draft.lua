@@ -1,8 +1,21 @@
+-- Rotation draft: an in-memory editable copy of one rotation body with a command interface (Insert, Remove, Move,
+-- MoveTail, MoveMany, Duplicate, UpdateStep, PatchStep, UnsetStepField, SetCondition, SetDetails, SetBodyField, Batch)
+-- that the rotation editor calls. Each command validates against a detached candidate and replaces the draft only when
+-- the whole result is valid, so a failed command leaves the draft exactly as it was.
+-- It owns step identity (ids are allocated through an injected allocator and never reused) and must never touch saved
+-- data, evaluate conditions or hold references to the original tables.
+-- Loaded from RotationMaster.toc after Data/condition_draft.lua; uses data.IndexRotationSteps (Data/rotation_tree.lua),
+-- ReserveRotationIdentities, CheckPortable and the validators. Undo history is the caller's: Snapshot and Restore.
 local _, addon = ...
 local data = addon.RotationData
 
+-- ============================================================================
+-- Helpers
+-- ============================================================================
+
 -- Independent copies deliberately break aliases: editing one card or its
 -- condition cannot also edit a sibling that reused the same source table.
+-- Returns a deep copy of plain data (non-tables are returned as they are).
 local function detach(value)
     if type(value) ~= 'table' then return value end
     local result = {}
@@ -14,6 +27,7 @@ local function detach(value)
     return result
 end
 
+-- Returns true when two paths are dense lists with the same keys in the same order.
 local function samePath(a, b)
     if #a ~= #b then return false end
 
@@ -28,6 +42,7 @@ local function samePath(a, b)
     return true
 end
 
+-- Returns true when path a is a prefix of (or equal to) path b, i.e. a step at a contains or is the step at b.
 local function prefix(a, b)
     if #a > #b then return false end
 
@@ -38,10 +53,13 @@ local function prefix(a, b)
     return true
 end
 
+-- Returns true for a valid step id: at most 128 characters, starting alphanumeric, then letters, digits or . _ : -.
 local function identifier(value)
     return type(value) == 'string' and #value > 0 and #value <= 128 and value:match('^[%w][%w._:%-]*$') ~= nil
 end
 
+-- Asks the injected allocator for an unused valid id and marks it used. Gives up after 100 tries. Returns the id,
+-- or nil and 'missing-id-allocator', 'id-allocation-error' or 'id-allocation-exhausted'.
 local function fresh(newId, used)
     if type(newId) ~= 'function' then return nil, 'missing-id-allocator' end
 
@@ -58,11 +76,20 @@ local function fresh(newId, used)
     return nil, 'id-allocation-exhausted'
 end
 
+-- Indexes the body's steps. With legacy true, steps without an id are accepted (the draft assigns them on creation).
+-- Returns the tree, or nil and the error code.
 local function inspect(body, legacy)
     local tree, why = data.IndexRotationSteps(body, { allowMissingIds = legacy })
     return tree, why and why.code
 end
 
+-- ============================================================================
+-- Draft
+-- ============================================================================
+
+-- Creates a draft from a portable rotation body. newId allocates step ids; reserved is another body whose ids must
+-- not be reused (for example the source of a clone). Steps lacking an id (legacy bodies) receive one. Returns the
+-- draft (Snapshot, Restore, Command), or nil and a reason code.
 function data.NewRotationDraft(original, newId, reserved)
     local portable, why = data.CheckPortable(original)
     if not portable then return nil, why.code end
@@ -92,12 +119,15 @@ function data.NewRotationDraft(original, newId, reserved)
 
     local draft = {}
 
+    -- Returns a detached copy of the current body, for the caller's undo history or for saving.
     function draft:Snapshot()
         return detach(root)
     end
 
     -- History snapshots are bounded body data; reservation bookkeeping is an
     -- internal set and may grow beyond a transport object's node count.
+    -- Replaces the body with a snapshot after validating it. Ids already allocated stay reserved, so an id freed by
+    -- undo is never handed out again. Returns true, or nil and a reason code.
     function draft:Restore(snapshot)
         local valid, reason = inspect(snapshot)
         if not valid then return nil, reason end
@@ -111,6 +141,10 @@ function data.NewRotationDraft(original, newId, reserved)
         return true
     end
 
+    -- Applies one named edit. first and second are the command's arguments (a step id, a destination
+    -- { path, index, parentId }, a step, fields or a condition). Returns true and the command's result (usually the
+    -- affected step id), or nil and a reason code with the draft unchanged. 'Batch' applies a list of
+    -- { name, first, second } operations as one edit.
     function draft:Command(name, first, second)
         if not data.CheckPortable(first) or not data.CheckPortable(second) then return nil, 'non-portable-edit' end
 
@@ -144,6 +178,8 @@ function data.NewRotationDraft(original, newId, reserved)
         local candidate, allocated = detach(root), detach(used)
         local index = assert(inspect(candidate))
 
+        -- Resolves a destination { path, index, parentId } to its priority list in the candidate. Refuses a stale
+        -- parent (the list moved since the caller looked) and an index outside 1..#list+1.
         local function destination(value)
             if
                 type(value) ~= 'table'
@@ -165,11 +201,13 @@ function data.NewRotationDraft(original, newId, reserved)
             return nil, 'missing-priority-list'
         end
 
+        -- Looks up a step's index entry by id, or nil and 'missing-rotation-step'.
         local function row(id)
             if type(id) ~= 'string' or not index.byId[id] then return nil, 'missing-rotation-step' end
             return index.byId[id]
         end
 
+        -- Returns the list in the candidate that holds the entry's step.
         local function parent(entry)
             local list = candidate
 
@@ -180,6 +218,8 @@ function data.NewRotationDraft(original, newId, reserved)
             return list
         end
 
+        -- Gives a step, and every step nested inside it, fresh ids. Used by Insert and Duplicate so copies never share
+        -- an identity with the original.
         local function reidentify(step)
             local wrapper = { rotation = { step }, cooldowns = {} }
             local nodes, reason = inspect(wrapper, true)
@@ -204,6 +244,7 @@ function data.NewRotationDraft(original, newId, reserved)
             local assigned, allocationError = reidentify(step)
             if not assigned then return nil, allocationError end
 
+            -- A Branch inserted mid-list takes every step below it into its true arm.
             if step.type == 'branch' then
                 while #list.list >= first.index do
                     step.onTrue[#step.onTrue + 1] = table.remove(list.list, first.index)

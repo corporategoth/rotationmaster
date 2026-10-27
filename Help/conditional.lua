@@ -1,3 +1,9 @@
+-- Help layouts for the condition editor: the structural conditions (AND, OR, NOT), the shared field widgets (spell,
+-- spell name, item set, operator, percent operator, unit) and the cast-spell and aura-rank notes. Each layout function
+-- takes the help frame (some also the field's name, value and description) and adds the text widgets that explain it.
+-- Loaded from RotationMaster.toc with the other Help/ files, after Help/common.lua (addon.help_funcs) and UI/. The
+-- rank notes appear only on clients that have spell ranks (addon:ClientHasSpellRanks).
+-- Several paragraphs below are plain English literals rather than L[...] keys; they are not localized yet.
 local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
@@ -8,6 +14,7 @@ local helpers = addon.help_funcs
 local CreateText, CreatePictureText, Indent, Gap =
     helpers.CreateText, helpers.CreatePictureText, helpers.Indent, helpers.Gap
 
+-- Help for an All (AND) group: matching rule and how card selection and grouping work.
 function addon.layout_condition_and_help(frame)
     local group = frame
 
@@ -26,6 +33,7 @@ function addon.layout_condition_and_help(frame)
     )
 end
 
+-- Help for an Any (OR) group: matching rule and how card selection and grouping work.
 function addon.layout_condition_or_help(frame)
     local group = frame
 
@@ -42,6 +50,7 @@ function addon.layout_condition_or_help(frame)
     )
 end
 
+-- Help for a NOT condition: it negates its sub-condition.
 function addon.layout_condition_not_help(frame)
     local group = frame
 
@@ -53,6 +62,7 @@ function addon.layout_condition_not_help(frame)
     )
 end
 
+-- Help for the spell field: the icon slot, the exact-rank option (only on clients with ranks) and the name input.
 function addon.layout_condition_spellwidget_help(frame)
     local group = frame
 
@@ -97,6 +107,7 @@ function addon.layout_condition_spellwidget_help(frame)
     )
 end
 
+-- Help for the spell-name field: the icon slot and the name input (no rank option).
 function addon.layout_condition_spellnamewidget_help(frame)
     local group = frame
 
@@ -127,6 +138,7 @@ function addon.layout_condition_spellnamewidget_help(frame)
     )
 end
 
+-- Help for the item field: ordered item lists, pre-defined versus custom item sets, and the Edit button.
 function addon.layout_condition_itemwidget_help(frame)
     local group = frame
 
@@ -184,6 +196,7 @@ function addon.layout_condition_itemwidget_help(frame)
     )
 end
 
+-- Help for an operator field: how name is compared with value, then what value means (desc).
 function addon.layout_condition_operatorwidget_help(frame, name, value, desc)
     local group = frame
 
@@ -208,6 +221,7 @@ function addon.layout_condition_operatorwidget_help(frame, name, value, desc)
     group:AddChild(CreateText(color.BLIZ_YELLOW .. value .. color.RESET .. " - " .. desc))
 end
 
+-- Help for a percent operator field; the same text as the plain operator help, with the percent value described.
 function addon.layout_condition_operatorpercentwidget_help(frame, name, value, desc)
     local group = frame
 
@@ -232,6 +246,7 @@ function addon.layout_condition_operatorpercentwidget_help(frame, name, value, d
     group:AddChild(CreateText(color.BLIZ_YELLOW .. value .. color.RESET .. " - " .. desc))
 end
 
+-- Help for the unit field: the unit the condition tests.
 function addon.layout_condition_unitwidget_help(frame)
     local group = frame
 
@@ -246,6 +261,8 @@ function addon.layout_condition_unitwidget_help(frame)
     )
 end
 
+-- Help note for casting conditions: spells match by ID, saved names keep matching by name, and an unreadable cast is
+-- unavailable. The sentence about exact ranks is included only on clients that have spell ranks.
 function addon.layout_condition_castspell_help(frame)
     frame:AddChild(Gap())
 
@@ -264,6 +281,7 @@ function addon.layout_condition_castspell_help(frame)
     end
 end
 
+-- Help note for the exact-rank option of aura conditions; adds nothing on clients without spell ranks.
 function addon.layout_condition_aurarank_help(frame)
     if not addon:ClientHasSpellRanks() then return end
     frame:AddChild(Gap())

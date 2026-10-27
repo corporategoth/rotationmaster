@@ -1,6 +1,18 @@
+-- Structural rotation diff: DiffRotations lists field edits and ordered step additions, removals and moves between two
+-- rotation envelopes, and CompareClone builds the three-way view (baseline to source, baseline to custom, source to
+-- custom) of a cloned Built In with overlapping field edits flagged for review.
+-- It works on portable data only and must never mutate its inputs, evaluate conditions or merge automatically. Output
+-- is bounded: 500 changes, 100 conflicts and 4096-character paths, marking the result incomplete when a limit is hit.
+-- Loaded from RotationMaster.toc after Data/catalog.lua; uses data.CheckPortable, CopyData (Data/plain.lua) and
+-- IndexRotationSteps (Data/rotation_tree.lua). Callers are Core/rotation_library.lua and the import session.
 local _, addon = ...
 local data = addon.RotationData
 
+-- ============================================================================
+-- Indexing and ordering helpers
+-- ============================================================================
+
+-- Returns a failed diff result (valid = false, no changes) carrying one error diagnostic with the code and path.
 local function failure(code, path)
     return {
         valid = false,
@@ -10,6 +22,7 @@ local function failure(code, path)
     }
 end
 
+-- Returns the union of both tables' keys in a stable order (numbers first, then by value), so diffs are deterministic.
 local function keys(left, right)
     local seen, result = {}, {}
 
@@ -30,10 +43,14 @@ local function keys(left, right)
     return result
 end
 
+-- Returns true for a step id: a non-empty string of at most 128 characters that starts alphanumeric and continues
+-- with letters, digits or . _ : -.
 local function validId(value)
     return type(value) == "string" and #value > 0 and #value <= 128 and value:match("^[%w][%w._:%-]*$") ~= nil
 end
 
+-- Indexes one step list by canonical id (origins maps a clone's regenerated ids to the source ids). Returns
+-- { ordered, byId }, or nil, a reason code and the failing path for a non-dense list, a bad id or a duplicate id.
 local function index(list, origins, path)
     if list == nil then list = {} end
     if type(list) ~= "table" then return nil, "invalid-priority-list", path end
@@ -69,6 +86,8 @@ end
 
 -- Unique IDs reduce the common subsequence problem to a longest increasing
 -- subsequence of original positions: bounded O(n log n), no n-by-n matrix.
+-- Returns the set of ids that keep their relative order between the two indexed lists; every other shared id is
+-- reported as moved.
 local function stationary(left, right)
     local sequence = {}
 
@@ -108,6 +127,7 @@ end
 
 -- Structural segments drive list dispatch and ancestry. Rendered text is only
 -- for display: a literal dotted key must never impersonate a nested field.
+-- Returns a copy of the segment list with one more { kind, key } segment appended.
 local function child(segments, kind, key)
     local result = {}
 
@@ -119,12 +139,14 @@ local function child(segments, kind, key)
     return result
 end
 
+-- Renders one key as a display path suffix: [n] for numbers, .name for identifiers, ["quoted"] otherwise.
 local function fieldSuffix(key)
     if type(key) == "number" then return "[" .. key .. "]" end
     if key:match("^[%a_][%w_]*$") then return "." .. key end
     return "[" .. string.format("%q", key) .. "]"
 end
 
+-- Returns true when segment list a is a strict prefix of b (a change to a contains a change to b).
 local function ancestor(a, b)
     if #a >= #b then return false end
 
@@ -135,6 +157,14 @@ local function ancestor(a, b)
     return true
 end
 
+-- ============================================================================
+-- Rotation diff
+-- ============================================================================
+
+-- Compares two rotation envelopes and returns { valid, complete, changes, diagnostics }. Each change has kind
+-- (added, removed, changed or moved), a display path, structural segments and detached before/after values. options
+-- may carry leftOrigins / rightOrigins (id maps for clones) and ignoreIdentity (skip root id and revision). Returns a
+-- failed result for non-portable data or ambiguous step identity.
 function data.DiffRotations(left, right, options)
     options = options or {}
 
@@ -190,6 +220,7 @@ function data.DiffRotations(left, right, options)
     local result = { valid = true, complete = true, changes = {}, diagnostics = {} }
     local limits = {}
 
+    -- Marks the result incomplete and records one warning per limit code.
     local function limited(code)
         result.complete = false
 
@@ -199,6 +230,8 @@ function data.DiffRotations(left, right, options)
         end
     end
 
+    -- Appends one change with detached copies of its values, or records a limit warning when the path or change count
+    -- is over the cap.
     local function emit(kind, path, segments, before, after, extra)
         if #path > 4096 then
             limited("diff-path-limit")
@@ -223,6 +256,8 @@ function data.DiffRotations(left, right, options)
 
     local walk
 
+    -- Diffs two ordered step lists by id: removed steps first, then added and moved steps in the new order, recursing
+    -- into every step present on both sides.
     local function priorities(leftList, rightList, path, segments)
         local a, b = lists.left[leftList] or empty, lists.right[rightList] or empty
         local stable = stationary(a, b)
@@ -257,6 +292,8 @@ function data.DiffRotations(left, right, options)
         end
     end
 
+    -- Recursively compares two values at a path. The body's rotation and cooldowns lists and a Branch's onTrue/onFalse
+    -- lists go through the id-based list diff; step is true for a step table, whose own id is not a change.
     walk = function(a, b, path, segments, step)
         if #path > 4096 then
             limited("diff-path-limit")
@@ -305,6 +342,7 @@ function data.DiffRotations(left, right, options)
     return result
 end
 
+-- Deep structural equality over plain data (tables compare by content, using the stable key union).
 local function equal(a, b)
     if a == b then return true end
     if type(a) ~= "table" or type(b) ~= "table" then return false end
@@ -316,6 +354,14 @@ local function equal(a, b)
     return true
 end
 
+-- ============================================================================
+-- Clone comparison
+-- ============================================================================
+
+-- Three-way comparison of a cloned Built In. clone carries envelope and lineage (baseline, step origins, source
+-- identity); source carries envelope and reference. Returns sourceChanges, customChanges, currentDifferences and the
+-- conflicts (changes that touch the same path or an ancestor on both sides), or a failed result when the lineage does
+-- not match the source. Highlights overlaps only; it never merges.
 function data.CompareClone(clone, source)
     if type(clone) ~= "table" or type(source) ~= "table" or getmetatable(clone) or getmetatable(source) then
         return failure("invalid-comparison-view")

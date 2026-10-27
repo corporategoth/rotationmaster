@@ -1,6 +1,20 @@
+-- Visual comparison model: turns a structural diff (Data/diff.lua) plus the two detached rotation snapshots into the
+-- row-by-row model the comparison window draws (cooldown and rotation rows paired by step identity, with changed,
+-- moved, added and removed flags and counts of changes the rows do not show).
+-- It consumes trusted detached data only: it never evaluates conditions, reads saved data or touches the game, and it
+-- caps itself at 200 rows and 500 changes (marking the model incomplete beyond that).
+-- Loaded from RotationMaster.toc after Data/diff.lua; uses data.IndexRotationSteps (Data/rotation_tree.lua),
+-- GetRotationTags (Data/tags.lua) and GetRotationPriority (Data/validation.lua). The window that draws the model is
+-- UI/rotation_comparison.lua.
 local _, addon = ...
 local data = addon.RotationData
 
+-- ============================================================================
+-- Row pairing helpers
+-- ============================================================================
+
+-- Returns true when a changed step flag (use_name, ranked, disabled) is not a real difference: a missing flag reads as
+-- its implied default (use_name follows whether the step has a name), so both sides resolve to the same value.
 local function equivalentStepDefault(path, row, stepIndex)
     if
         #path ~= stepIndex + 1
@@ -16,6 +30,7 @@ local function equivalentStepDefault(path, row, stepIndex)
     local key = path[stepIndex + 1].key
     if key ~= "use_name" and key ~= "ranked" and key ~= "disabled" then return false end
 
+    -- Resolves the flag on one step, applying the implied default when the field is absent.
     local function flag(step)
         if step[key] ~= nil then return step[key] end
         if key == "use_name" then return type(step.name) == "string" and #step.name > 0 end
@@ -25,6 +40,7 @@ local function equivalentStepDefault(path, row, stepIndex)
     return flag(row.left.step) == flag(row.right.step)
 end
 
+-- Step fields the comparison rows already display; a change to any other field is counted as an additional change.
 local shownFields = {
     type = true,
     action = true,
@@ -41,6 +57,8 @@ local shownFields = {
 -- Only structural field/step segments form identity locations. Numeric source
 -- positions are replaced with canonical IDs, so same-arm reordering still pairs
 -- but moving across parents or arms stays an explicit removal plus addition.
+-- Builds a string key from the path segments 2 through last, length-prefixing each key so no key can impersonate
+-- another segment.
 local function locationKey(path, last)
     local parts = {}
 
@@ -53,6 +71,8 @@ local function locationKey(path, last)
     return table.concat(parts, "/")
 end
 
+-- Returns the location key of the step at a numeric body path, replacing each position with the step's canonical id
+-- (origins maps a clone's regenerated ids back to the source ids), so the same step pairs across both sides.
 local function rowLocation(body, path, origins)
     local cursor = body
     local segments = { { kind = "field", key = "body" } }
@@ -67,8 +87,15 @@ local function rowLocation(body, path, origins)
     return locationKey(segments, #segments)
 end
 
+-- ============================================================================
+-- Comparison model
+-- ============================================================================
+
 -- Consumes the trusted structural diff and detached snapshots supplied by the
 -- library facade. Canonical identities never depend on rendered path strings.
+-- view carries diff, left, right and optional leftOrigins / rightOrigins. Returns the model (groups.cooldowns and
+-- groups.rotation rows, name, switch, tag and priority fields, change flags and counts), or nil and
+-- 'invalid-comparison' for malformed or over-limit input.
 function data.BuildVisualComparison(view)
     if
         type(view) ~= "table"

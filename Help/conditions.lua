@@ -1,3 +1,8 @@
+-- Help document for the Conditions settings page: condition categories, ordering, switch and announcement
+-- availability, hiding, and the Import/Export and Move To controls, as title and sentence pairs, with the renderer that
+-- lays them out in a help frame.
+-- Loaded from RotationMaster.toc with the other Help/ files, after Help/common.lua (addon.help_funcs) and UI/. The
+-- sentences are L[...] literals and are translated as written; keep them whole.
 local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
@@ -6,6 +11,7 @@ local color = color
 local helpers = addon.help_funcs
 local CreateText, CreatePictureText, Gap = helpers.CreateText, helpers.CreatePictureText, helpers.Gap
 
+-- Returns the Conditions page help entries { title, text }, in the order the controls appear on the page.
 function addon:GetDocument_layout_conditions_options_help()
     return {
         {
@@ -67,6 +73,7 @@ function addon:GetDocument_layout_conditions_options_help()
     }
 end
 
+-- Lays the Conditions help document out in a frame as a yellow title followed by its text, one gap between each.
 function addon.layout_conditions_options_help(frame)
     for _, entry in ipairs(addon:GetDocument_layout_conditions_options_help()) do
         frame:AddChild(Gap())

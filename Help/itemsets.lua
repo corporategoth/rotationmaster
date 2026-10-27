@@ -1,9 +1,14 @@
+-- Help documents for item sets: the item-list controls (move, delete), the Item Sets settings page (name, global,
+-- priority order, binding, history, Apply/Cancel, collections, legacy macros) and the native item-list editor popup,
+-- each with a renderer that lays it out in a help frame. Paragraphs live in the locale tables under Help.ItemSets.*.
+-- Loaded from RotationMaster.toc with the other Help/ files, after Help/common.lua (addon.help_funcs) and UI/.
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local color = color
 local helpers = addon.help_funcs
 local CreateText, Gap = helpers.CreateText, helpers.Gap
 
+-- Returns the help sections for the item list's per-row controls (item, move, delete).
 function addon:GetDocument_layout_item_list_help()
     return {
         { id = "list.item", title = L["Item"], text = L["Help.ItemSets.list.item"] },
@@ -15,6 +20,7 @@ function addon:GetDocument_layout_item_list_help()
     }
 end
 
+-- Lays the item-list help out in a frame as a yellow title followed by its paragraph, one gap between each.
 function addon.layout_item_list_help(frame)
     for _, entry in ipairs(addon:GetDocument_layout_item_list_help()) do
         frame:AddChild(Gap())
@@ -27,6 +33,7 @@ function addon.layout_item_list_help(frame)
     end
 end
 
+-- Returns the Item Sets page help sections { id, title, text }.
 function addon:GetDocument_layout_itemsets_options_help()
     return {
         { id = "overview", title = L["Item Sets"], text = L["Help.ItemSets.overview"] },
@@ -50,6 +57,7 @@ function addon:GetDocument_layout_itemsets_options_help()
     }
 end
 
+-- Lays the Item Sets page help out in a frame as a yellow title followed by its paragraph, one gap between each.
 function addon.layout_itemsets_options_help(frame)
     for _, entry in ipairs(addon:GetDocument_layout_itemsets_options_help()) do
         frame:AddChild(Gap())

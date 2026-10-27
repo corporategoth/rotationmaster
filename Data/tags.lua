@@ -1,6 +1,19 @@
+-- Rotation tags as pure data: normalizing and validating a tag list, parsing and formatting the comma-separated text
+-- box, resolving a body's effective tags, matching a tag filter and building the search text for a rotation.
+-- It owns the tag limits (64 tags, 64 characters each, 32 KiB of CSV text) and must never write saved data or
+-- evaluate anything; tags are labels only.
+-- Loaded from RotationMaster.toc after Data/rotation_revision.lua; extends addon.RotationData from Data/plain.lua and
+-- uses data.CopyData. Used by the rotation list filter, the editor and import/export
+-- (docs/quality/rotation-transport.md).
 local _, addon = ...
 local data = addon.RotationData
 
+-- ============================================================================
+-- Tag validation
+-- ============================================================================
+
+-- Returns the number of UTF-8 characters in the text, or nil when it is not well-formed UTF-8 (overlong forms,
+-- surrogates, code points above U+10FFFF and C1 control characters are rejected).
 local function characters(text)
     local i, n = 1, 0
 
@@ -36,6 +49,9 @@ local function characters(text)
     return n
 end
 
+-- Validates a dense list of tag strings and returns a trimmed copy with case-insensitive duplicates dropped (first
+-- spelling wins), or nil and 'invalid-tags', 'tag-limit', 'invalid-tag' or 'tag-length'. Rejects tables with a
+-- metatable, holes or extra keys.
 function data.NormalizeRotationTags(tags)
     if type(tags) ~= 'table' or getmetatable(tags) then return nil, 'invalid-tags' end
     local count = 0
@@ -64,12 +80,20 @@ function data.NormalizeRotationTags(tags)
     return normalized
 end
 
+-- ============================================================================
+-- Tag text and lookup
+-- ============================================================================
+
+-- Parses the tag text box (comma or newline separated, with double-quoted entries that may hold commas and escaped
+-- quotes) into a normalized list. Returns the list, or nil and 'tag-limit', 'invalid-tag-quotes' or a normalize reason.
+-- Input is bounded to 32 KiB and is only ever read as data.
 function data.ParseRotationTags(text)
     if type(text) ~= 'string' or #text > 32768 then return nil, 'tag-limit' end
     local tags, parts = {}, {}
     local quoted, closed = false, false
     local i = 1
 
+    -- Ends the current entry: trims it, keeps it when non-empty and resets the scanner for the next one.
     local function finish()
         local value = table.concat(parts):match('^%s*(.-)%s*$')
         if value ~= '' then tags[#tags + 1] = value end
@@ -112,6 +136,8 @@ function data.ParseRotationTags(text)
     return data.NormalizeRotationTags(tags)
 end
 
+-- Formats a tag list as the text ParseRotationTags reads back: ", " separated, quoting any tag with a comma or quote.
+-- Returns nil and the reason when the list is not valid.
 function data.FormatRotationTags(tags)
     local normalized, why = data.NormalizeRotationTags(tags)
     if not normalized then return nil, why end
@@ -124,6 +150,8 @@ function data.FormatRotationTags(tags)
     return table.concat(parts, ', ')
 end
 
+-- Returns the effective tags of an envelope or bare body: the body's own list when present (even if empty), otherwise
+-- the envelope's. Always a list; invalid stored tags give nil and the reason from the normalizer.
 function data.GetRotationTags(value)
     if type(value) ~= 'table' then return {} end
     local body = type(value.body) == 'table' and value.body or value
@@ -133,6 +161,8 @@ function data.GetRotationTags(value)
     return data.NormalizeRotationTags(tags)
 end
 
+-- Tests a tag list against a filter (one tag or a list), ignoring case. mode 'all' needs every filtered tag; anything
+-- else needs at least one. A missing or empty filter matches everything.
 function data.RotationTagMatches(tags, filter, mode)
     if filter == nil then return true end
     if type(filter) == 'string' then filter = { filter } end
@@ -167,6 +197,8 @@ function data.RotationComparisonValue(body, inheritedTags)
     return { body = copy, tags = tags }
 end
 
+-- Builds the lowercase text the rotation list searches: display name and description (falling back to the body's),
+-- tags, metadata fields and the title, url, publisher and author of each source.
 function data.RotationSearchText(value, displayName, displayDescription)
     local body = type(value) == 'table' and (type(value.body) == 'table' and value.body or value) or {}
 

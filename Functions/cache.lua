@@ -1,6 +1,16 @@
+-- Per-poll result cache for condition evaluation: getCached/getRetryCached memoize a function call by its exact
+-- arguments inside one cache table, and protectedRead wraps a cached call in pcall for condition code.
+-- This file owns the canonical bodies; utils.lua re-exports them as addon.getCached, addon.getRetryCached and
+-- addon.ReportCacheStats for saved custom source. Diagnostics/cache_mode.lua binds the diagnostic dispatcher.
+-- Loaded from RotationMaster.toc with the other Functions/ files, after Functions/collections.lua.
+-- Restricted clients: an argument that platform:CanReadValue rejects makes the call bypass the cache entirely, so a
+-- secret value is never used as a table key.
+-- The function bodies are recorded as Built In helpers and are frozen: saved copies hash their exact text.
 local addon_name, addon = ...
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
+-- Calls a cached read behind pcall and returns ok, results; returns false, "missing-api" when the method is absent
+-- (an API this client does not have). Conditions use it so a throwing read becomes "unavailable", not an error.
 -- Preserve the original global type/pcall lookups and live legacy cache dispatch.
 local function protectedRead(cache, method, ...)
     if type(method)~="function" then return false,"missing-api" end
@@ -19,10 +29,14 @@ local cacheHits = 0
 local cacheMisses = 0
 local nilArgument, cachedResult = {}, {}
 
+-- Packs a call's results into a table with an explicit count so nil results survive the round trip.
 local function packResults(...)
     return { n = select('#', ...), ... }
 end
 
+-- Returns the memoized results of func(...) from the cache table, calling and storing on a miss. A nil cache, an
+-- unreadable (restricted) argument or a NaN argument calls through uncached. With recordnil false, a call that returned
+-- nothing is not stored, so it is retried next time (the getRetryCached behavior).
 ---@param cache table|nil
 local function getCachedInternal(cache, recordnil, func, ...)
     if type(func) == 'string' then func = _G[func] end
@@ -80,6 +94,9 @@ do
     local getCachedInternal = getCachedInternal
     local bound = false
 
+    -- Hands the diagnostics module a one-shot switch that can route every cached call straight to the function, with
+    -- no memoizing, to measure the cache's cost. Only the first call binds; Diagnostics/cache_mode.lua calls it at
+    -- load and then removes this method from addon.
     function addon:BindCacheDiagnosticDispatcher(bind)
         if self ~= addon or type(bind) ~= "function" or bound then return end
         bound = true
@@ -101,15 +118,19 @@ do
         end)
     end
 
+    -- Memoizing call: results are stored whether or not the function returned anything.
     cache.getCached = function(cache, func, ...)
     return getCachedInternal(cache, true, func, ...)
 end
 
+    -- Memoizing call that does not store an empty result, so a read that returned nothing is retried on the next call.
     cache.getRetryCached = function(cache, func, ...)
     return getCachedInternal(cache, false, func, ...)
 end
 end
 
+-- Writes the hit rate since the last report to the debug log and resets the counters (main.lua's evaluation report
+-- calls it as ReportCacheStats(addon) about every 15 seconds; with no calls recorded the rate is 0/0).
 function cache:ReportCacheStats()
     addon:debug(L["Cache hit rate at %.02f%%"], (cacheHits / (cacheHits + cacheMisses)) * 100)
     cacheHits = 0

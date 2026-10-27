@@ -1,3 +1,9 @@
+-- Help documents for the General settings: the ordered field help (enable, polling, history, preview window, highlight
+-- effect, tooltips, specs, logging and the capture and report buttons) and the two page layouts, the primary options
+-- help and the rotation options help. Paragraphs live in the locale tables under Help.General.*.
+-- Loaded from RotationMaster.toc with the other Help/ files, after Help/common.lua (addon.help_funcs) and UI/. Entries
+-- for features a client or build lacks (assisted highlight, talent groups, profiling captures) are added only when the
+-- matching addon method exists, so help never documents a control that is not on screen.
 local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
@@ -7,6 +13,8 @@ local helpers = addon.help_funcs
 local CreateText, Gap = helpers.CreateText, helpers.Gap
 
 -- Field documentation is shared by the native workbench and legacy adapters.
+-- Returns the General page help entries { id, title, text } in page order, with optional entries included only when
+-- their feature is present on this client.
 function addon:GetGeneralOptionHelp()
     local ordered = {
         { id = "enable", title = L["Enable"], text = L["Help.General.enable"] },
@@ -179,6 +187,8 @@ function addon:GetGeneralOptionHelp()
     return ordered
 end
 
+-- Lays out the General page help: an introduction to automatic action requirements, then every field entry as a yellow
+-- title followed by its paragraph.
 function addon.layout_primary_options_help(frame)
     frame:AddChild(
         CreateText(
@@ -192,6 +202,8 @@ function addon.layout_primary_options_help(frame)
     end
 end
 
+-- Lays out the Rotations page help overview as a series of short paragraphs: cards, drafts and Apply/Discard, the
+-- switch and fallback, cooldowns, branches, dragging, Stop, validation and the list/diagram controls.
 function addon.layout_rotation_options_help(frame)
     frame:AddChild(
         CreateText(

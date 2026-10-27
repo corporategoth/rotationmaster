@@ -1,3 +1,9 @@
+-- Export/import text presentation: wraps an encoded export string into 76-character lines and strips wrapping and
+-- invisible copy artifacts from pasted text before it is decoded.
+-- It owns only the text shape (docs/quality/export-text-format.md; the website follows the same rule) and must never
+-- alter the encoded characters themselves or decode anything.
+-- Loaded from RotationMaster.toc between Data/rotation_draft.lua and Data/codec.lua; the transfer windows and the codec
+-- call it as addon:FormatExportText and addon:NormalizeImportText.
 local _, addon = ...
 
 -- Presentation of an encoded export string. The encoded data is never changed:
@@ -26,6 +32,8 @@ local sequences = {
     "\239\187\191",  -- U+FEFF zero-width no-break space / byte order mark
 }
 
+-- Returns pasted text with all whitespace and invisible formatting characters removed, ready for decoding; anything
+-- that is not a string gives "". Text already made of only the encoding alphabet is returned without a copy.
 function addon:NormalizeImportText(text)
     if type(text) ~= "string" then return "" end
     -- Text that is already nothing but the alphabet (an unwrapped export) costs
@@ -42,6 +50,8 @@ function addon:NormalizeImportText(text)
     return text
 end
 
+-- Returns the encoded text cut into lines of width characters (76 when width is missing or below 1) joined by
+-- newlines, with no trailing newline. Existing line breaks are dropped first, so formatting twice gives the same text.
 function addon:FormatExportText(text, width)
     if type(text) ~= "string" then return "" end
     -- Only line breaks are touched, so wrapping twice is stable and any other

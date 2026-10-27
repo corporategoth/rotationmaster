@@ -1,3 +1,10 @@
+-- Rotation transport codec: turns a table into an export string (AceSerializer protocol 1 payload, LibCompress stream,
+-- Base64, "RM1:" marker for envelopes) and back, with every size and shape bound checked BEFORE the expensive library
+-- steps run. The contract is docs/quality/rotation-transport.md.
+-- It is a data-only boundary: serialize/deserialize/compress/decompress are injected trusted functions, and nothing
+-- here may execute predicates, compile Lua, register definitions or write SavedVariables.
+-- Loaded from RotationMaster.toc after Data/export_text.lua (addon:NormalizeImportText) and Data/plain.lua
+-- (CheckPortable); the UI builds a codec through addon:NewRotationCodec and the import session decodes with it.
 local _, addon = ...
 local data = addon.RotationData
 local maxSerialized, maxCompressed, maxInput = 1048576, 1048577, 2097152
@@ -10,6 +17,12 @@ for i = 1, #alphabet do
     values[c] = i - 1
 end
 
+-- ============================================================================
+-- Base64
+-- ============================================================================
+
+-- Encodes a byte string as standard padded Base64. Returns nil and 'encoded-size-limit' for a non-string or one over
+-- the compressed-stream limit.
 function data.EncodeBase64(raw)
     if type(raw) ~= "string" or #raw > maxCompressed then return nil, "encoded-size-limit" end
     local chunks = {}
@@ -27,6 +40,8 @@ function data.EncodeBase64(raw)
     return table.concat(chunks)
 end
 
+-- Strictly decodes Base64 to bytes. Rejects a bad alphabet, length, misplaced padding and nonzero unused tail bits, and
+-- a result over the compressed-stream limit. Returns the bytes, or nil and the reason code.
 local function base64(text)
     local clean = text:gsub("[ \t\r\n]", "")
     if #clean == 0 or #clean % 4 ~= 0 or clean:find("[^A-Za-z0-9+/=]") then return nil, "invalid-base64" end
@@ -58,8 +73,14 @@ local function base64(text)
     return raw
 end
 
+-- ============================================================================
+-- Compressed stream size checks
+-- ============================================================================
+
 -- Length-only analysis of the legacy LZW wire format. No decoded strings or
 -- dictionary phrases are allocated here. LibCompress does actual decompression.
+-- Returns the decompressed length, or nil and a reason code for an invalid code, an empty stream or a result over the
+-- serialized limit.
 local function lzwSize(stream)
     local lengths = {}
 
@@ -117,9 +138,11 @@ end
 -- A size header does not bound malformed codebook parsing in LibCompress.
 -- Walk the map once in wire bit order; each escaped code is at most 32 bits
 -- followed by its two stop bits. This prevents unbounded stop-bit searches.
+-- Returns true when the codebook is well formed within the stream, false otherwise.
 local function huffmanMap(stream)
     local position = 40
 
+    -- Reads the next bit in wire order (least significant first), or nil past the end of the stream.
     local function bit()
         local byte = stream:byte(math.floor(position / 8) + 1)
         if not byte then return nil end
@@ -160,6 +183,9 @@ local function huffmanMap(stream)
     return true
 end
 
+-- Returns the length a compressed stream will expand to, read from its header (stored), counted (LZW) or declared
+-- (Huffman), or nil and a reason code. Only methods 1, 2 and 3 are accepted. The caller compares the real
+-- decompressor output with this number.
 local function decompressedSize(stream)
     local codec = stream:byte(1)
 
@@ -180,6 +206,12 @@ local function decompressedSize(stream)
     return nil, "unsupported-compression"
 end
 
+-- ============================================================================
+-- Serializer preflight and codec
+-- ============================================================================
+
+-- Scans the AceSerializer control tokens of a payload before the recursive parser sees it: exactly one root table,
+-- depth at most 64, at most 20,000 tokens and a terminator. Returns true, or false and a reason code.
 local function serializerShape(raw)
     -- Match the bundled parser's whitespace normalization before inspecting its
     -- structural control tokens, then bound its recursive table construction.
@@ -229,6 +261,8 @@ end
 
 -- Dependencies are trusted application functions. Parsing never calls predicates,
 -- compiles Lua, registers definitions or writes to SavedVariables.
+-- Returns a codec with Encode and Decode methods bound to the injected serialize, deserialize, compress and decompress
+-- functions, or nil and a reason when one is missing.
 function data.NewCodec(dependencies)
     if type(dependencies) ~= "table" then return nil, "missing-codec-dependencies" end
 
@@ -238,6 +272,8 @@ function data.NewCodec(dependencies)
 
     local codec = {}
 
+    -- Encodes a portable table as an export string; an envelope (format "RotationMaster") gets the "RM1:" marker and a
+    -- legacy body is unmarked. Returns the string, or nil and a reason code (size limits, shape, compression mismatch).
     function codec:Encode(value)
         local portable, why = data.CheckPortable(value)
         if not portable then return nil, why.code end
@@ -257,6 +293,9 @@ function data.NewCodec(dependencies)
         return (value.format == "RotationMaster" and "RM1:" or "") .. encoded
     end
 
+    -- Decodes pasted text without trusting it: normalizes wrapping, checks the marker, Base64, the declared size, then
+    -- the serializer shape, and only then deserializes. Returns { value, kind = "envelope" | "legacy", original,
+    -- transportVersion }, or nil and a reason code. Nothing is executed or saved.
     function codec:Decode(text)
         if type(text) ~= "string" then return nil, "expected-import-string" end
         if #text > maxInput then return nil, "import-size-limit" end

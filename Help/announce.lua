@@ -1,9 +1,16 @@
+-- Help document for the Announces settings page: the ordered list of sections (title plus one authored paragraph per
+-- control), the renderer that lays them out in a help frame, and the subset shown from an announcement card's output
+-- controls. Paragraph text lives in the locale tables under Help.Announces.*; this file only orders and selects it.
+-- Loaded from RotationMaster.toc after Help/effects.lua, with the other Help/ files, once UI/ and Help/common.lua
+-- (addon.help_funcs) exist. The document function is also read by UI/help.lua as the Announces help source.
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local color = color
 local helpers = addon.help_funcs
 local CreateText, Gap = helpers.CreateText, helpers.Gap
 
+-- Returns the Announces help sections { id, title, text }: overview, action type, macro use, channels and outputs,
+-- text and sounds, state and Apply/Cancel, and the collection buttons.
 -- Keep whole paragraphs in the locale table so translations control word order.
 function addon:GetDocument_layout_announce_options_help()
     return {
@@ -61,6 +68,7 @@ function addon:GetDocument_layout_announce_options_help()
     }
 end
 
+-- Lays the Announces help document out in a frame as a yellow title followed by its paragraph, one gap between each.
 function addon.layout_announce_options_help(frame)
     for _, entry in ipairs(addon:GetDocument_layout_announce_options_help()) do
         frame:AddChild(Gap())
@@ -74,6 +82,8 @@ function addon.layout_announce_options_help(frame)
 end
 
 -- Card Help uses the same authored document, limited to its output controls.
+-- kind is the announcement's action type and mode its output channel; returns only the sections for that channel and
+-- the shared output controls (emote target wording differs for a macro announcement).
 function addon:GetAnnouncementOutputHelp(kind, mode)
     local sections = {}
 

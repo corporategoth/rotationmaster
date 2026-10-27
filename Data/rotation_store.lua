@@ -1,3 +1,12 @@
+-- Scoped rotation store: the pure data layer over profile.rotationStore, where custom rotation records live under a
+-- Class or Character owner, a specialization key and a rotation id, next to preserved unassigned legacy data.
+-- It owns store validation (including aliasing checks), detached reads, fallback lookup, the legacy migration plan and
+-- guarded create/replace/delete/move/adopt plans with a Commit step, plus the internal borrowed reader and the
+-- publication and execution guards the runtime uses. A record is { body, origin | imported, comparison } kept together.
+-- It must never write the persistence root on load, evaluate conditions or infer an owner for legacy data.
+-- Loaded last of the Data/ modules from RotationMaster.toc (after Data/catalog.lua and Data/import_session.lua);
+-- built by Core/rotation_scope.lua through data.NewRotationStore.
+-- Saved shape and rules: docs/architecture/storage-scopes.md.
 local _, addon = ...
 local data = addon.RotationData
 local isClass = data.IsRotationClassToken
@@ -30,18 +39,26 @@ local recordFields = { body = true, origin = true, imported = true, comparison =
 local characterBucketFields = { class = true, specs = true }
 local legacyKinds = { rotations = 'body', origins = 'origin', imports = 'imported', comparisons = 'comparison' }
 
+-- ============================================================================
+-- Validation helpers
+-- ============================================================================
+
+-- Returns true for a table with no metatable (the only kind of table the store accepts as data).
 local function plain(v)
     return type(v) == 'table' and getmetatable(v) == nil
 end
 
+-- Returns true for a non-blank string of at most limit bytes with no control characters.
 local function text(v, limit)
     return type(v) == 'string' and #v > 0 and #v <= limit and v:find('%S') ~= nil and not v:find('[%z\1-\31\127]')
 end
 
+-- Returns true for a specialization key: a finite whole number of zero or more.
 local function spec(v)
     return type(v) == 'number' and v >= 0 and v < math.huge and v % 1 == 0
 end
 
+-- Returns true when v is a plain table whose keys are all in the allowed set.
 local function fields(v, allowed)
     if not plain(v) then return false end
 
@@ -52,6 +69,8 @@ local function fields(v, allowed)
     return true
 end
 
+-- Returns true for a well-formed address { scope, class, owner, spec, id }: a class-scope owner is its class token, a
+-- character-scope owner is a character key.
 local function validAddress(a)
     return fields(a, addressFields)
         and isClass(a.class)
@@ -60,6 +79,8 @@ local function validAddress(a)
         and (a.scope == 'class' and a.owner == a.class or a.scope == 'character' and text(a.owner, 512))
 end
 
+-- Returns true when the address belongs to the caller's owner context { class, character }: the same class, and for
+-- character scope the same character. Otherwise nil and 'missing-owner-context' or 'foreign-owner'.
 local function visible(a, c)
     if not plain(c) or not isClass(c.class) then return nil, 'missing-owner-context' end
     if a.scope == 'character' and not text(c.character, 512) then return nil, 'missing-owner-context' end
@@ -67,6 +88,7 @@ local function visible(a, c)
     return true
 end
 
+-- Deep structural equality over plain data.
 local function equal(a, b)
     if type(a) ~= type(b) then return false end
     if type(a) ~= 'table' then return a == b end
@@ -82,10 +104,12 @@ local function equal(a, b)
     return true
 end
 
+-- Detached deep copy through the shared plain-data copier (nil and a diagnostic for non-portable data).
 local function copied(value)
     return data.CopyData(value)
 end
 
+-- Returns a detached copy of the record's four components (body, origin, imported, comparison), dropping other keys.
 local function copyRecord(record)
     local result = {}
 
@@ -96,6 +120,7 @@ local function copyRecord(record)
     return result
 end
 
+-- Returns true for a map of step id to origin step id (both non-blank strings of at most 128 bytes).
 local function originMap(value)
     if not plain(value) then return false end
 
@@ -106,6 +131,10 @@ local function originMap(value)
     return true
 end
 
+-- Checks the shape of one stored record against its address: a portable body, at most one of origin (a clone's
+-- manifest and lineage) or imported (an import's manifest and step origins), a manifest that matches the address id and
+-- class, and a comparison pointer. Returns true, or nil and 'invalid-record' / 'source-class-mismatch'. The body may be
+-- incomplete; storage safety and runtime readiness are separate questions.
 local function validRecord(record, address)
     if
         not fields(record, recordFields)
@@ -185,6 +214,8 @@ local function validRecord(record, address)
     return true
 end
 
+-- Walks a map of specialization key to { id = value } rows, requiring valid keys and ids, and calls visit(value, id,
+-- spec) for each entry; the first failure is returned as nil and its reason.
 local function validSpecMap(map, visit)
     if not plain(map) then return nil, 'invalid-store' end
 
@@ -201,6 +232,8 @@ local function validSpecMap(map, visit)
     return true
 end
 
+-- Checks the unassigned legacy archive (rotations, origins, imports, comparisons and evidence): only portable data
+-- under valid keys. Returns true, or nil and 'invalid-legacy-state'.
 local function validLegacy(legacy)
     if not fields(legacy, {
         rotations = true,
@@ -223,6 +256,7 @@ local function validLegacy(legacy)
     return true
 end
 
+-- Returns true when no table reachable from the value is one of the store's own owner containers (the owned set).
 local function detachedPayload(value, owned)
     if type(value) ~= 'table' then return true end
     if owned[value] then return false end
@@ -234,15 +268,19 @@ local function detachedPayload(value, owned)
     return true
 end
 
+-- Returns true when every container of the store (state, owners, spec maps, rows, records) is a distinct table and no
+-- record payload points back into those containers; otherwise a plain table write could change another owner's data.
 local function distinctStructure(state)
     local owned, payloads = {}, {}
 
+    -- Registers a container as owned; false if it was already registered (an alias).
     local function claim(value)
         if owned[value] then return false end
         owned[value] = true
         return true
     end
 
+    -- Claims a spec map, its rows and records, and collects each record's components as payloads to check later.
     local function maps(map)
         if not claim(map) then return false end
 
@@ -299,6 +337,12 @@ local function distinctStructure(state)
     return true
 end
 
+-- ============================================================================
+-- Store validation and migration planning
+-- ============================================================================
+
+-- Validates the whole store state { version = 1, classes, characters, legacy }: every owner, record and legacy entry,
+-- plus the aliasing rules. Returns true, or nil and a reason ('invalid-store', 'aliased-store' or a record reason).
 local function validState(state)
     if
         not fields(state, stateFields) or state.version ~= 1 or not plain(state.classes) or not plain(state.characters)
@@ -334,10 +378,12 @@ local function validState(state)
     return true
 end
 
+-- Public form of the store validation, for profile transport and repair.
 function data.ValidateRotationStore(state)
     return validState(state)
 end
 
+-- Returns a detached copy of a legacy archive.
 local function copyLegacy(legacy)
     local result = {}
 
@@ -361,14 +407,23 @@ local function copyLegacy(legacy)
 end
 
 -- A proposal only: no source ownership is inferred and no live profile is changed.
+-- Returns a new empty store whose legacy section is a copy of the given archive (nothing is assigned to an owner), or
+-- nil and a reason when the archive is not valid.
 function data.PlanRotationStoreMigration(legacy)
     local ok, why = validState({ version = 1, classes = {}, characters = {}, legacy = legacy })
     if not ok then return nil, why end
     return { version = 1, classes = {}, characters = {}, legacy = copyLegacy(legacy) }
 end
 
+-- ============================================================================
+-- Store service
+-- ============================================================================
+
 -- One profile-owned state object, with explicit caller-provided identity/config.
 -- Bodies may be incomplete; storage safety and runtime readiness are separate.
+-- options carries state (the profile's store, validated first), fallbackID, optional validation (passed to the body
+-- validator), requireValidWrites and bindInternalReader. Returns the service (Get, ListVisible, GetFallback, Refresh,
+-- AllStored, Plan*, Commit), nil, and two private guard factories for the trusted runtime facade; or nil and a reason.
 function data.NewRotationStore(options)
     if not plain(options) or options.bindInternalReader ~= nil and type(options.bindInternalReader) ~= 'function' then
         return nil, 'invalid-store-options'
@@ -382,15 +437,20 @@ function data.NewRotationStore(options)
     local tokens = setmetatable({}, { __mode = 'k' })
     local plans = setmetatable({}, { __mode = 'k' })
 
+    -- Returns the three root tables of the state; a leased or indexed view is stale once any of them is replaced.
     local function roots()
         return { state.classes, state.characters, state.legacy }
     end
 
+    -- Returns true when the state still has the same three root tables as a recorded list from roots().
     local function sameRoots(previous)
         return previous[1] == state.classes and previous[2] == state.characters and previous[3] == state.legacy
     end
 
     -- Built only after full validation or our own detached plain-table writes.
+    -- Returns a structural index of the state: for each owner its bucket, spec map and, per specialization, the rows
+    -- table, record table and count, plus the set of every container the store owns. Reads check it against the raw
+    -- state so an outside change is caught as 'stale-store-index' instead of being trusted.
     local function buildIndex()
         local result = { roots = roots(), classes = {}, characters = {}, owned = { [state] = true } }
 
@@ -398,6 +458,7 @@ function data.NewRotationStore(options)
             result.owned[root] = true
         end
 
+        -- Indexes one owner's spec map and marks its containers as owned.
         local function add(bucket, map)
             result.owned[bucket] = true
             result.owned[map] = true
@@ -444,6 +505,8 @@ function data.NewRotationStore(options)
 
     local index = buildIndex()
 
+    -- Finds the record at an address straight in the state. Returns the record (or nil) and the chain of containers
+    -- walked (root, owner bucket, spec map, rows; false where one is missing), which leases compare by identity.
     local function locate(a)
         local root = a.scope == 'class' and state.classes or state.characters
         local bucket = root[a.owner]
@@ -452,6 +515,8 @@ function data.NewRotationStore(options)
         return rows and rows[a.id], { root, bucket or false, map or false, rows or false }
     end
 
+    -- Records a lease on an address: the record, its container chain, the roots and a detached baseline copy. A lease
+    -- is what a read token or a plan holds to prove later that nothing underneath has changed.
     local function capture(a)
         local record, chain = locate(a)
 
@@ -464,6 +529,7 @@ function data.NewRotationStore(options)
         }
     end
 
+    -- Returns true while a lease still holds: same roots, same record object with equal content, same container chain.
     local function alive(lease)
         if not sameRoots(lease.roots) then return false end
         local current, chain = locate(lease.address)
@@ -476,6 +542,8 @@ function data.NewRotationStore(options)
         return true
     end
 
+    -- Checks that a write may target the address: a valid address visible to the caller, a valid whole store, and a
+    -- Character bucket of the same class. Returns true, or nil and a reason.
     local function target(a, c)
         if not validAddress(a) then return nil, 'invalid-address' end
         local allowed, reason = visible(a, c)
@@ -487,6 +555,10 @@ function data.NewRotationStore(options)
         return true
     end
 
+    -- Cheap read path: validates only the address, the state header and the one owner and specialization involved, and
+    -- compares them with the index (the main one, or a reader index passed as source). Returns true, rows and the index
+    -- scope; or nil and a reason such as 'stale-store-index' when an outside change moved a container. A missing owner
+    -- is not an error (true with no rows).
     local function readRows(a, c, source)
         source = source or index
         if not validAddress(a) then return nil, 'invalid-address' end
@@ -522,6 +594,7 @@ function data.NewRotationStore(options)
         return true, rows, scope
     end
 
+    -- Validates the one record being read and checks its payload does not alias a store container.
     local function selected(record, a)
         local valid, reason = validRecord(record, a)
         if not valid then return nil, reason end
@@ -533,6 +606,8 @@ function data.NewRotationStore(options)
         return true
     end
 
+    -- Returns true and the live (not copied) record at the address, or true and nil when absent; nil and a reason when
+    -- the index is stale or the record is invalid. Callers copy before handing anything out.
     local function readRecord(a, c)
         local allowed, rows, scope = readRows(a, c)
         if not allowed then return nil, rows end
@@ -547,12 +622,15 @@ function data.NewRotationStore(options)
         return true, record
     end
 
+    -- Resolves the read token a caller says it based an edit on into its lease, requiring that it was issued for this
+    -- address and is still alive. Otherwise nil and 'stale-rotation-record'.
     local function checkExpected(a, expected)
         local lease = tokens[expected]
         if not lease or not equal(lease.address, a) or not alive(lease) then return nil, 'stale-rotation-record' end
         return lease
     end
 
+    -- Validates a record for writing (and its body too when requireValidWrites is set) and returns a detached copy.
     local function prepare(record, a)
         local valid, reason = validRecord(record, a)
         if not valid then return nil, reason end
@@ -564,6 +642,8 @@ function data.NewRotationStore(options)
         return copyRecord(record)
     end
 
+    -- Creates a plan: a public handle (operation, address, destination) that callers pass back to Commit, and a private
+    -- entry holding the leases, payload and context that Commit re-checks.
     local function plan(operation, a, c, lease, payload, destination)
         local public = { operation = operation, address = copied(a), destination = destination and copied(destination) }
 
@@ -581,6 +661,7 @@ function data.NewRotationStore(options)
         return public
     end
 
+    -- Internal borrowed reader, with the read seals, the publication guard and the execution guard built on it.
     -- This capability is bound only to trusted facade code. Canonical borrows
     -- must not escape its synchronous projectors; UI keeps snapshot APIs.
     local reader, readerState, readerBusy = {}, 'binding', false
@@ -590,12 +671,15 @@ function data.NewRotationStore(options)
     -- untouched. The cold planner supplies a captured notification closure.
     local executionWatch
 
+    -- Drops the selected execution watch and calls its notification, so the runtime sees the change and discards a plan
+    -- compiled against the old record.
     local function invalidateExecutionWatch()
         local watch = executionWatch
         executionWatch = nil
         if watch then watch.notify() end
     end
 
+    -- Returns true when the address is the record the execution watch is following.
     local function watchedAddress(a)
         local watch = executionWatch
         if not watch or not a then return false end
@@ -611,22 +695,28 @@ function data.NewRotationStore(options)
     local readSeals = setmetatable({}, { __mode = 'k' })
     local nilCharacter = {}
 
+    -- Copies just the five address fields, dropping anything else the caller's table carried.
     local function detachedAddress(a)
         return { scope = a.scope, class = a.class, owner = a.owner, spec = a.spec, id = a.id }
     end
 
+    -- Copies an owner context { class, character }.
     local function contextCopy(c)
         return { class = c.class, character = c.character }
     end
 
+    -- Returns true for a usable owner context: a class token and an optional valid character key.
     local function privateContext(c)
         return plain(c) and isClass(c.class) and (c.character == nil or text(c.character, 512))
     end
 
+    -- Returns true when a context table still names the same class and character as the recorded copy.
     local function sameContext(a, c)
         return plain(c) and a.class == c.class and a.character == c.character
     end
 
+    -- Returns true when the reader is active (and, with checkBusy, not inside a projector call); otherwise nil and
+    -- 'retired-rotation-reader', 'rotation-reader-not-ready' or 'reentrant-rotation-read'.
     local function readerReady(checkBusy)
         if readerState == 'retired' then return nil, 'retired-rotation-reader' end
         if readerState ~= 'active' then return nil, 'rotation-reader-not-ready' end
@@ -634,6 +724,8 @@ function data.NewRotationStore(options)
         return true
     end
 
+    -- Builds the reader's metadata for one record: detached address, the record, its container chain, its component
+    -- payload identities, a new revision number and a table of the seals issued for it.
     local function recordMetadata(a, record)
         readRevision = readRevision + 1
         local _, chain = locate(a)
@@ -653,11 +745,14 @@ function data.NewRotationStore(options)
         }
     end
 
+    -- Rebuilds the reader's index and metadata from the current state and advances the read epoch, which makes every
+    -- seal issued before it stale. Used at start and on Refresh, the only points where outside changes are blessed.
     local function resetReaderIndex()
         local beforeNotification = executionWatch and executionWatch.notify
         invalidateExecutionWatch()
         local replacement = buildIndex()
 
+        -- Adds metadata for every record of one owner to the replacement index.
         local function add(kind, name, owner)
             for number, scope in pairs(owner.specs) do
                 scope.metadata = {}
@@ -696,6 +791,8 @@ function data.NewRotationStore(options)
 
     -- Update only addresses actually written by this service. Rebuilding from
     -- raw state would accidentally bless external component/container changes.
+    -- Brings the reader index up to date for one address just written by Commit (creating the owner or specialization
+    -- entry if needed, adjusting the count and refreshing the record's metadata).
     local function advanceReaderAddress(a)
         local root = a.scope == 'class' and state.classes or state.characters
         local owners = a.scope == 'class' and readIndex.classes or readIndex.characters
@@ -729,6 +826,8 @@ function data.NewRotationStore(options)
         scope.metadata[a.id] = record and recordMetadata(a, record) or nil
     end
 
+    -- Returns the reader's metadata for the record at an address after re-checking the raw state against it (same
+    -- containers, same component tables, plain data). Otherwise nil and a reason such as 'stale-store-index'.
     local function privateRecord(a, c)
         local allowed, rows, scope = readRows(a, c, readIndex)
         if not allowed then return nil, rows end
@@ -751,6 +850,8 @@ function data.NewRotationStore(options)
         return meta
     end
 
+    -- Returns the seal for a record and owner context (one per character), creating it on first use. A seal is an
+    -- opaque token the reader later accepts as proof that the record has not changed since it was read.
     local function recordSeal(meta, c)
         local key = c.character
         if key == nil then key = nilCharacter end
@@ -768,11 +869,14 @@ function data.NewRotationStore(options)
     -- Every partition of the owner: a rotation's specializations are its own
     -- property (body.specs), so the namespace it was saved under no longer
     -- hides it. `number` still names the partition whose fallback applies.
+    -- Returns the reader metadata of every record of the class owner and the caller's character owner, in a stable
+    -- order, or nil and a reason.
     local function privateRows(number, c)
         if not spec(number) then return nil, 'invalid-specialization' end
         if not privateContext(c) then return nil, 'missing-owner-context' end
         local result = {}
 
+        -- Appends the metadata of every record in one owner and specialization, checking the index counts as it goes.
         local function partition(kind, name, value)
             local a = { scope = kind, class = c.class, owner = name, spec = value, id = options.fallbackID }
             local allowed, rows, scope = readRows(a, c, readIndex)
@@ -792,6 +896,8 @@ function data.NewRotationStore(options)
             return true
         end
 
+        -- Adds every specialization partition of one owner: the requested number first, then all others found in the
+        -- state or in the index.
         local function add(kind, name)
             local allowed, reason = partition(kind, name, number)
             if not allowed then return nil, reason end
@@ -846,6 +952,8 @@ function data.NewRotationStore(options)
         return result
     end
 
+    -- Returns true when a seal (from Read or ListOwned) is still valid for the context: same epoch, same owner, and
+    -- the record (or the whole list) unchanged. Otherwise nil and a reason such as 'stale-rotation-read-seal'.
     function reader:IsCurrent(seal, c)
         local ready, reason = readerReady()
         if not ready then return nil, reason end
@@ -874,6 +982,10 @@ function data.NewRotationStore(options)
     -- Only an owned factory admission may consume this private capability.
     local guardType, guardPairs, guardGetmetatable, guardRawget = type, pairs, getmetatable, rawget
 
+    -- Builds the pair of checks the runtime uses to publish a plan compiled from one record: fullCurrent re-proves
+    -- everything (reader state, epoch, write version, state header, container chain, component identities, plain data)
+    -- and continuationCurrent re-checks only raw identities between callouts, never running extension code. With a
+    -- notify function it also starts the single execution watch. Returns nil for a seal that is not a record seal.
     local function makePublicationGuard(_, seal, c, notify)
         local entry = readSeals[seal]
         if not entry or entry.kind ~= 'record' then return nil end
@@ -888,6 +1000,8 @@ function data.NewRotationStore(options)
         local chain = meta.chain
         local record, payload = meta.record, meta.payload
 
+        -- Full check; returns nil when a captured primitive (type, pairs, getmetatable, rawget) was replaced, false
+        -- when the record is no longer the one that was sealed, and true otherwise.
         local function fullCurrent()
             if
                 reader.IsCurrent ~= ownedReaderIsCurrent
@@ -964,6 +1078,7 @@ function data.NewRotationStore(options)
 
         -- Configuration was admitted by fullCurrent. Between real callouts,
         -- use raw identity/epoch witnesses only; never invoke extension code.
+        -- Cheap check with raw reads only: epoch, write version and the identity of every container and component.
         local function continuationCurrent()
             if
                 readerState ~= 'active'
@@ -1014,6 +1129,9 @@ function data.NewRotationStore(options)
     -- Only the literal owned executor consumes this fourth factory capability.
     -- Schema/address validation is cold; publication checks relevant identities
     -- and table metatables without re-walking closed field schemas each time.
+    -- Returns current and continuation checks like the publication guard, plus witnesses that the global environment,
+    -- the string library and every table involved are untouched (no metatables). Refuses (returns nothing) on a client
+    -- without getfenv or when any witness already differs.
     local function makeExecutionGuard(_, seal, c, notify)
         if
             type(executionGetfenv) ~= 'function'
@@ -1032,6 +1150,7 @@ function data.NewRotationStore(options)
         c = c or entry.context
         local tables, seen = {}, {}
 
+        -- Remembers a table once so current() can check later that it still has no metatable.
         local function add(value)
             if guardType(value) == 'table' and not seen[value] then
                 seen[value] = true
@@ -1057,6 +1176,8 @@ function data.NewRotationStore(options)
 
         local expectedClass, expectedCharacter = entry.context.class, entry.context.character
 
+        -- Returns true while every witness holds: the environment and string-library witnesses, no metatable on any
+        -- involved table, the same owner context, and the continuation check.
         local function current()
             local classReadable, classEnvironment = executionProtect(executionGetfenv, isClass)
             if not classReadable or classEnvironment ~= executionClassEnvironment then return false end
@@ -1098,6 +1219,8 @@ function data.NewRotationStore(options)
         return current, continuation
     end
 
+    -- Lists every record the owner context can run (class and character owners, all specialization partitions) as
+    -- detached addresses with record seals, plus a seal for the whole list. Returns nil and a reason when not ready.
     function reader:ListOwned(number, c)
         local ready, reason = readerReady(true)
         if not ready then return nil, reason end
@@ -1114,6 +1237,9 @@ function data.NewRotationStore(options)
         return rows, seal
     end
 
+    -- Lends the live record to a projector callback and returns true, the projector's value and a seal. The callback
+    -- must run synchronously (not in a coroutine), must not re-enter the reader and must not keep the record; the
+    -- seal is checked again afterward and the read fails if the record changed meanwhile.
     function reader:Read(a, c, project)
         local ready, reason = readerReady(true)
         if not ready then return nil, reason end
@@ -1138,12 +1264,15 @@ function data.NewRotationStore(options)
         return true, value, seal
     end
 
+    -- Permanently disables the reader and drops the execution watch; later reads answer 'retired-rotation-reader'.
     function reader:Retire()
         invalidateExecutionWatch()
         readerState = 'retired'
         return true
     end
 
+    -- Returns a detached copy of the record at an address, a token (to pass back as `expected` when planning an edit)
+    -- and the body's validation result; or nil and a reason ('unknown-rotation' when absent).
     function service:Get(a, c)
         local allowed, record = readRecord(a, c)
         if not allowed then return nil, record end
@@ -1154,6 +1283,7 @@ function data.NewRotationStore(options)
         return copyRecord(record), token, data.ValidateBody(record.body, options.validation)
     end
 
+    -- Builds a result row: detached address, detached record copy and the body's validation.
     local function row(a, record)
         return {
             address = copied(a),
@@ -1162,6 +1292,7 @@ function data.NewRotationStore(options)
         }
     end
 
+    -- Sorts rows in place by scope, class, owner, specialization and id, and returns them.
     local function sort(rows)
         table.sort(rows, function(a, b)
             local x, y = a.address, b.address
@@ -1177,11 +1308,14 @@ function data.NewRotationStore(options)
         return rows
     end
 
+    -- Lists the rows saved under one specialization key for the caller's class owner and character owner (detached
+    -- copies with validation), sorted. Work is proportional to those two partitions, not to the whole store.
     function service:ListVisible(number, c)
         if not spec(number) then return nil, 'invalid-specialization' end
         if not plain(c) or not isClass(c.class) then return nil, 'missing-owner-context' end
         local result = {}
 
+        -- Appends the rows of one owner at the requested specialization key, checking the index count.
         local function add(kind, owner)
             local a = { scope = kind, class = c.class, owner = owner, spec = number, id = options.fallbackID }
             local allowed, rows, scope = readRows(a, c)
@@ -1217,6 +1351,9 @@ function data.NewRotationStore(options)
         return sort(result)
     end
 
+    -- Returns the fallback rotation row for a specialization key: the character's own when it has one, else the
+    -- class's. The second result is 'invalid-fallback' or 'unavailable-fallback' when the row is found but cannot be
+    -- used; nil and 'unknown-rotation' when neither exists.
     function service:GetFallback(number, c)
         if not plain(c) or not isClass(c.class) or not text(c.character, 512) then
             return nil, 'missing-owner-context'
@@ -1249,6 +1386,8 @@ function data.NewRotationStore(options)
         return found
     end
 
+    -- Re-validates the whole state and rebuilds the indexes. Needed after any outside change to the store; it retires
+    -- every outstanding token and plan, and if validation fails nothing is replaced.
     function service:Refresh()
         local valid, reason = validState(state)
         if not valid then return nil, reason end
@@ -1260,11 +1399,14 @@ function data.NewRotationStore(options)
         return true
     end
 
+    -- Returns every stored record of every owner as rows, plus one row per unassigned legacy entry (scope 'legacy'),
+    -- sorted. Validates the whole store, so it is the expensive full inventory.
     function service:AllStored()
         local valid, reason = validState(state)
         if not valid then return nil, reason end
         local result = {}
 
+        -- Appends rows for every record in one owner's spec map.
         local function add(scope, owner, class, map)
             for number, rows in pairs(map) do
                 for id, record in pairs(rows) do
@@ -1314,6 +1456,8 @@ function data.NewRotationStore(options)
         return sort(result)
     end
 
+    -- Plans adding a new record at an unused address. Returns a plan to pass to Commit, or nil and a reason such as
+    -- 'rotation-id-collision'. Nothing is written until Commit.
     function service:PlanCreate(a, record, c)
         local allowed, reason = target(a, c)
         if not allowed then return nil, reason end
@@ -1323,6 +1467,8 @@ function data.NewRotationStore(options)
         return plan('create', a, c, nil, payload)
     end
 
+    -- Plans replacing the record at an address; `expected` is the token from Get, and the plan fails as
+    -- 'stale-rotation-record' if the record changed since.
     function service:PlanReplace(a, record, c, expected)
         local allowed, reason = target(a, c)
         if not allowed then return nil, reason end
@@ -1333,6 +1479,7 @@ function data.NewRotationStore(options)
         return plan('replace', a, c, lease, payload)
     end
 
+    -- Plans deleting the record at an address, guarded by the token from Get.
     function service:PlanDelete(a, c, expected)
         local allowed, reason = target(a, c)
         if not allowed then return nil, reason end
@@ -1341,6 +1488,8 @@ function data.NewRotationStore(options)
         return plan('delete', a, c, lease)
     end
 
+    -- Plans moving a record to a different owner (for example class to character) with the same id, specialization and
+    -- class. The record keeps its content unless a replacement is given; the destination must be free.
     function service:PlanMove(a, destination, c, expected, replacement)
         local allowed, reason = target(a, c)
         if not allowed then return nil, reason end
@@ -1364,6 +1513,7 @@ function data.NewRotationStore(options)
         return plan('move', a, c, lease, payload, destination)
     end
 
+    -- Records a lease on one legacy archive entry ({ spec, id }) across the four legacy maps, with a baseline copy.
     local function legacyCapture(selection)
         local record, chain = {}, {}
 
@@ -1384,6 +1534,7 @@ function data.NewRotationStore(options)
         }
     end
 
+    -- Returns true while a legacy lease still holds (same roots, same containers, equal content).
     local function legacyAlive(lease)
         if not sameRoots(lease.roots) then return false end
         local current = legacyCapture(lease.selection)
@@ -1398,6 +1549,8 @@ function data.NewRotationStore(options)
         return true
     end
 
+    -- Plans adopting one unassigned legacy entry into an owner: the entry's body and sidecars become a record at the
+    -- destination (same id and specialization) and the legacy entry is removed on Commit.
     function service:PlanLegacyAdoption(selection, destination, c)
         if
             not fields(selection, { spec = true, id = true }) or not spec(selection.spec) or not text(selection.id, 128)
@@ -1420,6 +1573,8 @@ function data.NewRotationStore(options)
         return plan('adopt', destination, c, lease, payload, destination)
     end
 
+    -- Stores a record (or nil to remove it) at an address, creating the owner bucket and specialization rows when
+    -- missing. Plain table assignments only; callers have validated everything first.
     local function write(a, value)
         local root = a.scope == 'class' and state.classes or state.characters
         local bucket = root[a.owner]
@@ -1440,6 +1595,9 @@ function data.NewRotationStore(options)
         rows[a.id] = value
     end
 
+    -- Applies a plan once. Everything is re-checked first (owner context, roots, leases, collisions, the payload), the
+    -- writes are plain assignments with no callbacks, then the indexes advance and the plan is consumed. Returns true
+    -- and the destination address, or nil and a reason ('invalid-plan', 'stale-rotation-record', ...).
     function service:Commit(public, c)
         local pending = plans[public]
         if not pending then return nil, 'invalid-plan' end
@@ -1547,6 +1705,8 @@ end
 local ownedRotationStoreFactory = data.NewRotationStore
 local storeFactoryEnvironment = type(getfenv) == 'function' and getfenv(1) or nil
 
+-- Hands the owned store factory (and the environment it was loaded in) to a trusted binder. Core/rotation_scope.lua
+-- captures both at load and then removes this public name, so it can tell the original factory from a replacement.
 function data.BindOwnedRotationStoreFactory(bind)
     if type(bind) == 'function' then bind(ownedRotationStoreFactory, storeFactoryEnvironment) end
 end

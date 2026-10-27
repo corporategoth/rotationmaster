@@ -1,3 +1,10 @@
+-- Table helpers (keys, spairs, tomap, index, tablelength, multiinsert, cleanArray, deepcopy, compareArray) for
+-- conditions, the UI and saved custom code.
+-- This file owns the canonical bodies; utils.lua re-exports them as addon.keys, addon.spairs and the rest so saved
+-- custom source that binds to those names keeps working.
+-- Loaded from RotationMaster.toc with the other Functions/ files, before Functions/cache.lua and utils.lua.
+-- Pure table work, no game API reads. Note deepcopy is a shallow copy of the top level, despite its name.
+-- The function bodies are recorded as Built In helpers and are frozen: saved copies hash their exact text.
 local _, addon = ...
 local pairs, tostring = pairs, tostring
 
@@ -6,6 +13,7 @@ local collections = {}
 addon.Functions = addon.Functions or {}
 addon.Functions.collections = collections
 
+-- Returns the keys of a table sorted by their values (not by the keys themselves); the values must be comparable.
 collections.keys = function(array)
     local rv = {}
     for k,_ in pairs(array) do
@@ -16,6 +24,8 @@ collections.keys = function(array)
     return rv
 end
 
+-- Iterates a table in sorted key order, or in the order given by order(t, a, b) over the keys. The keys are snapshotted
+-- first, so changing values during the loop is safe but added keys are not visited.
 collections.spairs = function(t, order)
     -- collect the keys
     local keys = {}
@@ -39,6 +49,7 @@ collections.spairs = function(t, order)
     end
 end
 
+-- Returns a copy of the table with every key converted to a string (so numeric keys become "1", "2", ...).
 collections.tomap = function(array)
     local rv = {}
     for k,v in pairs(array) do
@@ -47,6 +58,7 @@ collections.tomap = function(array)
     return rv
 end
 
+-- Returns the key under which the table holds the value (first found, in pairs order), or nil when absent.
 collections.index = function(array, value)
     if not array then return nil end
 
@@ -57,6 +69,7 @@ collections.index = function(array, value)
     end
 end
 
+-- Counts every entry of a table, hash part included (the # operator counts only a sequence); nil counts as zero.
 collections.tablelength = function(T)
     if T == nil then return 0 end
     local count = 0
@@ -64,12 +77,15 @@ collections.tablelength = function(T)
     return count
 end
 
+-- Inserts the list at the front of the target, item by item at positions 1..n, so the new items keep their order.
 collections.multiinsert = function(t, values)
     for i,v in ipairs(values) do
 	    table.insert(t, i, v)
     end
 end
 
+-- Clears the table in place, keeping the keys listed in except; with invert true it clears only those keys instead.
+-- Does nothing for nil.
 collections.cleanArray = function(array, except, invert)
     if array == nil then
         return
@@ -94,6 +110,8 @@ collections.cleanArray = function(array, except, invert)
     end
 end
 
+-- Returns a new table with the top-level entries, dropping the keys listed in except (or keeping only them with
+-- invert true). Nested tables are shared with the source, not copied.
 collections.deepcopy = function(array, except, invert)
     if array == nil then
         return nil
@@ -120,6 +138,8 @@ collections.deepcopy = function(array, except, invert)
     return rv
 end
 
+-- Returns true when both tables hold the same keys with equal values (compared with ==, so nested tables must be the
+-- same table).
 collections.compareArray = function(lhs, rhs)
     for k,v in pairs(lhs) do
         if rhs[k] ~= v then

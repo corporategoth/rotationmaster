@@ -1,3 +1,9 @@
+-- Historical health-trend formulas: calculateOld works from health snapshots, calculate from damage and heal history.
+-- utils.lua re-exports them as addon.calculate_trend_old and addon.calculate_trend for saved custom source.
+-- Loaded from RotationMaster.toc after Functions/cache.lua and before Functions/forecast.lua. They read the live
+-- profile window, GetTime() and addon.round, and do not validate their input; the checked replacement is
+-- Functions/forecast.lua. Callers must not pass restricted (secret) values.
+-- The function bodies are recorded as Built In helpers and are frozen: saved copies hash their exact text.
 local _, addon = ...
 local trends = {}
 addon.Functions = addon.Functions or {}
@@ -5,6 +11,9 @@ addon.Functions.trends = trends
 
 -- Runtime history services keep their live addon/profile, clock and legacy
 -- rounding lookups. Canonical ownership does not change those contracts.
+-- Estimates the health change per second from newest-first snapshots of time/value/max, weighting each one-second
+-- bucket within the profile's damage_history window. Returns the rate and the bucket count, or only 0 when there is
+-- nothing to weigh.
 function trends.calculateOld(health)
     if not health then
         return 0
@@ -50,6 +59,9 @@ function trends.calculateOld(health)
     return 0
 end
 
+-- Estimates the signed health change from history.damage (negative) and history.heals (positive), weighting newer
+-- entries more across the window (the profile damage_history setting when nil). noheals and nodmg skip a stream.
+-- Returns the combined rate and the larger rounded stream age, or only 0 for a falsy history.
 function trends.calculate(history, window, noheals, nodmg)
     if not history then
         return 0
