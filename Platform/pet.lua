@@ -1,5 +1,5 @@
-local _,addon=...
-local platform=addon.Platform
+local _, addon = ...
+local platform = addon.Platform
 
 -- Presence and display-name availability are independent requested facts.
 -- Keep the existing GetUnitName wrapper and its omitted optional argument.

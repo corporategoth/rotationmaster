@@ -1,7 +1,7 @@
-local _,addon=...
-local platform=addon.Platform
+local _, addon = ...
+local platform = addon.Platform
 
-local function readField(self,object,key)
+local function readField(self, object, key)
     if not self:CanReadValue(object) then return nil,'restricted-value' end
     if type(object)~='table' then return nil,'invalid-api-result' end
     local ok,value=pcall(function() return object[key] end)
@@ -10,7 +10,7 @@ local function readField(self,object,key)
     return value
 end
 
-local function roleValue(self,value)
+local function roleValue(self, value)
     if not self:CanReadValue(value) then return nil,'restricted-value' end
     if canaccessvalue and not canaccessvalue(value) then return nil,'restricted-value' end
     if value==nil then return nil,'role-unavailable' end

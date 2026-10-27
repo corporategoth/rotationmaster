@@ -1,5 +1,5 @@
-local _,addon=...
-local platform=addon.Platform
+local _, addon = ...
+local platform = addon.Platform
 
 -- The scan limit is an RM resource budget, not a declared native maximum.
 function platform:GetLossOfControlCount()
@@ -24,7 +24,7 @@ end
 
 -- Only the requested subject is required. Timing readiness stays on the row
 -- so an unrelated event with unknown duration does not block a later match.
-function platform:GetLossOfControlEvent(index,kind)
+function platform:GetLossOfControlEvent(index, kind)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     if not self:CanReadValue(index) or not self:CanReadValue(kind) then return nil,'restricted-value' end

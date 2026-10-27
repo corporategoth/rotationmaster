@@ -1,15 +1,17 @@
-local _,addon=...
-local platform=addon.Platform
+local _, addon = ...
+local platform = addon.Platform
 
 local function finite(value)
     return type(value)=='number' and value==value and value<math.huge and value>-math.huge
 end
-local function validIndex(self,index)
+
+local function validIndex(self, index)
     if not self:CanReadValue(index) then return nil,'restricted-value' end
     if not finite(index) or index%1~=0 or index<1 or index>6 then return nil,'invalid-rune-index' end
     return true
 end
-local function numberField(self,value,missing)
+
+local function numberField(self, value, missing)
     if not self:CanReadValue(value) then return nil,'restricted-value' end
     if canaccessvalue and not canaccessvalue(value) then return nil,'restricted-value' end
     if value==nil then return nil,missing end

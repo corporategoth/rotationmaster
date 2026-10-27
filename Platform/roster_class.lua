@@ -1,10 +1,12 @@
-local _,addon=...
-local platform=addon.Platform
+local _, addon = ...
+local platform = addon.Platform
+
 local function rosterUnit(unit)
     if unit=='player' or unit:match('^party[1-4]$') then return true end
     local slot=unit:match('^raid(%d+)$');slot=slot and tonumber(slot)
     return slot~=nil and slot>=1 and slot<=40 and unit=='raid'..tostring(slot)
 end
+
 -- Public roster facts are available on identified families independently of
 -- enemy-combat observation policy. Only exact helper-owned roster tokens route.
 function platform:GetRosterClassObservation(unit)

@@ -1,13 +1,13 @@
-local _,addon=...
-local platform=addon.Platform
+local _, addon = ...
+local platform = addon.Platform
 
-local function finite(self,value)
+local function finite(self, value)
     if not self:CanReadValue(value) then return false,'restricted-value' end
     if type(value)~='number' or value~=value or value>=math.huge or value<=-math.huge then return false,'invalid-mobinfo2-number' end
     return true
 end
 
-local function readField(self,object,key)
+local function readField(self, object, key)
     if not self:CanReadValue(object) then return nil,'restricted-value' end
     if type(object)~='table' then return nil,'invalid-mobinfo2-data' end
     local ok,value=pcall(function() return object[key] end)
@@ -18,7 +18,7 @@ end
 
 -- Only this prerequisite is cached. Provider history and its name/level
 -- identity remain fresh on every call, preserving the original boundary.
-local function presence(self,unit)
+local function presence(self, unit)
     if type(UnitExists)~='function' then return nil,'missing-api' end
     local ok,exists=pcall(UnitExists,unit)
     if not ok then return nil,'api-error' end
@@ -28,7 +28,7 @@ local function presence(self,unit)
     return exists
 end
 
-local function hitCount(self,resists,school)
+local function hitCount(self, resists, school)
     local hits,reason=readField(self,resists,school..'Hits')
     if reason then return nil,reason end
     if hits==nil or hits==false then return 1 end
@@ -37,7 +37,7 @@ local function hitCount(self,resists,school)
     return hits
 end
 
-function platform:GetMobInfo2Observation(unit,kind,school,cache)
+function platform:GetMobInfo2Observation(unit, kind, school, cache)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(kind) or not self:CanReadValue(cache) then return nil,'restricted-value' end

@@ -56,15 +56,31 @@ local function own(record, fields, built)
     return record
 end
 
-local infoFields = {name="string", subtext="string", iconID="icon", castTime="number",
-    minRange="number", maxRange="number", spellID="number", originalIconID="icon"}
-local chargeFields = {currentCharges="number",maxCharges="number",cooldownStartTime="number",
-    cooldownDuration="number",chargeModRate="number",isActive="boolean"}
+local infoFields = {
+    name = "string",
+    subtext = "string",
+    iconID = "icon",
+    castTime = "number",
+    minRange = "number",
+    maxRange = "number",
+    spellID = "number",
+    originalIconID = "icon",
+}
+
+local chargeFields = {
+    currentCharges = "number",
+    maxCharges = "number",
+    cooldownStartTime = "number",
+    cooldownDuration = "number",
+    chargeModRate = "number",
+    isActive = "boolean",
+}
 
 function platform:GetSpellInfo(spell)
     local valid, reason = identifier(spell)
     if not valid then return nil, reason end
     local ok, record, built
+
     if C_Spell and type(C_Spell.GetSpellInfo) == "function" then
         ok, record = pcall(C_Spell.GetSpellInfo, spell)
     elseif type(GetSpellInfo) == "function" then
@@ -72,24 +88,39 @@ function platform:GetSpellInfo(spell)
         ok, name, subtext, icon, cast, min, max, id, original = pcall(GetSpellInfo, spell)
         if not ok then return nil, "api-error" end
         if not self:CanReadValue(name) then return nil, "restricted-value" end
+
         if name ~= nil then
-            record = {name=name, subtext=subtext, iconID=icon, castTime=cast, minRange=min, maxRange=max,
-                      spellID=id, originalIconID=original}
+            record = {
+                name = name,
+                subtext = subtext,
+                iconID = icon,
+                castTime = cast,
+                minRange = min,
+                maxRange = max,
+                spellID = id,
+                originalIconID = original,
+            }
+
             built = true
         end
-    else return nil, "missing-api" end
+    else
+        return nil, "missing-api"
+    end
+
     if not ok then return nil, "api-error" end
     if not self:CanReadValue(record) then return nil, "restricted-value" end
     if record == nil then return nil, "spell-data-unavailable" end
     local info, why = own(record, infoFields, built)
     if not info then return nil, why end
     if not info.name or info.name == "" then return nil, "invalid-api-result" end
+
     -- Modern metadata omits rank text; keep this optional public decoration
     -- separate from the required spell identity fields.
-    if info.subtext==nil and C_Spell and type(C_Spell.GetSpellSubtext)=="function" then
-        local textOk,text=pcall(C_Spell.GetSpellSubtext,spell)
-        if textOk and self:CanReadValue(text) and type(text)=="string" then info.subtext=text end
+    if info.subtext == nil and C_Spell and type(C_Spell.GetSpellSubtext) == "function" then
+        local textOk, text = pcall(C_Spell.GetSpellSubtext, spell)
+        if textOk and self:CanReadValue(text) and type(text) == "string" then info.subtext = text end
     end
+
     return info
 end
 
@@ -99,6 +130,7 @@ end
 -- client's own localized name, so this holds on every locale. Names are fixed
 -- for a session, so a resolved name is kept; failures are never kept.
 local familyNames = {}
+
 function platform:GetSpellFamilyName(spellID)
     local name = familyNames[spellID]
     if name then return name end
@@ -112,17 +144,21 @@ end
 
 function platform:MatchSpellIdentity(observedID, observedReason, observedName, wanted, exact)
     if observedID ~= nil and observedID == wanted then return true end
+
     if exact then
         if observedID == nil then return nil, observedReason or "spell-identity-unavailable" end
         return false
     end
+
     local name = observedName
+
     if name == nil then
         if observedID == nil then return nil, observedReason or "spell-identity-unavailable" end
         local reason
         name, reason = self:GetSpellFamilyName(observedID)
         if not name then return nil, reason end
     end
+
     local wantedName, why = self:GetSpellFamilyName(wanted)
     if not wantedName then return nil, why end
     return name == wantedName
@@ -133,18 +169,31 @@ function platform:IsSpellKnown(spellID, pet)
     if not valid then return nil, reason end
     if pet ~= nil and type(pet) ~= "boolean" then return nil, "invalid-spell-bank" end
     local fn, bank
+
     if C_SpellBook and type(C_SpellBook.IsSpellKnown) == "function" then
         local banks = Enum and Enum.SpellBookSpellBank
+
         if banks then
-            if pet then bank = banks.Pet else bank = banks.Player end
+            if pet then
+                bank = banks.Pet
+            else
+                bank = banks.Player
+            end
         end
+
         if self:CanReadValue(bank) and type(bank) == "number" then fn = C_SpellBook.IsSpellKnown end
     end
+
     if not fn then
-        if type(IsSpellKnown) == "function" then fn, bank = IsSpellKnown, pet == true
-        elseif C_SpellBook and type(C_SpellBook.IsSpellKnown) == "function" then return nil, "missing-spell-bank"
-        else return nil, "missing-api" end
+        if type(IsSpellKnown) == "function" then
+            fn, bank = IsSpellKnown, pet == true
+        elseif C_SpellBook and type(C_SpellBook.IsSpellKnown) == "function" then
+            return nil, "missing-spell-bank"
+        else
+            return nil, "missing-api"
+        end
     end
+
     local ok, known = pcall(fn, spellID, bank)
     if not ok then return nil, "api-error" end
     if not self:CanReadValue(known) then return nil, "restricted-value" end
@@ -152,7 +201,7 @@ function platform:IsSpellKnown(spellID, pet)
     return known
 end
 
-local cooldownFields = {startTime="number", duration="number", isEnabled="boolean", modRate="number"}
+local cooldownFields = { startTime = "number", duration = "number", isEnabled = "boolean", modRate = "number" }
 
 -- Retail and Forever hide a cooldown's times while addon restrictions are in
 -- effect (combat, encounters, challenge modes, PvP matches), but never its
@@ -218,30 +267,37 @@ function platform:GetSpellCooldown(spell)
 end
 
 function platform:GetSpellLink(spell)
-    local valid,reason=identifier(spell)
-    if not valid then return nil,reason end
-    local fn=C_Spell and C_Spell.GetSpellLink or GetSpellLink
-    if type(fn)~="function" then return nil,"missing-api" end
-    local ok,link=pcall(fn,spell)
-    if not ok then return nil,"api-error" end
-    if not self:CanReadValue(link) then return nil,"restricted-value" end
-    if link==nil then return nil,"spell-data-unavailable" end
-    if type(link)~="string" or link=="" then return nil,"invalid-api-result" end
+    local valid, reason = identifier(spell)
+    if not valid then return nil, reason end
+    local fn = C_Spell and C_Spell.GetSpellLink or GetSpellLink
+    if type(fn) ~= "function" then return nil, "missing-api" end
+    local ok, link = pcall(fn, spell)
+    if not ok then return nil, "api-error" end
+    if not self:CanReadValue(link) then return nil, "restricted-value" end
+    if link == nil then return nil, "spell-data-unavailable" end
+    if type(link) ~= "string" or link == "" then return nil, "invalid-api-result" end
     return link
 end
 
 -- Recommendation readiness permits a next action during the global cooldown,
 -- but not an ability whose own cooldown will still be active afterward.
 local gcdSpell
+
 function platform:GetGlobalCooldown()
     if not gcdSpell then
-        local client=self:GetClientInfo()
+        local client = self:GetClientInfo()
+
         -- Classic public probe; later clients expose the dedicated GCD spell.
-        gcdSpell=(client.family=='era' or client.family=='tbc' or
-            (client.family=='progression' and client.expansion==2)) and 29515 or 61304
+        gcdSpell = (client.family == 'era'
+            or client.family == 'tbc'
+            or (client.family == 'progression' and client.expansion == 2))
+            and 29515
+            or 61304
     end
+
     return self:GetSpellCooldown(gcdSpell)
 end
+
 -- Readiness runs for every reached action each poll. On classic builds
 -- without secrets the multi-value cooldown API is read directly: the same
 -- values GetSpellCooldown validates, without a result table per call.
@@ -251,6 +307,7 @@ end
 local function finiteNonNegative(value)
     return type(value)=="number" and value==value and value>=0 and value~=math.huge
 end
+
 local function cooldownValues(self, spell)
     local legacy=self.secretsUnrestricted and GetSpellCooldown
     if type(legacy)~="function" then
@@ -358,18 +415,24 @@ function platform:GetSpellCharges(spell)
 end
 
 function platform:IsCurrentSpell(spell)
-    local valid,reason=identifier(spell)
-    if not valid then return nil,reason end
-    local native=C_Spell and C_Spell.IsCurrentSpell
-    local fn=native or IsCurrentSpell
-    if type(fn)~="function" then return nil,"missing-api" end
-    local ok,active=pcall(fn,spell)
-    if not ok then return nil,"api-error" end
-    if not self:CanReadValue(active) then return nil,"restricted-value" end
+    local valid, reason = identifier(spell)
+    if not valid then return nil, reason end
+    local native = C_Spell and C_Spell.IsCurrentSpell
+    local fn = native or IsCurrentSpell
+    if type(fn) ~= "function" then return nil, "missing-api" end
+    local ok, active = pcall(fn, spell)
+    if not ok then return nil, "api-error" end
+    if not self:CanReadValue(active) then return nil, "restricted-value" end
+
     if not native then
-        if active==0 then active=false elseif active==1 then active=true end
+        if active == 0 then
+            active = false
+        elseif active == 1 then
+            active = true
+        end
     end
-    if type(active)~="boolean" then return nil,"invalid-api-result" end
+
+    if type(active) ~= "boolean" then return nil, "invalid-api-result" end
     return active
 end
 

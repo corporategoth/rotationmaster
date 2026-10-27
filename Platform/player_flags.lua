@@ -1,5 +1,5 @@
-local _,addon=...
-local platform=addon.Platform
+local _, addon = ...
+local platform = addon.Platform
 
 -- These predicates are independent, zero-argument observations of the player.
 -- Keep their native facts distinct from existence, instances or spell usability.

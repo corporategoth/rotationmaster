@@ -1,5 +1,5 @@
-local _,addon=...
-local platform=addon.Platform
+local _, addon = ...
+local platform = addon.Platform
 
 -- Ownership needs a fresh public player class token, not eligibility facts.
 -- Consume only UnitClass's second return and leave its other fields alone.

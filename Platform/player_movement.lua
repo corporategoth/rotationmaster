@@ -1,5 +1,5 @@
-local _,addon=...
-local platform=addon.Platform
+local _, addon = ...
+local platform = addon.Platform
 
 function platform:GetPlayerMovementObservation()
     local policy=self:GetCombatDataPolicy()
