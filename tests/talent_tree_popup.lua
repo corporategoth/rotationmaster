@@ -534,4 +534,27 @@ test('reading another specialization leaves a linked build in Blizzard\'s window
     assert(p:GetTraitView(FROST) and state.calls.InitializeViewLoadout==1)
 end)
 
+
+-- The drawn tree sizes itself from the screen, and the window is drawn at the user's UI scale (70 to 130 percent), so the
+-- room it may take is the screen divided by that scale.
+test('the drawn tree window fits the screen at every UI scale',function()
+    for _,case in ipairs({
+        {screen={1366,768},scale=1,height=688,width=1240},
+        {screen={1366,768},scale=1.3,height=529,width=1020},
+        {screen={1366,768},scale=.7,height=820,width=1240},
+        {screen={1024,768},scale=1.3,height=529,width=756},
+        {screen={2560,1440},scale=1.3,height=820,width=1240},
+    }) do
+        local f,a,e=client({spec=FIRE,scale=600},{blizzard=false})
+        e.UIParent:SetSize(case.screen[1],case.screen[2]);a.db.global.uiScale=case.scale;f.load('UI/window.lua')
+        local d=open(a,{spec=FIRE});assert(d.mode=='drawn')
+        local name=string.format('%dx%d at %d%%',case.screen[1],case.screen[2],case.scale*100)
+        local scale=d.frame:GetScale()
+        assert(math.abs(d.frame:GetHeight()-case.height)<=1 and math.abs(d.frame:GetWidth()-case.width)<=1,name..': window is '..d.frame:GetWidth()..'x'..d.frame:GetHeight())
+        assert(d.frame:GetHeight()*scale<=case.screen[2]-80+1 and d.frame:GetWidth()*scale<=case.screen[1]-40+1,name..': the drawn window is larger than the screen')
+        assert(scale==case.scale,name..': the scale was reduced although the window fits: '..scale)
+    end
+end)
+
 finish()
+

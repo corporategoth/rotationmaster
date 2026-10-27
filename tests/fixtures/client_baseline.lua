@@ -9,7 +9,7 @@ local function once(source,old,new)
 end
 local startup=read('tests/startup.lua')
 local common=assert(startup:match('(local function fixture%(modern, absentThreat%).-)\ntest%('),'startup common boundary missing')
-local persistent=assert(startup:match('(local function persistentFixture%(saved,folder,scoped%).-)\n%-%- WoW SavedVariables'),'startup persistent boundary missing')
+local persistent=assert(startup:match('(local function persistentFixture%(saved,folder,scoped[,%a]*%).-)\n%-%- WoW SavedVariables'),'startup persistent boundary missing')
 local addonFixture=read('tests/fixtures/addon.lua')
 local support=assert(addonFixture:match("(    load%('UI/controls.lua'%).-)\n    return {env=env"),'native support boundary missing')
 -- Identity is assigned before the common fixture's first production load.

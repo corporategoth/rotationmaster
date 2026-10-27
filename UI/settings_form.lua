@@ -542,6 +542,7 @@ function addon:CreateSettingsForm(parent)
         c:ClearFocus()
         addon:SetUIScript(c, 'OnReceiveDrag', nil)
         addon:SetUIScript(c, 'OnMouseDown', nil)
+        c.rmOwnsRightClick = nil
         if c.dropHint then c.dropHint:Hide() end
         addon:SetUIScript(c, 'OnEditFocusGained', nil)
         addon:SetUIScript(c, 'OnEnter', nil)
@@ -781,6 +782,9 @@ function addon:CreateSettingsForm(parent)
         )
 
         record = self.edits[#self.edits]
+
+        -- A right click opens the insert menu; it must not also close the window (UI/window.lua, UI/config.lua).
+        c.rmOwnsRightClick = true
         c.referenceIcon = c.referenceIcon or c:CreateTexture(nil, 'ARTWORK')
         c.referenceIcon:SetSize(20, 20)
         c.referenceIcon:SetPoint('LEFT', 2, 0)

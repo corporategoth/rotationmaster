@@ -17,19 +17,45 @@ local function scaleValue(value)
     return math.floor(value * 100 + .5) / 100
 end
 
+-- The largest scale at which `frame` still fits the screen: a window has a fixed size in its own units and is drawn
+-- scale times larger, and a frame cannot be shrunk by SetClampedToScreen. Returns `wanted` unchanged when the frame
+-- sizes itself to the screen (`rmFitsOwnSize`, the resizable main window) or when a size is not known yet; otherwise
+-- the smaller of `wanted` and the scale at which the frame's width and height equal the screen's, to two decimals and
+-- never below 0.5.
+local function fittedScale(frame, wanted)
+    if frame.rmFitsOwnSize or not UIParent then return wanted end
+    local fit = wanted
+
+    for _, pair in ipairs({
+        { UIParent.GetHeight, frame.GetHeight },
+        { UIParent.GetWidth, frame.GetWidth },
+    }) do
+        local screen, size = pair[1] and pair[1](UIParent), pair[2] and pair[2](frame)
+
+        if type(screen) == 'number' and type(size) == 'number' and screen > 0 and size > 0 then
+            fit = math.min(fit, screen / size)
+        end
+    end
+
+    if fit >= wanted then return wanted end
+    return math.max(.5, math.floor(fit * 100 + 1e-6) / 100)
+end
+
 -- Applies the saved window scale (`db.global.uiScale`) to a frame parented to UIParent and remembers it so a later
--- scale change reaches it. Frames nested in another window keep their parent's scale.
+-- scale change reaches it. The scale is reduced when the frame, at its current size, would not fit the screen (a
+-- 650 pixel window at 130 percent on a 768 pixel screen). Frames nested in another window keep their parent's scale.
 function addon:ApplyWorkbenchScale(frame)
     if frame and frame.GetParent and frame:GetParent() == UIParent and frame.SetScale then
         scaledWindows[frame] = true
-        frame:SetScale(scaleValue(self.db and self.db.global and self.db.global.uiScale))
+        frame:SetScale(fittedScale(frame, scaleValue(self.db and self.db.global and self.db.global.uiScale)))
     end
 end
 
--- Rescales every window that was registered for scaling; called when the scale setting changes.
+-- Rescales every window that was registered for scaling (each still limited to what fits the screen); called when the
+-- scale setting changes.
 function addon:ScaleWorkbenchWindows(value)
     for frame in pairs(scaledWindows) do
-        frame:SetScale(scaleValue(value))
+        frame:SetScale(fittedScale(frame, scaleValue(value)))
     end
 end
 
@@ -813,7 +839,8 @@ end
 
 -- Child editors share the main workbench chrome without navigation tabs.
 -- Closes the window on a right click inside it, when it is the frontmost registered window; also closes it when its
--- owner-bound Help has gone away. Installs a polling watcher (one per frame, idempotent).
+-- owner-bound Help has gone away. A click whose pointer is over a control flagged `rmOwnsRightClick` (reference fields,
+-- the spell icon) is left to that control. Installs a polling watcher (one per frame, idempotent).
 function addon:EnableWorkbenchRightClickClose(frame)
     if frame.rmRightClickWatcher then return end
     local watcher = CreateFrame('Frame', nil, frame)
@@ -861,6 +888,9 @@ function addon:EnableWorkbenchRightClickClose(frame)
                 end
 
                 if not focus or type(focus.GetParent) ~= 'function' then break end
+
+                -- A control that gives a right click its own meaning keeps it (the main window honors the same flag).
+                if focus.rmOwnsRightClick then break end
                 focus = focus:GetParent()
             end
 

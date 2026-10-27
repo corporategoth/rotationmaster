@@ -1484,7 +1484,7 @@
     {
       "file": "Help/custom_condition.lua",
       "line": 48,
-      "text": "The function used to evaluate a this condition real-time."
+      "text": "The function used to evaluate this condition in real time."
     },
     {
       "file": "Help/custom_condition.lua",

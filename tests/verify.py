@@ -41,6 +41,19 @@ for line in (root / 'RotationMaster.toc').read_text().splitlines():
 
 main_entries = {path.resolve() for path in entries}
 
+# A Lua file the TOC and its XML never load is dead code that every other gate leaves green, and a file whose TOC line is
+# dropped keeps its own suite green because suites load files by hand. Everything authored outside the folders that
+# have their own listing (tests and tools are not packaged, Libs is pinned vendor code, Modules is checked per module
+# below) must be reached from RotationMaster.toc. UNLOADED_LUA is for a file that is deliberately not loaded, with the
+# reason; it is empty because there is none.
+UNLOADED_LUA = {}
+for path in sources:
+    relative = path.relative_to(root)
+    if relative.parts[0].startswith('.') or relative.parts[0] in ('tests', 'tools', 'Libs', 'Modules'):
+        continue
+    if path.resolve() not in main_entries and str(relative) not in UNLOADED_LUA:
+        errors.append(f'Lua file no TOC or XML loads: {relative}')
+
 # Built In packs ship as load-on-demand addons, one per class:
 # Modules/<Addon>/ holds one folder per edition and one client-flavour TOC per
 # edition, <Addon>_<Flavor>.toc, listing bind.lua then only that folder's files.

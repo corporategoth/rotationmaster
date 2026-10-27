@@ -16,6 +16,20 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
 local multiinsert, deepcopy = addon.Functions.collections.multiinsert, addon.Functions.collections.deepcopy
 
+-- Returns a copy of plain data with every nested table copied. Functions.collections.deepcopy copies only the top level,
+-- so a table built from it still shares its nested tables with the source; use this where the copy is saved data that
+-- the player will edit and the source must stay the shipped default.
+local function copyTree(value)
+    if type(value) ~= 'table' then return value end
+    local copy = {}
+
+    for key, entry in pairs(value) do
+        copy[key] = copyTree(entry)
+    end
+
+    return copy
+end
+
 -- Schema versions stamped into the saved variables at the end of addon:init, once every upgrade for that level has run.
 -- A profile that has the scoped rotation store is stamped 3 instead of PROFILE_VERSION.
 local CHAR_VERSION = 1
@@ -631,7 +645,7 @@ local function upgradeEffectsToGUID()
             button1 = YES,
             button2 = NO,
             OnAccept = function()
-                addon.db.global.effects = deepcopy(default_effects)
+                addon.db.global.effects = copyTree(default_effects)
                 if invalidateDependencies then invalidateDependencies(addon, 'effect', nil) end
             end,
             showAlert = 1,

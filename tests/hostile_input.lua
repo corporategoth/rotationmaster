@@ -52,7 +52,7 @@ end)
 -- The real addon, as the other startup-based suites load it.
 local source=assert(io.open('tests/startup.lua')):read('*a')
 local prefix=assert(source:match('^(.-)\nlocal function initialize'))
-local persistent=assert(source:match('(local function persistentFixture%(saved,folder,scoped%).-)\n%-%- WoW SavedVariables'))
+local persistent=assert(source:match('(local function persistentFixture%(saved,folder,scoped[,%a]*%).-)\n%-%- WoW SavedVariables'))
 local make=assert(loadstring(prefix..'\n'..persistent..'\nreturn persistentFixture','@hostile-input'))()
 local HOSTILE={'1\n/logout','5512\r/script x()','a;/cast Fireball','[@focus] item:1','x\0y','tab\there',"back\\slash",'pipe|r'}
 

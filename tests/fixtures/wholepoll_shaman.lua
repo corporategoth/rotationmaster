@@ -7,7 +7,7 @@ local function read(path)local h=assert(io.open(path));local s=h:read('*a');h:cl
 local function once(text,old,new)local a,b=text:find(old,1,true);assert(a,'fixture anchor missing '..old);assert(not text:find(old,b+1,true),'fixture anchor repeated');return text:sub(1,a-1)..new..text:sub(b+1)end
 local startup=read(snapshotRoot..'/tests/startup.lua')
 local common=assert(startup:match('(local function fixture%(modern, absentThreat%).-)\ntest%('))
-local persistent=assert(startup:match('(local function persistentFixture%(saved,folder,scoped%).-)\n%-%- WoW SavedVariables'))
+local persistent=assert(startup:match('(local function persistentFixture%(saved,folder,scoped[,%a]*%).-)\n%-%- WoW SavedVariables'))
 -- Model TOC order: owned Data and sequence exist before main captures its reader.
 -- Avoid rotation_data.lua's asserting __index global shim in the native model.
 common=once(common,'    env._G = env','    env._G = env\n    for _,key in ipairs({"type","pairs","ipairs","next","rawget","rawset","rawequal","getmetatable","getfenv","math","table","string","tonumber","tostring","unpack","select","pcall","error","assert"})do rawset(env,key,_G[key])end')

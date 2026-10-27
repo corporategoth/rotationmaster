@@ -142,6 +142,20 @@ test('a bundle that cannot load answers with the key and is asked only once',fun
     assert(L['Enabled']~=nil,'main text still reads')
 end)
 
+test('a bundle loader that throws is contained: the read answers with the key and the bundle is not asked again',function()
+    local calls=0
+    local L,addon=boot('deDE',{loader=function() calls=calls+1;error('loader exploded') end})
+    local first
+    for _,bundle in ipairs(bundles) do if bundle.id=='help' then first=next(bundle.english) end end
+    assert(first,'the help bundle needs a key')
+    local ok,value=pcall(function() return L[first] end)
+    assert(ok,'a throwing loader escaped an L read: '..tostring(value))
+    assert(value==first,'a bundle that threw must answer with the English key')
+    assert(L[first]==first and calls==1,'the loader was asked '..calls..' times')
+    assert(addon:GetTextBundleStates().help=='failed' and addon:LoadTextBundle('help')==false)
+    assert(L['Enabled']~=nil,'main text still reads')
+end)
+
 test('a key in no catalog is still reported as missing and loads nothing',function()
     local L,addon,loads=boot('enUS')
     local ok,message=pcall(function() return L['No such text anywhere in Rotation Master'] end)

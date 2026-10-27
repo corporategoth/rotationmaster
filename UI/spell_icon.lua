@@ -129,6 +129,9 @@ local function actionIcon(kind, initialSpell, accept)
     end
 
     frame:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+
+    -- A right click clears the id; it must not also close the window (UI/window.lua, UI/config.lua).
+    frame.rmOwnsRightClick = true
     local installedClick = addon:SetUIScript(frame, "OnClick", click)
     local installedDrop = addon:SetUIScript(frame, "OnReceiveDrag", drop)
     local installedHide = addon:SetUIScript(frame, "OnHide", hide)
@@ -141,6 +144,7 @@ local function actionIcon(kind, initialSpell, accept)
         if frame:GetScript("OnReceiveDrag") == installedDrop then frame:SetScript("OnReceiveDrag", originalDrag) end
         if frame:GetScript("OnHide") == installedHide then frame:SetScript("OnHide", originalHide) end
         frame:RegisterForClicks("LeftButtonUp")
+        frame.rmOwnsRightClick = nil
         self.SetText, self.OnRelease = originalText, originalRelease
         self:SetUserData(key, nil)
         self:SetUserData(key .. "Metadata", nil)

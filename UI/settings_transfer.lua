@@ -396,6 +396,27 @@ end
 -- Import/export dialog
 -- ============================================================================
 
+-- The import/export dialog's default width, and the room its bottom row keeps free: Copy and Clear (64 each) start at
+-- 12 and 82, the review buttons start at 152, and the Import (100) and Cancel (100) buttons end 120 and 12 from the
+-- right edge.
+local TRANSFER_WIDTH = 570
+local TRANSFER_REVIEW_LEFT = 152
+local TRANSFER_BUTTON_GAP = 6
+local TRANSFER_APPLY_RIGHT = 220
+
+-- Sets the width of the import/export dialog `d` and of everything sized from it (the text box, the original-name line,
+-- the name box and the status line). The height never changes.
+local function setTransferWidth(d, width)
+    if d.frame:GetWidth() == width then return end
+    d.frame:SetWidth(width)
+    d.scroll:SetWidth(width - 50)
+    d.input:SetWidth(width - 60)
+    d.original:SetWidth(width - 24)
+    d.name:SetWidth(width - 302)
+    d.status:SetWidth(width - 24)
+    d.scroll:UpdateWorkbenchScroll()
+end
+
 -- Opens the import/export dialog for settings form `p`, pre-filled with `text` (formatted to the export line width).
 -- `apply(input, settings)` is called on Import, inside p:WithSettingsHistory, with the pasted text and, when `options`
 -- is given, { mode = 'new' or 'replace', name, originalName }; it returns ok and an error text. `options` carries
@@ -406,7 +427,7 @@ function addon:ShowSettingsTextTransfer(p, title, text, apply, options)
     local d = p.textDialog
 
     if not d then
-        d = self:CreateWorkbenchTransferShell(570, 430)
+        d = self:CreateWorkbenchTransferShell(TRANSFER_WIDTH, 430)
         p.textDialog = d
         self:UseExportFont(d)
         d.original = d.frame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
@@ -429,9 +450,9 @@ function addon:ShowSettingsTextTransfer(p, title, text, apply, options)
         d.status:SetWordWrap(true)
         d.status:SetJustifyH('LEFT')
         d.preview = addon:CreateWorkbenchButton(d.frame, L['Preview import'], 90)
-        d.preview:SetPoint('BOTTOMLEFT', 152, 28)
+        d.preview:SetPoint('BOTTOMLEFT', TRANSFER_REVIEW_LEFT, 28)
         d.inspect = addon:CreateWorkbenchButton(d.frame, L['Check import'], 90)
-        d.inspect:SetPoint('BOTTOMLEFT', d.preview, 'BOTTOMRIGHT', 6, 0)
+        d.inspect:SetPoint('BOTTOMLEFT', d.preview, 'BOTTOMRIGHT', TRANSFER_BUTTON_GAP, 0)
 
         -- Closes the dialog; the OnHide script below does the cleanup.
         local function hide()
@@ -474,6 +495,7 @@ function addon:ShowSettingsTextTransfer(p, title, text, apply, options)
     d.serial = (d.serial or 0) + 1
     local serial = d.serial
     local token = p.generation
+    setTransferWidth(d, TRANSFER_WIDTH)
 
     -- True while this opening is current: the settings form generation is unchanged, the dialog is still this one and
     -- shown, and the caller's own valid() agrees. The first check is repeated after options.valid() because that
@@ -513,8 +535,10 @@ function addon:ShowSettingsTextTransfer(p, title, text, apply, options)
         return result
     end
 
-    -- Relabels the Preview and Check buttons for the destination mode (Compare when replacing) and widens them to
-    -- fit their text. Does nothing for dialogs without a preview or review.
+    -- Relabels the Preview and Check buttons for the destination mode (Compare when replacing), widens them to fit
+    -- their text and then widens the window until both end before the Import button starts (a long label, for example
+    -- Spanish "Previsualizar importación", would otherwise cover Import). Does nothing for dialogs without a preview or
+    -- review.
     local function labels()
         if not (options.requirePreview or options.review) then return end
         local compare = d.mode == 'replace' and options.canReplace and true or false
@@ -530,6 +554,15 @@ function addon:ShowSettingsTextTransfer(p, title, text, apply, options)
                 button:SetWidth(math.max(90, math.ceil(label:GetStringWidth() or 0) + 16))
             end
         end
+
+        local needed = TRANSFER_REVIEW_LEFT
+            + d.preview:GetWidth()
+            + TRANSFER_BUTTON_GAP
+            + d.inspect:GetWidth()
+            + TRANSFER_BUTTON_GAP
+            + TRANSFER_APPLY_RIGHT
+
+        setTransferWidth(d, math.max(TRANSFER_WIDTH, needed))
     end
 
     -- Applies the current mode to the controls: checkbox state and enablement, and the name box (locked to the selected

@@ -137,6 +137,15 @@ class Check(unittest.TestCase):
             layout[path] = b'x'
             self.assertTrue(self.problems(layout), path)
 
+    def test_every_file_type_that_is_not_for_the_game_fails_the_package(self):
+        # Spelled out, not read from P.FORBIDDEN_SUFFIXES, so dropping a suffix from the checker fails here.
+        for suffix in ('.py', '.sh', '.svg', '.psd', '.xcf', '.png', '.jpg', '.jpeg', '.zip', '.gz', '.bak', '.orig', '.rej', '.swp',
+                       '.log', '.pyc', '.pem', '.key', '.env'):
+            for name in (f'RotationMaster/Fonts/sample{suffix}', f'RotationMaster/Data/SAMPLE{suffix.upper()}'):
+                layout = minimal_layout()
+                layout[name] = b'x'
+                self.assertTrue(any('file type that is not for the game' in problem for problem in self.problems(layout)), name)
+
     def test_a_vendored_library_may_keep_its_own_docs_folder(self):
         layout = minimal_layout()
         layout['RotationMaster/Libs/AceX/docs/readme.txt'] = b'x'
@@ -332,6 +341,18 @@ class Fast(unittest.TestCase):
         self.assertGreater(len(commands), 500)
         self.assertEqual(commands[0][1], 'tests/verify.py')
 
+    # A suite that tools/check does not run is a suite that never fails. Every tests/*.lua and tests/*.py is a command
+    # in the list, unless it is named here with the reason it is not (none is: the helper scripts live in
+    # tests/fixtures/, and the one file that is not a suite is tests/README.md).
+    UNLISTED_SUITES = {}
+
+    def test_every_suite_file_is_a_command_tools_check_runs(self):
+        run = {argument for command in check_all.collect() for argument in command}
+        suites = sorted(path.relative_to(ROOT).as_posix() for pattern in ('tests/*.lua', 'tests/*.py') for path in ROOT.glob(pattern))
+        self.assertGreater(len(suites), 500)
+        self.assertEqual([name for name in suites if name not in run and name not in self.UNLISTED_SUITES], [],
+                         'a suite file is not in tools/check; add it to the lua5.1/luajit/python lines or to UNLISTED_SUITES with a reason')
+
     def test_the_slow_and_known_failure_lists_name_real_commands(self):
         labels = {check_all.label(command) for command in check_all.collect()}
         for name in ('slow_tests.txt', 'known_failures.txt'):
@@ -373,6 +394,27 @@ class Plan(unittest.TestCase):
         result = release_plan.plan('2.0.0', {}, dry_run=True)
         self.assertEqual(result['problems'], [])
         self.assertTrue(result['packager'].startswith('-u -e -l -d') or ' -d' in result['packager'])
+
+    # The workflow pipes the tool through tee under pipefail and relies on its exit status to refuse a release that would
+    # skip a site, and on the key=value lines for $GITHUB_OUTPUT. Run it as the workflow does, in a process.
+    def run_tool(self, *arguments, environ=None):
+        clean = {key: value for key, value in os.environ.items() if key not in ('CF_API_KEY', 'WOWI_API_TOKEN', 'WAGO_API_TOKEN')}
+        clean.update(environ or {})
+        return subprocess.run([sys.executable, str(TOOLS / 'release_plan.py'), *arguments], capture_output=True, text=True, env=clean)
+
+    def test_the_command_exits_nonzero_when_a_site_would_be_skipped(self):
+        refused = self.run_tool('--tag', '2.0.0', environ={'CF_API_KEY': 'x', 'WAGO_API_TOKEN': 'x'})
+        self.assertEqual(refused.returncode, 1, refused.stderr)
+        self.assertIn('ERROR wowinterface: WOWI_API_TOKEN is not set', refused.stderr)
+        self.assertEqual(self.run_tool('--tag', '2.0.0').returncode, 1, 'no secret at all was accepted')
+        self.assertEqual(self.run_tool('--tag', '2.0.0-beta.1', environ={'CF_API_KEY': 'x'}).returncode, 1, 'a beta without the Wago secret was accepted')
+
+    def test_the_command_exits_zero_and_prints_the_workflow_outputs(self):
+        done = self.run_tool('--tag', '2.0.0-beta.1', environ={'CF_API_KEY': 'x', 'WAGO_API_TOKEN': 'x'})
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertEqual(done.stdout.splitlines(), ['type=beta', 'prerelease=true', 'sites=curseforge wago', 'packager=-u -e -l -w 0'])
+        self.assertEqual(self.run_tool('--tag', '2.0.0', '--dry-run').returncode, 0)
+        self.assertEqual(self.run_tool('--tag', '2.0.0', '--allow-missing-tokens', environ={'CF_API_KEY': 'x'}).returncode, 0)
 
 
 class FakeGitea(http.server.BaseHTTPRequestHandler):

@@ -57,8 +57,9 @@ and has not been verified in a real client is in `docs/quality/client-support.md
 ### Where a new file goes
 
 A game-facing file lives in the folder named for what it does (the roles above) and is listed in `RotationMaster.toc` (or
-the XML it includes) in load order; `tests/verify.py` fails on a file the TOC names but the tree lacks. Nothing in the
-addon folders is unreferenced: a file no TOC, test, tool or document names is dead and is removed (`git grep` for its name
+the XML it includes) in load order; `tests/verify.py` fails on a file the TOC names but the tree lacks, and on an authored
+Lua file outside `tests/`, `tools/`, `Libs/` and `Modules/` that no TOC or XML loads; `tools/test_devtools.py` fails on a
+`tests/*.lua` or `*.py` that `tools/check` does not run. Nothing in the addon folders is unreferenced: a file no TOC, test, tool or document names is dead and is removed (`git grep` for its name
 first). Generators write only the generated files in the table below; a hand-edited generated file fails
 `python3 tools/check --static`. Dev-only material stays out of the package (`.pkgmeta`, `tools/package_release.py --check`).
 Planning documents are never committed.

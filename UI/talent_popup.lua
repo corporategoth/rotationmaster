@@ -151,7 +151,12 @@ end
 local function layout(d)
     local frame, handle = d.frame, d.handle
     local width = 760
-    if d.mode == 'drawn' then width = math.max(640, math.min(1240, (UIParent:GetWidth() or 1280) - 40)) end
+
+    -- The window is drawn at the user's UI scale, so the room the screen leaves it is the screen size divided by that
+    -- scale (a 130 percent window with an 800 pixel height would be 1040 pixels tall on a 768 pixel screen).
+    local scale = d.frame.GetScale and d.frame:GetScale() or 1
+    if type(scale) ~= 'number' or scale <= 0 then scale = 1 end
+    if d.mode == 'drawn' then width = math.max(640, math.min(1240, ((UIParent:GetWidth() or 1280) - 40) / scale)) end
     local y = -36
     local specs = d.request and d.request.specs
     local showSpecs = specs and #specs > 1
@@ -208,7 +213,7 @@ local function layout(d)
     y = y - 34
 
     if d.mode == 'drawn' then
-        local height = math.max(420, math.min(820, (UIParent:GetHeight() or 800) - 80))
+        local height = math.max(420, math.min(820, ((UIParent:GetHeight() or 800) - 80) / scale))
         d.canvasWidth, d.canvasHeight = width - 16, height + y - 26
         d.canvas:ClearAllPoints()
         d.canvas:SetPoint('TOPLEFT', frame, 'TOPLEFT', 8, y)

@@ -11,7 +11,7 @@ local function uuid(n) return string.format('00000000-0000-4000-8000-%012d',n) e
 -- The real startup fixture of tests/startup.lua, as several suites load it.
 local source=assert(io.open('tests/startup.lua')):read('*a')
 local prefix=assert(source:match('^(.-)\nlocal function initialize'))
-local persistent=assert(source:match('(local function persistentFixture%(saved,folder,scoped%).-)\n%-%- WoW SavedVariables'))
+local persistent=assert(source:match('(local function persistentFixture%(saved,folder,scoped[,%a]*%).-)\n%-%- WoW SavedVariables'))
 local make=assert(loadstring(prefix..'\n'..persistent..'\nreturn persistentFixture','@legacy-archive-startup'))()
 -- What the host writes at logout: AceDB strips defaults, then plain data only.
 local function serialized(value)
@@ -20,7 +20,17 @@ local function serialized(value)
 end
 local function start(saved,after)
     local env,a,scripts,load=make({RotationMasterDB=saved or build()},nil,true)
-    assert(not a.initializationErrorReport,'initialization failed');load('Core/legacy_archive.lua')
+    assert(not a.initializationErrorReport,'initialization failed')
+    local create=env.CreateFrame
+
+    -- Record what each frame registers, so a test can see the notice frame's event.
+    env.CreateFrame=function(...)
+        local frame=create(...);local register=frame.RegisterEvent
+        frame.events={}
+        frame.RegisterEvent=function(self,event) self.events[event]=true;return register(self,event) end
+        return frame
+    end
+    load('Core/legacy_archive.lua')
     local messages={};a.print=function(_,text,...) messages[#messages+1]=string.format(text,...) end
     return a,env,scripts,messages
 end
@@ -103,6 +113,11 @@ test('the first world entry shows the notice through the event frame',function()
     scripts.OnEvent(nil,'PLAYER_ENTERING_WORLD');assert(#messages==1,'the world-entry event did not show the notice')
     scripts.OnEvent(nil,'PLAYER_ENTERING_WORLD');assert(#messages==1,'a second world entry repeated it')
     assert(a.legacyArchiveNoticeFrame~=nil)
+end)
+
+test('the notice frame registers PLAYER_ENTERING_WORLD with the game',function()
+    local a=start()
+    assert(a.legacyArchiveNoticeFrame and a.legacyArchiveNoticeFrame.events.PLAYER_ENTERING_WORLD==true,'the notice frame never registers the world-entry event')
 end)
 
 test('the settings banner stays until dismissed, and dismissing keeps the archive',function()

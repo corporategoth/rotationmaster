@@ -52,6 +52,21 @@ test('Ignore Range lets an out-of-range spell, pet spell and item through and st
     f.env.C_Spell.GetSpellCooldown=function() return {startTime=99,duration=0,isEnabled=true,modRate=1} end
     assert(not a:NewActionReadiness(100)('spell',403),'turning Ignore Range off did not restore the range check')
 end)
+test('Ignore Range also lets Attack (6603) and the implicit ranged Auto Shot through; without it both are range gated',function()
+    local f,s=fixture();local a=f.addon
+    s.known.spell[75]=true
+    s.range=true
+    assert(a:NewActionReadiness(100)('spell',6603) and a:NewActionReadiness(100)('ranged',75),'Attack or Auto Shot was not ready in range')
+    s.range=false
+    assert(not a:NewActionReadiness(100)('spell',6603),'Attack was ready out of melee range')
+    assert(not a:NewActionReadiness(100)('ranged',75),'Auto Shot was ready out of range')
+    a.db.profile.ignore_range=true
+    assert(a:NewActionReadiness(100)('spell',6603),'Ignore Range did not let Attack through out of melee range')
+    assert(a:NewActionReadiness(100)('ranged',75),'Ignore Range did not let Auto Shot through out of range')
+    s.known.spell[75]=nil;assert(not a:NewActionReadiness(100)('ranged',75),'an unlearned Auto Shot was ready under Ignore Range')
+    a.db.profile.ignore_range=false;s.known.spell[75]=true
+    assert(not a:NewActionReadiness(100)('spell',6603) and not a:NewActionReadiness(100)('ranged',75),'turning Ignore Range off did not restore the range gates')
+end)
 test('Ignore Range does not read the range at all, and an unreadable range cannot hold a spell back',function()
     local f,s=fixture();local a=f.addon;local reads=0
     f.env.C_Spell.IsSpellInRange=function() reads=reads+1;return s.range end

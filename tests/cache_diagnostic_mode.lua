@@ -26,7 +26,7 @@ local function lateStartup(direct)
  local source=assert(read('tests/startup.lua'))
  local function once(text,from,to)local first,last=assert(text:find(from,1,true));assert(not text:find(from,last+1,true));return text:sub(1,first-1)..to..text:sub(last+1)end
  local common=assert(source:match('(local function fixture%(modern, absentThreat%).-)\ntest%('))
- local persistent=assert(source:match('(local function persistentFixture%(saved,folder,scoped%).-)\n%-%- WoW SavedVariables'))
+ local persistent=assert(source:match('(local function persistentFixture%(saved,folder,scoped[,%a]*%).-)\n%-%- WoW SavedVariables'))
  persistent=once(persistent,'    for key,value in pairs(saved or {}) do env[key]=value end','    env.RotationMasterDB=nil')
  if not persistent:find("load('Diagnostics/cache_mode.lua')",1,true)then persistent=once(persistent,"load('Functions/cache.lua');load('Functions/trends.lua')","load('Functions/cache.lua');load('Diagnostics/cache_mode.lua');load('Functions/trends.lua')")end
  persistent=once(persistent,'    addon:OnInitialize()','    local captured={cached=addon.Functions.cache.getCached,retry=addon.Functions.cache.getRetryCached,internal=addon.builtinSourceModules["Functions/cache.lua"]("getCachedInternal")}\n    for key,value in pairs(saved or {}) do env[key]=value end\n    addon:OnInitialize()\n    addon.lateCacheReferences=captured')
