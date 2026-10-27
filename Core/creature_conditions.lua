@@ -1,4 +1,4 @@
-local _,addon=...
+local _, addon = ...
 
 -- Existing stored keys retain their identities, including GAS_CLUUD's spelling.
 -- This is one executable map; no mutable caption table enters gameplay matching.
@@ -18,7 +18,7 @@ local function configuredID(key)
     elseif key=='GAS_CLUUD' then return 13 end
 end
 
-function addon:GetConditionCreatureTypeMatch(unit,key,cache)
+function addon:GetConditionCreatureTypeMatch(unit, key, cache)
     if not self.Platform:CanReadValue(unit) or not self.Platform:CanReadValue(key) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end
     if type(key)~='string' then return nil,'invalid-creature-type-selection' end

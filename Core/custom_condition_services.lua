@@ -81,35 +81,65 @@ local helpers = addon.help_funcs
 
 -- Retain exact old template headers only to recognize generated boilerplate in
 -- saved conditions. Arbitrary user comments are preserved.
-local templateHeaders={}
+local templateHeaders = {}
+
 for name in pairs(function_signatures) do
-    local code=addon.empty_condition[name];local offset=1
-    while offset<=#code do
-        local ending=code:find('\n',offset,true) or #code+1;local line=code:sub(offset,ending-1)
-        if line:match('^%s*%-%-') or line:match('^%s*$') then offset=ending+1 else break end
+    local code = addon.empty_condition[name]
+    local offset = 1
+
+    while offset <= #code do
+        local ending = code:find('\n', offset, true) or #code + 1
+        local line = code:sub(offset, ending - 1)
+
+        if line:match('^%s*%-%-') or line:match('^%s*$') then
+            offset = ending + 1
+        else
+            break
+        end
     end
-    templateHeaders[name]=code:sub(1,offset-1);addon.empty_condition[name]=code:sub(offset)
+
+    templateHeaders[name] = code:sub(1, offset - 1)
+    addon.empty_condition[name] = code:sub(offset)
 end
-function addon:PrepareCustomConditionEditorSource(source,preserveFormatting)
-    local result=self:CopySettingsData(source)
+
+function addon:PrepareCustomConditionEditorSource(source, preserveFormatting)
+    local result = self:CopySettingsData(source)
     if preserveFormatting then return result end
-    for name,prefix in pairs(templateHeaders) do
-        if prefix~='' and type(result[name])=='string' and result[name]:sub(1,#prefix)==prefix then result[name]=result[name]:sub(#prefix+1) end
+
+    for name, prefix in pairs(templateHeaders) do
+        if prefix ~= '' and type(result[name]) == 'string' and result[name]:sub(1, #prefix) == prefix then
+            result[name] = result[name]:sub(#prefix + 1)
+        end
     end
-    for name in pairs(self.CustomConditionCallbacks) do if type(result[name])=='string' then result[name]=self:NormalizeLuaSourceForEditor(result[name]) end end
+
+    for name in pairs(self.CustomConditionCallbacks) do
+        if type(result[name]) == 'string' then result[name] = self:NormalizeLuaSourceForEditor(result[name]) end
+    end
+
     return result
 end
 
 local function compile_function(sel, val)
     local funcid = uuid()
-    local str = string.format([[
+
+    local str = string.format(
+        [[
 _G.%s.funcDeserialize["%s"] = %s
 local addon = _G.%s
 local L = LibStub("AceLocale-3.0"):GetLocale("%s")
 %s
 end
-]], addon.name, funcid, function_signatures[sel], addon.name, addon.name, val)
+]],
+        addon.name,
+        funcid,
+        function_signatures[sel],
+        addon.name,
+        addon.name,
+        val
+    )
+
     local comp = loadstring(str)
+
     if not comp then
         return nil
     end
@@ -126,25 +156,36 @@ local function copy_fields(value, seen)
     if seen[value] then return seen[value] end
     local copy = {}
     seen[value] = copy
-    for key, field in pairs(value) do copy[key] = copy_fields(field, seen) end
+
+    for key, field in pairs(value) do
+        copy[key] = copy_fields(field, seen)
+    end
+
     return copy
 end
 
 function addon:register_custom_condition(key, condition)
     if self.CompileCustomCondition then
-        local compiled=self:CompileCustomCondition(key,condition,true)
+        local compiled = self:CompileCustomCondition(key, condition, true)
         if not compiled then return false end
-        self:RegisterCondition(key,compiled)
+        self:RegisterCondition(key, compiled)
         return true
     end
-    local newcond = { description = condition.description, icon = condition.icon,
-                     fields = copy_fields(condition.fields or {}), customCode = true }
+
+    local newcond = {
+        description = condition.description,
+        icon = condition.icon,
+        fields = copy_fields(condition.fields or {}),
+        customCode = true,
+    }
 
     for field, _ in pairs(function_signatures) do
         local func = compile_function(field, condition[field])
+
         if not func then
             return false
         end
+
         newcond[field] = func
     end
 

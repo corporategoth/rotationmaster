@@ -1,12 +1,12 @@
-local _,addon=...
+local _, addon = ...
 
-local function finite(platform,value)
+local function finite(platform, value)
     if not platform:CanReadValue(value) then return false,'restricted-value' end
     if type(value)~='number' or value~=value or value>=math.huge or value<=-math.huge then return false,'invalid-health-forecast-number' end
     return true
 end
 
-local function readField(platform,object,key)
+local function readField(platform, object, key)
     if not platform:CanReadValue(object) then return nil,'restricted-value' end
     if type(object)~='table' then return nil,'invalid-health-forecast-data' end
     local ok,value=pcall(function() return object[key] end)
@@ -15,7 +15,7 @@ local function readField(platform,object,key)
     return value
 end
 
-local function nativeValue(self,unit,kind,cache)
+local function nativeValue(self, unit, kind, cache)
     local platform=self.Platform
     if type(platform.GetHealthForecastValueObservation)~='function' then return nil,'missing-api' end
     local value,why=addon.Functions.cache.getCached(cache,platform.GetHealthForecastValueObservation,platform,unit,kind)
@@ -27,7 +27,7 @@ local function nativeValue(self,unit,kind,cache)
     return value
 end
 
-function addon:GetConditionHealthForecast(unit,healthTarget,percentage,mode,cache)
+function addon:GetConditionHealthForecast(unit, healthTarget, percentage, mode, cache)
     local platform=self.Platform
     local policy=platform:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
