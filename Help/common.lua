@@ -1,6 +1,5 @@
 local _, addon = ...
 
-
 local helpers = {}
 local color = color
 
@@ -12,6 +11,7 @@ function helpers.CreateText(text, font, fontheight)
     local rv = addon:CreateConditionLabel()
     rv:SetFullWidth(true)
     rv:SetText(text .. color.RESET)
+
     if font then
         if fontheight then
             rv:SetFont(font, fontheight)
@@ -83,11 +83,13 @@ addon.help_funcs = helpers
 
 -- Authored field documentation is data, independent of any renderer.
 function addon:SettingsHelpSections(values)
-    local rows={}
-    for _,value in ipairs(values) do
-        local plain=value:gsub('|c%x%x%x%x%x%x%x%x',''):gsub('|r','')
-        local title,text=plain:match('^(.-) %- (.*)$')
-        rows[#rows+1]={title=title or '',text=text or plain}
+    local rows = {}
+
+    for _, value in ipairs(values) do
+        local plain = value:gsub('|c%x%x%x%x%x%x%x%x', ''):gsub('|r', '')
+        local title, text = plain:match('^(.-) %- (.*)$')
+        rows[#rows + 1] = { title = title or '', text = text or plain }
     end
+
     return rows
 end
