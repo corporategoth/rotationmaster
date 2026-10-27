@@ -1,5 +1,16 @@
+-- Built In conditions about cast-time spells: CASTING, CASTING_SPELL, CASTING_REMAIN, CASTING_PROGRESS and
+-- CAST_INTERRUPTABLE. All of them read one cached Platform:GetUnitCastObservation(unit, "cast") record per unit per
+-- evaluation (Platform/casting.lua, which owns the restricted-client rule: a field the client hides as a secret value
+-- comes back as nil plus a reason). A unit that is not casting is a readable false; an unreadable field makes the
+-- condition unavailable (nil, reason), also under NOT. The channeling twins, and the one-time seeding of
+-- CASTING_PROGRESS into older profiles, are in Conditions/channeling.lua.
+-- Loaded with the other Conditions/ files at the end of RotationMaster.toc. Callback bodies and the helpers they bind
+-- are hashed by saved copies and bundles: never add or change text inside a function body, and leave the generated
+-- block at the end alone.
 local addon_name, addon = ...
 
+-- Witness wrapper that lets the lean engine prove the registered CASTING definition is the packaged one (see
+-- DeclareOwnedConditionRuntime at the end of the file); an identity function when Core/condition_runtime.lua is absent.
 local runtimeCondition = addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness(
     'Conditions/casting.lua'
 )
@@ -37,23 +48,33 @@ addon.builtinCallbackBindings["Conditions/casting.lua"] = {
     ["Functions.collections.deepcopy"] = "builtin:Functions/collections.lua:deepcopy",
 }
 
+-- ============================================================================
+-- Casting state and spell
+-- ============================================================================
+
+-- True while the unit is casting any spell. Stores unit. False when it is not casting; nil and a reason when the cast
+-- query itself fails. The only condition here enrolled in the lean engine's owned runtime (end of file).
 addon:RegisterCondition("CASTING", runtimeCondition('CASTING', {
     description = L["Casting"],
     icon = addon.Artwork.condition["CASTING"],
     fields = { unit = "string" },
+    -- Accepts any unit in the full unit list.
     valid = function(_, value)
         return value.unit ~= nil and Functions.values.isin(addon.units, value.unit)
     end,
+    -- Reads the cached cast record. Unavailable only when the query fails; not casting is a plain false.
     evaluate = function(value, cache)
         local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitCastObservation,addon.Platform,value.unit,"cast")
         if not record then return nil,reason end
         if not record.active then return false end
         return true
     end,
+    -- Readable summary; "you are" for the player, "<unit> is" otherwise.
     print = function(_, value)
         return string.format(Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} currently casting"], L["%s {{!is|is not}} currently casting"]),
             Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))
     end,
+    -- widget builds the editor controls (a unit picker); help draws the help page.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -68,15 +89,21 @@ addon:RegisterCondition("CASTING", runtimeCondition('CASTING', {
     end,
 }))
 
+-- True while the unit is casting the chosen spell. Stores unit, spell (a spell ID, or a name saved before IDs
+-- existed) and ranked (ID picks only: match that exact rank instead of any rank). False when nothing is being cast.
+-- Unavailable when the cast's name or spell ID cannot be read.
 addon:RegisterCondition("CASTING_SPELL", {
     description = L["Specific Spell Casting"],
     icon = addon.Artwork.condition["CASTING_SPELL"],
     fields = { unit = "string", spell = { "string", "number" }, ranked = "boolean" },
+    -- Needs a known unit and a spell; a numeric spell must be a positive whole number.
     valid = function(_, value)
         -- A name (saved before spell IDs) or a spell ID picked in the editor.
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and value.spell ~= nil and
                 (type(value.spell) ~= "number" or (value.spell > 0 and value.spell < math.huge and value.spell % 1 == 0)))
     end,
+    -- A name pick compares the cast's name; an ID pick goes through Platform:MatchSpellIdentity. Both give nil and a
+    -- reason when the observed name or ID is unreadable.
     evaluate = function(value, cache)
         local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitCastObservation,addon.Platform,value.unit,"cast")
         if not record then return nil,reason end
@@ -88,12 +115,15 @@ addon:RegisterCondition("CASTING_SPELL", {
         -- By ID, any rank unless the exact rank was asked for (locale-safe).
         return addon.Platform:MatchSpellIdentity(record.spellID, record.spellReason, record.name, value.spell, value.ranked == true)
     end,
+    -- Readable summary with the spell link (and rank, when ranked) for an ID pick.
     print = function(_, value)
         return LiteralSummary.phrase(Functions.presentation.playerize(value.unit, L["{unit} {{!are|are not}} currently casting {spell}"], L["{unit} {{!is|is not}} currently casting {spell}"]), {
             unit = Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
             spell = Functions.presentation.nullable(type(value.spell) == "number" and addon:CastSpellLabel(value) or value.spell, L["<spell>"]),
         })
     end,
+    -- widget builds a unit picker, the spell box and, on clients with ranks, the exact-rank checkbox; help draws the
+    -- help page.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -118,15 +148,23 @@ addon:RegisterCondition("CASTING_SPELL", {
     end,
 })
 
+-- ============================================================================
+-- Cast timing
+-- ============================================================================
+
+-- Compares the seconds left on the unit's cast with a number. Stores unit, operator and value (seconds, 0 or more).
+-- False when the unit is not casting, whatever the operator; unavailable when the remaining time cannot be read.
 addon:RegisterCondition("CASTING_REMAIN", {
     description = L["Cast Time Remaining"],
     icon = addon.Artwork.condition["CASTING_REMAIN"],
     fields = { unit = "string", operator = "string", value = "number" },
+    -- Needs a known unit, a known operator and a non-negative number of seconds.
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
+    -- Unavailable when the cast's remaining time is hidden or missing; not casting is false.
     evaluate = function(value, cache)
         local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitCastObservation,addon.Platform,value.unit,"cast")
         if not record then return nil,reason end
@@ -134,11 +172,13 @@ addon:RegisterCondition("CASTING_REMAIN", {
         if record.remainingSeconds==nil then return nil,record.remainingReason end
         return Functions.values.compare(value.operator,record.remainingSeconds,value.value)
     end,
+    -- Readable summary of the comparison against the unit's remaining cast time, in seconds.
     print = function(_, value)
         return Functions.presentation.compareString(value.operator,
             string.format(L["the time remaining on %s cast"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])),
             string.format(L["%s seconds"], Functions.presentation.nullable(value.value)))
     end,
+    -- widget builds a unit picker and an operator-and-seconds control; help draws the help page.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -165,15 +205,19 @@ addon:RegisterCondition("CASTING_REMAIN", {
 
 -- Share of the cast done (0..1, shown as a percentage), from the same cached
 -- observation as CASTING_REMAIN: haste-proof, so a tick threshold is N/K.
+-- Stores unit, operator and value (a fraction from 0 to 1). False when the unit is not casting; unavailable when the
+-- remaining time or the total duration cannot be read.
 addon:RegisterCondition("CASTING_PROGRESS", {
     description = L["Cast Progress"],
     icon = addon.Artwork.condition["CASTING_PROGRESS"],
     fields = { unit = "string", operator = "string", value = "number" },
+    -- Like CASTING_REMAIN, but the value must also be at most 1.
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0 and value.value <= 1)
     end,
+    -- Progress is 1 - remaining / duration, floored at 0.
     evaluate = function(value, cache)
         local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitCastObservation,addon.Platform,value.unit,"cast")
         if not record then return nil,reason end
@@ -184,11 +228,13 @@ addon:RegisterCondition("CASTING_PROGRESS", {
         if done<0 then done=0 end
         return Functions.values.compare(value.operator,done,value.value)
     end,
+    -- Shows the stored fraction as a percentage.
     print = function(_, value)
         local v = value.value
         if v ~= nil then v = v * 100 end
         return Functions.presentation.compareString(value.operator, string.format(L["%s cast progress"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(v) .. "%")
     end,
+    -- widget builds a unit picker and an operator-and-percent control; help draws the help page.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -210,13 +256,21 @@ addon:RegisterCondition("CASTING_PROGRESS", {
     end,
 })
 
+-- ============================================================================
+-- Interruptibility
+-- ============================================================================
+
+-- True when the unit's current cast can be interrupted. Stores unit. False when the unit is not casting; unavailable
+-- when the client hides the interruptible flag.
 addon:RegisterCondition("CAST_INTERRUPTABLE", {
     description = L["Cast Interruptible"],
     icon = addon.Artwork.condition["CAST_INTERRUPTABLE"],
     fields = { unit = "string" },
+    -- Accepts any unit in the full unit list.
     valid = function(_, value)
         return value.unit ~= nil and Functions.values.isin(addon.units, value.unit)
     end,
+    -- Returns the observed interruptible flag itself, or nil and its reason when it is unreadable.
     evaluate = function(value, cache)
         local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitCastObservation,addon.Platform,value.unit,"cast")
         if not record then return nil,reason end
@@ -224,9 +278,11 @@ addon:RegisterCondition("CAST_INTERRUPTABLE", {
         if record.interruptible==nil then return nil,record.interruptibleReason end
         return record.interruptible
     end,
+    -- Readable summary naming the unit whose spell is tested.
     print = function(_, value)
         return string.format(L["%s spell {{!is|is not}} interruptible"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"]))
     end,
+    -- widget offers every unit except player and pet; help draws the help page.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -240,6 +296,10 @@ addon:RegisterCondition("CAST_INTERRUPTABLE", {
         addon.layout_condition_unitwidget_help(frame)
     end,
 })
+
+-- ============================================================================
+-- Lean engine enrollment
+-- ============================================================================
 
 -- Source-owned volatile observations; only configuration-only validators memoize.
 if addon.DeclareOwnedConditionRuntime then

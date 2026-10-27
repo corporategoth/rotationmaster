@@ -1,3 +1,9 @@
+-- Built In condition SPELL_GLOW: whether a spell shows the game's activation (proc) glow. The glow is read through
+-- addon.Platform:IsSpellGlowing (Platform/world_state.lua), which applies platform:CanReadValue; the answer is a plain
+-- Boolean, so it is readable on Retail and Forever in combat. Related spell IDs come from addon:GetSpellIdRelatives and
+-- spell selection from the shared spell widget. Loaded from RotationMaster.toc after Conditions/hero_talent.lua and
+-- before Conditions/edition_state.lua. Callback bodies are recorded by tools/generate_builtin_sources.py and saved
+-- copies bind to their exact text.
 local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
@@ -17,6 +23,7 @@ local Functions = {
     presentation = { nullable = addon.Functions.presentation.nullable },
 }
 
+-- Declares the stable Built In identity of each Functions leaf so saved copies and the source collector can resolve it.
 addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
 
 addon.builtinCallbackBindings["Conditions/proc_glow.lua"] = {
@@ -24,15 +31,21 @@ addon.builtinCallbackBindings["Conditions/proc_glow.lua"] = {
     ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
 }
 
+-- SPELL_GLOW: true when the spell, or any of its base and override relatives, is glowing; false when none is. Returns
+-- nil and a reason when the spell cannot be resolved ("spell-data-unavailable" by default) or when no relative glows
+-- and at least one could not be read. Stores spell (a spell ID) and ranked (any rank of the spell).
 addon:RegisterCondition("SPELL_GLOW", {
     description = L["Spell Proc Glow"],
     icon = addon.Artwork.condition["SPELL_GLOW"],
     requiredFields = { "spell" },
     fields = { spell = "number", ranked = "boolean" },
+    -- Configuration check: spell must be a valid condition spell ID and ranked, when present, a Boolean.
     valid = function(_, value)
         return value.spell ~= nil and addon.IsConditionSpellID(value.spell)
             and (value.ranked == nil or type(value.ranked) == "boolean")
     end,
+    -- Asks the glow reader about the spell and each relative through the evaluation cache. Unavailable cases: the spell
+    -- cannot be resolved, or a relative's glow is unreadable while none of the others glows.
     evaluate = function(value, cache)
         local spellid, why = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return nil, why or "spell-data-unavailable" end
@@ -48,10 +61,12 @@ addon:RegisterCondition("SPELL_GLOW", {
         if reason then return nil, reason end
         return false
     end,
+    -- Rule summary with a clickable spell link, or a placeholder while no spell is chosen.
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
         return string.format(L["%s {{!is|is not}} glowing with a proc"], Functions.presentation.nullable(link, L["<spell>"]))
     end,
+    -- Editor control: the spell picker for the rotation's spec.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -63,6 +78,7 @@ addon:RegisterCondition("SPELL_GLOW", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
     end,
+    -- Help page: the condition's own text, then the shared spell widget help.
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Help.Conditions.SPELL_GLOW"]))
         frame:AddChild(helpers.Gap())

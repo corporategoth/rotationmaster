@@ -1,5 +1,15 @@
+-- Built In conditions about channeled spells: CHANNELING, CHANNELING_SPELL, CHANNELING_REMAIN, CHANNELING_PROGRESS and
+-- CHANNEL_INTERRUPTABLE. All of them read one cached Platform:GetUnitCastObservation(unit, "channel") record per unit
+-- per evaluation (Platform/casting.lua, which owns the restricted-client rule: a field the client hides as a secret
+-- value comes back as nil plus a reason). A unit that is not channeling is a readable false; an unreadable field makes
+-- the condition unavailable (nil, reason), also under NOT. The casting twins are in Conditions/casting.lua.
+-- Loaded with the other Conditions/ files at the end of RotationMaster.toc. The file also seeds the progress conditions
+-- into the Combat category of older profiles. Callback bodies and the helpers they bind are hashed by saved copies and
+-- bundles: never add or change text inside a function body, and leave the generated block at the end alone.
 local addon_name, addon = ...
 
+-- Witness wrapper that lets the lean engine prove the registered CHANNELING definition is the packaged one (see
+-- DeclareOwnedConditionRuntime at the end of the file); an identity function when Core/condition_runtime.lua is absent.
 local runtimeCondition = addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness(
     'Conditions/channeling.lua'
 )
@@ -37,23 +47,33 @@ addon.builtinCallbackBindings["Conditions/channeling.lua"] = {
     ["Functions.collections.deepcopy"] = "builtin:Functions/collections.lua:deepcopy",
 }
 
+-- ============================================================================
+-- Channeling state and spell
+-- ============================================================================
+
+-- True while the unit is channeling any spell. Stores unit. False when it is not channeling; nil and a reason when the
+-- cast query itself fails. The only condition here enrolled in the lean engine's owned runtime (end of file).
 addon:RegisterCondition("CHANNELING", runtimeCondition('CHANNELING', {
     description = L["Channeling"],
     icon = addon.Artwork.condition["CHANNELING"],
     fields = { unit = "string" },
+    -- Accepts any unit in the full unit list.
     valid = function(_, value)
         return value.unit ~= nil and Functions.values.isin(addon.units, value.unit)
     end,
+    -- Reads the cached channel record. Unavailable only when the query fails; not channeling is a plain false.
     evaluate = function(value, cache)
         local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitCastObservation,addon.Platform,value.unit,"channel")
         if not record then return nil,reason end
         if not record.active then return false end
         return true
     end,
+    -- Readable summary; "you are" for the player, "<unit> is" otherwise.
     print = function(_, value)
         return string.format(Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} currently channeling"], L["%s {{!is|is not}} currently channeling"]),
             Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))
     end,
+    -- widget builds the editor controls (a unit picker); help draws the help page.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -68,15 +88,21 @@ addon:RegisterCondition("CHANNELING", runtimeCondition('CHANNELING', {
     end,
 }))
 
+-- True while the unit is channeling the chosen spell. Stores unit, spell (a spell ID, or a name saved before IDs
+-- existed) and ranked (ID picks only: match that exact rank instead of any rank). False when nothing is being
+-- channeled. Unavailable when the channel's name or spell ID cannot be read.
 addon:RegisterCondition("CHANNELING_SPELL", {
     description = L["Specific Spell Channeling"],
     icon = addon.Artwork.condition["CHANNELING_SPELL"],
     fields = { unit = "string", spell = { "string", "number" }, ranked = "boolean" },
+    -- Needs a known unit and a spell; a numeric spell must be a positive whole number.
     valid = function(_, value)
         -- A name (saved before spell IDs) or a spell ID picked in the editor.
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and value.spell ~= nil and
                 (type(value.spell) ~= "number" or (value.spell > 0 and value.spell < math.huge and value.spell % 1 == 0)))
     end,
+    -- A name pick compares the channel's name; an ID pick goes through Platform:MatchSpellIdentity. Both give nil and a
+    -- reason when the observed name or ID is unreadable.
     evaluate = function(value, cache)
         local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitCastObservation,addon.Platform,value.unit,"channel")
         if not record then return nil,reason end
@@ -88,12 +114,15 @@ addon:RegisterCondition("CHANNELING_SPELL", {
         -- By ID, any rank unless the exact rank was asked for (locale-safe).
         return addon.Platform:MatchSpellIdentity(record.spellID, record.spellReason, record.name, value.spell, value.ranked == true)
     end,
+    -- Readable summary with the spell link (and rank, when ranked) for an ID pick.
     print = function(_, value)
         return LiteralSummary.phrase(Functions.presentation.playerize(value.unit, L["{unit} {{!are|are not}} currently channeling {spell}"], L["{unit} {{!is|is not}} currently channeling {spell}"]), {
             unit = Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
             spell = Functions.presentation.nullable(type(value.spell) == "number" and addon:CastSpellLabel(value) or value.spell, L["<spell>"]),
         })
     end,
+    -- widget builds a unit picker, the spell box and, on clients with ranks, the exact-rank checkbox; help draws the
+    -- help page.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -118,15 +147,23 @@ addon:RegisterCondition("CHANNELING_SPELL", {
     end,
 })
 
+-- ============================================================================
+-- Channel timing
+-- ============================================================================
+
+-- Compares the seconds left on the unit's channel with a number. Stores unit, operator and value (seconds, 0 or more).
+-- False when the unit is not channeling, whatever the operator; unavailable when the remaining time cannot be read.
 addon:RegisterCondition("CHANNELING_REMAIN", {
     description = L["Channel Time Remaining"],
     icon = addon.Artwork.condition["CHANNELING_REMAIN"],
     fields = { unit = "string", operator = "string", value = "number" },
+    -- Needs a known unit, a known operator and a non-negative number of seconds.
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
+    -- Unavailable when the channel's remaining time is hidden or missing; not channeling is false.
     evaluate = function(value, cache)
         local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitCastObservation,addon.Platform,value.unit,"channel")
         if not record then return nil,reason end
@@ -134,11 +171,13 @@ addon:RegisterCondition("CHANNELING_REMAIN", {
         if record.remainingSeconds==nil then return nil,record.remainingReason end
         return Functions.values.compare(value.operator,record.remainingSeconds,value.value)
     end,
+    -- Readable summary of the comparison against the unit's remaining channel time, in seconds.
     print = function(_, value)
         return Functions.presentation.compareString(value.operator,
             string.format(L["the time remaining on %s channel"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])),
             string.format(L["%s seconds"], Functions.presentation.nullable(value.value)))
     end,
+    -- widget builds a unit picker and an operator-and-seconds control; help draws the page.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -165,15 +204,19 @@ addon:RegisterCondition("CHANNELING_REMAIN", {
 
 -- Share of the channel done (0..1, shown as a percentage), from the same cached
 -- observation as CHANNELING_REMAIN: haste-proof, so a tick threshold is N/K.
+-- Stores unit, operator and value (a fraction from 0 to 1). False when the unit is not channeling; unavailable when
+-- the remaining time or the total duration cannot be read.
 addon:RegisterCondition("CHANNELING_PROGRESS", {
     description = L["Channel Progress"],
     icon = addon.Artwork.condition["CHANNELING_PROGRESS"],
     fields = { unit = "string", operator = "string", value = "number" },
+    -- Like CHANNELING_REMAIN, but the value must also be at most 1.
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0 and value.value <= 1)
     end,
+    -- Progress is 1 - remaining / duration, floored at 0.
     evaluate = function(value, cache)
         local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitCastObservation,addon.Platform,value.unit,"channel")
         if not record then return nil,reason end
@@ -184,11 +227,13 @@ addon:RegisterCondition("CHANNELING_PROGRESS", {
         if done<0 then done=0 end
         return Functions.values.compare(value.operator,done,value.value)
     end,
+    -- Shows the stored fraction as a percentage.
     print = function(_, value)
         local v = value.value
         if v ~= nil then v = v * 100 end
         return Functions.presentation.compareString(value.operator, string.format(L["%s channel progress"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(v) .. "%")
     end,
+    -- widget builds a unit picker and an operator-and-percent control; help draws the page.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -210,13 +255,21 @@ addon:RegisterCondition("CHANNELING_PROGRESS", {
     end,
 })
 
+-- ============================================================================
+-- Interruptibility
+-- ============================================================================
+
+-- True when the unit's current channel can be interrupted. Stores unit. False when the unit is not channeling;
+-- unavailable when the client hides the interruptible flag.
 addon:RegisterCondition("CHANNEL_INTERRUPTABLE", {
     description = L["Channel Interruptible"],
     icon = addon.Artwork.condition["CHANNEL_INTERRUPTABLE"],
     fields = { unit = "string" },
+    -- Accepts any unit in the full unit list.
     valid = function(_, value)
         return value.unit ~= nil and Functions.values.isin(addon.units, value.unit)
     end,
+    -- Returns the observed interruptible flag itself, or nil and its reason when it is unreadable.
     evaluate = function(value, cache)
         local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitCastObservation,addon.Platform,value.unit,"channel")
         if not record then return nil,reason end
@@ -224,9 +277,11 @@ addon:RegisterCondition("CHANNEL_INTERRUPTABLE", {
         if record.interruptible==nil then return nil,record.interruptibleReason end
         return record.interruptible
     end,
+    -- Readable summary naming the unit whose channeled spell is tested.
     print = function(_, value)
         return string.format(L["%s channeled spell {{!is|is not}} interruptible"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"]))
     end,
+    -- widget offers every unit except player and pet; help draws the page.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -241,11 +296,17 @@ addon:RegisterCondition("CHANNEL_INTERRUPTABLE", {
     end,
 })
 
+-- ============================================================================
+-- Seeding older profiles
+-- ============================================================================
+
 -- Cold, one-time seed for profiles created before the progress conditions
 -- existed: add them to the Combat category once. Removing them later stays
 -- saved; new and reset profiles get them from the packaged defaults.
 local combatCategory = "b3d7df2c-f257-4a2d-961e-66e49336d109"
 
+-- Adds CASTING_PROGRESS and CHANNELING_PROGRESS to the Combat condition category of db.profile once (the profile
+-- remembers it in castProgressConditionsSeeded). Tolerates a malformed profile; the first argument is unused.
 function addon:InitializeCastProgressConditions(_, db)
     local profile = db and db.profile
     if type(profile) ~= "table" or profile.castProgressConditionsSeeded then return end
@@ -272,6 +333,8 @@ end
 
 local seedOwner = {}
 
+-- Seeds the profile now and again whenever AceDB creates, resets, switches to or copies a profile. Called from
+-- init.lua once the database exists.
 function addon:InstallCastProgressConditions(db)
     if type(db) ~= "table" or type(db.RegisterCallback) ~= "function" then return end
 
@@ -283,6 +346,10 @@ function addon:InstallCastProgressConditions(db)
 
     self:InitializeCastProgressConditions(nil, db)
 end
+
+-- ============================================================================
+-- Lean engine enrollment
+-- ============================================================================
 
 -- Source-owned volatile observations; only configuration-only validators memoize.
 if addon.DeclareOwnedConditionRuntime then

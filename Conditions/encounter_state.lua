@@ -1,3 +1,11 @@
+-- Built In conditions about the encounter around you, from the game itself rather than a boss mod: ENCOUNTER (a boss
+-- encounter is in progress) and KEYSTONE_LEVEL (compares the active Mythic+ keystone level, 0 outside one). They read
+-- Platform:GetEncounterObservation and GetKeystoneObservation (Platform/world_state.lua) through the per-poll cache.
+-- The encounter reader answers only under the probe and restricted combat-data policies (Retail and Forever) and the
+-- keystone reader only on Retail; elsewhere, or when a value is hidden, the condition is unavailable (nil, reason),
+-- also under NOT. Boss mod encounters are in Conditions/bossmod.lua. Loaded from RotationMaster.toc after
+-- Conditions/player_state.lua. Callback and helper bodies are hashed by saved copies and bundles: never add or change
+-- text inside a function body, and leave the generated block at the end alone.
 local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
@@ -27,49 +35,63 @@ addon.builtinCallbackBindings["Conditions/encounter_state.lua"] = {
     ["Functions.cache.getCached"] = "builtin:utils.lua:getCached",
 }
 
+-- True for a finite number of 0 or more.
 local function validNumber(value)
     return type(value) == "number" and value == value and value >= 0 and value < math.huge
 end
 
+-- True when value carries a known operator and a finite, non-negative number to compare against.
 local function validCompare(value)
     return value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and validNumber(value.value)
 end
 
+-- ENCOUNTER: true while a boss encounter is in progress. Stores no fields. False for a readable "no"; `nil, reason`
+-- when the Platform cannot answer.
 addon:RegisterCondition("ENCOUNTER", {
     description = L["Boss Encounter"],
     icon = addon.Artwork.condition["ENCOUNTER"],
     fields = {},
+    -- Nothing to configure, so always valid.
     valid = function()
         return true
     end,
+    -- Returns the cached Platform observation unchanged: a boolean, or nil and a reason.
     evaluate = function(_, cache)
         return Functions.cache.getCached(cache, addon.Platform.GetEncounterObservation, addon.Platform)
     end,
+    -- Readable summary; there are no fields to mention.
     print = function()
         return L["a boss encounter {{!is|is not}} in progress"]
     end,
+    -- help draws the help page; there is no widget because nothing is configurable.
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Help.Conditions.ENCOUNTER"]))
     end,
 })
 
+-- KEYSTONE_LEVEL: compares the level of the Mythic+ keystone being run (0 when none is) with a number. Stores
+-- `operator` and `value`. Returns `nil, reason` when the keystone cannot be read ("missing-api" off Retail).
 addon:RegisterCondition("KEYSTONE_LEVEL", {
     description = L["Mythic+ Keystone Level"],
     icon = addon.Artwork.condition["KEYSTONE_LEVEL"],
     requiredFields = { "operator", "value" },
     fields = { operator = "string", value = "number" },
+    -- Valid with a known operator and a finite, non-negative number.
     valid = function(_, value)
         return validCompare(value)
     end,
+    -- Unavailable when the keystone observation fails; otherwise compares its level.
     evaluate = function(value, cache)
         local keystone, reason = Functions.cache.getCached(cache, addon.Platform.GetKeystoneObservation, addon.Platform)
         if not keystone then return nil, reason end
         return Functions.values.compare(value.operator, keystone.level, value.value)
     end,
+    -- Readable summary of the level comparison.
     print = function(_, value)
         return Functions.presentation.compareString(value.operator, L["the level of your active Mythic+ keystone"],
             Functions.presentation.nullable(value.value))
     end,
+    -- widget builds an operator-and-level control; help draws the help page.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")

@@ -1,3 +1,12 @@
+-- Miscellaneous character and place conditions: SELF_LEVEL (your level), PVP (a unit's PVP flag), ZONEPVP (the zone's
+-- PVP status), INSTANCE (the kind, difficulty and ID of the instance you are in) and OUTDOORS. Level comes from
+-- addon:GetConditionUnitLevel (Core/level_conditions.lua); the rest come from Platform readers (GetUnitFlagObservation,
+-- GetZonePVPObservation, GetInstanceObservation, GetInstanceDetails, GetPlayerFlagObservation) called through the
+-- evaluation cache, which return a record or nil and a reason, so a value hidden on a restricted client (Retail,
+-- Forever) is unavailable rather than compared. Which client each one can work on is declared in
+-- Core/condition_support.lua. Loaded from the Conditions group of RotationMaster.toc, after Conditions/build.lua. The
+-- callback and helper bodies are frozen: saved custom conditions bind to their exact text, and the generated block at
+-- the end is written by a tool.
 local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
@@ -29,23 +38,33 @@ addon.builtinCallbackBindings["Conditions/misc.lua"] = {
     ["Functions.collections.keys"] = "builtin:Functions/collections.lua:keys",
 }
 
+-- ============================================================================
+-- Level and PVP
+-- ============================================================================
+
+-- SELF_LEVEL compares the player's level. Returns false when the level reads as false (no player), and nil and a reason
+-- when the level cannot be read. Stores operator and value (a level).
 addon:RegisterCondition("SELF_LEVEL", {
     description = L["Level"],
     icon = addon.Artwork.condition["SELF_LEVEL"],
     fields = { operator = "string", value = "number" },
+    -- Valid with a listed operator and a non-negative level.
     valid = function(_, value)
         return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
+    -- Unavailable: the reason from addon:GetConditionUnitLevel (restricted-value, unsupported-client, a missing level).
     evaluate = function(value, cache)
         local level,reason=addon:GetConditionUnitLevel("player",cache)
         if level==nil then return nil,reason end
         if level==false then return false end
         return Functions.values.compare(value.operator, level, value.value)
     end,
+    -- Summary line for the condition list.
     print = function(_, value)
         return Functions.presentation.compareString(value.operator, L["your level"], Functions.presentation.nullable(value.value, L["<level>"]))
     end,
+    -- Editor: the operator and level.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -55,26 +74,33 @@ addon:RegisterCondition("SELF_LEVEL", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Help page: the operator text.
     help = function(frame)
         addon.layout_condition_operatorwidget_help(frame, L["Level"], L["Level"],
                 "The level you are at.")
     end,
 })
 
+-- PVP tests whether a unit is flagged for PVP. Returns the flag as the Platform reports it, or nil and a reason when
+-- the unit's flag cannot be read. Stores unit.
 addon:RegisterCondition("PVP", {
     description = L["PVP Flagged"],
     icon = addon.Artwork.condition["PVP"],
     fields = { unit = "string" },
+    -- Valid with a unit from the unit list.
     valid = function(_, value)
         return value.unit ~= nil and Functions.values.isin(addon.units, value.unit)
     end,
+    -- Unavailable: whatever reason Platform:GetUnitFlagObservation gives for the "pvp" flag.
     evaluate = function(value, cache)
         return Functions.cache.getCached(cache, addon.Platform.GetUnitFlagObservation, addon.Platform, value.unit, "pvp")
     end,
+    -- Summary line for the condition list; "are" for the player, "is" for anyone else.
     print = function(_, value)
         return string.format(Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} PVP flagged"], L["%s {{!is|is not}} PVP flagged"]),
                 Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))
     end,
+    -- Editor: the unit picker, without the pet entry.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -85,26 +111,38 @@ addon:RegisterCondition("PVP", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
     end,
+    -- Help page: the shared unit picker text.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
     end,
 })
 
+-- ============================================================================
+-- Zone PVP status
+-- ============================================================================
+
+-- ZONEPVP tests the PVP status of the zone you are in (none, arena, friendly, contested, hostile, sanctuary, combat).
+-- Returns whether the zone's status equals the chosen one, or nil and a reason when the zone cannot be read. A value of
+-- nil stands for "no PVP". Stores value.
 addon:RegisterCondition("ZONEPVP", {
     description = L["Zone PVP"],
     icon = addon.Artwork.condition["ZONEPVP"],
     fields = { value = "string" },
+    -- Valid when unset (no PVP) or one of the listed statuses.
     valid = function(_, value)
         return value.value == nil or Functions.values.isin(addon.zonepvp, value.value)
     end,
+    -- Unavailable: whatever reason Platform:GetZonePVPObservation gives.
     evaluate = function(value, cache)
         local record,reason=Functions.cache.getCached(cache, addon.Platform.GetZonePVPObservation, addon.Platform)
         if not record then return nil,reason end
         return value.value == record.pvpType
     end,
+    -- Summary line for the condition list.
     print = function(_, value)
         return string.format(L["the zone's PVP status {{!is|is not}} %s"], Functions.presentation.nullable(addon.zonepvp[value.value], L["no PVP"]))
     end,
+    -- Editor: a dropdown of statuses, where the empty key stands for "no PVP".
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -132,6 +170,7 @@ addon:RegisterCondition("ZONEPVP", {
         end
         parent:AddChild(zone)
     end,
+    -- Help page: what each status means.
     help = function(frame)
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Mode"] .. color.RESET .. " - " ..
                 "The PVP status of the area you are in."))
@@ -155,18 +194,25 @@ addon:RegisterCondition("ZONEPVP", {
     end,
 })
 
+-- ============================================================================
+-- Instance
+-- ============================================================================
+
 -- The difficulty IDs the INSTANCE editor offers, in the order they are listed.
 -- The game names each one (GetDifficultyInfo, in the player's language) and an
 -- ID the client does not know is left out. 0 is "not in an instance".
 local DIFFICULTIES = {0, 1, 2, 23, 8, 24, 205, 3, 4, 5, 6, 7, 9, 14, 15, 16, 17, 33, 208, 11, 12}
 
 -- The words after a difficulty name that say what kind of group it is for.
+-- Returns the localized word for the GetDifficultyInfo group ("party", "raid", "scenario"), or nil for any other group.
 local function difficultyKind(group)
     if group == "party" then return L["Dungeon"] end
     if group == "raid" then return L["Raid"] end
     if group == "scenario" then return L["Scenario"] end
 end
 
+-- The display name of a difficulty ID, with its group kind appended when the game gives one. Returns nil when the
+-- client does not know the ID or the name is hidden or empty, so callers fall back to the number.
 local function difficultyName(id)
     if id == 0 then return L["Not in an instance"] end
     if type(id) ~= "number" then return nil end
@@ -179,6 +225,7 @@ local function difficultyName(id)
     return nil
 end
 
+-- True for a finite whole number from 0 up to 2^31 (the range of a difficulty or instance ID).
 local function validWhole(value)
     return type(value) == "number" and value == value and value >= 0 and value < 2^31 and value % 1 == 0
 end
@@ -187,15 +234,21 @@ end
 -- instance (by ID, which does not change with the game language the way a zone
 -- name does) are optional additions: a condition saved without them is
 -- unchanged, and one with them matches only when every part given matches.
+-- Returns whether every part given matches, or nil and a reason when a part that was asked about cannot be read.
+-- Stores value (the kind), difficulty and instanceID.
 addon:RegisterCondition("INSTANCE", {
     description = L["Instance"],
     icon = addon.Artwork.condition["INSTANCE"],
     fields = { value = "string", difficulty = "number", instanceID = "number" },
+    -- Valid when each part given is a listed kind or a whole number; every part is optional.
     valid = function(_, value)
         return (value.value == nil or Functions.values.isin(addon.instances, value.value))
             and (value.difficulty == nil or validWhole(value.difficulty))
             and (value.instanceID == nil or validWhole(value.instanceID))
     end,
+    -- Unavailable: whatever reason Platform:GetInstanceObservation or GetInstanceDetails gives, the instance type
+    -- reason, or instance-data-unavailable (or a per-field reason) when the difficulty or ID is asked for but is
+    -- unreadable.
     evaluate = function(value, cache)
         local extra = value.difficulty ~= nil or value.instanceID ~= nil
         -- The kind of instance, as before; with no kind chosen and a difficulty
@@ -224,6 +277,7 @@ addon:RegisterCondition("INSTANCE", {
         end
         return true
     end,
+    -- Summary line for the condition list; the short form when only the kind is set, else a list of the parts given.
     print = function(_, value)
         if value.difficulty == nil and value.instanceID == nil then
             return string.format(L["your instance type {{!is|is not}} %s"],
@@ -241,6 +295,7 @@ addon:RegisterCondition("INSTANCE", {
         end
         return string.format(L["you {{!are|are not}} in an instance (%s)"], table.concat(parts, ", "))
     end,
+    -- Editor: the kind dropdown, the difficulty dropdown, the instance ID box, and a note naming the current instance.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -314,6 +369,7 @@ addon:RegisterCondition("INSTANCE", {
         end
         parent:AddChild(note)
     end,
+    -- Help page: what each kind of instance means, then the difficulty and ID text.
     help = function(frame)
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Mode"] .. color.RESET .. " - " ..
                 "The type of instance you are in."))
@@ -335,19 +391,29 @@ addon:RegisterCondition("INSTANCE", {
     end,
 })
 
+-- ============================================================================
+-- Outdoors
+-- ============================================================================
+
+-- OUTDOORS tests whether the game reports you as outdoors, which is not the same as being outside an instance. Returns
+-- the flag as the Platform reports it, or nil and a reason when it cannot be read. Stores no fields.
 addon:RegisterCondition("OUTDOORS", {
     description = L["Outdoors"],
     icon = addon.Artwork.condition["OUTDOORS"],
     fields = {},
+    -- Always valid: there is nothing to configure.
     valid = function()
         return true
     end,
+    -- Unavailable: whatever reason Platform:GetPlayerFlagObservation gives for the "outdoors" flag.
     evaluate = function(_, cache)
         return Functions.cache.getCached(cache, addon.Platform.GetPlayerFlagObservation, addon.Platform, "outdoors")
     end,
+    -- Summary line for the condition list.
     print = function()
         return L["you {{!are|are not}} outdoors"]
     end,
+    -- Help page: one explanatory paragraph. There is no widget callback because the condition has no options.
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Matches when the game reports that you are outdoors. Being outdoors is different from being outside an instance."] ))
     end,

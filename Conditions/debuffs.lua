@@ -1,3 +1,11 @@
+-- Debuff conditions: DEBUFF (present), DEBUFF_REMAIN (time left), DEBUFF_STACKS (application count) and DISPELLABLE (a
+-- debuff of a given type, optionally only a dispellable one). Each is a thin wrapper that hands its saved value to
+-- addon:EvaluateAuraCondition (Core/aura_conditions.lua) with the "HARMFUL" filter and a mode; that function scans the
+-- unit's auras through Platform adapters and returns nil and a reason when an aura field is hidden (restricted clients,
+-- Retail and Forever) or unreadable, so nothing here reads a game value. The buff counterparts live in
+-- Conditions/buffs.lua, which loads just before this file in the Conditions group of RotationMaster.toc. The callback
+-- bodies are frozen: saved custom conditions bind to their exact text, and the generated block at the end is written
+-- by a tool.
 local addon_name, addon = ...
 
 local runtimeCondition = addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness(
@@ -37,22 +45,35 @@ addon.builtinCallbackBindings["Conditions/debuffs.lua"] = {
     ["Functions.presentation.playerize"] = "builtin:utils.lua:playerize",
 }
 
+-- ============================================================================
+-- Debuff on a unit
+-- ============================================================================
+
+-- DEBUFF tests that a unit has a harmful aura matching a spell (any rank unless the rank is pinned), optionally only
+-- one you applied. Returns false when the unit does not exist or no aura matches, and nil and a reason when an aura
+-- read fails and nothing else matched. Stores unit, spell, anyrank and owndebuff. It is declared pure for the lean
+-- engine (see DeclareOwnedConditionRuntime below), hence the witness.
 addon:RegisterCondition("DEBUFF", runtimeCondition('DEBUFF', {
     description = L["Debuff Present"],
     icon = addon.Artwork.condition["DEBUFF"],
     fields = { unit = "string", spell = { "string", "number" }, anyrank = "boolean", owndebuff = "boolean" },
+    -- Valid with a unit from the unit list and a spell.
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and value.spell ~= nil)
     end,
+    -- Unavailable: the reasons addon:EvaluateAuraCondition returns (missing-api, api-error, restricted-value,
+    -- invalid-api-result, an aura read reason, or aura-scan-limit after 256 auras). start is the poll's time.
     evaluate = function(value, cache, start)
         return addon:EvaluateAuraCondition(value, cache, start, "HARMFUL", "present")
     end,
+    -- Summary line for the condition list; "have" for the player, "has" for anyone else.
     print = function(_, value)
         return AuraLiteral.phrase(Functions.presentation.playerize(value.unit, L["{unit} {{!have|do not have}} {aura}"], L["{unit} {{!has|does not have}} {aura}"]), {
             unit = Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
             aura = string.format(value.owndebuff and L["your own %s"] or "%s", (value.spell and addon:AuraSpellLabel(value) or L["<debuff>"])),
         })
     end,
+    -- Editor: the unit picker, the Own Debuff checkbox, the spell name box and the rank choice.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -78,6 +99,7 @@ addon:RegisterCondition("DEBUFF", runtimeCondition('DEBUFF', {
         parent:AddChild(spell_group)
         parent:AddChild(addon:Widget_AuraRankWidget(value,function() top:SetStatusText(funcs:print(root,spec)) end))
     end,
+    -- Help page: the unit text, Own Debuff, then the spell name and rank text.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
@@ -89,6 +111,9 @@ addon:RegisterCondition("DEBUFF", runtimeCondition('DEBUFF', {
     end,
 }))
 
+-- DEBUFF_REMAIN compares the seconds left on a matching debuff. Permanent auras have no expiry and an absent aura
+-- gives false, so neither satisfies a finite threshold; nil and a reason when the timing is hidden or unreadable.
+-- Stores unit, spell, anyrank, owndebuff, operator and value (seconds).
 addon:RegisterCondition("DEBUFF_REMAIN", {
     description = L["Debuff Time Remaining"],
     icon = addon.Artwork.condition["DEBUFF_REMAIN"],
@@ -100,14 +125,18 @@ addon:RegisterCondition("DEBUFF_REMAIN", {
         operator = "string",
         value = "number",
     },
+    -- Valid with a unit, a spell, a listed operator and a non-negative number of seconds.
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and value.spell ~= nil and
                 value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
+    -- Unavailable: the reasons addon:EvaluateAuraCondition returns for its "remaining" mode; an aura field that cannot
+    -- be read fails at once rather than waiting for another aura to match.
     evaluate = function(value, cache, start)
         return addon:EvaluateAuraCondition(value, cache, start, "HARMFUL", "remaining")
     end,
+    -- Summary line for the condition list; "have" for the player, "has" for anyone else.
     print = function(_, value)
         return AuraSummary.phrase(Functions.presentation.playerize(value.unit, L["{unit} {{!have|do not have}} {aura} where {remaining} {comparison} {duration}"], L["{unit} {{!has|does not have}} {aura} where {remaining} {comparison} {duration}"]), {
             unit = Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
@@ -117,6 +146,7 @@ addon:RegisterCondition("DEBUFF_REMAIN", {
             duration = string.format(L["%s seconds"], Functions.presentation.nullable(value.value)),
         })
     end,
+    -- Editor: the DEBUFF controls, then the operator and seconds.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -146,6 +176,7 @@ addon:RegisterCondition("DEBUFF_REMAIN", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Help page: the DEBUFF text, then the operator text describing permanent, absent and hidden timing.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
@@ -160,6 +191,9 @@ addon:RegisterCondition("DEBUFF_REMAIN", {
     end,
 })
 
+-- DEBUFF_STACKS compares the application count of a matching debuff (charges count too). An absent aura gives false;
+-- nil and a reason when the count is hidden or unreadable. Stores unit, spell, anyrank, owndebuff, operator and value
+-- (a count).
 addon:RegisterCondition("DEBUFF_STACKS", {
     description = L["Debuff Stacks"],
     icon = addon.Artwork.condition["DEBUFF_STACKS"],
@@ -171,14 +205,17 @@ addon:RegisterCondition("DEBUFF_STACKS", {
         operator = "string",
         value = "number",
     },
+    -- Valid with a unit, a spell, a listed operator and a non-negative count.
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and value.spell ~= nil and
                 value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
+    -- Unavailable: the reasons addon:EvaluateAuraCondition returns for its "stacks" mode.
     evaluate = function(value, cache, start)
         return addon:EvaluateAuraCondition(value, cache, start, "HARMFUL", "stacks")
     end,
+    -- Summary line for the condition list.
     print = function(_, value)
         return AuraSummary.phrase(L["the number of stacks of {aura} on {unit} {comparison} {quantity}"], {
             unit = Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
@@ -187,6 +224,7 @@ addon:RegisterCondition("DEBUFF_STACKS", {
             quantity = Functions.presentation.nullable(value.value),
         })
     end,
+    -- Editor: the DEBUFF controls, then the operator and stack count.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -216,6 +254,7 @@ addon:RegisterCondition("DEBUFF_STACKS", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Help page: the DEBUFF text, then the operator text describing what counts as a stack.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
@@ -230,17 +269,29 @@ addon:RegisterCondition("DEBUFF_STACKS", {
     end,
 })
 
+-- ============================================================================
+-- Debuff type
+-- ============================================================================
+
+-- DISPELLABLE tests that a unit has a debuff of a given type (Magic, Disease, Poison, Curse, Enrage), optionally one
+-- you applied and optionally only one the game's dispellable filter returns. Returns false when none is present, and
+-- nil and a reason when an aura read fails and nothing else matched. Stores unit, debufftype, owndebuff and
+-- dispellable.
 addon:RegisterCondition("DISPELLABLE", {
     description = L["Debuff Type Present"],
     icon = addon.Artwork.condition["DISPELLABLE"],
     fields = { unit = "string", debufftype = "string", owndebuff = "boolean", dispellable = "boolean" },
+    -- Valid with a unit from the unit list and a listed debuff type.
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.debufftype ~= nil and Functions.values.isin(addon.debufftypes, value.debufftype))
     end,
+    -- Unavailable: the reasons addon:EvaluateAuraCondition returns for its "dispel" mode, which switches the filter to
+    -- "HARMFUL|RAID" when dispellable is set.
     evaluate = function(value, cache, start)
         return addon:EvaluateAuraCondition(value, cache, start, "HARMFUL", "dispel")
     end,
+    -- Summary line for the condition list; "have" for the player, "has" for anyone else.
     print = function(_, value)
         local template
         if value.owndebuff then
@@ -252,6 +303,7 @@ addon:RegisterCondition("DISPELLABLE", {
             Functions.presentation.nullable(addon.debufftypes[value.debufftype], L["<debuff type>"])) ..
             (value.dispellable and " " .. L["that is dispellable"] or "")
     end,
+    -- Editor: the unit picker, the debuff type dropdown, and the Own Debuff and Dispellable checkboxes.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -293,6 +345,7 @@ addon:RegisterCondition("DISPELLABLE", {
         end)
         parent:AddChild(dispellable)
     end,
+    -- Help page: the unit text, then the Debuff Type, Own Debuff and Dispellable options.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())

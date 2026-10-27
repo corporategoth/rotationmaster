@@ -1,5 +1,17 @@
+-- Built In spell-state conditions for one spell ID: SPELL_AVAIL, SPELL_RANGE, SPELL_COOLDOWN, SPELL_REMAIN,
+-- SPELL_CHARGES, SPELL_HISTORY, SPELL_HISTORY_TIME, SPELL_ACTIVE and SPELL_AUTOREPEAT. Every read goes through
+-- addon.Platform (IsSpellReady, GetSpellCooldown, GetSpellCharges, GetSpellRangeState, IsCurrentSpell,
+-- IsAutoRepeatActive) behind the per-poll cache, and the spell ID is resolved by addon:Widget_GetSpellId from
+-- Conditions/common.lua; this file reads no game value itself, so a restricted or missing answer is `nil, reason`.
+-- The cast-history conditions read addon.spellHistory, where a cast whose spell was secret is recorded as `false`.
+-- All store `spell` and `ranked`; the editors use the shared spell widget. Loaded from RotationMaster.toc after
+-- Conditions/ext_stats.lua and before Conditions/anyspell.lua. Callback bodies are frozen Built In source (saved
+-- custom copies bind to them byte for byte): never edit inside one, and leave the generated block at the end alone.
 local addon_name, addon = ...
 
+-- Registers each definition with the runtime witness (Core/condition_runtime.lua) when it exists, so the enrollment at
+-- the bottom of the file can prove SPELL_ACTIVE and SPELL_AUTOREPEAT were not replaced; otherwise it passes the
+-- definition through.
 local runtimeCondition = addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness(
     'Conditions/spell.lua'
 )
@@ -30,10 +42,18 @@ addon.builtinCallbackBindings["Conditions/spell.lua"] = {
     ["Functions.presentation.compareString"] = "builtin:utils.lua:compareString",
 }
 
+-- ============================================================================
+-- Availability and range
+-- ============================================================================
+
+-- SPELL_AVAIL: true when the spell can be used at this poll's time `evalStart` (a spell whose cooldown ends inside the
+-- running global cooldown counts as ready). Returns `nil, reason` when the spell ID cannot be resolved or the cooldown
+-- state is unreadable. Stores `spell` and `ranked`.
 addon:RegisterCondition("SPELL_AVAIL", {
     description = L["Spell Available"],
     icon = addon.Artwork.condition["SPELL_AVAIL"],
     fields = { spell = "number", ranked = "boolean" },
+    -- Valid once a positive integer spell ID is chosen.
     valid = function(_, value)
         if value.spell ~= nil then
             local validSpell = addon.IsConditionSpellID(value.spell)
@@ -42,6 +62,8 @@ addon:RegisterCondition("SPELL_AVAIL", {
             return false
         end
     end,
+    -- Unavailable (`nil, reason`) when the spell ID does not resolve ("spell-data-unavailable") or when the Platform
+    -- cannot read the cooldown; otherwise the readiness boolean.
     evaluate = function(value, cache, evalStart)
         local spellid, reason = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return nil, reason or "spell-data-unavailable" end
@@ -67,10 +89,14 @@ addon:RegisterCondition("SPELL_AVAIL", {
     end,
 })
 
+-- SPELL_RANGE: true when your target is within the spell's range. False when there is no target or the spell has no
+-- range; `nil, reason` when target presence, the spell ID or the range state cannot be read. Always checks "target".
+-- Stores `spell` and `ranked`.
 addon:RegisterCondition("SPELL_RANGE", {
     description = L["Spell In Range"],
     icon = addon.Artwork.condition["SPELL_RANGE"],
     fields = { spell = "number", ranked = "boolean" },
+    -- Valid once a positive integer spell ID is chosen.
     valid = function(_, value)
         if value.spell ~= nil then
             local validSpell = addon.IsConditionSpellID(value.spell)
@@ -79,6 +105,7 @@ addon:RegisterCondition("SPELL_RANGE", {
             return false
         end
     end,
+    -- Unavailable when target presence, the spell ID or the range state is unreadable; a missing target is false.
     evaluate = function(value, cache)
         local exists,presenceReason=Functions.cache.getCached(cache, addon.Platform.GetUnitPresenceObservation, addon.Platform, "target")
         if exists==nil then return nil,presenceReason or 'unit-data-unavailable' end
@@ -109,10 +136,19 @@ addon:RegisterCondition("SPELL_RANGE", {
     end,
 })
 
+-- ============================================================================
+-- Cooldowns and charges
+-- ============================================================================
+
+-- SPELL_COOLDOWN: compares the seconds left on the spell's cooldown (rounded to milliseconds, never below zero)
+-- with `value` using `operator`. Returns `nil, reason` when the cooldown cannot be read, and "cooldown-held" when the
+-- client reports the cooldown as not running (isEnabled false, for example a spell held by a buff). Stores `spell`,
+-- `ranked`, `operator` and `value`.
 addon:RegisterCondition("SPELL_COOLDOWN", {
     description = L["Spell Cooldown"],
     icon = addon.Artwork.condition["SPELL_COOLDOWN"],
     fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
+    -- Needs a spell ID, a known operator and a non-negative number of seconds.
     valid = function(_, value)
         if value.spell ~= nil then
             local validSpell = addon.IsConditionSpellID(value.spell)
@@ -122,6 +158,7 @@ addon:RegisterCondition("SPELL_COOLDOWN", {
             return false
         end
     end,
+    -- Unavailable when the spell ID does not resolve, the cooldown is unreadable, or the cooldown is held.
     evaluate = function(value, cache, evalStart)
         local spellid, reason = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return nil, reason or "spell-data-unavailable" end
@@ -160,10 +197,14 @@ addon:RegisterCondition("SPELL_COOLDOWN", {
     end,
 })
 
+-- SPELL_REMAIN: compares the seconds until the next charge of a spell with charges with `value`; full charges and an
+-- inactive recharge timer count as zero. Returns `nil, reason` for a spell without charges or unreadable charge data.
+-- Stores `spell`, `ranked`, `operator` and `value`.
 addon:RegisterCondition("SPELL_REMAIN", {
     description = L["Spell Recharge Time"],
     icon = addon.Artwork.condition["SPELL_REMAIN"],
     fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
+    -- Needs a spell ID, a known operator and a non-negative number of seconds.
     valid = function(_, value)
         if value.spell ~= nil then
             local validSpell = addon.IsConditionSpellID(value.spell)
@@ -173,6 +214,7 @@ addon:RegisterCondition("SPELL_REMAIN", {
             return false
         end
     end,
+    -- Unavailable when the spell ID does not resolve or the charge record cannot be read (including "no charges").
     evaluate = function(value, cache, evalStart)
         local spellid, reason = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return nil, reason or "spell-data-unavailable" end
@@ -213,10 +255,13 @@ addon:RegisterCondition("SPELL_REMAIN", {
     end,
 })
 
+-- SPELL_CHARGES: compares the number of charges currently available on a spell with `value`. Returns `nil, reason`
+-- for a spell without charges or unreadable charge data. Stores `spell`, `ranked`, `operator` and `value`.
 addon:RegisterCondition("SPELL_CHARGES", {
     description = L["Spell Charges"],
     icon = addon.Artwork.condition["SPELL_CHARGES"],
     fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
+    -- Needs a spell ID, a known operator and a non-negative count.
     valid = function(_, value)
         if value.spell ~= nil then
             local validSpell = addon.IsConditionSpellID(value.spell)
@@ -226,6 +271,7 @@ addon:RegisterCondition("SPELL_CHARGES", {
             return false
         end
     end,
+    -- Unavailable when the spell ID does not resolve or the charge record cannot be read.
     evaluate = function(value, cache)
         local spellid, reason = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return nil, reason or "spell-data-unavailable" end
@@ -261,10 +307,19 @@ addon:RegisterCondition("SPELL_CHARGES", {
     end,
 })
 
+-- ============================================================================
+-- Cast history
+-- ============================================================================
+
+-- SPELL_HISTORY: true when the spell was cast `value` casts ago (compared with `operator`; 1 is your latest cast),
+-- read from addon.spellHistory, which only keeps casts newer than the history-memory setting. Returns `nil,
+-- "restricted-value"` when no readable cast matches but a cast whose spell was secret could have. Stores `spell`,
+-- `ranked`, `operator` and `value`.
 addon:RegisterCondition("SPELL_HISTORY", {
     description = L["Spell Cast History"],
     icon = addon.Artwork.condition["SPELL_HISTORY"],
     fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
+    -- Needs a spell ID, a known operator and a non-negative cast count.
     valid = function(_, value)
         if value.spell ~= nil then
             local validSpell = addon.IsConditionSpellID(value.spell)
@@ -274,6 +329,8 @@ addon:RegisterCondition("SPELL_HISTORY", {
             return false
         end
     end,
+    -- Unavailable when the spell ID does not resolve, or when the history holds an unreadable (secret) cast that
+    -- could satisfy the comparison and no readable cast settles it.
     evaluate = function(value)
         local spellid, reason = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return nil, reason or "spell-data-unavailable" end
@@ -325,10 +382,14 @@ addon:RegisterCondition("SPELL_HISTORY", {
     end,
 })
 
+-- SPELL_HISTORY_TIME: true when the spell was cast `value` seconds ago (compared with `operator`), measured from this
+-- poll's `evalStart` to the recorded cast time in addon.spellHistory. Returns `nil, reason` for unreadable or
+-- non-finite times and for a secret cast that could match. Stores `spell`, `ranked`, `operator` and `value`.
 addon:RegisterCondition("SPELL_HISTORY_TIME", {
     description = L["Spell Cast History Time"],
     icon = addon.Artwork.condition["SPELL_HISTORY_TIME"],
     fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
+    -- Needs a spell ID, a known operator and a non-negative number of seconds.
     valid = function(_, value)
         if value.spell ~= nil then
             local validSpell = addon.IsConditionSpellID(value.spell)
@@ -338,6 +399,9 @@ addon:RegisterCondition("SPELL_HISTORY_TIME", {
             return false
         end
     end,
+    -- Unavailable ("restricted-value", "history-time-unavailable") when the poll time or a recorded time is secret or
+    -- not a finite number, or when a secret cast could match. (The note at the end of the line below does not describe
+    -- this condition; nothing here computes a cooldown.)
     evaluate = function(value, _, evalStart) -- Cooldown until the spell is available
         local spellid, reason = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return nil, reason or "spell-data-unavailable" end
@@ -397,10 +461,18 @@ addon:RegisterCondition("SPELL_HISTORY_TIME", {
     end,
 })
 
+-- ============================================================================
+-- Current spell state
+-- ============================================================================
+
+-- SPELL_ACTIVE: true when the spell is your current spell, meaning queued for the next swing or currently active.
+-- Returns `nil, reason` when the spell ID does not resolve or the client cannot answer. Stores `spell` and `ranked`.
+-- Enrolled below as a volatile (not pure) observation, so it is never reused across polls.
 addon:RegisterCondition("SPELL_ACTIVE", runtimeCondition('SPELL_ACTIVE', {
     description = L["Spell Active or Pending"],
     icon = addon.Artwork.condition["SPELL_ACTIVE"],
     fields = { spell = "number", ranked = "boolean" },
+    -- Valid once a positive integer spell ID is chosen.
     valid = function(_, value)
         if value.spell ~= nil then
             local validSpell = addon.IsConditionSpellID(value.spell)
@@ -409,6 +481,7 @@ addon:RegisterCondition("SPELL_ACTIVE", runtimeCondition('SPELL_ACTIVE', {
             return false
         end
     end,
+    -- Unavailable when the spell ID does not resolve or the Platform cannot read the current-spell state.
     evaluate = function(value, cache)
         local spellid, reason = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return nil, reason or "spell-data-unavailable" end
@@ -434,13 +507,18 @@ addon:RegisterCondition("SPELL_ACTIVE", runtimeCondition('SPELL_ACTIVE', {
     end,
 }))
 
+-- SPELL_AUTOREPEAT: true while the spell is auto-repeating (Shoot, Auto Shot); a merely queued cast does not count.
+-- Returns `nil, reason` when the spell ID does not resolve or the client cannot answer (the Platform answers only
+-- under the probe and restricted policies). Stores `spell` and `ranked`. Enrolled below as a volatile observation.
 addon:RegisterCondition("SPELL_AUTOREPEAT", runtimeCondition('SPELL_AUTOREPEAT', {
     description = L["Spell Auto-Repeat Active"],
     icon = addon.Artwork.condition["SPELL_AUTOREPEAT"],
     fields = { spell = "number", ranked = "boolean" },
+    -- Valid with a positive integer spell ID and an absent or boolean `ranked`.
     valid = function(_, value)
         return addon.IsConditionSpellID(value.spell) and (value.ranked == nil or type(value.ranked) == "boolean")
     end,
+    -- Unavailable when the spell ID does not resolve or the auto-repeat state is unreadable.
     evaluate = function(value, cache)
         local spellid, reason = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return nil, reason or "spell-data-unavailable" end

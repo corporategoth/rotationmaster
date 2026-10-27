@@ -1,3 +1,11 @@
+-- Built In condition WEAPON_TYPE: what is equipped in the main hand, off hand or ranged slot (a category such as
+-- two-handed weapon or shield, or one weapon subclass such as daggers). It reads the equipment snapshot through
+-- addon:GetEquippedWeaponSlot (Core/build_context.lua), so an evaluation calls no native API and uses only item class
+-- IDs, never localized names; the one game call here is the editor's weapon subclass name lookup, which passes through
+-- Platform:CanReadValue. A slot or item data the snapshot cannot supply makes the condition unavailable (nil, reason),
+-- also under NOT. Loaded from RotationMaster.toc after Conditions/weapon.lua. Callback and helper bodies are hashed by
+-- saved copies and bundles: never add or change text inside a function body, and leave the generated block at the end
+-- alone.
 local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
@@ -12,6 +20,10 @@ addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
 addon.builtinCallbackBindings["Conditions/equipment.lua"] = {
     ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
 }
+
+-- ============================================================================
+-- Item classes and choices
+-- ============================================================================
 
 -- WEAPON_TYPE: what is equipped in the main hand, off hand or ranged slot.
 -- It reads item class, subclass and equip location IDs (never localized
@@ -71,10 +83,17 @@ local subclassNames = {
 
 local subclassOrder = {15, 13, 0, 4, 7, 9, 1, 5, 8, 6, 10, 2, 3, 18, 16, 19, 20}
 
+-- ============================================================================
+-- Matching
+-- ============================================================================
+
+-- True for a whole number from 0 to 31, the range of weapon subclass IDs.
 local function subclassID(value)
     return type(value) == "number" and value >= 0 and value <= 31 and value % 1 == 0
 end
 
+-- Display name of a weapon subclass: the client's own name when readable, otherwise the English fallback in
+-- subclassNames (localized), otherwise "weapon type N". Used by the editor and the readable summary.
 local function subclassName(id)
     local fn = C_Item and C_Item.GetItemSubClassInfo or GetItemSubClassInfo
     if type(fn) == "function" then
@@ -84,6 +103,9 @@ local function subclassName(id)
     return subclassNames[id] and L[subclassNames[id]] or string.format(L["weapon type %d"], id)
 end
 
+-- Tests an equipment record for one slot (as addon:GetEquippedWeaponSlot returns it: a table, or false for an empty
+-- slot) against value.kind or value.subclass. Returns true or false, or nil and a reason ("item-data-unavailable", the
+-- record's own typeReason, or "invalid-weapon-type") when the item cannot be classified yet.
 local function matches(value, record)
     if record == false then return value.kind == "empty" end
     if value.kind == "empty" then return false end
@@ -103,22 +125,34 @@ local function matches(value, record)
     return nil, "invalid-weapon-type"
 end
 
+-- ============================================================================
+-- Weapon type condition
+-- ============================================================================
+
+-- WEAPON_TYPE: true when the item in the chosen slot is of the chosen category (`kind`) or weapon subclass
+-- (`subclass`, which excludes `kind`). An empty slot is a real answer (true only for "Nothing equipped"). Stores
+-- `slot`, `kind` and `subclass`. Returns `nil, reason` when the slot does not exist on this client (the ranged slot
+-- from Mists of Pandaria on), the build snapshot is unavailable ("build-context-unavailable") or the item is not
+-- classified.
 addon:RegisterCondition("WEAPON_TYPE", {
     description = L["Weapon Type"],
     icon = addon.Artwork.condition["WEAPON_TYPE"],
     requiredFields = { "slot" },
     fields = { slot = "string", kind = "string", subclass = "number" },
+    -- Valid with a listed slot and either a listed kind or a weapon subclass ID, never both.
     valid = function(_, value)
         if slots[value.slot] == nil then return false end
         if value.subclass ~= nil then return value.kind == nil and subclassID(value.subclass) end
         return kinds[value.kind] ~= nil
     end,
+    -- Reads the slot record from the build snapshot and hands it to `matches`; unavailable cases are listed above.
     evaluate = function(value)
         if not addon.GetEquippedWeaponSlot then return nil, "build-context-unavailable" end
         local record, reason = addon:GetEquippedWeaponSlot(value.slot)
         if record == nil then return nil, reason end
         return matches(value, record)
     end,
+    -- Readable summary naming the slot and the category or weapon subclass.
     print = function(_, value)
         local what
         if value.subclass ~= nil then what = subclassName(value.subclass) else what = kinds[value.kind] end
@@ -126,6 +160,8 @@ addon:RegisterCondition("WEAPON_TYPE", {
             Functions.presentation.nullable(slots[value.slot], L["<slot>"]),
             Functions.presentation.nullable(what, L["<weapon type>"]))
     end,
+    -- widget builds the slot dropdown and one dropdown that lists the categories and then the weapon subclasses (a
+    -- subclass is saved as `subclass`, a category as `kind`); help draws the help page and examples.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")

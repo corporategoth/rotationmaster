@@ -1,3 +1,10 @@
+-- Built In condition RUNE_ENGRAVED: whether a Season of Discovery rune is engraved on one of your equipped items. It
+-- reads the engraved set from addon:IsRuneEngraved (Core/build_context.lua, refreshed on equipment or rune changes;
+-- the underlying C_Engraving calls are in Platform/engraving.lua), so a poll is a table lookup. Without C_Engraving,
+-- on a realm without engraving, or before the rune list has loaded, the condition is unavailable (nil, reason), also
+-- under NOT; the editor's rune lists come straight from platform:GetKnownRunes. Loaded from RotationMaster.toc after
+-- Conditions/talent.lua. Callback and helper bodies are hashed by saved copies and bundles: never add or change text
+-- inside a function body, and leave the generated block at the end alone.
 local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
@@ -24,12 +31,18 @@ addon.builtinCallbackBindings["Conditions/engraving.lua"] = {
     ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
 }
 
+-- ============================================================================
+-- Helpers
+-- ============================================================================
+
+-- True for a positive whole number below 2^31, the range of a rune or spell ID.
 local function identifier(value)
     return type(value) == "number" and value > 0 and value < 2147483648 and value % 1 == 0
 end
 
 -- A readable label: the known rune's name, else the taught spell's name, else
 -- the raw ID.
+-- Returns nil when value names neither a rune nor a spell. Works for a character that does not know the rune.
 local function runeLabel(value)
     local known = platform.FindKnownRune and platform:FindKnownRune(value.rune, value.spell)
     if known and known.name then return known.name end
@@ -41,22 +54,35 @@ local function runeLabel(value)
     if value.rune ~= nil then return string.format(L["rune %s"], tostring(value.rune)) end
 end
 
+-- ============================================================================
+-- Engraved rune condition
+-- ============================================================================
+
+-- RUNE_ENGRAVED: true when the chosen rune is engraved on an equipped item. The rune is named either by `spell` (a
+-- spell the rune teaches: portable between characters, preferred by the editor) or by `rune` (its skillLineAbilityID),
+-- never both. False when it is not engraved; `nil, reason` when engraving cannot be read ("build-context-unavailable",
+-- or the snapshot's own reason such as "rune-data-pending").
 addon:RegisterCondition("RUNE_ENGRAVED", {
     description = L["Engraved Rune"],
     icon = addon.Artwork.condition["RUNE_ENGRAVED"],
     fields = { rune = "number", spell = "number" },
+    -- Valid with exactly one of a rune ID or a spell ID.
     valid = function(_, value)
         if value.rune ~= nil then return identifier(value.rune) and value.spell == nil end
         return identifier(value.spell)
     end,
+    -- Looks the rune or spell up in the cached engraved set.
     evaluate = function(value)
         if not addon.IsRuneEngraved then return nil, "build-context-unavailable" end
         return addon:IsRuneEngraved(value.rune, value.spell)
     end,
+    -- Readable summary naming the rune.
     print = function(_, value)
         return string.format(L["you {{!have|do not have}} the rune %s engraved"],
             Functions.presentation.nullable(runeLabel(value), L["<rune>"]))
     end,
+    -- widget builds an equipment slot dropdown, a rune dropdown with its icon, and two boxes for entering a spell ID or
+    -- rune ID by hand (entering one clears the other); with no known runes it says why instead. help draws the page.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")

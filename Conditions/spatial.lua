@@ -1,3 +1,12 @@
+-- Built In conditions about where units are: PROXIMITY (allies within a distance of a unit), DISTANCE (a unit is
+-- closer than N yards), DISTANCE_COUNT (observed units within N yards) and ZONE. It also publishes the scan
+-- addon.proximity_eval and its editor widgets addon.proximity_widgets, which Conditions/spatial_stats.lua reuses.
+-- Positions come from UnitPosition and ranges from LibRangeCheck, read through the protectedRead wrapper from
+-- Functions/cache.lua; every result is checked with platform:CanReadValue and an unreadable one is `nil, reason`, never
+-- a guess. DISTANCE_COUNT counts addon.nameplateUnits (restricted clients) or addon.unitsInRange (GUID snapshot), both
+-- kept by main.lua. Loaded from RotationMaster.toc after Conditions/channeling.lua and before Conditions/range.lua.
+-- Callback bodies and the helpers named in the generated block at the end are frozen Built In source: never edit
+-- inside them.
 local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
@@ -31,10 +40,22 @@ addon.builtinCallbackBindings["Conditions/spatial.lua"] = {
     ["Functions.presentation.playerize"] = "builtin:utils.lua:playerize",
 }
 
+-- ============================================================================
+-- Protected reads and positions
+-- ============================================================================
+
+-- Range provider handed to the cached reader: returns LibRangeCheck's (minimum, maximum) yard bounds for a unit.
 local rcf = function(unit) return RangeCheck:GetRange(unit) end
+
+-- Calls a game function under pcall through the per-poll cache; returns ok, then the function's results.
 local protectedRead = addon.Functions.cache.protectedRead
+
+-- True for a real, finite number (not NaN, not infinite).
 local function finite(value) return type(value)=="number" and value==value and value>-math.huge and value<math.huge end
 
+-- Reads a game predicate and normalizes it: returns true or false, or nil and a reason ("missing-api", "api-error",
+-- "restricted-value", "invalid-api-result"). Legacy 0/1 answers count as booleans; an unreadable (secret) answer is
+-- never treated as false.
 local function booleanRead(cache, method, ...)
     local ok,result=protectedRead(cache,method,...)
     if not ok then return nil,result=="missing-api" and result or "api-error" end
@@ -44,6 +65,10 @@ local function booleanRead(cache, method, ...)
     return nil,"invalid-api-result"
 end
 
+-- Returns y, x and the instance ID of a unit's world position, or nil, nil, nil and a reason. The reasons are
+-- "missing-api", "api-error", "restricted-value", "position-unavailable" (the client has no position for the unit,
+-- as for most units outside your instance or party) and "invalid-position-result". Note the y-then-x order of
+-- UnitPosition.
 local function position(cache, unit)
     local ok, y, x, _, instance = protectedRead(cache, UnitPosition, unit)
     if not ok then return nil, nil, nil, y == "missing-api" and y or "api-error" end
@@ -61,6 +86,11 @@ local function position(cache, unit)
     return y, x, instance
 end
 
+-- Decides whether `other` is within `radius` yards of `unit`, whose position (y, x, instance, positionReason) the
+-- caller already read. Returns true or false and the distance (the measured one, or the proven upper bound for a
+-- range estimate), or nil and a reason when it cannot be decided. With coordinates on both units it measures the
+-- straight-line distance (units in different instances are never in range). When the anchor has no position and is
+-- the player, it falls back to LibRangeCheck's bounds for `other`; any other position failure is passed through.
 local function inRange(cache, unit, y, x, instance, positionReason, other, radius)
     if unit == other then return true, 0 end
 
@@ -98,6 +128,8 @@ local function inRange(cache, unit, y, x, instance, positionReason, other, radiu
     return nil, "range-uncertain"
 end
 
+-- Returns the raid subgroup (1 or higher) of raid roster index `index`, or nil and a reason when the roster entry is
+-- unreadable ("raid-roster-unavailable", "restricted-value").
 local function raidGroup(cache, index)
     local ok, _, _, group = protectedRead(cache, GetRaidRosterInfo, index)
     if not ok then return nil, "raid-roster-unavailable" end
@@ -106,6 +138,16 @@ local function raidGroup(cache, index)
     return group
 end
 
+-- ============================================================================
+-- Proximity scan
+-- ============================================================================
+
+-- Scans the party or raid members (and optionally their pets) within `value.distance` yards of `value.unit` and calls
+-- func(cache, unit, distance) for each one. `value` carries unit, distance, samegroup and includepets. Returns true
+-- when the whole roster was decided, or nil and a reason; one undecidable member invalidates the scan, so a caller
+-- must check completion before using what the callback accumulated. A unit that is not in your party or raid is
+-- "proximity-anchor-unavailable". Shared with Conditions/spatial_stats.lua.
+--
 -- Retain the callback(cache,unit,distance) API. A successful estimate supplies
 -- its proven upper bound, never an invented exact distance. Callers must check
 -- completion before using accumulated values; nil+reason invalidates a scan.
@@ -213,6 +255,8 @@ addon.proximity_eval = function(value, cache, func)
     return true
 end
 
+-- Adds the Distance box and the Same Group and Include Pets checkboxes to a proximity condition's editor; each change
+-- writes the field and refreshes the status text. Shared with Conditions/spatial_stats.lua.
 addon.proximity_widgets = function(top, root, funcs, parent, spec, value)
     local distance = addon:CreateConditionEditBox()
     distance:SetWidth(100)
@@ -251,6 +295,10 @@ addon.proximity_widgets = function(top, root, funcs, parent, spec, value)
     parent:AddChild(includepets)
 end
 
+-- PROXIMITY: compares the number of allies in your party or raid within `distance` yards of a unit with `value` using
+-- `operator`. Returns `nil, reason` when addon.proximity_eval cannot decide every member (uncertain positions or
+-- ranges), so the whole condition is unavailable rather than counting a guess. Stores `unit`, `operator`, `value`,
+-- `distance`, `samegroup` and `includepets`. The editor adds the shared proximity widgets after the unit and operator.
 addon:RegisterCondition("PROXIMITY", {
     description = L["Allies Within Range"],
     icon = addon.Artwork.condition["PROXIMITY"],
@@ -262,12 +310,14 @@ addon:RegisterCondition("PROXIMITY", {
         samegroup = "boolean",
         includepets = "boolean",
     },
+    -- A known unit and operator, and a non-negative count and distance.
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0 and
                 value.distance ~= nil and value.distance >= 0)
     end,
+    -- Counts the members the scan reports inside the distance; unavailable (`nil, reason`) when the scan is incomplete.
     evaluate = function(value, cache)
         local count = 0
         local complete,reason=addon.proximity_eval(value, cache, function()
@@ -320,14 +370,24 @@ addon:RegisterCondition("PROXIMITY", {
     end,
 })
 
+-- ============================================================================
+-- Distance
+-- ============================================================================
+
+-- DISTANCE: true when the unit is within `value` yards of you, judged by the upper bound of LibRangeCheck's range (it
+-- reports a range, not an exact distance). False when the unit does not exist; `nil, reason` when presence or the
+-- range is unreadable, there is no usable bound ("range-unavailable", "invalid-range-result") or the range provider
+-- fails. Stores `unit` and `value`; LibRangeCheck cannot measure past 40 yards, so larger values are invalid.
 addon:RegisterCondition("DISTANCE", {
     description = L["Distance"],
     icon = addon.Artwork.condition["DISTANCE"],
     fields = { unit = "string", value = "number" },
+    -- A known unit and a distance of 0 to 40 yards.
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.value ~= nil and value.value >= 0 and value.value <= 40)
     end,
+    -- Unavailable cases are listed above; a missing unit is false.
     evaluate = function(value, cache)
         local exists,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitPresenceObservation,addon.Platform,value.unit)
         if exists==nil then return nil,reason or 'unit-data-unavailable' end
@@ -381,6 +441,9 @@ addon:RegisterCondition("DISTANCE", {
     end,
 })
 
+-- Decides whether a unit is provably within `distance` yards from its LibRangeCheck bounds: true when the upper bound
+-- is inside, false when the lower bound is outside, otherwise nil and "range-uncertain". Returns nil and a reason when
+-- the bounds cannot be read.
 local function rangeMember(cache, unit, distance)
     local bounds,why=Functions.cache.getCached(cache,addon.Platform.GetRangeCheckBounds,addon.Platform,unit)
     if not bounds then return nil,why end
@@ -427,16 +490,24 @@ local function nameplateDistanceCount(value, cache, plates)
     return Functions.values.compare(value.operator, count, value.value)
 end
 
+-- DISTANCE_COUNT: compares the number of observed enemies (or non-enemies, per `enemy`) within `distance` yards of you
+-- with `value` using `operator`; with `incombat`, only units in combat count. It counts the addon's observed unit
+-- snapshot, not every nearby unit. Returns `nil, reason` when the snapshot is missing, any counted unit's identity,
+-- hostility or range is unreadable or uncertain, or the distance exceeds the nameplate distance setting
+-- ("distance-exceeds-nameplate-limit"). Stores `value`, `operator`, `distance`, `enemy` and `incombat`.
 addon:RegisterCondition("DISTANCE_COUNT", {
     description = L["Distance Count"],
     icon = addon.Artwork.condition["DISTANCE_COUNT"],
     fields = { value = "number", operator = "string", distance = "number", enemy = "boolean", incombat = "boolean" },
+    -- Every field must be present and well formed: finite non-negative numbers, a known operator, a boolean `enemy`.
     valid = function(_, value)
         return finite(value.value) and value.value >= 0 and
             Functions.values.isin(addon.operators, value.operator) and type(value.enemy)=="boolean" and
             (value.incombat==nil or type(value.incombat)=="boolean") and
             finite(value.distance) and value.distance >= 0
     end,
+    -- Restricted clients count nameplate tokens; other clients count the GUID snapshot after checking that each token
+    -- still belongs to the recorded GUID. One uncertain unit makes the whole count unavailable.
     evaluate = function(value, cache)
         local maximum,reason=Functions.cache.getCached(cache,addon.Platform.GetNameplateMaxDistance,addon.Platform)
         if maximum==nil then return nil,reason end
@@ -545,13 +616,22 @@ addon:RegisterCondition("DISTANCE_COUNT", {
     end,
 })
 
+-- ============================================================================
+-- Zone
+-- ============================================================================
+
+-- ZONE: true when the zone text (or the subzone text, with `subzone`) equals the saved name exactly. Returns `nil,
+-- reason` when the text API is missing or fails, or the text is restricted or not a string. Stores `value` (the name,
+-- as the client spells it in its own language) and `subzone`.
 addon:RegisterCondition("ZONE", {
     description = L["Zone"],
     icon = addon.Artwork.condition["ZONE"],
     fields = { value = "string", subzone = "boolean" },
+    -- Valid once a name is entered.
     valid = function(_, value)
         return value.value ~= nil
     end,
+    -- Unavailable cases are listed above; otherwise a plain string comparison.
     evaluate = function(value, cache)
         local method
         if value.subzone then method=GetSubZoneText else method=GetZoneText end

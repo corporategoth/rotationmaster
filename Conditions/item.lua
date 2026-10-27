@@ -1,3 +1,11 @@
+-- Item conditions: EQUIPPED, CARRYING, ITEM (available to use), ITEM_RANGE and ITEM_COOLDOWN. Each names an item
+-- reference: one item set (a string key into db.profile.itemsets or db.global.itemsets) or a list of item ids and
+-- names, and an optional trinket slot for ITEM_COOLDOWN. The conditions only declare fields, editors and text;
+-- evaluation is addon:EvaluateItemCondition in Core/item_conditions.lua, which reads the game through Platform
+-- adapters via the evaluation cache and returns nil and a reason for anything missing or hidden (restricted clients
+-- included), so no callback here touches a game API. Loaded from the Conditions group of RotationMaster.toc, after
+-- Conditions/totem.lua. The callback and helper bodies are frozen: saved custom conditions bind to their exact text,
+-- and the generated block at the end is written by a tool.
 local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
@@ -13,11 +21,13 @@ local Functions = {
     },
 }
 
+-- Summary text builders: phrase fills a {name} template, predicate renders an operator as words.
 local Summary = {
     phrase = addon.Functions.presentation.phrase,
     predicate = addon.Functions.presentation.predicate,
 }
 
+-- Literal-template builder for the summary lines that carry no operator.
 local Literal = { phrase = addon.Functions.presentation.phrase }
 addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
 
@@ -30,12 +40,19 @@ addon.builtinCallbackBindings["Conditions/item.lua"] = {
     ["Summary.predicate"] = "builtin:Functions/presentation.lua:predicate",
 }
 
+-- ============================================================================
+-- Shared helpers
+-- ============================================================================
+
+-- Help page body shared by every item condition: the item picker text and the note on how item sets are resolved.
 local function itemHelp(frame)
     addon.layout_condition_itemwidget_help(frame)
     frame:AddChild(helpers.Gap())
     frame:AddChild(helpers.CreateText(L["Item sets are checked in priority order. Bag counts use the first carried candidate, not the sum. Availability, range and cooldown checks use the first carried or equipped candidate. Missing or restricted observations stay unavailable, including under NOT."]))
 end
 
+-- Describes an item reference for a summary line: a colored item set name (white for a profile set, cyan for a global
+-- one), the first item's link or name plus a count of the others, or nil when the reference is invalid or empty.
 local function get_item_desc(items)
     if not addon:IsConditionItemReference(items) then return nil end
     local itemsets = addon.db.profile.itemsets
@@ -58,20 +75,31 @@ local function get_item_desc(items)
     return nil
 end
 
+-- ============================================================================
+-- Equipped, carried and available items
+-- ============================================================================
+
+-- EQUIPPED tests that one of the referenced items is worn. Returns false when none is, and nil and a reason when a
+-- read is unavailable. Stores item (and the notcarrying flag, which this condition does not use).
 addon:RegisterCondition("EQUIPPED", {
     description = L["Have Item Equipped"],
     icon = addon.Artwork.condition["EQUIPPED"],
     requiredFields = { 'item' },
     fields = { item = { "string", { "string", "number" } } },
+    -- Valid with an item set name or a list of items.
     valid = function(_, value)
         return addon:IsConditionItemReference(value.item) and (value.notcarrying==nil or type(value.notcarrying)=="boolean")
     end,
+    -- Unavailable: the reasons addon:EvaluateItemCondition returns (item-set-unavailable, a failed item or equipment
+    -- read). now is the poll's time.
     evaluate = function(value, cache, now)
         return addon:EvaluateItemCondition("EQUIPPED",value,cache,now)
     end,
+    -- Summary line for the condition list.
     print = function(_, value)
         return Literal.phrase(L["you {{!have|do not have}} {item} equipped"], {item = Functions.presentation.nullable(get_item_desc(value.item), L["<item>"])})
     end,
+    -- Editor: the item picker.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -82,24 +110,31 @@ addon:RegisterCondition("EQUIPPED", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(icon_group)
     end,
+    -- Help page: the shared item text.
     help = function(frame)
         itemHelp(frame)
     end,
 })
 
+-- CARRYING compares how many of the first carried candidate are in the bags (not the sum over candidates). Returns the
+-- comparison, with a count of 0 when none is carried, or nil and a reason when the bag counts are unavailable. Stores
+-- item, operator and value (a count).
 addon:RegisterCondition("CARRYING", {
     description = L["Have Item In Bags"],
     icon = addon.Artwork.condition["CARRYING"],
     requiredFields = { 'item', 'operator', 'value' },
     fields = { item = { "string", { "string", "number" } }, operator = "string", value = "number" },
+    -- Valid with an item reference, a listed operator and a finite non-negative count.
     valid = function(_, value)
         return (addon:IsConditionItemReference(value.item) and
                 value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 type(value.value)=="number" and value.value>=0 and value.value<math.huge)
     end,
+    -- Unavailable: the reasons addon:EvaluateItemCondition returns (item-set-unavailable, a failed bag-count read).
     evaluate = function(value, cache, now)
         return addon:EvaluateItemCondition("CARRYING",value,cache,now)
     end,
+    -- Summary line for the condition list.
     print = function(_, value)
         return Summary.phrase(L["the number of {item} you are carrying {comparison} {quantity}"], {
             item = Functions.presentation.nullable(get_item_desc(value.item), L["<item>"]),
@@ -107,6 +142,7 @@ addon:RegisterCondition("CARRYING", {
             quantity = Functions.presentation.nullable(value.value, L["<quantity>"]),
         })
     end,
+    -- Editor: the item picker, then the operator and quantity.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -121,6 +157,7 @@ addon:RegisterCondition("CARRYING", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Help page: the shared item text, then the operator text.
     help = function(frame)
         itemHelp(frame)
         frame:AddChild(helpers.Gap())
@@ -129,23 +166,31 @@ addon:RegisterCondition("CARRYING", {
     end,
 })
 
+-- ITEM tests that the first carried or equipped candidate can be used now: its required level is met and its cooldown
+-- is enabled and either idle or ending with the global cooldown. Returns false when none is held (unless notcarrying
+-- judges the first candidate anyway), and nil and a reason when a read is unavailable. Stores item and notcarrying.
 addon:RegisterCondition("ITEM", {
     description = L["Item Available"],
     icon = addon.Artwork.condition["ITEM"],
     requiredFields = { 'item' },
     fields = { item = { "string", { "string", "number" } }, notcarrying = "boolean" },
+    -- Valid with an item reference and an optional notcarrying flag.
     valid = function(_, value)
         return addon:IsConditionItemReference(value.item) and (value.notcarrying==nil or type(value.notcarrying)=="boolean")
     end,
+    -- Unavailable: the reasons addon:EvaluateItemCondition returns (invalid-time, a failed cooldown, level or global
+    -- cooldown read, invalid-api-result).
     evaluate = function(value, cache, now)
         return addon:EvaluateItemCondition("ITEM",value,cache,now)
     end,
+    -- Summary line for the condition list.
     print = function(_, value)
         return Literal.phrase(L["{item} {{!is|is not}} available{carrying}"], {
             item = Functions.presentation.nullable(get_item_desc(value.item), L["<item>"]),
             carrying = value.notcarrying and L[", even if you do not currently have one"] or "",
         })
     end,
+    -- Editor: the item picker and the Check If Not Carrying checkbox.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -166,6 +211,7 @@ addon:RegisterCondition("ITEM", {
         end)
         parent:AddChild(notcarring)
     end,
+    -- Help page: the shared item text, what availability means, then the Check If Not Carrying checkbox.
     help = function(frame)
         itemHelp(frame)
         frame:AddChild(helpers.Gap())
@@ -177,23 +223,30 @@ addon:RegisterCondition("ITEM", {
     end,
 })
 
+-- ITEM_RANGE tests that the current target is in range of the first carried or equipped candidate. Returns false when
+-- none is held (unless notcarrying judges the first candidate anyway) or the item has no range to test, and nil and a
+-- reason when a read is unavailable. Stores item and notcarrying.
 addon:RegisterCondition("ITEM_RANGE", {
     description = L["Item In Range"],
     icon = addon.Artwork.condition["ITEM_RANGE"],
     requiredFields = { 'item' },
     fields = { item = { "string", { "string", "number" } }, notcarrying = "boolean" },
+    -- Valid with an item reference and an optional notcarrying flag.
     valid = function(_, value)
         return addon:IsConditionItemReference(value.item) and (value.notcarrying==nil or type(value.notcarrying)=="boolean")
     end,
+    -- Unavailable: the reasons addon:EvaluateItemCondition returns (a failed item id or range read).
     evaluate = function(value, cache, now)
         return addon:EvaluateItemCondition("ITEM_RANGE",value,cache,now)
     end,
+    -- Summary line for the condition list.
     print = function(_, value)
         return Literal.phrase(L["{item} {{!is|is not}} in range{carrying}"], {
             item = Functions.presentation.nullable(get_item_desc(value.item), L["<item>"]),
             carrying = value.notcarrying and L[", even if you do not currently have one"] or "",
         })
     end,
+    -- Editor: the item picker and the Check If Not Carrying checkbox.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -214,6 +267,7 @@ addon:RegisterCondition("ITEM_RANGE", {
         end)
         parent:AddChild(notcarring)
     end,
+    -- Help page: the shared item text, then the Check If Not Carrying checkbox.
     help = function(frame)
         itemHelp(frame)
         frame:AddChild(helpers.Gap())
@@ -223,11 +277,19 @@ addon:RegisterCondition("ITEM_RANGE", {
     end,
 })
 
+-- ============================================================================
+-- Item cooldown
+-- ============================================================================
+
 -- The trinket slots ITEM_COOLDOWN can read instead of a named item (inventory slots 13 and 14).
 local TRINKET_SLOTS = { [13] = L["Trinket 1"], [14] = L["Trinket 2"] }
 local TRINKET_SLOT_ORDER = { 13, 14 }
 
 -- Either an item (or item set) is named, or a trinket slot is chosen and the item is ignored.
+-- ITEM_COOLDOWN compares the seconds left on that item's cooldown. Returns false for an empty trinket slot or when no
+-- candidate is held, and nil and a reason when a read is unavailable (item-cooldown-disabled, or
+-- trinket-has-no-use-effect for a slot whose trinket has no on-use effect). Stores item or slot, notcarrying, operator
+-- and value (seconds).
 addon:RegisterCondition("ITEM_COOLDOWN", {
     description = L["Item Cooldown"],
     icon = addon.Artwork.condition["ITEM_COOLDOWN"],
@@ -239,15 +301,19 @@ addon:RegisterCondition("ITEM_COOLDOWN", {
         operator = "string",
         value = "number",
     },
+    -- Valid with a trinket slot or an item reference, a listed operator and a finite non-negative number of seconds.
     valid = function(_, value)
         local source
         if value.slot ~= nil then source = Functions.values.isin(TRINKET_SLOTS, value.slot) else source = addon:IsConditionItemReference(value.item) end
         return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 source and (value.notcarrying==nil or type(value.notcarrying)=="boolean") and type(value.value)=="number" and value.value>=0 and value.value<math.huge)
     end,
+    -- Unavailable: the reasons addon:EvaluateItemCondition returns, including build-context-unavailable for a slot
+    -- before the equipment snapshot exists. now is the poll's time.
     evaluate = function(value, cache, now)
         return addon:EvaluateItemCondition("ITEM_COOLDOWN",value,cache,now)
     end,
+    -- Summary line for the condition list; a trinket slot reads as "your Trinket n".
     print = function(_, value)
         if value.slot ~= nil then
             return Functions.presentation.compareString(value.operator,
@@ -261,6 +327,7 @@ addon:RegisterCondition("ITEM_COOLDOWN", {
             carrying = value.notcarrying and L[", even if you do not currently have one"] or "",
         })
     end,
+    -- Editor: the item picker, the optional trinket slot, the operator and seconds, and Check If Not Carrying.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -300,6 +367,7 @@ addon:RegisterCondition("ITEM_COOLDOWN", {
         end)
         parent:AddChild(notcarring)
     end,
+    -- Help page: the shared item text, the trinket slot, the operator text, then Check If Not Carrying.
     help = function(frame)
         itemHelp(frame)
         frame:AddChild(helpers.Gap())

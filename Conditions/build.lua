@@ -1,3 +1,12 @@
+-- Built In conditions about which bar you act through and what you are wearing: ACTION_CONTEXT (your own bar, a
+-- vehicle, a possessed unit, an override bar or a pet battle), SET_PIECES (compares the number of equipped pieces of an
+-- item set) and WEAPON_IMBUE (the temporary enchant ID on the main or off hand). ACTION_CONTEXT reads
+-- addon:GetActionContext (main.lua) and SET_PIECES reads the cached build snapshot (Core/build_context.lua), so
+-- neither scans per poll; a missing provider or pending item data is unavailable (nil, reason), also under NOT.
+-- WEAPON_IMBUE reads the game through imbueObservation, which passes every value through Platform:CanReadValue. The
+-- weapon-enchant timers and stacks are in Conditions/weapon.lua. Loaded from RotationMaster.toc after
+-- Conditions/equipment.lua. Callback and helper bodies are hashed by saved copies and bundles: never add or change
+-- text inside a function body, and leave the generated block at the end alone.
 local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
@@ -29,6 +38,12 @@ addon.builtinCallbackBindings["Conditions/build.lua"] = {
     ["Summary.predicate"] = "builtin:Functions/presentation.lua:predicate",
 }
 
+-- ============================================================================
+-- Helpers
+-- ============================================================================
+
+-- Display labels for the bars you can act through, keyed by the context name addon:GetActionContext returns. Public
+-- on addon so other files can list them.
 addon.actionContexts = {
     player = L["your own action bar"],
     vehicle = L["a vehicle"],
@@ -37,12 +52,16 @@ addon.actionContexts = {
     petbattle = L["a pet battle"],
 }
 
+-- The order the editor lists the action contexts in.
 local actionContextOrder = { "player", "vehicle", "possession", "override", "petbattle" }
 
+-- True for a positive whole number (a set ID or an enchant ID).
 local function wholeNumber(value)
     return type(value)=="number" and value>0 and value<math.huge and value%1==0
 end
 
+-- Display label for an item set ID: its name and ID when the game exposes a name, otherwise "item set N". Returns nil
+-- for something that is not a valid ID.
 local function setLabel(id)
     if not wholeNumber(id) then return nil end
     local name=addon.GetItemSetName and addon:GetItemSetName(id)
@@ -53,6 +72,10 @@ end
 -- Temporary weapon enchant: GetWeaponEnchantInfo returns has, expires,
 -- charges, enchant ID for the main hand (1-4) and the off hand (5-8). The
 -- Platform reader composes the same tuple from Retail's C_PaperDollInfo.
+-- Returns the temporary enchant ID on the hand chosen by value.offhand, false when that hand has none, or nil and a
+-- reason ("missing-api", "api-error", "restricted-value" when the client hides the values, or
+-- "invalid-weapon-observation"). The game call is cached per poll through `cache`; the editor passes a throwaway
+-- table.
 local function imbueObservation(value, cache)
     local reader = GetWeaponEnchantInfo
     if C_PaperDollInfo and C_PaperDollInfo.GetTemporaryEnchantmentInfo then reader = addon.Platform.ComposedWeaponEnchantInfo end
@@ -68,22 +91,33 @@ local function imbueObservation(value, cache)
     return id
 end
 
+-- ============================================================================
+-- Action context
+-- ============================================================================
+
+-- ACTION_CONTEXT: true when the bar you are acting through (your own, a vehicle, a possessed unit, an override bar or a
+-- pet battle) is the chosen one. Stores `context`. Returns `nil, "action-context-unavailable"` when main.lua's reader
+-- is missing.
 addon:RegisterCondition("ACTION_CONTEXT", {
     description = L["Action Context"],
     icon = addon.Artwork.condition["ACTION_CONTEXT"],
     requiredFields = { "context" },
     fields = { context = "string" },
+    -- Valid once one of the listed action contexts is chosen.
     valid = function(_, value)
         return value.context ~= nil and addon.actionContexts[value.context] ~= nil
     end,
+    -- Unavailable only when addon:GetActionContext does not exist; otherwise compares the current context.
     evaluate = function(value)
         if not addon.GetActionContext then return nil, "action-context-unavailable" end
         return addon:GetActionContext() == value.context
     end,
+    -- Readable summary naming the chosen bar.
     print = function(_, value)
         return string.format(L["you {{!are|are not}} acting through %s"],
             Functions.presentation.nullable(addon.actionContexts[value.context], L["<action bar>"]))
     end,
+    -- widget builds the action context dropdown; help explains each context.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -108,21 +142,32 @@ addon:RegisterCondition("ACTION_CONTEXT", {
     end,
 })
 
+-- ============================================================================
+-- Equipment
+-- ============================================================================
+
+-- SET_PIECES: compares the number of equipped pieces of one game item set with a number. Stores `set` (the item set
+-- ID), `operator` and `value`. Returns `nil, reason` while any equipped item's metadata is still loading
+-- ("item-data-pending"), so a count is never understated, or when the build snapshot is unavailable.
 addon:RegisterCondition("SET_PIECES", {
     description = L["Item Set Pieces Equipped"],
     icon = addon.Artwork.condition["SET_PIECES"],
     requiredFields = { "set", "operator", "value" },
     fields = { set = "number", operator = "string", value = "number" },
+    -- Valid with a set ID, a known operator and a finite, non-negative number.
     valid = function(_, value)
         return wholeNumber(value.set) and value.operator ~= nil and Functions.values.isin(addon.operators, value.operator)
             and type(value.value) == "number" and value.value >= 0 and value.value < math.huge
     end,
+    -- Unavailable ("build-context-unavailable", or the snapshot's own reason such as "item-data-pending") when the
+    -- count cannot be known; a set with no equipped pieces counts 0.
     evaluate = function(value)
         if not addon.GetEquippedSetPieces then return nil, "build-context-unavailable" end
         local count, reason = addon:GetEquippedSetPieces(value.set)
         if count == nil then return nil, reason end
         return Functions.values.compare(value.operator, count, value.value)
     end,
+    -- Readable summary naming the set and the comparison.
     print = function(_, value)
         return Summary.phrase(L["the number of {set} pieces you have equipped {comparison} {quantity}"], {
             set = Functions.presentation.nullable(setLabel(value.set), L["<item set>"]),
@@ -130,6 +175,8 @@ addon:RegisterCondition("SET_PIECES", {
             quantity = Functions.presentation.nullable(value.value, L["<quantity>"]),
         })
     end,
+    -- widget builds a set ID box, a dropdown of the sets you are wearing and an operator-and-pieces control; help
+    -- explains the set ID and the count.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -180,26 +227,38 @@ addon:RegisterCondition("SET_PIECES", {
     end,
 })
 
+-- ============================================================================
+-- Temporary weapon enchant
+-- ============================================================================
+
 -- Every client, Retail included (Shaman imbues); see Conditions/weapon.lua.
 do
+    -- WEAPON_IMBUE: true when the temporary enchant on the main hand (or the off hand, when `offhand` is set) is the
+    -- chosen enchant ID. False when that hand has no temporary enchant or a different one. Stores `offhand` and
+    -- `enchant`. Returns `nil, reason` when imbueObservation cannot read the enchant.
     addon:RegisterCondition("WEAPON_IMBUE", {
         description = L["Weapon Enchant Type"],
         icon = addon.Artwork.condition["WEAPON_IMBUE"],
         requiredFields = { "enchant" },
         fields = { offhand = "boolean", enchant = "number" },
+        -- Valid with an enchant ID and, if present, a boolean off hand flag.
         valid = function(_, value)
             return wholeNumber(value.enchant) and (value.offhand == nil or type(value.offhand) == "boolean")
         end,
+        -- Unavailable when the weapon enchant API is missing, errors, or returns hidden or malformed values.
         evaluate = function(value, cache)
             local id, reason = imbueObservation(value, cache)
             if id == nil then return nil, reason end
             return id == value.enchant
         end,
+        -- Readable summary naming the hand and the enchant ID.
         print = function(_, value)
             return string.format(L["your %s weapon {{!has|does not have}} temporary enchant %s"],
                 (value.offhand and L["off hand"] or L["main hand"]),
                 Functions.presentation.nullable(value.enchant, L["<enchant>"]))
         end,
+        -- widget builds an off hand checkbox, an enchant ID box and a line showing the enchant currently on that hand;
+        -- help explains the enchant ID.
         widget = function(parent, spec, value)
             local top = parent:GetUserData("top")
             local root = top:GetUserData("root")
