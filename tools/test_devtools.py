@@ -137,6 +137,15 @@ class Check(unittest.TestCase):
             layout[path] = b'x'
             self.assertTrue(self.problems(layout), path)
 
+    def test_every_file_type_that_is_not_for_the_game_fails_the_package(self):
+        # Spelled out, not read from P.FORBIDDEN_SUFFIXES, so dropping a suffix from the checker fails here.
+        for suffix in ('.py', '.sh', '.svg', '.psd', '.xcf', '.png', '.jpg', '.jpeg', '.zip', '.gz', '.bak', '.orig', '.rej', '.swp',
+                       '.log', '.pyc', '.pem', '.key', '.env'):
+            for name in (f'RotationMaster/Fonts/sample{suffix}', f'RotationMaster/Data/SAMPLE{suffix.upper()}'):
+                layout = minimal_layout()
+                layout[name] = b'x'
+                self.assertTrue(any('file type that is not for the game' in problem for problem in self.problems(layout)), name)
+
     def test_a_vendored_library_may_keep_its_own_docs_folder(self):
         layout = minimal_layout()
         layout['RotationMaster/Libs/AceX/docs/readme.txt'] = b'x'
