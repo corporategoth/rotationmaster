@@ -58,7 +58,7 @@ def release_metadata():
     # Development-only trees and files. The packager already skips every dotfile; naming them here keeps the intent in
     # the file and lets tools/package_release.py --check state it as a rule.
     ignored = ['tests', 'tools', 'docs', '.claude', '.gitea', '.github', '.pre-commit-config.yaml', '.gitattributes',
-               'README.md', 'CONTRIBUTING.md', 'TODO', 'custom_casting_remain.txt',
+               'README.md', 'CONTRIBUTING.md',
                'Modules/README.md',
                'Data/talent_trees.json', 'Data/wowsims/ids.json', 'Data/wowsims/kinds.json',
                'Data/wowsims/mapping.json', 'Data/wowsims/SOURCE.json', 'Assets/Controls/*.svg',
