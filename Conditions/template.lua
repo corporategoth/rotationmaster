@@ -22,17 +22,15 @@ addon:RegisterCondition("MYCONDITON", {
     --    -- Takes either a string, an table with subfields:
     --    value = { "string", { name = "string", value = "number" } }
     -- Any field can NOT exist in the source data.  This is perfectly valid!
-    fields = { },
+    fields = {},
     -- Call this when the condition is registered (could initialize some data or something).
     -- Params:
     --    tag - The tag (aka. type) this condition is registered as
-    on_register = function(tag)
-    end,
+    on_register = function(tag) end,
     -- Call this when the condition is unregistered (could destroy some data or something).
     -- Params:
     --    tag - The tag (aka. type) this condition was registered as
-    on_unregister = function(tag)
-    end,
+    on_unregister = function(tag) end,
     -- Validate that the condition has all required values set and they are in
     -- acceptable bounds.  This does not indicate if the condition is true or not.
     -- Params:
@@ -77,5 +75,5 @@ addon:RegisterCondition("MYCONDITON", {
     --    frame - The frame the help widgets will be layed out in.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
-    end
+    end,
 })
