@@ -94,7 +94,7 @@ function addon.layout_custom_condition_options_help(frame)
             .. L["Evaluation Function"]
             .. color.RESET
             .. " - "
-            .. "The function used to evaluate a this condition real-time."
+            .. "The function used to evaluate this condition in real time."
     ))
 
     group:AddChild(Indent(40, CreateText(
