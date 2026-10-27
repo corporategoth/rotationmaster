@@ -33,7 +33,7 @@ and has not been verified in a real client is in `docs/quality/client-support.md
 
 | Path | Role |
 | --- | --- |
-| `RotationMaster.toc`, `embeds.xml`, `locales.xml`, `Bindings.xml` | Load list; the libraries; the 11 locale files; key bindings |
+| `RotationMaster.toc`, `embeds.xml`, `locales.xml`, `Bindings.xml` | Load list; the libraries; the 11 main locale files; key bindings |
 | `globals.lua`, `compat.lua`, `constants.lua`, `utils.lua`, `profiler.lua`, `validate.lua` | Early globals and color codes; compatibility shims; constants; helpers; native profiler access; saved-data validation |
 | `init.lua`, `main.lua`, `buttons.lua` | Addon object, saved-variable defaults and migrations (`init.lua`); slash commands, events, the poll and both evaluation engines (`main.lua`); action-bar button discovery and highlighting (`buttons.lua`) |
 | `Platform/` | One adapter per Blizzard API family (`unit_health`, `spells`, `auras`, `talents`, `range`, ...). Everything that touches a game API goes through here and returns a value or `nil, reason`. |
@@ -45,9 +45,9 @@ and has not been verified in a real client is in `docs/quality/client-support.md
 | `Help/` | Authored help text, one file per area |
 | `Diagnostics/`, `Analytics/` | Error reports, CPU/runtime/memory capture, `/rm debug` reports; analytics capture and replay |
 | `Integrations/` | Optional addons: Masque, Questie, boss mods, LuaWorkbench, the supported-addon catalog |
-| `Modules/` | Load-on-demand add-ons: 13 class modules of Built In rotations and `RotationMaster_WowSims` |
+| `Modules/` | Load-on-demand add-ons: 13 class modules of Built In rotations, `RotationMaster_WowSims` (the converter and its text) and four text bundles (`RotationMaster_HelpText`, `_ConditionText`, `_DiagnosticsText`, `_IntegrationsText`) |
 | `Libs/`, `LibsAugment/` | Vendored libraries (hash-pinned in `Libs/UPSTREAM.json`) and local additions |
-| `Locales/` | `enUS.lua` (source) and ten generated translations |
+| `Locales/` | `enUS.lua` (source) and ten generated translations for the text read at startup; `bundles.json` names the load-on-demand text bundles that hold the rest (see "Text bundles") |
 | `Assets/`, `Fonts/`, `textures/` | Icons and overlays (`Assets/*/provenance.json` records each one), the monospace font, minimap and chat textures |
 | `tests/` | Headless suites (Lua 5.1 and LuaJIT) and Python checks; `tests/fixtures/` holds client models and frozen predecessor sources |
 | `tools/` | Generators, checkers, the package builder, translation tools (`docs/dev/running-things.md`) |
@@ -58,7 +58,7 @@ and has not been verified in a real client is in `docs/quality/client-support.md
 
 `RotationMaster.toc` is the load order and it matters. Roughly: `globals.lua`; `Core/dependency_revisions.lua`; all of
 `Platform/` (adapters first, so everything above can use them); `compat.lua`; the libraries (`embeds.xml`) and locales
-(`locales.xml`); `constants.lua`, early `Data/`, `Functions/`; `utils.lua`, `profiler.lua`, `Diagnostics/`; the `Core/`
+(`locales.xml`) with the text-bundle index and loader (`Data/text_bundle_index.lua`, `Core/text_bundles.lua`); `constants.lua`, early `Data/`, `Functions/`; `utils.lua`, `profiler.lua`, `Diagnostics/`; the `Core/`
 condition services and `Data/` modules; the rest of `Core/`; `main.lua`, `buttons.lua`; `init.lua`, `validate.lua`; all
 of `UI/` and `Integrations/`; `Help/`; and last `Conditions/`, which register themselves into the registry `Core/`
 created. `tests/verify.py` walks this graph (TOC and XML includes, exact filename case) and fails on a missing file.
@@ -66,7 +66,7 @@ created. `tests/verify.py` walks this graph (TOC and XML includes, exact filenam
 Every file starts `local addon_name, addon = ...`: the addon table is passed by the client. Platform adapters are
 methods on `addon.Platform` (`function platform:GetUnitHealthObservation(unit)`), other modules hang functions on `addon`.
 Several files capture `addon.X` into a local at load and delete the public name so later code cannot swap it; the byte
-freeze tests below depend on that style being stable.
+predecessor fixtures below depend on that style being stable.
 
 ## Load-on-demand Built In modules
 
@@ -76,7 +76,8 @@ Built In rotations are not in the main addon. `Modules/RotationMaster_<Class>/` 
 (`addon:LoadBuiltInModule`) asks the client for exactly the player's class module, and the client picks the flavor TOC, so
 only that edition's packs run. `bind.lua` (identical in every module) gives the module's private namespace
 `RegisterDefaultBlock` and `RegisterDefaultRotation`. `RotationMaster_WowSims` is a converter module loaded by
-`Core/transfer_formats.lua` the first time a transfer window needs it. In the release zip each module is moved to its own
+`Core/transfer_formats.lua` the first time a transfer window needs it (it also holds the converter's text). The four text
+bundles under `Modules/` are not Built In modules; see "Text bundles" below. In the release zip each module is moved to its own
 top-level folder (`.pkgmeta` `move-folders`); in a development install each needs its own symlink. Full detail,
 authoring rules and the premade policy are in `Modules/README.md`.
 
@@ -144,7 +145,8 @@ Never hand-edit these; `python3 tools/check --static` fails when one is stale.
 | `Data/talent_trees.json` | `tools/export_talent_trees.py` |
 | `docs/builtin-name-changes.md`, Built In names | `tools/builtin_names.py apply|docs` |
 | `tests/fixtures/client_api_<client>.lua` | `tools/generate_client_api.py` |
-| `Locales/<xx>.lua` | `tools/locales.py build` (via `tools/translation_apply.py`) |
+| `Locales/<xx>.lua`, `Modules/RotationMaster_*/<xx>.lua` of the text bundles | `tools/locales.py build` (via `tools/translation_apply.py`) |
+| `Data/text_bundle_index.lua` | `tools/locales.py index` (hashes of every bundle key) |
 | `docs/translators/glossary.md` | `tools/translation_glossary.py --write` |
 | `Assets/Controls/*.tga` | `tools/generate_control_icons.py` (needs rsvg-convert and ImageMagick) |
 
@@ -160,16 +162,51 @@ knowing:
 - **Class scenario suites** (`defaults_<edition>_<class>.lua`) run each premade through the real predicates and sequence
   executor with modeled observations. `default_corpus.lua` checks every pack of every module against five synthetic client
   families and thirteen class tokens and is by far the slowest test (minutes).
-- **Byte-freeze and predecessor ("inverse") suites.** Many suites guard a refactor by proving old and new behave the same.
-  `tests/fixtures/restore_*.lua` turn the *current* source text of a file back into its predecessor (a recorded "before" and
-  "after"); the suite loads the predecessor and compares behavior. The restore asserts the current file equals the recorded
-  "after" byte for byte and fails with `unrelated ... source change: <path>` when it does not. So **editing a frozen file
-  breaks those suites by design**; the change has to be recorded in the fixture on purpose. They are not flaky tests and
-  they are not regressions in behavior; compare against a clean baseline before drawing conclusions.
+- **Predecessor fixtures.** A suite that proves a refactor kept behavior can rebuild a predecessor of a file from the
+  current text (`tests/fixtures/restore_*.lua`: a recorded "before" and "after") and run both. The restore asserts the
+  current file equals the recorded "after" byte for byte and fails with `unrelated ... source change: <path>` when it does
+  not, so **editing a file a live restore covers fails it by design**: record the change in the fixture on purpose (a
+  layered restore, as in `restore_window_layering.lua`), never to turn a red run green. Prefer not to add them. A proof that
+  "this refactor changed nothing else" is established when the refactor lands and git keeps it; what lasts is a test of the
+  behavior. About a hundred such byte-exact proofs of past commits were retired for that reason (suites that only compared
+  old and new text were removed with their `tools/check` entries; behavior suites kept their behavior tests).
+  `tests/private_helper_identities.lua` is the one deliberate pin: the identity of the private helpers saved copies and
+  exported bundles bind to (`builtin:<module>:<name>`, whose source hash `Core/function_data.lua` carries in a bundle's
+  requirements). Where a helper changes on purpose, record its new hash there, against the commit that changed it.
 - **Client model suites** (`client_api_surface.lua`, `client_baseline.lua`) guard against fixtures that define globals the
   real client removed.
 
 The exact command list is `tools/check`; `tools/check_all.py` runs the same list without stopping at the first failure.
+
+## Text bundles (load-on-demand translations)
+
+A Lua table's hash part doubles past 4,096 entries (about 177 KB resident, for every player in every language), and
+`Locales/enUS.lua` had crossed the line. The text nothing reads while the game loads therefore lives outside the main
+table, in five load-on-demand add-ons named in `Locales/bundles.json`: `RotationMaster_HelpText` (Help articles and
+tooltips), `RotationMaster_ConditionText` (condition summaries, help and choices), `RotationMaster_DiagnosticsText`
+(performance, memory, analytics and error reports, `/rm debug`), `RotationMaster_IntegrationsText` (the Integrations page)
+and `RotationMaster_WowSims` (the converter's reports, beside the converter). Each holds `enUS.lua` and the ten
+translations as an AceLocale application of its own; the English is still the key, and a key lives in exactly one catalog.
+
+`Core/text_bundles.lua` makes this invisible: a `L["English text"]` read the main table cannot answer asks
+`Data/text_bundle_index.lua` (the sorted 32-bit hashes of each bundle's keys, generated by `tools/locales.py index`) which
+bundle owns the key, loads that add-on once through `C_AddOns.LoadAddOn`, and answers from it. A bundle that cannot load
+answers with the key (the English) and is not asked again; a key in no catalog is reported as missing as before.
+`addon:LoadTextBundle(id)`, `addon:GetTextBundleOf(key)` and `addon:GetTextBundleStates()` serve code and tests. The index
+and the loader load straight after `locales.xml`; nothing in a bundle may be read while the game is loading.
+
+Resident memory (Lua 5.1, English plus the game language): an English game 1,061 KB before, 692 KB at startup now and
+919 KB with every bundle loaded; a German game 1,388 KB before, 987 KB now and 1,325 KB with every bundle loaded.
+
+Tools and gates. `python3 tools/locales.py bundles` lists the catalogs; `move` moves keys between them; `check` validates
+every catalog and the index; `tools/translation_*.py` read and write all catalogs as one locale.
+`tests/test_locale_bundles.py` fails if any bundle string is missing, stale or invalid in any of the ten locales (the main
+catalog may carry untranslated keys, a bundle may not), if a key is in two catalogs, or if the index is stale;
+`tests/text_bundles.lua` proves the runtime (a normal start loads no bundle, a bundle key loads exactly its own bundle,
+every key reads as its translation in every language); `tests/client_locale.lua` holds the main table at or below 3,900
+entries and reports the resident memory. New text goes into `Locales/enUS.lua` first; move it when it is only read on
+demand. A new bundle needs an entry in `Locales/bundles.json`, a TOC (`## LoadOnDemand: 1`, `## Dependencies:
+RotationMaster`, English first), `.pkgmeta` (`python3 tools/generate_artwork_catalog.py --write`) and the index.
 
 ## How to...
 
@@ -194,8 +231,10 @@ shipped disabled). Add scenarios to the class suite, run `python3 tools/builtin_
 ### Add or change a locale string
 
 English text is the key. Write `L["Text"]` in code and `L["Text"] = true` in `Locales/enUS.lua`; never concatenate
-sentences, and use `{{name}}` / `%s` placeholders. Keep `enUS` under 4096 entries (see `.claude/learnings/tests-and-locales.md`).
-`python3 tools/catalog_check.py` and `python3 tools/locales.py check` must pass; translations catch up through
+sentences, and use `{{name}}` / `%s` placeholders. Keep `Locales/enUS.lua` at or below 3,900 entries (see "Text bundles"). Text that is only read when a window opens, a
+report is written or a condition is described belongs in a text bundle: add the key to `Locales/enUS.lua` first, then
+`python3 tools/locales.py move <bundle> keys.json` moves it (with every translation) into that bundle and rebuilds the
+index. `python3 tools/catalog_check.py` and `python3 tools/locales.py check` must pass; translations catch up through
 `tools/translation_status.py` / `translation_todo.py` / `translation_apply.py`.
 
 ### Add a client

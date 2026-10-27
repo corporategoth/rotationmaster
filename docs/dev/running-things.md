@@ -25,10 +25,11 @@ touch `core.hooksPath`).
 | `python3 tools/check_all.py` | The same command list, never stopping at the first failure; prints one line per command and the output of failures | minutes |
 | `python3 tools/check_all.py --runtime lua5.1` (or `luajit`, `python`) | Only the commands that use that runtime (CI runs the three as a matrix) | |
 | `python3 tools/check_all.py --baseline tools/known_failures.txt` | Lets the commands listed in that file fail (see below) | |
-| `python3 tools/check_all.py --skip-slow tools/slow_tests.txt` | Leaves out the six commands that take over 30 s each (what the pre-push hook runs) | about 15 min |
+| `python3 tools/check_all.py --skip-slow tools/slow_tests.txt` | Leaves out the commands listed in `tools/slow_tests.txt` (what the pre-push hook runs) | see the file |
 | `python3 tools/fast_tests.py Core/foo.lua` | Only the suites named after the files you changed (the pre-commit hook) | seconds |
 | `python3 tools/test_devtools.py` | The tools' own tests (package builder, release notes, translation tools, workflow lint) | about 10 s |
-| `python3 tests/test_us_spelling.py` | American English in enUS, help text and Markdown | seconds |
+| `python3 tests/test_us_spelling.py` | American English in enUS (main and text bundles), help text and Markdown | seconds |
+| `python3 tests/test_locale_bundles.py`, `lua5.1 tests/text_bundles.lua` | The load-on-demand text bundles: complete in ten languages, one owner per key, fresh index, nothing loaded at startup | seconds |
 | `lua5.1 tests/<name>.lua`, `luajit tests/<name>.lua` | One suite | usually under a second |
 
 `tools/check_all.py --json out.json` also writes every command's exit code and duration. `default_corpus.lua` is the one
@@ -49,10 +50,17 @@ Do not run several full suites at once. A test must leave nothing behind: no fil
 
 ### Known failures
 
-`tools/known_failures.txt` lists commands that are red on the current branch (a command is a line such as
-`lua5.1 tests/x.lua`). It is a temporary, honest list, not an exemption: CI's push workflow tolerates exactly those
-commands; the release workflow does not. Many suites are byte-freeze checks that fail by design when a frozen file is
-edited (`docs/dev/architecture.md`, "Tests"); fix them by updating the recorded fixture on purpose, then remove the line.
+`tools/known_failures.txt` lists commands that may fail without failing the run (a command is a line such as
+`lua5.1 tests/x.lua`); CI's push workflow tolerates exactly those commands, the release workflow does not. **The list is
+empty**: the whole suite passes (`python3 tools/check_all.py` exits 0) and has to stay that way. The mechanism stays for a
+regression that lands on a branch before its fix does. Add a line only for a failure you are about to fix on the same
+branch, remove it the moment the command is green, and never add one to hide a regression you just made. A line naming a
+command `tools/check` no longer runs is an error (`tools/test_devtools.py`). A suite that rebuilds a predecessor of a file
+(`tests/fixtures/restore_*.lua`) fails on any unrecorded edit of that file by design (`docs/dev/architecture.md`, "Tests"):
+record the change in the fixture on purpose.
+
+`tools/slow_tests.txt` lists the commands `--skip-slow` leaves out of a quick run, with the duration measured at the last
+full run; CI still runs them.
 
 ## Generated files
 
@@ -118,7 +126,7 @@ python3 tools/locales.py check
 | `tools/test_devtools.py` | Tests of the tools in this table |
 | `tools/setup_lint.py`, `tools/lint.py`, `tools/lint-tool.json`, `tools/lint-baseline.json` | Pinned wowlua-ls: download once, run against the baseline |
 | `tools/catalog_check.py` | Literal `L["key"]` definitions and reads; raw-prose inventory (`docs/quality/localization-inventory.json`) |
-| `tools/locales.py` | Export, missing, build, check, rebuild locale files (the translation tools wrap it) |
+| `tools/locales.py` | Export, missing, build, check, rebuild locale files, list and move text between the main catalog and the text bundles, write the bundle index (the translation tools wrap it) |
 | `tools/translation_status.py`, `translation_todo.py`, `translation_apply.py`, `translation_glossary.py`, `translation_lib.py`, `translation_exempt.json` | Translator workflow (`docs/translators/README.md`) |
 | `tools/generate_artwork_catalog.py` | `Data/artwork.lua` and `.pkgmeta` |
 | `tools/generate_builtin_sources.py`, `tools/collect_builtin_sources.lua`, `tools/public_helpers.lua` | `Data/builtin_sources.lua` and the public helper documentation |

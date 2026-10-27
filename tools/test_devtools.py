@@ -85,7 +85,10 @@ class Pkgmeta(unittest.TestCase):
         meta = P.parse_pkgmeta(ROOT / '.pkgmeta')
         self.assertEqual(meta['package-as'], 'RotationMaster')
         self.assertEqual(meta['changelog'], 'CHANGELOG.md')
-        self.assertEqual(len(meta['move-folders']), 14)
+        # Every add-on folder under Modules/ ships beside the main add-on: the Built In class modules, the WowSims
+        # converter and the load-on-demand text bundles.
+        folders = sorted(d.name for d in (ROOT / 'Modules').iterdir() if d.is_dir())
+        self.assertEqual(sorted(meta['move-folders'].values()), folders)
         self.assertIn('RotationMaster_WowSims', meta['move-folders'].values())
         for item in ('tests', 'tools', 'docs', '.claude', '.gitea', 'README.md', 'Data/wowsims/mapping.json'):
             self.assertIn(item, meta['ignore'])

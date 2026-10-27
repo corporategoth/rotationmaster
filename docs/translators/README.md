@@ -16,7 +16,7 @@ source. Ten translations exist, each a generated file:
 | zhCN | Chinese (Simplified) | |
 | zhTW | Chinese (Traditional) | |
 
-A string missing from a locale shows in English, so a translation can be finished in stages. Nothing here needs a
+A string missing from a locale shows in English, so a translation can be finished in stages. (The strings of the load-on-demand text bundles in `Modules/` are the exception: all ten languages must be complete for them, and `tests/test_locale_bundles.py` fails otherwise.) Nothing here needs a
 programmer except running the tools below.
 
 ## How the files work
@@ -29,7 +29,7 @@ file maps the same key to the translated text:
 L["Choose a duration from 1 to %d seconds."] = "Wähle eine Dauer von 1 bis %d Sekunden."
 ```
 
-- **Never edit `Locales/<xx>.lua` by hand and never translate a key.** The files are written by `tools/locales.py`, which keeps
+- **Never edit `Locales/<xx>.lua` (or a text bundle's `<xx>.lua` under `Modules/RotationMaster_*`) by hand and never translate a key.** The tools read and write the main catalog and the bundles as one language; the files are written by `tools/locales.py`, which keeps
   their order and format. You provide `{key: translation}` and the tools do the rest.
 - The `-- en:` comment above each entry is the English that entry was translated from. When the English later changes, the
   entry becomes **stale**: the game still shows the old translation until someone updates it, and the tools list it again.

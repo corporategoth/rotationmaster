@@ -14,5 +14,7 @@ built and then removed on purpose.
 - Terminology: *Identifier* (short *ID*), never "Handle" or "Identity". *Built In*, *Priority*, *Switch*, *Stop*, *Branch*.
 - Changing an English string makes every translation of it stale and the game keeps showing the old one. Prefer a new key when
   the meaning changes; fix a typo knowingly.
-- Keep `enUS` under 4096 entries (`learnings/tests-and-locales.md`).
+- Keep `Locales/enUS.lua` at or below 3,900 entries; text read only on demand lives in the load-on-demand text bundles, whose
+  strings must be translated in all ten locales (`learnings/tests-and-locales.md`, `docs/dev/architecture.md` "Text bundles").
+  The tools treat the main catalog and the bundles as one language.
 - American spelling in English text, enforced by `tests/test_us_spelling.py`.
