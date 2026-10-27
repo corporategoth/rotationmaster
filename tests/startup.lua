@@ -940,7 +940,6 @@ local function recommendationFixture()
     env.C_Container={GetItemCooldown=function(id) return 99,state.itemCooldowns[id] or 0,1 end}
     a.currentSpec=0;a.currentRotation='test-priority';a.units={}
     a.db.profile.rotations[0]={['test-priority']={name='Runtime priority',rotation={},cooldowns={}}}
-    a.db.profile.ignore_range=true
     a:RegisterCondition('TEST_GATE',{description='Fixture gate',icon=1,fields={},valid=function() return true end,
         evaluate=function() if state.gate=='unknown' then return nil,'unavailable-fixture' end;return state.gate end,
         print=function() return 'Fixture gate' end,widget=function() end,help=function() end})
@@ -1024,6 +1023,13 @@ test('conditional Stop ends priorities and optionally suppresses Attack while pr
     a:EvaluateNextActionInternal();assert(s.main==403 and a.currentSpell==403,'later unready preview cleared the first recommendation')
 end)
 
+test('Ignore Range reaches the real main action: an out-of-range spell is recommended, learned state still holds',function()
+    local _,a,s,body=recommendationFixture();s.combat=false
+    body.rotation={{id='plain',type='spell',action=403,ranked=true,conditions={}}};body.cooldowns={}
+    s.known[403]=true;s.range[403]=false;a:EvaluateNextActionInternal();assert(s.main==nil,'range blocks by default')
+    a.db.profile.ignore_range=true;a:EvaluateNextActionInternal();assert(s.main==403,'Ignore Range did not reach the main action')
+    s.known[403]=false;a:EvaluateNextActionInternal();assert(s.main==nil,'an unlearned spell was recommended')
+end)
 test('real main action checks apply to every bank and paired item alternative despite no explicit readiness conditions',function()
     local env,a,s,body=recommendationFixture();s.combat=false
     for _,kind in ipairs({'spell','pet','any'}) do

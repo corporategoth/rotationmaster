@@ -1,7 +1,7 @@
 # Original condition artwork, version 2
 
-`provenance.json` selects 164 independent original bitmap designs: every one of
-the 152 Built In condition tags, nine condition category selectors, and AND,
+`provenance.json` selects 153 independent original bitmap designs: every one of
+the 141 Built In condition tags, nine condition category selectors, and AND,
 OR, and NOT. The six packaged category UUIDs and All/Switch/Other selector
 identities are recorded in the manifest. The original sixteen family icons in
 the parent directory remain available for existing saved selections.

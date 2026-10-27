@@ -46,6 +46,13 @@ local function numericObservation(value)
     return value
 end
 local function swingSpeed(value,cache)
+    -- Ranged: the Auto Shot or wand interval (UnitRangedDamage), false with no
+    -- ranged attack; the melee hands read UnitAttackSpeed.
+    if value.ranged then
+        local speed,reason=Functions.cache.getCached(cache,addon.Platform.GetRangedSwingSpeed,addon.Platform)
+        if speed==nil then return nil,reason end
+        return speed
+    end
     if type(UnitAttackSpeed)~="function" then return nil,"missing-api" end
     -- pcall forwards the mainhand and offhand speeds from the observation.
     ---@diagnostic disable-next-line: unbalanced-assignments
@@ -211,10 +218,11 @@ end
 addon:RegisterCondition("SWING_TIME", {
     description = L["Weapon Swing Time"],
     icon = addon.Artwork.condition["SWING_TIME"],
-    fields = { offhand = "boolean", operator = "string", value = "number" },
+    fields = { offhand = "boolean", ranged = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
-                value.value ~= nil and value.value >= 0)
+                value.value ~= nil and value.value >= 0 and (value.ranged == nil or type(value.ranged) == "boolean") and
+                not (value.ranged and value.offhand))
     end,
     evaluate = function(value, cache)
         local speed,reason=swingSpeed(value,cache)
@@ -223,7 +231,7 @@ addon:RegisterCondition("SWING_TIME", {
         return Functions.values.compare(value.operator,speed,value.value)
     end,
     print = function(_, value)
-        return string.format(L["Your %s weapon %s"], (value.offhand and L["off hand"] or L["main hand"]),
+        return string.format(L["Your %s weapon %s"], (value.ranged and L["ranged"] or value.offhand and L["off hand"] or L["main hand"]),
                 Functions.presentation.compareString(value.operator, L["attack speed"], string.format(L["%s seconds"], Functions.presentation.nullable(value.value))))
     end,
     widget = function(parent, spec, value)
@@ -232,14 +240,27 @@ addon:RegisterCondition("SWING_TIME", {
         local funcs = top:GetUserData("funcs")
 
         local offhand = addon:CreateConditionCheckBox()
+        local ranged = addon:CreateConditionCheckBox()
         offhand:SetWidth(100)
         offhand:SetLabel(L["Off Hand"])
         offhand:SetValue(value.offhand and true or false)
         offhand:SetCallback("OnValueChanged", function(_, _, v)
             value.offhand = v
+            -- One weapon at a time: the off hand and the ranged weapon exclude each other.
+            if v and value.ranged then value.ranged = nil;ranged:SetValue(false) end
             top:SetStatusText(funcs:print(root, spec))
         end)
         parent:AddChild(offhand)
+
+        ranged:SetWidth(100)
+        ranged:SetLabel(L["Ranged"])
+        ranged:SetValue(value.ranged and true or false)
+        ranged:SetCallback("OnValueChanged", function(_, _, v)
+            value.ranged = v or nil
+            if v and value.offhand then value.offhand = nil;offhand:SetValue(false) end
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(ranged)
 
         local operator_group = addon:Widget_OperatorWidget(value, L["Seconds"],
                 function() top:SetStatusText(funcs:print(root, spec)) end)
@@ -250,6 +271,7 @@ addon:RegisterCondition("SWING_TIME", {
                 "Should this condition affect your main or off-hand weapon.  If this is checked, it will affect " ..
                 "your off-hand weapon, otherwise it will affect your main-hand (or two-handed) weapon."))
         frame:AddChild(helpers.CreateText(L["With no off-hand weapon equipped, an off-hand check is false (and true under NOT)."]))
+        frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Ranged"] .. color.RESET .. " - " .. L["Help.Conditions.SWING_RANGED"]))
 
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Attack Speed"], L["Seconds"],
@@ -260,15 +282,24 @@ addon:RegisterCondition("SWING_TIME", {
 addon:RegisterCondition("SWING_TIME_REMAIN", {
     description = L["Weapon Swing Time Remaining"],
     icon = addon.Artwork.condition["SWING_TIME_REMAIN"],
-    fields = { offhand = "boolean", operator = "string", value = "number" },
+    fields = { offhand = "boolean", ranged = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
-                value.value ~= nil and value.value >= 0)
+                value.value ~= nil and value.value >= 0 and (value.ranged == nil or type(value.ranged) == "boolean") and
+                not (value.ranged and value.offhand))
     end,
     evaluate = function(value, cache, evalStart)
         local speed,reason=swingSpeed(value,cache)
         if speed==nil then return nil,reason end
         if speed==false then return false end
+        if value.ranged then
+            -- The ranged timer runs from the last Auto Shot or wand shot the combat log
+            -- showed. It is not reset by a cast or a target change; before the first
+            -- shot of a fight it reads the full weapon interval.
+            local lastShot=addon.lastRangedShot
+            if lastShot==nil then return Functions.values.compare(value.operator,speed,value.value) end
+            return Functions.values.compare(value.operator,math.max(speed-math.max(evalStart-lastShot,0),0),value.value)
+        end
         local lastSwing=addon.lastMainSwing;if value.offhand then lastSwing=addon.lastOffSwing end
         if lastSwing==nil or Functions.cache.getCached(cache, UnitCastingInfo, "player") or Functions.cache.getCached(cache, UnitChannelInfo, "player") then
             return Functions.values.compare(value.operator,speed,value.value)
@@ -276,7 +307,7 @@ addon:RegisterCondition("SWING_TIME_REMAIN", {
         return Functions.values.compare(value.operator,math.max(speed-math.max(evalStart-lastSwing,0),0),value.value)
     end,
     print = function(_, value)
-        return string.format(L["Your %s weapon %s"], (value.offhand and L["off hand"] or L["main hand"]),
+        return string.format(L["Your %s weapon %s"], (value.ranged and L["ranged"] or value.offhand and L["off hand"] or L["main hand"]),
                 Functions.presentation.compareString(value.operator, L["swing time remaining"], string.format(L["%s seconds"], Functions.presentation.nullable(value.value))))
     end,
     widget = function(parent, spec, value)
@@ -285,14 +316,27 @@ addon:RegisterCondition("SWING_TIME_REMAIN", {
         local funcs = top:GetUserData("funcs")
 
         local offhand = addon:CreateConditionCheckBox()
+        local ranged = addon:CreateConditionCheckBox()
         offhand:SetWidth(100)
         offhand:SetLabel(L["Off Hand"])
         offhand:SetValue(value.offhand and true or false)
         offhand:SetCallback("OnValueChanged", function(_, _, v)
             value.offhand = v
+            -- One weapon at a time: the off hand and the ranged weapon exclude each other.
+            if v and value.ranged then value.ranged = nil;ranged:SetValue(false) end
             top:SetStatusText(funcs:print(root, spec))
         end)
         parent:AddChild(offhand)
+
+        ranged:SetWidth(100)
+        ranged:SetLabel(L["Ranged"])
+        ranged:SetValue(value.ranged and true or false)
+        ranged:SetCallback("OnValueChanged", function(_, _, v)
+            value.ranged = v or nil
+            if v and value.offhand then value.offhand = nil;offhand:SetValue(false) end
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(ranged)
 
         local operator_group = addon:Widget_OperatorWidget(value, L["Seconds"],
                 function() top:SetStatusText(funcs:print(root, spec)) end)
@@ -303,6 +347,7 @@ addon:RegisterCondition("SWING_TIME_REMAIN", {
                 "Should this condition affect your main or off-hand weapon.  If this is checked, it will affect " ..
                 "your off-hand weapon, otherwise it will affect your main-hand (or two-handed) weapon."))
         frame:AddChild(helpers.CreateText(L["With no off-hand weapon equipped, an off-hand check is false (and true under NOT)."]))
+        frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Ranged"] .. color.RESET .. " - " .. L["Help.Conditions.SWING_RANGED"]))
 
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Swing Time Remaining"], L["Seconds"],

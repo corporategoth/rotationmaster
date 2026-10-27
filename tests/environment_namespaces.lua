@@ -1,7 +1,7 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local tags={'SELF_LEVEL','PVP','ZONEPVP','INSTANCE','OUTDOORS'}
 local owners={isin='values',compare='values',nullable='presentation',compareString='presentation',playerize='presentation',getCached='cache',deepcopy='collections',keys='collections'}
-local counts={isin=4,compare=1,nullable=4,compareString=1,playerize=1,getCached=4,deepcopy=2,keys=2}
+local counts={isin=4,compare=1,nullable=5,compareString=1,playerize=1,getCached=5,deepcopy=2,keys=2}
 local function path(name) return 'Functions.'..owners[name]..'.'..name end
 local function identity(name) return 'builtin:'..(owners[name]=='collections' and 'Functions/collections.lua' or 'utils.lua')..':'..name end
 local function fixture()
@@ -88,12 +88,12 @@ test('only the explicitly repaired environment evaluators differ from prior sour
             assert(source.evaluate=='\n        return Functions.cache.getCached(cache, addon.Platform.GetPlayerFlagObservation, addon.Platform, \"outdoors\")\n    ','unexpected OUTDOORS evaluator repair')
             source.evaluate='\n        return Functions.cache.getCached(cache, IsOutdoors)\n    '
         end
-        if tag=='INSTANCE' then source.evaluate=dofile('tests/fixtures/restore_instance_repairs.lua')(source.evaluate) end
+        -- INSTANCE gained an optional difficulty and ID (this round); its source is hashed as it is now.
         if tag=='ZONEPVP' then source.evaluate=dofile('tests/fixtures/restore_zone_pvp_repairs.lua')(source.evaluate,true) end
-        if tag=='INSTANCE' or tag=='ZONEPVP' then source.widget=dofile('tests/fixtures/restore_environment_selector_repairs.lua')(source.widget,tag) end
+        if tag=='ZONEPVP' then source.widget=dofile('tests/fixtures/restore_environment_selector_repairs.lua')(source.widget,tag) end
         baseline[tag]=source
     end
-    assert(a:FunctionSourceHash(baseline)=='830f3476','unrelated environment source changed')
+    assert(a:FunctionSourceHash(baseline)=='5fcfaa96','unrelated environment source changed')
 end)
 test('level operators zone kinds instance tuples and unit flags agree for registered canonical and legacy-shaped copies',function()
     local _,a,s=fixture();copies(a);copies(a,true)

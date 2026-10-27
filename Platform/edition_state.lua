@@ -107,8 +107,12 @@ end
 -- The speed of the ranged weapon in seconds (the Auto Shot or Shoot interval),
 -- false with no ranged attack, as the first value of UnitRangedDamage.
 function platform:GetRangedSwingSpeed()
+    -- UnitRangedDamage is SecretWhenUnitStatsRestricted, as UnitAttackSpeed is: a
+    -- hidden value is unavailable (call checks readability), not unsupported.
+    -- The time remaining also needs the combat log; that is declared in
+    -- Core/condition_support.lua.
     local policy=self:GetCombatDataPolicy()
-    if policy~='probe' then return nil,'unsupported-policy' end
+    if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     local results,reason=call(self,UnitRangedDamage,'player')
     if not results then return nil,reason end
     local speed=results[2]

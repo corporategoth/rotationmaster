@@ -276,42 +276,20 @@ artwork.condition["BOSSMOD_STAGE"]=root.."Assets\\Conditions\\v2\\bossmod-stage"
 artwork.icons[#artwork.icons+1]={texture=artwork.condition["BOSSMOD_STAGE"],name=L["Boss Mod Encounter Stage"]}
 artwork.condition["BOSSMOD_TIMER"]=root.."Assets\\Conditions\\v2\\bossmod-timer"
 artwork.icons[#artwork.icons+1]={texture=artwork.condition["BOSSMOD_TIMER"],name=L["Boss Mod Timer"]}
-artwork.condition["MOUNTED"]=root.."Assets\\Conditions\\v2\\mounted"
-artwork.icons[#artwork.icons+1]={texture=artwork.condition["MOUNTED"],name=L["Mounted"]}
-artwork.condition["SWIMMING"]=root.."Assets\\Conditions\\v2\\swimming"
-artwork.icons[#artwork.icons+1]={texture=artwork.condition["SWIMMING"],name=L["Swimming"]}
-artwork.condition["FALLING"]=root.."Assets\\Conditions\\v2\\falling"
-artwork.icons[#artwork.icons+1]={texture=artwork.condition["FALLING"],name=L["Falling"]}
-artwork.condition["FLYING"]=root.."Assets\\Conditions\\v2\\flying"
-artwork.icons[#artwork.icons+1]={texture=artwork.condition["FLYING"],name=L["Flying"]}
-artwork.condition["RESTING"]=root.."Assets\\Conditions\\v2\\resting"
-artwork.icons[#artwork.icons+1]={texture=artwork.condition["RESTING"],name=L["In a Rested Area"]}
+artwork.condition["PLAYER_STATE"]=root.."Assets\\Conditions\\v2\\player-state"
+artwork.icons[#artwork.icons+1]={texture=artwork.condition["PLAYER_STATE"],name=L["Player State"]}
 artwork.condition["ENCOUNTER"]=root.."Assets\\Conditions\\v2\\encounter"
 artwork.icons[#artwork.icons+1]={texture=artwork.condition["ENCOUNTER"],name=L["Boss Encounter"]}
-artwork.condition["INSTANCE_DIFFICULTY"]=root.."Assets\\Conditions\\v2\\instance-difficulty"
-artwork.icons[#artwork.icons+1]={texture=artwork.condition["INSTANCE_DIFFICULTY"],name=L["Instance Difficulty"]}
-artwork.condition["INSTANCE_ID"]=root.."Assets\\Conditions\\v2\\instance-id"
-artwork.icons[#artwork.icons+1]={texture=artwork.condition["INSTANCE_ID"],name=L["Specific Instance"]}
 artwork.condition["HERO_TALENT"]=root.."Assets\\Conditions\\v2\\hero-talent"
 artwork.icons[#artwork.icons+1]={texture=artwork.condition["HERO_TALENT"],name=L["Hero Talent Tree"]}
 artwork.condition["SPELL_GLOW"]=root.."Assets\\Conditions\\v2\\spell-glow"
 artwork.icons[#artwork.icons+1]={texture=artwork.condition["SPELL_GLOW"],name=L["Spell Proc Glow"]}
-artwork.condition["TRINKET_COOLDOWN"]=root.."Assets\\Conditions\\v2\\trinket-cooldown"
-artwork.icons[#artwork.icons+1]={texture=artwork.condition["TRINKET_COOLDOWN"],name=L["Trinket Cooldown"]}
-artwork.condition["GROUP_SIZE"]=root.."Assets\\Conditions\\v2\\group-size"
-artwork.icons[#artwork.icons+1]={texture=artwork.condition["GROUP_SIZE"],name=L["Group Size"]}
-artwork.condition["GROUP_ROLE_COUNT"]=root.."Assets\\Conditions\\v2\\group-role-count"
-artwork.icons[#artwork.icons+1]={texture=artwork.condition["GROUP_ROLE_COUNT"],name=L["Group Role Count"]}
-artwork.condition["GROUP_DEAD_COUNT"]=root.."Assets\\Conditions\\v2\\group-dead-count"
-artwork.icons[#artwork.icons+1]={texture=artwork.condition["GROUP_DEAD_COUNT"],name=L["Dead Group Members"]}
+artwork.condition["GROUP_COUNT"]=root.."Assets\\Conditions\\v2\\group-count"
+artwork.icons[#artwork.icons+1]={texture=artwork.condition["GROUP_COUNT"],name=L["Group Count"]}
 artwork.condition["STAGGER"]=root.."Assets\\Conditions\\v2\\stagger"
 artwork.icons[#artwork.icons+1]={texture=artwork.condition["STAGGER"],name=L["Stagger"]}
-artwork.condition["ECLIPSE_DIRECTION"]=root.."Assets\\Conditions\\v2\\eclipse-direction"
-artwork.icons[#artwork.icons+1]={texture=artwork.condition["ECLIPSE_DIRECTION"],name=L["Eclipse Direction"]}
-artwork.condition["ECLIPSE_ENERGY"]=root.."Assets\\Conditions\\v2\\eclipse-energy"
-artwork.icons[#artwork.icons+1]={texture=artwork.condition["ECLIPSE_ENERGY"],name=L["Eclipse Energy"]}
-artwork.condition["RANGED_SWING_REMAIN"]=root.."Assets\\Conditions\\v2\\ranged-swing-remain"
-artwork.icons[#artwork.icons+1]={texture=artwork.condition["RANGED_SWING_REMAIN"],name=L["Ranged Swing Time Remaining"]}
+artwork.condition["ECLIPSE"]=root.."Assets\\Conditions\\v2\\eclipse"
+artwork.icons[#artwork.icons+1]={texture=artwork.condition["ECLIPSE"],name=L["Eclipse"]}
 artwork.condition["PET_HAPPINESS"]=root.."Assets\\Conditions\\v2\\pet-happiness"
 artwork.icons[#artwork.icons+1]={texture=artwork.condition["PET_HAPPINESS"],name=L["Pet Happiness"]}
 artwork.condition["ASSISTED_SUGGESTION"]=root.."Assets\\Conditions\\v2\\assisted-suggestion"

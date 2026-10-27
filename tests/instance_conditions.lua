@@ -51,7 +51,7 @@ test('transient failures recover without quarantine and unknown families never q
     local _,b,state=fixture(999);unknown(b,node('none'));assert(state.calls==0)
 end)
 test('current exported callback and public helper clones use their actual source ownership',function()
-    local f,a,s=fixture();local source=assert(a:GetBuiltinConditionSource('INSTANCE'));assert(source.evaluate==repaired,'INSTANCE catalog stale')
+    local f,a,s=fixture();local source=assert(a:GetBuiltinConditionSource('INSTANCE'));local _,_,_,instanceEvaluate=dofile('tests/fixtures/restore_instance_details.lua');assert(source.evaluate==instanceEvaluate,'INSTANCE catalog stale')
     local copy=assert(a:CompileCustomCondition('COPY_INSTANCE',source));a:RegisterCondition('COPY_INSTANCE',copy);local cache={}
     assert(copy.evaluate(node('party'),cache)==true and a.conditionDefinitions.INSTANCE.evaluate(node('party'),cache)==true and s.calls==1)
     s.kind=nil;unknown(a,node('party','COPY_INSTANCE'));assert(a:evaluateConditionResult(node('none','COPY_INSTANCE')).status=='no-match')
@@ -68,7 +68,7 @@ test('saved raw callbacks remain exact and retain their historical missing obser
     assert(a:SettingsDataEqual(before,source),'raw saved source changed')
 end)
 test('only one exact evaluator differs from complete misc baseline and private identities remain exact',function()
-    local _,a=fixture();local file=assert(io.open('Conditions/misc.lua'));local text=file:read('*a');file:close();text=dofile('tests/fixtures/restore_environment_selector_repairs.lua')(text);text=dofile('tests/fixtures/restore_zone_pvp_repairs.lua')(text)
+    local _,a=fixture();local file=assert(io.open('Conditions/misc.lua'));local text=file:read('*a');file:close();text=dofile('tests/fixtures/restore_instance_details.lua')(text);text=dofile('tests/fixtures/restore_environment_selector_repairs.lua')(text);text=dofile('tests/fixtures/restore_zone_pvp_repairs.lua')(text)
     assert(a:FunctionSourceHash(inverse(text))=='5bef8846','misc changed beyond INSTANCE evaluator from7fa128a')
     for name,hash in pairs({color='89a5436e',helpers='3ab28a24'}) do local id='builtin:Conditions/misc.lua:'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/misc.lua'](name)) end
     local zone=a:GetBuiltinConditionSource('ZONEPVP');zone.widget=dofile('tests/fixtures/restore_environment_selector_repairs.lua')(zone.widget,'ZONEPVP');zone.evaluate=dofile('tests/fixtures/restore_zone_pvp_repairs.lua')(zone.evaluate,true)

@@ -3,7 +3,7 @@
   "tool": "Built-in image_gen.imagegen",
   "transparent_background": true,
   "original_family_preserved": true,
-  "condition_count": 152,
+  "condition_count": 141,
   "category_count": 9,
   "logical_control_count": 3,
   "entries": [
@@ -3445,16 +3445,16 @@
       }
     },
     {
-      "key": "MOUNTED",
-      "description": "Mounted",
+      "key": "PLAYER_STATE",
+      "description": "Player State",
       "module": "Conditions/player_state.lua",
-      "name": "mounted",
+      "name": "player-state",
       "subject": "A noble saddled horse silhouette with a bold gold-trimmed leather saddle and a heavy brass stirrup, the player seated on a mount.",
       "prompt": "Use case: stylized-concept. Asset type: one original transparent raster icon for a classic high-fantasy MMO addon. Subject: A noble saddled horse silhouette with a bold gold-trimmed leather saddle and a heavy brass stirrup, the player seated on a mount. Style: hand-painted Warcraft-era fantasy inventory/spell art language, wholly original object design, chunky sculpted silhouette, dark ink-like edge shadows, rich saturated local colors, broad luminous highlights. Composition: a SINGLE centered emblem, NOT a sheet or set, subject fills 88 percent of square canvas with clean small transparent margin. Legible at actual 20,24,32 pixels: one dominant subject and at most one bold qualifier motif, oversized simple shapes, no tiny decorative inscriptions. Preserve both the condition subject and its qualifier. No generic hourglass standing alone for a duration condition. Genuine transparent background and transparent corners; no square background, vignette, plate, badge frame, ground or cast shadow. No letters, numbers, words, text, labels, watermark or existing game logo. Any temporal, count, percentage or range qualifier must be an oversized broad secondary motif occupying at least one quarter of the emblem, not merely tiny ticks or decorative sparks.",
       "generated_path": "/home/prez/.codex/generated_images/01a179e5-2183-7252-a9a0-7f29ee545a4e/exec-0255df25-0c4a-40fc-8f08-ff011e44e103.png",
       "kind": "condition",
       "status": "generated",
-      "runtime": "Assets/Conditions/v2/mounted.tga",
+      "runtime": "Assets/Conditions/v2/player-state.tga",
       "runtime_evidence": {
         "default": {
           "line": 26,
@@ -3466,98 +3466,6 @@
         }
       },
       "source_sha256": "bac2c78071ce7491204b3ae0839d4ceeced8e2b1afaf7800ab2b07a7d23cabad"
-    },
-    {
-      "key": "SWIMMING",
-      "description": "Swimming",
-      "module": "Conditions/player_state.lua",
-      "name": "swimming",
-      "subject": "Two broad blue curling waves around a reaching swimmer arm and a chunky floating buoy ring, swimming in water.",
-      "prompt": "Use case: stylized-concept. Asset type: one original transparent raster icon for a classic high-fantasy MMO addon. Subject: Two broad blue curling waves around a reaching swimmer arm and a chunky floating buoy ring, swimming in water. Style: hand-painted Warcraft-era fantasy inventory/spell art language, wholly original object design, chunky sculpted silhouette, dark ink-like edge shadows, rich saturated local colors, broad luminous highlights. Composition: a SINGLE centered emblem, NOT a sheet or set, subject fills 88 percent of square canvas with clean small transparent margin. Legible at actual 20,24,32 pixels: one dominant subject and at most one bold qualifier motif, oversized simple shapes, no tiny decorative inscriptions. Preserve both the condition subject and its qualifier. No generic hourglass standing alone for a duration condition. Genuine transparent background and transparent corners; no square background, vignette, plate, badge frame, ground or cast shadow. No letters, numbers, words, text, labels, watermark or existing game logo. Any temporal, count, percentage or range qualifier must be an oversized broad secondary motif occupying at least one quarter of the emblem, not merely tiny ticks or decorative sparks.",
-      "generated_path": "/home/prez/.codex/generated_images/01a179e5-2183-7252-a9a0-7f29ee545a4e/exec-9106e133-d77d-4337-b7b9-e87aad7e8148.png",
-      "kind": "condition",
-      "status": "generated",
-      "runtime": "Assets/Conditions/v2/swimming.tga",
-      "runtime_evidence": {
-        "default": {
-          "line": 44,
-          "parameters": [
-            "_",
-            "cache"
-          ],
-          "evaluate_sha256": "8f5590b6b1c1eef37dd67cd241d1231af1f99f18b0e30f4eb46ba34fc81698ae"
-        }
-      },
-      "source_sha256": "1b0685beac32c1f997233eac37a73ed230b59b32d2242f02199b318a146ec774"
-    },
-    {
-      "key": "FALLING",
-      "description": "Falling",
-      "module": "Conditions/player_state.lua",
-      "name": "falling",
-      "subject": "An armored boot and a billowing cloak plunging downward with three broad vertical wind streaks, falling through the air.",
-      "prompt": "Use case: stylized-concept. Asset type: one original transparent raster icon for a classic high-fantasy MMO addon. Subject: An armored boot and a billowing cloak plunging downward with three broad vertical wind streaks, falling through the air. Style: hand-painted Warcraft-era fantasy inventory/spell art language, wholly original object design, chunky sculpted silhouette, dark ink-like edge shadows, rich saturated local colors, broad luminous highlights. Composition: a SINGLE centered emblem, NOT a sheet or set, subject fills 88 percent of square canvas with clean small transparent margin. Legible at actual 20,24,32 pixels: one dominant subject and at most one bold qualifier motif, oversized simple shapes, no tiny decorative inscriptions. Preserve both the condition subject and its qualifier. No generic hourglass standing alone for a duration condition. Genuine transparent background and transparent corners; no square background, vignette, plate, badge frame, ground or cast shadow. No letters, numbers, words, text, labels, watermark or existing game logo. Any temporal, count, percentage or range qualifier must be an oversized broad secondary motif occupying at least one quarter of the emblem, not merely tiny ticks or decorative sparks.",
-      "generated_path": "/home/prez/.codex/generated_images/01a179e5-2183-7252-a9a0-7f29ee545a4e/exec-4ca2b3fe-bc62-4729-936f-14288c9aef99.png",
-      "kind": "condition",
-      "status": "generated",
-      "runtime": "Assets/Conditions/v2/falling.tga",
-      "runtime_evidence": {
-        "default": {
-          "line": 62,
-          "parameters": [
-            "_",
-            "cache"
-          ],
-          "evaluate_sha256": "f60765926965425c1994f7d13da20a922b7592213a8933b832b97e108f2ff875"
-        }
-      },
-      "source_sha256": "cc6dc81ecc3298afd6c6eb16e148910c716e85ac13c99707a294fa26929b0495"
-    },
-    {
-      "key": "FLYING",
-      "description": "Flying",
-      "module": "Conditions/player_state.lua",
-      "name": "flying",
-      "subject": "Two large feathered wings spread over a swirling cloud ring with a broad gold flight trail, airborne flight.",
-      "prompt": "Use case: stylized-concept. Asset type: one original transparent raster icon for a classic high-fantasy MMO addon. Subject: Two large feathered wings spread over a swirling cloud ring with a broad gold flight trail, airborne flight. Style: hand-painted Warcraft-era fantasy inventory/spell art language, wholly original object design, chunky sculpted silhouette, dark ink-like edge shadows, rich saturated local colors, broad luminous highlights. Composition: a SINGLE centered emblem, NOT a sheet or set, subject fills 88 percent of square canvas with clean small transparent margin. Legible at actual 20,24,32 pixels: one dominant subject and at most one bold qualifier motif, oversized simple shapes, no tiny decorative inscriptions. Preserve both the condition subject and its qualifier. No generic hourglass standing alone for a duration condition. Genuine transparent background and transparent corners; no square background, vignette, plate, badge frame, ground or cast shadow. No letters, numbers, words, text, labels, watermark or existing game logo. Any temporal, count, percentage or range qualifier must be an oversized broad secondary motif occupying at least one quarter of the emblem, not merely tiny ticks or decorative sparks.",
-      "generated_path": "/home/prez/.codex/generated_images/01a179e5-2183-7252-a9a0-7f29ee545a4e/exec-b2973177-924b-49ea-9031-4526c130a359.png",
-      "kind": "condition",
-      "status": "generated",
-      "runtime": "Assets/Conditions/v2/flying.tga",
-      "runtime_evidence": {
-        "default": {
-          "line": 80,
-          "parameters": [
-            "_",
-            "cache"
-          ],
-          "evaluate_sha256": "f8189f3bb6b6c57871fde0780ffcef8febb040a01a0eca76528541705b8ec510"
-        }
-      },
-      "source_sha256": "67bcf90c18c0b403dbb1c34a3aa4e4496cbcb6a82b26086eda747124817cc673"
-    },
-    {
-      "key": "RESTING",
-      "description": "In a Rested Area",
-      "module": "Conditions/player_state.lua",
-      "name": "resting",
-      "subject": "A cozy wooden inn bed with a plump pillow beneath a bold crescent moon and a warm lantern glow, a rested area.",
-      "prompt": "Use case: stylized-concept. Asset type: one original transparent raster icon for a classic high-fantasy MMO addon. Subject: A cozy wooden inn bed with a plump pillow beneath a bold crescent moon and a warm lantern glow, a rested area. Style: hand-painted Warcraft-era fantasy inventory/spell art language, wholly original object design, chunky sculpted silhouette, dark ink-like edge shadows, rich saturated local colors, broad luminous highlights. Composition: a SINGLE centered emblem, NOT a sheet or set, subject fills 88 percent of square canvas with clean small transparent margin. Legible at actual 20,24,32 pixels: one dominant subject and at most one bold qualifier motif, oversized simple shapes, no tiny decorative inscriptions. Preserve both the condition subject and its qualifier. No generic hourglass standing alone for a duration condition. Genuine transparent background and transparent corners; no square background, vignette, plate, badge frame, ground or cast shadow. No letters, numbers, words, text, labels, watermark or existing game logo. Any temporal, count, percentage or range qualifier must be an oversized broad secondary motif occupying at least one quarter of the emblem, not merely tiny ticks or decorative sparks.",
-      "generated_path": "/home/prez/.codex/generated_images/01a179e5-2183-7252-a9a0-7f29ee545a4e/exec-580cdb99-3d4b-406c-ac04-5d4e92ea2142.png",
-      "kind": "condition",
-      "status": "generated",
-      "runtime": "Assets/Conditions/v2/resting.tga",
-      "runtime_evidence": {
-        "default": {
-          "line": 98,
-          "parameters": [
-            "_",
-            "cache"
-          ],
-          "evaluate_sha256": "f58c66ca8813815945f5cb3453f72f5408606e7ab05c6b84bbc0950245cbc2e8"
-        }
-      },
-      "source_sha256": "acdf6f09ed7902c88f7285a100bc5f400b99cdbf64e6c89083b4513da02d33a9"
     },
     {
       "key": "ENCOUNTER",
@@ -3581,52 +3489,6 @@
         }
       },
       "source_sha256": "373f651fbc12062b7be22ce816c9b34901e349d2f1306247faa133c71181da04"
-    },
-    {
-      "key": "INSTANCE_DIFFICULTY",
-      "description": "Instance Difficulty",
-      "module": "Conditions/encounter_state.lua",
-      "name": "instance-difficulty",
-      "subject": "Three stacked heraldic shields of rising size in bronze, silver and glowing violet-gold, the top shield lit, dungeon difficulty tier.",
-      "prompt": "Use case: stylized-concept. Asset type: one original transparent raster icon for a classic high-fantasy MMO addon. Subject: Three stacked heraldic shields of rising size in bronze, silver and glowing violet-gold, the top shield lit, dungeon difficulty tier. Style: hand-painted Warcraft-era fantasy inventory/spell art language, wholly original object design, chunky sculpted silhouette, dark ink-like edge shadows, rich saturated local colors, broad luminous highlights. Composition: a SINGLE centered emblem, NOT a sheet or set, subject fills 88 percent of square canvas with clean small transparent margin. Legible at actual 20,24,32 pixels: one dominant subject and at most one bold qualifier motif, oversized simple shapes, no tiny decorative inscriptions. Preserve both the condition subject and its qualifier. No generic hourglass standing alone for a duration condition. Genuine transparent background and transparent corners; no square background, vignette, plate, badge frame, ground or cast shadow. No letters, numbers, words, text, labels, watermark or existing game logo. Any temporal, count, percentage or range qualifier must be an oversized broad secondary motif occupying at least one quarter of the emblem, not merely tiny ticks or decorative sparks.",
-      "generated_path": "/home/prez/.codex/generated_images/01a179e5-2183-7252-a9a0-7f29ee545a4e/exec-29a24760-618f-48d1-a717-69d299409ab9.png",
-      "kind": "condition",
-      "status": "generated",
-      "runtime": "Assets/Conditions/v2/instance-difficulty.tga",
-      "runtime_evidence": {
-        "default": {
-          "line": 83,
-          "parameters": [
-            "value",
-            "cache"
-          ],
-          "evaluate_sha256": "6192072cabd55d3d5645e387fa63308d0ecf4e18791d8a52ca6595f8cb750260"
-        }
-      },
-      "source_sha256": "707a91afab22cc2e2a2fe824d0a5ab4d8b41d3b63932da3a599dfe34b7860ff5"
-    },
-    {
-      "key": "INSTANCE_ID",
-      "description": "Specific Instance",
-      "module": "Conditions/encounter_state.lua",
-      "name": "instance-id",
-      "subject": "A dark dungeon portal with a bold brass identity tag hanging from an oversized iron key, one specific named instance.",
-      "prompt": "Use case: stylized-concept. Asset type: one original transparent raster icon for a classic high-fantasy MMO addon. Subject: A dark dungeon portal with a bold brass identity tag hanging from an oversized iron key, one specific named instance. Style: hand-painted Warcraft-era fantasy inventory/spell art language, wholly original object design, chunky sculpted silhouette, dark ink-like edge shadows, rich saturated local colors, broad luminous highlights. Composition: a SINGLE centered emblem, NOT a sheet or set, subject fills 88 percent of square canvas with clean small transparent margin. Legible at actual 20,24,32 pixels: one dominant subject and at most one bold qualifier motif, oversized simple shapes, no tiny decorative inscriptions. Preserve both the condition subject and its qualifier. No generic hourglass standing alone for a duration condition. Genuine transparent background and transparent corners; no square background, vignette, plate, badge frame, ground or cast shadow. No letters, numbers, words, text, labels, watermark or existing game logo. Any temporal, count, percentage or range qualifier must be an oversized broad secondary motif occupying at least one quarter of the emblem, not merely tiny ticks or decorative sparks.",
-      "generated_path": "/home/prez/.codex/generated_images/01a179ee-90a5-7f11-9f08-7837be2c4d5b/exec-e061bbe7-4062-4c3a-bfe8-8a066143ca16.png",
-      "kind": "condition",
-      "status": "generated",
-      "runtime": "Assets/Conditions/v2/instance-id.tga",
-      "runtime_evidence": {
-        "default": {
-          "line": 135,
-          "parameters": [
-            "value",
-            "cache"
-          ],
-          "evaluate_sha256": "0ca90318df994179bd551de0f2aa5600a1838d29293bdc27f912601f5fb357d9"
-        }
-      },
-      "source_sha256": "dbde350c2144d7209ef152d5b90d0cd5ab2deaf422805f1886c56a13ce7aa944"
     },
     {
       "key": "HERO_TALENT",
@@ -3675,40 +3537,16 @@
       "source_sha256": "e1790ea067ff2a0fafa4a48e4f5dca762221e300300edc7881663f01576bddd8"
     },
     {
-      "key": "TRINKET_COOLDOWN",
-      "description": "Trinket Cooldown",
-      "module": "Conditions/trinket.lua",
-      "name": "trinket-cooldown",
-      "subject": "A jeweled gold trinket amulet on a short chain half-covered by a heavy circular cooldown shutter with one dark sector, trinket cooldown.",
-      "prompt": "Use case: stylized-concept. Asset type: one original transparent raster icon for a classic high-fantasy MMO addon. Subject: A jeweled gold trinket amulet on a short chain half-covered by a heavy circular cooldown shutter with one dark sector, trinket cooldown. Style: hand-painted Warcraft-era fantasy inventory/spell art language, wholly original object design, chunky sculpted silhouette, dark ink-like edge shadows, rich saturated local colors, broad luminous highlights. Composition: a SINGLE centered emblem, NOT a sheet or set, subject fills 88 percent of square canvas with clean small transparent margin. Legible at actual 20,24,32 pixels: one dominant subject and at most one bold qualifier motif, oversized simple shapes, no tiny decorative inscriptions. Preserve both the condition subject and its qualifier. No generic hourglass standing alone for a duration condition. Genuine transparent background and transparent corners; no square background, vignette, plate, badge frame, ground or cast shadow. No letters, numbers, words, text, labels, watermark or existing game logo. Any temporal, count, percentage or range qualifier must be an oversized broad secondary motif occupying at least one quarter of the emblem, not merely tiny ticks or decorative sparks.",
-      "generated_path": "/home/prez/.codex/generated_images/01a179ee-90a5-7f11-9f08-7837be2c4d5b/exec-4c231671-69cd-4505-8936-af604aa1c7ac.png",
-      "kind": "condition",
-      "status": "generated",
-      "runtime": "Assets/Conditions/v2/trinket-cooldown.tga",
-      "runtime_evidence": {
-        "default": {
-          "line": 41,
-          "parameters": [
-            "value",
-            "cache",
-            "now"
-          ],
-          "evaluate_sha256": "5f04e7177a56de8d863e6d64a8bd1fe2eac969ec92b126065efdbbbfede69466"
-        }
-      },
-      "source_sha256": "2fe3c755a1e00577536b5e18cb729dab5b6669a8897e4c61e47ece8f9cf0b4d9"
-    },
-    {
-      "key": "GROUP_SIZE",
-      "description": "Group Size",
+      "key": "GROUP_COUNT",
+      "description": "Group Count",
       "module": "Conditions/group_state.lua",
-      "name": "group-size",
+      "name": "group-count",
       "subject": "Five chunky allied adventurer figures standing in a tight formation around a gold banner pole with five bold count studs, group headcount.",
       "prompt": "Use case: stylized-concept. Asset type: one original transparent raster icon for a classic high-fantasy MMO addon. Subject: Five chunky allied adventurer figures standing in a tight formation around a gold banner pole with five bold count studs, group headcount. Style: hand-painted Warcraft-era fantasy inventory/spell art language, wholly original object design, chunky sculpted silhouette, dark ink-like edge shadows, rich saturated local colors, broad luminous highlights. Composition: a SINGLE centered emblem, NOT a sheet or set, subject fills 88 percent of square canvas with clean small transparent margin. Legible at actual 20,24,32 pixels: one dominant subject and at most one bold qualifier motif, oversized simple shapes, no tiny decorative inscriptions. Preserve both the condition subject and its qualifier. No generic hourglass standing alone for a duration condition. Genuine transparent background and transparent corners; no square background, vignette, plate, badge frame, ground or cast shadow. No letters, numbers, words, text, labels, watermark or existing game logo. Any temporal, count, percentage or range qualifier must be an oversized broad secondary motif occupying at least one quarter of the emblem, not merely tiny ticks or decorative sparks.",
       "generated_path": "/home/prez/.codex/generated_images/01a179ee-90a5-7f11-9f08-7837be2c4d5b/exec-f66bd01e-7628-49c4-ad06-5f3a295bf573.png",
       "kind": "condition",
       "status": "generated",
-      "runtime": "Assets/Conditions/v2/group-size.tga",
+      "runtime": "Assets/Conditions/v2/group-count.tga",
       "runtime_evidence": {
         "default": {
           "line": 41,
@@ -3720,52 +3558,6 @@
         }
       },
       "source_sha256": "040f86c4803a537e58ad4a339f345dfe4234de8dbfd71d9279f0ca6282d77449"
-    },
-    {
-      "key": "GROUP_ROLE_COUNT",
-      "description": "Group Role Count",
-      "module": "Conditions/group_state.lua",
-      "name": "group-role-count",
-      "subject": "A defender shield, a green healing leaf and a steel sword, each standing over a pair of bold gold tally studs, count of assigned roles in a group.",
-      "prompt": "Use case: stylized-concept. Asset type: one original transparent raster icon for a classic high-fantasy MMO addon. Subject: A defender shield, a green healing leaf and a steel sword, each standing over a pair of bold gold tally studs, count of assigned roles in a group. Style: hand-painted Warcraft-era fantasy inventory/spell art language, wholly original object design, chunky sculpted silhouette, dark ink-like edge shadows, rich saturated local colors, broad luminous highlights. Composition: a SINGLE centered emblem, NOT a sheet or set, subject fills 88 percent of square canvas with clean small transparent margin. Legible at actual 20,24,32 pixels: one dominant subject and at most one bold qualifier motif, oversized simple shapes, no tiny decorative inscriptions. Preserve both the condition subject and its qualifier. No generic hourglass standing alone for a duration condition. Genuine transparent background and transparent corners; no square background, vignette, plate, badge frame, ground or cast shadow. No letters, numbers, words, text, labels, watermark or existing game logo. Any temporal, count, percentage or range qualifier must be an oversized broad secondary motif occupying at least one quarter of the emblem, not merely tiny ticks or decorative sparks.",
-      "generated_path": "/home/prez/.codex/generated_images/01a179ee-90a5-7f11-9f08-7837be2c4d5b/exec-be8956ce-c0e3-4890-8b91-13dce199d5cc.png",
-      "kind": "condition",
-      "status": "generated",
-      "runtime": "Assets/Conditions/v2/group-role-count.tga",
-      "runtime_evidence": {
-        "default": {
-          "line": 73,
-          "parameters": [
-            "value",
-            "cache"
-          ],
-          "evaluate_sha256": "8160eeb5f6519d7ff25ad810a87ac86e017426e30310cc27478439c0f8e39857"
-        }
-      },
-      "source_sha256": "61d9c0aec280f5889a807e5eb983aa0cb41ef1e3183624c7e69f161984deb511"
-    },
-    {
-      "key": "GROUP_DEAD_COUNT",
-      "description": "Dead Group Members",
-      "module": "Conditions/group_state.lua",
-      "name": "group-dead-count",
-      "subject": "A cracked tombstone beside two fallen adventurer helms with a bold rising white revive spark, dead party members.",
-      "prompt": "Use case: stylized-concept. Asset type: one original transparent raster icon for a classic high-fantasy MMO addon. Subject: A cracked tombstone beside two fallen adventurer helms with a bold rising white revive spark, dead party members. Style: hand-painted Warcraft-era fantasy inventory/spell art language, wholly original object design, chunky sculpted silhouette, dark ink-like edge shadows, rich saturated local colors, broad luminous highlights. Composition: a SINGLE centered emblem, NOT a sheet or set, subject fills 88 percent of square canvas with clean small transparent margin. Legible at actual 20,24,32 pixels: one dominant subject and at most one bold qualifier motif, oversized simple shapes, no tiny decorative inscriptions. Preserve both the condition subject and its qualifier. No generic hourglass standing alone for a duration condition. Genuine transparent background and transparent corners; no square background, vignette, plate, badge frame, ground or cast shadow. No letters, numbers, words, text, labels, watermark or existing game logo. Any temporal, count, percentage or range qualifier must be an oversized broad secondary motif occupying at least one quarter of the emblem, not merely tiny ticks or decorative sparks.",
-      "generated_path": "/home/prez/.codex/generated_images/01a179fb-301b-76b2-a5b0-c48c0ffc06d2/exec-db2082b4-4d9d-4d66-b125-50346fd426b8.png",
-      "kind": "condition",
-      "status": "generated",
-      "runtime": "Assets/Conditions/v2/group-dead-count.tga",
-      "runtime_evidence": {
-        "default": {
-          "line": 121,
-          "parameters": [
-            "value",
-            "cache"
-          ],
-          "evaluate_sha256": "35d97a6512f022fc637e055ca30870d7318a8cf20eee0ca91fecd4811aeb484f"
-        }
-      },
-      "source_sha256": "ab4130ea4a72ed9fec25fb7e605a583eb0a8e8ad92613078d38de523ec873179"
     },
     {
       "key": "STAGGER",
@@ -3791,16 +3583,16 @@
       "source_sha256": "1ef768df2e5fb3c8ddac6447033946ae5639b7fecf89d4085e00b3ee0567f13d"
     },
     {
-      "key": "ECLIPSE_DIRECTION",
-      "description": "Eclipse Direction",
+      "key": "ECLIPSE",
+      "description": "Eclipse",
       "module": "Conditions/edition_state.lua",
-      "name": "eclipse-direction",
+      "name": "eclipse",
       "subject": "A golden sun and a silver crescent moon facing each other across a bold pointing arrow, the direction of the next eclipse.",
       "prompt": "Use case: stylized-concept. Asset type: one original transparent raster icon for a classic high-fantasy MMO addon. Subject: A golden sun and a silver crescent moon facing each other across a bold pointing arrow, the direction of the next eclipse. Style: hand-painted Warcraft-era fantasy inventory/spell art language, wholly original object design, chunky sculpted silhouette, dark ink-like edge shadows, rich saturated local colors, broad luminous highlights. Composition: a SINGLE centered emblem, NOT a sheet or set, subject fills 88 percent of square canvas with clean small transparent margin. Legible at actual 20,24,32 pixels: one dominant subject and at most one bold qualifier motif, oversized simple shapes, no tiny decorative inscriptions. Preserve both the condition subject and its qualifier. No generic hourglass standing alone for a duration condition. Genuine transparent background and transparent corners; no square background, vignette, plate, badge frame, ground or cast shadow. No letters, numbers, words, text, labels, watermark or existing game logo. Any temporal, count, percentage or range qualifier must be an oversized broad secondary motif occupying at least one quarter of the emblem, not merely tiny ticks or decorative sparks.",
       "generated_path": "/home/prez/.codex/generated_images/01a179fb-301b-76b2-a5b0-c48c0ffc06d2/exec-78bb8e81-5834-407f-8d8d-89c6a37ef999.png",
       "kind": "condition",
       "status": "generated",
-      "runtime": "Assets/Conditions/v2/eclipse-direction.tga",
+      "runtime": "Assets/Conditions/v2/eclipse.tga",
       "runtime_evidence": {
         "default": {
           "line": 134,
@@ -3812,53 +3604,6 @@
         }
       },
       "source_sha256": "1353ac235b7f63a6b792e31e848a4a104ddfcc72d54b0b12b76b8cac58e980dd"
-    },
-    {
-      "key": "ECLIPSE_ENERGY",
-      "description": "Eclipse Energy",
-      "module": "Conditions/edition_state.lua",
-      "name": "eclipse-energy",
-      "subject": "A tall glass gauge vial filled half gold and half silver with a bold centre notch and one thick needle, solar and lunar balance energy.",
-      "prompt": "Use case: stylized-concept. Asset type: one original transparent raster icon for a classic high-fantasy MMO addon. Subject: A tall glass gauge vial filled half gold and half silver with a bold centre notch and one thick needle, solar and lunar balance energy. Style: hand-painted Warcraft-era fantasy inventory/spell art language, wholly original object design, chunky sculpted silhouette, dark ink-like edge shadows, rich saturated local colors, broad luminous highlights. Composition: a SINGLE centered emblem, NOT a sheet or set, subject fills 88 percent of square canvas with clean small transparent margin. Legible at actual 20,24,32 pixels: one dominant subject and at most one bold qualifier motif, oversized simple shapes, no tiny decorative inscriptions. Preserve both the condition subject and its qualifier. No generic hourglass standing alone for a duration condition. Genuine transparent background and transparent corners; no square background, vignette, plate, badge frame, ground or cast shadow. No letters, numbers, words, text, labels, watermark or existing game logo. Any temporal, count, percentage or range qualifier must be an oversized broad secondary motif occupying at least one quarter of the emblem, not merely tiny ticks or decorative sparks.",
-      "generated_path": "/home/prez/.codex/generated_images/01a179fb-301b-76b2-a5b0-c48c0ffc06d2/exec-cc466b92-87c3-4cff-96f0-7436633cc25b.png",
-      "kind": "condition",
-      "status": "generated",
-      "runtime": "Assets/Conditions/v2/eclipse-energy.tga",
-      "runtime_evidence": {
-        "default": {
-          "line": 173,
-          "parameters": [
-            "value",
-            "cache"
-          ],
-          "evaluate_sha256": "058526d4a198f63baec76dab7b956b8e20c4cb1be94ca8c36a4541ed6adec3c4"
-        }
-      },
-      "source_sha256": "2d607787061363abcdac68400d99014e5baeb3cd31f6d7fc222fbaf1b072ff04"
-    },
-    {
-      "key": "RANGED_SWING_REMAIN",
-      "description": "Ranged Swing Time Remaining",
-      "module": "Conditions/edition_state.lua",
-      "name": "ranged-swing-remain",
-      "subject": "TWO LARGE OBJECTS side by side: a recurve hunting bow with a nocked arrow on the LEFT and a huge brass hourglass with only a little amber sand remaining on the RIGHT, each nearly half the silhouette. Time until the next auto shot.",
-      "prompt": "Use case: stylized-concept. Asset type: one original transparent raster icon for a classic high-fantasy MMO addon. Subject: TWO LARGE OBJECTS side by side: a recurve hunting bow with a nocked arrow on the LEFT and a huge brass hourglass with only a little amber sand remaining on the RIGHT, each nearly half the silhouette. Time until the next auto shot. Style: hand-painted Warcraft-era fantasy inventory/spell art language, wholly original object design, chunky sculpted silhouette, dark ink-like edge shadows, rich saturated local colors, broad luminous highlights. Composition: a SINGLE centered emblem, NOT a sheet or set, subject fills 88 percent of square canvas with clean small transparent margin. Legible at actual 20,24,32 pixels: one dominant subject and at most one bold qualifier motif, oversized simple shapes, no tiny decorative inscriptions. Preserve both the condition subject and its qualifier. No generic hourglass standing alone for a duration condition. Genuine transparent background and transparent corners; no square background, vignette, plate, badge frame, ground or cast shadow. No letters, numbers, words, text, labels, watermark or existing game logo. Any temporal, count, percentage or range qualifier must be an oversized broad secondary motif occupying at least one quarter of the emblem, not merely tiny ticks or decorative sparks.",
-      "generated_path": "/home/prez/.codex/generated_images/01a179fb-301b-76b2-a5b0-c48c0ffc06d2/exec-de5b36fa-c2d8-4435-8f2f-a49571bcfe70.png",
-      "kind": "condition",
-      "status": "generated",
-      "runtime": "Assets/Conditions/v2/ranged-swing-remain.tga",
-      "runtime_evidence": {
-        "default": {
-          "line": 204,
-          "parameters": [
-            "value",
-            "cache",
-            "evalStart"
-          ],
-          "evaluate_sha256": "e414325e7d988c08448dd6c064b27ea05c7b8e8c9e686f3cdea6990e40735a4d"
-        }
-      },
-      "source_sha256": "34079fcfb338696fa35370d126c81cbd1238d27d9caae5ad5a6259c076015d49"
     },
     {
       "key": "PET_HAPPINESS",

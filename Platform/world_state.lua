@@ -2,8 +2,9 @@ local _,addon=...
 local platform=addon.Platform
 
 -- Player, instance, encounter and group state read through the platform
--- adapter, for the conditions in Conditions/player_state.lua,
--- Conditions/encounter_state.lua and Conditions/group_state.lua. Every read is
+-- adapter, for PLAYER_STATE (Conditions/player_state.lua), ENCOUNTER and
+-- KEYSTONE_LEVEL (Conditions/encounter_state.lua), INSTANCE (Conditions/misc.lua)
+-- and GROUP_COUNT (Conditions/group_state.lua). Every read is
 -- protected and readability-checked: a missing API is "missing-api", a throw is
 -- "api-error", a secret value is "restricted-value" and an answer of the wrong
 -- shape is "invalid-api-result". The caller turns a reason into an unavailable
@@ -37,28 +38,43 @@ local function call(self,api,...)
     return results
 end
 
--- The five zero-argument player predicates. The legacy form of these functions
--- answers 1 or nil rather than true or false, and they never fail, so nil
--- means "no" here (unlike the player flags in Platform/player_flags.lua).
-local stateKinds={mounted=true,swimming=true,falling=true,flying=true,resting=true}
-function platform:GetPlayerStateObservation(kind)
-    local policy=self:GetCombatDataPolicy()
-    if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
-    if not self:CanReadValue(kind) then return nil,'restricted-value' end
-    if type(kind)~='string' or not stateKinds[kind] then return nil,'invalid-player-state-query' end
-    local api
-    if kind=='mounted' then api=IsMounted
-    elseif kind=='swimming' then api=IsSwimming
-    elseif kind=='falling' then api=IsFalling
-    elseif kind=='flying' then api=IsFlying
-    else api=IsResting end
-    local results,reason=call(self,api)
+-- The player predicates PLAYER_STATE chooses from. The legacy form of the
+-- zero-argument functions answers 1 or nil rather than true or false, and they
+-- never fail, so nil means "no" here (unlike the player flags in
+-- Platform/player_flags.lua). "dead" is UnitIsDead, which is false for a ghost;
+-- "ghost" is dead-or-ghost without dead, both reads the generated client
+-- manifests (tests/fixtures/client_api_*.lua) already list.
+local stateKinds={mounted=true,swimming=true,falling=true,flying=true,resting=true,dead=true,ghost=true}
+local function flag(self,api,...)
+    local results,reason=call(self,api,...)
     if not results then return nil,reason end
     local result=results[2]
     if result==nil or result==0 then return false end
     if result==1 then return true end
     if type(result)~='boolean' then return nil,'invalid-api-result' end
     return result
+end
+function platform:GetPlayerStateObservation(kind)
+    local policy=self:GetCombatDataPolicy()
+    if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
+    if not self:CanReadValue(kind) then return nil,'restricted-value' end
+    if type(kind)~='string' or not stateKinds[kind] then return nil,'invalid-player-state-query' end
+    if kind=='dead' then return flag(self,UnitIsDead,'player') end
+    if kind=='ghost' then
+        local either,reason=flag(self,UnitIsDeadOrGhost,'player')
+        if either==nil then return nil,reason end
+        if not either then return false end
+        local dead,why=flag(self,UnitIsDead,'player')
+        if dead==nil then return nil,why end
+        return not dead
+    end
+    local api
+    if kind=='mounted' then api=IsMounted
+    elseif kind=='swimming' then api=IsSwimming
+    elseif kind=='falling' then api=IsFalling
+    elseif kind=='flying' then api=IsFlying
+    else api=IsResting end
+    return flag(self,api)
 end
 
 -- Whether a boss encounter is in progress, from the game rather than a boss mod.
@@ -209,13 +225,18 @@ function platform:IsSpellGlowing(spellID)
     return result
 end
 
--- Group size, assigned roles and dead members in one pass over the party or
--- raid tokens: {size, roles={TANK,HEALER,DAMAGER,NONE}, dead}. size counts you
--- (1 when solo). roles and dead are left nil, with rolesReason or deadReason,
--- when a member's value could not be read. dead never counts you.
-function platform:GetGroupSnapshot()
+-- Group size, assigned roles or dead members over the party or raid tokens:
+-- {size, roles={TANK,HEALER,DAMAGER,NONE}, dead}. Everything counts you: size
+-- is 1 when solo, a role counts you when it is yours, and dead counts you when
+-- you are dead or a ghost. `want` is 'size' (the default), 'roles' or 'dead':
+-- only the members' values that measure needs are read, so a group size never
+-- calls the role or death APIs. roles or dead is nil, with rolesReason or
+-- deadReason, when a member's value could not be read.
+function platform:GetGroupSnapshot(want)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
+    if not self:CanReadValue(want) then return nil,'restricted-value' end
+    if want~=nil and want~='size' and want~='roles' and want~='dead' then return nil,'invalid-group-query' end
     local count,reason=call(self,GetNumGroupMembers)
     if not count then return nil,reason end
     local members=count[2]
@@ -226,6 +247,7 @@ function platform:GetGroupSnapshot()
     local raid=inRaid[2]
     local size=members>1 and members or 1
     local record={size=size}
+    -- A raid lists you among raid1-40; a party is you plus party1-4.
     local tokens
     if raid then
         tokens={}
@@ -234,36 +256,28 @@ function platform:GetGroupSnapshot()
         tokens={'player'}
         for index=1,members-1 do tokens[#tokens+1]='party'..index end
     end
-    -- Roles: every member, you included (a raid lists you among raid1-40).
-    local roles={TANK=0,HEALER=0,DAMAGER=0,NONE=0}
-    local rolesOK=true
-    for _,token in ipairs(tokens) do
-        local result,problem=call(self,UnitGroupRolesAssigned,token)
-        if not result then record.rolesReason=problem;rolesOK=false;break end
-        local role=result[2]
-        if type(role)~='string' then record.rolesReason='invalid-api-result';rolesOK=false;break end
-        if roles[role]==nil then role='NONE' end
-        roles[role]=roles[role]+1
-    end
-    if rolesOK then record.roles=roles end
-    -- Dead members other than you.
-    local dead=0
-    local deadOK=true
-    for _,token in ipairs(tokens) do
-        if token~='player' then
+    if want=='roles' then
+        local roles={TANK=0,HEALER=0,DAMAGER=0,NONE=0}
+        local ok=true
+        for _,token in ipairs(tokens) do
+            local result,problem=call(self,UnitGroupRolesAssigned,token)
+            if not result then record.rolesReason=problem;ok=false;break end
+            local role=result[2]
+            if type(role)~='string' then record.rolesReason='invalid-api-result';ok=false;break end
+            if roles[role]==nil then role='NONE' end
+            roles[role]=roles[role]+1
+        end
+        if ok then record.roles=roles end
+    elseif want=='dead' then
+        local dead=0
+        local ok=true
+        for _,token in ipairs(tokens) do
             local result,problem=call(self,UnitIsDeadOrGhost,token)
-            if not result then record.deadReason=problem;deadOK=false;break end
-            if type(result[2])~='boolean' then record.deadReason='invalid-api-result';deadOK=false;break end
+            if not result then record.deadReason=problem;ok=false;break end
+            if type(result[2])~='boolean' then record.deadReason='invalid-api-result';ok=false;break end
             if result[2] then dead=dead+1 end
         end
+        if ok then record.dead=dead end
     end
-    if deadOK and raid then
-        -- A raid lists you among raid1-40: take yourself back out.
-        local result,problem=call(self,UnitIsDeadOrGhost,'player')
-        if not result then record.deadReason=problem;deadOK=false
-        elseif type(result[2])~='boolean' then record.deadReason='invalid-api-result';deadOK=false
-        elseif result[2] and dead>0 then dead=dead-1 end
-    end
-    if deadOK then record.dead=dead end
     return record
 end

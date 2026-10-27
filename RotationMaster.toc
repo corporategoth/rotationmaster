@@ -327,6 +327,5 @@ Conditions/encounter_state.lua
 Conditions/group_state.lua
 Conditions/hero_talent.lua
 Conditions/proc_glow.lua
-Conditions/trinket.lua
 Conditions/edition_state.lua
 Conditions/world_seed.lua

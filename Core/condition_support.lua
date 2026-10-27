@@ -167,6 +167,9 @@ local GROUP_ROLE_EDITION=editionRule('no-group-roles',function(info)
     return info.family=='retail' or info.family=='forever' or info.family=='progression'
 end)
 
+-- Defined below the requirement table; requirements that depend on the saved
+-- value (a chosen state, a measure, a hand) call it for the API they need.
+local check
 local UNIT={'UnitExists'}
 local CASTING={POLICY,UNIT,{'UnitCastingInfo'}}
 local CHANNELING={POLICY,UNIT,{'UnitChannelInfo'}}
@@ -195,12 +198,55 @@ local PROXIMITY={UNIT,{'IsInRaid'},{'IsInGroup'},{'UnitIsUnit'},{'UnitPosition'}
 local MOBINFO={POLICY,UNIT,{'UnitName'},{'UnitLevel'}}
 -- Retail/Forever read C_PaperDollInfo (the global is a loadDeprecationFallbacks alias there).
 local WEAPON={{'C_PaperDollInfo.GetTemporaryEnchantmentInfo','GetWeaponEnchantInfo'}}
-local SWING={{'UnitAttackSpeed'}}
 local TOTEM={{'GetTotemInfo'}}
 local TOTEM_SPELL={{'GetNumTotemSlots'},{'GetTotemInfo'}}
 local RUNE={POLICY,{'GetRuneType'},{'GetRuneCooldown'}}
 local ITEM_LOOKUP={{'C_Item.GetItemCount','GetItemCount'}}
 local TREES={'GetNumTalentTabs','C_Traits.GetGroupDisplayInfoByTreeID'}
+
+-- The API each PLAYER_STATE state reads; ghost is dead-or-ghost without dead.
+local PLAYER_STATE_API={
+    mounted={{'IsMounted'}},swimming={{'IsSwimming'}},falling={{'IsFalling'}},flying={{'IsFlying'}},resting={{'IsResting'}},
+    dead={{'UnitIsDead'}},ghost={{'UnitIsDead'},{'UnitIsDeadOrGhost'}},
+}
+local function playerState(value)
+    local needs=type(value)=='table' and PLAYER_STATE_API[value.state]
+    if not needs then return nil end
+    for _,path in ipairs(needs) do
+        local reason=check(path,value)
+        if reason then return reason end
+    end
+end
+-- GROUP_COUNT: size and dead members read on every client; assigned roles only
+-- where a client lets players assign them (not Era or Burning Crusade: the
+-- function exists there, but the client generated manifests prove only that, not
+-- that a role can be assigned).
+local function groupCount(value)
+    local measure=type(value)=='table' and value.measure
+    if measure=='TANK' or measure=='HEALER' or measure=='DAMAGER' then
+        local reason=GROUP_ROLE_EDITION();if reason then return reason end
+        return check({'UnitGroupRolesAssigned'},value)
+    elseif measure=='dead' then return check({'UnitIsDeadOrGhost'},value) end
+end
+-- ITEM_COOLDOWN with a trinket slot reads the equipped item from the slot.
+local function itemCooldownSlot(value)
+    if type(value)~='table' or value.slot==nil then return nil end
+    return check({'GetInventoryItemID'},value)
+end
+-- Eclipse: the direction and the energy each read their own API.
+local function eclipse(value)
+    local measure=type(value)=='table' and value.measure
+    if measure=='direction' then return check({'GetEclipseDirection'},value)
+    elseif measure=='energy' then
+        local reason=check({'UnitPower'},value);if reason then return reason end
+        return check({'Enum.PowerType'},value)
+    end
+end
+-- Swing timers: the ranged option reads UnitRangedDamage, the melee hands UnitAttackSpeed; the
+-- remaining time needs the combat log for either (a restricted client has none).
+local function swingApi(value)
+    return check(type(value)=='table' and value.ranged and {'UnitRangedDamage'} or {'UnitAttackSpeed'},value)
+end
 
 local requirements={
     SELF_LEVEL={FAMILY,UNIT,{'UnitLevel'}},
@@ -213,10 +259,10 @@ local requirements={
     CARRYING={{'C_Container.GetContainerNumSlots','GetContainerNumSlots'},{'C_Container.GetContainerItemInfo','GetContainerItemInfo'}},
     ITEM=ITEM_LOOKUP,
     ITEM_RANGE={{'C_Item.IsItemInRange','IsItemInRange'}},
-    ITEM_COOLDOWN={{'C_Item.GetItemCooldown','C_Container.GetItemCooldown','GetItemCooldown'}},
+    ITEM_COOLDOWN={{'C_Item.GetItemCooldown','C_Container.GetItemCooldown','GetItemCooldown'},itemCooldownSlot},
     SET_PIECES={{'GetInventoryItemID'}},
     WEAPON_IMBUE=WEAPON,WEAPON=WEAPON,WEAPON_REMAIN=WEAPON,WEAPON_STACKS=WEAPON,
-    SWING_TIME=SWING,SWING_TIME_REMAIN=with(SWING,LOG),
+    SWING_TIME={swingApi},SWING_TIME_REMAIN={swingApi,LOG},
     BUFF=AURA,BUFF_REMAIN=AURA,BUFF_STACKS=AURA,STEALABLE=AURA,
     DEBUFF=AURA,DEBUFF_REMAIN=AURA,DEBUFF_STACKS=AURA,DISPELLABLE=AURA,
     TOTEM=TOTEM,TOTEM_REMAIN=TOTEM,TOTEM_SPELL=TOTEM_SPELL,TOTEM_SPELL_REMAIN=TOTEM_SPELL,
@@ -280,29 +326,22 @@ local requirements={
     DISTANCE_COUNT={POLICY,UNIT,{'UnitIsEnemy'},{'UnitGUID'},{'C_CVar.GetCVar','GetCVar'}},
     RUNE_ENGRAVED={{'C_Engraving.IsEngravingEnabled'}},
     WEAPON_TYPE={weaponSlot},
-    MOUNTED={POLICY,{'IsMounted'}},SWIMMING={POLICY,{'IsSwimming'}},FALLING={POLICY,{'IsFalling'}},
-    FLYING={POLICY,{'IsFlying'}},RESTING={POLICY,{'IsResting'}},
+    PLAYER_STATE={POLICY,playerState},
     ENCOUNTER={POLICY,{'C_InstanceEncounter.IsEncounterInProgress','IsEncounterInProgress'}},
-    INSTANCE_DIFFICULTY={POLICY,{'GetInstanceInfo'}},INSTANCE_ID={POLICY,{'GetInstanceInfo'}},
     KEYSTONE_LEVEL={POLICY,RETAIL_ONLY,{'C_ChallengeMode.IsChallengeModeActive'},{'C_ChallengeMode.GetActiveKeystoneInfo'}},
     HERO_TALENT={POLICY,RETAIL_ONLY,{'C_ClassTalents.GetActiveHeroTalentSpec'}},
     SPELL_GLOW={POLICY,{'C_SpellActivationOverlay.IsSpellOverlayed'}},
-    TRINKET_COOLDOWN={POLICY,{'GetInventoryItemID'},{'C_Item.GetItemCooldown','C_Container.GetItemCooldown','GetItemCooldown'}},
-    GROUP_SIZE={POLICY,{'GetNumGroupMembers'},{'IsInRaid'}},
-    GROUP_ROLE_COUNT={POLICY,GROUP_ROLE_EDITION,{'GetNumGroupMembers'},{'IsInRaid'},{'UnitGroupRolesAssigned'}},
-    GROUP_DEAD_COUNT={POLICY,{'GetNumGroupMembers'},{'IsInRaid'},{'UnitIsDeadOrGhost'}},
+    GROUP_COUNT={POLICY,{'GetNumGroupMembers'},{'IsInRaid'},groupCount},
     PET_HAPPINESS={POLICY,PET_HAPPINESS_EDITION,{'GetPetHappiness'}},
     STAGGER={POLICY,STAGGER_EDITION,{'UnitStagger'}},
-    ECLIPSE_DIRECTION={POLICY,ECLIPSE_EDITION,{'UnitClass'},{'GetEclipseDirection'}},
-    ECLIPSE_ENERGY={POLICY,ECLIPSE_EDITION,{'UnitClass'},{'UnitPower'},{'Enum.PowerType'}},
-    RANGED_SWING_REMAIN={{'UnitRangedDamage'},LOG},
+    ECLIPSE={POLICY,ECLIPSE_EDITION,{'UnitClass'},eclipse},
     ZONE={{'GetZoneText'},{'GetSubZoneText'}},
 }
 addon.conditionRequirements=requirements
 
 local listedFamilies={retail=true,forever=true,era=true,tbc=true,progression=true}
 local bossmodFamilies={era=true,tbc=true,progression=true}
-local function check(requirement,value)
+function check(requirement,value)
     local kind=type(requirement)
     if kind=='function' then return requirement(value) end
     if kind=='table' then

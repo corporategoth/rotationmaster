@@ -183,8 +183,8 @@ local default_condition_groups = {
             "MANA", "MANAPCT", "POWER", "POWERPCT", "POINT", "RUNE", "RUNE_COOLDOWN",
             "TOTEM", "TOTEM_SPELL", "TOTEM_REMAIN", "TOTEM_SPELL_REMAIN",
             "STAT", "ECS_STAT", "ECS_STAT_PCT",
-            "HERO_TALENT", "GROUP_SIZE", "GROUP_ROLE_COUNT", "GROUP_DEAD_COUNT",
-            "PET_HAPPINESS", "STAGGER", "ECLIPSE_DIRECTION", "ECLIPSE_ENERGY",
+            "HERO_TALENT", "GROUP_COUNT",
+            "PET_HAPPINESS", "STAGGER", "ECLIPSE",
         }
     },
     {
@@ -203,7 +203,7 @@ local default_condition_groups = {
         id = "fca4ff75-4085-458a-b5bf-27a6b52f2092",
         name = L["Items"],
         conditions = {
-            "EQUIPPED", "CARRYING", "ITEM", "ITEM_RANGE", "ITEM_COOLDOWN", "GLYPH", "WEAPON_TYPE", "TRINKET_COOLDOWN",
+            "EQUIPPED", "CARRYING", "ITEM", "ITEM_RANGE", "ITEM_COOLDOWN", "GLYPH", "WEAPON_TYPE",
         }
     },
     {
@@ -212,7 +212,7 @@ local default_condition_groups = {
         conditions = {
             "BUFF", "BUFF_REMAIN", "BUFF_STACKS", "STEALABLE",
             "DEBUFF", "DEBUFF_REMAIN", "DEBUFF_STACKS", "DISPELLABLE",
-            "WEAPON", "WEAPON_REMAIN", "WEAPON_STACKS", "SWING_TIME", "SWING_TIME_REMAIN", "RANGED_SWING_REMAIN",
+            "WEAPON", "WEAPON_REMAIN", "WEAPON_STACKS", "SWING_TIME", "SWING_TIME_REMAIN",
         }
     },
     {
@@ -222,8 +222,7 @@ local default_condition_groups = {
             "ZONE", "OUTDOORS", "DISTANCE", "BEYOND_MELEE", "DISTANCE_COUNT", "PROXIMITY",
             "PROXIMITY_HEALTH", "PROXIMITY_HEALTH_COUNT", "PROXIMITY_HEALTHPCT", "PROXIMITY_HEALTHPCT_COUNT",
             "PROXIMITY_MANA", "PROXIMITY_MANA_COUNT", "PROXIMITY_MANAPCT", "PROXIMITY_MANAPCT_COUNT",
-            "MOUNTED", "SWIMMING", "FALLING", "FLYING", "RESTING",
-            "INSTANCE_DIFFICULTY", "INSTANCE_ID", "KEYSTONE_LEVEL",
+            "PLAYER_STATE", "KEYSTONE_LEVEL",
         }
     },
 }
@@ -239,8 +238,8 @@ local default_switch_conditions = {
     "STEALTHED", "GROUP", "FORM", "CLASS", "CLASS_GROUP", "CREATURE", "CLASSIFICATION",
     "PET", "PET_NAME", "EQUIPPED", "DISTANCE_COUNT", "THREAT_COUNT", "ROLE", "GLYPH",
     "BOSSMOD_ENCOUNTER", "BOSSMOD_STAGE", "SPECIALIZATION", "WEAPON_TYPE",
-    "ENCOUNTER", "INSTANCE_DIFFICULTY", "INSTANCE_ID", "KEYSTONE_LEVEL", "HERO_TALENT",
-    "GROUP_SIZE", "GROUP_ROLE_COUNT", "MOUNTED", "RESTING",
+    "ENCOUNTER", "KEYSTONE_LEVEL", "HERO_TALENT",
+    "GROUP_COUNT", "PLAYER_STATE",
 }
 
 -- Default 'switch only' conditions

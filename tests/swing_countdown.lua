@@ -86,7 +86,7 @@ test('archived raw source retains negative overdue behavior without mutating sto
 end)
 -- swingSpeed changed on purpose (an absent off-hand weapon reads false, 994be32a); the other helpers are unchanged.
 test('native helper and capture source identities remain exact for current and historical copies',function()
- local _,a=fixture();for name,hash in pairs({enchantObservation='5abf63f3',numericObservation='02dee6a9',swingSpeed='5af56bab',color='63742be5',helpers='e831a1db'})do local id='builtin:Conditions/weapon.lua:'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/weapon.lua'](name))end
+ local _,a=fixture();for name,hash in pairs({enchantObservation='5abf63f3',numericObservation='02dee6a9',swingSpeed='cf9027ac',color='63742be5',helpers='e831a1db'})do local id='builtin:Conditions/weapon.lua:'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/weapon.lua'](name))end
 end)
 print('Source mode: '..mode..(mode=='authored-copy'and' (exact authored evaluator over detached archived metadata; checked-in catalog untouched)'or' (checked-in catalog must equal actual authored evaluator)'))
 finish()
