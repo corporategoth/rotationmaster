@@ -1,5 +1,12 @@
+-- Visual markers for editor controls: a red border for invalid data and an amber left rail for unsaved changes, plus
+-- the rotation pane's unsaved-state refresh. The two markers are separate on purpose so validation and unsaved state
+-- never share a meaning. It only draws and reads the draft; the comparison itself is addon:RotationUnsavedState in
+-- Core/unsaved_changes.lua, and nothing here saves or discards. Loaded in the UI/ block of RotationMaster.toc after
+-- UI/drag_presentation.lua.
 local _, addon = ...
 
+-- Shows or hides a red border on `control` and records the validation message. Safe on nil; textures are created the
+-- first time a control is marked invalid.
 function addon:SetWorkbenchInvalid(control, invalid, message)
     if not control then return end
     control.rmInvalid = invalid == true
@@ -39,6 +46,7 @@ function addon:SetWorkbenchInvalid(control, invalid, message)
 end
 
 -- A separate amber rail preserves the meaning of validation/negation borders.
+-- Shows or hides the amber unsaved rail on `control` (safe on nil); the texture is created on first use.
 function addon:SetWorkbenchUnsaved(control, changed)
     if not control then return end
     control.rmUnsaved = changed == true
@@ -58,9 +66,14 @@ function addon:SetWorkbenchUnsaved(control, changed)
     end
 end
 
+-- Adds RefreshUnsaved to the rotation editor pane and extends its UpdateHistory so every history change also
+-- refreshes the markers. Call once after the pane's own UpdateHistory exists.
 function addon:InstallRotationUnsaved(pane)
     local history = pane.UpdateHistory
 
+    -- Compares the saved baseline with the draft plus any not yet staged field edits and marks the name, switch,
+    -- priority, identifier, info button, changed cards and the metadata dialog's fields. Read-only rotations are never
+    -- marked. A no-op when the pane is inactive or has no workspace.
     function pane:RefreshUnsaved()
         if not self.active or not self.workspace then return end
         local baseline = self.workspace.session:Baseline()
@@ -165,6 +178,7 @@ function addon:InstallRotationUnsaved(pane)
         end
     end
 
+    -- The pane's original history update followed by an unsaved-marker refresh.
     function pane:UpdateHistory()
         history(self)
         self:RefreshUnsaved()

@@ -1,9 +1,16 @@
+-- A small diagnostic window for the Lua editor's input problems: a plain, unhooked multi-line EditBox with a fixed
+-- sample so a player can compare caret and Up/Down behavior in the stock chat font and the RM font. It must stay free
+-- of the editor's completion, gutter, paint and diagnostic hooks and must never read or save an owner's buffer; the
+-- sample text is temporary. Loaded in the "Code authoring UI" block of RotationMaster.toc, before
+-- lua_input_diagnostics.lua. Nothing in the shipped addon opens it; tests/lua_input_probe.lua exercises it.
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local sample = 'first line: 0123456789\nsecond line: abcdefghij\nthird line: 0123456789'
 
 -- This comparison deliberately has no editor/completion/diagnostic scripts or
 -- hooks on its EditBox. Its fixed sample never reads or saves an owner buffer.
+-- Opens (or reopens) the probe window with the sample text and the stock font selected, and returns the window
+-- record. Each opening starts a new session so click handlers from an earlier opening do nothing.
 function addon:ShowLuaInputProbe()
     local d = self.luaInputProbe
 
@@ -54,6 +61,7 @@ function addon:ShowLuaInputProbe()
         edit:SetHeight(1)
         d.scroll:SetScrollChild(edit)
 
+        -- Registry-facing hide: marks the probe inactive and drops edit focus along with the frame.
         function d:Hide()
             self.active = false
             self.edit:ClearFocus()
@@ -75,6 +83,8 @@ function addon:ShowLuaInputProbe()
     d.active = true
     local session = d.session
 
+    -- Switches the sample between the stock chat font ('stock') and the bundled monospace font ('rm'), keeping the
+    -- caret position and focus so the player can compare caret behavior in place.
     local function selectFont(mode)
         if not d.active or d.session ~= session or not d.frame:IsShown() then return end
         local cursor = d.edit:GetCursorPosition()

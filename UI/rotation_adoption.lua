@@ -1,10 +1,22 @@
+-- The "Recover unassigned rotations" window. Older rotations saved without an owner sit in a profile or character
+-- archive; this window lists them, shows the archived record as text, and lets the player explicitly adopt one (or
+-- all) for the class or the current character. It must never infer an owner and never change the archive except
+-- through addon:ApplyRotationAdoption and addon:AdoptAllUnassignedRotations (Core/). The window closes itself when the
+-- opening window, profile or character changes underneath it. Opened from the rotation browser
+-- (UI/rotation_browser.lua); loaded in the UI/ block of RotationMaster.toc after UI/transfer_format.lua.
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- ============================================================================
+-- Helpers
+-- ============================================================================
+
+-- Stable identity string for one archived record, used as the roster value.
 local function key(selection)
     return selection.kind .. '\0' .. selection.spec .. '\0' .. selection.id
 end
 
+-- Localized class name for display, falling back to the raw token (or empty) when the client has no name table.
 local function className(class)
     local names = type(LOCALIZED_CLASS_NAMES_MALE) == 'table' and LOCALIZED_CLASS_NAMES_MALE
     return names and names[class] or class or ''
@@ -12,10 +24,13 @@ end
 
 -- Archival inspection is text only. Bounds apply to the report, never to the
 -- saved record or the complete recovery roster.
+-- Serializes an archived record to indented text for the copyable report, capped at 64 KB, 20,000 nodes or keys and 32
+-- levels of depth; cycles print as <cycle>. Appends a notice when anything was cut. Read-only on `value`.
 local function describe(value)
     local parts, bytes, nodes, active = {}, 0, 0, {}
     local truncated = false
 
+    -- Appends a piece of text; returns false (and marks the report truncated) when the byte budget is exhausted.
     local function put(text)
         if bytes + #text > 65500 then
             truncated = true
@@ -27,6 +42,7 @@ local function describe(value)
         return true
     end
 
+    -- Writes one value recursively, with keys sorted by type then value so the report is stable between runs.
     local function visit(current, depth)
         nodes = nodes + 1
 
@@ -84,6 +100,13 @@ local function describe(value)
     return table.concat(parts):sub(1, 65536)
 end
 
+-- ============================================================================
+-- Adoption window
+-- ============================================================================
+
+-- Opens the recovery window. `owner` is the window that opened it (its generation, lease and serial are captured so
+-- the window closes if that owner goes away; may be nil), and `onApplied(reference)` is called with a copy of the last
+-- adopted rotation's reference after a successful adoption, only if the owner is still current. Returns the window.
 function addon:ShowRotationAdoption(owner, onApplied)
     local window = self.rotationAdoptionWindow
 
@@ -107,10 +130,13 @@ function addon:ShowRotationAdoption(owner, onApplied)
         window.form:SetWidth(976)
         window.form:SetHeight(598)
 
+        -- Registry-facing hide for the window.
         function window:Hide()
             self.frame:Hide()
         end
 
+        -- Marks the window inactive (so every callback from the previous draw stops working), releases the form and
+        -- hides any open archive report. Runs on every hide and before each reopening.
         function window:Clear()
             self.active = false
             self.form:Release()
@@ -132,6 +158,8 @@ function addon:ShowRotationAdoption(owner, onApplied)
     local ownerLease = owner and owner.rmLease
     local ownerSerial = owner and owner.serial
 
+    -- True when there is no owner, or the owner window is still shown, with the same generation, lease and serial
+    -- it had when this window opened.
     local function ownerValid()
         return not owner
             or (not owner.frame or owner.frame:IsShown())
@@ -141,6 +169,8 @@ function addon:ShowRotationAdoption(owner, onApplied)
                 and owner.active ~= false
     end
 
+    -- True while the profile and the class and character that the window opened under are unchanged and the owner is
+    -- still valid; adoption writes to that profile and owner, so a switch must stop it.
     local function identityCurrent()
         local now = addon:GetRotationOwnerContext()
 
@@ -150,6 +180,7 @@ function addon:ShowRotationAdoption(owner, onApplied)
             and ownerValid()
     end
 
+    -- True while this opening is current: window active, same serial, shown, same identity and same coordinator.
     local function valid()
         return window.active
             and window.serial == serial
@@ -259,6 +290,7 @@ function addon:ShowRotationAdoption(owner, onApplied)
 
         p:Text(L['Applies to'])
 
+        -- Switches the adoption owner between 'class' and 'character' and redraws the page.
         local function choose(value)
             if valid() then
                 scope = value
@@ -323,6 +355,8 @@ function addon:ShowRotationAdoption(owner, onApplied)
         if total > 1 then
             local target = scope == 'class' and className(context and context.class) or L['This character']
 
+            -- Confirms, then adopts `count` records for the chosen owner (optionally limited to one specialization).
+            -- Records that cannot be adopted stay in the archive and are named in a message.
             local function run(count, options)
                 p:Confirm(
                     string.format(

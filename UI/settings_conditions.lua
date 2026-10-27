@@ -1,10 +1,23 @@
+-- The Conditions page of the settings window. Two modes share one form: the condition roster (browse Built In and
+-- custom conditions by category and source, hide a condition, mark it as a switch or announcement condition, move it
+-- to a category, enable or delete a custom one) and category management (create, rename, icon, import/export and
+-- delete categories). Edits go to the settings draft through the form `p` (p:SettingsData(), p:Draw()), never straight
+-- to the registry; custom Lua edits open the custom condition editor in UI/custom_condition_editor.lua instead. Loaded
+-- in the UI/ block of RotationMaster.toc after UI/item_set_binding.lua. Saved data: profile.condition_groups,
+-- profile.switch_conditions, profile.announcement_conditions, profile.disabled_conditions,
+-- profile.other_conditions_order and global.custom_conditions.
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local normalColor = { .4, .7, 1 }
 local switchColor = { 1, .82, .25 }
 
+-- ============================================================================
+-- Flag row layout
+-- ============================================================================
+
 -- Hidden, Switch Condition and Announcement Condition share one row in
 -- thirds; a row too narrow for their captions wraps instead of clipping.
+-- Lays the three flag checkboxes out starting at `y` across `width`, records and returns the row height.
 function addon:LayoutConditionFlags(hidden, switch, announcement, y, width)
     local widest = 0
 
@@ -21,6 +34,15 @@ function addon:LayoutConditionFlags(hidden, switch, announcement, y, width)
     return height
 end
 
+-- ============================================================================
+-- Condition roster
+-- ============================================================================
+
+-- Builds the Conditions page into the settings form `p`. Merges the registered definitions with the draft's custom
+-- conditions, filters by category and source (all, built in, custom), marks invalid or disabled custom entries in the
+-- roster, then draws the selected condition's flags, category and Move To controls, or hands over to the inline
+-- custom condition editor. Switches to the category page when p.mode is 'categories'. Selection state lives on `p`
+-- (category, conditionSource, condition) and is corrected here when it no longer exists.
 function addon:BuildConditionSettings(p)
     local store = p:SettingsData()
     if p.mode == 'categories' then return self:BuildConditionCategorySettings(p) end
@@ -140,6 +162,7 @@ function addon:BuildConditionSettings(p)
         ordered = tags
     end
 
+    -- Stores a reordered list in the place that backs the current category (switch, announcement, other or a group).
     local function orderChanged(list)
         if p.category == 'SWITCH' then
             profile.switch_conditions = list
@@ -152,6 +175,8 @@ function addon:BuildConditionSettings(p)
         end
     end
 
+    -- Runs a navigation change, first asking the inline custom condition editor (when present) whether leaving would
+    -- discard its unsaved edits.
     local function navigate(fn)
         if self.BuildInlineCustomCondition then
             p:RequestLeave(fn)
@@ -453,6 +478,8 @@ function addon:BuildConditionSettings(p)
                         end
                     end
 
+                    -- Keep the saved definition so a failed reinstall puts it back instead of leaving a
+                    -- half-changed condition registered.
                     local original = self:CopySettingsData(
                         p.draftBaseline and p.draftBaseline.global.custom_conditions[tag]
                             or self.db.global.custom_conditions[tag]
@@ -509,6 +536,13 @@ function addon:BuildConditionSettings(p)
     end
 end
 
+-- ============================================================================
+-- Category management
+-- ============================================================================
+
+-- Builds the category management mode of the Conditions page into form `p`: roster of categories (plus the built-in
+-- Switch and Other), a creation form, name and icon editing, the member condition grid, import/export through
+-- p.categoryTransfer and delete. Deleting a category leaves its conditions available under Other.
 function addon:BuildConditionCategorySettings(p)
     local store = p:SettingsData()
     local profile = store.profile
@@ -837,6 +871,13 @@ function addon:BuildConditionCategorySettings(p)
     end
 end
 
+-- ============================================================================
+-- Custom condition editor
+-- ============================================================================
+
+-- Opens the custom code editor for condition `key` (nil for a new one) over settings form `p`. Refuses while the
+-- settings draft has unapplied changes, because the editor saves straight to the database and the draft is resynced
+-- afterward. Returns the editor dialog and its owner, or nothing; the dialog is closed through the form's cleanups.
 function addon:OpenSettingsCustomCondition(p, key, condition)
     if p.transactionKeys and p:IsSettingsDraftDirty() then
         p:Message(L['Apply or discard current settings before opening the custom code editor.'])

@@ -1,9 +1,18 @@
+-- Drag ghost behavior for the card editors. Turns the ghost frame made in UI/controls.lua into a presenter that lifts
+-- the real card frames onto itself while a drag runs, leaves a dimmed placeholder where each card was, and draws the
+-- preview edges. It must give every lifted frame back (parent, anchors, level, strata) on hide, cancel or error, and
+-- it moves only frames the RM editors own. Used by UI/condition_canvas.lua and UI/rotation_canvas.lua; loaded in the
+-- UI/ block of RotationMaster.toc right after UI/controls.lua.
 local _, addon = ...
 local tones = { red = { .85, .3, .25 }, green = { .25, .7, .35 }, gray = { .4, .4, .4 }, neutral = { .55, .58, .6 } }
 
 -- Preview only RM-owned editor frames. Restore them before a command, rerender,
 -- release or canceled drag can recycle their controls or replace their model.
+-- Adds the presentation methods to `ghost`, using `decoration` (its fill and border textures) for the stock look.
+-- Call once per ghost frame.
 function addon:InstallDragPresentation(ghost, decoration)
+    -- Registers a stand-in window (unlayered) with the window registry so that closing it, which Escape does, calls
+    -- `callback` and cancels the drag.
     function ghost:CaptureCancel(callback)
         self.cancelOwner = self.cancelOwner or { frame = self }
 
@@ -18,6 +27,7 @@ function addon:InstallDragPresentation(ghost, decoration)
     ghost.placeholders = {}
     ghost.previewLines = {}
 
+    -- Shows or hides the ghost's stock fill and border textures (hidden while real cards are drawn on it).
     local function artwork(show)
         for _, layer in ipairs({ 'fill', 'border' }) do
             for _, texture in ipairs(decoration[layer]) do
@@ -30,6 +40,9 @@ function addon:InstallDragPresentation(ghost, decoration)
         end
     end
 
+    -- Gives every lifted card frame back to its original parent, anchors, level and strata, and clears the placeholders
+    -- and preview lines. Safe to call when nothing is lifted. A failure restoring one frame does not stop the rest;
+    -- the first error is re-raised after everything has been restored.
     function ghost:RestoreCards()
         local entries = self.liveEntries
         self.liveEntries = nil
@@ -77,11 +90,13 @@ function addon:InstallDragPresentation(ghost, decoration)
         end
     end
 
+    -- Hiding the ghost always restores the lifted cards first.
     function ghost:Hide()
         self:RestoreCards()
         nativeHide(self)
     end
 
+    -- Shows the ghost as the plain summary chip (label, summary, count) instead of lifted cards.
     function ghost:Present(...)
         self:RestoreCards()
         self:SetClampedToScreen(true)
@@ -94,6 +109,8 @@ function addon:InstallDragPresentation(ghost, decoration)
         present(self, ...)
     end
 
+    -- Moves the ghost with the cursor, keeping the point where the player grabbed the card under the pointer; without
+    -- a grab offset (summary chip) it defers to the stock follow behavior.
     function ghost:FollowPointer()
         if self.grabOffset and GetCursorPosition then
             local x, y = GetCursorPosition()
@@ -112,12 +129,16 @@ function addon:InstallDragPresentation(ghost, decoration)
         end
     end
 
+    -- Lifts a single control onto the ghost at its current position; a one-entry PresentCards.
     function ghost:PresentSource(control)
         return self:PresentCards({
             { frame = control, x = 0, y = 0, width = control:GetWidth(), height = control:GetHeight() },
         }, control:GetParent())
     end
 
+    -- Lifts the card frames in `entries` (each { frame, x, y, width, height } in the source's coordinates) onto the
+    -- ghost, leaves a placeholder at each original spot, hides `sourceLines` and draws `edges` as preview lines.
+    -- `source` supplies the scale. Returns false for an empty list; on an error it restores the cards and re-raises.
     function ghost:PresentCards(entries, source, edges, sourceLines)
         self:RestoreCards()
         if type(entries) ~= 'table' or #entries == 0 then return false end

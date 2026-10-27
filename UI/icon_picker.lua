@@ -1,6 +1,19 @@
+-- Paged icon chooser window used when an author picks an icon for a custom condition (UI/custom_condition_editor.lua).
+-- It lists icon groups (a short built-in set, the addon's own artwork, spells the player knows and the client's macro
+-- icon lists), filters by name, and hands the chosen texture path to the caller's `choose` callback. It owns only the
+-- window; it never stores the icon, and it stops responding whenever the owner stops being valid. Loaded in the UI/
+-- block of RotationMaster.toc after UI/condition_unit.lua; needs addon.Artwork (Data/artwork.lua), addon.SpellCatalog
+-- and the category icon check in Core/category_data.lua.
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- ============================================================================
+-- Icon catalog
+-- ============================================================================
+
+-- Builds the list of icon groups for one picker opening: { name, icons = { { texture, name } } }. Sources are fixed
+-- sets, the addon artwork, the player's indexed spells, and the client macro icon lists (included only when the
+-- client exposes them and the icon passes IsCategoryIcon). Rebuilt on every open so newly learned spells appear.
 local function catalogs()
     local groups = {}
     local labels = {}
@@ -148,6 +161,13 @@ local function catalogs()
     return groups
 end
 
+-- ============================================================================
+-- Picker window
+-- ============================================================================
+
+-- Opens (or reuses) the single icon picker window. `current` is the texture to mark as selected, `choose(texture)` is
+-- called once on a click and the window then closes, and `ownerValid()` says whether the opener is still alive; every
+-- callback is dropped once it returns false or the window is reopened. Returns the window record.
 function addon:ShowWorkbenchIconPicker(current, choose, ownerValid)
     local d = self.iconPicker
 
@@ -186,16 +206,20 @@ function addon:ShowWorkbenchIconPicker(current, choose, ownerValid)
         frame:Hide()
     end
 
+    -- The serial changes on every open, so scripts left over from an earlier opening see valid() as false.
     d.serial = (d.serial or 0) + 1
     local serial = d.serial
     local selectedCategory, page = 1, 1
     d.categories = catalogs()
     d.search:SetText('')
 
+    -- True while this opening is current, the window is shown and the opener is still valid.
     local function valid()
         return d.serial == serial and d.frame:IsShown() and ownerValid()
     end
 
+    -- Redraws the current page of matches for the selected category and search text (54 icons per page, 9 per row).
+    -- Each draw bumps d.revision so a click handler from an earlier draw cannot choose an icon that has since moved.
     local function draw()
         if not valid() then return end
         d.revision = (d.revision or 0) + 1

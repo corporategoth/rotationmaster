@@ -1,6 +1,17 @@
+-- Cold command surface for performance capture: the /rm perf commands, the General page's CPU, Runtime and Memory
+-- buttons (UI/settings_general.lua) and the "native profiler probe". It only starts, stops and reports captures owned
+-- by Diagnostics/ (cpu.lua, cpu_runtime.lua, memory.lua) and prints their status; it never changes WoW's scriptProfile
+-- setting and never touches rotation advice or saved settings. The probe reads game globals defensively
+-- (rawget, pcall, secret-value checks) because the profiler API may be absent or restricted on a client.
+-- Loaded from the UI/ block of RotationMaster.toc, after UI/errors.lua.
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- ============================================================================
+-- Messages
+-- ============================================================================
+
+-- Maps a CPU capture failure reason code to the localized sentence shown to the player; unknown codes are quoted.
 local function failure(reason)
     if reason == 'script-profile-disabled' then
         return L['CPU capture requires WoW scriptProfile to be enabled before a reload. RM does not change this setting.']
@@ -15,14 +26,22 @@ local function failure(reason)
     return L['CPU capture is unavailable: %s']:format(tostring(reason or L['Unknown']))
 end
 
+-- ============================================================================
+-- Native profiler probe
+-- ============================================================================
+
 -- Cold, explicit capability experiment. The measured function touches only
 -- constants/local counters and the optional named profiler marker, never advice.
+-- Re-entrancy guard: set while a probe runs so a second probe or a capture command is refused.
 local nativeProbeBusy = false
 
+-- Packs varargs with an explicit count so nil results survive the trip through pcall.
 local function probePack(...)
     return { n = select('#', ...), ... }
 end
 
+-- True only when the value is safe to inspect: not a secret value and accessible to addon code. A missing secret API
+-- counts as readable; a present but malformed one does not.
 local function probeReadable(value)
     local secret = rawget(_G, 'issecretvalue')
 
@@ -45,6 +64,8 @@ local function probeReadable(value)
     return true
 end
 
+-- Formats one measurement from the profiler record for the report, or the localized "unavailable" when it is secret,
+-- negative, non-finite or malformed. With bytes set, accepts an unsigned 64-bit decimal string or an exact integer.
 local function probeNumber(value, bytes)
     if not probeReadable(value) then return L['unavailable'] end
 
@@ -69,6 +90,8 @@ local function probeNumber(value, bytes)
     return string.format('%.6g', value)
 end
 
+-- Calls a capture-running getter safely. Returns its boolean, or nil when the getter is missing, restricted, errors
+-- or answers anything but a boolean (callers treat nil as "cannot tell" and refuse to probe).
 local function probeRunning(owner, getter)
     if not probeReadable(getter) or type(getter) ~= 'function' then return nil end
     local ok, value = pcall(getter, owner)
@@ -76,6 +99,10 @@ local function probeRunning(owner, getter)
     return value
 end
 
+-- Runs the one-shot capability probe against C_AddOnProfiler and returns the report text. It records which pieces of
+-- the API exist, calls MeasureCall once with an inert callback and checks what came back. Every step re-verifies that
+-- the captured globals and capture state have not changed (callbacks can run arbitrary code), and a changed context
+-- ends the probe early with a partial report. Measures no evaluator and no gameplay.
 local function buildNativeProbe(owner, getter)
     local runtimeGetter = rawget(owner, 'IsCPURuntimeCaptureRunning')
 
@@ -107,6 +134,7 @@ local function buildNativeProbe(owner, getter)
 
     local restrictionsResult = L['unavailable']
 
+    -- Builds the report text from the state gathered so far; every early exit returns through here.
     local function render()
         return table.concat({
             L['Native profiler probe'],
@@ -153,6 +181,7 @@ local function buildNativeProbe(owner, getter)
         'AddMeasuredCallEvent'
     )
 
+    -- Classifies one provider field as restricted, absent, present (a function) or malformed.
     local function presence(value)
         if not probeReadable(value) then return 'restricted' end
         return value == nil and 'absent' or type(value) == 'function' and 'present' or 'malformed'
@@ -162,6 +191,8 @@ local function buildNativeProbe(owner, getter)
     local db = owner.db
     local profile = db.profile
 
+    -- True while the profiler namespace, its three functions, the saved-variable tables and the capture getters are
+    -- still the exact objects captured when the probe started.
     local function sameProvider()
         local namespace = rawget(_G, 'C_AddOnProfiler')
 
@@ -176,6 +207,7 @@ local function buildNativeProbe(owner, getter)
             and rawequal(rawget(owner, 'IsCPURuntimeCaptureRunning'), runtimeGetter)
     end
 
+    -- True when nothing moved and no CPU or runtime capture started; checked after each call that can run foreign code.
     local function current()
         return sameProvider()
             and probeRunning(owner, getter) == false
@@ -183,6 +215,7 @@ local function buildNativeProbe(owner, getter)
             and sameProvider()
     end
 
+    -- Abandons the probe: reports the measurement as unavailable because the context changed underneath it.
     local function changed()
         state.measure = 'unavailable (context changed)'
         metrics = { L['unavailable'], L['unavailable'], L['unavailable'] }
@@ -215,6 +248,8 @@ local function buildNativeProbe(owner, getter)
     if not value or state.measure ~= 'present' then return render() end
     local calls, arguments, eventOK = 0, true, nil
 
+    -- The callback handed to MeasureCall. It touches only local counters, notes whether it received exactly the
+    -- three arguments passed, fires the named marker event once, and returns fixed values for the result check.
     local function inert(...)
         calls = math.min(calls + 1, 2)
 
@@ -276,6 +311,7 @@ local function buildNativeProbe(owner, getter)
 
     -- This readonly build-capability call is outside the inert measurement.
     -- Recheck exact captured methods after every callback-capable boundary.
+    -- True while the secret-value globals captured at the start of the probe are still the same objects.
     local function sameEligibility()
         return rawequal(rawget(_G, 'issecretvalue'), secret)
             and rawequal(rawget(_G, 'canaccessvalue'), access)
@@ -306,6 +342,8 @@ local function buildNativeProbe(owner, getter)
     return render()
 end
 
+-- Entry point for "/rm perf probe". Refuses unless the owner is the addon itself, no probe is running and no capture
+-- is active; shows the report in the text window. Returns true and an empty message, or false and a reason.
 local function runNativeProbe(owner)
     local unavailable = L['Native profiler probe is unavailable.']
     if not rawequal(owner, addon) or nativeProbeBusy then return false, unavailable end
@@ -354,7 +392,14 @@ local function runNativeProbe(owner)
     return result, message
 end
 
+-- ============================================================================
+-- Capture actions and commands
+-- ============================================================================
+
 -- These actions affect diagnostic state only, independently of settings drafts.
+-- Runs one named action ('start', 'cancel', 'runtime', 'runtimereport', 'memory', 'memorystop', 'memoryreport',
+-- 'probe', 'report') for the General page buttons and legacy commands. Prints the outcome and returns ok and the
+-- message.
 function addon:RunCPUProfileAction(action)
     if nativeProbeBusy then return false, L['Native profiler probe is already running.'] end
     local ok, message
@@ -484,6 +529,8 @@ local performanceCaptures = {
     },
 }
 
+-- Localized failure sentence for a capture kind in performanceCaptures, from the reason code a start, stop or report
+-- call returned.
 local function performanceFailure(spec, reason)
     if reason == 'script-profile-disabled' then return failure(reason) end
 
@@ -499,9 +546,12 @@ local function performanceFailure(spec, reason)
     return L['%s is unavailable: %s']:format(L[spec.title], tostring(reason or L['Unknown']))
 end
 
+-- Parses and runs the text after "/rm perf": cpu, runtime or memory with seconds, start, stop or report; probe; or
+-- engine. Prints the outcome and returns ok and the message; a malformed command prints the usage line.
 function addon:HandlePerformanceCommand(text)
     local usage = L['Usage: /rm perf cpu|runtime|memory [seconds|start|stop|report], or /rm perf probe']
 
+    -- Prints the message and returns the failure pair.
     local function reject(message)
         self:print(message)
         return false, message
@@ -585,6 +635,13 @@ function addon:HandlePerformanceCommand(text)
     return ok, message
 end
 
+-- ============================================================================
+-- Completion notices
+-- ============================================================================
+
+-- Callbacks the capture modules in Diagnostics/ look up on the addon and call (via pcall) when a run ends. Each prints
+-- one chat line telling the player where to open the report; status is 'complete' or 'invalid'.
+-- Called when a runtime capture ends.
 function addon:OnCPURuntimeCaptureFinished(_, status)
     if status == 'complete' then
         self:print(
@@ -595,6 +652,7 @@ function addon:OnCPURuntimeCaptureFinished(_, status)
     end
 end
 
+-- Called when a CPU capture ends.
 function addon:OnCPUProfileFinished(_, status)
     if status == 'complete' then
         self:print(L['CPU capture complete. Use General > CPU report or /rm perf cpu report to view and copy it.'])
@@ -603,6 +661,7 @@ function addon:OnCPUProfileFinished(_, status)
     end
 end
 
+-- Called when a memory capture ends.
 function addon:OnMemoryCaptureFinished(_, status)
     if status == 'complete' then
         self:print(

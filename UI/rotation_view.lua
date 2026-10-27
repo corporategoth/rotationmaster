@@ -1,9 +1,17 @@
+-- The view controls of the rotation editor pane: the Rotation / Cooldowns tabs, Expand all and Collapse all, the
+-- Diagram / List switch, the Add action, branch and cooldown palette and the zoom bar. They change only what is shown
+-- (section, layout, zoom, card fold state) and must never edit rotation data except through the pane's Insert command.
+-- InstallRotationView(pane) adds these members to the pane built in UI/rotation_editor.lua; this file is loaded in the
+-- UI/ block of RotationMaster.toc just before it, and uses addon.RotationData for step indexing.
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local data = addon.RotationData
 
 -- View controls stay outside the scaled/scrolled scene. All three workspaces
 -- share the same draft and history; these choices never alter rotation data.
+-- Creates the view controls on `pane` and adds ContentSection, SelectContent, UpdateCanvasNavigation,
+-- LayoutViewControls and BindViewControls to it. Call once while the pane is built; pane.frame and pane.canvas must
+-- already exist.
 function addon:InstallRotationView(pane)
     pane.contentTabs = {}
     pane.sectionLabels = pane.contentTabs
@@ -73,10 +81,13 @@ function addon:InstallRotationView(pane)
     pane.zoomIn:SetPoint('LEFT', pane.zoomReset, 'RIGHT', 2, 0)
     pane.zoomReset.tooltip = L['Reset diagram zoom to 100%. Scroll to zoom; middle-click to reset. Drag empty space to pan.']
 
+    -- The section being edited: 'cooldowns' or 'rotation' (anything else counts as the rotation).
     function pane:ContentSection()
         return self.view.section == 'cooldowns' and 'cooldowns' or 'rotation'
     end
 
+    -- Switches to the 'rotation' or 'cooldowns' section. Pending name and field edits are flushed first so they are
+    -- not lost on the rerender; returns true on success, or nil (and a reason when a flush fails).
     function pane:SelectContent(section)
         if not self.active or (section ~= 'rotation' and section ~= 'cooldowns') then return nil end
         if self:ContentSection() == section then return true end
@@ -94,6 +105,8 @@ function addon:InstallRotationView(pane)
         return true
     end
 
+    -- Syncs the tab selection, the view-mode pill, the zoom bar visibility and its percentage and enable states
+    -- (zoom runs from 25% to 200%) with the current section and canvas.
     function pane:UpdateCanvasNavigation()
         local section = self:ContentSection()
         local diagram = self.canvas:IsDiagram()
@@ -131,6 +144,8 @@ function addon:InstallRotationView(pane)
         end
     end
 
+    -- Places the tabs, view switch, expand and collapse buttons and the add palette below y offset `top` for the
+    -- given pane width; the palette wraps to a second row when narrow. Returns the y offset where content starts.
     function pane:LayoutViewControls(top, width)
         local section = self:ContentSection()
 
@@ -174,6 +189,8 @@ function addon:InstallRotationView(pane)
         return row + (wrap and 26 or 0) + 28
     end
 
+    -- Wires every view control's click and drag handlers. `alive()` says whether the pane's current render is still
+    -- the live one; handlers do nothing once it returns false. Palette controls are disabled for read-only rotations.
     function pane:BindViewControls(alive)
         for section, button in pairs(self.contentTabs) do
             addon:SetUIScript(button, 'OnClick', function()

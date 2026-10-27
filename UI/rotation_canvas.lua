@@ -1,3 +1,10 @@
+-- The scene surface of the rotation editor: the scrolling, zooming canvas that draws a rotation as cards, branch
+-- groups, connector lines and True/False arm buttons, in diagram, list or cooldown-grid form. It turns the scene model
+-- built by the editor into frames, recycles card controls so only nearby cards exist, and runs pointer gestures (pan,
+-- box select, multi-select, drag and drop of cards) without ever editing the rotation itself: every change goes out as
+-- owner:Command and selection and viewport live in owner.view. Every card handler checks a generation token so a
+-- handler left over from an earlier render does nothing. Built by UI/rotation_editor.lua (loaded after this file in
+-- the UI/ block of RotationMaster.toc); cards come from UI/rotation_cards.lua.
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
@@ -9,14 +16,21 @@ local colors = {
     white = { .85, .85, .85 },
 }
 
+-- ============================================================================
+-- Helpers
+-- ============================================================================
+
+-- True for a real, finite number (not NaN, not infinite).
 local function finite(value)
     return type(value) == 'number' and value == value and value > -math.huge and value < math.huge
 end
 
+-- Clamps a zoom factor to 25% to 200%; anything that is not a finite number becomes 1.
 local function zoom(value)
     return finite(value) and math.max(.25, math.min(2, value)) or 1
 end
 
+-- A step's path (list of keys and indexes) as one comparable string.
 local function location(path)
     return table.concat(path, '/')
 end
@@ -27,11 +41,15 @@ end
 -- 8 px per nested branch, and grid columns share the row. Nothing narrows.
 local listIndent, gridGap, gridCardMaximum = 24, 24, 600
 
+-- Widens the scene's cards, groups and drop targets to fill a viewport of `viewport` pixels for the list and grid
+-- layouts (the diagram is left alone) and updates scene.width. Mutates and returns `scene`; an invalid scene or
+-- viewport is returned unchanged.
 function addon:FitRotationSceneWidth(scene, viewport)
     if type(scene) ~= 'table' or not finite(viewport) then return scene end
     local right = math.max(0, viewport - 4)
     local widest = 0
 
+    -- Stretches one item to the right edge, less 8 px for each level of nesting derived from its indent.
     local function stretch(item, inset, base)
         local depth = math.max(0, math.floor((item.x - base) / listIndent + .5))
         item.width = math.max(item.width, right - depth * 8 - inset - item.x)
@@ -65,6 +83,7 @@ function addon:FitRotationSceneWidth(scene, viewport)
         if columns == 0 then return scene end
         local each = math.max(design, math.min(gridCardMaximum, (right - (columns - 1) * gridGap) / columns))
 
+        -- Moves an item to its column at the stretched card width.
         local function place(item)
             local column = math.floor(item.x / pitch + .5)
             item.x = column * (each + gridGap)
@@ -99,6 +118,13 @@ function addon:FitRotationSceneWidth(scene, viewport)
     return scene
 end
 
+-- ============================================================================
+-- Canvas construction
+-- ============================================================================
+
+-- Builds the canvas inside `parent` for the editor pane `owner` (which supplies view, workspace, BuildScene, Command,
+-- UpdateHistory and the other callbacks used below). Returns the canvas; the editor calls Render when the document or
+-- layout changes and Release when it closes.
 function addon:CreateRotationCanvas(parent, owner)
     local canvas = {
         frame = addon:CreateWorkbenchScrollFrame(parent),
@@ -126,6 +152,13 @@ function addon:CreateRotationCanvas(parent, owner)
 
     canvas.ghost = addon:CreateWorkbenchDragCard()
 
+    -- ============================================================================
+    -- View state
+    -- ============================================================================
+
+    -- Ends any drag, pan or box selection: hides the ghost, markers and selection box, stops the per-frame update and
+    -- restores the lifted cards. Safe to call at any time. If a measurement was deferred while dragging, the
+    -- canvas reflows now; otherwise it refreshes the visible cards.
     function canvas:CancelDrag()
         local moving = self.drag or self.pan
         self.drag = nil
@@ -150,20 +183,25 @@ function addon:CreateRotationCanvas(parent, owner)
         end
     end
 
+    -- True when the rotation section is shown as the pannable, zoomable diagram (not the list or cooldown grid).
     function canvas:IsDiagram()
         return owner.view.section ~= 'cooldowns' and owner.view.layout ~= 'list'
     end
 
+    -- Key naming the current section and layout; viewport positions are remembered per key.
     function canvas:ModeKey()
         return owner.view.section == 'cooldowns' and 'cooldowns'
             or self:IsDiagram() and 'rotation:diagram'
             or 'rotation:list'
     end
 
+    -- Current zoom factor; always 1 outside the diagram.
     function canvas:GetZoom()
         return self:IsDiagram() and zoom(owner.view.zoom) or 1
     end
 
+    -- Saves the scroll position (relative to the diagram padding) in the view under the current mode key, so
+    -- switching tabs or layouts and back returns to the same spot.
     function canvas:RememberViewport()
         local view = self.viewportView
         if not view or not self.modeKey then return end
@@ -175,6 +213,8 @@ function addon:CreateRotationCanvas(parent, owner)
         }
     end
 
+    -- Sets the diagram zoom (clamped), keeping the viewport center fixed, and reflows. Returns true, or nil when the
+    -- editor is closed, the canvas is not the diagram or the value is not finite.
     function canvas:SetZoom(value)
         if not owner.active or not self:IsDiagram() or not finite(value) then return nil end
         local previous = self:GetZoom()
@@ -199,10 +239,15 @@ function addon:CreateRotationCanvas(parent, owner)
     -- coordinates in diagram mode. They never participate in pointer gestures.
     local updateScroll = canvas.frame.UpdateWorkbenchScroll
 
+    -- Runs the stock scroll update, then hides the vertical bar in diagram mode where scrolling is the camera.
     function canvas.frame:UpdateWorkbenchScroll()
         updateScroll(self)
         if canvas:IsDiagram() then self.workbenchBar:Hide() end
     end
+
+    -- ============================================================================
+    -- Selection
+    -- ============================================================================
 
     -- Several cards can be selected: Ctrl-click toggles a card, Shift-click
     -- selects the sibling range from the last clicked card, a plain click on
@@ -210,6 +255,7 @@ function addon:CreateRotationCanvas(parent, owner)
     -- the selection. Shift-drag on empty canvas draws a box that selects the
     -- cards it touches (Ctrl+Shift adds to the selection). The selection is
     -- view state: it survives renders and drops cards that no longer exist.
+    -- The selected step ids as a set, kept in owner.view (created on first use).
     function canvas:SelectionSet()
         owner.view.selection = owner.view.selection or {}
         return owner.view.selection
@@ -265,6 +311,7 @@ function addon:CreateRotationCanvas(parent, owner)
         return result
     end
 
+    -- Repaints every bound card's selected outline from the selection and tells the editor the selection changed.
     function canvas:PaintSelection()
         local selection = self:SelectionSet()
 
@@ -277,6 +324,7 @@ function addon:CreateRotationCanvas(parent, owner)
         if owner.SelectionChanged then owner:SelectionChanged() end
     end
 
+    -- Empties the selection and the range anchor.
     function canvas:ClearSelection()
         if next(self:SelectionSet()) == nil then return end
         owner.view.selection = {}
@@ -284,6 +332,8 @@ function addon:CreateRotationCanvas(parent, owner)
         self:PaintSelection()
     end
 
+    -- Applies a click on card `id`: `toggle` (Ctrl) adds or removes it, `range` (Shift) selects the siblings between
+    -- the anchor card and it, neither selects only it. A range only works between siblings of the same parent.
     function canvas:Select(id, toggle, range)
         if not self:CanSelect() or not self.scene then return end
         local selection = self:SelectionSet()
@@ -354,6 +404,13 @@ function addon:CreateRotationCanvas(parent, owner)
         self:PaintSelection()
     end
 
+    -- ============================================================================
+    -- Pointer gestures
+    -- ============================================================================
+
+    -- Starts a rubber-band selection at the pointer (Ctrl makes it additive). An OnUpdate follows the pointer and
+    -- ends the gesture on mouse release, on a render (generation change) or when the editor closes. Returns false
+    -- when selection is unavailable or the pointer is not over the canvas.
     function canvas:BeginBoxSelect()
         if not self:CanSelect() or self.drag then return false end
         local x, y = addon:WorkbenchPointerIn(self.child)
@@ -392,6 +449,7 @@ function addon:CreateRotationCanvas(parent, owner)
         return true
     end
 
+    -- Finishes the rubber band: removes it and selects the cards inside the final box.
     function canvas:EndBoxSelect()
         local box = self.box
         if not box then return end
@@ -400,6 +458,9 @@ function addon:CreateRotationCanvas(parent, owner)
         self:SelectBox(math.min(box.x, cx), math.min(box.y, cy), math.max(box.x, cx), math.max(box.y, cy), box.additive)
     end
 
+    -- Starts dragging the diagram camera from empty space. Refused over the zoom bar or any card. The pointer is read
+    -- with GetCursorPosition under pcall and validated, because the pan scrolls by the raw difference scaled by the
+    -- frame's effective scale; any bad reading ends the pan. Returns true when a pan started.
     function canvas:BeginPan()
         if not owner.active or not self:IsDiagram() or self.drag or type(GetCursorPosition) ~= 'function' then
             return false
@@ -461,6 +522,9 @@ function addon:CreateRotationCanvas(parent, owner)
         return true
     end
 
+    -- Wires mouse wheel (zoom in the diagram, scroll elsewhere), middle click (reset zoom) and left click and drag
+    -- gestures onto `control`. With `pan`, dragging on it pans or box-selects; `click` is the plain-click handler
+    -- (skipped after a drag); `alive` is the caller's staleness check.
     function canvas:BindViewportInput(control, pan, alive, click)
         control:EnableMouse(true)
         control:EnableMouseWheel(true)
@@ -500,6 +564,7 @@ function addon:CreateRotationCanvas(parent, owner)
         if pan then
             control:RegisterForDrag('LeftButton')
 
+            -- Shift-drag on empty canvas selects by box; a plain drag pans.
             local function begin()
                 if IsShiftKeyDown and IsShiftKeyDown() and self:CanSelect() then
                     self:BeginBoxSelect()
@@ -531,10 +596,18 @@ function addon:CreateRotationCanvas(parent, owner)
         addon:SetUIScript(surface, 'OnHide', function() canvas:CancelDrag() end)
     end
 
+    -- ============================================================================
+    -- Drag and drop
+    -- ============================================================================
+
+    -- The editor command a drop performs: Insert (palette), MoveMany (a selection), MoveTail (Ctrl-drag) or Move.
     local function dragCommand(drag)
         return drag.insert and 'Insert' or drag.ids and 'MoveMany' or (drag.tail and 'MoveTail' or 'Move')
     end
 
+    -- True when dropping the current drag into `target` (a gap) would change the rotation. Tries the command on a
+    -- scratch draft and rejects drops that leave every carried card where it was; results are cached per gap for the
+    -- life of the drag.
     function canvas:CanDrop(target)
         local drag = self.drag
 
@@ -573,6 +646,7 @@ function addon:CreateRotationCanvas(parent, owner)
         return ok == true
     end
 
+    -- Finds the gap under the pointer that accepts the drag, shows only its marker, and returns that zone (or nil).
     function canvas:HoverTarget()
         local selected
 
@@ -596,6 +670,7 @@ function addon:CreateRotationCanvas(parent, owner)
         return selected
     end
 
+    -- Ends the drag and, if the drop is valid and still current, sends the move or insert command to the editor.
     function canvas:Drop(target)
         local drag = self.drag
         local valid = self:CanDrop(target)
@@ -609,6 +684,7 @@ function addon:CreateRotationCanvas(parent, owner)
         )
     end
 
+    -- Mouse released: drop on the hovered gap if there is one, else cancel.
     function canvas:EndDrag()
         if not self.drag then return end
         local zone = self:HoverTarget()
@@ -616,6 +692,10 @@ function addon:CreateRotationCanvas(parent, owner)
         self:CancelDrag()
     end
 
+    -- Starts a drag of card `id` (with Ctrl, that card and the siblings after it; if it is selected, the whole
+    -- selection), or of a new step `insert` from the palette (`insertSource` is its button). Shows the ghost with the
+    -- dragged cards lifted onto it, reveals the drop gaps and starts an OnUpdate that follows the pointer and drops on
+    -- release. Does nothing for a read-only rotation.
     function canvas:BeginDrag(id, insert, insertSource)
         self:CancelDrag()
         if not owner.active or owner.workspace.readOnly then return end
@@ -745,6 +825,7 @@ function addon:CreateRotationCanvas(parent, owner)
                 end
             end
 
+            -- True when a connector belongs to the dragged cards (its owner, or both of its ends, are being carried).
             local function owns(edge)
                 return edge
                     and (edge.owner and selected[edge.owner]
@@ -782,12 +863,21 @@ function addon:CreateRotationCanvas(parent, owner)
         end)
     end
 
+    -- ============================================================================
+    -- Scene drawing
+    -- ============================================================================
+
+    -- Places the horizontal scroll bar under the canvas frame at the frame's width.
     function canvas:LayoutScrollBar()
         self.horizontal:ClearAllPoints()
         self.horizontal:SetPoint('TOPLEFT', self.frame, 'BOTTOMLEFT', 0, -4)
         self.horizontal:SetWidth(self.frame:GetWidth())
     end
 
+    -- Rebuilds the scene from the editor and redraws everything that is not a card control: scroll extents and zoom,
+    -- group frames, connector lines, True/False labels and arm buttons, drop gaps; already bound cards are only
+    -- re-placed. Restores the remembered viewport for the mode, then refreshes which cards exist. Frames and textures
+    -- are pooled and reused. A failure inside is re-raised after the reflowing flag is cleared.
     function canvas:Reflow()
         if not owner.active then return end
         local scene = owner:BuildScene()
@@ -1011,6 +1101,14 @@ function addon:CreateRotationCanvas(parent, owner)
         self:RefreshVisibleCards()
     end
 
+    -- ============================================================================
+    -- Cards
+    -- ============================================================================
+
+    -- Binds a pooled card to scene model `model` and wires all of its controls (title, name edit, action, condition,
+    -- remove, duplicate, enable, move, help, fold, selection and drag). Every handler is guarded by a token that is
+    -- invalidated on render or release. Returns true when the card's measured summary or details height changed, which
+    -- means the scene must reflow.
     function canvas:BindCard(card, model)
         local priorSummary = math.max(0, ((owner.view.summaryHeights or {})[model.id] or 0) - 28)
         local priorDetails = (owner.view.detailsHeights or {})[model.id]
@@ -1018,10 +1116,12 @@ function addon:CreateRotationCanvas(parent, owner)
         card.token = token
         card.spec = owner.workspace.spec
 
+        -- True while the editor is open and this card is still bound by this render.
         local function alive()
             return owner.active and token.generation == self.generation and card.token == token
         end
 
+        -- alive() and the rotation is editable (not a Built In).
         local function writable()
             return alive() and not owner.workspace.readOnly
         end
@@ -1099,6 +1199,7 @@ function addon:CreateRotationCanvas(parent, owner)
             if alive() then self:EndDrag() end
         end)
 
+        -- The spell hyperlink for a spell, pet or any step, or nil (items and other kinds have none).
         local function actionLink()
             if step.type ~= 'spell' and step.type ~= 'pet' and step.type ~= 'any' then return end
             local info = addon.Platform and addon.Platform:GetSpellInfo(step.action)
@@ -1194,10 +1295,12 @@ function addon:CreateRotationCanvas(parent, owner)
             end
         end)
 
+        -- Current Ctrl and Shift key states, tolerating clients without those functions.
         local function modifiers()
             return IsControlKeyDown and IsControlKeyDown() or false, IsShiftKeyDown and IsShiftKeyDown() or false
         end
 
+        -- A plain click on the card's body selects it (with Ctrl or Shift for toggle and range).
         local function clickBody()
             if not alive() then return end
             local ctrl, shift = modifiers()
@@ -1244,6 +1347,8 @@ function addon:CreateRotationCanvas(parent, owner)
             or priorDetails ~= (owner.view.detailsHeights or {})[model.id]
     end
 
+    -- True when the card's name box or one of its field inputs has keyboard focus; such a card is never released,
+    -- so typing is not interrupted by a refresh.
     local function focused(card)
         if card.name:HasFocus() then return true end
 
@@ -1272,6 +1377,10 @@ function addon:CreateRotationCanvas(parent, owner)
         end
     end
 
+    -- Makes sure exactly the cards near the viewport have controls: releases cards that scrolled away (never one that
+    -- is focused or being dragged) and binds pooled cards to the models that came into range. Scenes of up to 200
+    -- cards bind them all. If binding changed a measured height the scene reflows (deferred while a drag runs); a
+    -- failure while binding releases the half-bound card before the error is re-raised.
     function canvas:RefreshVisibleCards()
         if not owner.active or not self.scene or self.refreshing then return end
         self.refreshing = true
@@ -1361,6 +1470,7 @@ function addon:CreateRotationCanvas(parent, owner)
         end
     end
 
+    -- Full redraw: invalidates every card handler (new generation), releases all cards and reflows the scene.
     function canvas:Render()
         self:CancelDrag()
         self.generation = self.generation + 1
@@ -1377,6 +1487,7 @@ function addon:CreateRotationCanvas(parent, owner)
         self:Reflow()
     end
 
+    -- Closes the canvas: saves the viewport, cancels gestures, releases cards and hides the frames.
     function canvas:Release()
         self:RememberViewport()
         self:CancelDrag()

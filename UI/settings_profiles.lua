@@ -1,12 +1,26 @@
+-- The Profiles and About pages of the settings window. Profiles lists the AceDB profiles in a sidebar and offers
+-- activate, new, duplicate, copy, reset, delete, compare and import/export. Unlike the other settings pages these
+-- changes apply immediately rather than through the draft Apply flow, and every profile switch disables the rotation,
+-- invalidates dependency caches and re-enables it afterward. Imports go through the migration planner so a transferred
+-- profile is validated before it replaces anything. Each page is a builder called with the settings form `p`; loaded in
+-- the UI/ block of RotationMaster.toc after UI/settings_integrations.lua. Saved data: addon.db (AceDB profiles).
 local addon_name, addon = ...
 local invalidateDependencies = addon.InvalidateRotationDependencies
 if type(invalidateDependencies) ~= 'function' then invalidateDependencies = nil end
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- Returns the text when it has a visible character and at most 50 characters, else nil (a usable profile name).
 local function nonempty(text)
     if text:find('%S') and #text <= 50 then return text end
 end
 
+-- ============================================================================
+-- Profiles page
+-- ============================================================================
+
+-- Builds the Profiles page into the settings form `p`: roster of profiles, the footer (new, duplicate, import/export,
+-- compare), the creation form, and the actions for the selected profile. State lives on `p` (selection, creating,
+-- newProfileName, profileSource, importProfile) and survives redraws.
 function addon:BuildProfileSettings(p)
     local db = self.db
     local current = db:GetCurrentProfile()
@@ -21,6 +35,8 @@ function addon:BuildProfileSettings(p)
 
     if not values[p.selection] and not p.creating then p.selection = current end
 
+    -- Copies an imported profile over `destination` field by field; the color, minimap and preview_window tables merge
+    -- into the existing tables so defaults the import lacks survive, every other key is replaced by a copy.
     local function overlay(destination, incoming)
         for key, value in pairs(incoming) do
             if
@@ -37,10 +53,15 @@ function addon:BuildProfileSettings(p)
         end
     end
 
+    -- The live profile table for `name` (the active profile is db.profile, others live in db.profiles).
     local function saved(name)
         return name == db:GetCurrentProfile() and db.profile or db.profiles[name]
     end
 
+    -- Runs a profile operation on the database (SetProfile, CopyProfile, ResetProfile) safely. The rotation is switched
+    -- off for the duration, dependency caches are invalidated and the rotation is rebuilt even when the operation
+    -- fails, so the engine never keeps state from the old profile. `after` runs inside the protected call. Returns
+    -- true after redrawing, or false with the error shown as a message.
     local function change(operation, name, after)
         if self.DisableRotation then self:DisableRotation() end
         local depth = self.rotationProfileChangeDepth or 0
@@ -148,6 +169,8 @@ function addon:BuildProfileSettings(p)
                     end
                 end
 
+                -- A frozen copy of the selected profile: a replace import is refused if the profile no longer equals
+                -- it, so an import cannot overwrite changes made while the dialog was open.
                 local baseline = selected and self:CopySettingsData(selected)
 
                 self:ShowSettingsTextTransfer(
@@ -455,9 +478,16 @@ function addon:BuildProfileSettings(p)
     end
 end
 
+-- ============================================================================
+-- About page
+-- ============================================================================
+
+-- Builds the About page into the settings form `p`: version, author, credits and the project links read from the TOC
+-- metadata. The link boxes revert any edit so they can be selected and copied but never changed.
 function addon:BuildAboutSettings(p)
     local getter = C_AddOns and C_AddOns.GetAddOnMetadata or GetAddOnMetadata
 
+    -- A non-empty TOC metadata string for `key`, or nil (a missing or failing API counts as absent).
     local function meta(key)
         if type(getter) == 'function' then
             local ok, value = pcall(getter, addon_name, key)

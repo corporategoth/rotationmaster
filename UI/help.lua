@@ -1,13 +1,27 @@
+-- The Help window and its tooltips. Builds the help content for the settings pages, the rotation and condition
+-- editors and the window chrome (sections of title and text, localized through L), shows one shared Help window with an
+-- optional mounted document, and binds hover tooltips to controls. Every callback runs under Diagnostics so a faulty
+-- help renderer cannot break the editor, and a request counter makes a newer request retire an older one. It owns a
+-- document lease only and must never open an edit or history transaction. Loaded in the UI/ block of RotationMaster.toc
+-- after UI/window.lua; the authored help text itself lives in Help/ and the localized text bundles.
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- ============================================================================
+-- Request guards
+-- ============================================================================
+
+-- Builds one help section record from a title and body text.
 local function section(title, text)
     return { title = title, text = text }
 end
 
 -- Help owns a document lease, never an edit/history transaction.
+-- Request counter. Each open request and each hide bumps it, so a stale request can tell it was superseded.
 local helpRequest = 0
 
+-- Calls `callback` under Diagnostics with a help render context (or a plain pcall when diagnostics are absent).
+-- Returns ok followed by the callback's results.
 ---@return boolean, any
 local function callHelpContext(context, callback, ...)
     if addon.Diagnostics then
@@ -17,22 +31,32 @@ local function callHelpContext(context, callback, ...)
     return pcall(callback, ...)
 end
 
+-- callHelpContext with the default render context.
 local function callHelp(callback, ...)
     return callHelpContext(nil, callback, ...)
 end
 
+-- True when there is no validity callback, or it runs cleanly and returns exactly true. An error counts as invalid.
 local function validHelp(valid)
     if not valid then return true end
     local ok, current = callHelp(valid)
     return ok and current == true
 end
 
+-- Wraps `callback` so it runs only while `valid` still reports the help subject as current.
 function addon:GuardWorkbenchHelp(valid, callback)
     return function(...)
         if validHelp(valid) then return callback(...) end
     end
 end
 
+-- ============================================================================
+-- Opening the window
+-- ============================================================================
+
+-- Opens Help for a request { valid, sections (table or function), heading, owner, render, renderContext }. Sections
+-- may be a function, which is called safely. Returns a handle with Hide, or nothing when the request is invalid or was
+-- superseded by a newer one while it was being prepared.
 function addon:OpenWorkbenchHelp(request)
     local valid = request.valid
     local previous = helpRequest
@@ -40,12 +64,14 @@ function addon:OpenWorkbenchHelp(request)
     helpRequest = helpRequest + 1
     local token = helpRequest
 
+    -- True while this request is still the newest and its subject is still valid.
     local function current()
         if token ~= helpRequest then return false end
         local live = validHelp(valid)
         return live and token == helpRequest
     end
 
+    -- Drops any content already mounted and hides the window, but only if no newer request has taken it over.
     local function failed()
         local d = self.helpWindow
 
@@ -98,6 +124,7 @@ function addon:OpenWorkbenchHelp(request)
     if not document or not current() then return end
     local handle = { frame = document.frame, heading = heading, sections = sections }
 
+    -- Hides the window only if this handle's request is still the current one.
     function handle:Hide()
         if token == helpRequest then document:Hide() end
     end
@@ -105,6 +132,11 @@ function addon:OpenWorkbenchHelp(request)
     return handle
 end
 
+-- ============================================================================
+-- Authored help sections
+-- ============================================================================
+
+-- Help sections for the shared window chrome (navigation, scale, controls, drafts, help).
 function addon:WorkbenchWindowHelp()
     return {
         section(L['Navigation'], L['Help.Window.navigation']),
@@ -117,23 +149,34 @@ end
 
 -- Some bound controls are Lua wrappers (editor objects), not frames; the
 -- tooltip's owner APIs reject those with "Wrong object type".
+-- True when GameTooltip is currently owned by `control`; false when it is not, or when the owner check rejects it.
 local function tooltipOwned(control)
     if not GameTooltip then return false end
     local ok, owned = pcall(GameTooltip.IsOwned, GameTooltip, control)
     return ok and owned
 end
 
+-- ============================================================================
+-- Tooltip binding
+-- ============================================================================
+
 -- Descriptors are held only by their owning control and retired on pool reuse.
+-- Chains a hover tooltip onto `control`: descriptor.brief (text or a function read at hover time) is shown after the
+-- control's own OnEnter, and descriptor.valid retires it. Returns a clear function that restores the previous scripts;
+-- binding a control again clears its earlier binding first.
 function addon:BindWorkbenchHelp(control, descriptor)
     if control.rmHelpBinding then control.rmHelpBinding.clear() end
     local binding = {}
     control.rmHelpBinding = binding
     local enter, leave = control:GetScript('OnEnter'), control:GetScript('OnLeave')
 
+    -- True while this binding is still the control's binding. The binding is checked on both sides of the validity
+    -- callback because that callback may rebind the control.
     local function current()
         return control.rmHelpBinding == binding and validHelp(descriptor.valid) and control.rmHelpBinding == binding
     end
 
+    -- Hover handler: runs the control's original OnEnter first, then adds or sets the tooltip text.
     local function onEnter(...)
         if not current() then return end
         if enter then enter(...) end
@@ -157,6 +200,7 @@ function addon:BindWorkbenchHelp(control, descriptor)
         GameTooltip:Show()
     end
 
+    -- Leave handler: runs the original OnLeave, then hides the tooltip if this control still owns it.
     local function onLeave(...)
         if not current() then return end
         if leave then leave(...) end
@@ -168,6 +212,8 @@ function addon:BindWorkbenchHelp(control, descriptor)
     addon:SetUIScript(control, 'OnLeave', onLeave)
     local installedLeave = control:GetScript('OnLeave')
 
+    -- Restores the control's original scripts, but only the ones still installed by this binding so a later
+    -- replacement by someone else is left alone.
     function binding.clear()
         if control.rmHelpBinding ~= binding then return end
         control.rmHelpBinding = nil
@@ -179,6 +225,7 @@ function addon:BindWorkbenchHelp(control, descriptor)
     return binding.clear
 end
 
+-- Per-option help entries for the Profiles page (id, title, text).
 function addon:GetProfileOptionHelp()
     return {
         { id = 'activate', title = L['Activate profile'], text = L['Help.Profiles.activate'] },
@@ -190,6 +237,7 @@ function addon:GetProfileOptionHelp()
     }
 end
 
+-- Per-option help entries for the Integrations page (id, title, text).
 function addon:GetIntegrationOptionHelp()
     return {
         { id = 'lua_editor', title = L['Editor'], text = L['Help.Integrations.lua_editor'] },
@@ -215,6 +263,8 @@ function addon:GetIntegrationOptionHelp()
     }
 end
 
+-- Help sections for the card editors. `kind` is 'condition' for the condition editor; 'branch', 'cooldown' or any
+-- other value for the rotation editor, which adds the matching branch, bar and effect sections.
 function addon:WorkbenchInteractionHelp(kind)
     local result = {
         section(
@@ -283,6 +333,9 @@ function addon:WorkbenchInteractionHelp(kind)
     return result
 end
 
+-- Full help for one settings page, by topic name ('General', 'Conditions', 'Effects', 'ItemSets', 'Announces',
+-- 'Profiles', 'About', 'Rotations', 'Integrations' or 'Functions'): an intro, the shared Apply / Discard note, the
+-- page's authored option entries and the window controls. Returns a list of sections.
 function addon:WorkbenchPageHelp(topic)
     if topic == 'Functions' then
         return {
@@ -394,6 +447,14 @@ function addon:WorkbenchPageHelp(topic)
     return result
 end
 
+-- ============================================================================
+-- The shared Help window
+-- ============================================================================
+
+-- Fills and shows the single shared Help window with `sections` under `heading`, optionally mounting a rendered
+-- document below them (request.render). `request.current` retires the call if a newer one starts; with no request a
+-- private one is made. Returns the window record, or nothing when the call was superseded or the mounted document
+-- failed validation.
 function addon:ShowWorkbenchHelp(heading, sections, owner, request)
     if not request then
         helpRequest = helpRequest + 1
@@ -436,6 +497,8 @@ function addon:ShowWorkbenchHelp(heading, sections, owner, request)
             end)
         end
 
+        -- Releases the mounted document (if any) through its own Release under Diagnostics, clearing the fields first
+        -- so a release that reopens Help cannot release it twice.
         function d:ReleaseMount()
             local mount, release, context = self.mount, self.mountRelease, self.mountContext
             self.mount = nil
@@ -444,6 +507,7 @@ function addon:ShowWorkbenchHelp(heading, sections, owner, request)
             if release then callHelpContext(context, release, mount) end
         end
 
+        -- Registry-facing hide for the window.
         function d:Hide()
             frame:Hide()
         end
@@ -543,8 +607,15 @@ function addon:ShowWorkbenchHelp(heading, sections, owner, request)
     return d
 end
 
+-- ============================================================================
+-- Integration project links
+-- ============================================================================
+
 -- Release pages use their own small, pooled table; ordinary diagnostic reports
 -- retain the full copyable report window and its independent selection.
+-- Shows the provider, URL and copy buttons for integration `id` (links come from GetIntegrationProjectLinks). The URL
+-- boxes are read-only in effect: any edit is reverted so the player can select and copy but never change a link.
+-- Returns the window record, or nothing when the integration has no links.
 function addon:ShowIntegrationProjectLink(id)
     if type(self.GetIntegrationProjectLinks) ~= 'function' then return end
     local links, name = self:GetIntegrationProjectLinks(id)
@@ -562,6 +633,7 @@ function addon:ShowIntegrationProjectLink(id)
         d.title = frame:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
         d.chrome = self:CreateWorkbenchDialogChrome(frame, d.title)
 
+        -- Creates one column heading label at x across the top of the link table.
         local function heading(text, x, width)
             local label = frame:CreateFontString(nil, 'OVERLAY', 'GameFontNormalSmall')
             label:SetPoint('TOPLEFT', x, -36)
@@ -585,6 +657,7 @@ function addon:ShowIntegrationProjectLink(id)
         d.close:SetPoint('TOPRIGHT', -5, -5)
         addon:SetUIScript(d.close, 'OnClick', function() frame:Hide() end)
 
+        -- Invalidates every row callback (generation bump) and clears the rows, so stale handlers do nothing.
         function d:Retire()
             self.generation = self.generation + 1
             self.active = false
@@ -606,6 +679,7 @@ function addon:ShowIntegrationProjectLink(id)
 
         addon:SetUIScript(frame, 'OnHide', function() d:Retire() end)
 
+        -- Registry-facing hide and show for the window.
         function d:Hide()
             self.frame:Hide()
         end
@@ -621,10 +695,12 @@ function addon:ShowIntegrationProjectLink(id)
     d.active = true
     local token = d.generation
 
+    -- True while this row still belongs to the call that populated it and is visible.
     local function current(row)
         return d.active and d.generation == token and row.url ~= nil and row.frame:IsShown()
     end
 
+    -- Selects the whole URL of one row so Ctrl+C copies it, and drops the selection from every other row.
     local function selectRow(row)
         if not current(row) then return end
 

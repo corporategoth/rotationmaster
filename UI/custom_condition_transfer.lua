@@ -1,6 +1,15 @@
+-- Import/export dialog for one custom (Lua) condition, opened from the native custom condition editor. It encodes the
+-- condition as an RM-CustomCondition text, lets the player paste one back, and hands a parsed import to the editor
+-- only after an explicit "this contains Lua code" confirmation; it never saves or runs the imported code itself.
+-- Conditions that carry function bindings are routed to the dependency-bundle review in
+-- UI/function_bundle_transfer.lua instead. Loaded from the UI/ block of RotationMaster.toc, after
+-- settings_transfer.lua.
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- Opens the transfer dialog for condition `key` over its editor `parent`; `update` is the editor's refresh callback.
+-- Returns the dialog widget, or nil and a reason when the parent is not a native custom editor. While it is open the
+-- parent editor is hidden, and it is shown again on close only if the editor is still resumable.
 function addon:ShowCustomConditionTransfer(parent, update, key, condition)
     if not parent or parent.nativeCustomEditor ~= true then
         return nil, L['Native custom condition editor required.']
@@ -46,6 +55,7 @@ function addon:ShowCustomConditionTransfer(parent, update, key, condition)
         parent:Hide()
     end
 
+    -- True while the parent editor and its owner window are still the ones this dialog was opened over.
     local function valid()
         return addon:CanResumeCustomConditionDialog(parent, owner)
     end
@@ -161,6 +171,7 @@ function addon:ShowCustomConditionTransfer(parent, update, key, condition)
         options
     )
 
+    -- Lets the owner window's dismissal path hide this dialog like any other registered widget.
     function dialog:Hide()
         self.frame:Hide()
     end

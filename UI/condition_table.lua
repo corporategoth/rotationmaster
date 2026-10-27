@@ -1,3 +1,8 @@
+-- Rich AceGUI-style Table layout (column weights and widths, row and column spans, per-cell alignment, spacing) for the
+-- native condition groups. addon:PrepareNativeConditionTable wraps a group's DoLayout; groups whose Table settings are
+-- plain keep the older compact layout, and anything malformed or oversized raises an error before any frame is moved.
+-- It must never mutate the caller's column or cell descriptors. Applied by UI/condition_widgets.lua when it acquires an
+-- RM-ConditionGroup; loaded in the UI/ block of RotationMaster.toc, after UI/condition_layout.lua.
 local _, addon = ...
 
 -- Native rich Table geometry preserves the established column/cell behavior
@@ -33,22 +38,33 @@ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ]]
+
+-- ============================================================================
+-- Descriptor validation
+-- ============================================================================
+
+-- True for a real, finite number; rejects NaN and both infinities so bad geometry cannot reach SetPoint.
 local function finite(value)
     return type(value) == 'number' and value == value and value ~= math.huge and value ~= -math.huge
 end
 
+-- True when an align value is absent, a name, a callback or a finite offset.
 local function alignment(value)
     return value == nil or type(value) == 'string' or type(value) == 'function' or finite(value)
 end
 
+-- Checks the three alignment keys (align, alignH, alignV) of a settings, column or cell table.
 local function alignments(value)
     return alignment(value.align) and alignment(value.alignH) and alignment(value.alignV)
 end
 
+-- True when a rowspan or colspan is absent or a whole number of at least one.
 local function span(value)
     return value == nil or finite(value) and value >= 1 and value == math.floor(value)
 end
 
+-- Raises 'condition-table-work-limit' when a Table group has too many columns, children or span cells to lay out
+-- cheaply. Runs before any geometry work so an oversized descriptor cannot freeze the client.
 local function guardWork(group)
     if group.layout ~= 'Table' then return end
     local settings = group:GetUserData('table')
@@ -70,6 +86,8 @@ local function guardWork(group)
     end
 end
 
+-- Decides which route lays the group out. Returns true when the group uses a rich feature (spans, spacing, alignment,
+-- table columns), false for the plain compact numeric Table, and raises on malformed settings, columns or cells.
 local function supported(group)
     if group.layout ~= 'Table' then return false end
     local settings = group:GetUserData('table')
@@ -146,6 +164,11 @@ local function supported(group)
     return advanced
 end
 
+-- ============================================================================
+-- Geometry
+-- ============================================================================
+
+-- Total size of lanes first..last (column widths or row heights) including the gaps between them.
 local function dimension(lanes, first, last, spacing)
     local result = 0
 
@@ -156,6 +179,8 @@ local function dimension(lanes, first, last, spacing)
     return result + math.max(0, last - first) * spacing
 end
 
+-- Resolves a cell's alignment on one axis ('H' or 'V'). Precedence is cell, column, then table settings; names are
+-- normalized to start, middle, end or fill. Returns the method and the clamped offset inside the available space.
 local function offset(direction, settings, column, cell, available, size)
     local method = cell and (cell['align' .. direction] or cell.align)
         or column['align' .. direction]
@@ -192,6 +217,9 @@ local function offset(direction, settings, column, cell, available, size)
     return method, math.max(0, math.min(result, available))
 end
 
+-- Places every shown child of a Table group: assigns cells to a grid (honoring rowspan and colspan), sizes the
+-- columns, then the rows, and anchors each child. Reuses a per-group scratch cache so a relayout allocates nothing
+-- new; reports the final height through group:LayoutFinished.
 local function layout(group)
     local content, children = group.content, group.children
     local settings = group:GetUserData('table')
@@ -355,7 +383,12 @@ local function layout(group)
     group:LayoutFinished(nil, dimension(heights, 1, rows, spacingV))
 end
 
--- Install the native rich-table route once on each owned group.
+-- ============================================================================
+-- Group integration
+-- ============================================================================
+
+-- Install the native rich-table route once on each owned group. Replaces the group's DoLayout with a wrapper that
+-- falls back to the original compact layout when the group is not a rich table.
 function addon:PrepareNativeConditionTable(group)
     if not group.rmNativeTableOriginal then
         local original = group.DoLayout
