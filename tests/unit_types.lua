@@ -78,6 +78,7 @@ test('maintank and mainassist read the raid roster role and resolve to the first
         raid(s,10,{[5]='maintank',[6]='MainAssist'});assert(a.Platform:ResolveGroupUnit('maintank')=='raid5' and a.Platform:ResolveGroupUnit('mainassist')=='raid6',name..' the role case must not matter')
         raid(s,40,{[40]='MAINTANK'});assert(a.Platform:ResolveGroupUnit('maintank')=='raid40',name..' a full raid of 40 is still resolved')
         raid(s,10);local token,why=a.Platform:ResolveGroupUnit('maintank');assert(token==nil and why=='no-assigned-unit',name..' nobody is main tank')
+        raid(s,41,{[41]='MAINTANK'});token,why=a.Platform:ResolveGroupUnit('maintank');assert(token==nil and why=='invalid-api-result',name..' a roster of 41 is not a raid')
         s.raid=false;s.members=5;token,why=a.Platform:ResolveGroupUnit('mainassist');assert(token==nil and why=='no-assigned-unit',name..' a party has no main assist')
         raid(s,3,{[2]=SECRET});token,why=a.Platform:ResolveGroupUnit('maintank');assert(token==nil and why=='restricted-value',name..' an unreadable role')
         raid(s,3,{[2]=7});token,why=a.Platform:ResolveGroupUnit('maintank');assert(token==nil and why=='invalid-api-result',name..' a malformed role')
