@@ -1,4 +1,5 @@
-local _,addon=...
+local _, addon = ...
+
 ---@class RMConditionGroup: RMConditionWidget
 ---@field children table[]
 ---@field rmLease table
@@ -19,14 +20,16 @@ local function verticalAlignment(value)
     if value=='end' or value:sub(1,6)=='bottom' then return 1 end
     if value=='middle' or value:sub(1,6)=='center' then return .5 end
 end
+
 -- An icon spanning the rows of the controls beside it: children[1] is the
 -- icon, the controls that follow are its rows, top to bottom, and a control
 -- marked userdata "side" (a button) sits right of the last row when the row
 -- has the room, else on a line of its own under the rows. The icon's frame is
 -- centered on the rows.
-local ICON_ROWS_GAP=4
-local ICON_ROWS_MINIMUM=190
-local function layoutIconRows(content,children,width)
+local ICON_ROWS_GAP = 4
+local ICON_ROWS_MINIMUM = 190
+
+local function layoutIconRows(content, children, width)
     local icon,side,rows=children[1],nil,{}
     for index=2,#children do
         local child=children[index]
@@ -61,6 +64,7 @@ local function layoutIconRows(content,children,width)
     end
     return total
 end
+
 local function constructor()
     local group={type='RM-ConditionGroup',children={}}
     local frame=CreateFrame('Frame',nil,UIParent);group.frame=frame;group.content=frame
@@ -170,6 +174,7 @@ local function constructor()
     ---@cast group RMConditionWidget
     return addon:RegisterConditionWidget(group)
 end
+
 ---@return RMConditionGroup
 function addon:CreateConditionGroup()
     local group=addon:AcquireConditionWidget('RM-ConditionGroup',constructor)

@@ -1,4 +1,4 @@
-local _,addon=...
+local _, addon = ...
 
 ---@class RMConditionCheckBox: RMConditionWidget
 ---@field button Button
@@ -24,6 +24,7 @@ local function constructor()
     ---@cast w RMConditionWidget
     return addon:RegisterConditionWidget(w)
 end
+
 ---@return RMConditionCheckBox
 function addon:CreateConditionCheckBox()
     local widget=addon:AcquireConditionWidget('RM-CheckBox',constructor)

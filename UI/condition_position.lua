@@ -1,4 +1,4 @@
-local _,addon=...
+local _, addon = ...
 
 -- Condition/Help adapter for the same arrow block used by settings and cards.
 ---@class RMConditionPositionPad: RMConditionWidget
@@ -30,6 +30,7 @@ local function constructor()
     end
     return addon:RegisterConditionWidget(w)
 end
+
 ---@return RMConditionPositionPad
 function addon:CreateConditionPositionPad()
     return self:AcquireConditionWidget('RM-ConditionPositionPad',constructor)

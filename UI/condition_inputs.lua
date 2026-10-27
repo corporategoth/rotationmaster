@@ -1,4 +1,4 @@
-local _,addon=...
+local _, addon = ...
 local function finite(value) return type(value)=='number' and value==value and value>-math.huge and value<math.huge end
 
 -- Native visuals and pending-input protocol shared by condition fields.
@@ -127,12 +127,14 @@ local function constructor(numeric)
     ---@cast w RMConditionWidget
     return addon:RegisterConditionWidget(w)
 end
+
 ---@return RMConditionInput
 function addon:CreateConditionEditBox()
     local w=addon:AcquireConditionWidget('RM-ConditionEditBox',function() return constructor(false) end)
     ---@cast w RMConditionInput
     return w
 end
+
 ---@return RMConditionInput
 function addon:CreateConditionSlider()
     local w=addon:AcquireConditionWidget('RM-ConditionSlider',function() return constructor(true) end)

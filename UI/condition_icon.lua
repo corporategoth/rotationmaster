@@ -1,4 +1,4 @@
-local _,addon=...
+local _, addon = ...
 
 -- Shared native image primitive with owned callback and input leases.
 ---@class RMConditionIcon: RMConditionWidget
@@ -52,6 +52,7 @@ local function constructor()
     end
     return addon:RegisterConditionWidget(w)
 end
+
 ---@return RMConditionIcon
 function addon:CreateConditionIcon()
     return self:AcquireConditionWidget('RM-ConditionIcon',constructor)
