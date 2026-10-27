@@ -202,4 +202,16 @@ test('retired module maps and foreign builders cannot create tabs render panes o
     local foreign={Release=function() error('foreign owner released') end}
     shell.pane=foreign;shell.nativePane=false;shell:ReleasePane();assert(not shell.pane and pages.released==1)
 end)
+
+test('the main window keeps its saved scale on a small screen and shrinks its size instead',function()
+    local f=F.new();local a=f.addon;nativePages(f)
+    a.pretty_name='Rotation Master';a.name='rotationmaster';a.SetupOptions=function() end;a.BuildConfigurationPane=function() end
+    f.env.UIParent:SetSize(1366,768);a.db.global.uiScale=1.3
+    f.load('UI/window.lua');f.load('UI/help.lua');f.load('UI/config.lua')
+    local shell=a:ShowConfig('General')
+    assert(shell.frame:GetScale()==1.3,'the shell scale was reduced to fit: '..shell.frame:GetScale())
+    assert(shell.frame:GetHeight()*1.3<=768+1 and shell.frame:GetWidth()*1.3<=1366+1,'the shell was not resized to the screen')
+end)
+
 finish()
+

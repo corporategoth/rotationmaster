@@ -97,6 +97,25 @@ test('workbench scale reaches independent dialogs but is inherited only once by 
     root:OnRelease();assert(root.frame:GetScale()==1)
     f.addon:ScaleWorkbenchWindows(.75);assert(root.frame:GetScale()==1,'a released pooled frame retained RM scale ownership')
 end)
+test('a fixed-size window is never scaled past the screen, but the resizable main window and small windows keep the saved scale',function()
+    local f=F.new();local _,create=dofile('tests/fixtures/native_ui.lua')(f.env);f.load('UI/window.lua')
+    f.env.UIParent:SetSize(1366,768);f.addon.db.global.uiScale=1.3
+    local function window(width,height) local w={frame=create('Frame',nil,f.env.UIParent)};w.frame:SetSize(width,height);return w end
+    local small,recover,preview,shell,wide=window(700,400),window(1000,650),window(940,620),window(1120,760),window(1500,300)
+    shell.frame.rmFitsOwnSize=true
+    for _,w in ipairs({small,recover,preview,shell,wide}) do f.addon:ApplyWorkbenchScale(w.frame) end
+    assert(small.frame:GetScale()==1.3,'a window that fits was scaled down')
+    assert(recover.frame:GetScale()==1.18,'1000x650 at 130% must shrink to 768/650: '..recover.frame:GetScale())
+    assert(preview.frame:GetScale()==1.23,'940x620 must shrink to 768/620: '..preview.frame:GetScale())
+    assert(wide.frame:GetScale()==.91,'the width limits too: '..wide.frame:GetScale())
+    assert(shell.frame:GetScale()==1.3,'the main window sizes itself and keeps the saved scale')
+    f.addon:ScaleWorkbenchWindows(1.1)
+    assert(small.frame:GetScale()==1.1 and recover.frame:GetScale()==1.1 and preview.frame:GetScale()==1.1 and wide.frame:GetScale()==.91 and shell.frame:GetScale()==1.1,'a scale change is still clamped per window')
+    f.addon:ScaleWorkbenchWindows(1.3);assert(recover.frame:GetScale()==1.18,'raising the scale again is clamped as well')
+    f.addon:ScaleWorkbenchWindows(.7);assert(recover.frame:GetScale()==.7,'a lower scale is never raised to fit')
+    -- Sizes that are not known yet leave the saved scale alone.
+    local bare={frame=create('Frame',nil,f.env.UIParent)};f.addon:ApplyWorkbenchScale(bare.frame);assert(bare.frame:GetScale()==1.3,"an unsized frame was clamped")
+end)
 test('themed dialog headers drag their own window without intercepting body fields or resetting geometry',function()
     local f=F.new();local _,create=dofile('tests/fixtures/native_ui.lua')(f.env);f.load('UI/window.lua')
     local frame=create('Frame',nil,f.env.UIParent);frame:SetSize(620,430);frame:SetPoint('CENTER')

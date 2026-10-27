@@ -140,6 +140,9 @@ local function newShell()
     window:SetSize(1120, 760)
     window:SetPoint("CENTER")
     window:SetClampedToScreen(true)
+
+    -- The window keeps itself inside the screen by resizing (ApplySizeBounds), so its scale is never reduced to fit.
+    window.rmFitsOwnSize = true
     window:SetMovable(true)
     window:SetResizable(true)
     window:EnableMouse(true)
