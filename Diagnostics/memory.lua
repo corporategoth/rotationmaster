@@ -54,20 +54,28 @@ local function readable(value)
     return true
 end
 
--- True for a readable finite non-negative number small enough to be a safe integer.
+-- Tells whether a value is a readable finite non-negative number small enough to be a safe integer.
+-- @param value any  The value to test.
+-- @return boolean  True when it is.
 local function number(value)
     return readable(value) and kind(value) == 'number' and value == value and value >= 0 and value <= 9007199254740991
 end
 
--- Returns value[key] without invoking metamethods, or nil when value is unreadable or not a table.
+-- Reads value[key] without invoking metamethods.
+-- @param value any  The table to read from.
+-- @param key any  The key.
+-- @return any  The value; nil when value is unreadable or not a table.
 local function field(value, key)
     if readable(value) and kind(value) == 'table' then
         return raw(value, key)
     end
 end
 
--- True while run is the active, running capture. Checked after every native call, because a callout can stop or
--- replace the capture.
+-- Tells whether a run is the active, running capture.
+-- @param run table  The capture state.
+-- @return boolean  True while it is.
+--
+-- Checked after every native call, because a callout can stop or replace the capture.
 local function current(run)
     return active == run and run.phase == 'running'
 end
@@ -217,6 +225,8 @@ local function roots(run, row)
     local budget = { n = 0 }
 
     -- Stores the (capped) key count of map under row[key].
+    -- @param key string  The row field; the capped flag goes to key .. "Capped".
+    -- @param map any  The table to count.
     local function save(key, map)
         local n, capped = count(run, map, budget)
         row[key], row[key .. 'Capped'] = n, capped
@@ -306,12 +316,16 @@ end
 -- Report
 -- ============================================================================
 
--- True for a stored (already validated) non-negative number.
+-- Tells whether a stored (already validated) value is a non-negative number.
+-- @param value any  The value to test.
+-- @return boolean  True when it is.
 local function storedNumber(value)
     return kind(value) == 'number' and value == value and value >= 0 and value <= 9007199254740991
 end
 
--- Formats a stored number to three decimals, or "unavailable".
+-- Formats a stored number to three decimals.
+-- @param value any  The stored number.
+-- @return string  The formatted number, or "unavailable".
 local function amount(value)
     return storedNumber(value) and format('%.3f', value) or 'unavailable'
 end
@@ -942,7 +956,8 @@ function addon:StopMemoryCapture()
     return true
 end
 
--- True while a capture is running.
+-- Tells whether a capture is running.
+-- @return boolean  True while one is.
 function addon:IsMemoryCaptureRunning()
     return self == addon and active ~= nil
 end

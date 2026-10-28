@@ -109,6 +109,10 @@ local function executionIndexProof()
             parts[i] = part
         end
 
+        -- Reads one parser flag of the execution index status.
+        -- @param owner string  The status row to read ("index" or "portable").
+        -- @param key string  The flag name ("parserMatch" or "parserSub").
+        -- @return string  "1" for true, "0" for false, otherwise "?".
         local function parserFlag(owner, key)
             local row = proofRawget(status, owner)
             local value = proofType(row) == "table" and proofRawget(row, key)
@@ -322,17 +326,25 @@ local function appendStoreStringShape(report, started, ended)
 end
 
 -- END COLD STORE STRING SHAPE
--- True for a readable, finite number (not NaN or infinity).
+-- Tells whether a value is a readable, finite number (not NaN or infinity).
+-- @param value any  The value to test.
+-- @return boolean  True for a readable finite number.
 local function finite(value)
     return readable(value) and type(value) == 'number' and value == value and value ~= math.huge and value ~= -math.huge
 end
 
--- True for a usable CPU counter: finite and not negative, and a whole number when integer is set (call counts).
+-- Tells whether a value is a usable CPU counter.
+-- @param value any  The value to test.
+-- @param integer boolean|nil  True to also require a whole number (call counts).
+-- @return boolean  True for a finite number that is not negative.
 local function counter(value, integer)
     return finite(value) and value >= 0 and (not integer or value % 1 == 0)
 end
 
--- Reads owner[key] with rawget, so no metamethod runs; returns nil when owner is not a table.
+-- Reads owner[key] with rawget, so no metamethod runs.
+-- @param owner any  The table to read from.
+-- @param key any  The key.
+-- @return any  The value; nil when owner is not a table.
 local function field(owner, key)
     if type(owner) == 'table' then
         return rawget(owner, key)
@@ -354,17 +366,20 @@ local function addonCPUAPI(name, legacy)
     end
 end
 
--- The function that reads the addon's total CPU time (GetAddOnCPUUsage), or nil.
+-- Finds the function that reads the addon's total CPU time (GetAddOnCPUUsage).
+-- @return function|nil  The function, or nil.
 local function totalAPI()
     return addonCPUAPI('GetAddOnCPUUsage', GetAddOnCPUUsage)
 end
 
--- The function that refreshes the client's addon CPU figures (UpdateAddOnCPUUsage), or nil.
+-- Finds the function that refreshes the client's addon CPU figures (UpdateAddOnCPUUsage).
+-- @return function|nil  The function, or nil.
 local function updateAPI()
     return addonCPUAPI('UpdateAddOnCPUUsage', UpdateAddOnCPUUsage)
 end
 
--- The function that reads a console variable (GetCVar or C_CVar.GetCVar), or nil.
+-- Finds the function that reads a console variable (GetCVar or C_CVar.GetCVar).
+-- @return function|nil  The function, or nil.
 local function cvarAPI()
     return type(GetCVar) == 'function' and GetCVar
         or type(C_CVar) == 'table' and type(C_CVar.GetCVar) == 'function' and C_CVar.GetCVar
@@ -401,7 +416,8 @@ local function enabled(fn)
     return true
 end
 
--- The most precise clock the client offers (GetTimePreciseSec, else GetTime), or nil.
+-- Finds the most precise clock the client offers (GetTimePreciseSec, else GetTime).
+-- @return function|nil  The function, or nil.
 local function clockAPI()
     return type(GetTimePreciseSec) == 'function' and GetTimePreciseSec or type(GetTime) == 'function' and GetTime or nil
 end
@@ -557,6 +573,9 @@ local function context(owner)
     if type(mode) == 'function' then
         local ok, loaded, requested, pending = pcall(mode, owner)
 
+        -- Tells whether a value is a valid observation cache mode.
+        -- @param value any  The value to test.
+        -- @return boolean  True for a readable "cached" or "direct".
         local function known(value)
             return readable(value) and type(value) == 'string' and (value == 'cached' or value == 'direct')
         end
@@ -761,12 +780,18 @@ local function reference(owner, ...)
     end
 end
 
--- The registry of condition definitions (addon.conditionDefinitions, or a plain definitions field), or nil.
+-- Finds the registry of condition definitions (addon.conditionDefinitions, or a plain definitions field).
+-- @param owner table  The addon.
+-- @return table|nil  The registry, or nil.
 local function definitionsOf(owner)
     return field(owner, 'conditionDefinitions') or field(owner, 'definitions')
 end
 
--- Returns a resolver for one callback ("evaluate" or "valid") of the condition registered under key.
+-- Builds a resolver for one callback of the condition registered under key.
+-- @param owner table  The addon.
+-- @param key string  The condition tag.
+-- @param callback string  "evaluate" or "valid".
+-- @return function  Called with no arguments; returns the callback function, or nil.
 local function conditionReference(owner, key, callback)
     return function() return field(field(definitionsOf(owner), key), callback) end
 end
@@ -1098,6 +1123,8 @@ local function validationEnding(run, status)
 end
 
 -- Packs a pcall result with its count in field n, so a nil among the returns is not lost.
+-- @param ... any  The values to pack.
+-- @return table  {n=count, ...}.
 local function validationTuple(...)
     return { n = validationSelect('#', ...), ... }
 end
@@ -2587,6 +2614,9 @@ local function finish(run, status, reason)
                 ),
             }
 
+            -- Formats the call count of one structural validation row.
+            -- @param name string  The row name ("ValidateEnvelope", "ValidateBody" or "IndexRotationSteps").
+            -- @return string  The count as text, or "unavailable".
             local function validationCount(name)
                 local row = run.validationRows[name]
                 return row and row.deltaCalls ~= nil and tostring(row.deltaCalls) or 'unavailable'
@@ -2971,7 +3001,8 @@ function addon:CancelCPUProfile()
     return true
 end
 
--- True while a capture is in progress.
+-- Tells whether a capture is in progress.
+-- @return boolean  True while a capture is in progress.
 function addon:IsCPUProfileRunning()
     return active ~= nil
 end

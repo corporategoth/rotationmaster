@@ -25,7 +25,9 @@ local MAX_REPORTS, MAX_LINES, MAX_STEPS, MAX_WATCH = 5, 600, 24, 60
 -- Report helpers
 -- ============================================================================
 
--- True when value may be shown and compared; true as well when the platform adapter is not loaded.
+-- Tells whether a value may be shown and compared.
+-- @param value any  The value to test.
+-- @return boolean  True when the platform adapter allows reading it; also true when the platform adapter is not loaded.
 local function readable(value)
     local platform = addon.Platform
     return not platform or type(platform.CanReadValue) ~= 'function' or platform:CanReadValue(value)
@@ -75,7 +77,9 @@ local function apiPresence(name, namespace)
     return type(rawget(_G, name)) == 'function' and 'present' or 'missing'
 end
 
--- Returns a CVar's value formatted for the report, or "unreadable".
+-- Reads a CVar for the report.
+-- @param name string  The CVar name.
+-- @return string  The value formatted by show, or "unreadable".
 local function cvar(name)
     local get = type(C_CVar) == 'table' and C_CVar.GetCVar or rawget(_G, 'GetCVar')
     local ok, value = protect(get, name)
@@ -583,6 +587,8 @@ end
 -- ============================================================================
 
 -- Starts a titled section of the report, after a blank line.
+-- @param report table  The report object.
+-- @param title string  The section title.
 local function section(report, title)
     report.add('')
     report.add('== ' .. title)

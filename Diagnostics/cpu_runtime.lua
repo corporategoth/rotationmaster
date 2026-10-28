@@ -17,6 +17,8 @@ local LIMIT, SAFE = 512, 9007199254740991
 -- ============================================================================
 
 -- Packs varargs with their count, so a trailing nil is not lost.
+-- @param ... any  The values to pack.
+-- @return table  {n=count, ...}.
 local function tuple(...)
     return { n = select('#', ...), ... }
 end
@@ -48,12 +50,17 @@ local function readable(value)
     return true
 end
 
--- True for a readable finite number.
+-- Tells whether a value is a readable finite number.
+-- @param v any  The value to test.
+-- @return boolean  True for a readable finite number.
 local function finite(v)
     return readable(v) and type(v) == 'number' and v == v and v ~= math.huge and v ~= -math.huge
 end
 
--- Returns t[k] without invoking metamethods, or nil when t is unreadable or not a table.
+-- Reads t[k] without invoking metamethods.
+-- @param t any  The table to read from.
+-- @param k any  The key.
+-- @return any  The value; nil when t is unreadable or not a table.
 local function field(t, k)
     if readable(t) and type(t) == 'table' then
         return rawget(t, k)
@@ -92,14 +99,18 @@ local function now(run)
     end
 end
 
--- True while C_AddOnProfiler and the two functions captured at start are still the very same objects.
+-- Tells whether C_AddOnProfiler and the two functions captured at start are still the very same objects.
+-- @param run table  The capture state.
+-- @return boolean  True while they are.
 local function providerCurrent(run)
     return rawequal(rawget(_G, 'C_AddOnProfiler'), run.provider)
         and rawequal(rawget(run.provider, 'IsEnabled'), run.enabled)
         and rawequal(rawget(run.provider, 'MeasureCall'), run.measure)
 end
 
--- True while run is the active running capture and its dispatch wrapper is still installed on the addon.
+-- Tells whether a run is the active running capture and its dispatch wrapper is still installed on the addon.
+-- @param run table  The capture state.
+-- @return boolean  True while it is.
 local function current(run)
     return active == run and run.phase == 'running' and rawequal(rawget(addon, 'EvaluateNextAction'), run.wrapper)
 end
@@ -328,13 +339,16 @@ local function phaseInstall(run)
 end
 
 -- Puts the original child lookup back, only if the wrapper is still the installed one.
+-- @param run table  The capture state.
 local function phaseRestore(run)
     if run.phaseRoot and rawequal(rawget(run.phaseRoot, 'child'), run.childWrapper) then
         rawset(run.phaseRoot, 'child', run.childOriginal)
     end
 end
 
--- True for a readable number that is not a valid byte counter (negative, fractional or not finite).
+-- Tells whether a readable number is not a valid byte counter (negative, fractional or not finite).
+-- @param value any  The value to test.
+-- @return boolean  True for such a number; false for valid counters and for anything that is not a readable number.
 local function invalidSnapshotCounter(value)
     return readable(value) and type(value) == 'number' and (not finite(value) or value < 0 or value % 1 ~= 0)
 end
@@ -434,7 +448,8 @@ end
 -- Boundary snapshots
 -- ============================================================================
 
--- Returns the profile's poll interval as text, or "unavailable".
+-- Reads the profile's poll interval as text.
+-- @return string  The interval, or "unavailable".
 local function poll()
     local value = field(field(rawget(addon, 'db'), 'profile'), 'poll')
     return finite(value) and tostring(value) or 'unavailable'
@@ -662,7 +677,9 @@ local function report(run, status, reason)
         (function()
             local a, b = run.idleStart or {}, run.idleEnd or {}
 
-            -- Capture delta of one counter as text, or "unavailable" when either end is missing or it went backwards.
+            -- Formats the capture delta of one idle gate or lean plan counter.
+            -- @param k string  The counter name.
+            -- @return string  The delta as text, or "unavailable" when either end is missing or it went backwards.
             local function delta(k)
                 return a[k] and b[k] and b[k] >= a[k] and tostring(b[k] - a[k]) or 'unavailable'
             end
@@ -1163,7 +1180,8 @@ function addon:CancelCPURuntimeCapture()
     return true
 end
 
--- True while a capture is running.
+-- Tells whether a capture is running.
+-- @return boolean  True while one is.
 function addon:IsCPURuntimeCaptureRunning()
     return active ~= nil
 end

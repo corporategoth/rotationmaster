@@ -25,7 +25,8 @@ local moduleOrder = {
 }
 
 -- Copies the whitelisted boolean and number editor options (autocomplete, indentation, output limit, ...) from the
--- installed LuaWorkbench addon, if any. Nothing else crosses over, and the result is a fresh table.
+-- installed LuaWorkbench addon, if any.
+-- @return table  A fresh table of the options found; nothing else crosses over.
 local function editorPreferences()
     local installed = type(_G.LuaWorkbench) == 'table' and _G.LuaWorkbench.db
     local source = type(installed) == 'table' and type(installed.options) == 'table' and installed.options or {}
@@ -50,11 +51,17 @@ local function editorPreferences()
     return result
 end
 
--- Cleanup retires the lease first and finishes independent native resources
--- even if one optional provider/debugger cleanup fails.
+-- Creates a cleanup runner that retires the lease first and finishes independent native resources even if one optional
+-- provider/debugger cleanup fails.
+-- @return function  attempt(callback, ...): runs a cleanup step under pcall and remembers the first failure.
+-- @return function  finish(): raises the first failure remembered, if any.
 local function cleanup()
     local failed, why
 
+    -- Runs one cleanup step under pcall, remembering the first failure.
+    -- @param callback function  The cleanup step.
+    -- @param ... any  The arguments passed to callback.
+    -- @return boolean  True when the step ran without error.
     local function attempt(callback, ...)
         local ok, result = pcall(callback, ...)
 
@@ -65,6 +72,7 @@ local function cleanup()
         return ok
     end
 
+    -- Raises the first failure remembered by attempt, if any.
     local function finish()
         if failed then
             error(why, 0)
@@ -74,15 +82,19 @@ local function cleanup()
     return attempt, finish
 end
 
--- Stand-in for an owner "valid" callback once the control is released: always false.
+-- Stand-in for an owner "valid" callback once the control is released.
+-- @return boolean  Always false.
 local function inactive()
     return false
 end
 
--- Builds an isolated embedded engine and returns it, or nil and 'missing-editor-module:<name>' when a vendored module
--- is absent. options: id and name label the workspace; environment, status, show, help and navigate connect the engine
--- to its owner; limited builds the reduced editor used for completion only (no API event subscription). The engine has
--- its own in-memory workspace and never persists anything.
+-- Builds an isolated embedded engine.
+-- @param options table|nil  {id, name} label the workspace; {environment, status, show, help, navigate} connect the
+--   engine to its owner; limited builds the reduced editor used for completion only (no API event subscription).
+-- @return table|nil  The engine; nil when a vendored module is absent.
+-- @return string|nil  'missing-editor-module:<name>' when the first value is nil; nil otherwise.
+--
+-- The engine has its own in-memory workspace and never persists anything.
 function rm:CreateLuaWorkbenchEngine(options)
     options = options or {}
     -- Only documented-looking scalar preferences cross this boundary. Never use
@@ -116,16 +128,24 @@ function rm:CreateLuaWorkbenchEngine(options)
     end
 
     -- Normalizes Windows line endings so stored and edited source compare equal.
+    -- @param text string|nil  The source; nil means empty.
+    -- @return string  The text with Windows line endings replaced by line feeds.
+    -- @return number  The number of replacements (the gsub count).
     function W:NormalizeSource(text)
         return (text or ''):gsub('\r\n', '\n')
     end
 
-    -- Embedded engines keep source in memory only; this returns the normalized text instead of saving it.
+    -- Returns the normalized text instead of saving it, since embedded engines keep source in memory only.
+    -- @param text string|nil  The source; nil means empty.
+    -- @return string  The normalized text.
+    -- @return number  The number of replacements (the gsub count).
     function W:StoreSource(text)
         return self:NormalizeSource(text)
     end
 
-    -- True when the draft for snippet `id` differs from the saved snippet.
+    -- Tells whether the draft for a snippet differs from the saved snippet.
+    -- @param id string  The snippet ID.
+    -- @return boolean  True when there is a draft and it differs from (or has no) saved snippet.
     function W:IsSnippetDirty(id)
         local draft, saved = self.db.drafts[id], self.db.snippets[id]
         return draft and (not saved or draft.source ~= saved.source) or false
@@ -138,7 +158,8 @@ function rm:CreateLuaWorkbenchEngine(options)
         self:UpdateStatus()
     end
 
-    -- Hides every engine-owned panel, tooltip and menu except `except`, and cancels object picking.
+    -- Hides every engine-owned panel, tooltip and menu except one, and cancels object picking.
+    -- @param except table|nil  A panel to leave as it is.
     function W:HidePanels(except)
         if engine.Inspector then
             engine.Inspector:StopPicking()
@@ -161,7 +182,9 @@ function rm:CreateLuaWorkbenchEngine(options)
         end
     end
 
-    -- Asks the owner to switch to another snippet or callback (options.navigate); false when it cannot.
+    -- Asks the owner to switch to another snippet or callback (options.navigate).
+    -- @param id string  The snippet or callback to switch to.
+    -- @return boolean  True when the owner switched; false when it cannot.
     function W:Select(id)
         if options.navigate then
             return options.navigate(id)
@@ -191,7 +214,9 @@ function rm:CreateLuaWorkbenchEngine(options)
         end
     end
 
-    -- Offers a key to the debugger shortcuts first, then to navigation; true if either used it.
+    -- Offers a key to the debugger shortcuts first, then to navigation.
+    -- @param key string  The key name.
+    -- @return boolean  True if either used the key.
     function W:RunShortcut(key)
         if engine.DebugUI:Shortcut(key) then
             return true
@@ -215,8 +240,11 @@ function rm:CreateLuaWorkbenchEngine(options)
 
     local make = engine.Debugger.MakeEnvironment
 
-    -- Extends the debugger's sandbox with the owner's environment (addon, L, bindings). Parameter names of the running
-    -- callback resolve to nil rather than to a global of the same name.
+    -- Extends the debugger's sandbox with the owner's environment (addon, L, bindings).
+    -- @param ... any  The arguments of the upstream MakeEnvironment.
+    -- @return table  The environment.
+    --
+    -- Parameter names of the running callback resolve to nil rather than to a global of the same name.
     function engine.Debugger:MakeEnvironment(...)
         local environment = make(self, ...)
 
@@ -279,6 +307,8 @@ function rm:CreateLuaWorkbenchEngine(options)
     local refresh = engine.Query.Console.Refresh
 
     -- Ignores console refreshes after release.
+    -- @param ... any  The arguments of the upstream Refresh.
+    -- @return any  The upstream Refresh's results; nothing after release.
     function engine.Query.Console:Refresh(...)
         if not engine.released then
             return refresh(self, ...)
@@ -424,9 +454,11 @@ function rm:CreateLuaWorkbenchEngine(options)
         self.Automation.running = {}
         self.EditorActions.lineClipboard = nil
 
-        -- A FontString or EditBox with no font raises "Font not set" from
-        -- :SetText(), even for ''. One the editor never painted has none yet,
-        -- so it gets the plain font first; it is being emptied, not shown.
+        -- Empties a text widget without emitting live change events.
+        -- @param widget table|nil  The FontString or EditBox to clear; nil does nothing.
+        --
+        -- A FontString or EditBox with no font raises "Font not set" from :SetText(), even for ''. One the editor never
+        -- painted has none yet, so it gets the plain font first; it is being emptied, not shown.
         local function clearText(widget)
             if not widget then
                 return
@@ -445,6 +477,7 @@ function rm:CreateLuaWorkbenchEngine(options)
 
         -- Clears an editor input record: its text widgets and every cached field except the overlay, caret and active
         -- flag.
+        -- @param value table|nil  The input record; nil does nothing.
         local function clearInput(value)
             if not value then
                 return
@@ -546,10 +579,15 @@ end
 -- Editor control
 -- ============================================================================
 
--- Builds the LuaWorkbench-backed editor control inside `parent` and returns it. `changed(text)` reports user edits and
--- `valid()` says whether the owner is live. The control has the editor interface of UI/lua_editor.lua (GetText,
--- SetText, SetReadOnly, SetContext, SetCloseHandler, Acquire, Release) plus Run, Debug and the test-arguments box, and
--- lays out the debugger toolbar and terminal.
+-- Builds the LuaWorkbench-backed editor control inside a parent frame.
+-- @param parent table  The frame that will hold the control.
+-- @param changed function  changed(text) reports user edits.
+-- @param valid function  valid() says whether the owner is live.
+-- @return table  The control.
+--
+-- The control has the editor interface of UI/lua_editor.lua (GetText, SetText, SetReadOnly, SetContext,
+-- SetCloseHandler, Acquire, Release) plus Run, Debug and the test-arguments box, and lays out the debugger toolbar and
+-- terminal.
 function rm:CreateLuaWorkbenchControl(parent, changed, valid)
     local frame = CreateFrame('Frame', nil, parent)
     frame:SetSize(600, 300)
@@ -578,6 +616,7 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
                 c.showOwner()
             end
         end,
+        -- Opens the editor help window (Run, Debug and terminal explanations) through the owner.
         help = function()
             self:ShowWorkbenchHelp(
                 L['Lua editor'],
@@ -617,6 +656,9 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
 
         if type(original) == 'function' then
             object[method] = function(self, ...)
+                -- Opens the shown panel with the RM windows and passes the original method's results through.
+                -- @param ... any  The results of the original method.
+                -- @return any  The same values (any number).
                 local function after(...)
                     local panel = self[field]
 
@@ -640,6 +682,10 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
     local baseEditor = UI.Editor
 
     -- Builds the upstream editor input and switches it to the monospace font RM ships.
+    -- @param owner table  The frame the input belongs to.
+    -- @param label string  The input's label.
+    -- @param readonly boolean|nil  True for a read-only input.
+    -- @return table  The input record.
     function UI:Editor(owner, label, readonly)
         local input = baseEditor(self, owner, label, readonly)
         input.editBox:SetFont('Interface\\AddOns\\' .. addon_name .. '\\Fonts\\Inconsolata-Regular.ttf', 12, '')
@@ -647,6 +693,8 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
     end
 
     -- Uses RM's themed scroll frame instead of the upstream one.
+    -- @param owner table  The frame the scroll frame belongs to.
+    -- @return table  The scroll frame.
     function UI:Scroll(owner)
         local scroll = rm:CreateWorkbenchScrollFrame(owner)
         scroll.bar = scroll.workbenchBar
@@ -699,6 +747,7 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
     c.output.tooltip = L['View and copy full debugger output and errors.']
 
     -- Opens the copyable Output window with printed text, terminal evaluations and full errors.
+    -- @return any  The result of rm:ShowLuaDebugOutput.
     function c:ShowDebugOutput()
         return rm:ShowLuaDebugOutput(self)
     end
@@ -707,7 +756,9 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
         c:ShowDebugOutput()
     end)
 
-    -- Turns an error value into text for the Output report. A secret value is shown as "<secret>" and never inspected.
+    -- Turns an error value into text for the Output report.
+    -- @param value any  The error value; a secret value is shown as "<secret>" and never inspected.
+    -- @return string  The text.
     local function fullError(value)
         if issecretvalue and issecretvalue(value) then
             return '<secret>'
@@ -720,6 +771,8 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
     local fail = engine.Debugger.Fail
 
     -- Remembers the full error text with its line for the Output window before the debugger handles the failure.
+    -- @param value any  The error value.
+    -- @return any  The upstream Fail's result.
     function engine.Debugger:Fail(value)
         c.debugError = fullError(value)
             .. (self.line and '\n' .. tostring(W.current) .. ':' .. tostring(self.line) or '')
@@ -730,6 +783,9 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
     local report = C.ReportError
 
     -- Remembers the full error text and stack for the Output window before the console reports it.
+    -- @param value any  The error value.
+    -- @param stack any  The stack text, if any.
+    -- @return any  The upstream ReportError's result.
     function C:ReportError(value, stack)
         c.debugError = fullError(value) .. (stack and '\n' .. fullError(stack) or '')
         return report(self, value, stack)
@@ -746,6 +802,7 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
     local stop = engine.Debugger.Stop
 
     -- Stops the debugger, and closes the preview surface unless a debug session is just being started.
+    -- @return any  The result of the upstream Stop.
     function engine.Debugger:Stop()
         local result = stop(self)
 
@@ -756,8 +813,12 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
         return result
     end
 
-    -- Calls `callback` under pcall; when a preview surface is open, widgets the callback creates are guarded and
-    -- observed so they belong to that surface. Returns pcall results.
+    -- Calls a callback under pcall; when a preview surface is open, widgets the callback creates are guarded and
+    -- observed so they belong to that surface.
+    -- @param callback function  The function to call.
+    -- @param ... any  The arguments passed to callback.
+    -- @return boolean  The pcall success flag.
+    -- @return any  The callback's results (any number), or the error value.
     function c:InvokeWithSurface(callback, ...)
         local surface = self.debugSurface
 
@@ -773,6 +834,7 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
     local resume = engine.Debugger.Resume
 
     -- Resumes a paused script through the surface-aware caller; an error becomes a debugger failure.
+    -- @param ... any  The arguments of the upstream Resume.
     function engine.Debugger:Resume(...)
         local ok, result = c:InvokeWithSurface(resume, self, ...)
 
@@ -782,11 +844,13 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
     end
 
     -- The toolbar Start button runs the control's own Debug.
+    -- @return any  The result of c:Debug().
     function engine.DebugUI:Start()
         return c:Debug()
     end
 
     -- The debug dropdown: start, toggle a breakpoint on the cursor line, stop.
+    -- @param owner table  The frame the menu opens from.
     function engine.DebugUI:Menu(owner)
         W:OpenMenu(owner, {
             {
@@ -814,10 +878,13 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
         c:Debug()
     end)
 
-    -- Common first step of Run and Debug. Builds the argument list and names for the current callback (from the Test
-    -- values for a condition, from the Test arguments box for a function), rebuilds the private bindings the live
-    -- compiler would give it, and loads them into the control's environment. Returns arguments, names, or false after
-    -- setting a status message. Only the generated binding prelude runs here; user code waits for Run or Debug.
+    -- Common first step of Run and Debug: builds the argument list and names for the current callback, rebuilds the
+    -- private bindings the live compiler would give it, and loads them into the control's environment.
+    -- @return table|boolean  The arguments (from the Test values for a condition, from the Test arguments box for a
+    --   function); false after setting a status message.
+    -- @return string[]|nil  The parameter names; nil when the first value is false.
+    --
+    -- Only the generated binding prelude runs here; user code waits for Run or Debug.
     function c:PrepareExecution()
         if self.released or not valid() then
             return false
@@ -990,6 +1057,8 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
 
     -- Supplies only the variadic tail as the chunk arguments, since named parameters already live in the prepared
     -- environment.
+    -- @param item table  The invocation record; item.args is replaced when it has no callback.
+    -- @return any  The result of the upstream StartInvocation.
     function engine.Debugger:StartInvocation(item)
         -- Named parameters live in the prepared environment. A chunk's `...`
         -- must contain only the declared variadic tail, not those parameters.
@@ -1000,8 +1069,8 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
         return startInvocation(self, item)
     end
 
-    -- Starts a debugger session on the current buffer with the prepared arguments. Returns the session result, or false
-    -- after reporting why it could not start.
+    -- Starts a debugger session on the current buffer with the prepared arguments.
+    -- @return any  The session result; false after reporting why it could not start.
     function c:Debug()
         local arguments, names = self:PrepareExecution()
 
@@ -1041,8 +1110,10 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
     end
 
     -- Runs the current buffer once without debugging: compiles it, wraps it in a function with the callback parameters,
-    -- runs it in the prepared environment with print and dump going to Output, then shows returns and the status. Never
-    -- applies the source or replaces the live callback.
+    -- runs it in the prepared environment with print and dump going to Output, then shows returns and the status.
+    -- @return boolean  True when the buffer ran; false after reporting why not.
+    --
+    -- Never applies the source or replaces the live callback.
     function c:Run()
         if self.released or not valid() then
             return false
@@ -1119,6 +1190,9 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
         setfenv(factory, environment)
         chunk = factory()
 
+        -- Packs values with their count, so a trailing nil is not lost.
+        -- @param ... any  The values to pack.
+        -- @return table  {n=count, ...}.
         local function pack(...)
             return { n = select('#', ...), ... }
         end
@@ -1204,13 +1278,16 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
         end
     end
 
-    -- True when two sizes differ by more than a tenth of a pixel; smaller differences are rounding noise.
+    -- Tells whether two sizes differ by more than a tenth of a pixel; smaller differences are rounding noise.
+    -- @param current number  The current size.
+    -- @param wanted number  The wanted size.
+    -- @return boolean  True when they differ by more than .1.
     local function differs(current, wanted)
         return math.abs(current - wanted) > .1
     end
 
-    -- Places the debugger toolbar, terminal dock and editor area for the control size and debugger state. Returns true
-    -- when the editor area moved.
+    -- Places the debugger toolbar, terminal dock and editor area for the control size and debugger state.
+    -- @return boolean|nil  True when the editor area moved; nil when the toolbar does not exist yet.
     function engine.DebugUI:Layout()
         if not self.toolbar then
             return
@@ -1334,12 +1411,14 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
         end
     end
 
-    -- The current buffer text.
+    -- Returns the current buffer text.
+    -- @return string  The text.
     function c:GetText()
         return input:GetText()
     end
 
     -- Replaces the buffer without reporting a user change; stops a running debug session first.
+    -- @param text string|nil  The new text; nil means empty.
     function c:SetText(text)
         if self.released then
             return
@@ -1356,6 +1435,7 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
     end
 
     -- Switches between editable and read-only (the EditBox is disabled when read-only).
+    -- @param value boolean|nil  True for read-only; anything else for editable.
     function c:SetReadOnly(value)
         input.readonly = value == true
 
@@ -1368,12 +1448,16 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
     end
 
     -- Stores the handler called with `mouse` true on right click, false on Escape.
+    -- @param callback function|nil  The handler, called with a boolean.
     function c:SetCloseHandler(callback)
         self.closeRequested = callback
     end
 
     -- Binds the control to a callback or function: the symbols, the workspace id and name, and the default test
-    -- arguments. Does nothing when the context signature and function registry revision are unchanged.
+    -- arguments.
+    -- @param context table|nil  {kind, id, name, callback, source, testOwner}; nil clears the context.
+    --
+    -- Does nothing when the context signature and function registry revision are unchanged.
     function c:SetContext(context)
         self.context = context or {}
         local source = self.context.source or {}
@@ -1419,6 +1503,8 @@ function rm:CreateLuaWorkbenchControl(parent, changed, valid)
 
     -- Takes a pooled control for a new owner: installs the owner callbacks and, if it was released, reacquires the
     -- engine, reattaches the editor, gutter and API help and lays the control out again.
+    -- @param callback function  changed(text) reports user edits.
+    -- @param ownerValid function  valid() says whether the owner is live.
     function c:Acquire(callback, ownerValid)
         if self.closing then
             error('editor-release-in-progress', 0)
@@ -1633,7 +1719,8 @@ end
 -- Provider registration
 -- ============================================================================
 
--- True when the !!!LuaWorkbench addon is loaded and has published its global table. Uses only addon-loaded evidence.
+-- Tells whether the !!!LuaWorkbench addon is loaded and has published its global table.
+-- @return boolean  True when it is available; uses only addon-loaded evidence.
 function rm:IsLuaWorkbenchIntegrationAvailable()
     local loaded = C_AddOns and C_AddOns.IsAddOnLoaded or IsAddOnLoaded
 
@@ -1659,6 +1746,14 @@ function rm:DiscoverLuaEditorIntegrations()
 
     if self:IsLuaWorkbenchIntegrationAvailable() then
         if not workbenchProvider then
+            -- The editor provider registered as 'LuaWorkbench': builds the control for a parent frame when the addon is
+            -- available.
+            -- @param parent table  The frame that will hold the control.
+            -- @param changed function  changed(text) reports user edits.
+            -- @param valid function  valid() says whether the owner is live.
+            -- @return table|nil  The control; nil when the LuaWorkbench addon is not available.
+            -- @return function|nil  The constructor, when it is RM's own CreateLuaWorkbenchControl (so a replaced one
+            --   is not reused); nil otherwise.
             workbenchProvider = function(parent, changed, valid)
                 if not self:IsLuaWorkbenchIntegrationAvailable() then
                     return nil

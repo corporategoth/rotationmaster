@@ -59,7 +59,9 @@ local INFO_FIELDS = {
 -- Probe helpers and report storage
 -- ============================================================================
 
--- True when value may be shown and compared; true as well when the platform adapter is not loaded.
+-- Tells whether a value may be shown and compared.
+-- @param value any  The value to test.
+-- @return boolean  True when the platform adapter allows reading it; also true when the platform adapter is not loaded.
 local function readable(value)
     local platform = addon.Platform
     return not platform or type(platform.CanReadValue) ~= 'function' or platform:CanReadValue(value)
@@ -96,7 +98,9 @@ local function protect(fn, ...)
     return pcall(fn, ...)
 end
 
--- Returns C_EncounterTimeline[name], or nil when the namespace does not exist on this client.
+-- Finds a member of C_EncounterTimeline.
+-- @param name string  The member name.
+-- @return any  C_EncounterTimeline[name]; nil when the namespace does not exist on this client.
 local function timeline(name)
     local space = rawget(_G, 'C_EncounterTimeline')
     return type(space) == 'table' and space[name] or nil
@@ -384,6 +388,7 @@ function addon:RunTimelineDiagnostic(argument)
         local frame = CreateFrame('Frame')
 
         -- Seconds since the watch started, for the line prefix.
+        -- @return string  The elapsed time formatted like "+3.0s".
         local function stamp()
             return string.format('%+.1fs', (type(GetTime) == 'function' and GetTime() or 0) - started)
         end

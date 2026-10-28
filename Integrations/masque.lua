@@ -17,8 +17,11 @@ local configNotifyBusy = false
 -- Status and window lifecycle
 -- ============================================================================
 
--- Replaces the published status (state, reason, whether the preview option is on, Masque version and whether that
--- version has been tested against the source). window may be nil.
+-- Replaces the published status.
+-- @param window table|nil  The preview window; its profile gives whether the preview option is on and its Masque
+--   version fields give the version and whether that version has been tested against the source. May be nil.
+-- @param state string  'disabled', 'connected', 'missing', 'incompatible', 'unavailable' or 'error'.
+-- @param reason string  The reason code for the state.
 local function publish(window, state, reason)
     status = {
         state = state,
@@ -32,8 +35,11 @@ local function publish(window, state, reason)
     }
 end
 
--- User action only: the documented /masque entrypoint toggles its own panel.
--- Success means dispatch completed, not that a settings window became visible.
+-- Opens or closes Masque's own settings panel through its documented /masque entry point.
+-- @return boolean  True when the dispatch completed, not necessarily that a settings window became visible; false for a
+--   foreign caller or when Masque has no slash command.
+--
+-- User action only.
 function addon:ToggleMasqueSettings()
     if not rawequal(self, addon) then
         return false
@@ -60,6 +66,7 @@ function addon:ToggleMasqueSettings()
 end
 
 -- Returns a copy of the published status table for the settings page.
+-- @return table  {state, reason, enabled, version, apiMinor, nativeAcceptance, versionStatus}.
 function addon:GetMasquePreviewStatus()
     local copy = {}
 
@@ -71,6 +78,7 @@ function addon:GetMasquePreviewStatus()
 end
 
 -- Shows the icon's own texture again and hides its Masque surface (the unskinned look).
+-- @param icon table  The preview icon.
 local function baseline(icon)
     if icon.masqueSurface then
         icon.masqueSurface:Hide()
@@ -79,7 +87,10 @@ local function baseline(icon)
     icon.texture:Show()
 end
 
--- Detaches one icon from its Masque group and restores the baseline. A failed detach quarantines the icon for good.
+-- Detaches one icon from its Masque group and restores the baseline.
+-- @param icon table  The preview icon.
+--
+-- A failed detach quarantines the icon for good.
 local function remove(icon)
     local owner = icon.masqueOwner
     icon.masqueOwner = nil
@@ -98,8 +109,10 @@ local function remove(icon)
     end
 end
 
--- Releases every icon of the window from Masque and invalidates any work still in flight for it (new epoch). Safe
--- to call at any time, including from inside provider callbacks.
+-- Releases every icon of the window from Masque and invalidates any work still in flight for it (new epoch).
+-- @param window table  The preview window.
+--
+-- Safe to call at any time, including from inside provider callbacks.
 function addon:ReleaseMasquePreview(window)
     window.masqueEpoch = (window.masqueEpoch or 0) + 1
 
@@ -123,6 +136,8 @@ function addon:ReleaseMasquePreview(window)
 end
 
 -- Returns the icon's Masque surface button (creating it once), hidden until the skin is applied.
+-- @param icon table  The preview icon.
+-- @return table  The surface button.
 local function surface(icon)
     local child = icon.masqueSurface
 
@@ -141,7 +156,8 @@ local function surface(icon)
     return child
 end
 
--- Returns Masque's version string from its addon metadata (at most 64 characters), or nil.
+-- Reads Masque's version string from its addon metadata.
+-- @return string|nil  The version (at most 64 characters); nil when it cannot be read.
 local function nativeVersion()
     local namespace = C_AddOns
     local get = namespace and namespace.GetAddOnMetadata or GetAddOnMetadata
@@ -156,8 +172,11 @@ local function nativeVersion()
 end
 
 -- Attaches (or detaches, when the option is off or Masque is missing or incompatible) the window's icons to a Masque
--- group named "RecommendationPreview", and publishes the outcome. Every step re-checks that the window, profile and
--- epoch are unchanged, because the provider can call back into this addon synchronously.
+-- group named "RecommendationPreview", and publishes the outcome.
+-- @param window table  The preview window.
+--
+-- Every step re-checks that the window, profile and epoch are unchanged, because the provider can call back into this
+-- addon synchronously.
 function addon:ConfigureMasquePreview(window)
     -- Reentry invalidates the outer lease. It cannot attach a competing owner
     -- while an AddButton/RemoveButton call is still on the provider's stack.
@@ -172,7 +191,8 @@ function addon:ConfigureMasquePreview(window)
     local epoch = window.masqueEpoch
     local generation, profile = window.generation, window.profile
 
-    -- True while this configure call is still the current one for the same window, generation and profile.
+    -- Tells whether this configure call is still the current one for the same window, generation and profile.
+    -- @return boolean  True while it is.
     local function valid()
         return window:Valid()
             and window.generation == generation
@@ -181,6 +201,8 @@ function addon:ConfigureMasquePreview(window)
     end
 
     -- Releases the window and publishes the failure, unless the call was already superseded.
+    -- @param state string  The state to publish.
+    -- @param reason string  The reason code to publish.
     local function fail(state, reason)
         if not valid() then
             return
@@ -368,8 +390,12 @@ function addon:ConfigureMasquePreview(window)
     window.masqueBusy = false
 end
 
--- Resizes one icon's surface and asks Masque to reskin it, only when the size really changed (the one provider call
--- that is not cold lifecycle work). A failed reskin releases the window and publishes an error.
+-- Resizes one icon's surface and asks Masque to reskin it, only when the size really changed.
+-- @param window table  The preview window.
+-- @param icon table  The preview icon.
+--
+-- This is the one provider call that is not cold lifecycle work. A failed reskin releases the window and publishes an
+-- error.
 function addon:ResizeMasquePreviewIcon(window, icon)
     local owner = icon.masqueOwner
     local child = icon.masqueSurface
@@ -439,8 +465,12 @@ local function notifyMasqueOptions()
     configNotifyBusy = false
 end
 
--- Reskins every attached icon of the current preview window for group (or restores the baseline when disabled).
--- Returns true when nothing needed doing or the refresh worked, false when the window was busy, changed or failed.
+-- Reskins every attached icon of the current preview window for a group (or restores the baseline when disabled).
+-- @param provider table  The Masque library.
+-- @param group table  The Masque group.
+-- @param disabled boolean|nil  True to restore the baseline instead of reskinning.
+-- @return boolean  True when nothing needed doing or the refresh worked; false when the window was busy, changed or
+--   failed.
 local function refreshSkin(provider, group, disabled)
     local window = addon.nextWindow
 
@@ -459,7 +489,8 @@ local function refreshSkin(provider, group, disabled)
 
     local epoch, generation = window.masqueEpoch, window.generation
 
-    -- True while the window is the same one, in the same epoch and generation, as when the refresh started.
+    -- Tells whether the window is the same one, in the same epoch and generation, as when the refresh started.
+    -- @return boolean  True while it is.
     local function valid()
         return window:Valid() and window.masqueEpoch == epoch and window.generation == generation
     end
@@ -506,9 +537,14 @@ local function refreshSkin(provider, group, disabled)
     return true
 end
 
--- Registers (once per group) the callback that follows the user's skin changes made in Masque's own options, and
--- links it to window. disabled is Masque's current "Disable" value when the caller already read it. Returns true when
--- the link is in place, false when the provider or the window changed during the work or the registration failed.
+-- Registers (once per group) the callback that follows the user's skin changes made in Masque's own options, and links
+-- it to a window.
+-- @param provider table  The Masque library.
+-- @param group table  The Masque group.
+-- @param window table|nil  The preview window to link the callback to.
+-- @param disabled boolean|nil  Masque's current "Disable" value when the caller already read it.
+-- @return boolean  True when the link is in place; false when the provider or the window changed during the work or the
+--   registration failed.
 bindSkinCallback = function(provider, group, window, disabled)
     local profile = addon.db.profile
     local currentWindow = addon.nextWindow
@@ -516,7 +552,8 @@ bindSkinCallback = function(provider, group, window, disabled)
     local currentActive = currentWindow and currentWindow.active
     local epoch, generation = window and window.masqueEpoch, window and window.generation
 
-    -- True while the profile, the preview window and the Masque link are all the ones this call started with.
+    -- Tells whether the profile, the preview window and the Masque link are all the ones this call started with.
+    -- @return boolean  True while they are.
     local function valid()
         if addon.db.profile ~= profile or profile.preview_masque ~= true or addon.nextWindow ~= currentWindow then
             return false
@@ -681,9 +718,11 @@ bindSkinCallback = function(provider, group, window, disabled)
     return true
 end
 
--- Reads Masque's option table for the preview group and returns a context { disabled, provider, group, option,
--- skins, info, valid, window } for the skin calls, or nil when the option is off or Masque's API is not the expected
--- shape. valid() reports whether the context is still current; every caller must check it after each provider call.
+-- Reads Masque's option table for the preview group.
+-- @return table|nil  The context {disabled, provider, group, option, skins, info, valid, window} for the skin calls;
+--   nil when the option is off or Masque's API is not the expected shape.
+--
+-- valid() reports whether the context is still current; every caller must check it after each provider call.
 local function skinContext()
     local profile = addon.db and addon.db.profile
 
@@ -695,7 +734,8 @@ local function skinContext()
     local generation = window and window.generation
     local epoch = window and window.masqueEpoch
 
-    -- True while the profile option, preview window, generation and epoch are unchanged.
+    -- Tells whether the profile option, preview window, generation and epoch are unchanged.
+    -- @return boolean  True while they are.
     local function valid()
         return addon.db.profile == profile
             and profile.preview_masque == true
@@ -781,7 +821,10 @@ local function skinContext()
     }
 end
 
--- True when id is a short string that Masque lists as a selectable skin.
+-- Tells whether an id is a selectable skin.
+-- @param context table  The skin context from skinContext.
+-- @param id any  The skin id to test.
+-- @return boolean  True when id is a short string that Masque lists as a selectable skin.
 local function validSkin(context, id)
     return type(id) == 'string'
         and #id > 0
@@ -790,8 +833,10 @@ local function validSkin(context, id)
         and type(context.skins[id]) == 'table'
 end
 
--- Returns the selectable skins as { value, text } rows (default skin first) and true, or just the default skin and
--- false when Masque is unavailable, disabled for the group or busy. Escapes "|" and control characters in the text.
+-- Lists the selectable Masque skins.
+-- @return table[]  The skins as {value=string, text=string} rows, default skin first; just the default skin when Masque
+--   is unavailable, disabled for the group or busy. Pipes and control characters are escaped in the text.
+-- @return boolean  True when the rows come from Masque; false for the fallback.
 function addon:GetPreviewSkinChoices()
     local fallback = { { value = defaultSkin, text = defaultSkin } }
 
@@ -846,7 +891,8 @@ function addon:GetPreviewSkinChoices()
     return fallback, false
 end
 
--- Returns the skin Masque has selected for the preview group, or the default skin when it cannot be read.
+-- Returns the skin Masque has selected for the preview group.
+-- @return string  The skin id, or the default skin when it cannot be read.
 function addon:GetPreviewSkin()
     if not rawequal(self, addon) or skinBusy then
         return defaultSkin
@@ -873,7 +919,9 @@ function addon:GetPreviewSkin()
 end
 
 -- Selects a skin through Masque's own option setter, verifies it by reading it back, then reskins the preview and
--- notifies Masque's options registry. Returns true only when the new skin is confirmed in effect.
+-- notifies Masque's options registry.
+-- @param id string  The skin id.
+-- @return boolean  True only when the new skin is confirmed in effect.
 function addon:SetPreviewSkin(id)
     if not rawequal(self, addon) or skinBusy or configNotifyBusy then
         return false

@@ -9,8 +9,10 @@ local color = color
 local helpers = addon.help_funcs
 local CreateText, Gap = helpers.CreateText, helpers.Gap
 
--- Returns the Announces help sections { id, title, text }: overview, action type, macro use, channels and outputs,
--- text and sounds, state and Apply/Cancel, and the collection buttons.
+-- Returns the Announces help sections: overview, action type, macro use, channels and outputs, text and sounds, state
+-- and Apply/Cancel, and the collection buttons.
+-- @return table[]  The sections, each {id=string, title=string, text=string}, in page order.
+--
 -- Keep whole paragraphs in the locale table so translations control word order.
 function addon:GetDocument_layout_announce_options_help()
     return {
@@ -69,6 +71,7 @@ function addon:GetDocument_layout_announce_options_help()
 end
 
 -- Lays the Announces help document out in a frame as a yellow title followed by its paragraph, one gap between each.
+-- @param frame table  The help frame (a container widget) the text widgets are added to.
 function addon.layout_announce_options_help(frame)
     for _, entry in ipairs(addon:GetDocument_layout_announce_options_help()) do
         frame:AddChild(Gap())
@@ -79,9 +82,12 @@ function addon.layout_announce_options_help(frame)
     end
 end
 
--- Card Help uses the same authored document, limited to its output controls.
--- kind is the announcement's action type and mode its output channel; returns only the sections for that channel and
--- the shared output controls (emote target wording differs for a macro announcement).
+-- Returns the Announces help limited to an announcement card's output controls (card Help uses the same authored
+-- document).
+-- @param kind string  The announcement's action type ("macro" selects the macro wording of the emote target section).
+-- @param mode string  The announcement's output channel (for example "audible" or "gesture").
+-- @return table[]  Only the sections for that channel and the shared output controls, each {id=string, title=string,
+--   text=string}.
 function addon:GetAnnouncementOutputHelp(kind, mode)
     local sections = {}
 

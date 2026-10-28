@@ -105,8 +105,10 @@ local scopes={
 -- Project links and client support
 -- ============================================================================
 
--- Returns the curated release and source links for addon `id` as a list of { label, url, note, primary, families },
--- with localized text, and as a second value the localized addon name. An unknown id yields an empty list.
+-- Returns the curated release and source links for an addon.
+-- @param id string  The addon identity (an entry of the supported addon list).
+-- @return table[]  The links, each {label, url, note, primary, families}, with localized text; empty for an unknown id.
+-- @return string|nil  The localized addon name; nil for an unknown id.
 function addon:GetIntegrationProjectLinks(id)
     local result = {}
 
@@ -138,10 +140,13 @@ function addon:GetIntegrationProjectLinks(id)
     return result, name
 end
 
--- Advertised edition scope belongs to this exact addon identity. It is not
--- native acceptance, and a different-folder successor cannot widen it.
--- Returns 'supported', 'unsupported' or 'unknown' for addon `id` on the `client` record (family and interface number)
--- from Platform:GetClientInfo. Only an explicit 'unsupported' hides a row; a missing, malformed or unlisted client or
+-- Tells whether an addon supports the player's client.
+-- @param id string  The addon identity.
+-- @param client table  The client record (family and interface number) from Platform:GetClientInfo.
+-- @return string  'supported', 'unsupported' or 'unknown'.
+--
+-- Advertised edition scope belongs to this exact addon identity. It is not native acceptance, and a different-folder
+-- successor cannot widen it. Only an explicit 'unsupported' hides a row; a missing, malformed or unlisted client or
 -- scope stays 'unknown' and visible. Progression clients are matched by branch (Wrath, Cataclysm, Mists).
 function addon:GetIntegrationClientSupport(id, client)
     local scope = scopes[id]
@@ -156,6 +161,10 @@ function addon:GetIntegrationClientSupport(id, client)
         return 'unknown'
     end
 
+    -- Tells whether a list holds a value.
+    -- @param list table|nil  The list to search; nil is treated as empty.
+    -- @param value any  The value to look for (compared with ==).
+    -- @return boolean  True when the value is in the list.
     local function contains(list, value)
         for _, item in ipairs(list or {}) do
             if item == value then
@@ -228,8 +237,11 @@ local questieStates = {
     unavailable = 'unknown',
 }
 
--- True when Platform:CanReadValue accepts `value`; every value that comes from another addon or a game API passes this
--- before it is inspected.
+-- Tells whether Platform:CanReadValue accepts a value.
+-- @param value any  The value to test.
+-- @return boolean  True when it is accepted; false when it is not or the check throws.
+--
+-- Every value that comes from another addon or a game API passes this before it is inspected.
 local function readable(value)
     local ok, accepted = pcall(function()
         local platform = addon.Platform
@@ -239,9 +251,14 @@ local function readable(value)
     return ok and accepted == true
 end
 
--- Returns `value` as display text of at most `limit` bytes, or nil if it is unreadable or not a string. Keeps whole
--- UTF-8 characters, doubles pipes so no color or texture escapes get through, and replaces control and malformed bytes
--- with '?'. With `complete` set, returns nil instead of a truncated result.
+-- Bounds a value to display text of at most limit bytes.
+-- @param value any  The value to convert.
+-- @param limit number  The most bytes of the result.
+-- @param complete boolean|nil  When set, a result that would be truncated is returned as nil instead.
+-- @return string|nil  The text; nil if the value is unreadable or not a string.
+--
+-- Keeps whole UTF-8 characters, doubles pipes so no color or texture escapes get through, and replaces control and
+-- malformed bytes with '?'.
 ---@param value any
 ---@param limit number
 local function text(value, limit, complete)
@@ -321,14 +338,19 @@ local function text(value, limit, complete)
     return table.concat(result)
 end
 
--- Looks up the localized text for `key` and bounds it to `limit` bytes with text(); falls back to the key itself.
+-- Looks up the localized text for a key and bounds it with text().
+-- @param key string  The locale key.
+-- @param limit number  The most bytes of the result.
+-- @return string  The bounded localized text; falls back to the key itself.
 local function display(key, limit)
     local ok, value = pcall(function() return L[key] end)
     return (ok and text(value, limit)) or text(key, limit) or key
 end
 
--- Calls a game addon-metadata function (C_AddOns first, then the global) under pcall. Returns its first result, or nil
--- if it is missing, raised or returned an unreadable value.
+-- Calls a game addon-metadata function (C_AddOns first, then the global) under pcall.
+-- @param name string  The function name (for example 'IsAddOnLoaded').
+-- @param ... any  The arguments passed to the function.
+-- @return any|nil  Its first result; nil if it is missing, raised or returned an unreadable value.
 local function native(name, ...)
     local args = { ... }
 
@@ -354,9 +376,11 @@ local function native(name, ...)
     return value
 end
 
--- Returns the connection state of a loaded addon (connected, disabled, missing, incompatible, loaded or unknown) from
--- the adapter named by `kind`: 'ecs' and 'editor' look for the objects they register, 'masque', 'encounters' and
--- 'questie' read the adapter's cached status. For boss mods only the selected provider counts as connected.
+-- Returns the connection state of a loaded addon.
+-- @param kind string|nil  The adapter kind: 'ecs' and 'editor' look for the objects they register, 'masque',
+--   'encounters' and 'questie' read the adapter's cached status.
+-- @param id string  The addon identity (for boss mods, only the selected provider counts as connected).
+-- @return string  'connected', 'disabled', 'missing', 'incompatible', 'loaded' or 'unknown'.
 local function connection(kind, id)
     if kind == 'ecs' then
         local definitions = rawget(addon, 'conditionDefinitions')
@@ -448,7 +472,10 @@ local function connection(kind, id)
     return 'loaded'
 end
 
--- Returns one row per supported addon for the settings page: { id, name, version, loaded, state, detail, projectURL }.
+-- Lists the supported addons for the settings page.
+-- @return table[]  One row per supported addon: {id, name, version, loaded, state, detail, projectURL}; empty when not
+--   called on the addon.
+--
 -- version is metadata and may exist for an addon that is not loaded, so the page shows it only with loaded evidence; a
 -- false loaded flag never proves the addon is not installed. The Masque row also reports the library API level.
 function addon:ListIntegrationStatus()

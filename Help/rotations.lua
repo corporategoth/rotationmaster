@@ -18,8 +18,11 @@ local CreateText, CreatePictureText, Indent, Gap =
 -- Shared sections
 -- ============================================================================
 
--- Adds the help for the name field and the list-order buttons (move to top, up, down, to bottom, duplicate, delete)
--- for one kind of entry.
+-- Adds the help for the name field and the list-order buttons (move to top, up, down, to bottom, duplicate, delete) for
+-- one kind of entry.
+-- @param group table  The help frame the text widgets are added to.
+-- @param singular string  The noun for one entry ("cooldown" or "rotation").
+-- @param plural string  The plural noun.
 local function help_top_buttons(group, singular, plural)
     group:AddChild(CreateText(
         color.BLIZ_YELLOW
@@ -128,7 +131,11 @@ local function help_top_buttons(group, singular, plural)
 end
 
 -- Adds the help for the highlight effect control of one kind of entry (the Default effect follows the General
--- settings). Callers pass a plural noun as well; it is not used here.
+-- settings).
+-- @param group table  The help frame the text widgets are added to.
+-- @param singular string  The noun for one entry ("cooldown" or "rotation").
+--
+-- Callers pass a plural noun as well; it is not used here.
 local function help_effect_group(group, singular)
     group:AddChild(CreateText(
         color.BLIZ_YELLOW
@@ -235,7 +242,11 @@ local function help_effect_group(group, singular)
 end
 
 -- Adds the help for the action fields of one kind of entry: automatic requirements (learned, usable, ready, in range,
--- on an action bar), the action type choices and their options. The plural noun callers pass is not used.
+-- on an action bar), the action type choices and their options.
+-- @param group table  The help frame the text widgets are added to.
+-- @param singular string  The noun for one entry ("cooldown" or "rotation").
+--
+-- The plural noun callers pass is not used.
 local function help_action_group(group, singular)
     group:AddChild(CreateText(
         L["Actions automatically require a learned spell or carried item, usable resources, cooldown readiness and valid range. Conditions can additionally test other actions."]
@@ -386,6 +397,9 @@ local function help_action_group(group, singular)
 end
 
 -- Adds the help for the conditions summary of one kind of entry, including the live satisfied/not satisfied marker.
+-- @param group table  The help frame the text widgets are added to.
+-- @param singular string  The noun for one entry ("cooldown" or "rotation").
+--
 -- The plural noun callers pass is not used.
 local function help_conditions(group, singular)
     group:AddChild(CreateText(
@@ -514,6 +528,7 @@ end
 
 -- Lays out the cooldown help page: what cooldowns are, then the shared sections, plus the cooldown's own Announce
 -- options.
+-- @param frame table  The help frame the text widgets are added to.
 function addon.layout_cooldown_help(frame)
     local group = frame
 
@@ -608,6 +623,7 @@ end
 
 -- Lays out the rotation help page: what a rotation is, how one is chosen (priority, specializations, identifier, list
 -- markers), the implicit auto-attack fallback, then the shared sections.
+-- @param frame table  The help frame the text widgets are added to.
 function addon.layout_rotation_help(frame)
     local group = frame
 

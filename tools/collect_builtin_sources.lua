@@ -95,6 +95,10 @@ for name, value in pairs(_G) do
     end
 end
 
+-- Describes where a function is defined.
+-- @param fn function  The function to describe.
+-- @return table  {file=string, first=number, last=number, what=string}: the source file (without the leading @), the
+--   first and last line, and the debug kind.
 local function descriptor(fn)
     local info = debug.getinfo(fn, 'S')
 
@@ -108,6 +112,10 @@ end
 
 local publicIdentities, callbackBindings, currentAddon, ownedCacheSeen, ownedConditionValues = {}, {}, nil, {}, {}
 
+-- Tells whether two sets of condition callbacks are the same source.
+-- @param left table  Callbacks by name, each {file, first, last, what, bindings}.
+-- @param right table  The callbacks to compare with.
+-- @return boolean  True when both sets have the same names, locations and binding IDs.
 local function sameCallbacks(left, right)
     for name, callback in pairs(left) do
         local other = right[name]
@@ -144,6 +152,14 @@ local function sameCallbacks(left, right)
     return true
 end
 
+-- Stores the callbacks of one condition (or one of its marked variants) in a module record.
+-- @param module table  The module record {file, conditions, bindings, conditionVariants}.
+-- @param tag string  The condition tag.
+-- @param variant string|nil  The condition's builtinSourceVariant; nil for an unmarked condition.
+-- @param callbacks table  The captured callbacks by name.
+--
+-- Fails an assertion when the variant name is invalid, when marked and unmarked variants are mixed for one tag, or when
+-- two different callbacks claim the same tag and variant.
 local function storeCallbacks(module, tag, variant, callbacks)
     local target
 
@@ -177,6 +193,14 @@ local function storeCallbacks(module, tag, variant, callbacks)
     target[variant] = callbacks
 end
 
+-- Resolves the declared binding IDs of a qualified callback namespace (for example Functions.cache.getCached).
+-- @param module table  The module record whose callbacks declare the bindings.
+-- @param root string  The captured name the namespace hangs from.
+-- @param value any  The captured value: a table of nested namespaces ending in functions.
+-- @return table|nil  A map from each dotted path to its binding ID; nil when the module declares none under that root.
+--
+-- Fails an assertion when a function is not the public identity of its declared binding, when the namespace is not a
+-- plain table, or when a declared path is missing.
 local function qualifiedBindings(module, root, value)
     local declared = {}
 
@@ -192,6 +216,10 @@ local function qualifiedBindings(module, root, value)
 
     local result, seen = {}, {}
 
+    -- Walks one level of a qualified namespace, recording the binding ID of each function found.
+    -- @param current any  A function (a leaf) or a plain table of children.
+    -- @param path string  The dotted path of current.
+    -- @param depth number  The nesting depth, at most 8.
     local function visit(current, path, depth)
         assert(depth <= 8, 'qualified callback binding depth: ' .. path)
 
@@ -228,6 +256,10 @@ local function qualifiedBindings(module, root, value)
     return result
 end
 
+-- Records the retained module-level value (character_class) that the manifest declares, as a binding of its module.
+--
+-- Checks that the getter of the declaring module is owned by that module and exposes exactly one upvalue of the
+-- declared alias, that the getter's descriptor does not drift between runs, and that no other binding collides.
 local function seedRetainedValue()
     local declaration = retainedDeclaration
     local getter = currentAddon.builtinSourceModules and currentAddon.builtinSourceModules[declaration.module]
@@ -277,6 +309,8 @@ local function seedRetainedValue()
     module.bindings[declaration.alias] = { kind = type(value), retained = { declaration = declaration, getter = info } }
 end
 
+-- Checks that a captured value is the retained value recorded by seedRetainedValue.
+-- @param value any  The captured value; compared by identity and type.
 local function verifyRetainedCapture(value)
     assert(
         retainedSnapshot and type(value) == retainedSnapshot.kind and rawequal(value, retainedSnapshot.value),
@@ -286,6 +320,12 @@ end
 
 local capture
 
+-- Registers one of the function cache module's own bindings as a packaged helper of utils.lua.
+-- @param alias string  The binding name (a key of the cache ownership manifest).
+-- @param value any  The binding's current value; the module getter and the utils.lua getter must return the same one.
+-- @return string  The binding ID.
+--
+-- A function binding is captured once, with its own captures required to be declared.
 local function ownedCacheBinding(alias, value)
     local declaration = assert(cacheOwnership.bindings[alias], 'cache ownership declaration missing: ' .. alias)
     local owner = currentAddon.builtinSourceModules and currentAddon.builtinSourceModules[cacheOwnership.module]
@@ -326,6 +366,15 @@ local function ownedCacheBinding(alias, value)
     return declaration.bindingID
 end
 
+-- Captures the source description of a function and the binding IDs of its upvalues.
+-- @param module table  The module record the function belongs to; bindings it needs are added to it.
+-- @param fn function  The function to capture.
+-- @param captureBindings table|nil  Declared binding IDs by upvalue name.
+-- @param ownedCapture boolean|nil  True to require a declaration for every upvalue (cache and condition ownership).
+-- @return table  The descriptor of fn plus a bindings map from upvalue name to binding ID.
+--
+-- Upvalues that are addon, L or a standard function are skipped. Fails an assertion when a declared binding is not
+-- captured, or when a binding identity collides.
 capture = function(module, fn, captureBindings, ownedCapture)
     local info = descriptor(fn)
     info.bindings = {}
@@ -600,6 +649,10 @@ for _, case in ipairs(inventory.branches) do
     end
 end
 
+-- Serializes the collected module records as JSON.
+-- @param value any  A string, number, or table (an array when it has a sequence part, otherwise an object with sorted
+--   keys).
+-- @return string  The JSON text; anything else raises 'unsupported source metadata'.
 local function json(value)
     if type(value) == 'string' then
         return '"'

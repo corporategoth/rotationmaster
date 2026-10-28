@@ -21,7 +21,9 @@ local MAX_REPORTS, MAX_LINES, MAX_NODES = 3, 400, 1200
 -- Report helpers
 -- ============================================================================
 
--- True when value may be shown and compared; true as well when the platform adapter is not loaded.
+-- Tells whether a value may be shown and compared.
+-- @param value any  The value to test.
+-- @return boolean  True when the platform adapter allows reading it; also true when the platform adapter is not loaded.
 local function readable(value)
     local platform = addon.Platform
     return not platform or type(platform.CanReadValue) ~= 'function' or platform:CanReadValue(value)

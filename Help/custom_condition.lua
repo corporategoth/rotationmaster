@@ -15,7 +15,10 @@ local CreateText, CreatePictureText, CreateButtonText, Gap, Indent =
     helpers.CreateText, helpers.CreatePictureText, helpers.CreateButtonText, helpers.Gap, helpers.Indent
 
 -- Lays the whole custom condition help page out in the given help frame, top to bottom in the order of the editor's
--- fields. The Evaluation Function text also documents the per-poll cache (getCached) the function receives.
+-- fields.
+-- @param frame table  The help frame the text widgets are added to.
+--
+-- The Evaluation Function text also documents the per-poll cache (getCached) the function receives.
 function addon.layout_custom_condition_options_help(frame)
     local group = frame
 

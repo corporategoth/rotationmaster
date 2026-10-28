@@ -6,6 +6,9 @@
 -- the order its TOC lists (blocks.lua before the packs that expand it).
 local M = {}
 
+-- Tells whether a file can be opened for reading.
+-- @param path string  The file path.
+-- @return boolean  True when it can.
 local function readable(path)
     local file = io.open(path, 'r')
 
@@ -17,6 +20,10 @@ local function readable(path)
     return false
 end
 
+-- Loads Core/builtin_modules.lua, the in-game loader's module and edition catalog, outside the game.
+-- @param root string  The repository root, with a trailing slash or empty for the current directory.
+-- @return table  The BuiltInModules catalog (classes and editions).
+-- @return table  The namespace the loader file populated (it carries GetBuiltInModuleName).
 local function catalog(root)
     local scope = { ipairs = ipairs, type = type }
     scope._G = scope
@@ -27,7 +34,10 @@ local function catalog(root)
     return namespace.BuiltInModules, namespace
 end
 
--- A TOC's file entries, repository-relative, in order.
+-- Lists the file entries of a TOC, repository-relative, in order.
+-- @param toc string  The TOC path, relative to root.
+-- @param root string|nil  The repository root; nil or empty means the current directory.
+-- @return string[]  The paths of the files the TOC lists (blank lines and # comments skipped).
 function M.entries(toc, root)
     root = (root and root ~= '') and (root:gsub('/?$', '/')) or ''
     local dir = toc:match('^(.*)/[^/]+$')
@@ -44,10 +54,14 @@ function M.entries(toc, root)
     return result
 end
 
--- Every class module on disk: {name,class,dir,toc (the unsuffixed fallback),tocs (every TOC),
--- bind,editions={[family]={family,folder,flavors,tocs,files}}}. An edition's files are its
--- primary flavour TOC's block and pack paths (bind.lua excluded); its other flavour TOCs
--- are identical (tests/verify.py).
+-- Lists every class module on disk.
+-- @param root string|nil  The repository root; nil or empty means the current directory.
+-- @return table[]  The modules, each {name, class, dir, toc (the unsuffixed fallback), tocs (every TOC), bind,
+--   editions={[family]={family, folder, flavors, tocs, files}}}.
+-- @return table[]  The editions of the catalog.
+--
+-- An edition's files are its primary flavour TOC's block and pack paths (bind.lua excluded); its other flavour TOCs are
+-- identical (tests/verify.py).
 function M.list(root)
     root = (root and root ~= '') and (root:gsub('/?$', '/')) or ''
     local modules, namespace = catalog(root)
@@ -110,7 +124,10 @@ function M.list(root)
     return result, modules.editions
 end
 
--- Flat block+pack path list. filter: {family=,class=} (either may be omitted).
+-- Lists the block and pack paths of the Built In modules, in load order.
+-- @param filter table|nil  {family=, class=}; either may be omitted, and nil selects everything.
+-- @param root string|nil  The repository root; nil or empty means the current directory.
+-- @return string[]  The flat path list.
 function M.paths(filter, root)
     local result = {}
     local list, editions = M.list(root)
@@ -135,11 +152,16 @@ function M.paths(filter, root)
     return result
 end
 
+-- Tells whether a path is a module's blocks.lua.
+-- @param path string  The file path.
+-- @return boolean  True for a path ending in /blocks.lua.
 function M.isBlock(path)
     return path:match('/blocks%.lua$') ~= nil
 end
 
--- Every module TOC (fallback and flavours): inputs whose bytes decide what loads.
+-- Lists every module TOC (fallback and flavours): inputs whose bytes decide what loads.
+-- @param root string|nil  The repository root; nil or empty means the current directory.
+-- @return string[]  The TOC paths.
 function M.tocs(root)
     local result = {}
 

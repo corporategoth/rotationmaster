@@ -516,6 +516,9 @@ local function callFailed(message)
 end
 
 -- Puts the previous context back and passes the call's results through, so nested Calls keep their own context.
+-- @param previous table|nil  The context to restore.
+-- @param ... any  The call's results.
+-- @return any  The same results (any number).
 local function restore(previous, ...)
     activeContext = previous
     return ...

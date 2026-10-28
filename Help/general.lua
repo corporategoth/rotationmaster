@@ -12,9 +12,11 @@ local color = color
 local helpers = addon.help_funcs
 local CreateText, Gap = helpers.CreateText, helpers.Gap
 
+-- Returns the General page help entries in page order, with optional entries included only when their feature is
+-- present on this client.
+-- @return table[]  The entries, each {id=string, title=string, text=string}.
+--
 -- Field documentation is shared by the native workbench and legacy adapters.
--- Returns the General page help entries { id, title, text } in page order, with optional entries included only when
--- their feature is present on this client.
 function addon:GetGeneralOptionHelp()
     local ordered = {
         { id = "enable", title = L["Enable"], text = L["Help.General.enable"] },
@@ -189,6 +191,7 @@ end
 
 -- Lays out the General page help: an introduction to automatic action requirements, then every field entry as a yellow
 -- title followed by its paragraph.
+-- @param frame table  The help frame the text widgets are added to.
 function addon.layout_primary_options_help(frame)
     frame:AddChild(CreateText(
         L['Actions automatically require a learned spell or carried item, usable resources, cooldown readiness and valid range. Conditions can additionally test other actions.']
@@ -202,6 +205,7 @@ end
 
 -- Lays out the Rotations page help overview as a series of short paragraphs: cards, drafts and Apply/Discard, the
 -- switch and fallback, cooldowns, branches, dragging, Stop, validation and the list/diagram controls.
+-- @param frame table  The help frame the text widgets are added to.
 function addon.layout_rotation_options_help(frame)
     frame:AddChild(CreateText(
         L["Built In and custom rotations use the same cards. Built In rotations are read-only; enable or disable them, inspect their conditions, or Duplicate to edit."]

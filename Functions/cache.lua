@@ -130,6 +130,13 @@ do
             selected = true
 
             if direct then
+                -- Direct-mode replacement for the memoizing call: calls the function straight through, with no
+                -- memoizing.
+                -- @param _ any  The cache table; ignored.
+                -- @param _recordnil any  Whether empty results are stored; ignored.
+                -- @param func function|string  The function to call, or the name of a global function.
+                -- @param ... any  The arguments of the call.
+                -- @return any  The results of func(...), any number of them; nothing when func is not a function.
                 getCachedInternal = function(_, _recordnil, func, ...)
                     if type(func) == 'string' then
                         func = _G[func]

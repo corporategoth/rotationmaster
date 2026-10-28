@@ -10,20 +10,26 @@ local _, addon = ...
 local type, rawget, rawset, pcall = type, rawget, rawset, pcall
 local globals = _G
 
--- Returns the global saved-variables table straight from the RotationMasterDB global (before AceDB has set up
--- addon.db), or nil.
+-- Reads the global saved-variables table straight from the RotationMasterDB global (before AceDB has set up addon.db).
+-- @return table|nil  The saved global table; nil when it is not there.
 local function savedGlobal()
     local saved = rawget(globals, 'RotationMasterDB')
     return type(saved) == 'table' and rawget(saved, 'global') or nil
 end
 
--- Returns the AceDB global table once addon.db exists, or nil before that.
+-- Reads the AceDB global table once addon.db exists.
+-- @return table|nil  The AceDB global table; nil before addon.db exists.
 local function readyGlobal()
     local db = rawget(addon, 'db')
     return type(db) == 'table' and rawget(db, 'global') or nil
 end
 
--- Returns true when the saved choice asks for direct mode.
+-- Tells whether the saved choice asks for direct mode.
+-- @param global any  The global table that holds diagnosticCacheBypass; anything but a table asks for direct mode.
+-- @return boolean  True when direct mode is asked for.
+--
+-- Explicit legacy choices are preserved: false means cached, true means direct. Missing or malformed preferences use
+-- the allocation-light direct default.
 local function directRequested(global)
     -- Preserve explicit legacy choices: false means cached, true means direct.
     -- Missing or malformed preferences use the allocation-light direct default.

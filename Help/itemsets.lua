@@ -9,6 +9,7 @@ local helpers = addon.help_funcs
 local CreateText, Gap = helpers.CreateText, helpers.Gap
 
 -- Returns the help sections for the item list's per-row controls (item, move, delete).
+-- @return table[]  The sections, each {id=string, title=string, text=string}.
 function addon:GetDocument_layout_item_list_help()
     return {
         { id = "list.item", title = L["Item"], text = L["Help.ItemSets.list.item"] },
@@ -21,6 +22,7 @@ function addon:GetDocument_layout_item_list_help()
 end
 
 -- Lays the item-list help out in a frame as a yellow title followed by its paragraph, one gap between each.
+-- @param frame table  The help frame the text widgets are added to.
 function addon.layout_item_list_help(frame)
     for _, entry in ipairs(addon:GetDocument_layout_item_list_help()) do
         frame:AddChild(Gap())
@@ -31,7 +33,8 @@ function addon.layout_item_list_help(frame)
     end
 end
 
--- Returns the Item Sets page help sections { id, title, text }.
+-- Returns the Item Sets page help sections.
+-- @return table[]  The sections, each {id=string, title=string, text=string}.
 function addon:GetDocument_layout_itemsets_options_help()
     return {
         { id = "overview", title = L["Item Sets"], text = L["Help.ItemSets.overview"] },
@@ -56,6 +59,7 @@ function addon:GetDocument_layout_itemsets_options_help()
 end
 
 -- Lays the Item Sets page help out in a frame as a yellow title followed by its paragraph, one gap between each.
+-- @param frame table  The help frame the text widgets are added to.
 function addon.layout_itemsets_options_help(frame)
     for _, entry in ipairs(addon:GetDocument_layout_itemsets_options_help()) do
         frame:AddChild(Gap())
@@ -66,7 +70,9 @@ function addon.layout_itemsets_options_help(frame)
     end
 end
 
--- The native child edits one caller-owned list, not every saved item set.
+-- Returns the help sections for the native item list editor, which edits one caller-owned list, not every saved item
+-- set.
+-- @return table[]  The sections, each {id=string, title=string, text=string}.
 function addon:GetNativeItemListHelp()
     return {
         { id = 'popup.overview', title = L['Editing this list'], text = L['Help.ItemSets.popup.overview'] },

@@ -9,9 +9,11 @@ local color = color
 local helpers = addon.help_funcs
 local CreateText, Gap = helpers.CreateText, helpers.Gap
 
--- Whole paragraphs preserve translation word order and retain distinct units
--- for library glow rates versus RM texture/sequence timer intervals.
--- Returns the Effects page help sections { id, title, text }.
+-- Returns the Effects page help sections.
+-- @return table[]  The sections, each {id=string, title=string, text=string}.
+--
+-- Whole paragraphs preserve translation word order and retain distinct units for library glow rates versus RM
+-- texture/sequence timer intervals.
 function addon:GetDocument_layout_effects_options_help()
     return {
         { id = "overview", title = L["Effects"], text = L["Help.Effects.overview"] },
@@ -62,6 +64,7 @@ function addon:GetDocument_layout_effects_options_help()
 end
 
 -- Lays the Effects help document out in a frame as a yellow title followed by its paragraph, one gap between each.
+-- @param frame table  The help frame the text widgets are added to.
 function addon.layout_effects_options_help(frame)
     for _, entry in ipairs(addon:GetDocument_layout_effects_options_help()) do
         frame:AddChild(Gap())

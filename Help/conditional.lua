@@ -15,6 +15,7 @@ local CreateText, CreatePictureText, Indent, Gap =
     helpers.CreateText, helpers.CreatePictureText, helpers.Indent, helpers.Gap
 
 -- Help for an All (AND) group: matching rule and how card selection and grouping work.
+-- @param frame table  The help frame the text widgets are added to.
 function addon.layout_condition_and_help(frame)
     local group = frame
 
@@ -30,6 +31,7 @@ function addon.layout_condition_and_help(frame)
 end
 
 -- Help for an Any (OR) group: matching rule and how card selection and grouping work.
+-- @param frame table  The help frame the text widgets are added to.
 function addon.layout_condition_or_help(frame)
     local group = frame
 
@@ -45,6 +47,7 @@ function addon.layout_condition_or_help(frame)
 end
 
 -- Help for a NOT condition: it negates its sub-condition.
+-- @param frame table  The help frame the text widgets are added to.
 function addon.layout_condition_not_help(frame)
     local group = frame
 
@@ -55,6 +58,7 @@ function addon.layout_condition_not_help(frame)
 end
 
 -- Help for the spell field: the icon slot, the exact-rank option (only on clients with ranks) and the name input.
+-- @param frame table  The help frame the text widgets are added to.
 function addon.layout_condition_spellwidget_help(frame)
     local group = frame
 
@@ -94,6 +98,7 @@ function addon.layout_condition_spellwidget_help(frame)
 end
 
 -- Help for the spell-name field: the icon slot and the name input (no rank option).
+-- @param frame table  The help frame the text widgets are added to.
 function addon.layout_condition_spellnamewidget_help(frame)
     local group = frame
 
@@ -121,6 +126,7 @@ function addon.layout_condition_spellnamewidget_help(frame)
 end
 
 -- Help for the item field: ordered item lists, pre-defined versus custom item sets, and the Edit button.
+-- @param frame table  The help frame the text widgets are added to.
 function addon.layout_condition_itemwidget_help(frame)
     local group = frame
 
@@ -170,6 +176,10 @@ function addon.layout_condition_itemwidget_help(frame)
 end
 
 -- Help for an operator field: how name is compared with value, then what value means (desc).
+-- @param frame table  The help frame the text widgets are added to.
+-- @param name string  The name of the field being compared.
+-- @param value string  The name of the value field it is compared with.
+-- @param desc string  The description of the value field.
 function addon.layout_condition_operatorwidget_help(frame, name, value, desc)
     local group = frame
 
@@ -193,6 +203,10 @@ function addon.layout_condition_operatorwidget_help(frame, name, value, desc)
 end
 
 -- Help for a percent operator field; the same text as the plain operator help, with the percent value described.
+-- @param frame table  The help frame the text widgets are added to.
+-- @param name string  The name of the field being compared.
+-- @param value string  The name of the value field it is compared with.
+-- @param desc string  The description of the value field.
 function addon.layout_condition_operatorpercentwidget_help(frame, name, value, desc)
     local group = frame
 
@@ -216,6 +230,7 @@ function addon.layout_condition_operatorpercentwidget_help(frame, name, value, d
 end
 
 -- Help for the unit field: the unit the condition tests.
+-- @param frame table  The help frame the text widgets are added to.
 function addon.layout_condition_unitwidget_help(frame)
     local group = frame
 
@@ -229,7 +244,10 @@ function addon.layout_condition_unitwidget_help(frame)
 end
 
 -- Help note for casting conditions: spells match by ID, saved names keep matching by name, and an unreadable cast is
--- unavailable. The sentence about exact ranks is included only on clients that have spell ranks.
+-- unavailable.
+-- @param frame table  The help frame the text widgets are added to.
+--
+-- The sentence about exact ranks is included only on clients that have spell ranks.
 function addon.layout_condition_castspell_help(frame)
     frame:AddChild(Gap())
 
@@ -244,7 +262,10 @@ function addon.layout_condition_castspell_help(frame)
     end
 end
 
--- Help note for the exact-rank option of aura conditions; adds nothing on clients without spell ranks.
+-- Help note for the exact-rank option of aura conditions.
+-- @param frame table  The help frame the text widgets are added to.
+--
+-- Adds nothing on clients without spell ranks.
 function addon.layout_condition_aurarank_help(frame)
     if not addon:ClientHasSpellRanks() then
         return

@@ -20,6 +20,8 @@ local ownedFault = {}
 -- ============================================================================
 
 -- Returns a shallow copy of a table.
+-- @param source table  The table to copy.
+-- @return table  The copy.
 local function copy(source)
     local result = {}
 
@@ -30,17 +32,23 @@ local function copy(source)
     return result
 end
 
--- True for a real finite number (not NaN, not infinite).
+-- Tells whether a value is a real finite number (not NaN, not infinite).
+-- @param value any  The value to test.
+-- @return boolean  True when it is.
 local function finite(value)
     return type(value) == 'number' and value == value and value ~= math.huge and value ~= -math.huge
 end
 
--- True for a positive whole number.
+-- Tells whether a value is a positive whole number.
+-- @param value any  The value to test.
+-- @return boolean  True when it is.
 local function positiveInteger(value)
     return finite(value) and value > 0 and value % 1 == 0
 end
 
--- The answer of every reader when no receipt can be given, carrying the reason code.
+-- Builds the answer of every reader when no receipt can be given.
+-- @param reason string  The reason code.
+-- @return table  {status="unavailable", reason=reason}.
 local function unavailable(reason)
     return { status = 'unavailable', reason = reason }
 end
@@ -49,10 +57,13 @@ end
 -- Questie service
 -- ============================================================================
 
--- Creates the Questie service. options (all optional, used by tests): resolve() describing the provider, now() for
--- the clock, readable(value) for the readability check, onChange(status) called when the status changes.
--- Every asynchronous piece of work carries the epoch (generation) it started in and is dropped if the service has
--- been refreshed, disabled or disposed since; provider callbacks never run nested (callbackBusy).
+-- Creates the Questie service.
+-- @param options table|nil  All fields optional, used by tests: resolve() describing the provider, now() for the clock,
+--   readable(value) for the readability check, onChange(status) called when the status changes.
+-- @return table  The service (GetStatus, Refresh, SetEnabled, GetRecentUpdate, Dispose).
+--
+-- Every asynchronous piece of work carries the epoch (generation) it started in and is dropped if the service has been
+-- refreshed, disabled or disposed since; provider callbacks never run nested (callbackBusy).
 function addon.Integrations.NewQuestie(options)
     options = options or {}
     local resolve, now, readable, onChange = options.resolve, options.now, options.readable, options.onChange
@@ -62,7 +73,8 @@ function addon.Integrations.NewQuestie(options)
     local binding, receipts, count, lastClock, sequence = nil, {}, 0, nil, 0
     local notifying, callbackBusy = false, false
 
-    -- Returns a new table with weak keys.
+    -- Creates a new table with weak keys.
+    -- @return table  The table.
     local function weakKeys()
         return setmetatable({}, { __mode = 'k' })
     end
@@ -92,7 +104,8 @@ function addon.Integrations.NewQuestie(options)
         lastClock = nil
     end
 
-    -- Starts a new epoch, which invalidates all work in flight, and drops the binding and receipts. Returns the epoch.
+    -- Starts a new epoch, which invalidates all work in flight, and drops the binding and receipts.
+    -- @return number  The new epoch.
     local function retire()
         epoch = epoch + 1
         failureOwner = nil
@@ -102,6 +115,7 @@ function addon.Integrations.NewQuestie(options)
     end
 
     -- Aborts the current work (with the private "retired" marker) when epoch g is no longer the live one.
+    -- @param g number  The epoch the work belongs to.
     local function guard(g)
         if disposed or not enabled or epoch ~= g then
             error(retired, 0)
@@ -109,12 +123,19 @@ function addon.Integrations.NewQuestie(options)
     end
 
     -- Aborts the current work with an owned failure; execute turns it into the published state and reason.
+    -- @param state string  The state to publish.
+    -- @param reason string  The reason code to publish.
     local function fault(state, reason)
         error({ owner = ownedFault, state = state, reason = reason }, 0)
     end
 
-    -- Calls fn under pcall between two guards: a throw becomes an owned fault with the given reason, and a call that
-    -- retired the epoch (a provider calling back into this service) aborts the work.
+    -- Calls fn under pcall between two guards.
+    -- @param g number  The epoch the work belongs to; a call that retired it (a provider calling back into this
+    --   service) aborts the work.
+    -- @param fn function|nil  The function to call; anything else faults.
+    -- @param reason string  The reason code of the fault raised when fn is missing or throws.
+    -- @param ... any  The arguments passed to fn.
+    -- @return any  The first result of fn.
     local function call(g, fn, reason, ...)
         guard(g)
 
@@ -132,7 +153,10 @@ function addon.Integrations.NewQuestie(options)
         return result
     end
 
-    -- Returns value after proving it is readable (not a secret); a restricted value faults as "client-restricted".
+    -- Proves a value readable (not a secret).
+    -- @param g number  The epoch the work belongs to.
+    -- @param value any  The value to check.
+    -- @return any  The value unchanged; a restricted value faults as "client-restricted".
     local function read(g, value)
         local accepted
 
@@ -151,12 +175,18 @@ function addon.Integrations.NewQuestie(options)
     end
 
     -- Reads object[key] without metamethods and proves it readable.
+    -- @param g number  The epoch the work belongs to.
+    -- @param object table  The table to read from.
+    -- @param key any  The key.
+    -- @return any  The value (a restricted value faults as "client-restricted").
     local function field(g, object, key)
         return read(g, rawget(object, key))
     end
 
     -- Describes Questie from the live client: client family, whether it is loaded, its version and its public API
     -- table.
+    -- @param g number  The epoch the work belongs to.
+    -- @return table  {loaded=boolean, api=table|nil, version=string|nil, family=string}.
     local function defaultResolve(g)
         local platform = addon.Platform
         local info = call(g, platform and platform.GetClientInfo, 'resolver-error', platform)
@@ -191,8 +221,10 @@ function addon.Integrations.NewQuestie(options)
     end
 
     -- Resolves the provider and validates its whole contract: registration functions, readiness flag and the quest
-    -- update reason enum (it must match the four values RM maps). Returns a result with state and reason (missing,
-    -- incompatible, waiting or available) and, when usable, the API and its functions; an invalid shape faults.
+    -- update reason enum (it must match the four values RM maps).
+    -- @param g number  The epoch the work belongs to.
+    -- @return table  A result with state and reason (missing, incompatible, waiting or available) and, when usable, the
+    --   API and its functions (api, readyFn, updateFn, ready); an invalid shape faults.
     local function probe(g)
         local source = resolve and call(g, resolve, 'resolver-error') or defaultResolve(g)
         read(g, source)
@@ -274,8 +306,11 @@ function addon.Integrations.NewQuestie(options)
         return result
     end
 
-    -- Rebuilds the status table for a new state and reason (taking version and family from source when given).
-    -- Returns true when anything changed.
+    -- Rebuilds the status table for a new state and reason.
+    -- @param state string  The new state.
+    -- @param reason string  The new reason code.
+    -- @param source table|nil  When given, the version and family are taken from it.
+    -- @return boolean  True when anything changed.
     local function cache(state, reason, source)
         local nextStatus = copy(status)
         nextStatus.state = state
@@ -308,8 +343,12 @@ function addon.Integrations.NewQuestie(options)
         return changed
     end
 
-    -- Calls onChange with a copy of the status, once at a time. A failing notification retires the service into an
-    -- "error" status, unless a newer operation or disposal has already replaced this one.
+    -- Calls onChange with a copy of the status, once at a time.
+    -- @param g number|nil  The epoch the notification belongs to; nothing is changed if it was superseded.
+    -- @param owner number|nil  The failure owner recorded when the notification fails; defaults to g.
+    --
+    -- A failing notification retires the service into an "error" status, unless a newer operation or disposal has
+    -- already replaced this one.
     local function notify(g, owner)
         if not onChange or notifying then
             return
@@ -333,7 +372,12 @@ function addon.Integrations.NewQuestie(options)
         end
     end
 
-    -- Publishes a new status for epoch g (notifying on change) and returns a copy of it.
+    -- Publishes a new status for an epoch (notifying on change).
+    -- @param g number  The epoch the work belongs to.
+    -- @param state string  The new state.
+    -- @param reason string  The new reason code.
+    -- @param source table|nil  When given, the version and family are taken from it.
+    -- @return table  A copy of the status.
     local function publish(g, state, reason, source)
         guard(g)
 
@@ -345,8 +389,13 @@ function addon.Integrations.NewQuestie(options)
         return copy(status)
     end
 
-    -- Runs body(g) under pcall and is the only boundary errors cross. A superseded run returns nil quietly; any other
-    -- failure retires the service and publishes its owned state and reason (arbitrary errors become "adapter-error").
+    -- Runs body(g) under pcall and is the only boundary errors cross.
+    -- @param g number  The epoch the work belongs to.
+    -- @param body function  The work, called as body(g).
+    -- @return any|nil  The body's result; nil for a superseded run or a failure.
+    --
+    -- A superseded run returns nil quietly; any other failure retires the service and publishes its owned state and
+    -- reason (arbitrary errors become "adapter-error").
     local function execute(g, body)
         local ok, result = pcall(body, g)
 
@@ -372,7 +421,10 @@ function addon.Integrations.NewQuestie(options)
         return nil
     end
 
-    -- Reads the clock; a non-finite value or one that runs backwards faults, so that expiry arithmetic stays sound.
+    -- Reads the clock.
+    -- @param g number  The epoch the work belongs to.
+    -- @return number  The time; a non-finite value or one that runs backwards faults, so that expiry arithmetic stays
+    --   sound.
     local function clock(g)
         local value
 
@@ -390,7 +442,10 @@ function addon.Integrations.NewQuestie(options)
         return value
     end
 
-    -- True when a freshly probed source is the same provider (same API table, functions and family) as the binding.
+    -- Tells whether a freshly probed source is the same provider (same API table, functions and family) as the binding.
+    -- @param source table  The probed source.
+    -- @param current table|nil  The current binding.
+    -- @return boolean|nil  True when they are the same; false or nil otherwise.
     local function same(source, current)
         return current
             and rawequal(source.api, current.api)
@@ -399,8 +454,14 @@ function addon.Integrations.NewQuestie(options)
             and source.family == current.family
     end
 
-    -- Probes again before trusting a callback; if the provider changed (or is not ready when requireReady), retires the
-    -- service with "source-changed" and aborts. Returns the fresh source.
+    -- Probes again before trusting a callback.
+    -- @param g number  The epoch the work belongs to.
+    -- @param current table  The current binding.
+    -- @param requireReady boolean  True to also require that the provider is ready.
+    -- @return table  The fresh source.
+    --
+    -- If the provider changed (or is not ready when requireReady), retires the service with "source-changed" and
+    -- aborts.
     local function verify(g, current, requireReady)
         local source = probe(g)
 
@@ -417,8 +478,12 @@ function addon.Integrations.NewQuestie(options)
     local attachUpdates, readyCallback, updateCallback
 
     -- Returns the immutable pair of registration functions recorded for this API table the first time it was seen.
-    -- A changed pair, an earlier attempt whose outcome is unknown, or a failed attempt faults: RM never registers
-    -- twice with the same provider, because the contract it consumes has no unregister call.
+    -- @param g number  The epoch the work belongs to.
+    -- @param source table  The probed source (api, readyFn, updateFn).
+    -- @return table  {readyFn=function, updateFn=function}.
+    --
+    -- A changed pair, an earlier attempt whose outcome is unknown, or a failed attempt faults: RM never registers twice
+    -- with the same provider, because the contract it consumes has no unregister call.
     local function contractFor(g, source)
         local api = source.api
         local contract = contracts[api]
@@ -442,8 +507,12 @@ function addon.Integrations.NewQuestie(options)
         return contract
     end
 
-    -- Registers the quest update callback with the provider, once per API table (the attempt is recorded before the
-    -- call, so a retry after a failure or a refresh never registers a second time).
+    -- Registers the quest update callback with the provider, once per API table.
+    -- @param g number  The epoch the work belongs to.
+    -- @param current table  The current binding.
+    -- @param contract table  The registration functions recorded for the API.
+    --
+    -- The attempt is recorded before the call, so a retry after a failure or a refresh never registers a second time.
     attachUpdates = function(g, current, contract)
         guard(g)
 
@@ -474,7 +543,11 @@ function addon.Integrations.NewQuestie(options)
     end
 
     -- Provider callback: Questie became ready. Re-verifies the provider, attaches the update callback and publishes
-    -- "available". Ignored when it is not for the current binding or runs nested.
+    -- "available".
+    -- @param api table  The API table the callback was registered with.
+    -- @param contract table  The registration functions recorded for the API.
+    --
+    -- Ignored when it is not for the current binding or runs nested.
     readyCallback = function(api, contract)
         if
             callbackBusy
@@ -509,9 +582,15 @@ function addon.Integrations.NewQuestie(options)
         callbackBusy = false
     end
 
-    -- Provider callback: a quest update (quest id, optional objective index, trigger reason 1 to 4). Validates every
-    -- argument, then stores a receipt for 30 seconds, evicting expired ones and, at 64, the oldest. Anything invalid
-    -- is silently ignored.
+    -- Provider callback: a quest update. Validates every argument, then stores a receipt for 30 seconds, evicting
+    -- expired ones and, at 64, the oldest.
+    -- @param api table  The API table the callback was registered with.
+    -- @param contract table  The registration functions recorded for the API.
+    -- @param id number  The quest ID.
+    -- @param index number|nil  The objective index.
+    -- @param reason number  The trigger reason, 1 to 4.
+    --
+    -- Anything invalid is silently ignored.
     updateCallback = function(api, contract, id, index, reason)
         if
             callbackBusy
@@ -600,13 +679,15 @@ function addon.Integrations.NewQuestie(options)
         callbackBusy = false
     end
 
-    -- Returns a copy of the status { state, reason, enabled, provider, version, family, ... }.
+    -- Returns a copy of the status.
+    -- @return table  {state, reason, enabled, provider, version, family, ...}.
     function service:GetStatus()
         return copy(status)
     end
 
-    -- Probes the provider again and (re)binds to it, publishing the outcome. Returns a copy of the status, or nil when
-    -- the service is disposed or a newer operation superseded this one.
+    -- Probes the provider again and (re)binds to it, publishing the outcome.
+    -- @return table|nil  A copy of the status; nil when the service is disposed or a newer operation superseded this
+    --   one.
     function service:Refresh()
         if disposed then
             return nil
@@ -689,8 +770,10 @@ function addon.Integrations.NewQuestie(options)
         return result or copy(status)
     end
 
-    -- Turns the integration on (which refreshes it) or off (which drops the binding and receipts). Returns true, or
-    -- false and a reason code.
+    -- Turns the integration on (which refreshes it) or off (which drops the binding and receipts).
+    -- @param value boolean  True to turn it on, false to turn it off.
+    -- @return boolean  True when applied.
+    -- @return string|nil  The reason code when false ("disposed" or "invalid-enabled"); nil when true.
     function service:SetEnabled(value)
         if disposed then
             return false, 'disposed'
@@ -712,9 +795,12 @@ function addon.Integrations.NewQuestie(options)
         return true
     end
 
-    -- Returns the receipt for quest id when Questie reported an update in the last 30 seconds, otherwise an
-    -- "unavailable" record with the reason ("no-recent-update", "expired", ...). A receipt only says an update
-    -- arrived, not what the quest's progress is.
+    -- Looks up the receipt for a quest.
+    -- @param id number  The quest ID.
+    -- @return table  The receipt when Questie reported an update in the last 30 seconds; otherwise an "unavailable"
+    --   record {status="unavailable", reason} with the reason ("no-recent-update", "expired", ...).
+    --
+    -- A receipt only says an update arrived, not what the quest's progress is.
     function service:GetRecentUpdate(id)
         if disposed then
             return unavailable('disposed')
