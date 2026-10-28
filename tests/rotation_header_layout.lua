@@ -17,6 +17,8 @@ local audit = dofile('tests/fixtures/layout_audit.lua')
 local test, finish = F.suite()
 local WIDTHS = { min = 800 - 24 - 210 - 18, normal = 1120 - 24 - 270 - 18 }
 local HELP_RESERVE = 22
+-- Every game language the addon is translated into.
+local LANGUAGES = {'enUS', 'deDE', 'esES', 'esMX', 'frFR', 'itIT', 'koKR', 'ptBR', 'ruRU', 'zhCN', 'zhTW'}
 
 local function characters(text)
     local n = 0
@@ -49,9 +51,9 @@ local function custom(f, spec, name)
 end
 
 local function open(language, case, width)
-    local f = T.new({ level = 10, specIndex = 1 })
+    -- The fixture boots the addon in the game language, the way the client does.
+    local f = T.new({ level = 10, specIndex = 1, locale = language })
     local a = f.addon
-    -- (The real-TOC fixture applies the client language only when it boots, so these passes measure English; the loop is kept for when it does not.)
     local id
 
     if case == 'default' then
@@ -85,6 +87,8 @@ local function open(language, case, width)
         end
     end
 
+    -- The picker measured its wordings when the pane was built, before the text measure above was installed.
+    pane.specWidth = nil
     pane:Layout()
     return f, pane
 end
@@ -182,8 +186,10 @@ local function check(pane, label, case, nameMinimum)
         label .. ': row 1 is not one line'
     )
 
+    -- (The picker grows by up to 40 px in a language with long wordings, and the name gives that room up: 180 px
+    -- still shows about thirty characters of a name.)
     assert(
-        name.right - name.left >= (nameMinimum or 200),
+        name.right - name.left >= (nameMinimum or 180),
         label .. ': the name field is too small: ' .. (name.right - name.left)
     )
 
@@ -285,7 +291,7 @@ local function check(pane, label, case, nameMinimum)
     return byName, line(k), idLine, resetLine
 end
 
-for _, language in ipairs({ 'enUS', 'deDE', 'ruRU' }) do
+for _, language in ipairs(LANGUAGES) do
     for _, size in ipairs({ 'min', 'normal' }) do
         test(
             language
@@ -338,7 +344,7 @@ end
 test(
     'the kind slot is one rectangle: the Read-Only pill and Undo + Redo fill the same space, and the rest of row 2 does not move',
     function()
-        for _, language in ipairs({ 'enUS', 'deDE', 'ruRU' }) do
+        for _, language in ipairs(LANGUAGES) do
             for _, size in ipairs({ 'min', 'normal' }) do
                 local label = language .. ' ' .. size
                 local _, builtin = open(language, 'builtin', WIDTHS[size])
@@ -380,7 +386,7 @@ test(
 test(
     'the right cluster (ID, Priority, Enabled, Delete) is flush right and does not move when Reset to default appears',
     function()
-        for _, language in ipairs({ 'enUS', 'deDE', 'ruRU' }) do
+        for _, language in ipairs(LANGUAGES) do
             for _, size in ipairs({ 'min', 'normal' }) do
                 local label = language .. ' ' .. size
                 local _, plain = open(language, 'builtin', WIDTHS[size])
@@ -438,11 +444,14 @@ test(
 test(
     'the picker holds the longest specialization wording at its fixed width, and every row-1 control fits at the minimum',
     function()
-        for _, language in ipairs({ 'enUS', 'deDE', 'ruRU' }) do
+        for _, language in ipairs(LANGUAGES) do
             local f, pane = open(language, 'mine', WIDTHS.min)
             local a = f.addon
             local width = pane.specButton:GetWidth()
-            assert(width == 172, 'the picker width changed: ' .. width)
+            -- 172 where every wording fits (English must not move), wider only as far as a longer wording needs, and
+            -- never past the cap, so the name field keeps its room (check() below proves it at the minimum).
+            assert(width >= 172 and width <= 212, language .. ': the picker width is out of its bounds: ' .. width)
+            assert(language ~= 'enUS' or width == 172, 'the English picker moved: ' .. width)
             local texts = {}
 
             for _, entry in ipairs(a:GetRotationSpecEntries()) do
@@ -462,10 +471,13 @@ test(
             end
 
             -- The caption starts after the chevron (26 px) and keeps 4 px at the right; the client's font averages
-            -- under 6 px a character.
+            -- under 6 px a character (this test's own measure, 7 px, only makes the picker grow earlier).
             for _, text in ipairs(texts) do
                 assert(characters(text) * 6 <= width - 30, language .. ': "' .. text .. '" does not fit the picker')
             end
+
+            -- Every other control of row 1 still fits beside the (possibly wider) picker.
+            check(pane, language .. ' picker', 'mine', 60)
         end
     end
 )

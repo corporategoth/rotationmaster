@@ -864,5 +864,191 @@ test('the event frame listens for PLAYER_ENTERING_WORLD and the game dispatching
     )
 end)
 
+-- The disabled-rotation and disabled-condition options ------------------------------
+-- A disabled condition is a condition node with disabled == true (the evaluator treats it as a match and the
+-- description prints nothing for it); everything under it goes with it.
+local function optionFixture()
+    local _, a = fixture()
+    a.db.profile.tooltip_limit = 10
+
+    -- 91403 is a step in an enabled and in a disabled rotation; 91042 and 91043 only appear in conditions, the second
+    -- one under a disabled condition, and 91044 under a disabled AND group that holds a live-looking child.
+    local conditions = {
+        type = 'AND',
+        value = {
+            { type = 'SPELL_AVAIL', spell = 91042 },
+            { type = 'SPELL_AVAIL', spell = 91043, disabled = true },
+            {
+                type = 'AND',
+                disabled = true,
+                value = { { type = 'SPELL_AVAIL', spell = 91044 } },
+            },
+        },
+    }
+
+    custom(a, 'on', body('Alpha', { step('a', 91403, { conditions = conditions }) }))
+    custom(a, 'off', body('Beta', { step('a', 91403) }, nil, { disabled = true }))
+    custom(a, 'onlyoff', body('Gamma', { step('a', 91042) }, nil, { disabled = true }))
+    return a, a.TooltipIntegration
+end
+
+local function apply(a, settings)
+    for key, value in pairs(settings) do
+        a.db.profile[key] = value
+    end
+
+    a:RefreshTooltipIntegration()
+end
+
+local function rotationText(m, id)
+    local out = lines(m, 'spell', id)
+    return out and out[#out] or nil
+end
+
+test('the new options default to today\'s output: disabled rotations listed, disabled conditions counted', function()
+    local a, m = optionFixture()
+    local settings = a:GetTooltipSettings()
+    assert(settings.disabledRotations == true and settings.excludeDisabledConditions == false)
+
+    assert(
+        a.db.profile.tooltip_disabled_rotations == true and a.db.profile.tooltip_exclude_disabled_conditions == false
+    )
+
+    assert(rotationText(m, 91403) == 'Rotation Master rotations: Alpha, Beta (disabled)', rotationText(m, 91403))
+    -- Conditions are off, so a spell named only in a condition shows nothing.
+    assert(rotationText(m, 91042) == 'Rotation Master rotations: Gamma (disabled)', 'a step in a disabled rotation')
+    assert(rotationText(m, 91043) == nil)
+end)
+
+test(
+    'Include disabled rotations off hides switched-off rotations and leaves them out of the (+N more) count',
+    function()
+        local a, m = optionFixture()
+        apply(a, { tooltip_disabled_rotations = false })
+        assert(rotationText(m, 91403) == 'Rotation Master rotations: Alpha', rotationText(m, 91403))
+        assert(rotationText(m, 91042) == nil, 'a spell used only by a disabled rotation shows no line')
+        apply(a, { tooltip_limit = 1 })
+        custom(a, 'two', body('Delta', { step('a', 91403) }))
+        custom(a, 'three', body('Epsilon', { step('a', 91403) }))
+        assert(rotationText(m, 91403) == 'Rotation Master rotations: Alpha (+2 more)', rotationText(m, 91403))
+        apply(a, { tooltip_disabled_rotations = true })
+        assert(rotationText(m, 91403) == 'Rotation Master rotations: Alpha (+3 more)', rotationText(m, 91403))
+    end
+)
+
+test('Include disabled rotations is true when the key was never saved, and only false hides', function()
+    local a, m = optionFixture()
+    a.db.profile.tooltip_disabled_rotations = nil
+    a:RefreshTooltipIntegration()
+    assert(rotationText(m, 91403):find('Beta (disabled)', 1, true), 'nil counts as on')
+    apply(a, { tooltip_disabled_rotations = false })
+    assert(not rotationText(m, 91403):find('Beta', 1, true))
+end)
+
+test(
+    'Exclude disabled conditions leaves disabled condition nodes, and what is under them, out of the counts',
+    function()
+        local a, m = optionFixture()
+        apply(a, { tooltip_conditions = true })
+        assert(rotationText(m, 91042) == 'Rotation Master rotations: Alpha, Gamma (disabled)', rotationText(m, 91042))
+        assert(rotationText(m, 91043) == 'Rotation Master rotations: Alpha', 'off: a disabled condition still counts')
+
+        assert(
+            rotationText(m, 91044) == 'Rotation Master rotations: Alpha',
+            'off: so does what is under a disabled group'
+        )
+
+        apply(a, { tooltip_exclude_disabled_conditions = true })
+
+        assert(
+            rotationText(m, 91042) == 'Rotation Master rotations: Alpha, Gamma (disabled)',
+            'a live condition still counts'
+        )
+
+        assert(rotationText(m, 91043) == nil, 'a disabled condition is left out')
+        assert(rotationText(m, 91044) == nil, 'a disabled group takes its children with it')
+        assert(rotationText(m, 91403) == 'Rotation Master rotations: Alpha, Beta (disabled)', 'steps are unaffected')
+    end
+)
+
+test('Exclude disabled conditions does nothing while conditions are not counted', function()
+    local a, m = optionFixture()
+    apply(a, { tooltip_exclude_disabled_conditions = true })
+    assert(rotationText(m, 91043) == nil and rotationText(m, 91042) == 'Rotation Master rotations: Gamma (disabled)')
+    apply(a, { tooltip_exclude_disabled_conditions = false })
+    assert(rotationText(m, 91043) == nil, 'conditions are still not counted')
+end)
+
+test('every combination of the two options and Include rotation conditions gives the expected line', function()
+    local a, m = optionFixture()
+
+    -- spell 91042 (live condition in Alpha, a step of disabled Gamma); 91043 (disabled condition in Alpha)
+    for _, conditions in ipairs({ false, true }) do
+        for _, disabledRotations in ipairs({ false, true }) do
+            for _, excludeDisabled in ipairs({ false, true }) do
+                apply(a, {
+                    tooltip_conditions = conditions,
+                    tooltip_disabled_rotations = disabledRotations,
+                    tooltip_exclude_disabled_conditions = excludeDisabled,
+                })
+
+                local names = {}
+
+                if conditions then
+                    names[#names + 1] = 'Alpha'
+                end
+                if disabledRotations then
+                    names[#names + 1] = 'Gamma (disabled)'
+                end
+
+                local want = #names > 0 and 'Rotation Master rotations: ' .. table.concat(names, ', ') or nil
+
+                local label = 'conditions='
+                    .. tostring(conditions)
+                    .. ' disabled='
+                    .. tostring(disabledRotations)
+                    .. ' exclude='
+                    .. tostring(excludeDisabled)
+
+                assert(rotationText(m, 91042) == want, label .. ': ' .. tostring(rotationText(m, 91042)))
+                local counted = conditions and not excludeDisabled and 'Rotation Master rotations: Alpha' or nil
+
+                assert(
+                    rotationText(m, 91043) == counted,
+                    label .. ' (disabled condition): ' .. tostring(rotationText(m, 91043))
+                )
+            end
+        end
+    end
+end)
+
+test(
+    'the master switch off hides everything whatever the new options say; the options never widen the specialization',
+    function()
+        local a, m = optionFixture()
+        apply(a, { tooltips = false, tooltip_disabled_rotations = true, tooltip_conditions = true })
+        assert(m:Lines('spell', 91403) == nil and not a:GetTooltipSettings().rotations)
+        apply(a, { tooltips = true })
+        -- A rotation for another specialization stays out with the disabled option on, and a disabled one too.
+        custom(a, 'other', body('Elsewhere', { step('a', 91403) }, nil, { specs = { 999999 } }))
+        custom(a, 'otheroff', body('Elsewhere off', { step('a', 91403) }, nil, { specs = { 999999 }, disabled = true }))
+        assert(rotationText(m, 91403) == 'Rotation Master rotations: Alpha, Beta (disabled)', rotationText(m, 91403))
+        apply(a, { tooltip_disabled_rotations = false })
+        assert(rotationText(m, 91403) == 'Rotation Master rotations: Alpha', rotationText(m, 91403))
+    end
+)
+
+test('the new options reach a rotation edit: toggling Exclude disabled conditions rebuilds the index once', function()
+    local a, m = optionFixture()
+    apply(a, { tooltip_conditions = true })
+    rotationText(m, 91042)
+    local first = m.uses
+    rotationText(m, 91043)
+    assert(m.uses == first, 'no rebuild without a change')
+    apply(a, { tooltip_exclude_disabled_conditions = true })
+    rotationText(m, 91043)
+    assert(m.uses ~= first and m.uses.excludeDisabled == true, 'the index follows the option')
+end)
+
 print(string.format('%d passed, %d failed', pass, fail))
 os.exit(fail > 0 and 1 or 0)

@@ -987,4 +987,31 @@ test('item field edits and deletion use canonical copies with private history an
     local stale=card(pane,'optional').fieldControls.item1;pane:Release();stale:Fire('OnEnterPressed','5515')
     assert(pane.workspace:Snapshot().cooldowns[1].action[1]==5514 and saved.action==original)
 end)
+test('the step type menu offers Blizzard suggestion only where the client has the Assisted Combat API or the step already is one',function()
+    -- Opens the type menu of a rotation step and returns the values it offers.
+    local function offered(f,parent,missingAPI,stepType)
+        local a=f.addon;local shown
+        local create=a.CreateWorkbenchSelector
+        a.CreateWorkbenchSelector=function(self,...)
+            local wrapper=create(self,...);local open=wrapper.Open
+            wrapper.Open=function(w,button,entries,...) shown={};for _,e in ipairs(entries) do shown[#shown+1]=e.value end;return open(w,button,entries,...) end
+            return wrapper
+        end
+        a.Platform.GetAssistedAvailability=function() return missingAPI and {available=false,reason='missing-api'} or {available=true} end
+        local value=a:GetEditableRotation(0,'mine');value.rotation[2]={id='probe',type=stepType,conditions={}}
+        local pane=assert(a:CreateRotationEditor(parent,0,'mine'))
+        local c=card(pane,'probe');c.action:Click();c.fieldPool.choices[1]:Click()
+        a.CreateWorkbenchSelector=create
+        local set={};for _,v in ipairs(shown or {}) do set[v]=true end
+        return set
+    end
+    local f,parent=fixture();local menu=offered(f,parent,true,'stop')
+    assert(menu.spell and menu.stop and not menu.assisted,'a client without the API was offered the assisted step')
+    f,parent=fixture();menu=offered(f,parent,false,'stop')
+    assert(menu.spell and menu.stop and menu.assisted,'a client with the API was not offered the assisted step')
+    f,parent=fixture();menu=offered(f,parent,true,'assisted')
+    assert(menu.assisted,'an existing assisted step lost its own type from the menu')
+    f,parent=fixture();f.addon.Platform=nil
+    local a=f.addon;assert(a:HasAssistedCombatAPI()==false,'a missing platform must read as no API')
+end)
 finish()

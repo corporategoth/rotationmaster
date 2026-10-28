@@ -603,35 +603,69 @@ function addon:BuildGeneralSettings(p)
 
     local tooltipsOn = profile.tooltips ~= false
 
-    p:Check('tooltips', L['Show Rotation Master in tooltips'], tooltipsOn, function(v)
-        profile.tooltips = v
-        tooltipsChanged()
-        p:Draw()
-    end)
-
-    local tooltipChecks = {
-        p:Check('tooltip_itemsets', L['List item sets in item tooltips'], profile.tooltip_itemsets ~= false, function(v)
-            profile.tooltip_itemsets = v
-            tooltipsChanged()
-        end),
-        p:Check(
-            'tooltip_rotations',
-            L['List rotations in spell and item tooltips'],
-            profile.tooltip_rotations ~= false,
-            function(v)
+    -- A grid, two to a row: the master switch with disabled rotations, the condition options, then the two lines.
+    local boxes = p:CheckGrid({
+        {
+            key = 'tooltips',
+            caption = L['Show Rotation Master in tooltips'],
+            value = tooltipsOn,
+            changed = function(v)
+                profile.tooltips = v
+                tooltipsChanged()
+                p:Draw()
+            end,
+        },
+        {
+            key = 'tooltip_disabled_rotations',
+            caption = L['Include disabled rotations'],
+            value = profile.tooltip_disabled_rotations ~= false,
+            changed = function(v)
+                profile.tooltip_disabled_rotations = v
+                tooltipsChanged()
+            end,
+        },
+        {
+            key = 'tooltip_conditions',
+            caption = L['Include rotation conditions'],
+            value = profile.tooltip_conditions == true,
+            changed = function(v)
+                profile.tooltip_conditions = v
+                tooltipsChanged()
+            end,
+        },
+        {
+            key = 'tooltip_exclude_disabled_conditions',
+            caption = L['Exclude disabled conditions'],
+            value = profile.tooltip_exclude_disabled_conditions == true,
+            changed = function(v)
+                profile.tooltip_exclude_disabled_conditions = v
+                tooltipsChanged()
+            end,
+        },
+        {
+            key = 'tooltip_itemsets',
+            caption = L['List item sets in item tooltips'],
+            value = profile.tooltip_itemsets ~= false,
+            changed = function(v)
+                profile.tooltip_itemsets = v
+                tooltipsChanged()
+            end,
+        },
+        {
+            key = 'tooltip_rotations',
+            caption = L['List rotations in spell and item tooltips'],
+            value = profile.tooltip_rotations ~= false,
+            changed = function(v)
                 profile.tooltip_rotations = v
                 tooltipsChanged()
-            end
-        ),
-        p:Check('tooltip_conditions', L['Include rotation conditions'], profile.tooltip_conditions == true, function(v)
-            profile.tooltip_conditions = v
-            tooltipsChanged()
-        end),
-    }
+            end,
+        },
+    })
 
+    -- The master switch (the first box) turns the other five off.
     if not tooltipsOn then
-        for _, control in ipairs(tooltipChecks) do
-            control:Disable()
+        for index = 2, #boxes do
+            boxes[index]:Disable()
         end
     end
 

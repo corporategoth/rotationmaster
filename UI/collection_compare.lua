@@ -204,6 +204,8 @@ function addon:CollectionComparisonRows(kind, left, right, showSame)
             tooltip_itemsets = L['List item sets in item tooltips'],
             tooltip_rotations = L['List rotations in spell and item tooltips'],
             tooltip_conditions = L['Include rotation conditions'],
+            tooltip_disabled_rotations = L['Include disabled rotations'],
+            tooltip_exclude_disabled_conditions = L['Exclude disabled conditions'],
             tooltip_limit = L['Names listed per tooltip line'],
             preview_spells = L['Preview Spells'],
             preview_window = L['Preview position'],

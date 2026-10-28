@@ -529,16 +529,26 @@ function addon:CreateSettingsForm(parent)
     -- Value fields
     -- ============================================================================
 
-    -- Adds a check box registered as key. A click flushes edits, toggles and calls changed(newValue). Returns it.
-    function p:Check(key, caption, value, changed, tooltip)
-        local y = self:Row(nil)
-        local c = self:Acquire('checks', function() return addon:CreateWorkbenchCheckBox(self.child, '', 420) end)
+    -- Builds one check box registered as `key` at (x, y) of the current surface, wrapping its caption to `width`.
+    -- Shared by Check (one per row) and CheckGrid (several per row).
+    -- @param kind string  the control pool the box comes from
+    -- @param key string  the registered field key
+    -- @param caption string  the localized caption
+    -- @param value boolean  the checked state shown
+    -- @param changed function  called with the new value after a click
+    -- @param tooltip string|nil  the hover tooltip
+    -- @param x number  left offset on the surface
+    -- @param y number  top offset on the surface
+    -- @param width number  the width of the whole control, box included
+    -- @return table  the check box
+    function p:PlaceCheck(kind, key, caption, value, changed, tooltip, x, y, width)
+        local c = self:Acquire(kind, function() return addon:CreateWorkbenchCheckBox(self.child, '', 420) end)
         c:ClearAllPoints()
-        c:SetPoint('TOPLEFT', 0, -y)
-        c:SetWidth(self.width)
+        c:SetPoint('TOPLEFT', x, -y)
+        c:SetWidth(width)
         c:SetText(caption)
         c.tooltip = tooltip
-        c:GetFontString():SetWidth(self.width - 22)
+        c:GetFontString():SetWidth(width - 22)
         c:SetChecked(value == true)
         c.rmCheck = true
         c:Enable()
@@ -552,6 +562,55 @@ function addon:CreateSettingsForm(parent)
         end))
 
         return c
+    end
+
+    -- Adds a check box registered as key. A click flushes edits, toggles and calls changed(newValue). Returns it.
+    function p:Check(key, caption, value, changed, tooltip)
+        local y = self:Row(nil)
+        return self:PlaceCheck('checks', key, caption, value, changed, tooltip, 0, y, self.width)
+    end
+
+    -- Adds check boxes in a grid of two per row, left to right, each half the width of the surface less a gap. A
+    -- caption that does not fit one line wraps inside its cell and its row grows to hold it, so the next row never
+    -- overlaps it.
+    -- @param cells table  list of { key, caption, value, changed, tooltip }; an odd last cell sits alone in its row
+    -- @return table  the check boxes, in the order of cells
+    function p:CheckGrid(cells)
+        local gap = 12
+        local cellWidth = math.floor((self.width - gap) / 2)
+        local boxes = {}
+
+        for first = 1, #cells, 2 do
+            local y = self.y
+            local rowHeight = 30
+
+            for offset = 0, 1 do
+                local cell = cells[first + offset]
+
+                if cell then
+                    local c = self:PlaceCheck(
+                        'gridChecks',
+                        cell.key,
+                        cell.caption,
+                        cell.value,
+                        cell.changed,
+                        cell.tooltip,
+                        offset * (cellWidth + gap),
+                        y,
+                        cellWidth
+                    )
+
+                    local height = math.max(20, c:GetFontString():GetStringHeight())
+                    c:SetHeight(height)
+                    rowHeight = math.max(rowHeight, height + 10)
+                    boxes[#boxes + 1] = c
+                end
+            end
+
+            self:Row(nil, rowHeight)
+        end
+
+        return boxes
     end
 
     -- Adds a check box on the same row as the existing field fieldKey when it fits beside it, otherwise on a row below.

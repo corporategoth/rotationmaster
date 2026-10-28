@@ -84,6 +84,24 @@ function addon:GetGeneralOptionHelp()
     }
 
     ordered[#ordered + 1] = {
+        id = "tooltip_disabled_rotations",
+        title = L["Include disabled rotations"],
+        text = L["Help.General.tooltip_disabled_rotations"],
+    }
+
+    ordered[#ordered + 1] = {
+        id = "tooltip_conditions",
+        title = L["Include rotation conditions"],
+        text = L["Help.General.tooltip_conditions"],
+    }
+
+    ordered[#ordered + 1] = {
+        id = "tooltip_exclude_disabled_conditions",
+        title = L["Exclude disabled conditions"],
+        text = L["Help.General.tooltip_exclude_disabled_conditions"],
+    }
+
+    ordered[#ordered + 1] = {
         id = "tooltip_itemsets",
         title = L["List item sets in item tooltips"],
         text = L["Help.General.tooltip_itemsets"],
@@ -93,12 +111,6 @@ function addon:GetGeneralOptionHelp()
         id = "tooltip_rotations",
         title = L["List rotations in spell and item tooltips"],
         text = L["Help.General.tooltip_rotations"],
-    }
-
-    ordered[#ordered + 1] = {
-        id = "tooltip_conditions",
-        title = L["Include rotation conditions"],
-        text = L["Help.General.tooltip_conditions"],
     }
 
     ordered[#ordered + 1] = {

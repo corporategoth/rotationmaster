@@ -9,21 +9,23 @@ Lines are only appended. The tooltip is never read, so the Midnight secret-value
 
 ## Settings
 
-All on the General page, under Tooltips, in the profile (and so in profile transfer and the General draft/Apply workflow):
+All on the General page, under Tooltips, laid out two to a row (master and disabled rotations; conditions and disabled conditions; item sets and rotations), with the master switch disabling the other five, in the profile (and so in profile transfer and the General draft/Apply workflow):
 
 | Key | Default | Meaning |
 | --- | --- | --- |
 | `tooltips` | on | Master switch. Off: nothing is added and nothing is registered at login. |
 | `tooltip_itemsets` | on | The item set line in item tooltips. |
 | `tooltip_rotations` | on | The rotation line in spell and item tooltips. |
+| `tooltip_disabled_rotations` | on | List rotations that are switched off (dimmed, marked `(disabled)`). Off: they are left out, and so are not counted in `(+N more)`. |
 | `tooltip_conditions` | off | Also count a spell or item that appears only inside a condition (any depth through AND, OR and NOT, and on branch steps). |
+| `tooltip_exclude_disabled_conditions` | off | With conditions counted: leave out a condition that is switched off in the editor (a node with `disabled == true`, and everything under it; the evaluator treats it as always true and the description prints nothing for it). Off keeps counting it. |
 | `tooltip_limit` | 3 | Names per line (1 to 20); the rest is counted as `(+N more)`. |
 
 ## What counts as "uses"
 
 The rotations in the Rotations list for the **current specialization**, built from the same sources the list uses (`ListRotationHeaders` for your rotations, `GetBuiltinStates` for Built Ins). A spell or item counts when an enabled, reachable step of the rotation or cooldown list names it (`spell`, `pet` and `any` steps by spell ID; `item` steps by item set key or an inline list). A disabled step, and the arm of a branch that can never run, does not count. A rotation is named once however many steps use the spell.
 
-* A rotation that is switched off is listed after the enabled ones, dimmed and marked `(disabled)`. Enabled rotations come first, then by priority (higher first), then by name.
+* A rotation that is switched off is listed after the enabled ones, dimmed and marked `(disabled)` (unless `tooltip_disabled_rotations` is off). Enabled rotations come first, then by priority (higher first), then by name.
 * Built Ins that are not for this client's edition, expansion or build, not for this class, not valid here, or restricted to another specialization are left out. Every other Built In the list shows is listed, including ones above your level.
 * Names go through `addon:RotationDisplayName`, so a Built In never shows its locale key.
 * Spells match through the spells the client relates to them (`GetSpellIdRelatives`: base and override, so a talent swap still matches). On clients with spell ranks a hovered rank matches a step that is not rank-exact; a step with "Use this exact spell rank" matches only that rank.
@@ -42,7 +44,7 @@ Only `GameTooltip` and `ItemRefTooltip` are touched; comparison tooltips and oth
 Two lazy indexes, built on the first relevant tooltip after something changed, never in combat (in combat the previous index, or nothing, is served):
 
 * **Item sets** (item ID to set names). Rebuilt when the dependency stamp (`GetRotationValidationStamp`, which `InvalidateRotationDependencies` advances for item set, condition, function and effect writes) or the profile table changes. An entry that is an item name resolves only once the client has the item cached; until then the index is marked incomplete and retried, at most every five seconds, after `GET_ITEM_INFO_RECEIVED`.
-* **Uses** (spell ID and item ID to rotations). The same stamps, plus the specialization, the conditions setting, and the rotation roster stamp that `ListRotationHeaders` returns. A rotation edit moves neither the dependency stamp nor the specialization, so the roster stamp is re-read at most once a second while tooltips keep coming; the cost of that read is one `ListRotationHeaders` call.
+* **Uses** (spell ID and item ID to rotations). The same stamps, plus the specialization, the conditions and disabled settings, and the rotation roster stamp that `ListRotationHeaders` returns. A rotation edit moves neither the dependency stamp nor the specialization, so the roster stamp is re-read at most once a second while tooltips keep coming; the cost of that read is one `ListRotationHeaders` call.
 
 The formatted line is cached per ID until the index is replaced. Hooks are registered only when the master switch is on at login (or when it is turned on later), and the retained hook of a feature turned off is one settings read. The polling path is not touched: no event handler, timer or function of `main.lua` changed except the profile defaults.
 

@@ -859,28 +859,31 @@ test(
     end
 )
 
--- The header's geometry (both rows, three locales, two widths) is proved in
+-- The header's geometry (both rows, every locale, two widths) is proved in
 -- tests/rotation_header_layout.lua.
 -- A list row's line is only the kind, the specialization and the priority; the
 -- rest (read-only, switched off, not available) is color and tooltip.
 test(
-    'a list row says kind, specialization and priority on one line at the narrowest window (enUS, deDE, ruRU), and nothing else',
+    'a list row says kind, specialization and priority on one line at the narrowest window (in every language), and nothing else',
     function()
-        local function width(text)
+        -- The width of a line of text in a font of `size` (the mock's default, 12, is the full measure).
+        local function width(text, size)
             local w = 0
 
             for char in (text or ''):gmatch('[%z\1-\127\194-\244][\128-\191]*') do
                 w = w + (#char == 1 and 6 or 7)
             end
 
-            return w
+            return w * (size or 12) / 12
         end
 
-        for _, language in ipairs({ 'enUS', 'deDE', 'ruRU' }) do
-            local f = T.new({ level = 10, specIndex = 1 })
+        for _, language in ipairs({
+            'enUS', 'deDE', 'esES', 'esMX', 'frFR', 'itIT', 'koKR', 'ptBR', 'ruRU', 'zhCN', 'zhTW'
+        }) do
+            -- The fixture boots the addon in the game language, the way the client does.
+            local f = T.new({ level = 10, specIndex = 1, locale = language })
             local a = f.addon
 
-            -- (The real-TOC fixture applies the client language only when it boots, so these passes measure English; the loop is kept for when it does not.)
             for _, id in ipairs({ 'rm.retail.monk.windwalker', 'rm.retail.monk.mistweaver' }) do
                 assert(a:SetDefaultRotationEnabled(id, false))
             end
@@ -891,11 +894,13 @@ test(
             local browser = a:CreateRotationBrowser(host, { spec = 268 })
             browser:SetSpecValue('all')
             local seen = {}
+            local shrunk = false
 
             -- Text is measured per character (a Cyrillic or accented letter is wider), as the client measures it.
             for _, c in ipairs(browser.rowButtons) do
                 function c.statusLabel:GetStringWidth()
-                    return width(self.text)
+                    local _, size = self:GetFont()
+                    return width(self.text, size)
                 end
             end
 
@@ -935,16 +940,26 @@ test(
 
                     assert(c.statusLabel:GetWidth() < 220, 'not the narrow column: ' .. c.statusLabel:GetWidth())
 
+                    local _, size = c.statusLabel:GetFont()
+
                     assert(
-                        width(text) <= c.statusLabel:GetWidth(),
-                        label .. ': the line is wider than the column (' .. width(text) .. '): ' .. text
+                        width(text, size) <= c.statusLabel:GetWidth(),
+                        label .. ': the line is wider than the column (' .. width(text, size) .. '): ' .. text
                     )
+
+                    -- The caption only shrinks as far as it still reads, and never for a line that fits.
+                    assert(size >= 8, label .. ': the line shrank below a readable size: ' .. size)
+                    shrunk = shrunk or size < 12
 
                     seen[entry.fallback and 'fallback' or entry.readOnly and 'builtin' or 'custom'] = text
                 end
             end
 
             assert(seen.fallback and seen.builtin and seen.custom, language .. ': a kind of row was not listed')
+
+            -- English fits without shrinking; German's long kind word is what needs it.
+            assert(language ~= 'enUS' or not shrunk, 'the English line shrank')
+            assert(language ~= 'deDE' or shrunk, 'the German line fits without shrinking, so the test proves nothing')
 
             if language == 'enUS' then
                 assert(

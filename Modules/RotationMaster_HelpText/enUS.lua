@@ -474,6 +474,10 @@ local S = {
 [3389] = { "Help.General.ignore_mana_restricted", "Retail and Forever can hide whether a spell is usable from addons in some situations. The spell is then skipped whether or not this option is on." },
 -- 0c4bd263
 [3390] = { "Help.General.ignore_range", "Advise a spell or item even when your target is out of its range. Without this, a step whose range check fails is skipped. The spell or item must still be learned or owned, off cooldown and usable, and its conditions still apply." },
+-- e3334d5c
+[4047] = { "Help.General.tooltip_disabled_rotations", "Also list the rotations for your current specialization that are switched off, dimmed and marked disabled, after the ones that are on. Turn this off to list only rotations that are on; the \"(+N more)\" count then leaves the switched-off ones out too." },
+-- 766abde1
+[4048] = { "Help.General.tooltip_exclude_disabled_conditions", "With rotation conditions included, leave out any condition that is switched off in the rotation editor, together with everything under it, because a disabled condition no longer affects the rotation. Off by default: a spell or item that appears only in a disabled condition still counts." },
 }
 for id, entry in pairs(S) do L[entry[1]] = T and T[id] or entry[2] end
 S = nil

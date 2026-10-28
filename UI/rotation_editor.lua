@@ -41,10 +41,14 @@ local function builtinSwitch(workspace)
     return type(source) == 'table' and (source.switchedOn == nil and source.enabled or source.switchedOn) or nil
 end
 
--- The editor header: the specialization picker's fixed width (it holds "All
+-- The editor header: the specialization picker's width (it holds "All
 -- specializations" and the longest Retail names), the gap between controls and
--- the slot at the start of row 2 (the Read-Only pill, or Undo and Redo).
-local SPEC_WIDTH, HEADER_GAP, KIND_WIDTH = 172, 8, 78
+-- the slot at the start of row 2 (the Read-Only pill, or Undo and Redo). The
+-- picker is SPEC_WIDTH wide, and grows up to SPEC_MAX_WIDTH in a language whose
+-- longest wording (German "Beliebige Spezialisierung") would not fit.
+local SPEC_WIDTH, SPEC_MAX_WIDTH, HEADER_GAP, KIND_WIDTH = 172, 212, 8, 78
+-- Room the picker's caption leaves: the chevron before it and a margin after it.
+local SPEC_CAPTION_INSET = 30
 
 -- Returns the profile's overrides of a Built In (effective and shipped priority, Enabled) for a read-only Built In
 -- workspace, or nil for anything else, including an import preview.
@@ -566,6 +570,53 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     -- Default per specialization, else every specialization.
     function pane:FallbackSpecText()
         return addon:GetFallbackSpecName(spec) or L['All specializations']
+    end
+
+    -- Returns the width of the specialization picker: SPEC_WIDTH, or wider (to SPEC_MAX_WIDTH) when the longest fixed
+    -- wording or specialization name in the game's language does not fit it on one line. Measured once, with the
+    -- picker's own font, and kept so the header does not shift as the choice changes.
+    -- @return number  the picker width in pixels
+    function pane:SpecWidth()
+        if self.specWidth then
+            return self.specWidth
+        end
+
+        local label = self.specButton:GetFontString()
+        local wide = 0
+
+        if label and label.GetStringWidth then
+            local texts = {}
+
+            for _, key in ipairs({
+                'All specializations',
+                'Any specialization',
+                'No specialization',
+                'Primary talents',
+                'Secondary talents',
+            }) do
+                texts[#texts + 1] = L[key]
+            end
+
+            if addon.GetRotationSpecEntries then
+                for _, entry in ipairs(addon:GetRotationSpecEntries()) do
+                    texts[#texts + 1] = entry.name
+                end
+            end
+
+            local shown = label:GetText()
+
+            for _, text in ipairs(texts) do
+                if type(text) == 'string' then
+                    label:SetText(text)
+                    wide = math.max(wide, math.ceil(label:GetStringWidth() or 0))
+                end
+            end
+
+            label:SetText(shown or '')
+        end
+
+        self.specWidth = math.max(SPEC_WIDTH, math.min(SPEC_MAX_WIDTH, wide + SPEC_CAPTION_INSET))
+        return self.specWidth
     end
 
     -- Shows the specialization picker for the rotation, locked on a Built In and on the fallback, with the full choice
@@ -1742,11 +1793,12 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         self.info:SetPoint('TOPRIGHT', frame, 'TOPRIGHT', -8 - reserve, -4)
 
         if showSpecs then
-            self.specButton:SetWidth(SPEC_WIDTH)
+            local specWidth = self:SpecWidth()
+            self.specButton:SetWidth(specWidth)
             self.specButton:ClearAllPoints()
             self.specButton:SetPoint('TOPLEFT', frame, 'TOPLEFT', 8, -6)
             self.specButton:Show()
-            x = 8 + SPEC_WIDTH + HEADER_GAP
+            x = 8 + specWidth + HEADER_GAP
         else
             self.specButton:Hide()
         end

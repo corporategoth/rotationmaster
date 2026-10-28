@@ -69,6 +69,8 @@ local scalar = {
     tooltip_itemsets = 'boolean',
     tooltip_rotations = 'boolean',
     tooltip_conditions = 'boolean',
+    tooltip_disabled_rotations = 'boolean',
+    tooltip_exclude_disabled_conditions = 'boolean',
     tooltip_limit = 'number',
 }
 
