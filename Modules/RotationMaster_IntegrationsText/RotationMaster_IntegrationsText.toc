@@ -9,7 +9,6 @@
 ## X-Category: Action Bars
 ## X-License: MIT
 
-enUS.lua
 deDE.lua
 esES.lua
 esMX.lua
@@ -20,3 +19,4 @@ ptBR.lua
 ruRU.lua
 zhCN.lua
 zhTW.lua
+enUS.lua

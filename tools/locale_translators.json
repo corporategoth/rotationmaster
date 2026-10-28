@@ -1,0 +1,443 @@
+{
+ "_comment": "Who translated which file (tools/locales.py owns this file; it writes the \"-- Translators:\" header and the L[0] table of each locale file from it). kind is human or ai; only humans are credited on the About page.",
+ "deDE": {
+  "main": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 3043,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   }
+  ],
+  "help": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 351
+   }
+  ],
+  "conditions": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 426
+   }
+  ],
+  "diagnostics": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 106
+   }
+  ],
+  "integrations": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 118
+   }
+  ]
+ },
+ "esES": {
+  "main": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 3043,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   }
+  ],
+  "help": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 351
+   }
+  ],
+  "conditions": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 426
+   }
+  ],
+  "diagnostics": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 106
+   }
+  ],
+  "integrations": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 118
+   }
+  ]
+ },
+ "esMX": {
+  "main": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 3043,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   }
+  ],
+  "help": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 351
+   }
+  ],
+  "conditions": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 426
+   }
+  ],
+  "diagnostics": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 106
+   }
+  ],
+  "integrations": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 118
+   }
+  ]
+ },
+ "frFR": {
+  "main": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 3043,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   }
+  ],
+  "help": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 351
+   }
+  ],
+  "conditions": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 426
+   }
+  ],
+  "diagnostics": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 106
+   }
+  ],
+  "integrations": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 118
+   }
+  ]
+ },
+ "itIT": {
+  "main": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 3043,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   }
+  ],
+  "help": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 351
+   }
+  ],
+  "conditions": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 426
+   }
+  ],
+  "diagnostics": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 106
+   }
+  ],
+  "integrations": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 118
+   }
+  ]
+ },
+ "koKR": {
+  "main": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 3043,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   }
+  ],
+  "help": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 351
+   }
+  ],
+  "conditions": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 426
+   }
+  ],
+  "diagnostics": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 106
+   }
+  ],
+  "integrations": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 118
+   }
+  ]
+ },
+ "ptBR": {
+  "main": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 3043,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   }
+  ],
+  "help": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 351
+   }
+  ],
+  "conditions": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 426
+   }
+  ],
+  "diagnostics": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 106
+   }
+  ],
+  "integrations": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 118
+   }
+  ]
+ },
+ "ruRU": {
+  "main": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 3043,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   }
+  ],
+  "help": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 351
+   }
+  ],
+  "conditions": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 426
+   }
+  ],
+  "diagnostics": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 106
+   }
+  ],
+  "integrations": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 118
+   }
+  ]
+ },
+ "zhCN": {
+  "main": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 3043,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   }
+  ],
+  "help": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 351
+   }
+  ],
+  "conditions": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 426
+   }
+  ],
+  "diagnostics": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 106
+   }
+  ],
+  "integrations": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 118
+   }
+  ]
+ },
+ "zhTW": {
+  "main": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 3043,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   }
+  ],
+  "help": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 351
+   }
+  ],
+  "conditions": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 426
+   }
+  ],
+  "diagnostics": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 106
+   }
+  ],
+  "integrations": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 118
+   }
+  ]
+ }
+}
