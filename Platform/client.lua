@@ -14,7 +14,9 @@ addon.Platform = platform
 -- Secret-value readability
 -- ============================================================================
 
--- Returns true when value is neither a secret value nor inaccessible; the base of every readability decision.
+-- Whether a value is neither a secret value nor inaccessible; the base of every readability decision.
+-- @param value any  The value to test.
+-- @return boolean  True when the value may be inspected.
 local function readable(value)
     if type(issecretvalue) == "function" and issecretvalue(value) then
         return false
@@ -56,8 +58,10 @@ do
     platform.secretsUnrestricted = secretsUnrestricted
 end
 
--- Returns value when it is readable and a string, number or boolean; nil for anything else (tables, functions,
--- secrets).
+-- Reduces a value to a plain primitive.
+-- @param value any  The value to read.
+-- @return string|number|boolean|nil  The value when it is readable and a string, number or boolean; nil for anything
+--   else (tables, functions, secrets).
 local function primitive(value)
     if not readable(value) then
         return nil
@@ -70,7 +74,11 @@ local function primitive(value)
     end
 end
 
--- Calls fn under pcall and returns its first result as a primitive; nil when fn is missing, throws or returns a secret.
+-- Calls a function under pcall and returns its first result as a primitive.
+-- @param fn function|nil  The function to call.
+-- @param ... any  The arguments passed to fn.
+-- @return string|number|boolean|nil  The first result as a primitive; nil when fn is missing, throws or returns a
+--   secret.
 local function probe(fn, ...)
     if type(fn) ~= "function" then
         return nil
@@ -87,12 +95,18 @@ end
 -- Client identity
 -- ============================================================================
 
--- Returns a fresh table describing the running client: family, project, expansion, locale, build, season, game rules
--- and combatDataPolicy. Allocates on every call, so runtime checks use GetClientFamily or GetCombatDataPolicy instead.
+-- Describes the running client.
+-- @return table  A fresh table: family, projectId, expansion, classicExpansionLevel, locale, runtimeVerified, version,
+--   build, interface, seasonId, gameModeId, hardcore, selfFoundAllowed and combatDataPolicy (fields the client cannot
+--   report are nil).
+--
+-- Allocates on every call, so runtime checks use GetClientFamily or GetCombatDataPolicy instead.
 function platform:GetClientInfo()
     local project = primitive(WOW_PROJECT_ID)
 
-    -- True when constant is a number equal to the project id (a project constant is nil on clients that lack it).
+    -- Whether a project constant equals the running project id.
+    -- @param constant any  A WOW_PROJECT_* constant (nil on clients that lack it).
+    -- @return boolean  True when the constant is a number equal to the project id.
     local function isProject(constant)
         return type(project) == "number" and type(constant) == "number" and project == constant
     end
@@ -160,7 +174,12 @@ local ownedClientInfo = platform.GetClientInfo
 -- changes (only test harnesses do either).
 local factsFrom, factsProject, factsFamily, factsPolicy
 
--- Returns the cached client family and combat policy, refreshing them when GetClientInfo or the project id changed.
+-- Reads the cached client family and combat policy.
+-- @param self table  The platform object whose GetClientInfo is consulted.
+-- @return string  The client family.
+-- @return string  The combat data policy.
+--
+-- Refreshed when GetClientInfo or the project id changed since the last read.
 local function clientFacts(self)
     local getter, project = self.GetClientInfo, WOW_PROJECT_ID
 
@@ -172,22 +191,26 @@ local function clientFacts(self)
     return factsFamily, factsPolicy
 end
 
--- Returns the client family string without allocating.
+-- Reads the client family without allocating.
+-- @return string  "retail", "forever", "era", "tbc", "progression" or "unknown".
 function platform:GetClientFamily()
     return (clientFacts(self))
 end
 
--- Returns "restricted", "probe" or "unsupported" without allocating; the policy every restricted-client gate reads.
+-- Reads the combat data policy without allocating; the policy every restricted-client gate reads.
+-- @return string  "restricted", "probe" or "unsupported".
 function platform:GetCombatDataPolicy()
     local _, policy = clientFacts(self)
     return policy
 end
 
--- Spell ranks exist on Classic Era, TBC Anniversary, Wrath Classic and Forever
--- (its spellbook documents IsSpellBookItemLowRank). Retail, Mists and Cataclysm
--- have none. Every rank checkbox is shown only where this is true; stored
--- values and evaluation do not depend on it. Read live, never cached: only
--- test harnesses change the project.
+-- Whether this client has spell ranks.
+-- @return boolean  True on Classic Era, TBC Anniversary, Wrath Classic and Forever.
+--
+-- Spell ranks exist on Classic Era, TBC Anniversary, Wrath Classic and Forever (its spellbook documents
+-- IsSpellBookItemLowRank). Retail, Mists and Cataclysm have none. Every rank checkbox is shown only where this is
+-- true; stored values and evaluation do not depend on it. Read live, never cached: only test harnesses change the
+-- project.
 function addon:ClientHasSpellRanks()
     local project = primitive(WOW_PROJECT_ID)
 
@@ -242,7 +265,10 @@ if policyType(policyGetfenv) == 'function' then
     end
 end
 
--- Returns the combat data policy for the Platform object current without building the full client metadata table.
+-- Reads the combat data policy for a Platform object without building the full client metadata table.
+-- @param current table  The Platform object whose policy is read.
+-- @return string  The policy: "restricted", "probe" or "unsupported".
+--
 -- Any sign that GetClientInfo, the environment or a secret-value global was replaced (test harnesses do this) falls
 -- back to the public method so that the replacement is honored.
 local function readCombatPolicy(current)
@@ -319,21 +345,32 @@ local function readCombatPolicy(current)
     return 'unsupported'
 end
 
--- Hands readCombatPolicy to the addon itself and to no other caller (returns nil for any other receiver).
+-- Hands readCombatPolicy to the addon itself and to no other caller.
+-- @return function|nil  readCombatPolicy when called on the addon; nil for any other receiver.
 function addon:ConsumeClientPolicyReader()
     if self == addon then
         return readCombatPolicy
     end
 end
 
--- One-time private handoff. Public client metadata keeps its complete shape.
--- Passes bind a reader that returns the small context pack selection needs (family, expansion, build, policy) and a
--- flag that is false when GetClientInfo was replaced and its own result was returned instead.
+-- Binds the rotation client reader into a caller-supplied binder (a one-time private handoff).
+-- @param bind function  Called once with the reader function; anything else is refused.
+-- @return boolean|nil  True when the reader was handed over; nil when bind is not a function.
+-- @return string|nil  The reason code ("invalid-client-reader-binder") when the first return is nil; nil otherwise.
+--
+-- Public client metadata keeps its complete shape. The reader passed to bind takes the Platform object and returns the
+-- small context pack selection needs (family, expansion, build, combatDataPolicy) and a flag that is false when
+-- GetClientInfo was replaced and its own result was returned instead.
 function addon:BindRotationClientReader(bind)
     if type(bind) ~= 'function' then
         return nil, 'invalid-client-reader-binder'
     end
 
+    -- The reader handed to bind: builds the small context pack selection needs without the full client metadata.
+    -- @param current table  The Platform object whose GetClientInfo is consulted.
+    -- @return table  { family, expansion, build, combatDataPolicy } (or the GetClientInfo result when it was replaced).
+    -- @return boolean  True when the context pack was built here; false when GetClientInfo was replaced and its own
+    --   result was returned instead.
     bind(function(current)
         local method = current.GetClientInfo
 
@@ -344,6 +381,10 @@ function addon:BindRotationClientReader(bind)
 
         local project = primitive(WOW_PROJECT_ID)
 
+        -- Whether a project constant equals the running project id.
+        -- @param constant any  A WOW_PROJECT_* constant (nil on clients that lack it).
+        -- @return boolean  True when the constant is a number equal to the project id.
+        --
         -- Same test as in GetClientInfo, kept local so that this reader allocates only the context table.
         local function isProject(constant)
             return type(project) == 'number' and type(constant) == 'number' and project == constant
@@ -394,7 +435,11 @@ end
 -- Public readability check and API surface
 -- ============================================================================
 
--- Returns true when value may be compared, calculated with or indexed by; otherwise false and "restricted-value".
+-- Tells whether a value may be compared, calculated with or indexed by.
+-- @param value any  The game value to test.
+-- @return boolean  True when the value is readable.
+-- @return string|nil  "restricted-value" when the first return is false; nil otherwise.
+--
 -- Every Platform reader and every condition calls this before it touches a game value.
 function platform:CanReadValue(value)
     if not readable(value) then
@@ -406,13 +451,22 @@ end
 
 -- Constant form of CanReadValue for Classic-family builds that guarantee no secret values.
 if secretsUnrestricted then
+    -- Constant form of CanReadValue: every value is readable on these builds.
+    -- @return boolean  Always true.
     function platform:CanReadValue()
         return true
     end
 end
 
--- Describes one API of the surface report: present (namespaced or legacy global) or missing; readability stays
--- "unverified" because only a live call can show whether its values are secret.
+-- Describes one API of the surface report.
+-- @param namespace table|nil  The namespaced API table (for example C_Spell).
+-- @param method string  The method name looked up in the namespace.
+-- @param label string  The namespace name used in the reported source.
+-- @param legacy string|nil  The legacy global function name to fall back to.
+-- @return table  { status = "present", source, readability = "unverified" } when the API exists (namespaced or legacy
+--   global), otherwise { status = "missing", readability = "unverified" }.
+--
+-- Readability stays "unverified" because only a live call can show whether its values are secret.
 local function declaration(namespace, method, label, legacy)
     if type(namespace) == "table" and type(namespace[method]) == "function" then
         return { status = "present", source = label .. "." .. method, readability = "unverified" }
@@ -424,7 +478,9 @@ local function declaration(namespace, method, label, legacy)
     return { status = "missing", readability = "unverified" }
 end
 
--- Returns which of the spell, spellbook, aura, cooldown, assisted-combat and event-validation APIs this client has.
+-- Reports which of the spell, spellbook, aura, cooldown, assisted-combat and event-validation APIs this client has.
+-- @return table  One declaration per API (spellMetadata, spellbook, knownSpell, aura, cooldown, assisted,
+--   eventValidation), as built by declaration.
 function platform:GetAPISurface()
     return {
         spellMetadata = declaration(C_Spell, "GetSpellInfo", "C_Spell", "GetSpellInfo"),
@@ -437,8 +493,9 @@ function platform:GetAPISurface()
     }
 end
 
--- Returns { available, reason } for Blizzard's assisted combat; available is false with a reason code when the API is
--- missing, throws, returns a secret or returns a non-boolean.
+-- Probes Blizzard's assisted combat availability.
+-- @return table  { available, reason }: available is false with a reason code when the API is missing, throws,
+--   returns a secret or returns a non-boolean; reason is nil when available.
 function platform:GetAssistedAvailability()
     if type(C_AssistedCombat) ~= "table" or type(C_AssistedCombat.IsAvailable) ~= "function" then
         return { available = false, reason = "missing-api" }

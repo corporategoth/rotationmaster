@@ -11,8 +11,13 @@ local _, addon = ...
 local data = addon.RotationData
 local maximum = 9007199254740991
 
--- This saved content revision counter is separate from envelope/source revisions.
--- Returns the body's revision (1 when absent), or nil and 'invalid-rotation-body' / 'invalid-rotation-revision'.
+-- Reads a saved rotation body's content revision counter.
+-- @param body table  The rotation body.
+-- @return number|nil  The revision (1 when absent); nil when it is invalid.
+-- @return string|nil  'invalid-rotation-body' or 'invalid-rotation-revision' when the first return is nil; nil
+--   otherwise.
+--
+-- This saved content revision counter is separate from envelope and source revisions.
 function data.GetRotationContentRevision(body)
     if type(body) ~= 'table' or getmetatable(body) ~= nil then
         return nil, 'invalid-rotation-body'
@@ -30,13 +35,22 @@ function data.GetRotationContentRevision(body)
     return value
 end
 
--- Ignore only the body's own revision; nested user fields remain content.
--- Returns true when both bodies are portable data and deeply equal apart from the root revision field.
+-- Tells whether two rotation bodies hold the same content.
+-- @param left table  The first body.
+-- @param right table  The second body.
+-- @return boolean  True when both bodies are portable data and deeply equal apart from the root revision field.
+--
+-- Ignores only the body's own revision; nested user fields remain content.
 function data.SameRotationContent(left, right)
     if not data.CheckPortable(left) or not data.CheckPortable(right) then
         return false
     end
 
+    -- Compares two values deeply.
+    -- @param a any  The first value.
+    -- @param b any  The second value.
+    -- @param root boolean  True for the body itself, whose revision field is ignored.
+    -- @return boolean  True when the values are equal.
     local function same(a, b, root)
         if type(a) ~= type(b) then
             return false
@@ -63,10 +77,19 @@ function data.SameRotationContent(left, right)
     return same(left, right, true)
 end
 
--- Prepare detached data before a commit. Never trust an editable draft count.
--- mode is 'create' (revision 1), 'import' (keeps the incoming revision) or 'edit' (previous revision plus one when the
--- content changed or forceChanged is true; unchanged keeps the previous value, including a legacy absence).
--- Returns the stamped copy, nil and the changed flag; or nil and a reason code (including overflow at the maximum).
+-- Prepares a detached copy of a rotation body for a commit, stamped with its content revision.
+-- @param body table  The body being committed.
+-- @param previous table|nil  The body as previously saved; used by the 'edit' mode.
+-- @param mode string  'create' (revision 1), 'import' (keeps the incoming revision) or 'edit' (previous revision plus
+--   one when the content changed or forceChanged is true; unchanged keeps the previous value, including a legacy
+--   absence).
+-- @param forceChanged boolean|nil  True to count an edit as changed even when the content is equal.
+-- @return table|nil  The stamped copy; nil on failure.
+-- @return string|nil  The reason code when the first return is nil (including overflow at the maximum); nil
+--   otherwise.
+-- @return boolean|nil  Whether the content changed; nil on failure.
+--
+-- Prepares detached data before a commit and never trusts an editable draft count.
 function data.PrepareRotationContentRevision(body, previous, mode, forceChanged)
     local incoming, why = data.GetRotationContentRevision(body)
 

@@ -8,9 +8,13 @@
 local _, addon = ...
 local platform = addon.Platform
 
--- One public world-state tuple; membership and type have independent readiness.
--- Returns { inInstance = false }, or { inInstance = true } carrying either instanceType or instanceTypeReason when the
--- type alone is unreadable; nil and a reason code when membership itself cannot be read.
+-- Reads whether the player is inside an instance and, when so, which type of instance.
+-- @return table{inInstance=boolean,instanceType=string|nil,instanceTypeReason=string|nil}|nil  The observation:
+--   { inInstance = false }, or { inInstance = true } carrying either instanceType or instanceTypeReason when the type
+--   alone is unreadable; nil when membership itself cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- One public world-state tuple (IsInInstance); membership and type have independent readiness.
 function platform:GetInstanceObservation()
     local family=self:GetClientFamily()
     if family~='retail' and family~='forever' and family~='era' and family~='tbc' and family~='progression' then return nil,'unsupported-policy' end

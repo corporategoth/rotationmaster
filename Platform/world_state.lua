@@ -31,24 +31,36 @@ local platform = addon.Platform
 --   carry no secret annotation on their returns. UnitGroupRolesAssigned is
 --   SecretWhenUnitIdentityRestricted, which a group member never meets.
 
--- True for a number that is neither NaN nor infinite.
+-- Whether a value is a number that is neither NaN nor infinite.
+-- @param value any  The value to test.
+-- @return boolean  True for a finite number.
 local function finite(value)
     return type(value) == 'number' and value == value and value < math.huge and value > -math.huge
 end
 
--- True for a finite integer.
+-- Whether a value is a finite integer.
+-- @param value any  The value to test.
+-- @return boolean  True for a finite integer.
 local function whole(value)
     return finite(value) and value % 1 == 0
 end
 
--- Packs varargs into a table with n set to the count, so trailing nils from a pcall are not lost. In a call()
--- result, index 1 is the pcall status and the API's results start at index 2.
+-- Packs varargs into a table with n set to the count, so trailing nils from a pcall are not lost.
+-- @param ... any  The values to pack.
+-- @return table  The values in the array part, with the count in field n.
+--
+-- In a call() result, index 1 is the pcall status and the API's results start at index 2.
 local function pack(...)
     return { n = select('#', ...), ... }
 end
 
--- A protected call whose results must all be readable: returns the pack() of pcall(api, ...) (results from index 2 on,
--- n counting nils), or nil and "missing-api", "api-error" or "restricted-value".
+-- Makes a protected call whose results must all be readable.
+-- @param self table  The platform table, used for its CanReadValue method.
+-- @param api function|nil  The native function.
+-- @param ... any  The arguments passed to api.
+-- @return table|nil  The pack() of pcall(api, ...), with the results from index 2 on and n counting nils; nil on
+--   failure.
+-- @return string|nil  The reason code ("missing-api", "api-error" or "restricted-value") when the first return is nil.
 local function call(self, api, ...)
     if type(api) ~= 'function' then
         return nil, 'missing-api'
@@ -89,8 +101,13 @@ local stateKinds = {
     ghost = true,
 }
 
--- Calls a Boolean predicate and returns true or false, treating nil and 0 as false and 1 as true (legacy answers), or
--- nil and a reason for anything else.
+-- Calls a Boolean predicate and normalizes its answer.
+-- @param self table  The platform table, used for its CanReadValue method.
+-- @param api function|nil  The native predicate.
+-- @param ... any  The arguments passed to api.
+-- @return boolean|nil  True or false, treating nil and 0 as false and 1 as true (legacy answers); nil for anything
+--   else.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 local function flag(self, api, ...)
     local results, reason = call(self, api, ...)
 
@@ -113,8 +130,13 @@ local function flag(self, api, ...)
     return result
 end
 
--- kind is one of the stateKinds names. Returns the player's state as a Boolean, or nil and a reason. Probe and
--- restricted policies only.
+-- Reads one of the player's state predicates.
+-- @param kind string  One of the stateKinds names: "mounted", "swimming", "falling", "flying", "resting", "dead" or
+--   "ghost".
+-- @return boolean|nil  The state; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Probe and restricted policies only.
 function platform:GetPlayerStateObservation(kind)
     local policy = self:GetCombatDataPolicy()
 
@@ -167,8 +189,11 @@ function platform:GetPlayerStateObservation(kind)
     return flag(self, api)
 end
 
--- Whether a boss encounter is in progress, from the game rather than a boss mod.
--- Returns true or false, or nil and a reason. Prefers C_InstanceEncounter and falls back to the legacy global.
+-- Reads whether a boss encounter is in progress, from the game rather than a boss mod.
+-- @return boolean|nil  True or false; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Prefers C_InstanceEncounter and falls back to the legacy global.
 function platform:GetEncounterObservation()
     local policy = self:GetCombatDataPolicy()
 
@@ -206,12 +231,13 @@ function platform:GetEncounterObservation()
     return result
 end
 
--- GetInstanceInfo() of the area you are in, one read for every condition that
--- needs it: {difficultyID, instanceID, name, instanceType, maxPlayers}, with a
--- field left nil when its value could not be read (reasons[field] says why).
--- In the open world the difficulty is 0 and the instance ID is the map ID of
--- the continent.
--- Returns the record described above (always, once the API ran), or nil and a reason when the API cannot be called.
+-- Reads GetInstanceInfo() of the area the player is in, one read for every condition that needs it.
+-- @return table|nil  { difficultyID, instanceID, name, instanceType, maxPlayers, reasons }: a field is left nil when
+--   its value could not be read, and reasons[field] says why. The record is always returned once the API ran; nil when
+--   the API cannot be called.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- In the open world the difficulty is 0 and the instance id is the map id of the continent.
 function platform:GetInstanceDetails()
     local policy = self:GetCombatDataPolicy()
 
@@ -233,7 +259,12 @@ function platform:GetInstanceDetails()
 
     local record, reasons = {}, {}
 
-    -- Stores value in record[field] when it is readable, present and passes valid(); otherwise records the reason.
+    -- Stores a value in the record when it is readable, present and valid.
+    -- @param field string  The record field to set.
+    -- @param value any  The value read from the API.
+    -- @param valid function  Predicate taking the value and returning true when it has the right shape.
+    --
+    -- Otherwise the reason is recorded in reasons[field].
     local function take(field, value, valid)
         if not self:CanReadValue(value) then
             reasons[field] = 'restricted-value'
@@ -262,10 +293,13 @@ function platform:GetInstanceDetails()
     return record
 end
 
--- The active Mythic+ keystone: {active, level, affixes}. level is 0 when no
--- keystone is running. Retail only; where the API is absent the reason is
--- missing-api.
--- Affix IDs the client reports that are not whole numbers are dropped rather than failing the read.
+-- Reads the active Mythic+ keystone.
+-- @return table|nil  { active, level, affixes }: level is 0 when no keystone is running; affixes is a list of affix
+--   ids. nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil ("missing-api" where the API is absent); nil
+--   otherwise.
+--
+-- Retail only. Affix ids the client reports that are not whole numbers are dropped rather than failing the read.
 function platform:GetKeystoneObservation()
     local policy = self:GetCombatDataPolicy()
 
@@ -333,9 +367,12 @@ end
 -- Hero talents and spell glow
 -- ============================================================================
 
--- The hero talent tree (subtree ID) the player has chosen: a number, false
--- when none is chosen (below the level that offers one, or not chosen yet), or
--- nil with a reason. Retail only.
+-- Reads the hero talent tree the player has chosen.
+-- @return number|false|nil  The subtree id; false when none is chosen (below the level that offers one, or not chosen
+--   yet); nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Retail only.
 function platform:GetActiveHeroTree()
     local policy = self:GetCombatDataPolicy()
 
@@ -370,10 +407,13 @@ end
 -- Hero tree names already read, by subtree ID; also filled by GetHeroTreeChoices.
 local heroNames = {}
 
--- The name the game gives a hero tree, remembered once read (a name does not
--- change within a session). Needs the active talent config, so it is nil while
--- the config is unavailable.
--- Returns the name string, or nil and a reason.
+-- Reads the name the game gives a hero tree, remembered once read.
+-- @param subTreeID number  The hero subtree id; a positive integer.
+-- @return string|nil  The name; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- A name does not change within a session. Needs the active talent config, so it is nil while the config is
+-- unavailable.
 function platform:GetHeroTreeName(subTreeID)
     if not whole(subTreeID) or subTreeID <= 0 then
         return nil, 'invalid-talent-query'
@@ -421,11 +461,15 @@ function platform:GetHeroTreeName(subTreeID)
     return record.name
 end
 
--- The hero trees a specialization (default: the one being played) can choose,
--- for the editor: a list of {id, name}. Listed from the talent tree reader, so
--- another specialization's trees need the view loadout and not being in combat.
--- Returns the list, or nil and a reason ("hero-trees-unavailable" when the specialization has none). Depends on
--- platform:GetTraitTalents from Platform/talents.lua, which loads later, so it is looked up at call time.
+-- Lists the hero trees a specialization can choose, for the editor.
+-- @param specID number|nil  The specialization id; nil means the one being played.
+-- @return table[]|nil  A list of { id, name }; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil ("hero-trees-unavailable" when the specialization
+--   has none); nil otherwise.
+--
+-- Listed from the talent tree reader, so another specialization's trees need the view loadout and not being in
+-- combat. Depends on platform:GetTraitTalents from Platform/talents.lua, which loads later, so it is looked up at
+-- call time.
 function platform:GetHeroTreeChoices(specID)
     if type(self.GetTraitTalents) ~= 'function' then
         return nil, 'missing-api'
@@ -456,10 +500,13 @@ function platform:GetHeroTreeChoices(specID)
     return list
 end
 
--- Whether a spell currently shows its activation (proc) glow. The game answers
--- for the spell ID the action shows, so the spell and its base and override
--- relatives are each asked by the caller.
--- Returns true or false, or nil and a reason.
+-- Reads whether a spell currently shows its activation (proc) glow.
+-- @param spellID number  The spell id; a positive integer.
+-- @return boolean|nil  True or false; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- The game answers for the spell id the action shows, so the spell and its base and override relatives are each asked
+-- by the caller.
 function platform:IsSpellGlowing(spellID)
     local policy = self:GetCombatDataPolicy()
 
@@ -497,13 +544,15 @@ end
 -- Group
 -- ============================================================================
 
--- Group size, assigned roles or dead members over the party or raid tokens:
--- {size, roles={TANK,HEALER,DAMAGER,NONE}, dead}. Everything counts you: size
--- is 1 when solo, a role counts you when it is yours, and dead counts you when
--- you are dead or a ghost. `want` is 'size' (the default), 'roles' or 'dead':
--- only the members' values that measure needs are read, so a group size never
--- calls the role or death APIs. roles or dead is nil, with rolesReason or
--- deadReason, when a member's value could not be read.
+-- Reads the group size, assigned roles or dead members over the party or raid tokens.
+-- @param want string|nil  Which measure to read: "size" (the default), "roles" or "dead".
+-- @return table|nil  { size, roles = { TANK, HEALER, DAMAGER, NONE }, dead, rolesReason, deadReason }; nil when it
+--   cannot be read. roles or dead is nil, with rolesReason or deadReason, when a member's value could not be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Everything counts you: size is 1 when solo, a role counts you when it is yours, and dead counts you when you are
+-- dead or a ghost. Only the members' values that the measure needs are read, so a group size never calls the role or
+-- death APIs.
 function platform:GetGroupSnapshot(want)
     local policy = self:GetCombatDataPolicy()
 

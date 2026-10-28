@@ -8,17 +8,23 @@
 local _, addon = ...
 local platform = addon.Platform
 
--- True for a number that is neither NaN nor infinite.
+-- Whether a value is a number that is neither NaN nor infinite.
+-- @param value any  The value to test.
+-- @return boolean  True for a finite number.
 local function finite(value)
     return type(value) == "number" and value == value and value < math.huge and value > -math.huge
 end
 
--- True when value is an integer slot number from 1 to 64.
+-- Whether a value is an integer totem slot number from 1 to 64.
+-- @param value any  The value to test.
+-- @return boolean  True for an integer from 1 to 64.
 local function slotNumber(value)
     return finite(value) and value >= 1 and value <= 64 and value % 1 == 0
 end
 
--- Returns the number of totem slots the client has (0 to 64), or nil and a reason.
+-- Reads how many totem slots the client has (GetNumTotemSlots).
+-- @return number|nil  The slot count (0 to 64); nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:GetTotemSlotCount()
     if type(GetNumTotemSlots) ~= "function" then
         return nil, "missing-api"
@@ -39,11 +45,21 @@ function platform:GetTotemSlotCount()
     return count
 end
 
--- Keep observation transport separate from validation, as with spell/aura
--- records. No tuple field is compared before its readability check.
--- Turns one GetTotemInfo tuple into { slot, active, name, startTime, duration, iconID, modRate, spellID }. An empty
--- slot (have == false) is an inactive record with zeroed times; otherwise nil and a reason when any field is
--- restricted or malformed.
+-- Turns one GetTotemInfo tuple into a normalized totem record.
+-- @param slot number  The totem slot the tuple was read for.
+-- @param have boolean|nil  The native "slot has a totem" flag; false yields an inactive record with zeroed times.
+-- @param name string|nil  The totem name.
+-- @param start number|nil  The start time.
+-- @param duration number|nil  The duration in seconds.
+-- @param icon number|nil  The icon file id.
+-- @param rate number|nil  The haste modifier rate; nil is treated as 1.
+-- @param id number|nil  The totem spell id; zero or nil leaves spellID unset.
+-- @return table|nil  The record { slot, active, name, startTime, duration, iconID, modRate, spellID }; an empty slot is
+--   { slot, active = false, startTime = 0, duration = 0, modRate = 1 }. nil when any field is restricted or malformed.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Observation transport is kept separate from validation, as with spell/aura records. No tuple field is compared
+-- before its readability check.
 local function normalize(slot, have, name, start, duration, icon, rate, id)
     if not platform:CanReadValue(have) then
         return nil, "restricted-value"
@@ -89,7 +105,10 @@ local function normalize(slot, have, name, start, duration, icon, rate, id)
     }
 end
 
--- Returns the normalized record for totem slot (1 to 64) as described above normalize, or nil and a reason.
+-- Reads one totem slot (GetTotemInfo).
+-- @param slot number  The totem slot, an integer from 1 to 64.
+-- @return table|nil  The normalized record, as described above normalize; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:GetTotemInfo(slot)
     if not slotNumber(slot) then
         return nil, "invalid-totem-slot"

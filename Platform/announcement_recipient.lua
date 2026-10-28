@@ -9,11 +9,18 @@
 local _, addon = ...
 local platform = addon.Platform
 
--- Cast receipts contain names; membership APIs consume unit tokens. Resolve
--- only at a matching announcement event, never from the selected target and
--- never into a cache shared by polls or casts.
--- Returns true or false when the named recipient is in the party or raid (raid only when raidOnly is true), or nil and
--- a reason code; an ambiguous name, an unreadable roster or a roster that changed during the read is nil.
+-- Reads whether the named recipient of a cast receipt is in the player's party or raid.
+-- @param recipient string  The recipient's name as it appears in the receipt; a non-empty string of at most 256
+--   characters.
+-- @param raidOnly boolean|nil  True to check the raid only; nil or false checks the party first, then the raid.
+-- @return boolean|nil  True when the recipient is in the party or raid, false when not; nil when it cannot be decided
+--   (an ambiguous name, an unreadable roster or a roster that changed during the read).
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Cast receipts contain names; membership APIs consume unit tokens. The name is resolved only at a matching
+-- announcement event, never from the selected target and never into a cache shared by polls or casts. Native calls and
+-- extension callbacks may reenter, so the complete bounded roster is read again after the membership reads (including
+-- negative results); a stale false must not turn a NOT condition into permission to announce.
 function platform:GetAnnouncementRecipientGroupMembership(recipient, raidOnly)
     if not self:CanReadValue(recipient) or not self:CanReadValue(raidOnly) then return nil,'restricted-value' end
     if type(recipient)~='string' or recipient=='' or #recipient>256 then return nil,'cast-recipient-unavailable' end
@@ -89,9 +96,14 @@ function platform:GetAnnouncementRecipientGroupMembership(recipient, raidOnly)
     return member,failure
 end
 
--- Joined names are configuration; local IDs are fresh invocation-only addresses.
--- Returns the list of { id, value, text } for the joined channels (slots 1 to 20), or nil and a reason code. current,
--- when given, is polled between native calls and ends the scan with "announcement-retired" once it stops saying true.
+-- Scans the joined chat channels (slots 1 to 20).
+-- @param self table  The platform table, used for its CanReadValue method.
+-- @param current function|nil  Callback polled between native calls; the scan ends with "announcement-retired" once it
+--   stops returning true.
+-- @return table[]|nil  The channels as { id, value, text } rows; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Joined names are configuration; local ids are fresh invocation-only addresses.
 local function channelScan(self, current)
     local query = GetChannelName
     local readable = self.CanReadValue
@@ -100,6 +112,9 @@ local function channelScan(self, current)
         return nil, 'missing-api'
     end
 
+    -- Whether the scan still owns its inputs.
+    -- @return boolean  True when the owner callback still returns true and neither GetChannelName nor CanReadValue has
+    --   been replaced.
     local function owned()
         if current then
             local ok, live = pcall(current)
@@ -112,6 +127,9 @@ local function channelScan(self, current)
         return query == GetChannelName and readable == self.CanReadValue
     end
 
+    -- Whether a value is readable and accessible.
+    -- @param value any  The value to test.
+    -- @return boolean  True when the value may be inspected.
     local function read(value)
         return readable(self, value) and (not canaccessvalue or canaccessvalue(value))
     end
@@ -154,8 +172,12 @@ local function channelScan(self, current)
     return rows
 end
 
--- Returns the joined channels as { value, text } rows for the settings picker (no channel numbers, which change), or
--- nil and a reason code.
+-- Lists the joined chat channels for the settings picker.
+-- @param current function|nil  Callback polled between native calls; the scan ends with "announcement-retired" once it
+--   stops returning true.
+-- @return table[]|nil  The channels as { value, text } rows (no channel numbers, which change); nil when it cannot be
+--   read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:GetJoinedAnnouncementChannels(current)
     local rows, why = channelScan(self, current)
 
@@ -172,9 +194,15 @@ function platform:GetJoinedAnnouncementChannels(current)
     return result
 end
 
--- Turns a configured channel name into its current numeric id at the moment of use. Returns the id and a function that
--- re-resolves and reports whether the id is still the same, or nil, nil and a reason code when the name is invalid,
--- absent or joined twice. The numeric id must never be stored: a channel's number changes when others are joined.
+-- Turns a configured channel name into its current numeric id at the moment of use.
+-- @param name string  The channel name; a non-empty string of at most 256 characters with no control characters.
+-- @param current function|nil  Callback polled between native calls; the scan ends once it stops returning true.
+-- @return number|nil  The channel id; nil when the name is invalid, absent or joined twice.
+-- @return function|nil  A function that re-resolves and reports (as a boolean) whether the id is still the same; nil
+--   when the first return is nil.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- The numeric id must never be stored: a channel's number changes when others are joined.
 function platform:ResolveAnnouncementChannel(name, current)
     if not self:CanReadValue(name) or type(name) ~= 'string' or name == '' or #name > 256 or name:find(
         '[%z\1-\31\127]'
@@ -184,6 +212,8 @@ function platform:ResolveAnnouncementChannel(name, current)
 
     local query, readable = GetChannelName, self.CanReadValue
 
+    -- Re-reads the channel list and finds the id for the configured name.
+    -- @return number|nil  The channel id; nil when it is absent, ambiguous or the inputs changed during the read.
     local function resolve()
         if query ~= GetChannelName or readable ~= self.CanReadValue then
             return nil

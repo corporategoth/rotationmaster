@@ -8,9 +8,13 @@
 local _, addon = ...
 local platform = addon.Platform
 
--- Ownership needs a fresh public player class token, not eligibility facts.
--- Consume only UnitClass's second return and leave its other fields alone.
--- Returns the player's class file name (for example "MAGE"), or nil and a reason.
+-- Reads the player's own class token for rotation ownership checks.
+-- @return string|nil  The player's class file name (for example "MAGE"); nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil ("missing-api", "api-error", "restricted-value",
+--   "class-data-unavailable" or "invalid-api-result"); nil on success.
+--
+-- Ownership needs a fresh public player class token, not eligibility facts, so this consumes only UnitClass's second
+-- return and leaves its other fields alone.
 function platform:GetPlayerOwnerClassObservation()
     if type(UnitClass)~='function' then return nil,'missing-api' end
     local ok,_,class=pcall(UnitClass,'player')

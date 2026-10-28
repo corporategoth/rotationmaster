@@ -9,9 +9,14 @@
 local _, addon = ...
 local platform = addon.Platform
 
--- Public roster membership is readable state, independent of enemy-combat
--- observation policy. A false selected result must not invoke another query.
--- Returns true or false for the player (raid only when raidOnly is true), or nil and a reason code.
+-- Reads whether the player is in a group.
+-- @param raidOnly boolean|nil  True to ask about a raid group only (IsInRaid); nil or false asks about any group
+--   (IsInGroup).
+-- @return boolean|nil  Whether the player is in the selected kind of group; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Public roster membership is readable state, independent of enemy-combat observation policy. A false selected result
+-- must not invoke another query.
 function platform:GetGroupMembership(raidOnly)
     if not self:CanReadValue(raidOnly) then return nil,'restricted-value' end
     if raidOnly~=nil and type(raidOnly)~='boolean' then return nil,'invalid-group-query' end
@@ -27,9 +32,16 @@ function platform:GetGroupMembership(raidOnly)
     return member
 end
 
--- Explicit unit/name observation is separate from the legacy player query.
--- Returns true when unit is in the party or raid (raid only when raidOnly is true), false when it is in neither, or
--- nil and a reason code; a unit string of any other shape is rejected before a native call is made.
+-- Reads whether a named unit is in the player's party or raid (UnitInParty, UnitInRaid).
+-- @param unit string  The unit token or name; a non-empty string of at most 512 characters with no control
+--   characters.
+-- @param raidOnly boolean|nil  True to check the raid only; nil or false checks the party first, then the raid.
+-- @return boolean|nil  True when the unit is in the party or raid, false when it is in neither; nil when it cannot be
+--   read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Explicit unit/name observation is separate from the legacy player query. A unit string of any other shape is
+-- rejected before a native call is made.
 function platform:GetUnitGroupMembership(unit, raidOnly)
     if not self:CanReadValue(unit) or not self:CanReadValue(raidOnly) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' or #unit>512 or unit:find('[%z\1-\31\127]') then return nil,'invalid-unit' end

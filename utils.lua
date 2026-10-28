@@ -23,8 +23,11 @@ local random, floor = math.random, math.floor
 -- Windows and popups
 -- ============================================================================
 
--- Shows the shared ROTATIONMASTER_ERROR alert with the text s and a single Accept button; onaccept (optional) runs when
--- it is accepted. Reuses one dialog definition, so a second call replaces the text of an alert still on screen.
+-- Shows the shared ROTATIONMASTER_ERROR alert with a single Accept button.
+-- @param s string  The alert text.
+-- @param onaccept function|nil  Runs when the alert is accepted.
+--
+-- Reuses one dialog definition, so a second call replaces the text of an alert still on screen.
 addon.PopupError = function(s, onaccept)
     StaticPopupDialogs["ROTATIONMASTER_ERROR"] = {
         text = s,
@@ -39,9 +42,11 @@ addon.PopupError = function(s, onaccept)
     StaticPopup_Show("ROTATIONMASTER_ERROR")
 end
 
--- Makes a native window (frame is the widget table, frame.frame its Blizzard frame) close on Escape. Prefers the window
--- registry (addon:RegisterWindowForEscape); if it is absent or declines, falls back to a keyboard handler on the frame
--- that swallows Escape and passes every other key through to the game.
+-- Makes a native window close on Escape.
+-- @param frame table  The widget table; frame.frame is its Blizzard frame.
+--
+-- Prefers the window registry (addon:RegisterWindowForEscape); if it is absent or declines, falls back to a keyboard
+-- handler on the frame that swallows Escape and passes every other key through to the game.
 addon.HideOnEscape = function(frame)
     if addon.MakeWindowOpaque then
         addon:MakeWindowOpaque(frame)
@@ -67,8 +72,11 @@ end
 -- Identifiers and legacy aliases
 -- ============================================================================
 
--- Returns a random version-4 style UUID string (also a second value, the substitution count, from string.gsub). Uses
--- math.random, so it is unique enough for record ids but not secure. Callable as addon.uuid() or addon:uuid().
+-- Generates a random version-4 style UUID string.
+-- @return string  The UUID.
+-- @return number  The substitution count from string.gsub.
+--
+-- Uses math.random, so it is unique enough for record ids but not secure. Callable as addon.uuid() or addon:uuid().
 addon.uuid = function()
     local template = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
 
@@ -127,9 +135,11 @@ addon.ReportCacheStats = addon.Functions.cache.ReportCacheStats
 -- Spell specialization lookups
 -- ============================================================================
 
--- Returns true when spellid is in the cached spell set of the spec key (addon.specSpells, rebuilt by Core/spell_catalog
--- from the spellbook), false when the spec or spell is unknown or nil. Pass the spec BOOKTYPE_PET ("pet") to get pet
--- spells.
+-- Tells whether a spell is in the cached spell set of a spec key.
+-- @param spec string|number|nil  The spec key (addon.specSpells, rebuilt by Core/spell_catalog from the spellbook);
+--   pass BOOKTYPE_PET ("pet") to get pet spells.
+-- @param spellid number|nil  The spell id.
+-- @return boolean  True when the spell is in the set; false when the spec or spell is unknown or nil.
 addon.isSpellOnSpec = function(spec, spellid)
     if spec ~= nil and spellid ~= nil and addon.specSpells[spec] ~= nil then
         return addon.specSpells[spec][spellid] ~= nil
@@ -138,14 +148,17 @@ addon.isSpellOnSpec = function(spec, spellid)
     return false
 end
 
--- Returns true when the spell is in the player's pet spellbook right now (a live client query, not the cached spec
--- sets).
+-- Tells whether a spell is in the player's pet spellbook right now.
+-- @param spellid number  The spell id.
+-- @return boolean  True when it is; a live client query, not the cached spec sets.
 addon.isActivePetSpell = function(spellid)
     return FindSpellBookSlotBySpellID(spellid, true) ~= nil
 end
 
--- Returns the best spell id for a spell name in the spec key (addon.specSpellsReverse), or nil when the name is unknown
--- or its id is not in that spec's spell set. Pass the spec BOOKTYPE_PET ("pet") to get pet spells.
+-- Looks up the best spell id for a spell name in a spec key.
+-- @param spec string|number|nil  The spec key (addon.specSpellsReverse); pass BOOKTYPE_PET ("pet") to get pet spells.
+-- @param name string|nil  The spell name.
+-- @return number|nil  The spell id; nil when the name is unknown or its id is not in that spec's spell set.
 addon.getSpecSpellID = function(spec, name)
     if spec ~= nil and name ~= nil and addon.specSpellsReverse[spec] ~= nil then
         local spellid = addon.specSpellsReverse[spec][name]
@@ -162,8 +175,9 @@ end
 -- Chat output
 -- ============================================================================
 
--- Returns the configured log level as a number (profile.loglevel; 4 verbose, 3 debug, 2 info, 1 warn, 0 quiet),
--- defaulting to 2 when the database or profile is not available. Never writes the default back.
+-- Reads the configured log level.
+-- @return number  profile.loglevel (4 verbose, 3 debug, 2 info, 1 warn, 0 quiet); 2 when the database or profile is
+--   not available. Never writes the default back.
 local function getLogLevel(self)
     -- AceDB removes default-valued fields during shutdown; events may still
     -- arrive afterwards. Use the normal default without writing it back.
@@ -171,8 +185,12 @@ local function getLogLevel(self)
     return (profile and tonumber(profile.loglevel)) or 2
 end
 
--- The leveled printers below prefix the addon name and print a string.format-style message through AceConsole; each
--- one prints only at or above its level and does nothing otherwise. Verbose is level 4, the chattiest.
+-- Prints a verbose (level 4) message.
+-- @param message string  A string.format-style message.
+-- @param ... any  The format arguments.
+--
+-- The leveled printers (verbose, debug, info, warn) prefix the addon name and print through AceConsole; each prints
+-- only at or above its level and does nothing otherwise. Verbose is level 4, the chattiest.
 function addon:verbose(message, ...)
     if getLogLevel(self) >= 4 then
         AceConsole:Printf(
@@ -190,7 +208,9 @@ function addon:verbose(message, ...)
     end
 end
 
--- Debug (level 3) output.
+-- Prints a debug (level 3) message.
+-- @param message string  A string.format-style message.
+-- @param ... any  The format arguments.
 function addon:debug(message, ...)
     if getLogLevel(self) >= 3 then
         AceConsole:Printf(
@@ -208,7 +228,9 @@ function addon:debug(message, ...)
     end
 end
 
--- Information (level 2, the default) output.
+-- Prints an information (level 2, the default) message.
+-- @param message string  A string.format-style message.
+-- @param ... any  The format arguments.
 function addon:info(message, ...)
     if getLogLevel(self) >= 2 then
         AceConsole:Printf(
@@ -226,7 +248,9 @@ function addon:info(message, ...)
     end
 end
 
--- Warning (level 1) output, in the warning color.
+-- Prints a warning (level 1) message in the warning color.
+-- @param message string  A string.format-style message.
+-- @param ... any  The format arguments.
 function addon:warn(message, ...)
     if getLogLevel(self) >= 1 then
         AceConsole:Printf(
@@ -244,7 +268,9 @@ function addon:warn(message, ...)
     end
 end
 
--- Unconditional output for command results the player asked for; ignores the log level.
+-- Prints command results the player asked for; ignores the log level.
+-- @param message string  A string.format-style message.
+-- @param ... any  The format arguments.
 function addon:print(message, ...)
     AceConsole:Printf(
         color.WHITE
@@ -260,7 +286,9 @@ function addon:print(message, ...)
     )
 end
 
--- Unconditional output in the announcement color; ignores the log level.
+-- Prints a message in the announcement color; ignores the log level.
+-- @param message string  A string.format-style message.
+-- @param ... any  The format arguments.
 function addon:announce(message, ...)
     AceConsole:Printf(
         color.WHITE
@@ -283,8 +311,12 @@ end
 -- The base64 alphabet shared by base64enc and base64dec.
 local b64_chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 
--- Returns data (a byte string) as padded base64 text. A global, not an addon field; nothing else in the addon calls it,
--- the export format has its own encoder in Data/codec.lua.
+-- Encodes a byte string as padded base64 text.
+-- @param data string  The bytes to encode.
+-- @return string  The base64 text.
+--
+-- A global, not an addon field; nothing else in the addon calls it, the export format has its own encoder in
+-- Data/codec.lua.
 function base64enc(data)
     return ((data:gsub('.', function(x)
         local r, b = '', x:byte()
@@ -309,8 +341,11 @@ function base64enc(data)
     end) .. ({ '', '==', '=' })[#data % 3 + 1])
 end
 
--- Returns the bytes encoded by base64 text, ignoring any character outside the alphabet and the padding sign. A global
--- like base64enc, and likewise not called elsewhere in the addon.
+-- Decodes base64 text.
+-- @param data string  The base64 text; any character outside the alphabet and the padding sign is ignored.
+-- @return string  The bytes.
+--
+-- A global like base64enc, and likewise not called elsewhere in the addon.
 function base64dec(data)
     data = string.gsub(data, '[^' .. b64_chars .. '=]', '')
 
@@ -341,8 +376,13 @@ function base64dec(data)
     end))
 end
 
--- Breaks s into lines of sz + 1 characters each, joined with newlines (nil in, nil out). Cuts at fixed offsets, not at
--- word boundaries; addon.wrap is the word-aware one. A global, not called elsewhere in the addon.
+-- Breaks a string into lines of a fixed width.
+-- @param s string|nil  The string.
+-- @param sz number  The line length minus one: each line holds sz + 1 characters.
+-- @return string|nil  The lines joined with newlines; nil when s is nil.
+--
+-- Cuts at fixed offsets, not at word boundaries; addon.wrap is the word-aware one. A global, not called elsewhere in
+-- the addon.
 function width_split(s, sz)
     if s == nil then
         return nil
@@ -378,9 +418,12 @@ addon.calculate_trend = addon.Functions.trends.calculate
 -- Widget helpers
 -- ============================================================================
 
--- Shows text in the game tooltip while the pointer is over a native widget (frame is the widget table with SetCallback;
--- frame.frame is the Blizzard frame it anchors to). Hides the tooltip on leave only if this widget still owns it. Note
--- the dot: called as addon.AddTooltip(widget, text), not as a method.
+-- Shows text in the game tooltip while the pointer is over a native widget.
+-- @param frame table  The widget table with SetCallback; frame.frame is the Blizzard frame it anchors to.
+-- @param text string  The tooltip text.
+--
+-- Hides the tooltip on leave only if this widget still owns it. Note the dot: called as addon.AddTooltip(widget, text),
+-- not as a method.
 function addon.AddTooltip(frame, text)
     frame:SetCallback("OnEnter", function()
         GameTooltip:SetOwner(frame.frame, "ANCHOR_BOTTOMRIGHT", 3)
@@ -394,9 +437,11 @@ function addon.AddTooltip(frame, text)
     end)
 end
 
--- Walks a built widget tree (obj and its children, depth first) giving each node spell hyperlink support when
--- addon:InstallSpellHyperlinks exists, then running the node's configure callback if it set one. Children are
--- configured before their parent.
+-- Configures a built widget tree.
+-- @param obj table  The widget (obj and its children are walked depth first).
+--
+-- Gives each node spell hyperlink support when addon:InstallSpellHyperlinks exists, then runs the node's configure
+-- callback if it set one. Children are configured before their parent.
 function addon:configure_frame(obj)
     if self.InstallSpellHyperlinks then
         if obj.label then
@@ -419,7 +464,9 @@ function addon:configure_frame(obj)
     end
 end
 
--- Returns the player's rotation specialization index, or nil and a reason when the platform cannot report one.
+-- Reads the player's rotation specialization index.
+-- @return number|nil  The index; nil when the platform cannot report one.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function addon:GetSpecialization()
     local selection, reason = self.Platform:GetRotationSpecialization()
 
@@ -441,8 +488,11 @@ end
 local itemUpdates = setmetatable({}, { __mode = 'k' })
 local itemReleases = setmetatable({}, { __mode = 'k' })
 
--- Wraps the widget's OnRelease once so that releasing the widget back to its pool drops its pending update ticket and
--- restores the original handler. Calling it again on an already watched widget does nothing.
+-- Wraps a widget's OnRelease once so that releasing the widget back to its pool drops its pending update ticket and
+-- restores the original handler.
+-- @param widget table|nil  The text or icon widget.
+--
+-- Calling it again on an already watched widget does nothing.
 local function watchItemRelease(widget)
     if not widget or itemReleases[widget] == widget.OnRelease and widget.OnRelease ~= nil then
         return
@@ -468,15 +518,20 @@ local function watchItemRelease(widget)
     widget.OnRelease = release
 end
 
--- Returns the widget's current text, or nil when there is no widget or it has no GetText.
+-- Reads a widget's current text.
+-- @param widget table|nil  The widget.
+-- @return string|nil  The text; nil when there is no widget or it has no GetText.
 local function itemText(widget)
     if widget and type(widget.GetText) == 'function' then
         return widget:GetText()
     end
 end
 
--- Keeps an item tooltip that is already open on the icon in step with the id just shown: re-points it at the new item,
--- or hides it when there is none. Opens nothing by itself.
+-- Keeps an item tooltip that is already open on the icon in step with the id just shown.
+-- @param icon table|nil  The icon widget.
+-- @param id number|nil  The item id shown; nil hides the tooltip.
+--
+-- Re-points the tooltip at the new item, or hides it when there is none. Opens nothing by itself.
 local function itemTooltip(icon, id)
     if icon and GameTooltip and GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
         if id then
@@ -487,8 +542,11 @@ local function itemTooltip(icon, id)
     end
 end
 
--- True when the text widget still shows what the ticket recorded at the last update (compared by reference id when the
--- widget has one, else by text), i.e. the player has not typed or picked something else since.
+-- Tells whether the text widget still shows what the ticket recorded at the last update.
+-- @param widget table  The text widget.
+-- @param ticket table  The update ticket.
+-- @return boolean  True when it does (compared by reference id when the widget has one, else by text), i.e. the
+--   player has not typed or picked something else since.
 local function sameItemText(widget, ticket)
     if widget.GetReferenceID then
         local current = widget:GetReferenceID()
@@ -501,11 +559,19 @@ local function sameItemText(widget, ticket)
     return itemText(widget) == ticket.text
 end
 
--- Fills an editor's item text widget and icon widget from an item (id, link or name) and retries while the client is
--- still loading item data. named: show the item name (else the id) in the text widget; image: set the icon as an image
--- (else write the id into it). method is the name of the public wrapper below, which the retry timer calls back with
--- attempt and ticket. Up to 4 attempts, 0.5 seconds apart; a retry is abandoned if the widgets were reused, released or
--- edited since it was scheduled. An item the platform cannot read (restricted client) is shown as empty.
+-- Fills an editor's item text widget and icon widget from an item and retries while the client is still loading item
+-- data.
+-- @param method string  The name of the public wrapper below, which the retry timer calls back.
+-- @param named boolean  True to show the item name (else the id) in the text widget.
+-- @param image boolean  True to set the icon as an image (else write the id into it).
+-- @param item number|string|nil  The item id, link or name.
+-- @param text table|nil  The text widget.
+-- @param icon table|nil  The icon widget.
+-- @param attempt number|nil  The attempt number; set by the retry timer.
+-- @param ticket table|nil  The update ticket; set by the retry timer.
+--
+-- Up to 4 attempts, 0.5 seconds apart; a retry is abandoned if the widgets were reused, released or edited since it
+-- was scheduled. An item the platform cannot read (restricted client) is shown as empty.
 local function updateItem(self, method, named, image, item, text, icon, attempt, ticket)
     if not attempt then
         attempt = 1
@@ -562,21 +628,45 @@ local function updateItem(self, method, named, image, item, text, icon, attempt,
     end
 end
 
--- The four UpdateItem_* methods are the public entry points of updateItem: the first word is what the text widget shows
--- (ID or Name), the second what the icon widget shows (ID or Image). Callers pass only item, text and icon; attempt and
--- ticket belong to the retry timer. Either widget may be nil.
+-- Shows an item id in the text widget and an item id in the icon widget.
+-- @param item number|string|nil  The item id, link or name.
+-- @param text table|nil  The text widget.
+-- @param icon table|nil  The icon widget.
+-- @param attempt number|nil  The attempt number; belongs to the retry timer.
+-- @param ticket table|nil  The update ticket; belongs to the retry timer.
+--
+-- The four UpdateItem_* methods are the public entry points of updateItem: the first word is what the text widget
+-- shows (ID or Name), the second what the icon widget shows (ID or Image).
 function addon:UpdateItem_ID_ID(item, text, icon, attempt, ticket)
     updateItem(self, 'UpdateItem_ID_ID', false, false, item, text, icon, attempt, ticket)
 end
 
+-- Shows an item id in the text widget and the item's image in the icon widget; see UpdateItem_ID_ID.
+-- @param item number|string|nil  The item id, link or name.
+-- @param text table|nil  The text widget.
+-- @param icon table|nil  The icon widget.
+-- @param attempt number|nil  The attempt number; belongs to the retry timer.
+-- @param ticket table|nil  The update ticket; belongs to the retry timer.
 function addon:UpdateItem_ID_Image(item, text, icon, attempt, ticket)
     updateItem(self, 'UpdateItem_ID_Image', false, true, item, text, icon, attempt, ticket)
 end
 
+-- Shows the item's name in the text widget and its id in the icon widget; see UpdateItem_ID_ID.
+-- @param item number|string|nil  The item id, link or name.
+-- @param text table|nil  The text widget.
+-- @param icon table|nil  The icon widget.
+-- @param attempt number|nil  The attempt number; belongs to the retry timer.
+-- @param ticket table|nil  The update ticket; belongs to the retry timer.
 function addon:UpdateItem_Name_ID(item, text, icon, attempt, ticket)
     updateItem(self, 'UpdateItem_Name_ID', true, false, item, text, icon, attempt, ticket)
 end
 
+-- Shows the item's name in the text widget and its image in the icon widget; see UpdateItem_ID_ID.
+-- @param item number|string|nil  The item id, link or name.
+-- @param text table|nil  The text widget.
+-- @param icon table|nil  The icon widget.
+-- @param attempt number|nil  The attempt number; belongs to the retry timer.
+-- @param ticket table|nil  The update ticket; belongs to the retry timer.
 function addon:UpdateItem_Name_Image(item, text, icon, attempt, ticket)
     updateItem(self, 'UpdateItem_Name_Image', true, true, item, text, icon, attempt, ticket)
 end

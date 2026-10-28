@@ -29,8 +29,12 @@ local platform = addon.Platform
 -- value still passes CanReadValue: a secret one is unavailable, never a number.
 local neverSecretPointPowers = { 'ComboPoints', 'Runes', 'SoulShards', 'HolyPower', 'Chi', 'ArcaneCharges', 'Essence' }
 
--- Returns true when powerType is one of the secondary resources Blizzard no longer makes secret (see the list above).
--- Matches by Enum.PowerType name so a client that renumbers the enum still works; any unreadable input is false.
+-- Whether a power type is one of the secondary resources Blizzard no longer makes secret (see the list above).
+-- @param powerType any  The power type id to test.
+-- @return boolean  True when powerType is one of those resources; false for anything else, including any unreadable
+--   input.
+--
+-- Matches by Enum.PowerType name so a client that renumbers the enum still works.
 function platform:IsNeverSecretPointPower(powerType)
     if not self:CanReadValue(powerType) then
         return false
@@ -70,11 +74,16 @@ function platform:IsNeverSecretPointPower(powerType)
     return false
 end
 
--- POINT has its own explicit secondary-resource selection policy. These reads
--- neither choose the primary power bar nor redirect the configured unit.
--- Identity is guarded value by value, so the restricted policy reads it too.
--- Returns { exists = false }, { exists = true } or { exists = true, class = <class file name> } (class only when
--- includeClass is true), or nil and a reason. Runs on the poll path; callers cache it per evaluation pass.
+-- Reads whether a unit exists and, on request, its class.
+-- @param unit string  The unit token to read; must be a non-empty string.
+-- @param includeClass boolean  True to also read the unit's class file name.
+-- @return table|nil  { exists = false }, { exists = true } or { exists = true, class = <class file name> } (class only
+--   when includeClass is true); nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- POINT has its own explicit secondary-resource selection policy. These reads neither choose the primary power bar
+-- nor redirect the configured unit. Identity is guarded value by value, so the restricted policy reads it too. Runs
+-- on the poll path; callers cache it per evaluation pass.
 function platform:GetUnitPointIdentityObservation(unit, includeClass)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
@@ -141,9 +150,15 @@ do
     end
 end
 
--- Reads UnitPower or UnitPowerMax with the unmodified-fragments flag and returns the value in whole units (fragments
--- divided by pointFragmentsPerWhole), or nil and a reason. Probe policy only; reached through
--- GetUnitPointPowerObservation when powerType is the Burning Embers type. kind is "current" or "maximum".
+-- Reads UnitPower or UnitPowerMax with the unmodified-fragments flag and converts it to whole units.
+-- @param unit string  The unit token to read; must be a non-empty string.
+-- @param powerType number  The power type id (the Burning Embers type).
+-- @param kind string  "current" (UnitPower) or "maximum" (UnitPowerMax).
+-- @return number|nil  The value in whole units (fragments divided by pointFragmentsPerWhole); nil when it cannot be
+--   read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Probe policy only; reached through GetUnitPointPowerObservation when powerType is the Burning Embers type.
 function platform:GetUnitPointFragmentObservation(unit, powerType, kind)
     if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(powerType) or not self:CanReadValue(kind) then return nil,'restricted-value' end
@@ -162,9 +177,15 @@ function platform:GetUnitPointFragmentObservation(unit, powerType, kind)
     return result/pointFragmentsPerWhole
 end
 
--- Returns the current or maximum quantity of one explicitly chosen point resource, or nil and a reason. kind is
--- "current" (UnitPower) or "maximum" (UnitPowerMax). Probe clients read any type; restricted clients only the types
--- IsNeverSecretPointPower accepts. The sign and fraction of the result are kept as the client reported them.
+-- Reads the current or maximum quantity of one explicitly chosen point resource.
+-- @param unit string  The unit token to read; must be a non-empty string.
+-- @param powerType number  The power type id of the resource.
+-- @param kind string  "current" (UnitPower) or "maximum" (UnitPowerMax).
+-- @return number|nil  The quantity, with its sign and fraction kept as the client reported them; nil when it cannot
+--   be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Probe clients read any type; restricted clients only the types IsNeverSecretPointPower accepts.
 function platform:GetUnitPointPowerObservation(unit, powerType, kind)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and (policy~='restricted' or not self:IsNeverSecretPointPower(powerType)) then return nil,'unsupported-policy' end
@@ -185,9 +206,13 @@ function platform:GetUnitPointPowerObservation(unit, powerType, kind)
     return result
 end
 
--- Explicit player/target combo transport. Other units/resources use the observer above.
--- Only the "tbc" client family on the probe policy has this path: "current" is GetComboPoints("player", "target") and
--- "maximum" is UnitPowerMax("player", powerType). Returns the number, or nil and a reason.
+-- Reads the player's combo points or maximum through the explicit player/target transport.
+-- @param powerType number  The power type id; used for the maximum query (UnitPowerMax("player", powerType)).
+-- @param kind string  "current" (GetComboPoints("player", "target")) or "maximum".
+-- @return number|nil  The number; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Other units and resources use the observer above. Only the "tbc" client family on the probe policy has this path.
 function platform:GetPlayerComboPointObservation(powerType, kind)
     local info=self:GetClientInfo()
     if info.combatDataPolicy~='probe' then return nil,'unsupported-policy' end

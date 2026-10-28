@@ -22,18 +22,27 @@ local platform = addon.Platform
 -- the Sun at the right end and the Moon at the left of its bar), UnitRangedDamage
 -- (every client).
 
--- True for a real finite number (not NaN, not infinite).
+-- Whether a value is a real finite number (not NaN, not infinite).
+-- @param value any  The value to test.
+-- @return boolean  True for a finite number.
 local function finite(value)
     return type(value) == 'number' and value == value and value < math.huge and value > -math.huge
 end
 
 -- Packs varargs with their count, so a trailing nil is not lost.
+-- @param ... any  The values to pack.
+-- @return table  The values in the array part, with the count in field n.
 local function pack(...)
     return { n = select('#', ...), ... }
 end
 
--- Calls api under pcall and returns the packed results (the pcall flag is at index 1, the native returns follow), or
--- nil and a reason code when the function is missing, throws or returns any restricted value.
+-- Calls a native function under pcall and packs its results.
+-- @param self table  The platform table, used for its CanReadValue method.
+-- @param api function|nil  The native function; a non-function is "missing-api".
+-- @param ... any  The arguments passed to api.
+-- @return table|nil  The packed results (the pcall flag is at index 1, the native returns follow); nil when the
+--   function is missing, throws or returns any restricted value.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 local function call(self, api, ...)
     if type(api) ~= 'function' then
         return nil, 'missing-api'
@@ -54,7 +63,10 @@ local function call(self, api, ...)
     return results
 end
 
--- Returns the player's class token (for example "DRUID"), or nil and a reason code.
+-- Reads the player's class token.
+-- @param self table  The platform table, used for its CanReadValue method.
+-- @return string|nil  The class file name (for example "DRUID"); nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 local function playerClass(self)
     local results, reason = call(self, UnitClass, 'player')
 
@@ -71,8 +83,10 @@ local function playerClass(self)
     return class
 end
 
--- A hunter pet's mood: 1 unhappy, 2 content, 3 happy; false when there is no
--- hunter pet (no pet, or a pet that has no happiness).
+-- Reads a hunter pet's mood (GetPetHappiness).
+-- @return number|false|nil  1 unhappy, 2 content or 3 happy; false when there is no hunter pet (no pet, or a pet that
+--   has no happiness); nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:GetPetHappinessObservation()
     local policy = self:GetCombatDataPolicy()
 
@@ -98,9 +112,13 @@ function platform:GetPetHappinessObservation()
     return happiness
 end
 
--- The player's Stagger: the damage waiting in the delayed pool, and with
--- asPercent the pool as a percentage of maximum health. Maximum health is
--- secret on Retail and Forever, so the percentage is unavailable there.
+-- Reads the player's Stagger (UnitStagger).
+-- @param asPercent boolean|nil  True to return the pool as a percentage of maximum health; nil or false returns the
+--   damage waiting in the delayed pool.
+-- @return number|nil  The damage, or the percentage; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Maximum health is secret on Retail and Forever, so the percentage is unavailable there.
 function platform:GetStaggerObservation(asPercent)
     local policy = self:GetCombatDataPolicy()
 
@@ -145,10 +163,14 @@ function platform:GetStaggerObservation(asPercent)
     return amount / health * 100
 end
 
--- Balance Druid Eclipse (Wrath through Mists). 'energy' is the signed bar,
--- -100 (Lunar Eclipse) to 100 (Solar Eclipse); 'direction' is where the bar is
--- heading: 'sun', 'moon' or 'none'. Another class has no Eclipse bar and
--- reads as unavailable, never as a confident zero.
+-- Reads the Balance Druid Eclipse state (Wrath through Mists).
+-- @param kind string  "energy" for the signed bar from -100 (Lunar Eclipse) to 100 (Solar Eclipse), or "direction"
+--   for where the bar is heading.
+-- @return number|string|nil  The energy as a number, or the direction as "sun", "moon" or "none"; nil when it cannot
+--   be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Another class has no Eclipse bar and reads as unavailable, never as a confident zero.
 function platform:GetEclipseObservation(kind)
     local policy = self:GetCombatDataPolicy()
 
@@ -229,8 +251,10 @@ function platform:GetEclipseObservation(kind)
     return power
 end
 
--- The speed of the ranged weapon in seconds (the Auto Shot or Shoot interval),
--- false with no ranged attack, as the first value of UnitRangedDamage.
+-- Reads the speed of the ranged weapon (the Auto Shot or Shoot interval).
+-- @return number|false|nil  The speed in seconds (the first value of UnitRangedDamage); false with no ranged attack;
+--   nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:GetRangedSwingSpeed()
     -- UnitRangedDamage is SecretWhenUnitStatsRestricted, as UnitAttackSpeed is: a
     -- hidden value is unavailable (call checks readability), not unsupported.

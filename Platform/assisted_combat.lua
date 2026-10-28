@@ -40,7 +40,9 @@ local platform = addon.Platform
 -- Assisted Combat readers
 -- ============================================================================
 
--- Returns the named C_AssistedCombat function, or nil when the namespace or the function does not exist.
+-- Looks up a C_AssistedCombat function.
+-- @param name string  The function name.
+-- @return function|nil  The function; nil when the namespace or the function does not exist.
 local function method(name)
     local namespace = C_AssistedCombat
 
@@ -55,13 +57,17 @@ local function method(name)
     end
 end
 
--- True for a positive whole number, the only shape a spell id may have.
+-- Whether a value is a positive whole number, the only shape a spell id may have.
+-- @param value any  The value to test.
+-- @return boolean  True for a positive integer.
 local function spellID(value)
     return type(value) == 'number' and value > 0 and value < math.huge and value % 1 == 0
 end
 
--- Whether the game offers Assisted Combat to this character and spec. The
--- second value is Blizzard's own failure text when it does not.
+-- Reads whether the game offers Assisted Combat to this character and spec.
+-- @return boolean|nil  Whether Assisted Combat is available; nil when it cannot be read.
+-- @return string|nil  Blizzard's own failure text when it is not available; the reason code when the first return is
+--   nil; nil otherwise.
 function platform:GetAssistedCombatAvailability()
     local fn = method('IsAvailable')
 
@@ -84,9 +90,12 @@ function platform:GetAssistedCombatAvailability()
     return available, type(reason) == 'string' and reason ~= '' and reason or nil
 end
 
--- The spell Assisted Combat suggests casting next, regardless of which
--- buttons are on the bars (checkForVisibleButton=false, as MaxDps reads it).
--- false: available, but nothing is suggested right now.
+-- Reads the spell Assisted Combat suggests casting next, regardless of which buttons are on the bars.
+-- @return number|false|nil  The suggested spell id; false when it is available but nothing is suggested right now;
+--   nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Reads checkForVisibleButton=false, as MaxDps does.
 function platform:GetAssistedSuggestion()
     local next = method('GetNextCastSpell')
 
@@ -121,7 +130,9 @@ function platform:GetAssistedSuggestion()
     return spell
 end
 
--- The specialization's Assisted Combat rotation set, as a fresh array.
+-- Reads the specialization's Assisted Combat rotation set.
+-- @return number[]|nil  A fresh array of spell ids; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:GetAssistedRotationSpells()
     local fn = method('GetRotationSpells')
 
@@ -159,7 +170,9 @@ function platform:GetAssistedRotationSpells()
     return result
 end
 
--- The spell behind the one-button assistant action, false when none.
+-- Reads the spell behind the one-button assistant action.
+-- @return number|false|nil  The spell id; false when there is none; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:GetAssistedActionSpell()
     local fn = method('GetActionSpell')
 
@@ -185,11 +198,15 @@ function platform:GetAssistedActionSpell()
     return spell
 end
 
--- Override relations (C_Spell.GetBaseSpell / GetOverrideSpell, Retail and
--- Forever): both return the argument when there is no override. Unreadable
--- or missing relations are reported, never guessed.
--- Returns the result of C_Spell[name](spell) (GetBaseSpell or GetOverrideSpell) when it is a valid spell id, or nil
--- and a reason code.
+-- Reads one override relation of a spell.
+-- @param self table  The platform table, used for its CanReadValue method.
+-- @param name string  The C_Spell function to call: "GetBaseSpell" or "GetOverrideSpell".
+-- @param spell number  The spell id.
+-- @return number|nil  C_Spell[name](spell) when it is a valid spell id; nil otherwise.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Override relations (C_Spell.GetBaseSpell / GetOverrideSpell, Retail and Forever): both return the argument when
+-- there is no override. Unreadable or missing relations are reported, never guessed.
 local function relation(self, name, spell)
     local namespace = C_Spell
     local fn = type(namespace) == 'table' and namespace[name] or nil
@@ -213,8 +230,10 @@ local function relation(self, name, spell)
     return value
 end
 
--- Spell IDs under which the suggestion may sit on an action button: the
--- suggestion itself, then its base spell and its current override.
+-- Lists the spell ids under which a suggestion may sit on an action button.
+-- @param spell number  The suggested spell id.
+-- @return number[]  The suggestion itself, then its base spell and its current override when they differ; an empty
+--   list when spell is not a valid spell id.
 function platform:GetAssistedSpellCandidates(spell)
     if not spellID(spell) then
         return {}
@@ -233,9 +252,15 @@ function platform:GetAssistedSpellCandidates(spell)
     return result
 end
 
--- Whether a chosen spell is the suggested one. Either may be an override of
--- the other (Hammer of Light suggested while the condition names Wake of
--- Ashes, or the reverse), so two spells match when they share a base spell.
+-- Tells whether a chosen spell is the suggested one.
+-- @param spell number  The chosen spell id.
+-- @param suggestion number  The suggested spell id.
+-- @return boolean|nil  True when the two match; false when not; nil when it cannot be decided.
+-- @return string|nil  The reason code when the first return is nil ("invalid-spell" or "restricted-value"); nil
+--   otherwise.
+--
+-- Either may be an override of the other (Hammer of Light suggested while the condition names Wake of Ashes, or the
+-- reverse), so two spells match when they share a base spell.
 function platform:IsAssistedSpellMatch(spell, suggestion)
     if not spellID(spell) or not spellID(suggestion) then
         return nil, 'invalid-spell'
@@ -270,8 +295,9 @@ end
 -- first membership question, so profiles that never ask pay nothing.
 local rotationSet, rotationDirty, rotationWatcher = {}, true, nil
 
--- Creates, once, the event frame that marks the cached rotation set stale. Returns the frame, or false when no frame
--- could be made or no event registered; the caller then rereads on every call instead of trusting the cache.
+-- Creates, once, the event frame that marks the cached rotation set stale.
+-- @return table|boolean  The frame; false when no frame could be made or no event registered, in which case the
+--   caller rereads on every call instead of trusting the cache.
 local function watchRotationSet()
     if rotationWatcher ~= nil then
         return rotationWatcher
@@ -313,8 +339,11 @@ local function watchRotationSet()
     return rotationWatcher
 end
 
--- Returns the reused set of spell ids Assisted Combat may suggest, rebuilt when it is stale, or nil and a reason code.
--- The returned table is shared; callers must only read it. A failed rebuild leaves it marked stale.
+-- Reads the reused set of spell ids Assisted Combat may suggest, rebuilding it when stale.
+-- @param self table  The platform table, used for its CanReadValue method.
+-- @return table|nil  The set of spell ids (spell id -> true); shared, so callers must only read it. nil when it
+--   cannot be read; a failed rebuild leaves it marked stale.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 local function rotationMembership(self)
     local watched = watchRotationSet()
 
@@ -363,10 +392,14 @@ local function rotationMembership(self)
     return rotationSet
 end
 
--- Whether a chosen spell is in this specialization's Assisted Combat rotation
--- set. As in Blizzard's own tooltip line, the spell's current override and its
--- base spell count too (Wake of Ashes while Hammer of Light is listed, or the
--- reverse). Unavailable when Assisted Combat is not offered here.
+-- Tells whether a spell is in this specialization's Assisted Combat rotation set.
+-- @param spell number  The spell id.
+-- @return boolean|nil  True when the spell, its current override or its base spell is in the set; false when not; nil
+--   when it cannot be decided (including when Assisted Combat is not offered here).
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- As in Blizzard's own tooltip line, the spell's current override and its base spell count too (Wake of Ashes while
+-- Hammer of Light is listed, or the reverse).
 function platform:IsAssistedRotationSpell(spell)
     if not spellID(spell) then
         return nil, 'invalid-spell'
@@ -425,7 +458,9 @@ end
 local HIGHLIGHT_CVAR = 'assistedCombatHighlight'
 platform.ASSISTED_HIGHLIGHT_CVAR = HIGHLIGHT_CVAR
 
--- Returns C_CVar[name] or the legacy global of the same name, or nil when neither exists.
+-- Looks up a CVar function, preferring the C_CVar namespace.
+-- @param name string  The function name, such as "GetCVar" or "SetCVar".
+-- @return function|nil  C_CVar[name] or the legacy global of the same name; nil when neither exists.
 local function cvarFunction(name)
     local namespace = C_CVar
 
@@ -440,7 +475,9 @@ local function cvarFunction(name)
     end
 end
 
--- The CVar's raw value ("0" or "1"), or nil plus a reason.
+-- Reads the assistedCombatHighlight CVar.
+-- @return string|nil  The CVar's raw value ("0" or "1"); nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:GetAssistedHighlightCVar()
     local get = cvarFunction('GetCVar')
 
@@ -466,10 +503,12 @@ function platform:GetAssistedHighlightCVar()
     return tostring(value)
 end
 
--- Whether Blizzard's highlight can be used on this client: the Assisted
--- Combat API, the CVar and Blizzard's highlighter must all exist. Being
--- unavailable for the current specialization is a separate, changing fact
--- (GetAssistedCombatAvailability).
+-- Tells whether Blizzard's assisted highlight can be used on this client.
+-- @return boolean|nil  True when the Assisted Combat API, the CVar and Blizzard's highlighter all exist; nil
+--   otherwise.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Being unavailable for the current specialization is a separate, changing fact (GetAssistedCombatAvailability).
 function platform:GetAssistedHighlightSupport()
     if type(C_AssistedCombat) ~= 'table' or not method('GetNextCastSpell') then
         return nil, 'missing-api'
@@ -490,8 +529,12 @@ function platform:GetAssistedHighlightSupport()
     return true
 end
 
--- Writes the CVar, outside combat only (never from protected-state code),
--- and reads it back. Returns the value now in effect, or nil plus a reason.
+-- Writes the assistedCombatHighlight CVar and reads it back.
+-- @param value string  The new CVar value.
+-- @return string|nil  The value now in effect; nil when it was not written or cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Outside combat only (never from protected-state code).
 function platform:SetAssistedHighlightCVar(value)
     if type(value) ~= 'string' then
         return nil, 'invalid-value'

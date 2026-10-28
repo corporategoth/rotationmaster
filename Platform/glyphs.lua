@@ -9,13 +9,20 @@
 local _, addon = ...
 local platform = addon.Platform
 
--- True for a finite whole number at or above minimum.
+-- Whether a value is a finite whole number at or above a minimum.
+-- @param value any  The value to test.
+-- @param minimum number  The smallest accepted value.
+-- @return boolean  True when value qualifies.
 local function integer(value, minimum)
     return type(value)=='number' and value==value and value>=minimum and value<math.huge and value%1==0
 end
 
--- Returns the item record of a glyph item when it is a glyph of the given class id (default: the player's class), or
--- nil and a reason code ("invalid-glyph-item" when the item is not a glyph of that class).
+-- Reads a glyph item and checks it is a glyph of a class.
+-- @param itemID number  The item id, an integer of at least 1.
+-- @param classID number|nil  The class id the glyph must belong to; nil means the player's class.
+-- @return table|nil  The item record from GetItemInfoInstant; nil when it cannot be read or is not a glyph.
+-- @return string|nil  The reason code when the first return is nil ("invalid-glyph-item" when the item is not a glyph
+--   of that class); nil otherwise.
 function platform:GetGlyphItemInfo(itemID, classID)
     if not self:CanReadValue(itemID) or not self:CanReadValue(classID) then return nil,'restricted-value' end
     if not integer(itemID,1) then return nil,'invalid-item' end
@@ -34,11 +41,13 @@ function platform:GetGlyphItemInfo(itemID, classID)
     return record
 end
 
--- Verified published Blizzard GlyphUI layouts: Wrath uses return three;
--- Cata/Mists insert glyphTooltipIndex before glyphSpellID. Future editions
--- require verification rather than interpreting a tooltip index as a spell.
--- Takes the table from GetClientInfo and returns the position of the glyph spell id among the GetGlyphSocketInfo
--- returns, or nil when this exact client version is not a verified layout.
+-- Finds which GetGlyphSocketInfo return holds the glyph spell id on this exact client build.
+-- @param info table  The client info table from GetClientInfo.
+-- @return number|nil  The position of the glyph spell id among the GetGlyphSocketInfo returns; nil when this exact
+--   client version is not a verified layout.
+--
+-- Verified published Blizzard GlyphUI layouts: Wrath uses return three; Cata/Mists insert glyphTooltipIndex before
+-- glyphSpellID. Future editions require verification rather than interpreting a tooltip index as a spell.
 local function layout(info)
     local editions={
         [11]={expansion=2,prefix='3.4.',last=3,base=30400,position=3},
@@ -52,8 +61,13 @@ local function layout(info)
     end
 end
 
--- Reads one glyph socket through fn and returns { slot, active, spellID } or { slot, reason }; a socket that cannot be
--- read is reported with its reason instead of failing the whole snapshot.
+-- Reads one glyph socket.
+-- @param self table  The platform table, used for its CanReadValue method.
+-- @param fn function  The GetGlyphSocketInfo function.
+-- @param index number  The socket index.
+-- @param position number  Which return of fn holds the glyph spell id.
+-- @return table  { slot, active, spellID } for a readable socket, or { slot, reason } when it cannot be read; a socket
+--   that cannot be read is reported with its reason instead of failing the whole snapshot.
 local function socket(self, fn, index, position)
     local ok,tuple=pcall(function() return {fn(index)} end)
     if not ok then return {slot=index,reason='api-error'} end
@@ -68,14 +82,18 @@ local function socket(self, fn, index, position)
     return {slot=index,active=true,spellID=spell}
 end
 
--- Whether this client build has a verified glyph layout; a fact of the
--- client, read by condition support without observing sockets.
+-- Whether this client build has a verified glyph layout.
+-- @return boolean  True when the layout is verified.
+--
+-- A fact of the client, read by condition support without observing sockets.
 function platform:IsGlyphLayoutSupported()
     return layout(self:GetClientInfo()) ~= nil
 end
 
--- Returns { slots, complete } for every glyph socket, where complete is false if any socket could not be read, or nil
--- and a reason code when the layout is unverified or the socket count cannot be read.
+-- Reads every glyph socket on the client.
+-- @return table|nil  { slots, complete } for every glyph socket, where complete is false if any socket could not be
+--   read; nil when the layout is unverified or the socket count cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:GetGlyphSocketSnapshot()
     local position=layout(self:GetClientInfo())
     if not position then return nil,'unsupported-glyph-layout' end

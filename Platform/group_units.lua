@@ -36,12 +36,19 @@ local ROSTER_ROLE = { maintank = 'MAINTANK', mainassist = 'MAINASSIST' }
 local ASSIGNED_ROLE = { assignedtank = 'TANK', assignedhealer = 'HEALER' }
 
 -- Packs varargs with their count, so a trailing nil is not lost.
+-- @param ... any  The values to pack.
+-- @return table  The values in the array part, with the count in field n.
 local function pack(...)
     return { n = select('#', ...), ... }
 end
 
--- Calls api under pcall and returns the packed results (the pcall flag is at index 1, the native returns follow), or
--- nil and a reason code when the function is missing, throws or returns any restricted value.
+-- Calls a native function under pcall and packs its results.
+-- @param self table  The platform table, used for its CanReadValue method.
+-- @param api function|nil  The native function; a non-function is "missing-api".
+-- @param ... any  The arguments passed to api.
+-- @return table|nil  The packed results (the pcall flag is at index 1, the native returns follow); nil when the
+--   function is missing, throws or returns any restricted value.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 local function call(self, api, ...)
     if type(api) ~= 'function' then
         return nil, 'missing-api'
@@ -62,8 +69,13 @@ local function call(self, api, ...)
     return results
 end
 
--- nil when this client can resolve the kind, else the reason. Roles exist only
--- where players can assign them (see 'no-group-roles' in Core/condition_support.lua).
+-- Tells whether this client can resolve a group unit type.
+-- @param kind string  The group unit type: "maintank", "mainassist", "assignedtank", "assignedhealer" or
+--   "groupleader".
+-- @return string|nil  nil when the client can resolve the kind; otherwise the reason it cannot ("invalid-group-unit",
+--   "unsupported-policy", "missing-api" or "no-group-roles").
+--
+-- Roles exist only where players can assign them (see 'no-group-roles' in Core/condition_support.lua).
 function platform:GetGroupUnitSupport(kind)
     -- The raid mark unit types (skull ... star, anymark) are answered by Platform/raid_marks.lua.
     if self.IsRaidMarkUnitKind and self:IsRaidMarkUnitKind(kind) then
@@ -101,8 +113,10 @@ function platform:GetGroupUnitSupport(kind)
     end
 end
 
--- Lists the unit tokens of the current group (raid1..N in a raid; player, party1..N-1 in a party). Returns the list
--- and whether it is a raid, or nil and a reason code.
+-- Lists the unit tokens of the current group.
+-- @param self table  The platform table, used for the group queries.
+-- @return string[]|nil  The tokens (raid1..N in a raid; player, party1..N-1 in a party); nil when it cannot be read.
+-- @return boolean|string|nil  Whether the group is a raid; the reason code when the first return is nil.
 local function groupTokens(self)
     local count, reason = call(self, GetNumGroupMembers)
 
@@ -142,7 +156,13 @@ local function groupTokens(self)
     return tokens, inRaid[2]
 end
 
--- The token of the first member holding the assignment, else nil and a reason.
+-- Resolves a group unit type to the token of the first member holding the assignment.
+-- @param kind string  The group unit type: "maintank", "mainassist", "assignedtank", "assignedhealer" or
+--   "groupleader".
+-- @return string|nil  The unit token ("raid7", "party2", "player"); nil when nobody holds the assignment or it cannot
+--   be read.
+-- @return string|nil  The reason code when the first return is nil ("no-assigned-unit" when nobody holds it); nil
+--   otherwise.
 function platform:ResolveGroupUnit(kind)
     if self.IsRaidMarkUnitKind and self:IsRaidMarkUnitKind(kind) then
         return self:ResolveRaidMarkUnit(kind)

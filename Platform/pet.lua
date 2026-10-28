@@ -8,10 +8,14 @@
 local _, addon = ...
 local platform = addon.Platform
 
--- Presence and display-name availability are independent requested facts.
--- Keep the existing GetUnitName wrapper and its omitted optional argument.
--- Returns { exists = boolean, name = string or nil }; name is read only when includeName is true and the pet exists.
--- Returns nil and a reason code when presence, or a requested name, cannot be read.
+-- Reads the player's pet: whether it exists and, on request, its name.
+-- @param includeName boolean|nil  True to also read the pet's name; nil or false skips the name.
+-- @return table{exists=boolean,name=string|nil}|nil  The record; name is read only when includeName is true and the
+--   pet exists. nil when presence, or a requested name, cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Presence and display-name availability are independent requested facts. The existing GetUnitName wrapper and its
+-- omitted optional argument are kept.
 function platform:GetPetObservation(includeName)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end

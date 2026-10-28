@@ -15,14 +15,19 @@ local data = addon.RotationData
 -- Helpers
 -- ============================================================================
 
--- Returns true for a valid rotation or step id: at most 128 characters, starting alphanumeric, then letters, digits
--- or . _ : -.
+-- Whether a value is a valid rotation or step id.
+-- @param value any  The value to test.
+-- @return boolean  True for a string of at most 128 characters, starting alphanumeric, then letters, digits or . _ : -.
 local function id(value)
     return type(value) == "string" and #value > 0 and #value <= 128 and value:match("^[%w][%w._:%-]*$") ~= nil
 end
 
--- Calls callback(step) for every step (cooldowns, rotation and nested Branch arms) of an envelope's body. Returns
--- true, or nil and the indexing error when the steps cannot be indexed. The callback may edit the step in place.
+-- Calls a callback for every step of an envelope's body (cooldowns, rotation and nested Branch arms).
+-- @param envelope table  The envelope whose body is walked.
+-- @param callback function  Called with each step; it may edit the step in place.
+-- @return boolean|nil  True when walked; nil when the steps cannot be indexed, or nothing when the envelope has no
+--   body table.
+-- @return table|nil  The indexing error when the first return is nil; nil otherwise.
 local function steps(envelope, callback)
     if type(envelope) ~= "table" or type(envelope.body) ~= "table" then
         return
@@ -41,8 +46,10 @@ local function steps(envelope, callback)
     return true
 end
 
--- Returns true when a stored clone lineage is intact: a valid source id and kind, a revision, a baseline envelope that
--- matches them and validates, and a step-origin map whose targets are all steps of that baseline.
+-- Whether a stored clone lineage is intact.
+-- @param value any  The lineage record.
+-- @return boolean  True for a valid source id and kind, a revision, a baseline envelope that matches them and
+--   validates, and a step-origin map whose targets are all steps of that baseline.
 local function validLineage(value)
     if
         type(value) ~= "table"
@@ -88,12 +95,15 @@ end
 -- Catalog
 -- ============================================================================
 
--- State is the catalog's SavedVariables namespace, not an entire legacy profile.
--- Validation catalogs/newId are trusted application dependencies.
--- Creates a catalog over options.state (custom, preferences and lineage tables, created when missing), with
--- options.validation passed to the validators and options.newId allocating ids for clones. Returns the catalog
--- (RegisterBuiltin, Get, List, SetEnabled, Save, AddCustom, Rename, Delete, WithdrawBuiltin, Clone), or nil and
--- 'invalid-catalog-state' / 'invalid-custom-id' when the state is malformed.
+-- Creates a catalog of saved custom rotation envelopes and registered Built In ones.
+-- @param options table|nil  { state = the catalog's SavedVariables namespace (custom, preferences and lineage tables,
+--   created when missing), validation = options passed to the validators, newId = function allocating ids for clones }.
+-- @return table|nil  The catalog (RegisterBuiltin, Get, List, SetEnabled, Save, AddCustom, Rename, Delete,
+--   WithdrawBuiltin, Clone); nil when the state is malformed.
+-- @return string|nil  'invalid-catalog-state' or 'invalid-custom-id' when the first return is nil; nil otherwise.
+--
+-- State is the catalog's SavedVariables namespace, not an entire legacy profile. Validation catalogs and newId are
+-- trusted application dependencies.
 function data.NewCatalog(options)
     options = options or {}
     local state = options.state
@@ -124,8 +134,11 @@ function data.NewCatalog(options)
     local builtins, withdrawn = {}, {}
     local catalog = {}
 
-    -- Turns a reference (an id string, or { kind, id }) into kind and id. A bare id is a Built In when one is
-    -- registered under it, otherwise custom. Returns nothing for a malformed reference.
+    -- Turns a reference into kind and id.
+    -- @param reference string|table  An id string, or { kind, id }. A bare id is a Built In when one is registered
+    --   under it, otherwise custom.
+    -- @return string|nil  "builtin" or "custom"; nothing for a malformed reference.
+    -- @return string|nil  The id.
     local function resolve(reference)
         if type(reference) == "table" then
             if (reference.kind == "builtin" or reference.kind == "custom") and id(reference.id) then
@@ -136,8 +149,10 @@ function data.NewCatalog(options)
         end
     end
 
-    -- Returns the id of a saved custom rotation the caller may change, or nil and 'read-only' (a Built In) or
-    -- 'unknown-rotation'.
+    -- Resolves a reference to a saved custom rotation the caller may change.
+    -- @param reference string|table  An id string, or { kind, id }.
+    -- @return string|nil  The id; nil when it may not be changed.
+    -- @return string|nil  'read-only' (a Built In) or 'unknown-rotation' when the first return is nil; nil otherwise.
     local function owned(reference)
         local kind, key = resolve(reference)
 
@@ -151,8 +166,12 @@ function data.NewCatalog(options)
         return key
     end
 
-    -- Returns whether a rotation is switched on: never for a withdrawn Built In, then a saved Built In preference, then
-    -- the envelope's own disabled flag.
+    -- Tells whether a rotation is switched on.
+    -- @param kind string  "builtin" or "custom".
+    -- @param key string  The rotation id.
+    -- @param envelope table|nil  The detached envelope.
+    -- @return boolean  False for a withdrawn Built In; then a saved Built In preference decides; otherwise the
+    --   envelope's own disabled flag.
     local function enabled(kind, key, envelope)
         if kind == "builtin" then
             if withdrawn[key] then
@@ -176,9 +195,13 @@ function data.NewCatalog(options)
         return type(envelope) == "table" and type(envelope.body) == "table" and envelope.body.disabled ~= true
     end
 
-    -- Builds the detached view of one rotation: identity, validation result, enabled state, withdrawal, name and
-    -- description keys, revision, applicability and tags. A full view (not a summary) adds the envelope copy and, for
-    -- a clone, its lineage. Returns nil when the rotation does not exist.
+    -- Builds the detached view of one rotation.
+    -- @param kind string  "builtin" or "custom".
+    -- @param key string  The rotation id.
+    -- @param summary boolean  True for a summary; false for a full view, which adds the envelope copy and, for a clone,
+    --   its lineage.
+    -- @return table|nil  The view: identity, validation result, enabled state, withdrawal, name and description keys,
+    --   revision, applicability and tags; nil when the rotation does not exist.
     local function snapshot(kind, key, summary)
         local source
 
@@ -260,9 +283,12 @@ function data.NewCatalog(options)
         return view
     end
 
-    -- Validates an envelope for storage and returns a detached copy, or nil, a reason code and the validation result.
-    -- It must carry a valid id and a positive integer revision. structuralOnly skips the current condition catalog
-    -- (used for Built Ins).
+    -- Validates an envelope for storage and returns a detached copy.
+    -- @param envelope table  The envelope; it must carry a valid id and a positive integer revision.
+    -- @param structuralOnly boolean|nil  True to skip the current condition catalog (used for Built Ins).
+    -- @return table|nil  The detached copy; nil on failure.
+    -- @return string|nil  The reason code when the first return is nil; nil otherwise.
+    -- @return table|nil  The validation result when the first return is nil; nil otherwise.
     local function storable(envelope, structuralOnly)
         local validation = data.ValidateEnvelope(envelope, not structuralOnly and options.validation or nil)
 
@@ -285,8 +311,15 @@ function data.NewCatalog(options)
         return copy
     end
 
-    -- Registers (or upgrades) a shipped Built In envelope; an equal or older revision is refused. Returns true, or
-    -- false and a reason.
+    -- Registers (or upgrades) a shipped Built In envelope.
+    -- @param envelope table  The Built In envelope; an equal or older revision than a registered one is refused.
+    -- @return boolean  True when registered.
+    -- @return string|nil  The reason code when false; nil otherwise.
+    -- @return table|nil  The validation result when the envelope was not storable; nil otherwise.
+    --
+    -- A changed extension schema can invalidate an otherwise intact shipped definition. Its source is retained;
+    -- snapshots expose current diagnostics and runtime eligibility keeps it inert. Custom saves remain strictly
+    -- checked.
     function catalog:RegisterBuiltin(envelope)
         -- A changed extension schema can invalidate an otherwise intact shipped
         -- definition. Retain its source; snapshots expose current diagnostics and
@@ -307,7 +340,9 @@ function data.NewCatalog(options)
         return true
     end
 
-    -- Returns the full view of one rotation (including a copy of its envelope), or nil when unknown.
+    -- Reads the full view of one rotation (including a copy of its envelope).
+    -- @param reference string|table  An id string, or { kind, id }.
+    -- @return table|nil  The view; nil when unknown.
     function catalog:Get(reference)
         local kind, key = resolve(reference)
 
@@ -318,8 +353,8 @@ function data.NewCatalog(options)
         return snapshot(kind, key, false)
     end
 
-    -- Returns summary views of every Built In and custom rotation, sorted by id (a Built In before a custom one that
-    -- shares its id).
+    -- Lists summary views of every Built In and custom rotation.
+    -- @return table[]  The summaries sorted by id (a Built In before a custom one that shares its id).
     function catalog:List()
         local rows = {}
 
@@ -342,8 +377,14 @@ function data.NewCatalog(options)
         return rows
     end
 
-    -- Switches a rotation on or off. A Built In stores a preference; a custom rotation is saved with its disabled flag
-    -- changed (so it gets a new revision). Returns true, or false and a reason.
+    -- Switches a rotation on or off.
+    -- @param reference string|table  An id string, or { kind, id }.
+    -- @param value boolean  True to switch on.
+    -- @return boolean  True when changed.
+    -- @return string|nil  The reason code when false; nil otherwise.
+    --
+    -- A Built In stores a preference; a custom rotation is saved with its disabled flag changed (so it gets a new
+    -- revision).
     function catalog:SetEnabled(reference, value)
         if type(value) ~= "boolean" then
             return false, "invalid-enabled-value"
@@ -392,13 +433,18 @@ function data.NewCatalog(options)
     local sealType, sealNext, sealRaw, sealMeta, sealEqual, sealInfinity =
         type, next, rawget, getmetatable, rawequal, math.huge
 
-    -- Takes an exact private copy of a stored value using only the captured raw primitives, so a metatable or an
-    -- overridden helper cannot change what is copied. Returns nil for anything that is not plain data within the node
-    -- and depth limits.
+    -- Takes an exact private copy of a stored value using only the captured raw primitives.
+    -- @param value any  The stored value.
+    -- @return table|nil  The copy; nil for anything that is not plain data within the node and depth limits.
+    --
+    -- A metatable or an overridden helper cannot change what is copied.
     local function savedSeal(value)
         local copies, visiting, nodes = {}, {}, 0
 
         -- Recursive step of savedSeal; shared tables are copied once and a cycle makes the copy fail.
+        -- @param current any  The value to copy.
+        -- @param depth number  The nesting depth.
+        -- @return any|nil  The copy; nil on failure.
         local function copy(current, depth)
             nodes = nodes + 1
 
@@ -454,10 +500,15 @@ function data.NewCatalog(options)
         return copy(value, 0)
     end
 
-    -- A revision preparation can call overridable copy helpers. Keep the
-    -- canonical body exact until that new stage has completed.
-    -- Deep equality using the raw primitives. In 'envelope' mode the envelope and body revisions are ignored; 'exact'
-    -- compares everything.
+    -- Compares two stored values for deep equality using the raw primitives.
+    -- @param a any  The first value.
+    -- @param b any  The second value.
+    -- @param mode string  'envelope' (the envelope and body revisions are ignored), 'body' or 'exact' (compares
+    --   everything).
+    -- @return boolean  True when equal.
+    --
+    -- A revision preparation can call overridable copy helpers, so the canonical body is kept exact until that new
+    -- stage has completed.
     local function sameSavedValue(a, b, mode)
         if sealType(a) ~= sealType(b) then
             return false
@@ -488,10 +539,16 @@ function data.NewCatalog(options)
         return true
     end
 
-    -- Saves an edited custom envelope over its stored one. The id must not change. For schema 1 the content revision
-    -- moves only when the content changed and the envelope revision always increases. The save is refused with
-    -- 'rotation-changed-externally' if the stored value changed while the revision was being prepared (that stage can
-    -- call overridable helpers). Returns true, or false and a reason.
+    -- Saves an edited custom envelope over its stored one.
+    -- @param reference string|table  An id string, or { kind, id } of a custom rotation.
+    -- @param envelope table  The edited envelope; its id must not change.
+    -- @return boolean  True when saved.
+    -- @return string|nil  The reason code when false; nil otherwise.
+    -- @return table|nil  The validation result when the envelope was not storable; nil otherwise.
+    --
+    -- For schema 1 the content revision moves only when the content changed and the envelope revision always increases.
+    -- The save is refused with 'rotation-changed-externally' if the stored value changed while the revision was being
+    -- prepared (that stage can call overridable helpers).
     function catalog:Save(reference, envelope)
         local key, why = owned(reference)
 
@@ -523,7 +580,8 @@ function data.NewCatalog(options)
                 end
             end
 
-            -- True while the stored rotation is still the one that was read at the start of the save.
+            -- Whether the stored rotation is still the one that was read at the start of the save.
+            -- @return boolean  True when unchanged.
             local function unchanged()
                 return sealEqual(sealRaw(state, 'custom'), custom)
                     and (sealEqual(sealRaw(custom, key), previous) or sealType(previous) == 'number'
@@ -577,8 +635,13 @@ function data.NewCatalog(options)
         return true
     end
 
-    -- Adds a new custom envelope under its own id; refuses an id that is a Built In or already saved. Schema 1 bodies
-    -- are stamped as an import. Returns true, or false and a reason.
+    -- Adds a new custom envelope under its own id.
+    -- @param envelope table  The envelope; an id that is a Built In or already saved is refused.
+    -- @return boolean  True when added.
+    -- @return string|nil  The reason code when false; nil otherwise.
+    -- @return table|nil  The validation result when the envelope was not storable; nil otherwise.
+    --
+    -- Schema 1 bodies are stamped as an import.
     function catalog:AddCustom(envelope)
         local copy, why, validation = storable(envelope)
 
@@ -619,6 +682,10 @@ function data.NewCatalog(options)
     end
 
     -- Renames a custom rotation by saving it with the new name (the envelope name key and the body name both change).
+    -- @param reference string|table  An id string, or { kind, id } of a custom rotation.
+    -- @param name string  The new name; non-empty.
+    -- @return boolean  True when renamed.
+    -- @return string|nil  The reason code when false; nil otherwise.
     function catalog:Rename(reference, name)
         local key, why = owned(reference)
 
@@ -639,7 +706,12 @@ function data.NewCatalog(options)
         return self:Save({ kind = "custom", id = key }, view.envelope)
     end
 
-    -- Deletes a custom rotation and its clone lineage. Built Ins cannot be deleted.
+    -- Deletes a custom rotation and its clone lineage.
+    -- @param reference string|table  An id string, or { kind, id } of a custom rotation.
+    -- @return boolean  True when deleted.
+    -- @return string|nil  The reason code when false; nil otherwise.
+    --
+    -- Built Ins cannot be deleted.
     function catalog:Delete(reference)
         local key, why = owned(reference)
 
@@ -651,7 +723,13 @@ function data.NewCatalog(options)
         return true
     end
 
-    -- Marks a registered Built In as withdrawn, with a reason shown to the user; a withdrawn Built In is never enabled.
+    -- Marks a registered Built In as withdrawn.
+    -- @param reference string|table  An id string, or { kind, id } of a Built In.
+    -- @param reason string  The reason shown to the user; non-empty.
+    -- @return boolean  True when withdrawn.
+    -- @return string|nil  The reason code when false; nil otherwise.
+    --
+    -- A withdrawn Built In is never enabled.
     function catalog:WithdrawBuiltin(reference, reason)
         local kind, key = resolve(reference)
 
@@ -666,9 +744,15 @@ function data.NewCatalog(options)
         return true
     end
 
-    -- Clones a rotation as a new custom one (revision 1, optional new name) with fresh step ids and a lineage record
-    -- (the source baseline plus a map from each new step id back to the original) that later source-versus-custom
-    -- comparisons use. Every id already in use anywhere is reserved first. Returns the new id, or nil and a reason.
+    -- Clones a rotation as a new custom one.
+    -- @param reference string|table  An id string, or { kind, id } of the rotation to clone.
+    -- @param name string|nil  The optional new name.
+    -- @return string|nil  The new id; nil on failure.
+    -- @return string|nil  The reason code when the first return is nil; nil otherwise.
+    --
+    -- The clone has revision 1, fresh step ids and a lineage record (the source baseline plus a map from each new step
+    -- id back to the original) that later source-versus-custom comparisons use. Every id already in use anywhere is
+    -- reserved first.
     function catalog:Clone(reference, name)
         local source = self:Get(reference)
 
@@ -713,7 +797,9 @@ function data.NewCatalog(options)
             end
         end
 
-        -- Allocates one unused id from the injected provider (nil and a reason when it fails or collides).
+        -- Allocates one unused id from the injected provider.
+        -- @return string|nil  The id; nil when the provider fails or collides.
+        -- @return string|nil  The reason code when the first return is nil; nil otherwise.
         local function fresh()
             local ok, value = pcall(options.newId)
 

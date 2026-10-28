@@ -10,16 +10,24 @@
 local _, addon = ...
 local platform = addon.Platform
 
--- True for a number that is neither NaN nor infinite.
+-- Whether a value is a number that is neither NaN nor infinite.
+-- @param value any  The value to test.
+-- @return boolean  True for a finite number.
 local function finite(value)
     return type(value)=='number' and value==value and value<math.huge and value>-math.huge
 end
 
--- Mana is an explicit resource even while another bar is active. Current mode
--- follows the numeric native type and preserves signed quantities such as Balance.
--- resource is "mana" (Enum.PowerType.Mana) or "current" (whatever UnitPowerType reports for the unit). Returns
--- { exists = false }, or { exists = true, powerType = id, current = n } plus maximum = n when includeMaximum is
--- true, or nil and a reason.
+-- Reads a unit's mana or current primary power (UnitExists, UnitPowerType, UnitPower, UnitPowerMax).
+-- @param unit string  The unit token to read; must be a non-empty string.
+-- @param resource string  "mana" (Enum.PowerType.Mana) or "current" (whatever UnitPowerType reports for the unit).
+-- @param includeMaximum boolean|nil  True to also read the maximum; nil or false skips it.
+-- @return table{exists=boolean,powerType=number|nil,current=number|nil,maximum=number|nil}|nil  { exists = false },
+--   or { exists = true, powerType = id, current = n } plus maximum = n when includeMaximum is true; nil when it
+--   cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Mana is an explicit resource even while another bar is active. Current mode follows the numeric native type and
+-- preserves signed quantities such as Balance.
 function platform:GetUnitPowerObservation(unit, resource, includeMaximum)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end

@@ -9,15 +9,22 @@
 local _, addon = ...
 local platform = addon.Platform
 
--- True for a number that is neither NaN nor infinite.
+-- Whether a value is a number that is neither NaN nor infinite.
+-- @param value any  The value to test.
+-- @return boolean  True for a finite number.
 local function finite(value)
     return type(value)=='number' and value==value and value<math.huge and value>-math.huge
 end
 
--- Actual public unit levels are distinct from effective/scaled levels. Negative
--- sentinels do not reveal an exact level and must not enter numeric predicates.
--- Returns { exists = false } or { exists = true, level = n } with a positive integer level, or nil and a reason (a
--- negative level, which UnitLevel reports for unknown-level units, is "level-data-unavailable").
+-- Reads a unit's actual level (UnitExists, UnitLevel).
+-- @param unit string  The unit token to read; must be a non-empty string.
+-- @return table{exists=boolean,level=number|nil}|nil  { exists = false }, or { exists = true, level = n } with a
+--   positive integer level; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise. A negative level, which UnitLevel
+--   reports for unknown-level units, is "level-data-unavailable".
+--
+-- Actual public unit levels are distinct from effective or scaled levels. Negative sentinels do not reveal an exact
+-- level and must not enter numeric predicates.
 function platform:GetUnitLevelObservation(unit)
     if not self:CanReadValue(unit) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end

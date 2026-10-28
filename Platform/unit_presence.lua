@@ -8,9 +8,13 @@
 local _, addon = ...
 local platform = addon.Platform
 
--- Public presence is independent of enemy-combat observation policy. Only a
--- readable Boolean false establishes absence; no additional unit facts apply.
--- Returns true or false for whether the unit exists, or nil and a reason.
+-- Reads whether a unit token exists (UnitExists).
+-- @param unit string  The unit token to read; must be a non-empty string.
+-- @return boolean|nil  True or false for whether the unit exists; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Public presence is independent of enemy-combat observation policy. Only a readable Boolean false establishes
+-- absence; no additional unit facts apply.
 function platform:GetUnitPresenceObservation(unit)
     if not self:CanReadValue(unit) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end

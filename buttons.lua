@@ -20,8 +20,11 @@ local addon_name, addon = ...
 -- Setup, capability probes and shared state
 -- ============================================================================
 
--- Returns the client's combat-data policy ('restricted' on Retail and Forever, 'probe' elsewhere); replaced below by
--- the reader the client module hands over at load.
+-- Reads the client's combat-data policy.
+-- @param current table  The platform table whose client info is read.
+-- @return string  The policy: 'restricted' on Retail and Forever, 'probe' elsewhere.
+--
+-- Replaced just below by the reader the client module hands over at load.
 local function readClientPolicy(current)
     return current:GetClientInfo().combatDataPolicy
 end
@@ -46,7 +49,10 @@ local CustomGlow = LibStub("LibCustomGlow-1.0")
 
 local procSupport, procProbe
 
--- True when value has a function for every one of names.
+-- Whether a value has a function for every one of the names.
+-- @param value table  The object to inspect.
+-- @param names string[]  The method names.
+-- @return boolean  True when every named field is a function.
 local function methods(value, names)
     for _, name in ipairs(names) do
         if type(value[name]) ~= 'function' then
@@ -57,8 +63,11 @@ local function methods(value, names)
     return true
 end
 
--- Builds a hidden, never-played frame, flipbook animation and atlas textures to check this client can run the proc
--- glow; true only if every needed method exists. Call under pcall.
+-- Checks that this client can run the proc glow.
+-- @param atlas function  The atlas info lookup (C_Texture.GetAtlasInfo or GetAtlasInfo).
+-- @return boolean  True only if the proc atlases exist and every needed method exists.
+--
+-- Builds a hidden, never-played frame, flipbook animation and atlas textures. Call under pcall.
 local function probeProcGlow(atlas)
     for _, name in ipairs({ 'UI-HUD-ActionBar-Proc-Start-Flipbook', 'UI-HUD-ActionBar-Proc-Loop-Flipbook' }) do
         if type(atlas(name)) ~= 'table' then
@@ -127,8 +136,11 @@ local function probeProcGlow(atlas)
     return true
 end
 
--- Method names alone do not establish animation/atlas support on Classic.
--- This hidden probe never plays, and stable capabilities need no warm allocation.
+-- Tells whether the proc glow is supported on this client.
+-- @return boolean  True when the proc glow can run.
+--
+-- Method names alone do not establish animation or atlas support on Classic. This hidden probe never plays, and
+-- stable capabilities need no warm allocation.
 function addon:GetProcGlowSupport()
     local atlas = C_Texture and C_Texture.GetAtlasInfo or rawget(_G, 'GetAtlasInfo')
 
@@ -163,13 +175,17 @@ function addon:GetProcGlowSupport()
     return procSupport.available
 end
 
--- Returns the spell id for a spell name, link or id through the spell metadata adapter, or nil.
+-- Resolves a spell name, link or id to a spell id through the spell metadata adapter.
+-- @param spell number|string  The spell name, link or id.
+-- @return number|nil  The spell id; nil when it cannot be resolved.
 local function spellMetadataID(spell)
     local info = addon.Platform:GetSpellInfo(spell)
     return info and info.spellID
 end
 
--- Returns the id of the spell an item casts when used, or nil.
+-- Resolves an item to the spell it casts when used.
+-- @param item number|string  The item id, name or link.
+-- @return number|nil  The spell id; nil when it cannot be resolved.
 local function itemUseSpellID(item)
     local info = addon.Platform:GetItemUseSpell(item)
     return info and info.spellID
@@ -221,8 +237,9 @@ local function announceIndexChange()
     end
 end
 
--- Registers callback(key) to run after every index change, one callback per key; a nil or non-function callback
--- removes the key's watcher.
+-- Registers a callback to run after every index change, one callback per key.
+-- @param key any  The watcher key; nil is ignored.
+-- @param callback function|nil  Called as callback(key); a nil or non-function callback removes the key's watcher.
 function addon:WatchButtonIndex(key, callback)
     if key ~= nil then
         indexWatchers[key] = type(callback) == 'function' and callback or nil
@@ -261,8 +278,15 @@ addon.textured_types = { "texture", "dazzle", "animate", "pulse", "rotate", "cus
 -- Glow effects and overlays
 -- ============================================================================
 
--- Starts one of the LibCustomGlow effects (pixel, autocast, blizzard or proc) on frame under glow key id. The proc
--- effect falls back to the pixel glow when this client cannot run it.
+-- Starts one of the LibCustomGlow effects on a frame.
+-- @param effect table  The effect: pixel, autocast, blizzard or proc.
+-- @param frame table  The button frame.
+-- @param id string|number  The glow key.
+-- @param color table|nil  The color { r, g, b, a }.
+-- @param xoffs number  The horizontal offset.
+-- @param yoffs number  The vertical offset.
+--
+-- The proc effect falls back to the pixel glow when this client cannot run it.
 function addon:ApplyCustomGlow(effect, frame, id, color, xoffs, yoffs)
     local c
 
@@ -320,16 +344,29 @@ function addon:ApplyCustomGlow(effect, frame, id, color, xoffs, yoffs)
     end
 end
 
--- Marks an overlay frame as needing a full repaint and bumps its generation, so any render or timer that was
--- already in flight notices it is stale and stops.
+-- Marks an overlay frame as needing a full repaint and bumps its generation.
+-- @param frame table  The overlay frame.
+--
+-- Any render or timer that was already in flight notices it is stale and stops.
 local function InvalidateOverlay(frame)
     frame.rmOverlayGeneration = (frame.rmOverlayGeneration or 0) + 1
     frame.rmOverlayDirty = true
     frame.rmOverlayParent = nil
 end
 
--- Paints one frame of a texture overlay: anchor, size, color, texture and rotation, writing only what changed since
--- the last paint. Returns false if a native callback invalidated the overlay partway through (the caller must stop).
+-- Paints one frame of a texture overlay: anchor, size, color, texture and rotation.
+-- @param frame table  The overlay frame.
+-- @param effect string  The texture path.
+-- @param color table  The color { r, g, b, a }.
+-- @param mags number|nil  The size multiplier; nil means 1.0.
+-- @param setp string  The anchor point on the parent.
+-- @param xoffs number  The horizontal offset.
+-- @param yoffs number  The vertical offset.
+-- @param angle number|nil  The rotation in radians.
+-- @return boolean  False if a native callback invalidated the overlay partway through (the caller must stop); true
+--   otherwise.
+--
+-- Writes only what changed since the last paint.
 local function UpdateOverlayRaw(frame, effect, color, mags, setp, xoffs, yoffs, angle)
     local generation = frame.rmOverlayGeneration
     -- Native size scripts can alter any earlier render channel. These frames
@@ -485,8 +522,13 @@ end
 -- Steps take the button's size when the glow starts.
 local NATIVE_MAX_STEPS = 64
 
--- Expands an animated effect into a list of {texture, color, magnification, angle} steps, or returns nil when the
--- effect is malformed or has more than NATIVE_MAX_STEPS steps (the Lua timer path then plays it).
+-- Expands an animated effect into a list of steps.
+-- @param effect table  The animated effect (rotate, dazzle, animate, pulse or custom).
+-- @param color table  The base color.
+-- @param mags number|nil  The base magnification.
+-- @param angle number|nil  The base angle.
+-- @return table[]|nil  The steps { texture, color, magnification, angle }; nil when the effect is malformed or has more
+--   than NATIVE_MAX_STEPS steps (the Lua timer path then plays it).
 local function nativeSteps(effect, color, mags, angle)
     local kind, sequence = effect.type, effect.sequence
     local result = {}
@@ -529,7 +571,9 @@ local function nativeSteps(effect, color, mags, angle)
     return #result == #sequence and result or nil
 end
 
--- True when the frame and its texture have the animation and rotation methods the native path needs.
+-- Whether the frame and its texture have the animation and rotation methods the native path needs.
+-- @param frame table  The overlay frame.
+-- @return boolean  True when they do.
 local function nativeSupported(frame)
     if type(frame.CreateAnimationGroup) ~= "function" or type(frame.CreateTexture) ~= "function" then
         return false
@@ -539,7 +583,11 @@ local function nativeSupported(frame)
     return texture and type(texture.SetRotation) == "function" and type(texture.SetAlpha) == "function"
 end
 
--- One group per step count and frequency, reused across glows on this frame.
+-- Gets the animation group for a step count and frequency, creating it once.
+-- @param frame table  The overlay frame.
+-- @param count number  The step count.
+-- @param frequency number  The seconds between steps.
+-- @return table  The animation group; one group per step count and frequency, reused across glows on this frame.
 local function nativeGroup(frame, count, frequency)
     frame.rmNativeGroups = frame.rmNativeGroups or {}
     local key = count .. "@" .. frequency
@@ -575,6 +623,7 @@ local function nativeGroup(frame, count, frequency)
 end
 
 -- Stops the native animation group, hides the step textures and shows the single overlay texture again.
+-- @param frame table  The overlay frame.
 local function StopNativeOverlay(frame)
     local native = frame.rmNative
 
@@ -592,8 +641,18 @@ local function StopNativeOverlay(frame)
     frame.texture:Show()
 end
 
--- Plays an animated effect natively: anchors the overlay, lays out one texture per step and plays the shared alpha
--- animation group. Returns false (nothing changed) when the client or the effect cannot use it.
+-- Plays an animated effect natively.
+-- @param frame table  The overlay frame.
+-- @param effect table  The animated effect.
+-- @param color table  The base color.
+-- @param mags number|nil  The base magnification.
+-- @param setp string  The anchor point on the parent.
+-- @param xoffs number  The horizontal offset.
+-- @param yoffs number  The vertical offset.
+-- @param angle number|nil  The base angle.
+-- @return boolean  True when playing; false (nothing changed) when the client or the effect cannot use it.
+--
+-- Anchors the overlay, lays out one texture per step and plays the shared alpha animation group.
 local function StartNativeOverlay(frame, effect, color, mags, setp, xoffs, yoffs, angle)
     if not nativeSupported(frame) then
         return false
@@ -649,7 +708,9 @@ end
 -- Assigned below; declared early because the animation timer and StartOverlay refer to it.
 local UpdateOverlay
 
--- Returns whether the overlay frame is visible, or nil for a stand-in frame that cannot say.
+-- Tells whether the overlay frame is visible.
+-- @param frame table  The overlay frame.
+-- @return boolean|nil  Whether it is visible; nil for a stand-in frame that cannot say.
 local function OverlayVisible(frame)
     -- Older external frame stand-ins have no visibility observation. Keep
     -- their legacy timer behavior; ordinary native Frames provide this API.
@@ -658,7 +719,9 @@ local function OverlayVisible(frame)
     end
 end
 
--- Stops native playback and cancels the Lua timer. Returns false if stopping invalidated the overlay again.
+-- Stops native playback and cancels the Lua timer.
+-- @param frame table  The overlay frame.
+-- @return boolean  False if stopping invalidated the overlay again; true otherwise.
 local function StopOverlay(frame)
     StopNativeOverlay(frame)
     InvalidateOverlay(frame)
@@ -675,6 +738,7 @@ local function StopOverlay(frame)
 end
 
 -- OnHide handler: cancels the running animation timer but keeps the animation record so ResumeOverlay can restart it.
+-- @param frame table  The overlay frame.
 local function PauseOverlay(frame)
     local animation, generation = frame.rmOverlayAnimation, frame.rmOverlayGeneration
 
@@ -698,7 +762,9 @@ local function PauseOverlay(frame)
 end
 
 -- Schedules the repeating timer for a Lua-driven animation unless the overlay is hidden (then it is marked paused).
--- Returns false if the overlay was replaced or stopped while scheduling, true otherwise.
+-- @param frame table  The overlay frame.
+-- @param animation table  The animation record.
+-- @return boolean  False if the overlay was replaced or stopped while scheduling; true otherwise.
 local function StartOverlay(frame, animation)
     local generation = frame.rmOverlayGeneration
 
@@ -771,6 +837,7 @@ local function StartOverlay(frame, animation)
 end
 
 -- OnShow handler: restarts a paused animation now that the overlay is visible.
+-- @param frame table  The overlay frame.
 local function ResumeOverlay(frame)
     local animation = frame.rmOverlayAnimation
 
@@ -779,8 +846,11 @@ local function ResumeOverlay(frame)
     end
 end
 
--- Removes every glow type that frame shows under key id, and stops its overlay. keepProc leaves the proc glow in
--- place so a proc effect being replaced by another proc effect does not flicker.
+-- Removes every glow type that a frame shows under a key, and stops its overlay.
+-- @param frame table  The button frame.
+-- @param id string|number|nil  The glow key.
+-- @param keepProc boolean|nil  True to leave the proc glow in place, so a proc effect being replaced by another proc
+--   effect does not flicker.
 function addon:HideGlow(frame, id, keepProc)
     CustomGlow.PixelGlow_Stop(frame, id)
     CustomGlow.AutoCastGlow_Stop(frame, id)
@@ -799,9 +869,21 @@ function addon:HideGlow(frame, id, keepProc)
     end
 end
 
--- Draws one step of a textured effect on an overlay frame. First call starts the animation (natively when possible);
--- later calls come from the repeating timer with the animation record and its ticket, and are ignored when the ticket
--- is stale. Returns true when the overlay should be shown.
+-- Draws one step of a textured effect on an overlay frame.
+-- @param frame table  The overlay frame.
+-- @param effect table  The effect.
+-- @param color table  The color { r, g, b, a }.
+-- @param mags number|nil  The magnification.
+-- @param setp string  The anchor point on the parent.
+-- @param xoffs number  The horizontal offset.
+-- @param yoffs number  The vertical offset.
+-- @param angle number|nil  The rotation.
+-- @param animation table|nil  The animation record; set by the repeating timer.
+-- @param ticket table|nil  The animation ticket; set by the repeating timer.
+-- @return boolean  True when the overlay should be shown.
+--
+-- The first call starts the animation (natively when possible); later calls come from the repeating timer with the
+-- animation record and its ticket, and are ignored when the ticket is stale.
 UpdateOverlay = function(frame, effect, color, mags, setp, xoffs, yoffs, angle, animation, ticket)
     if animation then
         if
@@ -937,9 +1019,11 @@ UpdateOverlay = function(frame, effect, color, mags, setp, xoffs, yoffs, angle, 
     return false
 end
 
---- Creates frame overlay over a specific frame, it doesn't need to be a button.
--- @param parent - frame that is suppose to be attached to
--- @param id - string id of overlay because frame can have multiple overlays
+-- Creates an overlay frame over a specific frame; it doesn't need to be a button.
+-- @param parent table  The frame the overlay attaches to.
+-- @return table  The overlay frame, taken from the pool when one is free.
+--
+-- Callers also pass the string id of the overlay (a frame can have multiple overlays); this function does not use it.
 local function CreateOverlay(parent)
     local frame = tremove(FramePool)
 
@@ -977,6 +1061,8 @@ local function CreateOverlay(parent)
 end
 
 -- Stops an overlay, detaches it from its button and returns the frame to the pool for reuse.
+-- @param frame table  The overlay frame.
+-- @param id string|number  The overlay's key on its button.
 local function DestroyOverlay(frame, id)
     if not StopOverlay(frame) then
         return
@@ -996,6 +1082,7 @@ local function DestroyOverlay(frame, id)
 end
 
 -- Destroys every overlay a button holds.
+-- @param parent table  The button.
 local function DestroyAllOverlay(parent)
     if parent.rmOverlays ~= nil then
         local overlays = parent.rmOverlays
@@ -1010,8 +1097,12 @@ local function DestroyAllOverlay(parent)
     end
 end
 
--- True when the overlay this caller saw under id has since been replaced or restarted by someone else, so the caller
--- must not tear it down.
+-- Tells whether the overlay this caller saw has since been replaced or restarted by someone else.
+-- @param button table  The button.
+-- @param id string|number  The overlay's key on the button.
+-- @param overlay table|nil  The overlay the caller saw.
+-- @param generation number|nil  The overlay's generation the caller saw.
+-- @return boolean  True when the caller must not tear it down.
 local function OverlaySuperseded(button, id, overlay, generation)
     if (button.rmOverlays and button.rmOverlays[id]) ~= overlay then
         return true
@@ -1054,8 +1145,10 @@ function addon:DestroyAllGlows()
     end
 end
 
--- Applies the disableButtonGlow setting: turns Blizzard's own spell-activation glow on or off on the stock bars and
--- on the ElvUI and Bartender4 button libraries.
+-- Applies the disableButtonGlow setting.
+--
+-- Turns Blizzard's own spell-activation glow on or off on the stock bars and on the ElvUI and Bartender4 button
+-- libraries.
 function addon:UpdateButtonGlow()
     local LAB
     local LBG
@@ -1099,8 +1192,18 @@ function addon:UpdateButtonGlow()
     end
 end
 
--- Shows effect on button under glow key id, replacing whatever that key showed. Textured effects get a pooled overlay
--- frame; the others go to LibCustomGlow. Does nothing when effect is nil.
+-- Shows an effect on a button under a glow key, replacing whatever that key showed.
+-- @param button table  The button.
+-- @param id string|number  The glow key.
+-- @param effect table|nil  The effect; nil does nothing.
+-- @param color table|nil  The color; resolved through ResolveHighlightColor.
+-- @param mags number|nil  The magnification of a textured effect.
+-- @param setp string|nil  The anchor point of a textured effect.
+-- @param xoffs number|nil  The horizontal offset.
+-- @param yoffs number|nil  The vertical offset.
+-- @param angle number|nil  The rotation of a textured effect.
+--
+-- Textured effects get a pooled overlay frame; the others go to LibCustomGlow.
 function addon:Glow(button, id, effect, color, mags, setp, xoffs, yoffs, angle)
     if not effect then
         return
@@ -1144,7 +1247,10 @@ end
 -- Reading action buttons into the index
 -- ============================================================================
 
--- Records that button holds spellId (and optionally itemId) in the index, ignoring unreadable or invalid ids.
+-- Records that a button holds a spell (and optionally an item) in the index, ignoring unreadable or invalid ids.
+-- @param spellId number  The spell id.
+-- @param button table  The button.
+-- @param itemId number|nil  The item id, for an item button.
 local function AddButton(spellId, button, itemId)
     if not addon.Platform:CanReadValue(spellId) then
         return
@@ -1164,7 +1270,9 @@ local function AddButton(spellId, button, itemId)
     end
 end
 
--- True for a readable, positive whole-number action slot.
+-- Whether a value is a readable, positive whole-number action slot.
+-- @param slot any  The value to test.
+-- @return boolean  True for such a slot.
 local function ValidActionSlot(slot)
     return addon.Platform:CanReadValue(slot)
         and type(slot) == 'number'
@@ -1173,8 +1281,10 @@ local function ValidActionSlot(slot)
         and slot % 1 == 0
 end
 
--- Returns the action slot a button currently shows, trying the secure attribute and then each paged or calculated
--- accessor the client or bar addon provides; nil if none gives a usable slot.
+-- Reads the action slot a button currently shows.
+-- @param button table  The button.
+-- @return number|nil  The slot, trying the secure attribute and then each paged or calculated accessor the client or
+--   bar addon provides; nil if none gives a usable slot.
 local function GetActionSlot(button)
     local slot = button:GetAttribute('action')
 
@@ -1208,14 +1318,17 @@ local function GetActionSlot(button)
     end
 end
 
--- Retail 12.0 moved the action-slot queries into C_ActionBar. The old
--- globals (HasAction, IsUsableAction, GetActionCooldown, IsActionInRange...)
--- are defined only by Blizzard_DeprecatedActionBar, and only while the
--- loadDeprecationFallbacks CVar is set; GetActionInfo stays a global.
--- Sources: Gethe/wow-ui-source live b9be9379 (12.0.5),
--- Blizzard_DeprecatedActionBar/Deprecated_ActionBar.lua and
+-- Looks up an action-bar query function.
+-- @param name string  The C_ActionBar function name.
+-- @param legacy function|nil  The legacy global of the same query.
+-- @return function|nil  C_ActionBar[name] where it exists, otherwise the legacy global; nil when neither is a
+--   function.
+--
+-- Retail 12.0 moved the action-slot queries into C_ActionBar. The old globals (HasAction, IsUsableAction,
+-- GetActionCooldown, IsActionInRange...) are defined only by Blizzard_DeprecatedActionBar, and only while the
+-- loadDeprecationFallbacks CVar is set; GetActionInfo stays a global. Sources: Gethe/wow-ui-source live b9be9379
+-- (12.0.5), Blizzard_DeprecatedActionBar/Deprecated_ActionBar.lua and
 -- Blizzard_APIDocumentationGenerated/ActionBarFrameDocumentation.lua.
--- The namespace is preferred wherever it exists; older clients keep the global.
 local function actionBarFunction(name, legacy)
     local namespace = C_ActionBar
     local fn = type(namespace) == 'table' and namespace[name] or nil
@@ -1228,9 +1341,11 @@ local function actionBarFunction(name, legacy)
     end
 end
 
--- Reads the kind and action a standard button holds ('spell', 'item', 'macro', or the slot's own contents for an
--- 'action' button). Returns nothing for an unreadable or unsupported button, and only the kind when the action is
--- secret.
+-- Reads the kind and action a standard button holds.
+-- @param button table  The button.
+-- @return string|nil  'spell', 'item', 'macro' or, for an 'action' button, the slot's own contents; nothing for an
+--   unreadable or unsupported button.
+-- @return any|nil  The action; nothing when the action is secret.
 local function ReadStandardAction(button)
     local kind = button:GetAttribute('type')
 
@@ -1269,7 +1384,11 @@ local function ReadStandardAction(button)
     return kind, action
 end
 
--- Maps a button's kind and action to the spell id and item id it stands for, or nil.
+-- Maps a button's kind and action to the spell id and item id it stands for.
+-- @param kind string  The button kind.
+-- @param action any  The button action.
+-- @return number|nil  The spell id; nil when unresolved.
+-- @return number|nil  The item id, for an item or macro button.
 local function ResolveStandardAction(kind, action)
     if kind == 'macro' then
         local observed = addon.Platform:GetMacroAction(action)
@@ -1288,11 +1407,14 @@ local function ResolveStandardAction(kind, action)
     end
 end
 
--- A spell on the bar is also found under its base spell and its current
--- override (C_Spell.GetBaseSpell/GetOverrideSpell, Retail and Forever): a
--- talent can replace a spell on the button, so the slot may report either ID
--- while a step names the other, and Blizzard's suggestion may be either.
--- Only Spells gains the aliases; the button keeps its one identity.
+-- Adds an alias spell id for a button's spell to the index.
+-- @param alias number|nil  The alias spell id; unreadable or invalid ids are ignored.
+-- @param button table  The button.
+--
+-- A spell on the bar is also found under its base spell and its current override (C_Spell.GetBaseSpell and
+-- GetOverrideSpell, Retail and Forever): a talent can replace a spell on the button, so the slot may report either id
+-- while a step names the other, and Blizzard's suggestion may be either. Only Spells gains the aliases; the button
+-- keeps its one identity.
 local function AddAlias(alias, button)
     if alias == nil or not addon.Platform:CanReadValue(alias) then
         return
@@ -1319,7 +1441,10 @@ local function AddAlias(alias, button)
     tinsert(buttons, button)
 end
 
--- Calls C_Spell[name](spell) under pcall; returns its value, or nil if the function is missing or fails.
+-- Calls C_Spell[name](spell) under pcall.
+-- @param name string  The C_Spell function name.
+-- @param spell number  The spell id.
+-- @return any|nil  The value; nil if the function is missing or fails.
 local function SpellRelation(name, spell)
     local namespace = C_Spell
     local fn = type(namespace) == 'table' and namespace[name] or nil
@@ -1336,6 +1461,9 @@ local function SpellRelation(name, spell)
 end
 
 -- On restricted clients, also files the button under the slot's own action id and the spell's base and override ids.
+-- @param button table  The button.
+-- @param spell number  The spell id the button holds.
+-- @param action any  The button's action; a number is filed as an alias.
 local function AddSpellAliases(button, spell, action)
     if ButtonSpells[button] ~= spell or fetchedPolicy ~= 'restricted' then
         return
@@ -1349,7 +1477,10 @@ local function AddSpellAliases(button, spell, action)
     AddAlias(SpellRelation('GetOverrideSpell', spell), button)
 end
 
--- Calls C_SpellBook[name](spell) under pcall; returns its value, or nil if the function is missing or fails.
+-- Calls C_SpellBook[name](spell) under pcall.
+-- @param name string  The C_SpellBook function name.
+-- @param spell number  The spell id.
+-- @return any|nil  The value; nil if the function is missing or fails.
 local function BookRelation(name, spell)
     local namespace = C_SpellBook
     local fn = type(namespace) == 'table' and namespace[name] or nil
@@ -1365,7 +1496,9 @@ local function BookRelation(name, spell)
     end
 end
 
--- True for a readable, positive whole-number spell id.
+-- Whether a value is a readable, positive whole-number spell id.
+-- @param value any  The value to test.
+-- @return boolean  True for such an id.
 local function validSpellId(value)
     return type(value) == "number"
         and addon.Platform:CanReadValue(value)
@@ -1374,8 +1507,10 @@ local function validSpellId(value)
         and value % 1 == 0
 end
 
--- The IDs the client relates to one spell, itself first, without repeats:
--- base and override by both APIs, and the override of the base.
+-- Lists the ids the client relates to one spell.
+-- @param spell number  The spell id.
+-- @return number[]  The spell itself first, without repeats: base and override by both APIs, and the override of the
+--   base. An empty list for an invalid id.
 function addon:GetSpellIdRelatives(spell)
     local list = {}
 
@@ -1385,6 +1520,8 @@ function addon:GetSpellIdRelatives(spell)
 
     local seen = {}
 
+    -- Adds a valid, not yet seen spell id to the list.
+    -- @param value any  The candidate spell id.
     local function add(value)
         if validSpellId(value) and not seen[value] then
             seen[value] = true
@@ -1407,7 +1544,9 @@ function addon:GetSpellIdRelatives(spell)
     return list
 end
 
--- Returns the readable name of a spell id, or nil.
+-- Reads the name of a spell id.
+-- @param id number  The spell id.
+-- @return string|nil  The readable name; nil when it cannot be read.
 local function spellNameOf(id)
     -- A Set Mark step's pseudo spell id is named for its mark; it must never be matched to a spell of that name, or to
     -- another unit's button for the same mark.
@@ -1424,6 +1563,7 @@ local function spellNameOf(id)
 end
 
 -- Builds (once per scan) a map from spell name to the buttons holding a spell of that name, for the same-name fallback.
+-- @return table  The map: spell name -> list of buttons.
 local function nameIndex()
     if NameIndex then
         return NameIndex
@@ -1449,22 +1589,20 @@ local function nameIndex()
     return NameIndex
 end
 
--- Which action buttons hold a step's spell when the bar reports another ID
--- for it. Retail has several IDs for one ability: its base spell, the spell
--- a talent or form currently overrides it with, and per-specialization
--- versions (Brewmaster's Blackout Kick is not the Windwalker's). The bar
--- reports whichever it holds, and a step names the one the pack was written
--- with, so a lookup that misses is retried through, in order:
+-- Finds which action buttons hold a step's spell when the bar reports another id for it.
+-- @param id number  The spell id a step names.
+-- @return table|nil  The list of buttons; nil when none is found (or on a client that does not look).
+--
+-- Retail has several ids for one ability: its base spell, the spell a talent or form currently overrides it with, and
+-- per-specialization versions (Brewmaster's Blackout Kick is not the Windwalker's). The bar reports whichever it
+-- holds, and a step names the one the pack was written with, so a lookup that misses is retried through, in order:
 --   1. the spells the client relates it to (base and override, both APIs);
---   2. the action slots the client itself says hold it
---      (C_ActionBar.FindSpellActionButtons), mapped back to buttons;
---   3. a spell on a button that is called the same (a specialization's
---      version of an ability keeps its name).
--- Settled once per scan and remembered (a miss too, so a spell that really
--- is on no bar costs one table read per poll); the first button list found
--- is added to the index under the asked ID, so every consumer of the index
--- (glow, readiness, range) sees it. Only the restricted clients (Retail,
--- Forever) look: the others identify spells by rank through the catalog.
+--   2. the action slots the client itself says hold it (C_ActionBar.FindSpellActionButtons), mapped back to buttons;
+--   3. a spell on a button that is called the same (a specialization's version of an ability keeps its name).
+-- Settled once per scan and remembered (a miss too, so a spell that really is on no bar costs one table read per
+-- poll); the first button list found is added to the index under the asked id, so every consumer of the index (glow,
+-- readiness, range) sees it. Only the restricted clients (Retail, Forever) look: the others identify spells by rank
+-- through the catalog.
 local function aliasButtons(id)
     local settled = AliasCache[id]
 
@@ -1484,6 +1622,8 @@ local function aliasButtons(id)
     local found, how
 
     -- Keeps the first non-empty button list found, with the reason it was chosen.
+    -- @param buttons table|nil  A list of buttons.
+    -- @param reason string  Why this list was chosen.
     local function take(buttons, reason)
         if found or not buttons or #buttons == 0 then
             return
@@ -1567,8 +1707,11 @@ local function aliasButtons(id)
     return buttons
 end
 
--- Indexes one standard action button: reads its action, files its spell (and aliases on restricted clients) and
--- remembers macro buttons for RefreshMacroButtons. Errors in reading a foreign button are contained.
+-- Indexes one standard action button.
+-- @param button table|nil  The button.
+--
+-- Reads its action, files its spell (and aliases on restricted clients) and remembers macro buttons for
+-- RefreshMacroButtons. Errors in reading a foreign button are contained.
 local function AddStandardButton(button)
     if not button or ButtonSpells[button] then
         return
@@ -1609,10 +1752,13 @@ local function AddStandardButton(button)
     end
 end
 
--- Pet action slots expose a spell only through GetPetActionInfo. Modern
--- clients return the spell ID seventh; a client without it still names the
--- ability, resolved through spell metadata. Tokens (Attack, Follow, Stay...)
--- are commands, not spells, and are never indexed.
+-- Reads the spell a pet action slot holds.
+-- @param index number  The pet action index.
+-- @return number|nil  The spell id; nil for a token or when it cannot be resolved.
+--
+-- Pet action slots expose a spell only through GetPetActionInfo. Modern clients return the spell id seventh; a client
+-- without it still names the ability, resolved through spell metadata. Tokens (Attack, Follow, Stay...) are commands,
+-- not spells, and are never indexed.
 local function PetActionSpell(index)
     if type(GetPetActionInfo) ~= 'function' then
         return
@@ -1633,7 +1779,10 @@ local function PetActionSpell(index)
     return spellMetadataID(name)
 end
 
--- Returns the pet action index (1 to 10) for a pet bar button, from the given index or the button's own id.
+-- Resolves the pet action index (1 to 10) for a pet bar button.
+-- @param button table  The button.
+-- @param index number|nil  The given index.
+-- @return number|nil  The index, from the given index or the button's own id; nil when neither is valid.
 local function PetIndex(button, index)
     if type(index) == 'number' and index >= 1 and index <= 10 and index % 1 == 0 then
         return index
@@ -1647,6 +1796,8 @@ local function PetIndex(button, index)
 end
 
 -- Indexes one pet bar button under the spell its pet action slot holds.
+-- @param button table|nil  The button.
+-- @param index number|nil  The pet action index; the button's own id by default.
 local function AddPetButton(button, index)
     if not button or ButtonSpells[button] then
         return
@@ -1662,9 +1813,10 @@ local function AddPetButton(button, index)
     AddButton(PetActionSpell(index), button)
 end
 
--- Macro conditionals and cast sequences can change their exposed action
--- without moving a slot or editing the macro. Observe known macro buttons on
--- the existing recommendation cadence; never parse or execute macro bodies.
+-- Re-observes the known macro buttons and reindexes any whose action changed.
+--
+-- Macro conditionals and cast sequences can change their exposed action without moving a slot or editing the macro.
+-- Known macro buttons are observed on the existing recommendation cadence; macro bodies are never parsed or executed.
 function addon:RefreshMacroButtons()
     -- Macro observation (Platform/macros.lua) is probe-only. Under the
     -- restricted policy macro buttons resolve to nothing; a scan made under
@@ -1766,7 +1918,7 @@ end
 -- Bar addon scans
 -- ============================================================================
 
--- Bartender4: its pet and stance buttons (its action buttons come through LibActionButton).
+-- Bartender4: indexes its pet and stance buttons (its action buttons come through LibActionButton).
 local function FetchBartender4()
     -- Non-pet buttons are done via. LibActionButton
     for i = 1, 10 do
@@ -1805,7 +1957,14 @@ local DOMINOS_BARS = {
     'MultiBar7',
 }
 
--- Dominos: its registry when reachable, then its own numbered buttons and the stock-named buttons it replaced.
+-- Dominos: indexes its registry when reachable, then its own numbered buttons and the stock-named buttons it replaced.
+--
+-- Dominos creates its own CheckButtons for its action IDs 1-24 and 73-132 (DominosActionButton<id>) and names the rest
+-- after the Blizzard bar they replace, MultiBar<Right|Left|BottomRight|BottomLeft|5|6|7>ActionButton<1-12>
+-- (tullamods/Dominos, Dominos/bars/actionBar/buttons.lua, GetActionButtonName and GetOrCreateActionButton, commit
+-- 3a65bfa). Blizzard's own frames of those names do not exist (they are ...Button<n>), so those buttons are Dominos'.
+-- The registry is the public route, Dominos.ActionButtons:GetAll(); the name scan covers a build whose registry is not
+-- reachable.
 local function FetchDominos()
     local dominos = rawget(_G, 'Dominos')
     local registry = type(dominos) == 'table' and rawget(dominos, 'ActionButtons') or nil
@@ -1860,7 +2019,7 @@ local function FetchFarmingBar()
     end
 end
 
--- AzeriteUI (the older version): its 24 action buttons.
+-- AzeriteUI (the older version): indexes its 24 action buttons.
 local function FetchAzeriteUI()
     for i = 1, 24 do
         local button = _G['AzeriteUIActionButton' .. i]
@@ -1871,18 +2030,19 @@ local function FetchAzeriteUI()
     end
 end
 
--- AzeriteUI6 (folder AzeriteUI6) builds every action button with
--- LibActionButton-1.0:CreateButton (Components/ActionBars/Prototypes/
--- ActionButton.lua), so the library scan finds them. Its pet bar creates plain
--- PetActionButtonTemplate frames named AZUI6_PetActionBarButton<1-10>
--- (Prototypes/PetButton.lua; PetBar.lua CreateButton), commit 05e2e2e.
+-- AzeriteUI6: indexes its pet bar buttons.
+--
+-- AzeriteUI6 (folder AzeriteUI6) builds every action button with LibActionButton-1.0:CreateButton
+-- (Components/ActionBars/Prototypes/ActionButton.lua), so the library scan finds them. Its pet bar creates plain
+-- PetActionButtonTemplate frames named AZUI6_PetActionBarButton<1-10> (Prototypes/PetButton.lua; PetBar.lua
+-- CreateButton), commit 05e2e2e.
 local function FetchAzeriteUI6()
     for i = 1, 10 do
         AddPetButton(_G['AZUI6_PetActionBarButton' .. i], i)
     end
 end
 
--- TotemTimers: its timer buttons and per-timer action buttons, indexed by the spell each is set to cast.
+-- TotemTimers: indexes its timer buttons and per-timer action buttons by the spell each is set to cast.
 local function FetchTotemTimers()
     for i = 1, 10 do
         local button = _G['XiTimers_Timer' .. i]
@@ -1917,7 +2077,7 @@ local function FetchTotemTimers()
     end
 end
 
--- LUI: its bottom, right and left action bars.
+-- LUI: indexes its bottom, right and left action bars.
 local function FetchLUI()
     local luiBars = {
         'LUIBarBottom1', 'LUIBarBottom2', 'LUIBarBottom3', 'LUIBarBottom4', 'LUIBarBottom5', 'LUIBarBottom6',
@@ -1941,10 +2101,17 @@ end
 -- once however many names reach it.
 local LAB_PREFIX = 'LibActionButton-1.0'
 
--- Returns the distinct LibActionButton library tables that can list their buttons.
+-- Lists the LibActionButton library tables that are registered.
+-- @return table[]  The distinct LibActionButton library tables that can list their buttons.
+--
+-- Every LibActionButton-1.0 variant is covered, not only the two known names: bar addons bundle forks under their own
+-- major (ElvUI's LibActionButton-1.0-ElvUI) and LibStub lists them all. A variant is read once however many names
+-- reach it.
 local function LibActionButtonLibraries()
     local libs, seen = {}, {}
 
+    -- Keeps a library table that can list its buttons and has not been seen yet.
+    -- @param lib any  The candidate library table.
     local function take(lib)
         if type(lib) == 'table' and not seen[lib] and type(lib.GetAllButtons) == 'function' then
             seen[lib] = true
@@ -1995,7 +2162,8 @@ end
 -- are never drawn. Stance and pet bars stay Blizzard's.
 local EUI_SLOTS = 180
 
--- True when EllesmereUI's action bars are loaded or have left their hidden parent frame behind.
+-- Whether EllesmereUI's action bars are loaded or have left their hidden parent frame behind.
+-- @return boolean  True when they are.
 local function EllesmereUIActive()
     return IsAddOnLoaded('EllesmereUIActionBars')
         or IsAddOnLoaded('EllesmereUI')
@@ -2006,7 +2174,9 @@ end
 -- slot that is hidden is a duplicate nobody sees; it is left out of the index.
 local DrawnSlots = {}
 
--- False only when the button positively reports it is not visible.
+-- Whether a button may be visible.
+-- @param button table  The button.
+-- @return boolean  False only when the button positively reports it is not visible.
 local function VisibleButton(button)
     if type(button.IsVisible) ~= 'function' then
         return true
@@ -2017,6 +2187,12 @@ local function VisibleButton(button)
 end
 
 -- Indexes EllesmereUI's buttons and records which action slots they draw visibly.
+--
+-- Its action buttons of bars 1-8 and the custom bars 9-10 are each their own CheckButton, EABButton<slot> for slots
+-- 1-180, built from ActionBarButtonTemplate with the slot in the secure "action" attribute (EllesmereGaming/
+-- EllesmereUI commit 1fdf4d2, EUI_ActionBars_Secure.lua). The stock bars are reparented to the hidden EABHiddenParent
+-- (EUI_ActionBars_Disposal.lua) but keep their ActionButtonN frames and their action attributes, so a scan of
+-- Blizzard's names alone indexes frames that are never drawn. Stance and pet bars stay Blizzard's.
 local function FetchEllesmereUI()
     for slot = 1, EUI_SLOTS do
         local button = _G['EABButton' .. slot]
@@ -2035,7 +2211,9 @@ local function FetchEllesmereUI()
     end
 end
 
--- A stock button hidden behind a replacement bar that draws its slot.
+-- Whether a stock button is hidden behind a replacement bar that draws its slot.
+-- @param button table|nil  The button.
+-- @return boolean  True for such a duplicate, which is left out of the index.
 local function HiddenDuplicate(button)
     if not button or next(DrawnSlots) == nil or VisibleButton(button) then
         return false
@@ -2054,19 +2232,28 @@ end
 local ButtonProviders, ProviderState = {}, {}
 local PROVIDER_LIMIT = 512
 
--- True when a provider handed over something that looks like a button (a table with GetAttribute).
+-- Whether a provider handed over something that looks like a button.
+-- @param button any  The candidate.
+-- @return boolean  True for a table with GetAttribute.
 local function validProviderButton(button)
     return type(button) == 'table' and type(button.GetAttribute) == 'function'
 end
 
 -- Runs every registered provider against this scan, counting its buttons (capped at PROVIDER_LIMIT) and recording any
 -- error it raised.
+--
+-- Each provider is called as fn(addButton, addPetButton) and reports its buttons through them. addButton(button) reads
+-- an action button the way the built-in scans do (secure type and action attributes, action slot, macro, item or
+-- spell); addPetButton(button, index) maps a pet bar button to its pet action index (1-10). An error in fn is
+-- contained and recorded.
 local function FetchProviders()
     for id, provider in pairs(ButtonProviders) do
         local state = ProviderState[id]
         state.error = nil
         state.buttons = 0
 
+        -- Counts one more button for the provider.
+        -- @return boolean  False once the provider is over PROVIDER_LIMIT; true otherwise.
         local function count()
             if state.buttons >= PROVIDER_LIMIT then
                 return false
@@ -2096,7 +2283,11 @@ local function FetchProviders()
     end
 end
 
--- Registers (or replaces) the button provider named id and triggers a rescan. Returns true, or false and a reason.
+-- Registers (or replaces) a button provider and triggers a rescan.
+-- @param id string  The provider id; a non-empty string of at most 128 characters.
+-- @param provider function  Called on every bar scan as provider(addButton, addPetButton).
+-- @return boolean  True when registered.
+-- @return string|nil  'invalid-id' or 'invalid-provider' when the first return is false; nil otherwise.
 function addon:RegisterButtonProvider(id, provider)
     if type(id) ~= 'string' or id == '' or #id > 128 then
         return false, 'invalid-id'
@@ -2115,7 +2306,9 @@ function addon:RegisterButtonProvider(id, provider)
     return true
 end
 
--- Removes a provider and rescans. Returns false when no provider had that id.
+-- Removes a provider and rescans.
+-- @param id string  The provider id.
+-- @return boolean  False when no provider had that id; true otherwise.
 function addon:UnregisterButtonProvider(id)
     if ButtonProviders[id] == nil then
         return false
@@ -2131,8 +2324,8 @@ function addon:UnregisterButtonProvider(id)
     return true
 end
 
--- Registered providers and what their last scan did: a sorted list of
--- {id=, buttons=, error=}.
+-- Lists the registered providers and what their last scan did.
+-- @return table[]  A list sorted by id of { id, buttons, error }.
 function addon:ListButtonProviders()
     local list = {}
 
@@ -2145,8 +2338,9 @@ function addon:ListButtonProviders()
     return list
 end
 
--- Blizzard's own bars: the action bars, the pet bar and the vehicle and override bar. A stock button hidden behind a
--- replacement bar that draws the same slot is skipped.
+-- Blizzard's own bars: indexes the action bars, the pet bar and the vehicle and override bar.
+--
+-- A stock button hidden behind a replacement bar that draws the same slot is skipped.
 local function FetchBlizzard()
     -- MultiBar5-7 are Retail's action bars 6-8 (Dragonflight and later).
     local BlizzardBars = {
@@ -2187,7 +2381,7 @@ local function FetchElvUIPet()
     end
 end
 
--- ButtonForge: its numbered buttons.
+-- ButtonForge: indexes its numbered buttons.
 local function FetchButtonForge()
     local i = 1
 
@@ -2208,9 +2402,11 @@ end
 -- Scan entry point and step bindings
 -- ============================================================================
 
--- Rebuilds the whole button index from every supported bar and provider, clearing existing glows first, then restarts
--- the rotation timer and re-evaluates. Always works on the addon whatever receiver it was called with. Callers that may
--- run often should go through addon:ButtonFetch (main.lua), which schedules the scan.
+-- Rebuilds the whole button index from every supported bar and provider.
+--
+-- Clears existing glows first, then restarts the rotation timer and re-evaluates. Always works on the addon whatever
+-- receiver it was called with. Callers that may run often should go through addon:ButtonFetch (main.lua), which
+-- schedules the scan.
 function addon:Fetch()
     self = addon
 
@@ -2296,8 +2492,11 @@ function addon:Fetch()
     announceIndexChange()
 end
 
--- Returns the first id (and its position) of spellIds that is on a button, or nil. With itemIds, the button must also
--- hold the item at the same position.
+-- Finds which of a list of spell ids is on a button.
+-- @param spellIds number[]|nil  The candidate spell ids.
+-- @param itemIds number[]|nil  When given, the button must also hold the item at the same position.
+-- @return number|nil  The first id of spellIds that is on a button; nil when none is.
+-- @return number|nil  Its position in spellIds.
 function addon:FindSpell(spellIds, itemIds)
     for index, id in ipairs(spellIds or {}) do
         if Spells[id] or aliasing and not itemIds and aliasButtons(id) then
@@ -2318,8 +2517,11 @@ function addon:FindSpell(spellIds, itemIds)
     end
 end
 
--- Checks the Blizzard suggestion step: true when every known spell of the specialization's suggestion set is on a
--- button, otherwise false and the list of those that are not; nil when the set is unavailable.
+-- Checks the Blizzard suggestion step against the bars.
+-- @param self table  The addon.
+-- @return boolean|nil  True when every known spell of the specialization's suggestion set is on a button, otherwise
+--   false; nil when the set is unavailable.
+-- @return number[]|nil  The spells that are on no button when the first return is false.
 local function assistedBinding(self)
     local platform = self.Platform
 
@@ -2360,9 +2562,11 @@ local function assistedBinding(self)
     return true
 end
 
--- Asks for a rescan when the last one is older than maxAge seconds (or none
--- ran); returns whether one was requested. Out of combat only: the editor
--- never makes the glows flicker mid-fight.
+-- Asks for a rescan when the last one is older than a given age.
+-- @param maxAge number|nil  The age in seconds (10 by default).
+-- @return boolean  Whether a rescan was requested.
+--
+-- Out of combat only: the editor never makes the glows flicker mid-fight.
 function addon:EnsureFreshButtonIndex(maxAge)
     if type(InCombatLockdown) == 'function' and InCombatLockdown() then
         return false
@@ -2384,19 +2588,18 @@ end
 -- Step types whose action can be looked up on the bars.
 local BINDABLE = { spell = true, pet = true, any = true, item = true, mark = true }
 
--- Whether a step's action is on an action button now: the test the engine
--- applies before it may select a step or show a cooldown (main.lua, "the
--- first mapped and ready spell"), read from the last scan with no bar call.
--- Bound means FindSpell maps one of the IDs GetSpellIds gives the step: a
--- spell under its own ID or any rank (Classic), or under its base or
--- override spell where the client relates them (the aliases above); an item
--- or item set through a button holding that same item; a pet spell through
--- the pet bar. Returns true, or false when no button holds it (the engine
--- skips it), or nil when there is nothing to check: no action (Stop,
--- Branch), IDs that cannot be resolved yet, or no scan has run.
--- Blizzard's suggestion changes every poll, so it is checked against the
--- specialization's suggestion set: false and the known spells that are on
--- no button, when any is missing.
+-- Tells whether a step's action is on an action button now.
+-- @param step table  The step.
+-- @return boolean|nil  True when a button holds it; false when no button holds it (the engine skips it); nil when
+--   there is nothing to check: no action (Stop, Branch), ids that cannot be resolved yet, or no scan has run.
+-- @return number[]|nil  For Blizzard's suggestion step, the known spells that are on no button.
+--
+-- This is the test the engine applies before it may select a step or show a cooldown (main.lua, "the first mapped and
+-- ready spell"), read from the last scan with no bar call. Bound means FindSpell maps one of the ids GetSpellIds gives
+-- the step: a spell under its own id or any rank (Classic), or under its base or override spell where the client
+-- relates them (the aliases above); an item or item set through a button holding that same item; a pet spell through
+-- the pet bar. Blizzard's suggestion changes every poll, so it is checked against the specialization's suggestion
+-- set: false and the known spells that are on no button, when any is missing.
 function addon:GetStepBinding(step)
     -- Nothing is judged before a scan has run, or while a bar change waits for
     -- the rescan it has scheduled (the index is older than the bars).
@@ -2431,11 +2634,12 @@ function addon:GetStepBinding(step)
     return false
 end
 
--- For /rm debug glow: why a step is, or is not, found on the bars. One record
--- per spell ID the step names: its name, the IDs the client relates to it,
--- whether the index holds it directly, how a lookup that missed was settled
--- (relative, client slots, same name) or that it was not, the buttons that
--- hold it, and the action slots the client itself reports for it.
+-- Explains why a step is, or is not, found on the bars; for /rm debug glow.
+-- @param step table  The step.
+-- @return table  { ids, bound, type, action, pending, scanned, error }: one record per spell id the step names (its
+--   name, the ids the client relates to it, whether the index holds it directly, how a lookup that missed was settled
+--   (relative, client slots, same name) or that it was not, the buttons that hold it, and the action slots the client
+--   itself reports for it).
 function addon:ExplainStepBinding(step)
     local result = { ids = {}, bound = nil }
 
@@ -2491,8 +2695,10 @@ function addon:ExplainStepBinding(step)
     return result
 end
 
--- What the last scan holds, for the same report: each indexed spell with its
--- name and buttons (capped), plus the scan's age and policy.
+-- Describes what the last scan holds, for the same report.
+-- @param limit number|nil  The most spells listed (120 by default).
+-- @return table  { spells, total, scans, age, pending, policy }: each indexed spell with its name and buttons
+--   (capped), plus the scan's age and policy.
 function addon:GetIndexedSpellsDiagnostic(limit)
     local list = {}
 
@@ -2533,8 +2739,10 @@ function addon:GetIndexedSpellsDiagnostic(limit)
     }
 end
 
--- The enabled, reachable steps of one rotation body whose action is on no
--- action button now, in walk order: {step=, section=, ordinal=, missing=}.
+-- Lists the enabled, reachable steps of one rotation body whose action is on no action button now.
+-- @param body table  The rotation body.
+-- @return table[]  The steps in walk order, each { step, section, ordinal, missing }.
+--
 -- For /rm why and /rm debug glow; nothing reads it per poll.
 function addon:ListUnboundSteps(body)
     local data = self.RotationData
@@ -2566,12 +2774,17 @@ function addon:ListUnboundSteps(body)
     return list
 end
 
--- One step's action, named for a report line.
+-- Names one step's action for a report line.
+-- @param step table  The step.
+-- @return string  The action's name; '?' for a non-table step.
 function addon:DescribeStepAction(step)
     if type(step) ~= 'table' then
         return '?'
     end
 
+    -- Names a spell id.
+    -- @param id number  The spell id.
+    -- @return string  The spell's name, or the id as text.
     local function spellName(id)
         local info = self.Platform and self.Platform:GetSpellInfo(id)
         return info and info.name or tostring(id)
@@ -2596,8 +2809,9 @@ function addon:DescribeStepAction(step)
     return spellName(step.action)
 end
 
--- Formats one ListUnboundSteps entry for a report line: the step's name, whether it is a cooldown or numbered step,
--- and any missing spells.
+-- Formats one ListUnboundSteps entry for a report line.
+-- @param entry table  The entry { step, section, ordinal, missing }.
+-- @return string  The step's name, whether it is a cooldown or numbered step, and any missing spells.
 function addon:DescribeUnboundStep(entry)
     local step = entry.step
 
@@ -2628,7 +2842,10 @@ end
 -- Readiness through the bar itself, for actions outside the player's and pet's
 -- spellbooks: vehicle, override and possession abilities. Consulted only in a
 -- special action context (Core/action_policy.lua), never on the player path.
--- True when every argument is a readable (non-secret) value.
+
+-- Whether every argument is a readable (non-secret) value.
+-- @param ... any  The values to test.
+-- @return boolean  True when all are readable.
 local function readable(...)
     for i = 1, select('#', ...) do
         if not addon.Platform:CanReadValue((select(i, ...))) then
@@ -2639,7 +2856,12 @@ local function readable(...)
     return true
 end
 
--- True when a cooldown has finished, or only the global cooldown is left; nil when the inputs are not numbers.
+-- Tells whether a cooldown has finished.
+-- @param start number|nil  The cooldown start time.
+-- @param duration number|nil  The cooldown duration.
+-- @param now number|nil  The current time.
+-- @return boolean|nil  True when it has finished, or only the global cooldown is left; nil when the inputs are not
+--   numbers.
 local function cooldownReady(start, duration, now)
     if type(start) ~= 'number' or type(duration) ~= 'number' or type(now) ~= 'number' then
         return nil
@@ -2658,7 +2880,10 @@ local function cooldownReady(start, duration, now)
     return gcdExpires > now and start + duration <= gcdExpires + 0.001
 end
 
--- True when the pet action at index is enabled, usable and off cooldown.
+-- Tells whether a pet action is ready.
+-- @param index number  The pet action index.
+-- @param now number  The current time.
+-- @return boolean  True when the pet action is enabled, usable and off cooldown.
 local function petActionReady(index, now)
     if type(GetPetActionCooldown) ~= 'function' then
         return false
@@ -2681,10 +2906,14 @@ local function petActionReady(index, now)
     return cooldownReady(start, duration, now) == true
 end
 
--- C_ActionBar.GetActionCooldown (Retail 12.0) returns a SpellCooldownInfo
--- whose times may be secret while cooldowns are restricted; isEnabled and
--- isActive never are. With the times hidden, an inactive cooldown is ready
--- and an active one only while it is the running global cooldown.
+-- Tells whether an action slot's cooldown has finished.
+-- @param slot number  The action slot.
+-- @param now number  The current time.
+-- @return boolean  True when the cooldown is ready.
+--
+-- C_ActionBar.GetActionCooldown (Retail 12.0) returns a SpellCooldownInfo whose times may be secret while cooldowns
+-- are restricted; isEnabled and isActive never are. With the times hidden, an inactive cooldown is ready and an active
+-- one only while it is the running global cooldown.
 local function actionCooldownReady(slot, now)
     local namespace = C_ActionBar
     local modern = type(namespace) == 'table' and namespace.GetActionCooldown or nil
@@ -2742,7 +2971,11 @@ local function actionCooldownReady(slot, now)
     return cooldownReady(start, duration, now) == true
 end
 
--- True when the slot is usable (with enough resources), off cooldown and, if the client says so, not out of range.
+-- Tells whether an action slot is ready.
+-- @param slot number  The action slot.
+-- @param now number  The current time.
+-- @return boolean  True when the slot is usable (with enough resources), off cooldown and, if the client says so, not
+--   out of range.
 local function actionSlotReady(slot, now)
     local usableFn = actionBarFunction('IsUsableAction', IsUsableAction)
 
@@ -2772,7 +3005,10 @@ local function actionSlotReady(slot, now)
     return true
 end
 
--- True when any button holding spellId is ready through the bar itself. False when no button holds it.
+-- Tells whether any button holding a spell is ready through the bar itself.
+-- @param spellId number  The spell id.
+-- @param now number  The current time.
+-- @return boolean  True when any button holding the spell is ready; false when none is or no button holds it.
 function addon:IsBoundActionReady(spellId, now)
     local buttons = Spells[spellId]
 
@@ -2799,10 +3035,12 @@ function addon:IsBoundActionReady(spellId, now)
     return false
 end
 
--- The range indicator of the first action button holding a spell: true or
--- false, or nil when no standard button holds it, the slot has no range
--- requirement or the answer is unreadable. Read for the implicit Shoot or
--- Auto Shot only (Core/action_policy.lua), whose button must be on the bars.
+-- Reads the range indicator of the first action button holding a spell.
+-- @param spellId number  The spell id.
+-- @return boolean|nil  True or false; nil when no standard button holds it, the slot has no range requirement or the
+--   answer is unreadable.
+--
+-- Read for the implicit Shoot or Auto Shot only (Core/action_policy.lua), whose button must be on the bars.
 function addon:GetBoundActionRange(spellId)
     local buttons = Spells[spellId]
 
@@ -2838,7 +3076,9 @@ function addon:GetBoundActionRange(spellId)
     return nil
 end
 
--- Returns the pet action index (1 to 10) of an indexed pet bar button, or nil.
+-- Returns the pet action index (1 to 10) of an indexed pet bar button.
+-- @param button table  The button.
+-- @return number|nil  The index; nil when it is not an indexed pet button.
 function addon:GetPetActionButtonIndex(button)
     return PetButtons[button]
 end
@@ -2847,16 +3087,29 @@ end
 -- Glow requests from the rotation engine
 -- ============================================================================
 
--- True when spellId (and itemId) is already recorded as the glowing recommendation with the same hidden flag, so the
--- engine can skip a redundant request.
--- hidden: the spell is the recommendation but Blizzard's Assisted Highlight
--- draws it (Core/assisted_highlight.lua), so RM recorded it without a glow.
+-- Tells whether a spell is already recorded as the glowing recommendation.
+-- @param spellId number  The spell id.
+-- @param itemId number|nil  The item id.
+-- @param hidden boolean|nil  Whether the spell is the recommendation but Blizzard's Assisted Highlight draws it
+--   (Core/assisted_highlight.lua), so RM recorded it without a glow.
+-- @return boolean  True when spellId (and itemId) is recorded with the same hidden flag, so the engine can skip a
+--   redundant request.
 function addon:IsGlowing(spellId, itemId, hidden)
     local current = SpellsGlowing[spellId]
     return current ~= nil and current.itemId == itemId and (current.hidden == true) == (hidden == true)
 end
 
--- Shows a cooldown glow under key id on every button holding spellId (matching itemId when given).
+-- Shows a cooldown glow under a key on every button holding a spell.
+-- @param spellId number  The spell id.
+-- @param id string|number  The glow key.
+-- @param effect string  The id of the effect in global.effects.
+-- @param color table|nil  The color.
+-- @param mags number|nil  The magnification.
+-- @param setpoint string|nil  The anchor point.
+-- @param xoffs number|nil  The horizontal offset.
+-- @param yoffs number|nil  The vertical offset.
+-- @param angle number|nil  The rotation.
+-- @param itemId number|nil  When given, only buttons holding this item are lit.
 local function GlowIndependent(spellId, id, effect, color, mags, setpoint, xoffs, yoffs, angle, itemId)
     if Spells[spellId] ~= nil and addon.db.global.effects[effect] then
         for _, button in pairs(Spells[spellId]) do
@@ -2869,7 +3122,9 @@ local function GlowIndependent(spellId, id, effect, color, mags, setpoint, xoffs
     end
 end
 
--- Removes the glow under key id from every button holding spellId.
+-- Removes the glow under a key from every button holding a spell.
+-- @param spellId number  The spell id.
+-- @param id string|number  The glow key.
 local function ClearGlowIndependent(spellId, id)
     if Spells[spellId] ~= nil then
         for _, button in pairs(Spells[spellId]) do
@@ -2879,8 +3134,14 @@ local function ClearGlowIndependent(spellId, id)
     end
 end
 
--- Starts or stops the cooldown glow for spellId as condition changes, using the cooldown step's own style or the
--- profile's. Called for every cooldown on every poll, so it acts only on a change.
+-- Starts or stops the cooldown glow for a spell as its condition changes.
+-- @param spellId number|nil  The spell id; nil does nothing.
+-- @param condition boolean  Whether the cooldown condition holds.
+-- @param cooldown table|nil  The cooldown step; its own style or the profile's is used.
+-- @param itemId number|nil  The item id, for an item cooldown.
+--
+-- Called for every cooldown on every poll, so it acts only on a change. WeakAuras are told only when a cooldown glow
+-- actually starts or stops.
 function addon:GlowCooldown(spellId, condition, cooldown, itemId)
     if spellId == nil then
         return
@@ -2929,8 +3190,11 @@ if type(publishActivePresentation) == 'function' then
     publishActivePresentation(addon, addon.GlowCooldown, getfenv(1))
 end
 
--- Lights the recommendation glow (key 'next') on every button holding spellId and records what happened for
--- /rm debug glow.
+-- Lights the recommendation glow (key 'next') on every button holding a spell.
+-- @param spellId number|nil  The spell id; nil does nothing.
+-- @param itemId number|nil  When given, only buttons holding this item are lit.
+--
+-- Records what happened for /rm debug glow.
 function addon:GlowSpell(spellId, itemId)
     if spellId == nil then
         return
@@ -2981,8 +3245,11 @@ function addon:GlowClear()
     end
 end
 
--- Replaces the current recommendation glow. With hidden set, Blizzard's Assisted Highlight draws the spell, so it is
--- recorded as recommended but nothing is lit.
+-- Replaces the current recommendation glow.
+-- @param spellId number|nil  The spell id.
+-- @param itemId number|nil  The item id.
+-- @param hidden boolean|nil  True when Blizzard's Assisted Highlight draws the spell, so it is recorded as recommended
+--   but nothing is lit.
 function addon:GlowNextSpell(spellId, itemId, hidden)
     self:GlowClear()
 
@@ -3013,13 +3280,17 @@ end
 -- Item set binding and slot highlight
 -- ============================================================================
 
--- Item-set binding observes the indexed action buttons and resolves their
--- slots exactly as highlighting does. Read-only; no secure state is touched.
+-- Resolves the action slot of an indexed button.
+-- @param button table  The button.
+-- @return number|nil  The slot, resolved exactly as highlighting does.
+--
+-- Item-set binding observes the indexed action buttons. Read-only; no secure state is touched.
 function addon:ResolveActionButtonSlot(button)
     return GetActionSlot(button)
 end
 
--- Calls callback(button, slot) for every indexed button whose type is 'action'.
+-- Calls a function for every indexed button whose type is 'action'.
+-- @param callback function  Called as callback(button, slot).
 function addon:ForEachActionButton(callback)
     for button in pairs(ButtonSpells) do
         local ok, kind = pcall(button.GetAttribute, button, 'type')
@@ -3030,8 +3301,11 @@ function addon:ForEachActionButton(callback)
     end
 end
 
--- Lights every indexed action button whose slot is in slots, clearing the previous highlight first. Used by the item
--- set editor to show where a set is bound.
+-- Lights every indexed action button whose slot is in a list, clearing the previous highlight first.
+-- @param slots number[]  The action slots to light.
+--
+-- Used by the item set editor to show where a set is bound. A button listed under its base or override spell too is
+-- lit once.
 function addon:HighlightSlots(slots)
     addon:EndHighlightSlot()
     -- A button listed under its base or override spell too is lit once.
@@ -3061,7 +3335,10 @@ end
 -- BEGIN GLOW DIAGNOSTIC SUPPORT
 -- Read-only observations for /rm debug glow (Diagnostics/glow.lua). Nothing
 -- here runs unless that command does, and every native read is protected.
--- A printable name for a frame, falling back to tostring.
+
+-- Gives a printable name for a frame.
+-- @param frame any  The frame.
+-- @return string  The frame's name, falling back to tostring.
 local function diagnosticName(frame)
     if type(frame) ~= 'table' then
         return tostring(frame)
@@ -3078,7 +3355,10 @@ local function diagnosticName(frame)
     return tostring(frame)
 end
 
--- Calls frame:method() under pcall and returns the value only when it is readable.
+-- Calls frame:method() under pcall.
+-- @param frame table  The frame.
+-- @param method string  The method name.
+-- @return any|nil  The value only when it is readable.
 local function diagnosticRead(frame, method)
     if type(frame) ~= 'table' or type(frame[method]) ~= 'function' then
         return nil
@@ -3104,12 +3384,18 @@ local DIAGNOSED_BARS = {
     'MultiBar7',
 }
 
--- The Blizzard bar names the glow report lists.
+-- Lists the Blizzard bar names the glow report lists.
+-- @return string[]  The bar names.
+--
+-- The bars a Retail client builds (Blizzard_ActionBar ActionBar.lua names them ActionButtonN and <bar>ButtonN),
+-- whether or not the scan reads them.
 function addon:GetGlowDiagnosticBars()
     return DIAGNOSED_BARS
 end
 
--- One standard action button, read exactly the way the scan reads it.
+-- Describes one standard action button, read exactly the way the scan reads it.
+-- @param button table  The button.
+-- @return table  { name, shown, visible, kind, slot, slotError, actionKind, action, spell, item, indexed, error }.
 function addon:DiagnoseActionButton(button)
     local record = {
         name = diagnosticName(button),
@@ -3154,7 +3440,8 @@ function addon:DiagnoseActionButton(button)
     return record
 end
 
--- Counts in the live index, and the buttons one spell maps to.
+-- Counts what the live index holds.
+-- @return table  { buttons, spells, ids (the first 24 spell ids), policy, fetches, lastFetch }.
 function addon:GetButtonIndexDiagnostic()
     local buttons, spells, ids = 0, 0, {}
 
@@ -3182,7 +3469,9 @@ function addon:GetButtonIndexDiagnostic()
     }
 end
 
--- Names of the buttons the index holds for spellId.
+-- Lists the names of the buttons the index holds for a spell.
+-- @param spellId number  The spell id.
+-- @return string[]  The names.
 function addon:GetSpellButtonNames(spellId)
     local names = {}
 
@@ -3193,7 +3482,8 @@ function addon:GetSpellButtonNames(spellId)
     return names
 end
 
--- What the last recommendation glow did, and what is lit now, frame by frame.
+-- Describes what the last recommendation glow did, and what is lit now, frame by frame.
+-- @return table  { last, glowing }.
 function addon:GetGlowDiagnostic()
     local result = { last = {}, glowing = {} }
 
@@ -3270,6 +3560,11 @@ do
     -- (bounded at 128 buttons and 512 frames) and the OnUpdate callbacks they run. It stands down if Glow, Fetch or
     -- the LibCustomGlow starters were replaced, since the counts would then mean something else.
     if kind(bind) == 'function' then
+        -- The 'visual' probe for the CPU diagnostics.
+        -- @param api table  The frame accessor table (GetParent, IsVisible, GetScript).
+        -- @return table|nil  The counts { buttons, slots, logical, overlays, sequence, pixel, autocast, blizzard, proc,
+        --   capped, callbacks, ambiguous } (unsupported = true when the frame accessors are missing); nothing when
+        --   Glow, Fetch or the LibCustomGlow starters were replaced.
         bind(addon, 'visual', function(api)
             if not equal(raw(addon, 'Glow'), ownedGlow) or not equal(raw(addon, 'Fetch'), ownedFetch) then
                 return
@@ -3324,8 +3619,13 @@ do
                 highlighted[button] = true
             end
 
-            -- Counts one glow frame of the given kind if it belongs to button and is shown; records the OnUpdate
-            -- callback it runs, or marks the kind ambiguous when two frames disagree. Counting stops at 512 frames.
+            -- Counts one glow frame of the given kind if it belongs to the button and is shown.
+            -- @param frame any  The glow frame.
+            -- @param button table  The button.
+            -- @param name string  The kind: overlays, pixel, autocast, proc or blizzard.
+            --
+            -- Records the OnUpdate callback it runs, or marks the kind ambiguous when two frames disagree. Counting
+            -- stops at 512 frames.
             local function inspect(frame, button, name)
                 result.slots = result.slots + 1
 

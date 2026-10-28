@@ -8,9 +8,13 @@
 local _, addon = ...
 local platform = addon.Platform
 
--- These predicates are independent, zero-argument observations of the player.
--- Keep their native facts distinct from existence, instances or spell usability.
--- kind is "stealthed", "control" or "outdoors"; returns the boolean answer, or nil and a reason code.
+-- Reads one of three independent zero-argument predicates of the player.
+-- @param kind string  Which predicate: "stealthed" (IsStealthed), "control" (HasFullControl) or "outdoors"
+--   (IsOutdoors).
+-- @return boolean|nil  The boolean answer; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Their native facts are kept distinct from existence, instances or spell usability.
 function platform:GetPlayerFlagObservation(kind)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end

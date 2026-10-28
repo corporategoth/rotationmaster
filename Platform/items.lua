@@ -13,8 +13,10 @@ local platform = addon.Platform
 -- Identity and use spell
 -- ============================================================================
 
--- Validates an item argument (a positive whole item id, or a name or link up to 1024 characters): true, or nil and a
--- reason code.
+-- Validates an item argument.
+-- @param item any  The candidate: a positive whole item id, or a name or link of up to 1024 characters.
+-- @return boolean|nil  True when valid; nil otherwise.
+-- @return string|nil  The reason code ("restricted-value" or "invalid-item") when the first return is nil.
 local function identifier(item)
     if not platform:CanReadValue(item) then return nil,"restricted-value" end
     if type(item)=="number" and item>0 and item<math.huge and item%1==0 then return true end
@@ -22,7 +24,11 @@ local function identifier(item)
     return nil,"invalid-item"
 end
 
--- Validates the (name, spell id) pair of an item's use spell and returns { name, spellID }, or nil and a reason code.
+-- Validates the (name, spell id) pair of an item's use spell.
+-- @param name string|nil  The spell name from the native call.
+-- @param id number|nil  The spell id from the native call.
+-- @return table{name=string,spellID=number}|nil  The validated pair; nil when it is missing, restricted or invalid.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 local function normalize(name, id)
     if not platform:CanReadValue(name) or not platform:CanReadValue(id) then
         return nil, "restricted-value"
@@ -37,7 +43,10 @@ local function normalize(name, id)
     return { name = name, spellID = id }
 end
 
--- Returns { name, spellID } for the spell an item casts when used, or nil and a reason code.
+-- Reads the spell an item casts when used.
+-- @param item number|string  The item id, name or link.
+-- @return table{name=string,spellID=number}|nil  The use spell; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:GetItemUseSpell(item)
     local valid, reason = identifier(item)
 
@@ -60,8 +69,10 @@ function platform:GetItemUseSpell(item)
     return normalize(name, id)
 end
 
--- Resolves an item id, name or link to its numeric item id (a number is returned as given); nil and a reason code
--- when it cannot be resolved.
+-- Resolves an item id, name or link to its numeric item id.
+-- @param item number|string  The item id (returned as given), name or link.
+-- @return number|nil  The item id; nil when it cannot be resolved.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:GetItemID(item)
     local valid, reason = identifier(item)
 
@@ -100,7 +111,9 @@ function platform:GetItemID(item)
     return id
 end
 
--- True for a finite number that is not negative (so NaN, infinity and negatives are all refused).
+-- Whether a value is a finite number that is not negative (NaN, infinity and negatives are all refused).
+-- @param value any  The value to test.
+-- @return boolean  True for such a number.
 local function finite(value)
     return type(value)=="number" and value==value and value>=0 and value<math.huge
 end
@@ -109,9 +122,13 @@ end
 -- Metadata
 -- ============================================================================
 
+-- Reads an item's classification from the instant lookup (no server round trip).
+-- @param item number|string  The item id, name or link.
+-- @return table{itemID=number,classID=number,subClassID=number,equipLoc=string|nil}|nil  The classification; equipLoc
+--   is a non-localized INVTYPE_* token and is nil when empty or unreadable. nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
 -- Native classification is independent of display loading and gameplay policy.
--- Returns { itemID, classID, subClassID, equipLoc } from the instant lookup (no server round trip), or nil and a
--- reason code.
 function platform:GetItemInfoInstant(item)
     local valid,reason=identifier(item)
     if not valid then return nil,reason end
@@ -132,11 +149,15 @@ function platform:GetItemInfoInstant(item)
     return {itemID=id,classID=class,subClassID=subclass,equipLoc=equipLoc}
 end
 
--- Display metadata does not need a minimum-level observation. Keep the
--- gameplay metadata contract separate so a readable name/icon is still usable
--- in editors, while readiness never guesses a missing required level.
--- Returns { itemID, name, link, iconID }, or nil and a reason code ("item-data-unavailable" while the client has not
--- loaded the item).
+-- Reads an item's display metadata.
+-- @param item number|string  The item id, name or link.
+-- @return table{itemID=number,name=string,link=string|nil,iconID=string|number|nil}|nil  The display record; nil when
+--   it cannot be read.
+-- @return string|nil  The reason code when the first return is nil ("item-data-unavailable" while the client has not
+--   loaded the item); nil otherwise.
+--
+-- Display metadata does not need a minimum-level observation. The gameplay metadata contract is kept separate so a
+-- readable name or icon is still usable in editors, while readiness never guesses a missing required level.
 function platform:GetItemDisplayInfo(item)
     local id, reason = self:GetItemID(item)
 
@@ -182,8 +203,11 @@ end
 -- Cooldown, count, state and readiness
 -- ============================================================================
 
--- Returns { startTime, duration, isEnabled } for an item, with isEnabled always a boolean; nil and a reason code
--- otherwise.
+-- Reads an item's cooldown.
+-- @param item number|string  The item id, name or link.
+-- @return table{startTime=number,duration=number,isEnabled=boolean}|nil  The cooldown, with isEnabled always a
+--   boolean; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:GetItemCooldown(item)
     local id, reason = self:GetItemID(item)
 
@@ -235,8 +259,11 @@ function platform:GetItemCooldown(item)
     return { startTime = start, duration = duration, isEnabled = enabled }
 end
 
--- Calls a native function under pcall and returns its first result, or nil and a reason code when the function is
--- missing, throws or returns a restricted value.
+-- Calls a native function under pcall and returns its first result.
+-- @param fn function|nil  The native function.
+-- @param ... any  The arguments passed to fn.
+-- @return any|nil  The first result; nil when the function is missing, throws or returns a restricted value.
+-- @return string|nil  The reason code when the call failed; nil otherwise.
 local function query(fn, ...)
     if type(fn) ~= "function" then
         return nil, "missing-api"
@@ -254,8 +281,13 @@ local function query(fn, ...)
     return value
 end
 
--- Returns { name, link, minimumLevel, iconID } for an item, or nil and a reason code. Unlike GetItemDisplayInfo it
--- requires the minimum level, so it is the one readiness uses.
+-- Reads the item metadata that readiness needs.
+-- @param item number|string  The item id, name or link.
+-- @return table{name=string,link=string|nil,minimumLevel=number,iconID=string|number|nil}|nil  The metadata; nil when
+--   it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Unlike GetItemDisplayInfo it requires the minimum level, so it is the one readiness uses.
 function platform:GetItemMetadata(item)
     local id, reason = self:GetItemID(item)
 
@@ -298,7 +330,10 @@ function platform:GetItemMetadata(item)
     return { name = name, link = link, minimumLevel = level, iconID = icon }
 end
 
--- Returns how many of the item the player carries (bank and charges not counted), or nil and a reason code.
+-- Reads how many of an item the player carries (bank and charges not counted).
+-- @param item number|string  The item id, name or link.
+-- @return number|nil  The count; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:GetItemCount(item)
     local id, reason = self:GetItemID(item)
 
@@ -318,7 +353,10 @@ function platform:GetItemCount(item)
     return value
 end
 
--- Returns whether the item is currently equipped, or nil and a reason code.
+-- Reads whether an item is currently equipped.
+-- @param item number|string  The item id, name or link.
+-- @return boolean|nil  True when equipped; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:IsItemEquipped(item)
     local id, reason = self:GetItemID(item)
 
@@ -345,8 +383,10 @@ end
 local wandItems = {}
 local WAND_SLOTS = { 18, 16 }
 
--- Returns true when a wand is equipped, false when none is, or nil and a reason code when an equipped item's class
--- is not loaded yet (the answer is retried next poll rather than cached).
+-- Reads whether a wand is equipped.
+-- @return boolean|nil  True when a wand is equipped, false when none is; nil when an equipped item's class is not
+--   loaded yet (the answer is retried next poll rather than cached) or it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:IsWandEquipped()
     if type(GetInventoryItemID) ~= 'function' then
         return nil, 'missing-api'
@@ -393,7 +433,10 @@ function platform:IsWandEquipped()
     return false
 end
 
--- Returns whether the player's level meets the item's minimum level, or nil and a reason code.
+-- Reads whether the player's level meets an item's minimum level.
+-- @param item number|string  The item id, name or link.
+-- @return boolean|nil  True when the level is high enough; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:IsItemLevelAllowed(item)
     local metadata, reason = self:GetItemMetadata(item)
 
@@ -413,8 +456,12 @@ function platform:IsItemLevelAllowed(item)
     return level >= metadata.minimumLevel
 end
 
--- Returns true when the player has the item, it is usable with enough power and its cooldown has ended by now (a
--- GetTime value); false when any of those fails; nil and a reason code when one cannot be read.
+-- Reads whether an item is ready to use.
+-- @param item number|string  The item id, name or link.
+-- @param now number  The current time, a GetTime value.
+-- @return boolean|nil  True when the player has the item, it is usable with enough power and its cooldown has ended
+--   by now; false when any of those fails; nil when one cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:IsItemReady(item, now)
     local id, reason = self:GetItemID(item)
 
@@ -467,8 +514,13 @@ function platform:IsItemReady(item, now)
     return cooldown.startTime + cooldown.duration <= now
 end
 
--- Returns { applicable = false } for an item with no range, { applicable = true, inRange = boolean } otherwise, or
--- nil and a reason code; accepts both the boolean and the 0/1 forms of the native result.
+-- Reads whether an item is in range of a unit.
+-- @param item number|string  The item id, name or link.
+-- @param unit string  The unit token to test; must be a non-empty string.
+-- @return table{applicable=boolean,inRange=boolean|nil}|nil  { applicable = false } for an item with no range,
+--   { applicable = true, inRange = boolean } otherwise; nil when it cannot be read. Accepts both the boolean and the
+--   0/1 forms of the native result.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:GetItemRangeState(item, unit)
     local valid, reason = identifier(item)
 
@@ -521,17 +573,14 @@ end
 -- Temporary weapon enchants
 -- ============================================================================
 
--- Temporary weapon enchants (poison, oil, stone, Shaman imbue) as the
--- GetWeaponEnchantInfo tuple: has, expiration (ms), charges, enchant ID for
--- the main hand, then the off hand. Every Classic client returns the enchant
--- ID fourth per hand (Classic Era's Blizzard_BuffFrame unpacks four values
--- per item). Retail 12.1 deprecated GetWeaponEnchantInfo for
--- C_PaperDollInfo.GetTemporaryEnchantmentInfo(slot), which returns a
--- TemporaryItemEnchantInfo or nothing; where it exists the same tuple is
--- composed from it by ComposedWeaponEnchantInfo, a stable function (cached
--- per evaluation by identity, so conditions share one observation). Callers
--- select it inline (no extra call per poll). A failing call raises, as the
--- native one does.
+-- Reads one hand's temporary weapon enchant from C_PaperDollInfo.GetTemporaryEnchantmentInfo.
+-- @param read function  The C_PaperDollInfo.GetTemporaryEnchantmentInfo function.
+-- @param slot number  The inventory slot: INVSLOT_MAINHAND or INVSLOT_OFFHAND.
+-- @return boolean|table  True when the hand has an enchant; false when it has none. An unreadable or malformed record
+--   is passed through unchanged for the caller's readability and shape checks; it never becomes "not enchanted".
+-- @return number|nil  The remaining time in milliseconds; nil when the enchant has no expiration.
+-- @return number|nil  The charges remaining.
+-- @return number|nil  The enchant id.
 local function temporaryEnchantHand(read, slot)
     local info = read(slot)
 
@@ -555,8 +604,24 @@ local function temporaryEnchantHand(read, slot)
     return true, remaining, info.chargesRemaining, info.enchantID
 end
 
--- Composes the eight-value GetWeaponEnchantInfo tuple from C_PaperDollInfo for the main and off hand. Only installed
--- as the reader where that function exists, so it needs no existence check of its own.
+-- Composes the eight-value GetWeaponEnchantInfo tuple from C_PaperDollInfo for the main and off hand.
+-- @return boolean|table  The main hand's enchant flag (see temporaryEnchantHand).
+-- @return number|nil  The main hand's remaining time in milliseconds.
+-- @return number|nil  The main hand's charges.
+-- @return number|nil  The main hand's enchant id.
+-- @return boolean|table  The off hand's enchant flag.
+-- @return number|nil  The off hand's remaining time in milliseconds.
+-- @return number|nil  The off hand's charges.
+-- @return number|nil  The off hand's enchant id.
+--
+-- Temporary weapon enchants (poison, oil, stone, Shaman imbue) as the GetWeaponEnchantInfo tuple: has, expiration
+-- (ms), charges, enchant id for the main hand, then the off hand. Every Classic client returns the enchant id fourth
+-- per hand (Classic Era's Blizzard_BuffFrame unpacks four values per item). Retail 12.1 deprecated
+-- GetWeaponEnchantInfo for C_PaperDollInfo.GetTemporaryEnchantmentInfo(slot), which returns a
+-- TemporaryItemEnchantInfo or nothing; where it exists the same tuple is composed from it here. It is a stable
+-- function (cached per evaluation by identity, so conditions share one observation) and callers select it inline (no
+-- extra call per poll). Only installed as the reader where that function exists, so it needs no existence check of
+-- its own. A failing call raises, as the native one does.
 local function composedWeaponEnchantInfo()
     local read = C_PaperDollInfo.GetTemporaryEnchantmentInfo
     local main, mainExpires, mainCharges, mainID = temporaryEnchantHand(read, INVSLOT_MAINHAND or 16)

@@ -9,9 +9,12 @@
 local _, addon = ...
 local platform = addon.Platform
 
--- Successful empty zone classification differs from an unavailable observation.
--- Returns { pvpType = <string> } for a classified zone (for example "sanctuary" or "contested"), an empty table when
--- the client reports no classification, or nil and a reason.
+-- Reads the PvP classification of the current zone (C_PvP.GetZonePVPInfo, falling back to the global GetZonePVPInfo).
+-- @return table{pvpType=string|nil}|nil  { pvpType = <string> } for a classified zone (for example "sanctuary" or
+--   "contested"), an empty table when the client reports no classification; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- A successful empty zone classification differs from an unavailable observation.
 function platform:GetZonePVPObservation()
     local family=self:GetClientFamily()
     if family~='retail' and family~='forever' and family~='era' and family~='tbc' and family~='progression' then return nil,'unsupported-policy' end

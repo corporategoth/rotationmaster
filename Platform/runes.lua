@@ -9,20 +9,30 @@
 local _, addon = ...
 local platform = addon.Platform
 
--- True for a number that is neither NaN nor infinite.
+-- Whether a value is a number that is neither NaN nor infinite.
+-- @param value any  The value to test.
+-- @return boolean  True for a finite number.
 local function finite(value)
     return type(value)=='number' and value==value and value<math.huge and value>-math.huge
 end
 
--- Returns true when index is a readable integer rune slot from 1 to 6, otherwise nil and a reason.
+-- Checks that an index is a readable integer rune slot from 1 to 6.
+-- @param self table  The platform table, used for its CanReadValue method.
+-- @param index any  The candidate slot index.
+-- @return boolean|nil  True when the index is valid; nil otherwise.
+-- @return string|nil  The reason code ("restricted-value" or "invalid-rune-index") when the first return is nil.
 local function validIndex(self, index)
     if not self:CanReadValue(index) then return nil,'restricted-value' end
     if not finite(index) or index%1~=0 or index<1 or index>6 then return nil,'invalid-rune-index' end
     return true
 end
 
--- Returns value when it is a readable finite number; a nil value yields nil and the caller's `missing` reason so each
--- field reports why it is absent.
+-- Validates a native number field.
+-- @param self table  The platform table, used for its CanReadValue method.
+-- @param value any  The native value to check.
+-- @param missing string  The reason code to return when value is nil, so each field reports why it is absent.
+-- @return number|nil  The value when it is a readable finite number; nil otherwise.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 local function numberField(self, value, missing)
     if not self:CanReadValue(value) then return nil,'restricted-value' end
     if canaccessvalue and not canaccessvalue(value) then return nil,'restricted-value' end
@@ -31,7 +41,10 @@ local function numberField(self, value, missing)
     return value
 end
 
--- Returns the rune type (a positive integer) for slot index, or nil and a reason.
+-- Reads the rune type of one rune slot (GetRuneType).
+-- @param index number  The rune slot, an integer from 1 to 6.
+-- @return number|nil  The rune type, a positive integer; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:GetRuneTypeObservation(index)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
@@ -47,10 +60,15 @@ function platform:GetRuneTypeObservation(index)
     return runeType
 end
 
--- A single native tuple supports independent ready and timing predicates.
--- Missing optional fields do not invalidate another readable field.
--- Returns a record { start, duration, ready } where each field is nil when unreadable, with startReason,
--- durationReason and readyReason saying why; or nil and a reason when the call itself cannot be made.
+-- Reads the cooldown state of one rune slot (GetRuneCooldown).
+-- @param index number  The rune slot, an integer from 1 to 6.
+-- @return table|nil  The record { start = number|nil, duration = number|nil, ready = boolean|nil }; each field is nil
+--   when unreadable, with startReason, durationReason and readyReason (strings) saying why. nil when the call itself
+--   cannot be made.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- A single native tuple supports independent ready and timing predicates. A missing optional field does not
+-- invalidate another readable field.
 function platform:GetRuneCooldownObservation(index)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
@@ -71,8 +89,11 @@ function platform:GetRuneCooldownObservation(index)
     return record
 end
 
+-- Reads the current game time (GetTime), used to turn a rune's start and duration into remaining time.
+-- @return number|nil  The time as a finite number; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
 -- This clock is deliberately not a per-pass cached observation.
--- Returns GetTime() as a finite number, or nil and a reason; used to turn rune start and duration into remaining time.
 function platform:GetRuneEvaluationTime()
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end

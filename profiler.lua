@@ -10,8 +10,9 @@ local _, addon = ...
 
 local string, pairs, protect, kind = string, pairs, pcall, type
 
--- Picks the best clock the client has (GetTimePreciseSec, debugprofilestop, GetTime); returns the function and the
--- factor that converts its result to seconds, or nil when none exists.
+-- Picks the best clock the client has (GetTimePreciseSec, debugprofilestop, GetTime).
+-- @return function|nil  The clock function; nil when none exists.
+-- @return number  The factor that converts its result to seconds.
 local function clock()
     if kind(GetTimePreciseSec) == 'function' then
         return GetTimePreciseSec, 1
@@ -26,7 +27,9 @@ local function clock()
     return nil, 1
 end
 
--- Calls the clock under pcall; returns its reading only if it is a finite non-negative number, otherwise nil.
+-- Calls the clock under pcall.
+-- @param fn function|nil  The clock function.
+-- @return number|nil  The reading when it is a finite non-negative number; nil otherwise.
 local function readClock(fn)
     if not fn then
         return
@@ -42,13 +45,19 @@ end
 -- Shared do-nothing method for the disabled profiler.
 local function noop() end
 
--- Disabled profilers hand back themselves as every child, so chained child():start() calls stay no-ops.
+-- Child accessor of the disabled profiler.
+-- @return table  The profiler itself, so chained child():start() calls stay no-ops.
 local function nopChild(self)
     return self
 end
 
--- Builds a profiler. enabled == false returns an inert object with the same method names; anything else (including
--- nil) measures. Children are created on demand by name and overlap with their parent rather than adding to it.
+-- Builds a profiler.
+-- @param enabled boolean|nil  False returns an inert object with the same method names; anything else (including nil)
+--   measures.
+-- @return table  The profiler (total, count, min, max, startTime, children and the start, stop, report, reset and
+--   child methods).
+--
+-- Children are created on demand by name and overlap with their parent rather than adding to it.
 local function Constructor(enabled)
     if enabled == false then
         return {
@@ -78,11 +87,15 @@ local function Constructor(enabled)
         unavailable = 0,
         children = {},
         startTime = 0.0,
+        -- Starts a measurement; a broken clock leaves it unmeasured.
         start = function(self)
             local value = readClock(timer)
             self._started, self._clockValid = true, value ~= nil
             self.startTime = value and value * scale or 0
         end,
+        -- Stops the measurement and adds it to the totals.
+        --
+        -- A measurement with an unreadable clock or a negative duration is counted as unavailable instead of raising.
         stop = function(self)
             if not self._started then
                 return
@@ -108,6 +121,9 @@ local function Constructor(enabled)
             self.total = self.total + runtime
             self.count = self.count + 1
         end,
+        -- Describes the measurements as text.
+        -- @param full boolean|nil  True to include the children.
+        -- @return string|nil  The summary; nil when nothing was measured and nothing was unavailable.
         report = function(self, full)
             if self.count == 0 then
                 if self.unavailable > 0 then
@@ -148,6 +164,7 @@ local function Constructor(enabled)
 
             return rv
         end,
+        -- Clears every measurement and drops the children.
         reset = function(self)
             self.total = 0.0
             self.count = 0
@@ -158,6 +175,9 @@ local function Constructor(enabled)
             self._started, self._clockValid = false, false
             self.children = {}
         end,
+        -- Finds or creates a named child profiler.
+        -- @param name string  The child's name.
+        -- @return table  The child profiler.
         child = function(self, name)
             if self.children[name] == nil then
                 self.children[name] = Constructor()
@@ -170,8 +190,12 @@ local function Constructor(enabled)
     return rv
 end
 
--- Public factory for a profiler object; see Constructor. It may be replaced by another addon or a test, which is why
--- build() below checks that it is still the original before claiming ownership of a root.
+-- Public factory for a profiler object; see Constructor.
+-- @param enabled boolean|nil  False for an inert profiler; anything else measures.
+-- @return table  The profiler.
+--
+-- It may be replaced by another addon or a test, which is why build() below checks that it is still the original
+-- before claiming ownership of a root.
 function addon:ProfiledCode(enabled)
     return Constructor(enabled)
 end
@@ -182,13 +206,17 @@ local ownedRoot, ownedMode, ownedMethods, consumed
 local refreshVersion = 0
 local methods = { 'start', 'stop', 'child', 'report', 'reset' }
 
--- True when the profile's log level is 3 or higher, the level at which evaluation timing is worth collecting.
+-- Whether evaluation timing is worth collecting.
+-- @param owner table  The addon (its db profile is read).
+-- @return boolean  True when the profile's log level is 3 or higher.
 local function collecting(owner)
     local level = owner.db and owner.db.profile and owner.db.profile.loglevel
     return type(level) == 'number' and level >= 3
 end
 
--- True when owner's current evaluationProfile is still the root this file built, with none of its methods swapped out.
+-- Whether the owner's current evaluationProfile is still the root this file built.
+-- @param owner table  The addon.
+-- @return boolean  True when none of its methods has been swapped out.
 local function unmodified(owner)
     if owner.evaluationProfile ~= ownedRoot or not ownedRoot or owner.ProfiledCode ~= ownedFactory then
         return false
@@ -203,9 +231,14 @@ local function unmodified(owner)
     return true
 end
 
--- Installs a fresh root profiler on owner.evaluationProfile, measuring when mode is true and inert when false.
--- Returns true if it installed one. On a refresh (initial false) it backs off when someone replaced the root or its
--- methods or the mode did not change; it also backs off if the factory call itself changed the owner's state.
+-- Installs a fresh root profiler on owner.evaluationProfile.
+-- @param owner table  The addon.
+-- @param mode boolean  True to measure; false for an inert profiler.
+-- @param initial boolean  True for the first installation.
+-- @return boolean  True if it installed one.
+--
+-- On a refresh (initial false) it backs off when someone replaced the root or its methods or the mode did not change;
+-- it also backs off if the factory call itself changed the owner's state.
 local function build(owner, mode, initial)
     refreshVersion = refreshVersion + 1
     local version = refreshVersion
@@ -251,8 +284,10 @@ local function build(owner, mode, initial)
     return true
 end
 
--- Called from the periodic report in main.lua: swaps the root profiler when the log level crossed the collecting
--- threshold. Returns true if it replaced the root.
+-- Swaps the root profiler when the log level crossed the collecting threshold.
+-- @return boolean  True if it replaced the root.
+--
+-- Called from the periodic report in main.lua.
 function addon:RefreshEvaluationProfilerPolicy()
     if self ~= addon then
         return false
@@ -261,8 +296,10 @@ function addon:RefreshEvaluationProfilerPolicy()
     return build(self, collecting(self), false)
 end
 
--- One-shot hand-off to main.lua: returns an initializer for the first root profiler and a report gate for the periodic
--- report (true means report and reset, false means skip this period). A second call returns nothing.
+-- One-shot hand-off to main.lua of the evaluation profiler policy.
+-- @return function|nil  An initializer for the first root profiler; nothing on a second call.
+-- @return function|nil  A report gate for the periodic report: true means report and reset, false means skip this
+--   period.
 function addon:ConsumeLegacyEvaluationProfilerPolicy()
     if self ~= addon or consumed then
         return

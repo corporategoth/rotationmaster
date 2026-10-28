@@ -16,22 +16,32 @@ local LIMIT_RECORDS, LIMIT_CASTS, LIMIT_PENDING, LIMIT_BYTES = 4096, 1024, 128, 
 -- Validation primitives and schemas
 -- ============================================================================
 
--- True for a real, finite number (rejects NaN and both infinities).
+-- Whether a value is a real, finite number (rejects NaN and both infinities).
+-- @param v any  The value to test.
+-- @return boolean  True for a finite number.
 local function finite(v)
     return type(v) == 'number' and v == v and v ~= huge and v ~= -huge
 end
 
--- True for a finite whole number between minimum and 2^31 - 1.
+-- Whether a value is a finite whole number between a minimum and 2^31 - 1.
+-- @param v any  The value to test.
+-- @param minimum number  The smallest accepted value.
+-- @return boolean  True for such a number.
 local function integer(v, minimum)
     return finite(v) and v >= minimum and v <= 2147483647 and v % 1 == 0
 end
 
--- True for a table with no metatable, so no hidden __index or __eq can run during validation.
+-- Whether a value is a table with no metatable, so no hidden __index or __eq can run during validation.
+-- @param v any  The value to test.
+-- @return boolean  True for a plain table.
 local function plain(v)
     return type(v) == 'table' and getmetatable(v) == nil
 end
 
--- True when v is a string present in the allowed-value set.
+-- Whether a value is a string present in an allowed-value set.
+-- @param v any  The value to test.
+-- @param set table  The allowed values (value -> true).
+-- @return boolean  True when v is in the set.
 local function member(v, set)
     return type(v) == 'string' and set[v] == true
 end
@@ -56,6 +66,10 @@ local fields = {
     damageCoverage = { state = true },
 }
 
+-- Charges the size of a value in the normalized payload accounting.
+-- @param v any  The value to charge.
+-- @return number  The charge: 2 plus the length for a string, 8 for a number, 1 for a boolean and 2 otherwise.
+--
 -- Deterministic normalized payload charge, not a Lua heap or wire-size claim.
 local function charge(v)
     local t = type(v)
@@ -71,9 +85,14 @@ local function charge(v)
     return 2
 end
 
--- Checks that every key of a record is an allowed string (plus type/seq/time when common is set) and returns the
--- record's byte charge, or nil and 'unknown-field'. Used for both the header and each row, so no extra field can ride
--- along unnoticed.
+-- Checks that every key of a record is an allowed string.
+-- @param value table  The record (the header or one row).
+-- @param allowed table  The allowed keys (key -> true).
+-- @param common boolean|nil  True to also allow type, seq and time.
+-- @return number|nil  The record's byte charge; nil when a key is not allowed.
+-- @return string|nil  'unknown-field' when the first return is nil; nil otherwise.
+--
+-- Used for both the header and each row, so no extra field can ride along unnoticed.
 local function keys(value, allowed, common)
     local bytes = 2
 
@@ -92,9 +111,13 @@ end
 -- Trace validation
 -- ============================================================================
 
--- Verifies the whole trace before any scoring: header, dense record array, size limits, strictly increasing seq,
--- nondecreasing time inside the duration, and the per-type field schema. Returns the record count and byte charge, or
--- nil and a reason code. Nothing is partially accepted, so the reducer can trust every field it reads.
+-- Verifies the whole trace before any scoring.
+-- @param trace any  The trace: header, dense record array, size limits, strictly increasing seq, nondecreasing time
+--   inside the duration, and the per-type field schema.
+-- @return number|nil  The record count; nil when the trace is refused.
+-- @return number|string  The byte charge; the reason code when the first return is nil.
+--
+-- Nothing is partially accepted, so the reducer can trust every field it reads.
 local function validate(trace)
     if not plain(trace) then
         return nil, 'unsafe-table'
@@ -248,6 +271,7 @@ end
 -- ============================================================================
 
 -- Builds a complete report with every metric in its 'unavailable' state, which the reducer then fills in.
+-- @return table  The blank report.
 local function blank()
     return {
         format = 1,
@@ -299,7 +323,9 @@ local function blank()
     }
 end
 
--- The bounded report returned when the trace is refused: status 'unavailable' with a reason and no partial score.
+-- Builds the bounded report returned when the trace is refused.
+-- @param reason string  The reason the trace was refused.
+-- @return table  A report with status 'unavailable', the reason and no partial score.
 local function refused(reason)
     local r = blank()
     r.status = 'unavailable'
@@ -313,9 +339,13 @@ end
 
 addon.Analytics = addon.Analytics or {}
 
--- Validates trace and reduces it to a report: exact-selected-spell agreement for the player's ordinary cast results,
--- cast and coverage counts, and raw/net damage totals over the seconds damage was covered. Returns a report in every
--- case; an invalid or over-limit trace yields the unavailable report from refused(). Pure: no events, no APIs.
+-- Validates a trace and reduces it to a report.
+-- @param trace table  The trace { format, model, family, actor, duration, records }.
+-- @return table  Always a report: exact-selected-spell agreement for the player's ordinary cast results, cast and
+--   coverage counts, and raw/net damage totals over the seconds damage was covered. An invalid or over-limit trace
+--   yields the unavailable report from refused().
+--
+-- Pure: no events, no APIs.
 function addon.Analytics.Replay(trace)
     local count, bytes = validate(trace)
 
@@ -333,7 +363,8 @@ function addon.Analytics.Replay(trace)
     local outcome = report.outcome
     local raw, net, rawOK, netOK, netMissing = 0, 0, true, true, 0
 
-    -- Marks every cast still waiting for a result as unobservable for the given reason (an epoch change or a retire).
+    -- Marks every cast still waiting for a result as unobservable for a reason.
+    -- @param reason string  The reason (an epoch change or a retire).
     local function finishPending(reason)
         for _, c in pairs(casts) do
             if c.pending then
@@ -345,6 +376,7 @@ function addon.Analytics.Replay(trace)
     end
 
     -- Gives up on attempts that have had no result for 30 seconds, counting them as expired.
+    -- @param now number  The current trace time in seconds.
     local function expire(now)
         for _, c in pairs(casts) do
             if c.pending and now - c.time > 30 then
@@ -356,8 +388,9 @@ function addon.Analytics.Replay(trace)
         end
     end
 
-    -- Returns the cast record for row.cast, creating it on first sight; nil once more than LIMIT_CASTS distinct casts
-    -- exist.
+    -- Looks up the cast record for a row, creating it on first sight.
+    -- @param row table  The attempt or result row.
+    -- @return table|nil  The cast record; nil once more than LIMIT_CASTS distinct casts exist.
     local function remember(row)
         local c = casts[row.cast]
 
@@ -375,7 +408,10 @@ function addon.Analytics.Replay(trace)
         return c
     end
 
-    -- True when a row agrees with the actor, kind and spell its cast was first seen with.
+    -- Whether a row agrees with the actor, kind and spell its cast was first seen with.
+    -- @param c table  The cast record.
+    -- @param row table  The row.
+    -- @return boolean  True when they agree.
     local function identity(c, row)
         return c.actor == row.actor and c.kind == row.castKind and c.spell == row.spell
     end

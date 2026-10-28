@@ -20,8 +20,12 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 -- Removal bookkeeping and basic template checks
 -- ============================================================================
 
--- Queues key for removal from the table being walked. Removals are deferred because deleting during pairs() is
--- unsafe; a non-array key switches apply_remove to key deletion instead of table.remove.
+-- Queues a key for removal from the table being walked.
+-- @param toremove table  The removal queue (data = the queued keys; not_array is set for a non-array key).
+-- @param key any  The key to queue.
+--
+-- Removals are deferred because deleting during pairs() is unsafe; a non-array key switches apply_remove to key
+-- deletion instead of table.remove.
 local function mark_for_remove(toremove, key)
     if type(key) ~= "number" or key < 1 then
         toremove.not_array = true
@@ -33,8 +37,11 @@ local function mark_for_remove(toremove, key)
     table.insert(toremove.data, key)
 end
 
--- Applies the queued removals to tbl when fix is set (by key, or by shifting array positions), then clears the queue.
--- Without fix it only clears, so a report-only run leaves the data untouched.
+-- Applies the queued removals to a table, then clears the queue.
+-- @param toremove table  The removal queue from mark_for_remove.
+-- @param tbl table  The table the keys were queued from.
+-- @param fix boolean|nil  True to remove (by key, or by shifting array positions); without it the queue is only
+--   cleared, so a report-only run leaves the data untouched.
 local function apply_remove(toremove, tbl, fix)
     if fix and toremove.data then
         if toremove.not_array then
@@ -58,9 +65,13 @@ local function apply_remove(toremove, tbl, fix)
     addon.Functions.collections.cleanArray(toremove)
 end
 
--- Compares data with template: a key absent from the template, or with a different Lua type, is warned about and
--- removed under fix. Nested tables are descended only when the template's table has named keys. Keys listed in
--- preserved are skipped because a dedicated validator owns them.
+-- Compares a table with a template of expected field names and types.
+-- @param prefix string  The path text used in warnings.
+-- @param data table  The saved data.
+-- @param template table  The template; a key absent from it, or with a different Lua type, is warned about and removed
+--   under fix. Nested tables are descended only when the template's table has named keys.
+-- @param fix boolean|nil  True to remove the offending data.
+-- @param preserved table|nil  Keys (key -> true) to skip because a dedicated validator owns them.
 local function validate_basic(prefix, data, template, fix, preserved)
     local toremove = {}
 
@@ -87,6 +98,10 @@ local function validate_basic(prefix, data, template, fix, preserved)
 end
 
 -- Removes entries of an item set's list that are neither an item id nor an item name.
+-- @param prefix string  The path text used in warnings.
+-- @param name string  The item set's key.
+-- @param items table  The item set's list.
+-- @param fix boolean|nil  True to remove the entries.
 local function validate_itemset_items(prefix, name, items, fix)
     local toremove = {}
 
@@ -104,14 +119,19 @@ end
 -- Record validators
 -- ============================================================================
 
--- True when uuid is a string containing the canonical 8-4-4-4-12 hex form.
+-- Whether a value is a string containing the canonical 8-4-4-4-12 hex form.
+-- @param uuid any  The value to test.
+-- @return boolean  True for such a string.
 local function is_uuid(uuid)
     return type(uuid) == "string"
         and uuid:match("(%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x)") ~= nil
 end
 
--- Validates one item set record: its key must be a uuid (otherwise the record is emptied under fix) and its fields
--- and items must match the template.
+-- Validates one item set record.
+-- @param prefix string  The path text used in warnings.
+-- @param name string  The record's key; it must be a uuid (otherwise the record is emptied under fix).
+-- @param itemset table  The record; its fields and items must match the template.
+-- @param fix boolean|nil  True to repair.
 function addon:validate_itemset(prefix, name, itemset, fix)
     if not is_uuid(name) then
         addon:warn("Invalid ID for itemset %s:%s", prefix, name)
@@ -137,8 +157,13 @@ function addon:validate_itemset(prefix, name, itemset, fix)
     validate_itemset_items(prefix, name, itemset.items, fix)
 end
 
--- Validates one effect record against the field template of its type, plus the shape of its sequence entries. An
--- unknown effect type is preserved with a warning rather than stripped, since newer code may own it.
+-- Validates one effect record against the field template of its type, plus the shape of its sequence entries.
+-- @param prefix string  The path text used in warnings.
+-- @param name string  The record's key; it must be a uuid (otherwise the record is emptied under fix).
+-- @param effect table  The record.
+-- @param fix boolean|nil  True to repair.
+--
+-- An unknown effect type is preserved with a warning rather than stripped, since newer code may own it.
 function addon:validate_effect(prefix, name, effect, fix)
     if not is_uuid(name) then
         addon:warn("Invalid ID for effect %s:%s", prefix, name)
@@ -168,7 +193,10 @@ function addon:validate_effect(prefix, name, effect, fix)
         return
     end
 
-    -- Example field values for each effect type; only the types and key names matter, never the values.
+    -- Gives example field values for an effect type.
+    -- @param type string  The effect type: texture, pixel, autocast, proc, blizzard, dazzle, animate, pulse, custom or
+    --   rotate.
+    -- @return table|nil  The template; nil for an unknown type. Only the types and key names matter, never the values.
     local function get_effect_template(type)
         if type == "texture" then
             return {
@@ -283,9 +311,14 @@ function addon:validate_effect(prefix, name, effect, fix)
     end
 end
 
--- Validates one announcement. Shapes the shared acceptance service recognizes pass untouched; rejected macro or
--- output-series announcements are preserved and disabled, and only legacy spell/petspell/item announcements are
--- stripped to the old template.
+-- Validates one announcement.
+-- @param prefix string  The path text used in warnings.
+-- @param idx string|number  The announcement's key.
+-- @param announce table  The announcement.
+-- @param fix boolean|nil  True to repair.
+--
+-- Shapes the shared acceptance service recognizes pass untouched; rejected macro or output-series announcements are
+-- preserved and disabled, and only legacy spell/petspell/item announcements are stripped to the old template.
 function addon:validate_announce(prefix, idx, announce, fix)
     if not announce["type"] then
         addon:warn("No announce type for %s:%s", prefix, idx)
@@ -366,8 +399,11 @@ function addon:validate_announce(prefix, idx, announce, fix)
     end
 end
 
--- Validates one condition picker category (id, name, condition list, optional icon); an invalid icon is cleared
--- under fix.
+-- Validates one condition picker category (id, name, condition list, optional icon).
+-- @param prefix string  The path text used in warnings.
+-- @param idx string|number  The category's key.
+-- @param group table  The category.
+-- @param fix boolean|nil  True to repair; an invalid icon is cleared.
 function addon:validate_condition_group(prefix, idx, group, fix)
     local template = {
         id = "61b36ed1-fa31-4656-ad71-f3d50f193a85",
@@ -391,9 +427,15 @@ function addon:validate_condition_group(prefix, idx, group, fix)
     end
 end
 
--- Validates one saved custom condition by data contract only: schema, icon, flag, parameters, function bindings,
--- required fields and field order. A failure never strips the record; under fix it disables the condition (and its
--- registered definition) and keeps the source, so the user can recover it.
+-- Validates one saved custom condition by data contract only.
+-- @param prefix string  The path text used in warnings.
+-- @param name string  The condition's key.
+-- @param custom_condition table  The saved condition: schema, icon, flag, parameters, function bindings, required
+--   fields and field order are checked.
+-- @param fix boolean|nil  True to repair.
+--
+-- A failure never strips the record; under fix it disables the condition (and its registered definition) and keeps
+-- the source, so the user can recover it.
 function addon:validate_custom_condition(prefix, name, custom_condition, fix)
     local semantic = {
         fields = true,
@@ -415,6 +457,8 @@ function addon:validate_custom_condition(prefix, name, custom_condition, fix)
 
     -- Warns about one invalid field; under fix, disables the saved condition and its live definition without
     -- recompiling anything.
+    -- @param field string  The invalid field's name.
+    -- @param reason string|nil  The reason code; "invalid-data" when missing.
     local function invalid(field, reason)
         local message = fix and L["Invalid custom condition %s:%s field %s (%s); source preserved; condition disabled."]
             or L["Invalid custom condition %s:%s field %s (%s); explicit repair will preserve source and disable the condition."]
@@ -503,9 +547,12 @@ function addon:validate_custom_condition(prefix, name, custom_condition, fix)
     end
 end
 
--- Checks one condition tree against the field schema its type declares (found through describeCondition), recursing
--- into nested conditions and typed arrays. A type that is not registered on this client is skipped, because the
--- condition may belong to another class. Mismatched or extra fields are removed under fix.
+-- Checks one condition tree against the field schema its type declares (found through describeCondition).
+-- @param prefix string  The path text used in warnings.
+-- @param condition table  The condition tree; nested conditions and typed arrays are checked recursively.
+-- @param fix boolean|nil  True to remove mismatched or extra fields.
+--
+-- A type that is not registered on this client is skipped, because the condition may belong to another class.
 local function validate_rotation_condition(prefix, condition, fix)
     if addon.Functions.collections.tablelength(condition) == 0 then
         return
@@ -536,8 +583,10 @@ local function validate_rotation_condition(prefix, condition, fix)
         fields.name = "string"
     end
 
-    -- True when cond matches any alternative of an array-style field spec (a list of allowed Lua types or nested
-    -- shapes).
+    -- Tells whether a value matches any alternative of an array-style field spec.
+    -- @param cond any  The value.
+    -- @param field table  The spec: a list of allowed Lua types or nested shapes.
+    -- @return boolean  True when cond matches an alternative.
     local function handle_array_field(cond, field)
         if type(cond) == "table" then
             for i = 1, #field do
@@ -569,8 +618,12 @@ local function validate_rotation_condition(prefix, condition, fix)
         return false
     end
 
-    -- Walks one level of a condition against its field spec, removing extra or wrongly typed keys under fix and
-    -- recursing into nested conditions and tables.
+    -- Walks one level of a condition against its field spec.
+    -- @param cond table  The condition level.
+    -- @param f table  The field spec.
+    -- @param subtree string|nil  The path of this level, for warnings.
+    --
+    -- Removes extra or wrongly typed keys under fix and recurses into nested conditions and tables.
     local function handle_fields(cond, f, subtree)
         local keyremove = {}
 
@@ -673,9 +726,14 @@ local function validate_rotation_condition(prefix, condition, fix)
     handle_fields(condition, fields)
 end
 
--- Validates one legacy-format rotation (cooldown and rotation step lists, switch conditions). A rotation that holds
--- a branch step is checked with the non-destructive RotationData.ValidateBody instead and never modified; a
--- priority RotationData rejects is reset only under fix.
+-- Validates one legacy-format rotation (cooldown and rotation step lists, switch conditions).
+-- @param prefix string  The path text used in warnings.
+-- @param id string  The rotation's key.
+-- @param rotation table  The rotation.
+-- @param fix boolean|nil  True to repair.
+--
+-- A rotation that holds a branch step is checked with the non-destructive RotationData.ValidateBody instead and never
+-- modified; a priority RotationData rejects is reset only under fix.
 function addon:validate_rotation(prefix, id, rotation, fix)
     if
         type(rotation) == 'table'
@@ -765,6 +823,8 @@ function addon:validate_rotation(prefix, id, rotation, fix)
     local cooldown_template = addon.Functions.collections.deepcopy(rotation_template)
 
     -- Adds the fields that depend on a step's type (the action id or item set, and stop's suppress_attack).
+    -- @param template table  The template being built.
+    -- @param rot table  The step.
     local function augment_template_type(template, rot)
         if rot.type == "stop" then
             template.suppress_attack = false
@@ -904,8 +964,11 @@ end
 -- ============================================================================
 
 -- Validates the whole saved database against the AceDB defaults template: global, per-character and per-profile data.
--- With fix false it only warns (the startup and /rm check behavior); with fix true (/rm repair) it removes invalid
--- data. Ownership archives and other records newer code owns are named in the preserved lists and only reported.
+-- @param template table  The AceDB defaults template.
+-- @param fix boolean|nil  False or nil only warns (the startup and /rm check behavior); true (/rm repair) removes
+--   invalid data.
+--
+-- Ownership archives and other records newer code owns are named in the preserved lists and only reported.
 function addon:validate(template, fix)
     if fix then
         if invalidateDependencies then

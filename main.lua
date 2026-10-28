@@ -59,8 +59,11 @@ if type(consumeSwitch) == 'function' then
     addon.ConsumeSwitchConditionEvaluator = nil
 end
 
--- Whether a rotation's switch condition lets automatic selection pick it. `current` is the caller's lease check, passed
--- through to the evaluator so a change during evaluation aborts it. Returns true for no/empty condition.
+-- Tells whether a rotation's switch condition lets automatic selection pick it.
+-- @param value table|nil  The switch condition; no condition or an empty one matches.
+-- @param current function|nil  The caller's lease check, passed through to the evaluator so a change during
+--   evaluation aborts it.
+-- @return boolean  True for no or an empty condition, or when the condition holds.
 local function switchConditionMatches(value, current)
     -- No switch condition (none, an empty one, or a tree with nothing in it)
     -- matches; a broken one (an unknown condition) is not "none" and falls
@@ -111,21 +114,31 @@ local equipmentCoordinator = addon.GetScopedRotationCoordinator
 -- Transition guards
 -- ============================================================================
 
--- Automatic rotation selection is on while its re-check interval is above
--- zero. The retired Disable Auto-Switching flag is still honoured until the
--- profile is migrated (see StartAutoSwitchTimer).
+-- Tells whether automatic rotation selection is on.
+-- @param profile table  The profile.
+-- @return boolean  True while the re-check interval is above zero.
+--
+-- The retired Disable Auto-Switching flag is still honoured until the profile is migrated (see StartAutoSwitchTimer).
 local function autoSwitchEnabled(profile)
     return not profile.disable_autoswitch and (tonumber(profile.autoswitch_poll) or 1) > 0
 end
 
--- True while `token` is still the current active-rotation transition. False when the owner is missing or a newer
--- change superseded this one; callers stop at once in that case.
+-- Tells whether a transition token is still the current active-rotation transition.
+-- @param self table  The addon.
+-- @param token table  The transition token.
+-- @return boolean  True while it is current; false when the owner is missing or a newer change superseded this one,
+--   in which case callers stop at once.
 local function activeChangeCurrent(self, token)
     return type(activeCurrent) == 'function' and activeCurrent(self, token)
 end
 
--- Calls self[name](self, ...) for the transition `token`, proving the token before and after the method lookup. Returns
--- whether the transition is still current afterwards, so callers write `if not activeCall(...) then return end`.
+-- Calls self[name](self, ...) for a transition, proving the token before and after the method lookup.
+-- @param self table  The addon.
+-- @param token table  The transition token.
+-- @param name string  The method name.
+-- @param ... any  The method's arguments.
+-- @return boolean  Whether the transition is still current afterwards, so callers write `if not activeCall(...) then
+--   return end`.
 local function activeCall(self, token, name, ...)
     if not activeChangeCurrent(self, token) then
         return false
@@ -141,8 +154,13 @@ local function activeCall(self, token, name, ...)
     return activeChangeCurrent(self, token)
 end
 
--- Like activeCall but also returns the method's first result: `current, value`. The value is only meaningful when
--- `current` is true.
+-- Like activeCall but also returns the method's first result.
+-- @param self table  The addon.
+-- @param token table  The transition token.
+-- @param name string  The method name.
+-- @param ... any  The method's arguments.
+-- @return boolean  Whether the transition is still current afterwards.
+-- @return any  The method's first result; only meaningful when the first return is true.
 local function activeValue(self, token, name, ...)
     if not activeChangeCurrent(self, token) then
         return false
@@ -158,7 +176,13 @@ local function activeValue(self, token, name, ...)
     return activeChangeCurrent(self, token), value
 end
 
--- activeCall for a method of another object (AceEvent, the preview window, a coordinator): object[name](object, ...).
+-- activeCall for a method of another object (AceEvent, the preview window, a coordinator).
+-- @param self table  The addon.
+-- @param token table  The transition token.
+-- @param object table  The object whose method is called as object[name](object, ...).
+-- @param name string  The method name.
+-- @param ... any  The method's arguments.
+-- @return boolean  Whether the transition is still current afterwards.
 local function activeObjectCall(self, token, object, name, ...)
     if not activeChangeCurrent(self, token) then
         return false
@@ -174,7 +198,14 @@ local function activeObjectCall(self, token, object, name, ...)
     return activeChangeCurrent(self, token)
 end
 
--- activeValue for a method of another object; returns `current, value`.
+-- activeValue for a method of another object.
+-- @param self table  The addon.
+-- @param token table  The transition token.
+-- @param object table  The object whose method is called as object[name](object, ...).
+-- @param name string  The method name.
+-- @param ... any  The method's arguments.
+-- @return boolean  Whether the transition is still current afterwards.
+-- @return any  The method's first result; only meaningful when the first return is true.
 local function activeObjectValue(self, token, object, name, ...)
     if not activeChangeCurrent(self, token) then
         return false
@@ -190,7 +221,12 @@ local function activeObjectValue(self, token, object, name, ...)
     return activeChangeCurrent(self, token), value
 end
 
--- Sets the data broker's text for the transition `token`; returns whether the transition is still current.
+-- Sets the data broker's text for a transition.
+-- @param self table  The addon.
+-- @param token table  The transition token.
+-- @param broker table  The data broker object.
+-- @param text string  The text.
+-- @return boolean  Whether the transition is still current.
 local function activeBroker(self, token, broker, text)
     if not activeChangeCurrent(self, token) then
         return false
@@ -265,9 +301,14 @@ if type(bindSequence) == "function" then
     addon.BindRotationSequenceReader = nil
 end
 
--- Walks a rotation body through the sequence executor (Core/rotation_sequence.lua). With `guard` it uses the method
--- captured at load instead of trusting owner.EvaluateRotationSequence; when no executor is bound it then reports an
--- unavailable result that suppresses the implicit attack. Returns the executor's result table.
+-- Walks a rotation body through the sequence executor (Core/rotation_sequence.lua).
+-- @param owner table  The addon.
+-- @param body table  The rotation body.
+-- @param evaluate function  Evaluates one step.
+-- @param visit function|nil  Called for each visited step.
+-- @param guard boolean|nil  True to use the method captured at load instead of trusting owner.EvaluateRotationSequence.
+-- @return table  The executor's result table; when no executor is bound a guarded call reports an unavailable result
+--   that suppresses the implicit attack.
 local function evaluateSequence(owner, body, evaluate, visit, guard)
     local before = sequenceRawMethod and sequenceRawMethod(owner)
     local method
@@ -303,7 +344,9 @@ end
 
 local DBIcon = LibStub("LibDBIcon-1.0")
 
--- Chat link for a spell id, or a localized "Unknown spell" text when the client has no data for it.
+-- Builds a chat link for a spell id.
+-- @param spellid number  The spell id.
+-- @return string  The spell link, or a localized "Unknown spell" text when the client has no data for it.
 local function spellLink(spellid)
     return addon.Platform:GetSpellLink(spellid) or string.format(L["Unknown spell (%s)"], spellid)
 end
@@ -336,8 +379,14 @@ local isin, starts_with, isint =
 addon.pretty_name = GetAddOnMetadata(addon_name, "Title")
 addon.delayed_condition = {}
 
--- The engine borrows its own validated pass; legacy public getters retain
--- their historical mutable-body contract without becoming the polling path.
+-- Borrows the validated selection pass for an owner and specialization.
+-- @param owner table  The addon.
+-- @param spec number  The specialization key.
+-- @return table|nil  The pass; nil when it cannot be acquired.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
+--
+-- The engine borrows its own validated pass; legacy public getters retain their historical mutable-body contract
+-- without becoming the polling path.
 local function mainSelectionPass(owner, spec)
     if acquireMainSelectionPass then
         return acquireMainSelectionPass(owner, spec)
@@ -346,8 +395,12 @@ local function mainSelectionPass(owner, spec)
     return owner:AcquireRotationRuntimePass(spec)
 end
 
--- The selectable rotations (id -> body) for `spec`. Returns the table, or an empty table and a reason when the scoped
--- selection pass cannot be acquired; `candidates` is forwarded to the pass.
+-- Lists the selectable rotations for a specialization.
+-- @param owner table  The addon.
+-- @param spec number  The specialization key.
+-- @param candidates boolean|nil  Forwarded to the pass; true asks for candidates.
+-- @return table  The rotations (id -> body); an empty table when the scoped selection pass cannot be acquired.
+-- @return string|nil  The reason when the table is empty because the pass cannot be acquired; nil otherwise.
 local function runtimeRows(owner, spec, candidates)
     if owner.GetScopedRotationCoordinator and owner:GetScopedRotationCoordinator() then
         local pass, why = mainSelectionPass(owner, spec)
@@ -362,7 +415,12 @@ local function runtimeRows(owner, spec, candidates)
     return owner:GetRuntimeRotations(spec, true, candidates)
 end
 
--- The runtime body of one rotation `value` for `spec`; returns it, or nil and a reason.
+-- Reads the runtime body of one rotation.
+-- @param owner table  The addon.
+-- @param spec number  The specialization key.
+-- @param value string  The rotation id.
+-- @return table|nil  The body; nil when it cannot be read.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
 local function runtimeOne(owner, spec, value)
     if owner.GetScopedRotationCoordinator and owner:GetScopedRotationCoordinator() then
         local pass, why = mainSelectionPass(owner, spec)
@@ -572,11 +630,15 @@ local classic_events = {}
 -- Manual rotation choice
 -- ============================================================================
 
+-- Applies a manual rotation choice (or returns to automatic selection).
+-- @param id string|nil  The rotation to select; nil returns to automatic selection and gives SwitchRotation's results.
+-- @param change table|nil  An open transition token; one is begun when omitted.
+-- @param remember boolean|nil  True to save the choice for this character, specialization and action context.
+-- @return boolean|nil  True once the manual rotation is applied; nil when the rotation is refused or the transition
+--   was superseded.
+-- @return table|nil  The transition token when the first return is true.
+--
 -- Chat, menu and cold restoration share the existing active transition path.
--- `id` is the rotation to select (nil returns to automatic selection and gives SwitchRotation's results), `change` an
--- open transition token (one is begun when omitted) and `remember` saves the choice for this character,
--- specialization and action context. Returns true and the token once the manual rotation is applied; nil when the
--- rotation is refused or the transition was superseded.
 local function chooseManualRotation(self, id, change, remember)
     change = change or beginActive(self)
 
@@ -728,9 +790,11 @@ local function chooseManualRotation(self, id, change, remember)
     return true, change
 end
 
--- Re-applies the saved manual choice when it changed (spec, action context or profile switch). Returns handled and the
--- open transition token: true means this call took over selection (or stopped on an error report) and automatic
--- switching must not run; false lets it continue.
+-- Re-applies the saved manual choice when it changed (specialization, action context or profile switch).
+-- @param self table  The addon.
+-- @return boolean  True means this call took over selection (or stopped on an error report) and automatic switching
+--   must not run; false lets it continue.
+-- @return table|nil  The open transition token.
 local function restoreManualChoice(self)
     if choiceNeedsRefresh and choiceNeedsRefresh(self) then
         local change = beginActive(self)
@@ -842,9 +906,11 @@ end
 -- Slash commands
 -- ============================================================================
 
--- Dispatcher for /rm and /rotationmaster; `str` is the raw argument text. While initialization has failed only
--- `errors` and `help` run and every other command opens the error report. `set` accepts an identifier first, then an
--- exact rotation name, and explains why a named rotation cannot be selected.
+-- Dispatches a /rm or /rotationmaster slash command.
+-- @param str string  The raw argument text.
+--
+-- While initialization has failed only `errors` and `help` run and every other command opens the error report. `set`
+-- accepts an identifier first, then an exact rotation name, and explains why a named rotation cannot be selected.
 function addon:HandleCommand(str)
     local cmd, npos = AceConsole:GetArgs(str, 1, 1)
 
@@ -1075,8 +1141,11 @@ function addon:InitializeQuestieIntegration()
     self:SyncQuestieIntegration()
 end
 
--- Applies profile.questie_enabled to the adapter. While enabled it listens for ADDON_LOADED so a Questie that loads
--- later is refreshed. Returns false when there is no adapter, true otherwise; does nothing if the setting is unchanged.
+-- Applies profile.questie_enabled to the adapter.
+-- @return boolean  False when there is no adapter; true otherwise (also when the setting is unchanged, in which case
+--   nothing is done).
+--
+-- While enabled it listens for ADDON_LOADED so a Questie that loads later is refreshed.
 function addon:SyncQuestieIntegration()
     if not questieService then
         return false
@@ -1110,7 +1179,8 @@ function addon:SyncQuestieIntegration()
     return true
 end
 
--- The adapter's status record, or an "unavailable" record when no adapter was created.
+-- Reads the Questie adapter's status.
+-- @return table  The adapter's status record, or an "unavailable" record when no adapter was created.
 function addon:GetQuestieIntegrationStatus()
     if questieService then
         return questieService:GetStatus()
@@ -1119,7 +1189,8 @@ function addon:GetQuestieIntegrationStatus()
     return { state = 'unavailable', reason = 'adapter-unavailable', nativeAcceptance = 'unverified' }
 end
 
--- Asks the adapter to rescan while the integration is enabled; otherwise returns the current status unchanged.
+-- Asks the Questie adapter to rescan while the integration is enabled.
+-- @return table  The adapter's result; otherwise the current status unchanged.
 function addon:RefreshQuestieIntegration()
     if questieService and questieEnabled then
         return questieService:Refresh()
@@ -1132,9 +1203,10 @@ end
 -- Initialization, enable and disable
 -- ============================================================================
 
--- The body of OnInitialize: registers the chat commands, opens the database, registers custom conditions and the
--- Built In module, and sets every runtime field to its empty state. It runs under Diagnostics:Call so an error leaves
--- the addon inert (see OnInitialize) instead of half built.
+-- The body of OnInitialize: registers the chat commands, opens the database, registers custom conditions and the Built
+-- In module, and sets every runtime field to its empty state.
+--
+-- It runs under Diagnostics:Call so an error leaves the addon inert (see OnInitialize) instead of half built.
 function addon:OnInitializeInternal()
     AceConsole:RegisterChatCommand("rm", function(str)
         addon:HandleCommand(str)
@@ -1290,8 +1362,12 @@ function addon:OnInitializeInternal()
     --self:SetupOptions()
 end
 
--- AceAddon entry point. Runs OnInitializeInternal under the error recorder when Diagnostics is loaded and stores the
--- failure report so OnEnable and the gameplay events stay off. Returns ok and the report id.
+-- AceAddon entry point: initializes the addon.
+-- @return boolean  Whether initialization succeeded.
+-- @return number|nil  The failure report id when it did not.
+--
+-- Runs OnInitializeInternal under the error recorder when Diagnostics is loaded and stores the failure report so
+-- OnEnable and the gameplay events stay off.
 function addon:OnInitialize()
     -- A failed initializer must not be followed by OnEnable or gameplay events
     -- using half-built state. Diagnostics stays independent of the database.
@@ -1319,7 +1395,8 @@ function addon:OnInitialize()
     return ok, reportId
 end
 
--- One warning line naming why `value` cannot be selected for this character.
+-- Prints one warning line naming why a rotation cannot be selected for this character.
+-- @param value string  The rotation id.
 function addon:WarnRotationRefusal(value)
     local why = self.ExplainRotationRefusal and self:ExplainRotationRefusal(self.currentSpec, value)
 
@@ -1328,7 +1405,9 @@ function addon:WarnRotationRefusal(value)
     end
 end
 
--- The name of rotation `id` in the current specialization (DEFAULT for the fallback), or nil when it is not selectable.
+-- Reads the name of a rotation in the current specialization.
+-- @param id string  The rotation id.
+-- @return string|nil  The name (DEFAULT for the fallback); nil when it is not selectable.
 function addon:GetRotationName(id)
     if id == DEFAULT then
         return DEFAULT
@@ -1342,7 +1421,11 @@ end
 -- Minimap menu and data broker
 -- ============================================================================
 
--- Menu callback for the "Battle rotation enabled" checkbox; `checked` is the new state.
+-- Menu callback for the "Battle rotation enabled" checkbox.
+-- @param _ any  Unused.
+-- @param _ any  Unused.
+-- @param _ any  Unused.
+-- @param checked boolean  The new state.
 local function minimapToggleRotation(_, _, _, checked)
     if checked then
         addon:enable()
@@ -1351,14 +1434,17 @@ local function minimapToggleRotation(_, _, _, checked)
     end
 end
 
--- Menu callback for a rotation entry: `arg1` is the rotation id, or nil for Automatic Switching. The choice is
--- remembered.
+-- Menu callback for a rotation entry; the choice is remembered.
+-- @param _ any  Unused.
+-- @param arg1 string|nil  The rotation id; nil for Automatic Switching.
 local function minimapChangeRotation(_, arg1)
     chooseManualRotation(addon, arg1, nil, true)
 end
 
--- Initializer of the minimap right-click dropdown: the enable checkbox, Automatic Switching, the fallback and every
--- selectable rotation (Built Ins in blue), then a note about Built Ins that apply but are switched off.
+-- Initializer of the minimap right-click dropdown.
+--
+-- Lists the enable checkbox, Automatic Switching, the fallback and every selectable rotation (Built Ins in blue), then
+-- a note about Built Ins that apply but are switched off.
 function minimapInitialize()
     local info = UIDropDownMenu_CreateInfo()
     info.text = addon.pretty_name
@@ -1443,8 +1529,11 @@ function minimapInitialize()
     end
 end
 
--- Broker click: right opens the rotation menu, left toggles the configuration window. After a failed initialization any
--- click opens the error report instead.
+-- Handles a broker click: right opens the rotation menu, left toggles the configuration window.
+-- @param _ any  Unused.
+-- @param button string  "RightButton" or "LeftButton".
+--
+-- After a failed initialization any click opens the error report instead.
 function DataBroker.OnClick(_, button)
     if addon.initializationErrorReport then
         addon:ShowErrors()
@@ -1469,6 +1558,7 @@ end
 
 -- Fills the broker tooltip with the addon version, the active rotation (or "disabled") and a notice when a saved manual
 -- choice cannot apply in the current context.
+-- @param GameTooltip table  The tooltip to fill.
 function DataBroker.OnTooltipShow(GameTooltip)
     GameTooltip:SetText(addon.pretty_name .. " " .. GetAddOnMetadata(addon_name, "Version"), 0, 1, 1)
     GameTooltip:AddLine(" ")
@@ -1506,9 +1596,15 @@ end
 -- Event registration
 -- ============================================================================
 
--- These additional notifications vary by client; leave existing subscriptions
--- alone and require the native event catalogue to confirm each optional name.
--- Returns whether the transition is still current and whether the event was registered.
+-- Registers an optional event when the client's event catalogue confirms it.
+-- @param owner table  The addon.
+-- @param change table  The transition token.
+-- @param event string  The event name.
+-- @return boolean  Whether the transition is still current.
+-- @return boolean|nil  Whether the event was registered.
+--
+-- These additional notifications vary by client; existing subscriptions are left alone and the native event catalogue
+-- must confirm each optional name.
 local function registerOptionalEvent(owner, change, event)
     if not activeChangeCurrent(owner, change) then
         return false
@@ -1568,8 +1664,11 @@ local restrictedCombatEvents = {
 -- Private frame carrying the per-unit cast subscriptions; created on first use and forwards to the addon's handlers.
 local castFrame
 
--- Subscribes the cast events in `wanted` (default: all of castEvents) for the player and pet only. Returns false when
--- the client cannot filter by unit; the caller then registers those events the ordinary way.
+-- Subscribes cast events for the player and pet only.
+-- @param self table  The addon, whose handlers the private frame forwards to.
+-- @param wanted table|nil  The events to subscribe (event -> true); default: all of castEvents.
+-- @return boolean  False when the client cannot filter by unit, in which case the caller registers those events the
+--   ordinary way.
 local function registerCastEvents(self, wanted)
     if not castFrame then
         if type(CreateFrame) ~= 'function' then
@@ -1598,8 +1697,11 @@ local function registerCastEvents(self, wanted)
     return true
 end
 
--- Nameplates already shown when a restricted client enables. Events keep the
--- set current afterwards; UnitExists carries no secret annotation.
+-- Fills the nameplate unit set with the nameplates already shown.
+-- @param self table  The addon.
+--
+-- Used when a restricted client enables. Events keep the set current afterwards; UnitExists carries no secret
+-- annotation.
 local function seedNameplateUnits(self)
     local units = self.nameplateUnits
 
@@ -1629,9 +1731,11 @@ end
 -- clients.
 local reconcileNameplateResume
 
--- Starts the addon: subscribes the events this client family needs (the combat log only where the policy allows it,
--- a reduced set on restricted clients), refreshes the preview window, selects a rotation and starts the auto-switch
--- timer. Each step re-proves the transition token, so a concurrent enable or disable wins cleanly.
+-- Starts the addon.
+--
+-- Subscribes the events this client family needs (the combat log only where the policy allows it, a reduced set on
+-- restricted clients), refreshes the preview window, selects a rotation and starts the auto-switch timer. Each step
+-- re-proves the transition token, so a concurrent enable or disable wins cleanly.
 function addon:enable()
     if self.initializationErrorReport then
         self:ShowErrors()
@@ -1783,8 +1887,10 @@ function addon:enable()
     end
 end
 
--- Stops the addon: cancels the auto-switch timer, retires the active rotation, releases the preview window, clears the
--- spell and combat histories and the nameplate set, and unregisters every event.
+-- Stops the addon.
+--
+-- Cancels the auto-switch timer, retires the active rotation, releases the preview window, clears the spell and combat
+-- histories and the nameplate set, and unregisters every event.
 function addon:disable()
     if self.initializationErrorReport then
         return
@@ -1872,8 +1978,11 @@ end
 -- Automatic rotation switching
 -- ============================================================================
 
--- Whether rotation body `rot` is complete for `spec`: every reachable, enabled step has valid conditions and an action
--- (or is a Stop or Assisted step), item steps name a non-empty item set, and at least one usable step exists.
+-- Tells whether a rotation body is complete for a specialization.
+-- @param rot table  The rotation body.
+-- @param spec number  The specialization key.
+-- @return boolean  True when every reachable, enabled step has valid conditions and an action (or is a Stop or Assisted
+--   step), item steps name a non-empty item set, and at least one usable step exists.
 function addon:rotationValidConditions(rot, spec)
     if type(rot) ~= 'table' or not self.RotationData.GetRotationPriority(rot.priority) then
         return false
@@ -1930,8 +2039,9 @@ function addon:rotationValidConditions(rot, spec)
     return itemfound
 end
 
--- Rebuilds self.autoswitchRotation, the ordered list of rotation ids automatic selection tries for the current
--- specialization, so selection does not have to validate rotations during combat.
+-- Rebuilds the ordered list of rotation ids automatic selection tries for the current specialization.
+--
+-- Stored in self.autoswitchRotation, so selection does not have to validate rotations during combat.
 function addon:UpdateAutoSwitch()
     local rotations = runtimeRows(self, self.currentSpec, true)
     self.autoswitchRotation = self:GetOrderedAutoSwitchRotations(self.currentSpec, rotations)
@@ -1939,10 +2049,13 @@ function addon:UpdateAutoSwitch()
     addon:debug(L["Autoswitch rotation list has been updated."])
 end
 
--- Figures out which of the autoswitch rotations best matches. A remembered manual choice is restored first; nothing
--- happens when automatic switching is off or a manual rotation is active. Otherwise the first matching rotation (else
--- the fallback) is committed, and with none the rotation is disabled. Every step re-proves its transition token.
--- Returns nil and the token when settled, nothing when superseded.
+-- Figures out which of the autoswitch rotations best matches.
+-- @return nil  Always nil when anything is returned; nothing at all is returned when the transition was superseded.
+-- @return table|nil  The transition token when settled.
+--
+-- A remembered manual choice is restored first; nothing happens when automatic switching is off or a manual rotation
+-- is active. Otherwise the first matching rotation (else the fallback) is committed, and with none the rotation is
+-- disabled. Every step re-proves its transition token.
 function addon:SwitchRotation()
     local handled, restoredChange = restoreManualChoice(self)
 
@@ -1986,8 +2099,9 @@ function addon:SwitchRotation()
     end
 
     -- BEGIN SWITCH OWNER LEASE
-    -- Lease passed to switch-condition evaluation: true while the transition, specialization, profile, rotation and
-    -- automatic mode are all unchanged.
+    -- Lease passed to switch-condition evaluation.
+    -- @return boolean  True while the transition, specialization, profile, rotation and automatic mode are all
+    --   unchanged.
     local function switchOwnerCurrent()
         return activeChangeCurrent(self, change)
             and self.currentSpec == selectedSpec
@@ -1998,7 +2112,9 @@ function addon:SwitchRotation()
     end
 
     -- END SWITCH OWNER LEASE
-    -- The same proof plus the scoped selection pass still being valid; checked before each state change below.
+    -- The same proof as switchOwnerCurrent plus the scoped selection pass still being valid; checked before each state
+    -- change below.
+    -- @return boolean  True while everything is unchanged.
     local function current()
         return activeChangeCurrent(self, change)
             and self.currentSpec == selectedSpec
@@ -2151,11 +2267,15 @@ function addon:SwitchRotation()
     end
 end
 
--- Auto mode re-checks selection every autoswitch_poll seconds, in and out of
--- combat, so volatile switch conditions (enemy count, threat, movement,
--- health...) take effect. The check below is read-only and follows the same
--- order as SwitchRotation; only a different answer goes through
--- SwitchRotation, whose transition retires current work.
+-- Finds the rotation automatic selection would pick, without changing anything.
+-- @param self table  The addon.
+-- @return string|nil  The rotation id (the first matching rotation, else the fallback); nil when none matches or the
+--   selection pass cannot be acquired.
+-- @return boolean  False when the selection pass cannot be acquired; true otherwise.
+--
+-- Auto mode re-checks selection every autoswitch_poll seconds, in and out of combat, so volatile switch conditions
+-- (enemy count, threat, movement, health...) take effect. The check is read-only and follows the same order as
+-- SwitchRotation; only a different answer goes through SwitchRotation, whose transition retires current work.
 local function autoSwitchCandidate(self)
     local spec, rotations = self.currentSpec, nil
 
@@ -2189,8 +2309,11 @@ local function autoSwitchCandidate(self)
     return nil, true
 end
 
--- Whether a switch condition matches now (true/false; nil when it cannot be
--- evaluated). Commands and menus only; polling uses the paths above.
+-- Tells whether a switch condition matches now.
+-- @param condition table|nil  The switch condition; none matches.
+-- @return boolean|nil  True or false; nil when it cannot be evaluated.
+--
+-- Commands and menus only; polling uses the paths above.
 function addon:SwitchConditionMatchesNow(condition)
     if condition == nil then
         return true
@@ -2208,8 +2331,10 @@ function addon:SwitchConditionMatchesNow(condition)
     return matched and true or false
 end
 
--- /rm why: the rotation automatic switching would choose now (nil when none),
--- by the same order and checks as the re-check above. Command only.
+-- Reports the rotation automatic switching would choose now (/rm why).
+-- @return string|nil  The rotation id; nil when none.
+--
+-- By the same order and checks as the re-check above. Command only.
 function addon:PreviewAutoSwitch()
     if not self.autoswitchRotation then
         return nil
@@ -2218,9 +2343,10 @@ function addon:PreviewAutoSwitch()
     return (autoSwitchCandidate(self))
 end
 
--- One periodic or event-driven re-check. Settles an action-bar context change first, then calls SwitchRotation only
--- when the read-only candidate differs from the current rotation. Skipped after an error, when disabled, and in manual
--- mode.
+-- One periodic or event-driven re-check of the automatic selection.
+--
+-- Settles an action-bar context change first, then calls SwitchRotation only when the read-only candidate differs from
+-- the current rotation. Skipped after an error, when disabled, and in manual mode.
 function addon:AutoSwitchTick()
     local profile = self.db.profile
 
@@ -2272,9 +2398,11 @@ function addon:StopAutoSwitchTimer()
     end
 end
 
--- Event-driven check (target, focus, pet): Auto mode checks read-only first,
--- so an unchanged selection keeps the current evaluation plan; manual mode
--- keeps SwitchRotation's remembered-choice handling.
+-- Event-driven check (target, focus, pet).
+-- @return any  The result of AutoSwitchTick in Auto mode, or of SwitchRotation otherwise.
+--
+-- Auto mode checks read-only first, so an unchanged selection keeps the current evaluation plan; manual mode keeps
+-- SwitchRotation's remembered-choice handling.
 function addon:CheckAutoSwitch()
     local profile = self.db and self.db.profile
 
@@ -2285,8 +2413,10 @@ function addon:CheckAutoSwitch()
     return self:AutoSwitchTick()
 end
 
--- (Re)starts the auto-switch timer from profile.autoswitch_poll (seconds; zero or less leaves it off) and migrates the
--- retired disable flag to an interval of zero.
+-- (Re)starts the auto-switch timer from profile.autoswitch_poll.
+--
+-- The interval is in seconds; zero or less leaves the timer off. Migrates the retired disable flag to an interval of
+-- zero.
 function addon:StartAutoSwitchTimer()
     self:StopAutoSwitchTimer()
     local profile = self.db and self.db.profile
@@ -2312,8 +2442,10 @@ end
 -- Rotation activation and the poll timer
 -- ============================================================================
 
--- Activates a rotation for the current specialization: rescans the buttons, rebuilds the autoswitch list, runs
--- SwitchRotation and shows the chosen name on the broker. Does nothing without a spec or when one is already active.
+-- Activates a rotation for the current specialization.
+--
+-- Rescans the buttons, rebuilds the autoswitch list, runs SwitchRotation and shows the chosen name on the broker. Does
+-- nothing without a spec or when one is already active.
 function addon:EnableRotation()
     if self.currentSpec == nil or self.currentRotation then
         return
@@ -2361,9 +2493,12 @@ function addon:EnableRotation()
     end
 end
 
--- Retires the active rotation: ends the poll timer, clears glows, the preview window, the broker text and the
--- WeakAuras signal. Returns nil, token, true when done (or nothing was active) and nil, nil, false when the transition
--- was superseded or a step refused.
+-- Retires the active rotation.
+-- @return nil  Always nil.
+-- @return table|nil  The transition token when done; nil when the transition was superseded or a step refused.
+-- @return boolean  True when done (or nothing was active); false when the transition was superseded or a step refused.
+--
+-- Ends the poll timer and clears glows, the preview window, the broker text and the WeakAuras signal.
 function addon:DisableRotation()
     local change = beginActive(self)
 
@@ -2518,7 +2653,10 @@ local idleEvents = {
 local idleGate = { dirty = true, nextEval = 0, evaluated = 0, skipped = 0 }
 addon.idleGate = idleGate
 
--- Registers `event` on `frame`, for the given units when any are passed and the frame supports unit events.
+-- Registers an event on a frame, for the given units when any are passed and the frame supports unit events.
+-- @param frame table  The frame.
+-- @param event string  The event name; an unknown name must not stop the rest.
+-- @param ... string  The units to subscribe the event for.
 local function register(frame, event, ...)
     -- Event names vary by client; an unknown name must not stop the rest.
     if select('#', ...) > 0 and frame.RegisterUnitEvent then
@@ -2528,9 +2666,9 @@ local function register(frame, event, ...)
     end
 end
 
--- Registers every gate event and marks the gate dirty; does nothing if already registered.
--- Frames cannot be destroyed, so they are created once and only their
--- registrations follow the rotation timer.
+-- Registers every idle gate event and marks the gate dirty; does nothing if already registered.
+--
+-- Frames cannot be destroyed, so they are created once and only their registrations follow the rotation timer.
 local function startIdleGate()
     idleGate.dirty = true
 
@@ -2541,7 +2679,7 @@ local function startIdleGate()
     local frames = idleGate.frames
 
     if not frames then
-        -- Any registered event marks the gate dirty, so the next tick evaluates.
+        -- Marks the gate dirty, so the next tick evaluates; any registered event calls it.
         local function dirty()
             idleGate.dirty = true
         end
@@ -2594,9 +2732,11 @@ local function stopIdleGate()
     idleGate.dirty = true
 end
 
--- The poll timer's callback. Out of combat it skips the tick while the idle gate is clean, the floor has not passed,
--- the rotation is unchanged, the configuration window is closed and there is no target or focus; otherwise it runs
--- EvaluateNextAction.
+-- The poll timer's callback.
+-- @return any  The result of EvaluateNextAction; nothing when the tick is skipped.
+--
+-- Out of combat it skips the tick while the idle gate is clean, the floor has not passed, the rotation is unchanged,
+-- the configuration window is closed and there is no target or focus; otherwise it runs EvaluateNextAction.
 function addon:EvaluateNextActionTimer()
     local interval = self.db.profile.idle_poll
 
@@ -2625,8 +2765,9 @@ function addon:EvaluateNextActionTimer()
     return self:EvaluateNextAction()
 end
 
--- Starts the poll (profile.poll seconds) and the idle gate for the active rotation. Does nothing without a rotation,
--- when already running, or after an advice error.
+-- Starts the poll (profile.poll seconds) and the idle gate for the active rotation.
+--
+-- Does nothing without a rotation, when already running, or after an advice error.
 function addon:EnableRotationTimer()
     if self.adviceErrorReport then
         return
@@ -2668,8 +2809,10 @@ end
 -- Per-poll preparation
 -- ============================================================================
 
--- Builds the record kept in self.unitsInRange for `unit`: name, attackable, enemy and, for enemies, threat. Reads go
--- through the per-poll API cache `cache`.
+-- Builds the record kept in self.unitsInRange for a unit.
+-- @param cache table  The per-poll API cache.
+-- @param unit string  The unit token.
+-- @return table  { unit, name, attackable, enemy, threat }: threat is read for enemies only.
 local function CreateUnitInfo(cache, unit)
     local info = {
         unit = unit,
@@ -2686,6 +2829,8 @@ local function CreateUnitInfo(cache, unit)
 end
 
 -- Refreshes a unitsInRange record in place; leaves it untouched when the unit no longer exists.
+-- @param cache table  The per-poll API cache.
+-- @param record table  The record from CreateUnitInfo.
 local function UpdateUnitInfo(cache, record)
     if not getCached(cache, UnitExists, record.unit) then
         return
@@ -2705,8 +2850,14 @@ end
 -- environment and history trimming. Returns the poll time and its API cache.
 local environmentHandled, environmentGUID = {}, {}
 
--- Runs at the start of every poll, standard or lean. It also drops spell, combat and damage history older than the
--- profile's windows. The GUID-keyed unit pass is skipped on restricted clients, where an NPC's GUID is secret.
+-- Runs the shared start of every evaluation, standard or lean: profile markers, macro buttons, unit environment and
+-- history trimming.
+-- @param self table  The addon.
+-- @return number  The poll time.
+-- @return table  The per-poll API cache.
+--
+-- Also drops spell, combat and damage history older than the profile's windows. The GUID-keyed unit pass is skipped
+-- on restricted clients, where an NPC's GUID is secret.
 local function prepareEvaluation(self)
     self.evaluationProfile:start()
 
@@ -2821,8 +2972,10 @@ local function prepareEvaluation(self)
     return now, cache
 end
 
--- Called after an error in the poll: records `reportId` in adviceErrorReport (advice stays off while it is set) and
--- retires the rotation, timer, preview, glows, broker text and event signals. Each step runs under Diagnostics, so one
+-- Stops advice after an error in the poll.
+-- @param reportId number  The error report id, recorded in adviceErrorReport (advice stays off while it is set).
+--
+-- Retires the rotation, timer, preview, glows, broker text and event signals. Each step runs under Diagnostics, so one
 -- failing step cannot stop the rest.
 function addon:StopAdviceForError(reportId)
     local change = beginActive(self)
@@ -2852,7 +3005,11 @@ function addon:StopAdviceForError(reportId)
     local timer = self.rotationTimer
     self.rotationTimer = nil
 
-    -- Runs one cleanup step under Diagnostics:Call; returns whether the transition is still current afterwards.
+    -- Runs one cleanup step under Diagnostics:Call.
+    -- @param operation string  The operation name recorded in the diagnostics context.
+    -- @param callback function  The cleanup function.
+    -- @param ... any  The arguments passed to callback.
+    -- @return boolean  Whether the transition is still current afterwards.
     local function cleanup(operation, callback, ...)
         if not activeChangeCurrent(self, change) then
             return false
@@ -2905,8 +3062,10 @@ local evaluationContext = { module = "recommendations", operation = "timer" }
 -- Evaluation entry point
 -- ============================================================================
 
--- Runs one poll under the error recorder; the first error stops advice (StopAdviceForError). Skipped after a failed
--- initialization or while an advice error is recorded.
+-- Runs one poll under the error recorder; the first error stops advice (StopAdviceForError).
+-- @return any  The result of the poll when Diagnostics is not loaded; nothing otherwise.
+--
+-- Skipped after a failed initialization or while an advice error is recorded.
 function addon:EvaluateNextAction()
     if self.initializationErrorReport then
         return
@@ -2966,14 +3125,17 @@ local implicitAttack = { id = "RM-IMPLICIT:ATTACK", type = "spell" }
 -- Single-entry scratch lists reused for every FindSpell call, and a shared empty list, so a poll does not allocate.
 local scratchSpell, scratchItem, noIds = {}, {}, {}
 
--- Whether the lean engine may run: its plan compiler and generation reader are bound and /rm perf engine has not
--- forced the standard engine.
+-- Whether the lean engine may run.
+-- @param self table  The addon.
+-- @return boolean  True when its plan compiler and generation reader are bound and /rm perf engine has not forced the
+--   standard engine.
 local function leanEnabled(self)
     return compileConditionPlan and readExecutionGeneration and self.db.global.evaluator ~= 'standard'
 end
 
--- Chooses 'lean' or 'standard' (saved in db.global.evaluator; lean is the default and is stored as nil) and drops the
--- recorded plan. Returns false for any other name.
+-- Chooses the evaluation engine and drops the recorded plan.
+-- @param engine string  'lean' or 'standard' (saved in db.global.evaluator; lean is the default and is stored as nil).
+-- @return boolean  False for any other name; true otherwise.
 function addon:SetEvaluationEngine(engine)
     if engine ~= 'lean' and engine ~= 'standard' then
         return false
@@ -2984,7 +3146,8 @@ function addon:SetEvaluationEngine(engine)
     return true
 end
 
--- The engine in use for /rm perf engine: 'standard', 'lean', or 'lean (building)' while no plan is recorded yet.
+-- Reports the engine in use, for /rm perf engine.
+-- @return string  'standard', 'lean', or 'lean (building)' while no plan is recorded yet.
 function addon:GetEvaluationEngine()
     if not leanEnabled(self) then
         return 'standard'
@@ -2993,8 +3156,11 @@ function addon:GetEvaluationEngine()
     return leanPlan and 'lean' or 'lean (building)'
 end
 
--- Compiles a step list into entries holding prepared condition plans, recursing into Branch arms. `ordinals` maps a
--- rotation step to its position among rotation steps, which reports and the implicit-attack ordinal use.
+-- Compiles a step list into entries holding prepared condition plans, recursing into Branch arms.
+-- @param list table  The step list.
+-- @param ordinals table  Maps a rotation step to its position among rotation steps, which reports and the
+--   implicit-attack ordinal use.
+-- @return table  The compiled entries.
 local function compileSteps(list, ordinals)
     local compiled = {}
 
@@ -3020,9 +3186,20 @@ local function compileSteps(list, ordinals)
     return compiled
 end
 
--- Records the plan after a poll completed on the standard path: the compiled rotation steps and cooldowns plus the
--- proofs (rotation key, spec, profile, preview window, execution generation, context epoch, age) that decide reuse.
--- Replaces any earlier plan; records nothing when the rotation cannot be indexed.
+-- Records the plan after a poll completed on the standard path.
+-- @param self table  The addon.
+-- @param rot table  The rotation body.
+-- @param views table  The per-poll views of the rotation.
+-- @param spec number  The specialization key.
+-- @param key string  The rotation id.
+-- @param profile table  The profile.
+-- @param window table|nil  The preview window.
+-- @param generation number  The execution generation.
+-- @param epoch number  The context epoch.
+--
+-- Holds the compiled rotation steps and cooldowns plus the proofs (rotation key, spec, profile, preview window,
+-- execution generation, context epoch, age) that decide reuse. Replaces any earlier plan; records nothing when the
+-- rotation cannot be indexed.
 local function recordLeanPlan(self, rot, views, spec, key, profile, window, generation, epoch)
     local index = self.RotationData.IndexRotationSteps(rot, { allowMissingIds = true })
 
@@ -3074,8 +3251,9 @@ local function recordLeanPlan(self, rot, views, spec, key, profile, window, gene
         end
     end
 
-    -- True while the selection, profile, preview window and execution generation the plan was built under are
-    -- unchanged.
+    -- Tells whether the plan is still current.
+    -- @return boolean  True while the selection, profile, preview window and execution generation the plan was built
+    --   under are unchanged.
     plan.current = function()
         return self.currentRotation == key
             and self.currentSpec == spec
@@ -3088,9 +3266,13 @@ local function recordLeanPlan(self, rot, views, spec, key, profile, window, gene
     leanStats.built = leanStats.built + 1
 end
 
--- One action step: conditions, then the first mapped and ready spell.
--- Returns the mapped spell, whether it is ready (and so may be recommended) and the item id; nil and false when the
--- step has no usable action or its conditions do not match. `decisionRow` names the bucket for runtime counters.
+-- Evaluates one action step: conditions, then the first mapped and ready spell.
+-- @param plan table  The lean plan.
+-- @param entry table  The compiled step entry.
+-- @param decisionRow string  The bucket for runtime counters.
+-- @return number|nil  The mapped spell; nil when the step has no usable action or its conditions do not match.
+-- @return boolean  Whether it is ready (and so may be recommended).
+-- @return number|nil  The item id.
 local function leanAction(plan, entry, decisionRow)
     local decisionSink = plan.decisionSink
     local cond = entry.step
@@ -3173,15 +3355,22 @@ local function leanAction(plan, entry, decisionRow)
     return firstMapped, false, firstItem
 end
 
--- Appends one recommendation (spell, step, ordinal, item) to the plan's parallel arrays, which are reused each poll.
+-- Appends one recommendation to the plan's parallel arrays, which are reused each poll.
+-- @param plan table  The lean plan.
+-- @param spellid number  The spell id.
+-- @param cond table  The step.
+-- @param index number  The step's ordinal.
+-- @param itemId number|nil  The item id.
 local function leanRecommend(plan, spellid, cond, index, itemId)
     local n = plan.recommended + 1
     plan.recommended = n
     plan.recSpell[n], plan.recCond[n], plan.recIndex[n], plan.recItem[n] = spellid, cond, index, itemId
 end
 
--- Same control flow as Core/rotation_sequence.lua execute(). Returns nil to
--- continue, or how the walk ended: "selected", "stopped" or "unavailable".
+-- Walks a compiled step list with the same control flow as Core/rotation_sequence.lua execute().
+-- @param plan table  The lean plan.
+-- @param list table  The compiled entries.
+-- @return string|nil  nil to continue, or how the walk ended: "selected", "stopped" or "unavailable".
 local function leanWalk(plan, list)
     for i = 1, #list do
         local entry = list[i]
@@ -3229,9 +3418,12 @@ local function leanWalk(plan, list)
     end
 end
 
--- Publication order and checks match the standard path's staged publishers.
--- Publishes the plan's recommendations: the preview window, the primary glow and the WeakAuras signal. `plan.current()`
--- is re-proved after each callout and the function returns as soon as it fails.
+-- Publishes the plan's recommendations: the preview window, the primary glow and the WeakAuras signal.
+-- @param self table  The addon.
+-- @param plan table  The lean plan.
+--
+-- Publication order and checks match the standard path's staged publishers. `plan.current()` is re-proved after each
+-- callout and the function returns as soon as it fails.
 local function leanPublish(self, plan)
     local current, profile, previewWindow = plan.current, plan.profile, plan.window
     local nativePreview = plan.nativePreview
@@ -3508,8 +3700,11 @@ local function leanPublish(self, plan)
     end
 end
 
--- Closes every poll, whichever engine ran it. At most every 15 seconds it writes the cache statistics and the
--- evaluation profiler report to the debug log and resets the profiler; otherwise it costs one GetTime() comparison.
+-- Closes every poll, whichever engine ran it.
+-- @param self table  The addon.
+--
+-- At most every 15 seconds it writes the cache statistics and the evaluation profiler report to the debug log and
+-- resets the profiler; otherwise it costs one GetTime() comparison.
 local function reportEvaluation(self)
     if GetTime() - self.lastCacheReport > 15 then
         addon.Functions.cache.ReportCacheStats(addon)
@@ -3527,10 +3722,14 @@ local function reportEvaluation(self)
     end
 end
 
--- Runs one poll from the recorded plan. Returns true when the lean path handled the poll. Returns false when there is
--- no plan or it is stale (rotation, spec, profile or preview window moved, a writer advanced the execution generation,
--- a context event fired, or the age cap passed): the plan is dropped, the reason is counted in leanStats and the
--- caller runs the standard path, which records a new plan. Conditions, readiness and cooldowns are read fresh here.
+-- Runs one poll from the recorded plan.
+-- @param self table  The addon.
+-- @return boolean  True when the lean path handled the poll. False when there is no plan or it is stale (rotation,
+--   spec, profile or preview window moved, a writer advanced the execution generation, a context event fired, or the
+--   age cap passed): the plan is dropped, the reason is counted in leanStats and the caller runs the standard path,
+--   which records a new plan.
+--
+-- Conditions, readiness and cooldowns are read fresh here.
 local function evaluateLean(self)
     local plan = leanPlan
 
@@ -3617,11 +3816,13 @@ end
 -- Standard evaluation and spell resolution
 -- ============================================================================
 
--- One poll of the standard engine. Tries the lean plan first; only when evaluateLean declines does the full path run:
--- resolve the active rotation body (prepared runtime plan, scoped pass or raw runtime rotation), evaluate the rotation
--- and cooldown steps through the sequence executor, stage every output (glows, messages, announcements) and publish
--- them in order, rechecking after each callout that the selection is still current. A completed poll whose inputs did
--- not move records a lean plan. Called every poll tick through addon:EvaluateNextAction, which adds the error boundary.
+-- Runs one poll of the standard engine.
+--
+-- Tries the lean plan first; only when evaluateLean declines does the full path run: resolve the active rotation body
+-- (prepared runtime plan, scoped pass or raw runtime rotation), evaluate the rotation and cooldown steps through the
+-- sequence executor, stage every output (glows, messages, announcements) and publish them in order, rechecking after
+-- each callout that the selection is still current. A completed poll whose inputs did not move records a lean plan.
+-- Called every poll tick through addon:EvaluateNextAction, which adds the error boundary.
 function addon:EvaluateNextActionInternal()
     local useLean = leanEnabled(self)
 
@@ -3635,8 +3836,11 @@ function addon:EvaluateNextActionInternal()
     local runtimePass, rot, publicationGuard, planToken, conditionSession, handled, presentationViews, conditionLease, notifiedLease, deliveryLease, dispatchLease
     local executionFailed = false
 
-    -- Asks the dispatch lease, when the managed runtime issued one, whether the poll may continue at a named checkpoint
-    -- ('resume', 'step', 'iterator'). The first refusal latches executionFailed, so every later check fails as well.
+    -- Asks the dispatch lease whether the poll may continue at a named checkpoint.
+    -- @param kind string  The checkpoint: 'resume', 'step' or 'iterator'.
+    -- @return boolean  True when the poll may continue, or when the managed runtime issued no lease.
+    --
+    -- The first refusal latches executionFailed, so every later check fails as well.
     local function dispatchCurrent(kind)
         if executionFailed then
             return false
@@ -3780,9 +3984,13 @@ function addon:EvaluateNextActionInternal()
         end
 
         -- Evaluates one action step fresh: its conditions, then the first of its spell ids that maps to a button and is
-        -- ready. Returns spellid, ready, itemId. If nothing is ready it still returns the first mapped spell with ready
-        -- false, so a disabled cooldown can clear its glow. decisionRow ('rotation' or 'cooldowns') is the row reported
-        -- to the runtime decision sink.
+        -- ready.
+        -- @param cond table  The step.
+        -- @param decisionRow string  The row reported to the runtime decision sink: 'rotation' or 'cooldowns'.
+        -- @return number|nil  The mapped spell. If nothing is ready it still returns the first mapped spell with ready
+        --   false, so a disabled cooldown can clear its glow.
+        -- @return boolean  Whether it is ready.
+        -- @return number|nil  The item id.
         local function eval(cond, decisionRow)
             if decisionSink then
                 decisionSink(decisionRow, 'attempt')
@@ -3851,9 +4059,11 @@ function addon:EvaluateNextActionInternal()
         local staged = {}
         local delivering, deliveryFailed = false, false
 
-        -- True while this poll may still publish: the selection, spec, profile and preview window are the ones the poll
-        -- started with, no checkpoint has failed and the runtime pass or publication guard still holds. Staged outputs
-        -- call it again after every callout that can reenter (glow, message and announcement handlers).
+        -- Tells whether this poll may still publish.
+        -- @return boolean  True while the selection, spec, profile and preview window are the ones the poll started
+        --   with, no checkpoint has failed and the runtime pass or publication guard still holds.
+        --
+        -- Staged outputs call it again after every callout that can reenter (glow, message and announcement handlers).
         local function current()
             if deliveryFailed or executionFailed then
                 return false
@@ -3882,7 +4092,8 @@ function addon:EvaluateNextActionInternal()
             return runtimePass:IsCurrent()
         end
 
-        -- Queues an output. Nothing becomes visible until every condition and readiness callback has finished.
+        -- Queues an output; nothing becomes visible until every condition and readiness callback has finished.
+        -- @param callback function  The output to run at publication.
         local function stage(callback)
             staged[#staged + 1] = callback
         end
@@ -3897,8 +4108,14 @@ function addon:EvaluateNextActionInternal()
             end)
         end
 
-        -- Counts one recommendation against the preview limit and stages its outputs. The first one becomes the current
-        -- spell (glow, WeakAuras and ROTATIONMASTER_SPELL_UPDATE); every one goes to the preview window, if any.
+        -- Counts one recommendation against the preview limit and stages its outputs.
+        -- @param spellid number  The spell id.
+        -- @param cond table  The step.
+        -- @param index number  The step's ordinal.
+        -- @param itemId number|nil  The item id.
+        --
+        -- The first one becomes the current spell (glow, WeakAuras and ROTATIONMASTER_SPELL_UPDATE); every one goes to
+        -- the preview window, if any.
         local function recommend(spellid, cond, index, itemId)
             preview = preview + 1
             local ordinal = preview
@@ -4307,11 +4524,14 @@ function addon:UpdateCurrentCondition()
     end
 end
 
--- Returns the spell ids a rotation or cooldown step can fire and, for item steps, a parallel list of item ids. Spell,
--- pet and "any" steps return the action alone on Retail and on ranked steps, otherwise every known rank from the spell
--- catalog. Item steps expand an item set (or a literal item list) to each item's use-spell; an item whose use-spell or
--- id is not loaded yet is left out and retried on the next poll. "assisted" steps return Blizzard's suggestion and its
--- override ids, read fresh on every call, and "mark" steps their one pseudo spell id. Anything else returns an empty list.
+-- Lists the spell ids a rotation or cooldown step can fire.
+-- @param rot table  The step.
+-- @return number[]  The spell ids. Spell, pet and "any" steps return the action alone on Retail and on ranked steps,
+--   otherwise every known rank from the spell catalog. Item steps expand an item set (or a literal item list) to each
+--   item's use-spell. "assisted" steps return Blizzard's suggestion and its override ids, read fresh on every call;
+--   "mark" steps return their one pseudo spell id. Anything else returns an empty list.
+-- @return number[]|nil  For item steps, a parallel list of item ids; an item whose use-spell or id is not loaded yet is
+--   left out and retried on the next poll.
 function addon:GetSpellIds(rot)
     if rot.action then
         if rot.type == (BOOKTYPE_SPELL or "spell") or rot.type == (BOOKTYPE_PET or "pet") or rot.type == "any" then
@@ -4380,6 +4600,9 @@ end
 
 -- Turns off the glow of every spell a cooldown step names, but only while spec and rotation are still the active
 -- selection.
+-- @param spec number  The specialization key.
+-- @param rotation string  The rotation id.
+-- @param rot table  The cooldown step.
 function addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot)
     if spec == self.currentSpec and rotation == self.currentRotation then
         for _, spellid in pairs(addon:GetSpellIds(rot)) do
@@ -4388,9 +4611,11 @@ function addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot)
     end
 end
 
--- Clears the primary-suggestion glow and every cooldown glow of the rotation being torn down. That rotation comes from
--- the cleanup selection of the transition in progress and falls back to the current one. Each external call is
--- bracketed by current() because a glow or lookup callback can reenter and change the active transition.
+-- Clears the primary-suggestion glow and every cooldown glow of the rotation being torn down.
+--
+-- That rotation comes from the cleanup selection of the transition in progress and falls back to the current one. Each
+-- external call is bracketed by current() because a glow or lookup callback can reenter and change the active
+-- transition.
 function addon:RemoveAllCurrentGlows()
     local spec, id, change = cleanupActive(self)
 
@@ -4398,7 +4623,8 @@ function addon:RemoveAllCurrentGlows()
         spec, id = self.currentSpec, self.currentRotation
     end
 
-    -- True while the transition this cleanup belongs to is still the active one (always true when there is none).
+    -- Tells whether the transition this cleanup belongs to is still the active one.
+    -- @return boolean  True while it is (always true when there is none).
     local function current()
         return not change or activeChangeCurrent(self, change)
     end
@@ -4477,14 +4703,18 @@ function addon:RemoveAllCurrentGlows()
 end
 
 -- Rebuilds the spell catalog for the current specialization; the name the spec-change paths call.
+-- @return any  The result of RefreshSpellCatalog.
 function addon:UpdateSpecSpells()
     return self:RefreshSpellCatalog()
 end
 
--- Re-reads the player's rotation specialization and brings everything that depends on it into line. When the spec
--- changed it stops the current rotation first, then clears the long-term cache, selects the spec tab, refreshes the
--- spell catalog and the auto-switch conditions, runs SwitchRotation and refetches the buttons. Every step is guarded by
--- the active-transition token, so a reentrant change abandons the rest. Returns nil and the token when it completed.
+-- Re-reads the player's rotation specialization and brings everything that depends on it into line.
+-- @return nil  Always nil.
+-- @return table|nil  The transition token when it completed.
+--
+-- When the spec changed it stops the current rotation first, then clears the long-term cache, selects the spec tab,
+-- refreshes the spell catalog and the auto-switch conditions, runs SwitchRotation and refetches the buttons. Every step
+-- is guarded by the active-transition token, so a reentrant change abandons the rest.
 function addon:UpdateSkill()
     local change = beginActive(self)
 
@@ -4585,8 +4815,11 @@ function addon:UpdateSkill()
     end
 end
 
--- Display name of talent slot idx (1 to 21) for a spec. Returns a "[Tier, Column]" placeholder while the name is not
--- known, and nil for an index outside 1 to 21.
+-- Reads the display name of a talent slot of a spec.
+-- @param spec number  The specialization key.
+-- @param idx number|nil  The talent slot, 1 to 21.
+-- @return string|nil  The name; a "[Tier, Column]" placeholder while the name is not known; nil for an index outside 1
+--   to 21.
 function addon:GetSpecTalentName(spec, idx)
     if idx == nil or idx < 1 or idx > 21 then
         return nil
@@ -4600,7 +4833,10 @@ function addon:GetSpecTalentName(spec, idx)
     return self.specTalents[spec][idx].name
 end
 
--- Icon path of talent slot idx (1 to 21) for a spec, the question-mark icon while it is not known, nil outside 1 to 21.
+-- Reads the icon path of a talent slot of a spec.
+-- @param spec number  The specialization key.
+-- @param idx number|nil  The talent slot, 1 to 21.
+-- @return string|nil  The icon path; the question-mark icon while it is not known; nil for an index outside 1 to 21.
 function addon:GetSpecTalentIcon(spec, idx)
     if idx == nil or idx < 1 or idx > 21 then
         return nil
@@ -4618,9 +4854,12 @@ end
 -- Item-set button bindings
 -- ============================================================================
 
--- Re-points the action-bar slots bound to item set `id` at the set's current first item and drops slots that no longer
--- hold an item. Returns true when anything changed and false when it did nothing. It refuses in combat (slots cannot
--- change then) and while the cursor holds something (it retries in half a second); one pass per set at a time.
+-- Re-points the action-bar slots bound to an item set at the set's current first item.
+-- @param id string  The item set id.
+-- @return boolean  True when anything changed; false when it did nothing.
+--
+-- Slots that no longer hold an item are dropped. It refuses in combat (slots cannot change then) and while the cursor
+-- holds something (it retries in half a second); one pass per set at a time.
 function addon:UpdateBoundButton(id)
     if InCombatLockdown and InCombatLockdown() then
         return false
@@ -4740,14 +4979,23 @@ local runtimeContextEvents = {
     PLAYER_REGEN_DISABLED = true,
 }
 
--- Wraps an event handler and returns the function to install as addon.<EVENT>. Before the handler runs, an event in
--- runtimeContextEvents (or a direct call with no event name) invalidates the evaluation and choice contexts and bumps
--- leanContextEpoch, which makes the lean engine rebuild its plan. The handler then runs inside the Diagnostics error
--- boundary; the first failure disables that handler for the session and stops advice (StopAdviceForError).
+-- Wraps an event handler and returns the function to install as addon.<EVENT>.
+-- @param func function  The handler, called as func(self, event, ...).
+-- @return function  The wrapped handler.
+--
+-- Before the handler runs, an event in runtimeContextEvents (or a direct call with no event name) invalidates the
+-- evaluation and choice contexts and bumps leanContextEpoch, which makes the lean engine rebuild its plan. The handler
+-- then runs inside the Diagnostics error boundary; the first failure disables that handler for the session and stops
+-- advice (StopAdviceForError).
 local function wrapEvent(func)
     local failed = false
     local context = { module = "events", operation = "dispatch" }
 
+    -- The wrapped event handler.
+    -- @param self table  The addon.
+    -- @param event string|nil  The event name; nil for a direct call.
+    -- @param ... any  The event payload.
+    -- @return any  The handler's result when Diagnostics is not loaded; nothing otherwise.
     return function(self, event, ...)
         if invalidateEvaluationContext and (event == nil or runtimeContextEvents[event]) then
             invalidateEvaluationContext()
@@ -4794,9 +5042,11 @@ end
 -- field may be secret and is checked before it is compared or used as a key.
 local combatDataPolicy
 
--- Like wrapEvent, for handlers that read combat data. `func` runs where the client exposes the data (combatDataPolicy
--- 'probe'); `restricted`, when given, runs instead on Retail and Forever and must check every payload field with
--- Platform:CanReadValue. A handler without a restricted variant does nothing there.
+-- Like wrapEvent, for handlers that read combat data.
+-- @param func function  Runs where the client exposes the data (combatDataPolicy 'probe').
+-- @param restricted function|nil  Runs instead on Retail and Forever and must check every payload field with
+--   Platform:CanReadValue; a handler without a restricted variant does nothing there.
+-- @return function  The wrapped handler.
 local function wrapCombatEvent(func, restricted)
     local dispatch = wrapEvent(func)
     local restrictedDispatch = restricted and wrapEvent(restricted)
@@ -4847,9 +5097,13 @@ end)
 -- Re-checks rotation selection when the stealth state changes.
 addon.UPDATE_STEALTH = wrapEvent(addon.SwitchRotation)
 
--- Forgets the action-bar slots bound to item set `id`: removes the binding, picks the set's items off those slots once
--- the cursor is empty (`expectedItems` names the items to match when the set was just edited), then refetches the
--- buttons and notifies itemSetCallback. Returns false in combat, where slots cannot change, and true otherwise.
+-- Forgets the action-bar slots bound to an item set.
+-- @param id string  The item set id.
+-- @param expectedItems table|nil  The items to match when the set was just edited.
+-- @return boolean  False in combat, where slots cannot change; true otherwise.
+--
+-- Removes the binding, picks the set's items off those slots once the cursor is empty, then refetches the buttons and
+-- notifies itemSetCallback.
 function addon:UnbindItemSet(id, expectedItems)
     if InCombatLockdown and InCombatLockdown() then
         return false
@@ -4858,10 +5112,10 @@ function addon:UnbindItemSet(id, expectedItems)
     local slots = self.db.char.bindings[id] or {}
     self.db.char.bindings[id] = nil
 
-    -- Clearing a slot picks its item up; never swap with or discard what the
-    -- cursor already holds. Clear the slots once the cursor is empty.
-    -- Picks each matching item off its slot. Retries every half second while the cursor is full and gives up if combat
-    -- starts.
+    -- Picks each matching item off its slot.
+    --
+    -- Clearing a slot picks its item up; it never swaps with or discards what the cursor already holds, so it retries
+    -- every half second while the cursor is full and gives up if combat starts.
     local function clearSlots()
         if type(GetCursorInfo) == 'function' and GetCursorInfo() then
             if C_Timer and C_Timer.After then
@@ -5097,7 +5351,9 @@ local equipmentEvent = wrapEvent(function(self, _, subscription, profile, change
         coordinator = equipmentCoordinator(self)
     end
 
-    -- True while the subscription, profile, scope coordinator and transition are all unchanged since the event began.
+    -- Tells whether the equipment event is still current.
+    -- @return boolean  True while the subscription, profile, scope coordinator and transition are all unchanged since
+    --   the event began.
     local function current()
         if
             not activeChangeCurrent(self, change)
@@ -5141,8 +5397,13 @@ local equipmentEvent = wrapEvent(function(self, _, subscription, profile, change
     end
 end)
 
--- The registered entry point. It ignores the event unless the addon is enabled with a live subscription, opens a
--- transition token, and only then hands over to equipmentEvent.
+-- The registered entry point for PLAYER_EQUIPMENT_CHANGED.
+-- @param self table  The addon.
+-- @param event string  The event name.
+-- @return any  The result of equipmentEvent; nothing when the event is ignored.
+--
+-- It ignores the event unless the addon is enabled with a live subscription, opens a transition token, and only then
+-- hands over to equipmentEvent.
 addon.PLAYER_EQUIPMENT_CHANGED = function(self, event)
     local subscription = equipmentSubscription
 
@@ -5169,8 +5430,10 @@ end
 -- A changed spell list refreshes the spell catalog through UpdateSkill.
 addon.SPELLS_CHANGED = wrapEvent(addon.UpdateSkill)
 
--- Drops the cached player level (the condition cache entry and the native UnitLevel cache) so the next read asks the
--- client again.
+-- Drops the cached player level so the next read asks the client again.
+-- @param self table  The addon.
+--
+-- Clears the condition cache entry and the native UnitLevel cache.
 local function invalidatePlayerLevel(self)
     if type(self.longtermCache) ~= 'table' then
         return
@@ -5319,13 +5582,16 @@ end)
 local actionContext
 local actionSuspended
 
--- Returns the last observed action context, 'player' when none has been read yet.
+-- Reads the last observed action context.
+-- @return string  The context; 'player' when none has been read yet.
 function addon:GetActionContext()
     return actionContext or 'player'
 end
 
--- Reads the context through ReadActionContext (a failure or a non-string result counts as 'player'), stores it and
--- returns it plus whether it differs from the previous observation. The first observation is never a change.
+-- Observes the action bar context.
+-- @return string  The context, read through ReadActionContext (a failure or a non-string result counts as 'player');
+--   it is stored.
+-- @return boolean  Whether it differs from the previous observation; the first observation is never a change.
 function addon:RefreshActionContext()
     local read = self.ReadActionContext
     local ok, value = true, 'player'
@@ -5342,10 +5608,12 @@ function addon:RefreshActionContext()
     return value, changed
 end
 
--- Re-reads the action context and, when it changed, reacts to it: bumps the context epoch, dirties the idle gate,
--- invalidates the evaluation caches, refetches the buttons and re-selects a rotation. A rotation that cannot be
--- resolved for the new bar is stopped (remembered in actionSuspended when leaving the player bar), and returning to
--- the player bar brings back a suspended manual choice. Returns true when the context changed.
+-- Re-reads the action context and, when it changed, reacts to it.
+-- @return boolean  True when the context changed.
+--
+-- Bumps the context epoch, dirties the idle gate, invalidates the evaluation caches, refetches the buttons and
+-- re-selects a rotation. A rotation that cannot be resolved for the new bar is stopped (remembered in actionSuspended
+-- when leaving the player bar), and returning to the player bar brings back a suspended manual choice.
 function addon:ApplyActionContext()
     local previous = actionContext or 'player'
     local value, changed = self:RefreshActionContext()
@@ -5408,7 +5676,8 @@ function addon:ApplyActionContext()
     return true
 end
 
--- Bar-swap notifications: apply the new action context, or just refetch the buttons when the context is unchanged.
+-- Bar-swap notification: applies the new action context, or just refetches the buttons when the context is unchanged.
+-- @param self table  The addon.
 local function actionBarChanged(self)
     if not self:ApplyActionContext() then
         self:ButtonFetch()
@@ -5440,14 +5709,24 @@ end)
 -- stored token; preserve only a positively identified canonical replacement.
 local nameplateEvent
 
--- True while `snapshot` is still the unit map and `ticket` the newest nameplate event. Every provider call below
--- rechecks it, because a callback can reenter these handlers and replace either.
+-- Tells whether a nameplate event is still the newest.
+-- @param self table  The addon.
+-- @param snapshot table  The unit map the event started with.
+-- @param ticket table  The ticket of the event.
+-- @return boolean  True while `snapshot` is still the unit map and `ticket` the newest nameplate event.
+--
+-- Every provider call below rechecks it, because a callback can reenter these handlers and replace either.
 local function nameplateCurrent(self, snapshot, ticket)
     return self.unitsInRange == snapshot and nameplateEvent == ticket
 end
 
--- Returns whether `value` may be read on this client (Platform:CanReadValue), or nil when the snapshot or ticket went
--- stale during the call; nil means the caller must abandon the event.
+-- Tells whether a value may be read on this client (Platform:CanReadValue).
+-- @param self table  The addon.
+-- @param snapshot table  The unit map the event started with.
+-- @param ticket table  The ticket of the event.
+-- @param value any  The value to test.
+-- @return boolean|nil  Whether it is readable; nil when the snapshot or ticket went stale during the call, in which
+--   case the caller must abandon the event.
 local function nameplateReadable(self, snapshot, ticket, value)
     local readable = self.Platform:CanReadValue(value)
 
@@ -5458,7 +5737,12 @@ local function nameplateReadable(self, snapshot, ticket, value)
     return not not readable
 end
 
--- Returns the GUID of a nameplate unit, or nil when the event went stale or the GUID is missing, secret or empty.
+-- Reads the GUID of a nameplate unit.
+-- @param self table  The addon.
+-- @param snapshot table  The unit map the event started with.
+-- @param ticket table  The ticket of the event.
+-- @param unit string  The nameplate unit token.
+-- @return string|nil  The GUID; nil when the event went stale or the GUID is missing, secret or empty.
 local function nameplateGUID(self, snapshot, ticket, unit)
     local ok, guid = pcall(UnitGUID, unit)
 
@@ -5482,9 +5766,15 @@ local function nameplateGUID(self, snapshot, ticket, unit)
     end
 end
 
--- Lists the map entries that still name `unit` under a GUID other than `keep`, each with the canonical unit alias that
--- now carries that GUID (change.alias, nil when there is none). Returns the list, empty when nothing needs to move, or
--- nil when the event went stale or a value was unreadable.
+-- Lists the map entries that still name a unit under a different GUID.
+-- @param self table  The addon.
+-- @param snapshot table  The unit map the event started with.
+-- @param ticket table  The ticket of the event.
+-- @param unit string  The nameplate unit token.
+-- @param keep string|nil  The GUID that legitimately holds the unit.
+-- @return table[]|nil  The entries still naming `unit` under a GUID other than `keep`, each { guid, entry, alias }
+--   where alias is the canonical unit that now carries that GUID (nil when there is none); an empty list when nothing
+--   needs to move; nil when the event went stale or a value was unreadable.
 local function nameplateChanges(self, snapshot, ticket, unit, keep)
     -- Provider calls can reenter these handlers and mutate public maps. Finish
     -- copying their keys before calling any provider or readability function.
@@ -5558,15 +5848,26 @@ local function nameplateChanges(self, snapshot, ticket, unit, keep)
     return changes
 end
 
--- Raw read of an entry's unit field. Always called under pcall so a value that became restricted cannot raise outside
--- a protected call.
+-- Reads an entry's unit field raw and compares it.
+-- @param entry table  The unit map entry.
+-- @param stored string  The value to compare with.
+-- @return boolean  True when the entry's unit equals `stored`.
+--
+-- Always called under pcall so a value that became restricted cannot raise outside a protected call.
 local function nameplateStoredMatches(entry, stored)
     return rawget(entry, "unit") == stored
 end
 
--- Applies the changes from nameplateChanges: an entry still stored under `unit` is retargeted to its canonical alias,
--- or removed from the map when it has none. Each entry is rechecked just before it is written. Returns false when the
--- event went stale.
+-- Applies the changes from nameplateChanges.
+-- @param self table  The addon.
+-- @param snapshot table  The unit map the event started with.
+-- @param ticket table  The ticket of the event.
+-- @param unit string  The nameplate unit token.
+-- @param changes table[]  The changes from nameplateChanges.
+-- @return boolean  False when the event went stale; true otherwise.
+--
+-- An entry still stored under `unit` is retargeted to its canonical alias, or removed from the map when it has none.
+-- Each entry is rechecked just before it is written.
 local function applyNameplateChanges(self, snapshot, ticket, unit, changes)
     for _, change in ipairs(changes) do
         if rawget(snapshot, change.guid) == change.entry then
@@ -5604,10 +5905,14 @@ do
     local kind, meta, read, write, same, nextEntry, items, protected, raise, match =
         type, getmetatable, rawget, rawset, rawequal, next, ipairs, pcall, error, string.match
 
-    -- Called from addon:enable on probe clients with the enable transition's token. Compares the unit map with a fresh
-    -- enumeration of the canonical units and the visible nameplate frames, all inside one protected call, and writes
-    -- the differences only at the very end and only if the map is unchanged since it was copied. Any failure, stale
-    -- token or unreadable value leaves the old map exactly as it was.
+    -- Reconciles the unit map with the nameplates shown, when the addon is enabled again.
+    -- @param self table  The addon.
+    -- @param change table  The enable transition's token.
+    --
+    -- Called from addon:enable on probe clients. Compares the unit map with a fresh enumeration of the canonical units
+    -- and the visible nameplate frames, all inside one protected call, and writes the differences only at the very end
+    -- and only if the map is unchanged since it was copied. Any failure, stale token or unreadable value leaves the old
+    -- map exactly as it was.
     reconcileNameplateResume = function(self, change)
         local snapshot = self.unitsInRange
 
@@ -5619,7 +5924,8 @@ do
         nameplateEvent = ticket
         local db, profile = self.db, self.db.profile
 
-        -- True while this resume is still the newest nameplate event and the enable transition is current.
+        -- Tells whether this resume is still current.
+        -- @return boolean  True while it is the newest nameplate event and the enable transition is current.
         local function current()
             return nameplateCurrent(self, snapshot, ticket)
                 and self.db == db
@@ -5638,7 +5944,9 @@ do
                 end
             end
 
-            -- Returns value after proving it is readable and not restricted; raises otherwise.
+            -- Proves a value is readable and not restricted.
+            -- @param value any  The value.
+            -- @return any  value; it raises otherwise.
             local function readable(value)
                 requireCurrent()
 
@@ -5659,8 +5967,10 @@ do
                 return value
             end
 
-            -- Calls a client provider, requiring the resume to stay current around the call, and returns its result
-            -- only if it is readable.
+            -- Calls a client provider, requiring the resume to stay current around the call.
+            -- @param fn function  The provider.
+            -- @param ... any  The arguments passed to fn.
+            -- @return any  The provider's result, only if it is readable.
             local function observe(fn, ...)
                 requireCurrent()
 
@@ -5695,8 +6005,11 @@ do
                 end
             end
 
-            -- GUID of a unit token, or nil when the unit does not exist. Each reading is recorded in `observations` so
-            -- it can be verified again just before the commit.
+            -- Reads the GUID of a unit token.
+            -- @param unit string  The unit token.
+            -- @return string|nil  The GUID; nil when the unit does not exist.
+            --
+            -- Each reading is recorded in `observations` so it can be verified again just before the commit.
             local function guidFor(unit)
                 local guid = observe(UnitGUID, unit)
 
@@ -5882,8 +6195,10 @@ do
     end
 end
 
--- Restricted clients: the token alone (its GUID is secret for an NPC). Adds or removes the token in the
--- self.nameplateUnits set and ignores a token that is unreadable or not a non-empty string.
+-- Restricted clients: tracks a nameplate by its token alone (its GUID is secret for an NPC).
+-- @param self table  The addon.
+-- @param unit any  The nameplate unit token; one that is unreadable or not a non-empty string is ignored.
+-- @param shown boolean  True to add the token to the self.nameplateUnits set; false to remove it.
 local function restrictedNameplateUnit(self, unit, shown)
     local units = self.nameplateUnits
 
@@ -6017,14 +6332,19 @@ end)
 local historyWanted = { damage = 0, combat = 0 }
 addon.historyWanted = historyWanted
 
--- Called by a history condition each time it evaluates: keeps `kind` ('damage' or 'combat') recording for another
--- minute. Runs on the poll path, so it only stores a number.
+-- Keeps `kind` recording for another minute.
+-- @param kind string  'damage' or 'combat'.
+--
+-- Called by a history condition each time it evaluates. Runs on the poll path, so it only stores a number.
 function addon:WantHistory(kind)
     historyWanted[kind] = GetTime() + 60
 end
 
--- The restricted variant's recorder (the probe handler keeps its own copy). Puts `entry` at the front of the unit's
--- combat history after dropping entries older than the profile's combat_history seconds.
+-- The restricted variant's recorder of a combat action (the probe handler keeps its own copy).
+-- @param self table  The addon.
+-- @param unit string  The unit token.
+-- @param entry table  The action; put at the front of the unit's combat history after dropping entries older than the
+--   profile's combat_history seconds.
 local function recordCombatAction(self, unit, entry)
     if self.combatHistory[unit] == nil then
         self.combatHistory[unit] = {}
@@ -6115,10 +6435,17 @@ local currentSpells = {}
 local lastCastTarget = {}  -- work around UNIT_SPELLCAST_SENT not always triggering
 local currentChannel
 
--- Shared handler of the UNIT_SPELLCAST_* events: runs the announcement rules for the player's and pet's casts. A rule
--- fires when its event matches this one, its spell or item list contains the cast spell and its conditions pass, and at
--- most once per cast GUID (self.announced). {{spell}}, {{item}}, {{event}} and {{target}} in its text are filled in
--- from the cast. Series rules (rules with outputs) deliver their cards through DispatchAnnouncementSeries instead.
+-- Shared handler of the UNIT_SPELLCAST_* events: runs the announcement rules for the player's and pet's casts.
+-- @param self table  The addon.
+-- @param event string  The event name.
+-- @param unit string  The caster's unit token; only "player" and "pet" are handled.
+-- @param castguid string  The cast GUID.
+-- @param spellid number  The spell id.
+--
+-- A rule fires when its event matches this one, its spell or item list contains the cast spell and its conditions
+-- pass, and at most once per cast GUID (self.announced). {{spell}}, {{item}}, {{event}} and {{target}} in its text are
+-- filled in from the cast. Series rules (rules with outputs) deliver their cards through DispatchAnnouncementSeries
+-- instead.
 local function spellcast(self, event, unit, castguid, spellid)
     -- even though we check it later, this skips rows entirely.
     if unit == 'player' or unit == "pet" then
@@ -6152,8 +6479,9 @@ local function spellcast(self, event, unit, castguid, spellid)
                     local seriesRecipient = currentSpells[castguid]
                     local seriesLifecycle = value.outputs ~= nil and self.IsEnabled or nil
 
-                    -- For series rules only (other rules are always enabled here): true while the addon is still
-                    -- enabled and IsEnabled is the method captured when the rule started.
+                    -- Tells whether a series rule may still run.
+                    -- @return boolean  For series rules only (other rules are always enabled here): true while the
+                    --   addon is still enabled and IsEnabled is the method captured when the rule started.
                     local function seriesEnabled()
                         if value.outputs == nil then
                             return true
@@ -6330,8 +6658,11 @@ addon.UNIT_SPELLCAST_STOP = wrapCombatEvent(function(self, event, unit, castguid
     end
 end)
 
--- The restricted variant's recorder (the probe handler keeps its own copy). Puts the spell (false when it was
--- unreadable) at the front of spellHistory after dropping entries older than the profile's spell_history seconds.
+-- The restricted variant's recorder of a cast (the probe handler keeps its own copy).
+-- @param self table  The addon.
+-- @param spellid number|false  The spell id; false when it was unreadable.
+--
+-- Puts the spell at the front of spellHistory after dropping entries older than the profile's spell_history seconds.
 local function recordSpellCast(self, spellid)
     local now = GetTime()
     local history = self.spellHistory
@@ -6435,9 +6766,22 @@ end)
 -- Combat log and data-load events
 -- ============================================================================
 
--- This runs for every combat log line in range. Only the player's own swings
--- and, while a damage history reader exists, damage and heal amounts matter;
--- everything else returns before any string work.
+-- Handles one combat log line.
+-- @param _ any  The timestamp; unused.
+-- @param event string  The sub-event, for example "SWING_DAMAGE".
+-- @param _ any  hideCaster; unused.
+-- @param sourceGUID string  The source GUID.
+-- @param _ any  The source name; unused.
+-- @param _ any  The source flags; unused.
+-- @param _ any  The source raid flags; unused.
+-- @param destGUID string  The destination GUID.
+-- @param _ any  The destination name; unused.
+-- @param _ any  The destination flags; unused.
+-- @param _ any  The destination raid flags; unused.
+-- @param ... any  The sub-event's own payload.
+--
+-- This runs for every combat log line in range. Only the player's own swings and, while a damage history reader
+-- exists, damage and heal amounts matter; everything else returns before any string work.
 local function handle_combat_log(_, event, _, sourceGUID, _, _, _, destGUID, _, _, _, ...)
     if sourceGUID == playerGUID then
         if event == "SWING_DAMAGE" then

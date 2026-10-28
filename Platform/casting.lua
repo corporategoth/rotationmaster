@@ -9,13 +9,17 @@
 local _, addon = ...
 local platform = addon.Platform
 
--- True for a real finite number (not NaN, not infinite).
+-- Whether a value is a real finite number (not NaN, not infinite).
+-- @param value any  The value to test.
+-- @return boolean  True for a finite number.
 local function finite(value)
     return type(value)=='number' and value==value and value<math.huge and value>-math.huge
 end
 
--- Seconds until the cast ends, from its end time in milliseconds and GetTime(); never negative. Returns nil and a
--- reason code when either value is secret, missing or invalid.
+-- Computes the seconds until the cast ends.
+-- @param ending number|nil  The cast end time in milliseconds, compared with GetTime().
+-- @return number|nil  The seconds remaining, never negative; nil when either value is secret, missing or invalid.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 local function remainingSeconds(ending)
     if not platform:CanReadValue(ending) then return nil,'restricted-value' end
     if ending==nil then return nil,'cast-time-unavailable' end
@@ -28,8 +32,13 @@ local function remainingSeconds(ending)
     return math.max(0,ending/1000-now)
 end
 
--- Full length of the cast, from its own start and end; with the remaining
--- seconds it gives the share done without a second clock read.
+-- Computes the full length of the cast from its own start and end.
+-- @param starting number|nil  The cast start time in milliseconds.
+-- @param ending number|nil  The cast end time in milliseconds.
+-- @return number|nil  The duration in seconds; nil when either value is secret, missing or invalid.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- With the remaining seconds it gives the share done without a second clock read.
 local function durationSeconds(starting, ending)
     if not platform:CanReadValue(starting) or not platform:CanReadValue(ending) then return nil,'restricted-value' end
     if starting==nil or ending==nil then return nil,'cast-time-unavailable' end
@@ -37,7 +46,10 @@ local function durationSeconds(starting, ending)
     return (ending-starting)/1000
 end
 
--- Validates a cast's spell id: returns it when it is a positive integer, otherwise nil and a reason code.
+-- Validates a cast's spell id.
+-- @param id number|nil  The spell id from the native tuple.
+-- @return number|nil  The id when it is a positive integer; nil otherwise.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 local function spellIdentity(id)
     if not platform:CanReadValue(id) then return nil,'restricted-value' end
     if id==nil then return nil,'cast-spell-unavailable' end
@@ -45,8 +57,10 @@ local function spellIdentity(id)
     return id
 end
 
--- Converts the native "not interruptible" flag into interruptible (its inverse); nil and a reason code when the flag
--- is secret, missing or not a boolean.
+-- Converts the native "not interruptible" flag into interruptible (its inverse).
+-- @param flag boolean|nil  The native not-interruptible flag.
+-- @return boolean|nil  Whether the cast can be interrupted; nil when the flag is secret, missing or not a boolean.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 local function interruptibility(flag)
     if not platform:CanReadValue(flag) then return nil,'restricted-value' end
     if flag==nil then return nil,'interruptibility-unavailable' end
@@ -54,13 +68,17 @@ local function interruptibility(flag)
     return not flag
 end
 
--- The timestamp/duration/flag/spell ID fields are independent observations.
--- A readable name can still establish presence when the timer, duration,
--- interruptibility or spell ID is unavailable; so can a secret one, though
--- the record then has no name (nameReason says why).
--- kind is "cast" or "channel". Returns { active = false } when the unit does not exist or is not casting, otherwise
--- { active = true } with name, remainingSeconds, durationSeconds, interruptible and spellID, each beside a *Reason
--- code when that field alone could not be read; nil and a reason code when the query itself fails.
+-- Reads what a unit is casting or channeling right now (UnitCastingInfo or UnitChannelInfo).
+-- @param unit string  The unit token to read; must be a non-empty string.
+-- @param kind string  "cast" (UnitCastingInfo) or "channel" (UnitChannelInfo).
+-- @return table|nil  { active = false } when the unit does not exist or is not casting; otherwise { active = true }
+--   with name, remainingSeconds, durationSeconds, interruptible and spellID, each beside a *Reason code when that
+--   field alone could not be read. nil when the query itself fails.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- The timestamp, duration, flag and spell id fields are independent observations. A readable name can still
+-- establish presence when the timer, duration, interruptibility or spell id is unavailable; so can a secret name,
+-- though the record then has no name (nameReason says why).
 function platform:GetUnitCastObservation(unit, kind)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end

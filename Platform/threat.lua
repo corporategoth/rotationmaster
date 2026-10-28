@@ -9,9 +9,13 @@
 local _, addon = ...
 local platform = addon.Platform
 
--- Preserve the ordered native threat predicate, including optional nil status.
--- False is known absence/nonenemy/no-threat; unavailable required facts are nil.
--- On success returns the numeric UnitThreatSituation("player", unit) status (0 to 3).
+-- Reads the player's threat status against a unit (UnitExists, UnitIsEnemy, UnitThreatSituation).
+-- @param unit string  The unit token to read; must be a non-empty string.
+-- @return number|false|nil  The numeric UnitThreatSituation("player", unit) status (0 to 3); false for a known
+--   absent unit, a non-enemy or no threat; nil when a required fact cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Preserves the ordered native threat predicate, including an optional nil status.
 function platform:GetUnitThreatObservation(unit)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end

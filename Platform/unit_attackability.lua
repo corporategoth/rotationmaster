@@ -9,8 +9,11 @@
 local _, addon = ...
 local platform = addon.Platform
 
--- Returns the combat data policy ("probe", "restricted" or other) for the platform; replaced just below by the
--- allocation-free reader that Platform/client.lua hands over.
+-- Reads the combat data policy of the client.
+-- @param current table  The platform table whose client info is read.
+-- @return string  The policy name: "probe", "restricted" or another value for an unsupported client.
+--
+-- Replaced just below by the allocation-free reader that Platform/client.lua hands over.
 local function readClientPolicy(current)
     return current:GetClientInfo().combatDataPolicy
 end
@@ -24,10 +27,14 @@ if type(consumeClientPolicy) == 'function' then
     readClientPolicy = consumeClientPolicy(addon)
 end
 
--- Attackability keeps the native player attacker and selected unit. A known
--- false at either early stage needs no later fact; unknown data cannot match.
--- Returns false for an absent or unattackable unit, otherwise true when the unit is alive (false when dead), or nil
--- and a reason.
+-- Reads whether the player can attack a unit (UnitExists, UnitCanAttack, UnitIsDead).
+-- @param unit string  The unit token to read; must be a non-empty string.
+-- @return boolean|nil  False for an absent or unattackable unit, otherwise true when the unit is alive (false when it
+--   is dead); nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Attackability keeps the native player attacker and selected unit. A known false at either early stage needs no
+-- later fact; unknown data cannot match.
 function platform:GetUnitAttackabilityObservation(unit)
     local policy=readClientPolicy(self)
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end

@@ -9,18 +9,17 @@ local _, addon = ...
 local platform = addon.Platform or {}
 addon.Platform = platform
 
--- Whether this client has a focus target, so that `focus` and `focustarget` are
--- offered as units. A 2021 check of WOW_PROJECT_ID hid them on Classic Era; the
--- client itself is asked instead. Three independent signs say yes: the event
--- catalog knows PLAYER_FOCUS_CHANGED (the catalog main.lua uses to confirm
--- optional events), the FocusUnit function exists, or the FocusFrame does. Names
--- are read through the environment table, not as globals: they are probes, and
--- a client without them must read as "no", not as a missing API.
--- Returns true or false; nil when the client cannot be probed at all (no event
--- catalog and no sign) and its family is unknown to the caller.
+-- Names are read through the environment table, not as globals: they are probes, and a client without them must read
+-- as "no", not as a missing API.
 local env = getfenv and getfenv(1) or _G
 
--- See the comment above env: returns true, false, or nil when the client cannot be probed. Safe to call at any time.
+-- Whether this client has a focus target, so that `focus` and `focustarget` are offered as units.
+-- @return boolean|nil  True or false when the client could be probed; nil when it cannot be probed at all (no event
+--   catalog and no sign of a focus system) and its family is unknown to the caller.
+--
+-- A 2021 check of WOW_PROJECT_ID hid the focus units on Classic Era; the client itself is asked instead. Three
+-- independent signs say yes: the event catalog knows PLAYER_FOCUS_CHANGED (the catalog main.lua uses to confirm
+-- optional events), the FocusUnit function exists, or the FocusFrame does. Safe to call at any time.
 function platform:IsFocusUnitSupported()
     local utils = env.C_EventUtils
     local asked

@@ -8,13 +8,18 @@
 local _, addon = ...
 local platform = addon.Platform
 
--- True for a finite number that is not negative (so NaN, infinity and negatives are all refused).
+-- Whether a value is a finite number that is not negative (NaN, infinity and negatives are all refused).
+-- @param value any  The value to test.
+-- @return boolean  True for such a number.
 local function finite(value)
     return type(value) == 'number' and value == value and value >= 0 and value < math.huge
 end
 
--- Calls fn under pcall and returns its first result, or nil and a reason code when it throws or returns a restricted
--- value. The caller has already checked that fn is a function.
+-- Calls a function under pcall and returns its first result.
+-- @param fn function  The function to call; the caller has already checked that it is a function.
+-- @param ... any  The arguments passed to fn.
+-- @return any|nil  The first result of fn; nil when it throws or returns a restricted value.
+-- @return string|nil  The reason code when the first return is nil because of a failure; nil otherwise.
 local function query(fn, ...)
     local ok, value = pcall(fn, ...)
 
@@ -28,10 +33,15 @@ local function query(fn, ...)
     return value
 end
 
--- A detached bag-only snapshot. GetItemCount can also include worn items;
--- bank slots are deliberately excluded from the Have Item In Bags predicate.
--- Returns a table keyed by item id, holding the count (or, with withSlots, { count, slots = { { bag, slot } } }), or
--- nil and a reason code. Any unreadable slot fails the whole scan rather than undercounting.
+-- Scans the carried bags and counts their items.
+-- @param self table  The platform table, used for its CanReadValue and GetItemID methods.
+-- @param withSlots boolean  True to also record each item's bag and slot positions.
+-- @return table|nil  A table keyed by item id holding the count (or, with withSlots, { count, slots = { { bag, slot
+--   } } }); nil when it cannot be read. Any unreadable slot fails the whole scan rather than undercounting.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- A detached bag-only snapshot. GetItemCount can also include worn items; bank slots are deliberately excluded from
+-- the Have Item In Bags predicate.
 local function scan(self, withSlots)
     local last = NUM_TOTAL_EQUIPPED_BAG_SLOTS
 
@@ -185,12 +195,16 @@ local function scan(self, withSlots)
     return result
 end
 
--- Returns { [itemID] = count } for the carried bags, or nil and a reason code.
+-- Counts the items in the carried bags.
+-- @return table|nil  { [itemID] = count }; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:GetBagItemCounts()
     return scan(self, false)
 end
 
--- Returns { [itemID] = { count, slots } } for the carried bags, or nil and a reason code.
+-- Lists the items in the carried bags with their slot positions.
+-- @return table|nil  { [itemID] = { count, slots } }; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:GetBagSnapshot()
     return scan(self, true)
 end

@@ -15,7 +15,10 @@ local data = addon.RotationData
 -- Tree helpers
 -- ============================================================================
 
--- Returns a deep copy of a portable condition tree, or nil and the portability error code.
+-- Deep copies a portable condition tree.
+-- @param value any  The condition tree.
+-- @return table|nil  The deep copy; nil when the tree is not portable.
+-- @return string|nil  The portability error code when the first return is nil; nil otherwise.
 local function copy(value)
     local ok, why = data.CheckPortable(value)
 
@@ -23,8 +26,12 @@ local function copy(value)
         return nil, why.code
     end
 
-    -- A condition tree has independent operands, even if its source reused a
-    -- table. Portable checking bounds the total traversal before copying.
+    -- Copies a value recursively.
+    -- @param current any  The value to copy.
+    -- @return any  The copy of a table; any other value as it is.
+    --
+    -- A condition tree has independent operands, even if its source reused a table. Portable checking bounds the total
+    -- traversal before copying.
     local function visit(current)
         if type(current) ~= "table" then
             return current
@@ -42,7 +49,9 @@ local function copy(value)
     return visit(value)
 end
 
--- Returns a copy of a path list, so a stored path is never altered by later edits to the original.
+-- Copies a path list, so a stored path is never altered by later edits to the original.
+-- @param path table  The path.
+-- @return table  The copy.
 local function pathCopy(path)
     local result = {}
 
@@ -53,7 +62,9 @@ local function pathCopy(path)
     return result
 end
 
--- Returns true when the table is a dense list: only positive integer keys with no holes (an empty table counts).
+-- Whether a table is a dense list: only positive integer keys with no holes.
+-- @param list any  The value to test.
+-- @return boolean  True for such a table (an empty table counts).
 local function dense(list)
     if type(list) ~= "table" then
         return false
@@ -73,8 +84,11 @@ local function dense(list)
     return count == maximum
 end
 
--- Extracts, from the registered condition definitions, which fields of each condition tag hold nested conditions
--- ("condition" or "condition[]"). Reads the raw field so a definition's metatable is never invoked.
+-- Extracts which fields of each condition tag hold nested conditions.
+-- @param definitions table|nil  The registered condition definitions, keyed by tag.
+-- @return table  tag -> { field -> "condition" | "condition[]" }.
+--
+-- Reads the raw field so a definition's metatable is never invoked.
 local function schemas(definitions)
     local result = {}
 
@@ -99,8 +113,11 @@ end
 -- Draft
 -- ============================================================================
 
--- Creates a draft from a portable condition tree; definitions maps condition tags to their definitions so nested
--- condition fields are known. Returns the draft object, or nil and a reason code when the tree is not valid.
+-- Creates a draft from a portable condition tree.
+-- @param original table  The condition tree.
+-- @param definitions table|nil  Maps condition tags to their definitions, so nested condition fields are known.
+-- @return table|nil  The draft object; nil when the tree is not valid.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function data.NewConditionDraft(original, definitions)
     local root, reason = copy(original)
 
@@ -113,9 +130,12 @@ function data.NewConditionDraft(original, definitions)
 
     local declarations = schemas(definitions)
 
-    -- Lists the child nodes of a node as edges { node, parts, container, key, relation }: AND/OR children in their
-    -- list, the NOT operand, and the nested-condition fields the node's definition declares (in sorted field order).
-    -- Returns nil and a reason for a malformed node.
+    -- Lists the child nodes of a node as edges.
+    -- @param node any  The condition node.
+    -- @return table[]|nil  The edges { node, parts, container, key, relation }: AND/OR children in their list, the NOT
+    --   operand, and the nested-condition fields the node's definition declares (in sorted field order). nil for a
+    --   malformed node.
+    -- @return string|nil  The reason code when the first return is nil; nil otherwise.
     local function edges(node)
         if type(node) ~= "table" then
             return nil, "invalid-condition"
@@ -127,6 +147,10 @@ function data.NewConditionDraft(original, definitions)
         local result = {}
 
         -- Adds the edges of one nested-condition field of the node (a single child or a list) to the result.
+        -- @param name string  The field name.
+        -- @param kind string  "condition" or "condition[]".
+        -- @return boolean|nil  True when added; nil for a malformed list.
+        -- @return string|nil  The reason code when the first return is nil; nil otherwise.
         local function field(name, kind)
             local value = node[name]
 
@@ -191,11 +215,19 @@ function data.NewConditionDraft(original, definitions)
         return result
     end
 
-    -- Walks a whole candidate tree and returns true, or nil and a reason ('condition-limit' beyond 4096 nodes or depth
-    -- 64, or a structural error from edges).
+    -- Validates a whole candidate tree.
+    -- @param candidate table  The tree.
+    -- @return boolean|nil  True when valid; nil otherwise.
+    -- @return string|nil  'condition-limit' (beyond 4096 nodes or depth 64) or a structural error from edges, when the
+    --   first return is nil; nil otherwise.
     local function validate(candidate)
         local count = 0
 
+        -- Counts and checks one node and everything below it.
+        -- @param node any  The node.
+        -- @param depth number  The nesting depth.
+        -- @return boolean|nil  True when valid; nil otherwise.
+        -- @return string|nil  The reason code when the first return is nil; nil otherwise.
         local function visit(node, depth)
             count = count + 1
 
@@ -229,8 +261,14 @@ function data.NewConditionDraft(original, definitions)
         return nil, why
     end
 
-    -- Follows a path of field names and indexes from the root. Returns node, container, key and relation ("root",
-    -- "list" or "single") for the node found, or four nils and 'invalid-condition-path'.
+    -- Follows a path of field names and indexes from the root.
+    -- @param candidate table  The tree.
+    -- @param path table  The path.
+    -- @return table|nil  The node found; nil when the path is invalid.
+    -- @return table|nil  The container that holds the node.
+    -- @return any  The key of the node in its container.
+    -- @return string|nil  The relation: "root", "list" or "single".
+    -- @return string|nil  'invalid-condition-path' when the node was not found; nil otherwise.
     local function resolve(candidate, path)
         if type(path) ~= "table" or not data.CheckPortable(path) or not dense(path) or #path > 128 then
             return nil, nil, nil, nil, "invalid-condition-path"
@@ -270,9 +308,13 @@ function data.NewConditionDraft(original, definitions)
         return node, container, key, relation
     end
 
-    -- Runs an edit on a detached copy of the tree. The operation returns the changed tree (and optionally a selection
-    -- result); the tree is copied again, validated and only then becomes the draft's root. Returns true and the
-    -- selection, or nil and a reason with the draft unchanged.
+    -- Runs an edit on a detached copy of the tree.
+    -- @param operation function  Takes the candidate tree and returns the changed tree (and optionally a reason and a
+    --   selection result).
+    -- @return boolean|nil  True when the edit was committed; nil with the draft unchanged on failure.
+    -- @return any  The selection result of the operation; the reason code when the first return is nil.
+    --
+    -- The tree is copied again, validated and only then becomes the draft's root.
     local function transaction(operation)
         local candidate = assert(copy(root))
         local changed, problem, selection = operation(candidate)
@@ -297,7 +339,11 @@ function data.NewConditionDraft(original, definitions)
         return true, selection
     end
 
-    -- Transaction on the node at a path: resolves it in the candidate and hands its position to the operation.
+    -- Runs a transaction on the node at a path: resolves it in the candidate and hands its position to the operation.
+    -- @param path table  The path of the node.
+    -- @param operation function  Called with node, container, key, relation and the candidate tree.
+    -- @return boolean|nil  True when committed; nil on failure.
+    -- @return any  The selection result; the reason code when the first return is nil.
     local function edit(path, operation)
         return transaction(function(candidate)
             local node, container, key, relation, errorCode = resolve(candidate, path)
@@ -310,8 +356,12 @@ function data.NewConditionDraft(original, definitions)
         end)
     end
 
-    -- Puts a value where a node was and returns the new tree: the value itself for the root (no container), otherwise
-    -- the candidate with the slot updated.
+    -- Puts a value where a node was.
+    -- @param container table|nil  The container of the node; nil for the root.
+    -- @param key any  The key of the node in its container.
+    -- @param value table  The new node.
+    -- @param candidate table  The candidate tree.
+    -- @return table  The new tree: the value itself for the root, otherwise the candidate with the slot updated.
     local function replace(container, key, value, candidate)
         if not container then
             return value
@@ -324,11 +374,16 @@ function data.NewConditionDraft(original, definitions)
     local draft = {}
 
     -- Returns a detached copy of the current tree.
+    -- @return table|nil  The copy.
     function draft:Snapshot()
         return copy(root)
     end
 
     -- Replaces the node at the path with a copy of the given condition table.
+    -- @param path table  The path of the node.
+    -- @param value table  The new condition.
+    -- @return boolean|nil  True when applied; nil with the draft unchanged on failure.
+    -- @return string|nil  The reason code when the first return is nil; nil otherwise.
     function draft:Replace(path, value)
         local replacement, errorCode = copy(value)
 
@@ -345,6 +400,10 @@ function data.NewConditionDraft(original, definitions)
     end
 
     -- Wraps the node at the path in an AND, OR or NOT group.
+    -- @param path table  The path of the node.
+    -- @param kind string  "AND", "OR" or "NOT".
+    -- @return boolean|nil  True when applied; nil with the draft unchanged on failure.
+    -- @return string|nil  The reason code when the first return is nil; nil otherwise.
     function draft:Wrap(path, kind)
         if kind ~= "AND" and kind ~= "OR" and kind ~= "NOT" then
             return nil, "invalid-condition-group"
@@ -356,8 +415,13 @@ function data.NewConditionDraft(original, definitions)
         end)
     end
 
-    -- Replaces a group with its contents: a NOT or single-child group becomes its child; a multi-child AND/OR is
-    -- spliced into a parent list of the same kind, and is refused as ambiguous anywhere else.
+    -- Replaces a group with its contents.
+    -- @param path table  The path of the group.
+    -- @return boolean|nil  True when applied; nil with the draft unchanged on failure.
+    -- @return string|nil  The reason code when the first return is nil; nil otherwise.
+    --
+    -- A NOT or single-child group becomes its child; a multi-child AND/OR is spliced into a parent list of the same
+    -- kind, and is refused as ambiguous anywhere else.
     function draft:Unwrap(path)
         return edit(path, function(node, container, key, relation, candidate)
             local child
@@ -395,8 +459,13 @@ function data.NewConditionDraft(original, definitions)
         end)
     end
 
-    -- Adds a condition (an empty one by default) into the group at the path; an empty node or empty NOT is filled
-    -- instead. Anything else is refused as 'not-an-empty-condition-group'.
+    -- Adds a condition into the group at the path.
+    -- @param path table  The path of the group.
+    -- @param value table|nil  The condition to add; an empty one by default.
+    -- @return boolean|nil  True when applied; nil with the draft unchanged on failure.
+    -- @return string|nil  The reason code when the first return is nil; nil otherwise.
+    --
+    -- An empty node or empty NOT is filled instead. Anything else is refused as 'not-an-empty-condition-group'.
     function draft:Add(path, value)
         if value == nil then
             value = {}
@@ -427,7 +496,12 @@ function data.NewConditionDraft(original, definitions)
         end)
     end
 
-    -- Removes the node at the path: out of its list, or emptied (an empty condition) when it fills a single slot.
+    -- Removes the node at the path.
+    -- @param path table  The path of the node.
+    -- @return boolean|nil  True when applied; nil with the draft unchanged on failure.
+    -- @return string|nil  The reason code when the first return is nil; nil otherwise.
+    --
+    -- Removed out of its list, or emptied (an empty condition) when it fills a single slot.
     function draft:Remove(path)
         return edit(path, function(_, container, key, relation, candidate)
             if relation == "list" then
@@ -442,7 +516,11 @@ function data.NewConditionDraft(original, definitions)
         end)
     end
 
-    -- Moves a list entry one place up (-1) or down (1) within its group.
+    -- Moves a list entry one place up or down within its group.
+    -- @param path table  The path of the entry.
+    -- @param delta number  -1 (up) or 1 (down).
+    -- @return boolean|nil  True when applied; nil with the draft unchanged on failure.
+    -- @return string|nil  The reason code when the first return is nil; nil otherwise.
     function draft:Move(path, delta)
         if delta ~= -1 and delta ~= 1 then
             return nil, "invalid-condition-move"
@@ -459,6 +537,10 @@ function data.NewConditionDraft(original, definitions)
     end
 
     -- Sets or clears the disabled flag on exactly the node at the path.
+    -- @param path table  The path of the node.
+    -- @param disabled boolean  True to disable; false to clear the flag.
+    -- @return boolean|nil  True when applied; nil with the draft unchanged on failure.
+    -- @return string|nil  The reason code when the first return is nil; nil otherwise.
     function draft:SetDisabled(path, disabled)
         if type(disabled) ~= "boolean" then
             return nil, "invalid-disabled-flag"
@@ -470,7 +552,10 @@ function data.NewConditionDraft(original, definitions)
         end)
     end
 
-    -- Returns true when path left is a prefix of (or equal to) path right, i.e. left contains right.
+    -- Whether one path is a prefix of (or equal to) another, i.e. left contains right.
+    -- @param left table  The possible prefix path.
+    -- @param right table  The other path.
+    -- @return boolean  True when left is a prefix of right.
     local function prefix(left, right)
         if #left > #right then
             return false
@@ -485,8 +570,12 @@ function data.NewConditionDraft(original, definitions)
         return true
     end
 
-    -- Resolves a selection (a dense list of up to 4096 paths) in the candidate. Returns the records in document order,
-    -- or nil and a reason; overlapping selections (one inside another) are refused.
+    -- Resolves a selection in the candidate.
+    -- @param candidate table  The tree.
+    -- @param paths table  A dense list of up to 4096 paths.
+    -- @return table[]|nil  The records { node, container, key, relation, path } in document order; nil on failure.
+    -- @return string|nil  The reason code when the first return is nil; overlapping selections (one inside another) are
+    --   refused; nil otherwise.
     local function selected(candidate, paths)
         if not data.CheckPortable(paths) or not dense(paths) or #paths == 0 or #paths > 4096 then
             return nil, "invalid-condition-selection"
@@ -535,11 +624,16 @@ function data.NewConditionDraft(original, definitions)
         return result
     end
 
-    -- Finds where each of the given node tables ended up in the candidate, by identity, and returns their paths in
-    -- the same order. Lets the editor keep its selection on nodes that moved.
+    -- Finds where each of the given node tables ended up in the candidate, by identity.
+    -- @param candidate table  The tree.
+    -- @param nodes table[]  The node tables to find.
+    -- @return table  Their paths in the same order; the editor uses it to keep its selection on nodes that moved.
     local function locations(candidate, nodes)
         local found = {}
 
+        -- Visits a node and everything below it, recording the path of each wanted node.
+        -- @param node table  The node.
+        -- @param path table  The path of the node.
         local function visit(node, path)
             for index, wanted in ipairs(nodes) do
                 if wanted == node then
@@ -563,6 +657,7 @@ function data.NewConditionDraft(original, definitions)
     end
 
     -- Removes the selected records from the candidate, last first so earlier list indexes stay valid.
+    -- @param records table[]  The records returned by selected.
     local function remove(records)
         for i = #records, 1, -1 do
             local record = records[i]
@@ -575,8 +670,13 @@ function data.NewConditionDraft(original, definitions)
         end
     end
 
-    -- Wraps the selected conditions in one AND or OR group. Several must be siblings of one list; the group takes the
-    -- first one's place. Returns the new group's path.
+    -- Wraps the selected conditions in one AND or OR group.
+    -- @param paths table  A dense list of the paths of the conditions to group.
+    -- @param kind string  "AND" or "OR".
+    -- @return boolean|nil  True when applied; nil with the draft unchanged on failure.
+    -- @return table|string|nil  The new group's path (in a list); the reason code when the first return is nil.
+    --
+    -- Several must be siblings of one list; the group takes the first one's place.
     function draft:GroupSelection(paths, kind)
         if kind ~= "AND" and kind ~= "OR" then
             return nil, "invalid-condition-group"
@@ -611,8 +711,13 @@ function data.NewConditionDraft(original, definitions)
         end)
     end
 
-    -- Toggles NOT on each selected condition: wraps it, or unwraps an existing NOT (carrying its name and disabled flag
-    -- over, and refusing when another property would be lost). Returns the new paths.
+    -- Toggles NOT on each selected condition.
+    -- @param paths table  A dense list of the paths of the conditions.
+    -- @return boolean|nil  True when applied; nil with the draft unchanged on failure.
+    -- @return table|string|nil  The new paths; the reason code when the first return is nil.
+    --
+    -- Wraps it, or unwraps an existing NOT (carrying its name and disabled flag over, and refusing when another
+    -- property would be lost).
     function draft:NegateSelection(paths)
         return transaction(function(candidate)
             local records, why = selected(candidate, paths)
@@ -669,8 +774,13 @@ function data.NewConditionDraft(original, definitions)
         end)
     end
 
-    -- Sets the disabled flag on the node at the path and clears it on the NOT wrappers and the condition beneath, so
-    -- one flag at the outermost level decides.
+    -- Sets the disabled flag on the node at the path and clears it on the NOT wrappers and the condition beneath.
+    -- @param path table  The path of the node.
+    -- @param disabled boolean  True to disable; false to clear the flag.
+    -- @return boolean|nil  True when applied; nil with the draft unchanged on failure.
+    -- @return string|nil  The reason code when the first return is nil; nil otherwise.
+    --
+    -- One flag at the outermost level decides.
     function draft:SetProjectedDisabled(path, disabled)
         if type(disabled) ~= "boolean" then
             return nil, "invalid-disabled-flag"
@@ -690,8 +800,13 @@ function data.NewConditionDraft(original, definitions)
         end)
     end
 
-    -- Selection-wide Duplicate and Enable/Disable: one transaction, so one
-    -- undo step, keeping the selection on the copies or the same nodes.
+    -- Duplicates every selected condition.
+    -- @param paths table  A dense list of the paths of the conditions.
+    -- @return boolean|nil  True when applied; nil with the draft unchanged on failure.
+    -- @return table|string|nil  The paths of the copies; the reason code when the first return is nil.
+    --
+    -- Selection-wide Duplicate and Enable/Disable are one transaction, so one undo step, keeping the selection on the
+    -- copies or the same nodes.
     function draft:DuplicateSelection(paths)
         return transaction(function(candidate)
             local records, why = selected(candidate, paths)
@@ -725,6 +840,10 @@ function data.NewConditionDraft(original, definitions)
     end
 
     -- Sets or clears the disabled flag on every selected condition, the same way as SetProjectedDisabled.
+    -- @param paths table  A dense list of the paths of the conditions.
+    -- @param disabled boolean  True to disable; false to clear the flag.
+    -- @return boolean|nil  True when applied; nil with the draft unchanged on failure.
+    -- @return table|string|nil  The paths of the nodes; the reason code when the first return is nil.
     function draft:SetSelectionDisabled(paths, disabled)
         if type(disabled) ~= "boolean" then
             return nil, "invalid-disabled-flag"
@@ -757,7 +876,12 @@ function data.NewConditionDraft(original, definitions)
         end)
     end
 
-    -- Removes every selected condition (the whole tree becomes empty when the root is selected).
+    -- Removes every selected condition.
+    -- @param paths table  A dense list of the paths of the conditions.
+    -- @return boolean|nil  True when applied; nil with the draft unchanged on failure.
+    -- @return table|string|nil  A list holding one empty path; the reason code when the first return is nil.
+    --
+    -- The whole tree becomes empty when the root is selected.
     function draft:RemoveSelection(paths)
         return transaction(function(candidate)
             local records, why = selected(candidate, paths)
@@ -776,8 +900,14 @@ function data.NewConditionDraft(original, definitions)
         end)
     end
 
-    -- Moves the selected conditions to a destination { path, field, index }: a group's list (the index is adjusted for
-    -- entries removed ahead of it) or an empty single slot. Refuses moving a node into itself.
+    -- Moves the selected conditions to a destination.
+    -- @param paths table  A dense list of the paths of the conditions.
+    -- @param destination table  { path, field, index }: a group's list (the index is adjusted for entries removed ahead
+    --   of it) or an empty single slot.
+    -- @return boolean|nil  True when applied; nil with the draft unchanged on failure.
+    -- @return table|string|nil  The new paths; the reason code when the first return is nil.
+    --
+    -- Refuses moving a node into itself.
     function draft:Transfer(paths, destination)
         if type(destination) ~= "table" or not data.CheckPortable(destination) then
             return nil, "invalid-condition-destination"
@@ -858,7 +988,13 @@ function data.NewConditionDraft(original, definitions)
         end)
     end
 
-    -- Inserts a condition after the node at the path; a node outside a list is grouped with it under an AND instead.
+    -- Inserts a condition after the node at the path.
+    -- @param path table  The path of the node.
+    -- @param value table|nil  The condition to insert; an empty one by default.
+    -- @return boolean|nil  True when applied; nil with the draft unchanged on failure.
+    -- @return table|string|nil  The new node's path; the reason code when the first return is nil.
+    --
+    -- A node outside a list is grouped with it under an AND instead.
     function draft:AddSibling(path, value)
         local child, why = copy(value == nil and {} or value)
 
@@ -879,7 +1015,12 @@ function data.NewConditionDraft(original, definitions)
         end)
     end
 
-    -- Copies the node at the path next to itself (grouped under an AND when it is not in a list).
+    -- Copies the node at the path next to itself.
+    -- @param path table  The path of the node.
+    -- @return boolean|nil  True when applied; nil with the draft unchanged on failure.
+    -- @return table|string|nil  The copy's path; the reason code when the first return is nil.
+    --
+    -- Grouped under an AND when the node is not in a list.
     function draft:Duplicate(path)
         return edit(path, function(node, container, key, relation, candidate)
             local child = assert(copy(node))
@@ -894,8 +1035,12 @@ function data.NewConditionDraft(original, definitions)
         end)
     end
 
-    -- Inserts a condition at a destination { path, relation = before|after, or field and index }: beside a node, into
-    -- an empty node, or into a field the node's definition declares. Returns the new node's path.
+    -- Inserts a condition at a destination.
+    -- @param destination table  { path, relation = "before"|"after", or field and index }: beside a node, into an empty
+    --   node, or into a field the node's definition declares.
+    -- @param value table|nil  The condition to insert; an empty one by default.
+    -- @return boolean|nil  True when applied; nil with the draft unchanged on failure.
+    -- @return table|string|nil  The new node's path; the reason code when the first return is nil.
     function draft:Insert(destination, value)
         if type(destination) ~= "table" or not data.CheckPortable(destination) then
             return nil, "invalid-condition-destination"
@@ -960,7 +1105,11 @@ function data.NewConditionDraft(original, definitions)
         end)
     end
 
-    -- Names an AND, OR or NOT group (trimmed, at most 512 characters, no control characters); an empty name clears it.
+    -- Names an AND, OR or NOT group.
+    -- @param path table  The path of the group.
+    -- @param name string  The name: trimmed, at most 512 characters, no control characters; an empty name clears it.
+    -- @return boolean|nil  True when applied; nil with the draft unchanged on failure.
+    -- @return string|nil  The reason code when the first return is nil; nil otherwise.
     function draft:SetName(path, name)
         if type(name) ~= "string" or #name > 512 or name:find("%c") then
             return nil, "invalid-condition-name"
@@ -979,6 +1128,10 @@ function data.NewConditionDraft(original, definitions)
     end
 
     -- Switches an AND group to OR or back, keeping its children.
+    -- @param path table  The path of the group.
+    -- @param kind string  "AND" or "OR".
+    -- @return boolean|nil  True when applied; nil with the draft unchanged on failure.
+    -- @return string|nil  The reason code when the first return is nil; nil otherwise.
     function draft:SetGroupType(path, kind)
         if kind ~= "AND" and kind ~= "OR" then
             return nil, "invalid-condition-group"
@@ -994,14 +1147,20 @@ function data.NewConditionDraft(original, definitions)
         end)
     end
 
-    -- Flattens the tree into display rows (path, type, depth, child count, disabled flags), at most limit of them
-    -- (200 by default, 4096 at most). Returns the rows and false when the limit cut the list short.
+    -- Flattens the tree into display rows.
+    -- @param limit number|nil  The most rows to return (200 by default, 4096 at most).
+    -- @return table[]  The rows { path, type, depth, childCount, disabled, invalidDisabled }.
+    -- @return boolean  False when the limit cut the list short.
     function draft:Rows(limit)
         limit = type(limit) == "number" and limit == limit and limit % 1 == 0 and math.max(1, math.min(4096, limit))
             or 200
 
         local rows, complete = {}, true
 
+        -- Adds the row of a node and then the rows of its children, stopping at the limit.
+        -- @param node table  The node.
+        -- @param path table  The path of the node.
+        -- @param depth number  The nesting depth.
         local function visit(node, path, depth)
             if #rows >= limit then
                 complete = false

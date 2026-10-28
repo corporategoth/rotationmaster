@@ -14,8 +14,11 @@ local platform = addon.Platform
 -- Validation and record helpers
 -- ============================================================================
 
--- Returns true when value is a readable spell identifier: a positive integer ID, or (unless idOnly) a non-empty
--- name; otherwise false and a reason.
+-- Checks that a value is a readable spell identifier.
+-- @param value any  The candidate: a positive integer id, or (unless idOnly) a non-empty name.
+-- @param idOnly boolean|nil  True to refuse names.
+-- @return boolean  True when value is a readable spell identifier.
+-- @return string|nil  The reason code ("restricted-value" or "invalid-spell") when the first return is false.
 local function identifier(value, idOnly)
     if not platform:CanReadValue(value) then return false, "restricted-value" end
     if type(value) == "number" and value > 0 and value < math.huge and value % 1 == 0 then return true end
@@ -23,8 +26,12 @@ local function identifier(value, idOnly)
     return false, "invalid-spell"
 end
 
--- Returns a fresh table holding only the listed fields of record, each checked against its expected type ("icon"
--- accepts a number or a string) and readability, or nil and a reason. Used for tables owned by the client.
+-- Copies the listed fields of a client-owned record into a fresh table.
+-- @param record any  The record to copy; used for tables owned by the client.
+-- @param fields table  Field name to expected type; "icon" accepts a number or a string.
+-- @return table|nil  A fresh table holding only the listed fields, each checked against its expected type and
+--   readability; nil when it cannot be copied.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 local function copy(record, fields)
     if not platform:CanReadValue(record) then return nil, "restricted-value" end
     if type(record) ~= "table" then return nil, "invalid-api-result" end
@@ -45,11 +52,16 @@ local function copy(record, fields)
     return result
 end
 
--- A record built here from a legacy multi-return API is ours, so normalize it
--- in place: same checks and listed fields, one table fewer per call. Records
--- returned by C_Spell are copied, never modified.
--- `built` is true only for a record this file just assembled; an unexpected metatable falls back to copy. Returns the
--- validated record (with unlisted keys removed), or nil and a reason.
+-- Validates the listed fields of a record, normalizing a record built here in place.
+-- @param record any  The record to validate.
+-- @param fields table  Field name to expected type; "icon" accepts a number or a string.
+-- @param built boolean|nil  True only for a record this file just assembled; an unexpected metatable falls back to
+--   copy.
+-- @return table|nil  The validated record (with unlisted keys removed); nil when it cannot be validated.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- A record built here from a legacy multi-return API is ours, so it is normalized in place: same checks and listed
+-- fields, one table fewer per call. Records returned by C_Spell are copied, never modified.
 local function own(record, fields, built)
     if not built then return copy(record, fields) end
     if not platform:CanReadValue(record) then return nil, "restricted-value" end
@@ -101,8 +113,13 @@ local chargeFields = {
 -- Spell info and identity
 -- ============================================================================
 
--- Returns { name, subtext?, iconID?, castTime?, minRange?, maxRange?, spellID?, originalIconID? } for a spell ID or
--- name, or nil and a reason. Legacy clients assemble the same record from the multi-return GetSpellInfo.
+-- Reads the info record of a spell.
+-- @param spell number|string  The spell id or name.
+-- @return table|nil  { name, subtext?, iconID?, castTime?, minRange?, maxRange?, spellID?, originalIconID? }; nil when
+--   it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Legacy clients assemble the same record from the multi-return GetSpellInfo.
 function platform:GetSpellInfo(spell)
     local valid, reason = identifier(spell)
 
@@ -188,7 +205,12 @@ end
 -- never kept.
 local familyNames = {}
 
--- Returns the localized name shared by every rank of spellID, or nil and a reason. Cached in familyNames.
+-- Reads the localized name shared by every rank of a spell.
+-- @param spellID number  The spell id.
+-- @return string|nil  The name; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Cached in familyNames.
 function platform:GetSpellFamilyName(spellID)
     local name = familyNames[spellID]
 
@@ -212,11 +234,17 @@ function platform:GetSpellFamilyName(spellID)
     return name
 end
 
--- Identity of a live spell observation (a cast, a channel, the active form)
--- against a configured spell ID. An equal ID matches. Otherwise, unless the
--- exact ID was asked for, any rank of the spell matches: ranks share the
+-- Tells whether a live spell observation matches a configured spell.
+-- @param observedID number|nil  The observed spell id (a cast, a channel, the active form).
+-- @param observedReason string|nil  The reason the observed id is unavailable, when it is nil.
+-- @param observedName string|nil  The observed spell name; looked up from observedID when nil.
+-- @param wanted number  The configured spell id.
+-- @param exact boolean|nil  True when the exact id was asked for, so other ranks do not match.
+-- @return boolean|nil  True or false for the match; nil when the observation or either name is unavailable.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- An equal id matches. Otherwise, unless the exact id was asked for, any rank of the spell matches: ranks share the
 -- client's own localized name, so this holds on every locale.
--- Returns true or false for the match, or nil and a reason when the observation or either name is unavailable.
 function platform:MatchSpellIdentity(observedID, observedReason, observedName, wanted, exact)
     if observedID ~= nil and observedID == wanted then
         return true
@@ -258,8 +286,14 @@ end
 -- Known state and links
 -- ============================================================================
 
--- Returns whether the player (or the pet, when pet is true) knows spellID, or nil and a reason. Uses the modern
--- C_SpellBook.IsSpellKnown with the spell bank enum, or the legacy global when the enum is unavailable.
+-- Reads whether the player (or the pet) knows a spell.
+-- @param spellID number  The spell id.
+-- @param pet boolean|nil  True to ask about the pet's book; nil or false asks about the player's.
+-- @return boolean|nil  Whether the spell is known; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Uses the modern C_SpellBook.IsSpellKnown with the spell bank enum, or the legacy global when the enum is
+-- unavailable.
 function platform:IsSpellKnown(spellID, pet)
     local valid, reason = identifier(spellID, true)
 
@@ -320,9 +354,15 @@ end
 -- Field name to expected type for a spell cooldown record.
 local cooldownFields = { startTime = "number", duration = "number", isEnabled = "boolean", modRate = "number" }
 
--- Retail and Forever hide a cooldown's times while addon restrictions are in
--- effect (combat, encounters, challenge modes, PvP matches), but never its
--- state flags. Blizzard's generated API documentation (Gethe/wow-ui-source,
+-- Reads the never-secret state flags of a cooldown record.
+-- @param self table  The platform table, used for its CanReadValue method.
+-- @param record any  The cooldown record.
+-- @return boolean|nil  isEnabled; nothing is returned unless all three flags are readable and well typed.
+-- @return boolean|nil  isActive.
+-- @return boolean|nil  isOnGCD (may be nil).
+--
+-- Retail and Forever hide a cooldown's times while addon restrictions are in effect (combat, encounters, challenge
+-- modes, PvP matches), but never its state flags. Blizzard's generated API documentation (Gethe/wow-ui-source,
 -- Interface/AddOns/Blizzard_APIDocumentationGenerated):
 --   live e7aa82019dc298e0351c7159d60c2a9b916b9b67 (12.1.5.70529) and
 --   forever ca8368f2f2380cbe696854f7f2646387c278a61b (1.60.1.70532), with
@@ -338,12 +378,9 @@ local cooldownFields = { startTime = "number", duration = "number", isEnabled = 
 --   SpellChargeInfo NeverSecret: maxCharges and isActive only.
 --   C_Spell.IsSpellUsable, IsSpellInRange and SpellHasRange carry no secret
 --   annotation at all.
--- So when only the times are secret, GetSpellCooldown stays unavailable (nil,
--- "restricted-value") and reports the flags after the reason. Readiness can be
--- decided from them; a remaining time never can. Classic-family builds never
+-- So when only the times are secret, GetSpellCooldown stays unavailable (nil, "restricted-value") and reports the
+-- flags after the reason. Readiness can be decided from them; a remaining time never can. Classic-family builds never
 -- reach this: their values are never secret.
--- Returns isEnabled, isActive and isOnGCD from a cooldown record when all three are readable and well typed
--- (isOnGCD may be nil); otherwise returns nothing.
 local function cooldownFlags(self, record)
     if type(record) ~= "table" then return end
     local enabled, active, onGCD = record.isEnabled, record.isActive, record.isOnGCD
@@ -352,9 +389,16 @@ local function cooldownFlags(self, record)
     return enabled, active, onGCD
 end
 
--- Returns { startTime, duration, isEnabled, modRate } for a spell, or nil and a reason. When only the times are
--- secret it returns nil, "restricted-value", then isEnabled, isActive and isOnGCD (see cooldownFlags) so readiness
--- can still be decided. Allocates a record per call; the poll path uses cooldownValues instead where it can.
+-- Reads the cooldown of a spell.
+-- @param spell number|string  The spell id or name.
+-- @return table|nil  { startTime, duration, isEnabled, modRate }; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+-- @return boolean|nil  When only the times are secret ("restricted-value"): isEnabled, from cooldownFlags.
+-- @return boolean|nil  When only the times are secret: isActive.
+-- @return boolean|nil  When only the times are secret: isOnGCD (may be nil).
+--
+-- The flags let readiness still be decided when only the times are secret. Allocates a record per call; the poll path
+-- uses cooldownValues instead where it can.
 function platform:GetSpellCooldown(spell)
     local valid, reason = identifier(spell)
     if not valid then return nil, reason end
@@ -388,7 +432,10 @@ function platform:GetSpellCooldown(spell)
     return cooldown
 end
 
--- Returns the spell's chat link string, or nil and a reason.
+-- Reads a spell's chat link.
+-- @param spell number|string  The spell id or name.
+-- @return string|nil  The link string; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:GetSpellLink(spell)
     local valid, reason = identifier(spell)
 
@@ -424,9 +471,13 @@ end
 -- but not an ability whose own cooldown will still be active afterward.
 local gcdSpell
 
--- Returns the global cooldown as a spell cooldown record (or nil, reason, flags as GetSpellCooldown does). Classic
--- Era, TBC and expansion-2 progression clients probe spell 29515; later clients use the dedicated GCD spell 61304.
--- The spell is chosen once and cached in gcdSpell.
+-- Reads the global cooldown as a spell cooldown record.
+-- @return table|nil  The record, as GetSpellCooldown returns it; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+-- @return boolean|nil  The never-secret flags after the reason, as GetSpellCooldown returns them.
+--
+-- Classic Era, TBC and expansion-2 progression clients probe spell 29515; later clients use the dedicated GCD spell
+-- 61304. The spell is chosen once and cached in gcdSpell.
 function platform:GetGlobalCooldown()
     if not gcdSpell then
         local client = self:GetClientInfo()
@@ -442,17 +493,26 @@ function platform:GetGlobalCooldown()
     return self:GetSpellCooldown(gcdSpell)
 end
 
--- True for a number that is zero or more and finite.
+-- Whether a value is a finite number that is zero or more.
+-- @param value any  The value to test.
+-- @return boolean  True for such a number.
 local function finiteNonNegative(value)
     return type(value)=="number" and value==value and value>=0 and value~=math.huge
 end
 
--- Readiness runs for every reached action each poll. On classic builds
--- without secrets the multi-value cooldown API is read directly: the same
--- values GetSpellCooldown validates, without a result table per call.
--- Results: start, duration, enabled, reason. When only the times are secret
--- (Retail/Forever), start is nil and enabled, then active and onGCD after the
--- reason, carry the never-secret flags.
+-- Reads a spell's cooldown times and enabled flag for readiness.
+-- @param self table  The platform table.
+-- @param spell number|string  The spell id or name.
+-- @return number|nil  The start time; nil when the times are unavailable.
+-- @return number|nil  The duration.
+-- @return boolean|nil  Whether the cooldown is enabled; when the times are secret (Retail/Forever) this is the
+--   never-secret isEnabled flag.
+-- @return string|nil  The reason code when the times are unavailable; nil otherwise.
+-- @return boolean|nil  When only the times are secret: isActive.
+-- @return boolean|nil  When only the times are secret: isOnGCD.
+--
+-- Readiness runs for every reached action each poll. On classic builds without secrets the multi-value cooldown API
+-- is read directly: the same values GetSpellCooldown validates, without a result table per call.
 local function cooldownValues(self, spell)
     local legacy=self.secretsUnrestricted and GetSpellCooldown
     if type(legacy)~="function" then
@@ -473,8 +533,13 @@ local function cooldownValues(self, spell)
     return start,duration,enabled==1 or enabled==true
 end
 
--- Whether the global cooldown is running: true, false, or nil and a reason.
--- From its times when they are readable, otherwise from its flags.
+-- Tells whether the global cooldown is running.
+-- @param self table  The platform table.
+-- @param now number  The current time, a GetTime value.
+-- @return boolean|nil  True or false; nil when it cannot be decided.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Decided from its times when they are readable, otherwise from its flags.
 local function gcdRunning(self, now)
     if not gcdSpell then self:GetGlobalCooldown() end
     local start,duration,enabled,why,active=cooldownValues(self,gcdSpell)
@@ -483,15 +548,20 @@ local function gcdRunning(self, now)
     return enabled and active
 end
 
--- Readiness from the never-secret flags alone, with the meaning the times
--- give it: a held cooldown is not ready; an inactive one is; an active one is
--- ready only while it is the global cooldown. Blizzard says isOnGCD is only
--- trustworthy at SPELL_UPDATE_COOLDOWN, so a polled "on the GCD" counts only
--- while a global cooldown is actually running. The one case the times decide
--- and the flags cannot is an own cooldown that ends inside the GCD: if the
--- client reports it as the spell's own (isOnGCD false), it reads not ready
--- until the client reports the GCD instead.
--- Returns true or false, or nil and a reason when the flags cannot decide.
+-- Decides readiness from the never-secret cooldown flags alone.
+-- @param self table  The platform table.
+-- @param enabled boolean  The cooldown's isEnabled flag.
+-- @param active boolean  The cooldown's isActive flag.
+-- @param onGCD boolean|nil  The cooldown's isOnGCD flag.
+-- @param now number  The current time, a GetTime value.
+-- @return boolean|nil  True or false; nil when the flags cannot decide.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- The flags are read with the meaning the times give them: a held cooldown is not ready; an inactive one is; an
+-- active one is ready only while it is the global cooldown. Blizzard says isOnGCD is only trustworthy at
+-- SPELL_UPDATE_COOLDOWN, so a polled "on the GCD" counts only while a global cooldown is actually running. The one
+-- case the times decide and the flags cannot is an own cooldown that ends inside the GCD: if the client reports it
+-- as the spell's own (isOnGCD false), it reads not ready until the client reports the GCD instead.
 local function flagReadiness(self, enabled, active, onGCD, now)
     if not enabled then return false end
     if not active then return true end
@@ -502,10 +572,15 @@ local function flagReadiness(self, enabled, active, onGCD, now)
     return nil,why or "restricted-value"
 end
 
--- Whether the spell can be used at time `now` (GetTime seconds): true, false, or nil and a reason. A spell whose own
--- cooldown ends inside the running global cooldown counts as ready, so a recommendation can show the next action.
--- Runs for every reached action each poll, so keep it cheap; only the non-legacy path allocates (through
--- GetSpellCooldown).
+-- Tells whether a spell can be used at a time.
+-- @param spell number|string  The spell id or name.
+-- @param now number  The time to test, in GetTime seconds.
+-- @return boolean|nil  True or false; nil when it cannot be decided.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- A spell whose own cooldown ends inside the running global cooldown counts as ready, so a recommendation can show
+-- the next action. Runs for every reached action each poll, so keep it cheap; only the non-legacy path allocates
+-- (through GetSpellCooldown).
 function platform:IsSpellReady(spell, now)
     if not self:CanReadValue(now) then return nil, "restricted-value" end
     if type(now)~="number" or now~=now or now==math.huge or now==-math.huge then
@@ -539,9 +614,14 @@ end
 -- Charges and current state
 -- ============================================================================
 
--- Returns { currentCharges, maxCharges, cooldownStartTime, cooldownDuration, chargeModRate, isActive } for a spell
--- with charges, or nil and a reason ("spell-charges-unavailable" when the spell has none). isActive is derived when
--- the client omits it, and a client claim of active that the numbers contradict is rejected.
+-- Reads the charges of a spell.
+-- @param spell number|string  The spell id or name.
+-- @return table|nil  { currentCharges, maxCharges, cooldownStartTime, cooldownDuration, chargeModRate, isActive };
+--   nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil ("spell-charges-unavailable" when the spell has
+--   none); nil otherwise.
+--
+-- isActive is derived when the client omits it, and a client claim of active that the numbers contradict is rejected.
 function platform:GetSpellCharges(spell)
     local valid,reason=identifier(spell)
     if not valid then return nil,reason end
@@ -571,8 +651,12 @@ function platform:GetSpellCharges(spell)
     return charges
 end
 
--- Returns whether the spell is the player's current (queued or active) spell, or nil and a reason. Legacy clients
--- answer 0 or 1, which is converted to a Boolean.
+-- Reads whether a spell is the player's current (queued or active) spell.
+-- @param spell number|string  The spell id or name.
+-- @return boolean|nil  Whether it is current; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Legacy clients answer 0 or 1, which is converted to a Boolean.
 function platform:IsCurrentSpell(spell)
     local valid, reason = identifier(spell)
 
@@ -611,10 +695,14 @@ function platform:IsCurrentSpell(spell)
     return active
 end
 
--- This is the client's auto-repeat state, distinct from a current/queued
--- spell. Legacy numeric arguments are book slots, so resolve the player book
--- explicitly instead of passing a spell ID into that overload.
--- Returns whether the spell is auto-repeating, or nil and a reason. Probe and restricted policies only.
+-- Reads whether a spell is auto-repeating.
+-- @param spellID number  The spell id.
+-- @return boolean|nil  Whether the spell is auto-repeating; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- This is the client's auto-repeat state, distinct from a current or queued spell. Legacy numeric arguments are book
+-- slots, so the player book is resolved explicitly instead of passing a spell id into that overload. Probe and
+-- restricted policies only.
 function platform:IsAutoRepeatActive(spellID)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
