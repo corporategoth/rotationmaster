@@ -79,7 +79,7 @@ addon:RegisterCondition("STAT", {
         return Functions.values.compare(value.operator,record.value,value.value)
     end,
     -- Builds the readable rule summary for the STAT condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -91,7 +91,7 @@ addon:RegisterCondition("STAT", {
     end,
     -- Builds the editor controls for the STAT condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- widget builds a unit picker limited to player and pet, a stat dropdown and an operator-and-value control; help
@@ -152,14 +152,11 @@ local ecs_state = { stats = {}, percentages = {} }
 -- This is the on_register hook of both ECS conditions, run when they register (so only with the addon loaded). It
 -- imports the addon's Data module and walks its settings tree once, sorting every stat that has a reference name into
 -- ecs_state.stats or ecs_state.percentages by the type its GetStatInfo returns. Later calls do nothing.
+-- The walk is done by the local recurse_ecs(prefix, root) inside, which cannot carry its own comment because the whole
+-- body is frozen. A node with a refName (not ending in "Header") and a text is recorded under its menu path
+-- "prefix -> text" in ecs_state.stats when GetStatInfo returns a number for it, otherwise in ecs_state.percentages;
+-- every table child is then visited with that path as the new prefix.
 local function init_ecs()
-    -- Walks one node of the Extended Character Stats settings tree, recording each stat and descending into its
-    -- children.
-    -- @param prefix string|nil  The menu path of the parent node; nil at the root.
-    -- @param root table  The settings node to visit.
-    --
-    -- A node with a refName (not ending in "Header") and a text is recorded under its menu path "prefix -> text" in
-    -- ecs_state.stats when GetStatInfo returns a number for it, otherwise in ecs_state.percentages.
     local function recurse_ecs(prefix, root)
         local text
         local name = root["refName"]
@@ -224,7 +221,7 @@ addon.delayed_condition["ExtendedCharacterStats"]["ECS_STAT"] = {
         return Functions.values.compare(value.operator, cur, value.value)
     end,
     -- Builds the readable rule summary for the ECS_STAT condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -238,7 +235,7 @@ addon.delayed_condition["ExtendedCharacterStats"]["ECS_STAT"] = {
     end,
     -- Builds the editor controls for the ECS_STAT condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- widget builds a dropdown of the addon's numeric stats and an operator-and-value control; help describes both.
@@ -306,7 +303,7 @@ addon.delayed_condition["ExtendedCharacterStats"]["ECS_STAT_PCT"] = {
         return Functions.values.compare(value.operator, cur, value.value * 100)
     end,
     -- Builds the readable rule summary for the ECS_STAT_PCT condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -324,7 +321,7 @@ addon.delayed_condition["ExtendedCharacterStats"]["ECS_STAT_PCT"] = {
     end,
     -- Builds the editor controls for the ECS_STAT_PCT condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- widget builds a dropdown of the addon's percentage stats and an operator-and-percent control; help describes

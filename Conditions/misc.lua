@@ -73,7 +73,7 @@ addon:RegisterCondition("SELF_LEVEL", {
         return Functions.values.compare(value.operator, level, value.value)
     end,
     -- Builds the readable rule summary for the SELF_LEVEL condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -83,7 +83,7 @@ addon:RegisterCondition("SELF_LEVEL", {
     end,
     -- Builds the editor controls for the SELF_LEVEL condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor: the operator and level.
@@ -133,7 +133,7 @@ addon:RegisterCondition("PVP", {
         return Functions.cache.getCached(cache, addon.Platform.GetUnitFlagObservation, addon.Platform, value.unit, "pvp")
     end,
     -- Builds the readable rule summary for the PVP condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -144,7 +144,7 @@ addon:RegisterCondition("PVP", {
     end,
     -- Builds the editor controls for the PVP condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor: the unit picker, without the pet entry.
@@ -201,7 +201,7 @@ addon:RegisterCondition("ZONEPVP", {
         return value.value == record.pvpType
     end,
     -- Builds the readable rule summary for the ZONEPVP condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -211,7 +211,7 @@ addon:RegisterCondition("ZONEPVP", {
     end,
     -- Builds the editor controls for the ZONEPVP condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor: a dropdown of statuses, where the empty key stands for "no PVP".
@@ -370,7 +370,7 @@ addon:RegisterCondition("INSTANCE", {
         return true
     end,
     -- Builds the readable rule summary for the INSTANCE condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -394,7 +394,7 @@ addon:RegisterCondition("INSTANCE", {
     end,
     -- Builds the editor controls for the INSTANCE condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor: the kind dropdown, the difficulty dropdown, the instance ID box, and a note naming the current instance.

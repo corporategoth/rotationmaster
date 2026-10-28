@@ -43,41 +43,60 @@ local platform = addon.Platform
 -- Helpers
 -- ============================================================================
 
--- Calls a Platform reader (`method`, with the platform as self) through the per-poll cache; returns its value, or nil
--- and a reason.
+-- Calls a Platform reader through the per-poll cache.
+-- @param cache table  The per-pass memo table the read is cached in.
+-- @param method function  The Platform method to call (with the platform as self).
+-- @param ... any  Arguments passed to method after the platform.
+-- @return any  The reader's value; nil when it cannot be read.
+-- @return string|nil  The reason code when the value is nil; nil otherwise.
 local function observe(cache, method, ...)
     return addon.getCached(cache,method,platform,...)
 end
 
--- Seconds left on a totem record at time `start` (the poll's time, defaulting to now), never below 0; 0 for an
--- inactive slot.
+-- Computes the seconds left on a totem record.
+-- @param record table  A totem record with active, startTime and duration.
+-- @param start number|nil  The time to measure against (the poll's time); nil means now.
+-- @return number  The seconds left, never below 0; 0 for an inactive slot.
 local function remaining(record, start)
     if not record.active then return 0 end
     return math.max(0,record.startTime+record.duration-(start or GetTime()))
 end
 
 -- True when value.spell is one of the four element slots (1 to 4: Fire, Earth, Water, Air) the TOTEM conditions use.
+-- @param value table  The saved condition fields; reads spell.
+-- @return boolean  True when spell is a valid spell ID that is at most 4.
 local function element(value)
     return addon.IsConditionSpellID(value.spell) and value.spell<=4
 end
 
--- True when value carries a known operator and a finite, non-negative number to compare against.
+-- True when the saved fields carry a known operator and a finite, non-negative number to compare against.
+-- @param value table  The saved condition fields; reads operator and value.
+-- @return boolean  True when value is a finite number of at least 0 and operator is one of addon.operators.
 local function amount(value)
     return type(value.value)=="number" and value.value==value.value and value.value>=0 and value.value<math.huge
         and type(value.operator)=="string" and addon.isin(addon.operators,value.operator)
 end
 
 -- True when value.spell is a spell ID and value.ranked, if set, is a boolean (the TOTEM_SPELL conditions).
+-- @param value table  The saved condition fields; reads spell and ranked.
+-- @return boolean  True when the fields have that shape.
 local function specific(value)
     return addon.IsConditionSpellID(value.spell) and (value.ranked==nil or type(value.ranked)=="boolean")
 end
 
--- Scans every totem slot for an active totem of the chosen spell. Without ranked it matches by spell ID or by the
--- localized name (looking up a nameless slot's spell to compare names); with ranked it needs the exact spell ID. With
--- compareTime the remaining seconds (rounded to milliseconds) must also pass the operator test. Returns true on the
--- first match, false when no slot matches and every slot was readable, or nil and a reason ("totem-data-unavailable",
--- "totem-rank-unavailable", "totem-identity-unavailable" or the Platform's) when no match was found but some slot
--- could not be read well enough to rule one out.
+-- Scans every totem slot for an active totem of the chosen spell.
+-- @param value table  The saved condition fields: spell, ranked and, with compareTime, operator and value.
+-- @param cache table  The per-pass memo table the reads are cached in.
+-- @param start number|nil  The time to measure remaining seconds against (the poll's time); nil means now.
+-- @param compareTime boolean  True to also require the remaining seconds (rounded to milliseconds) to pass the operator
+--     test.
+-- @return boolean|nil  True on the first match, false when no slot matches and every slot was readable; nil when no
+--     match was found but some slot could not be read well enough to rule one out.
+-- @return string|nil  The reason code when the first value is nil ("totem-data-unavailable", "totem-rank-unavailable",
+--     "totem-identity-unavailable" or the Platform's); nil otherwise.
+--
+-- Without ranked it matches by spell ID or by the localized name (looking up a nameless slot's spell to compare names);
+-- with ranked it needs the exact spell ID.
 local function findSpecific(value, cache, start, compareTime)
     local target,reason=observe(cache,platform.GetSpellInfo,value.spell)
     if not target then return nil,reason end
@@ -120,18 +139,41 @@ addon:RegisterCondition("TOTEM", {
     icon = addon.Artwork.condition["TOTEM"],
     fields = { spell = "number" },
     requiredFields = { "spell" },
+    -- Checks that the saved fields of the TOTEM condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid once an element slot is chosen.
     valid = function(_, value) return element(value) end,
+    -- Decides whether the totem in the chosen element slot is active with time left.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @param start number  The GetTime() reading taken when this evaluation pass began.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable when the slot record is unreadable (for example a secret value on a restricted client).
     evaluate = function(value, cache, start)
         local record,reason=observe(cache,platform.GetTotemInfo,value.spell)
         if not record then return nil,reason end
         return record.active and remaining(record,start)>0
     end,
+    -- Builds the readable rule summary for the TOTEM condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Readable summary naming the element.
     print = function(_, value)
         return string.format(L["%s totem {{!is|is not}} active"], Functions.presentation.nullable(addon.totems[value.spell], L["<element>"]))
     end,
+    -- Builds the editor controls for the TOTEM condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- widget builds the element dropdown; help explains the slot.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -150,6 +192,8 @@ addon:RegisterCondition("TOTEM", {
         end
         parent:AddChild(totem)
     end,
+    -- Builds the help page for the TOTEM condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Totem"] .. color.RESET .. " - " ..
             L["The elemental slot to check: Fire, Earth, Water or Air. Empty, zero-duration and expired totems do not match."]))
@@ -167,15 +211,38 @@ addon:RegisterCondition("TOTEM_SPELL", {
     icon = addon.Artwork.condition["TOTEM_SPELL"],
     fields = { spell = "number", ranked = "boolean" },
     requiredFields = { "spell" },
+    -- Checks that the saved fields of the TOTEM_SPELL condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid with a spell ID and an optional boolean ranked flag.
     valid = function(_, value) return specific(value) end,
+    -- Decides whether an active totem of the chosen spell is in any slot.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @param start number  The GetTime() reading taken when this evaluation pass began.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Delegates to findSpecific without a time comparison.
     evaluate = function(value, cache, start) return findSpecific(value,cache,start,false) end,
+    -- Builds the readable rule summary for the TOTEM_SPELL condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Readable summary with the spell link.
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
         return string.format(L["%s {{!is|is not}} active"], Functions.presentation.nullable(link, L["<totem>"]))
     end,
+    -- Builds the editor controls for the TOTEM_SPELL condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- widget builds a spell picker limited to totem spells on the rotation's specialization; help explains the rank
     -- checkbox.
     widget = function(parent, spec, value)
@@ -192,6 +259,8 @@ addon:RegisterCondition("TOTEM_SPELL", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
     end,
+    -- Builds the help page for the TOTEM_SPELL condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Totem"] .. color.RESET .. " - " ..
             L["The active totem to check. Unticked, Use this exact spell rank matches its localized name across ranks. Ticked, it requires the native spell ID; name-only observations are unavailable."]))
@@ -210,8 +279,22 @@ addon:RegisterCondition("TOTEM_REMAIN", {
     icon = addon.Artwork.condition["TOTEM_REMAIN"],
     fields = { spell = "number", operator = "string", value = "number" },
     requiredFields = { "spell", "operator", "value" },
+    -- Checks that the saved fields of the TOTEM_REMAIN condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid with an element slot and a comparison (known operator, finite non-negative number).
     valid = function(_, value) return element(value) and amount(value) end,
+    -- Compares the seconds left on the totem in the chosen element slot with the configured number; false for an empty
+    -- or expired slot.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @param start number  The GetTime() reading taken when this evaluation pass began.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable when the slot record is unreadable; the remaining seconds are rounded to milliseconds first.
     evaluate = function(value, cache, start)
         local record,reason=observe(cache,platform.GetTotemInfo,value.spell)
@@ -219,12 +302,22 @@ addon:RegisterCondition("TOTEM_REMAIN", {
         local seconds=remaining(record,start)
         return record.active and seconds>0 and Functions.values.compare(value.operator,addon.Functions.values.round(seconds,3),value.value)
     end,
+    -- Builds the readable rule summary for the TOTEM_REMAIN condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Readable summary naming the element and the comparison.
     print = function(_, value)
         return string.format(L["you {{!have|do not have}} a %s totem active where %s"],
             Functions.presentation.nullable(addon.totems[value.spell], L["<element>"]),
                 Functions.presentation.compareString(value.operator, L["the remaining time"], string.format(L["%s seconds"], Functions.presentation.nullable(value.value))))
     end,
+    -- Builds the editor controls for the TOTEM_REMAIN condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- widget builds the element dropdown and an operator-and-seconds control; help explains both.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -247,6 +340,8 @@ addon:RegisterCondition("TOTEM_REMAIN", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the TOTEM_REMAIN condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Totem"] .. color.RESET .. " - " ..
                 L["The elemental slot to check: Fire, Earth, Water or Air. Empty, zero-duration and expired totems do not match."]))
@@ -264,16 +359,39 @@ addon:RegisterCondition("TOTEM_SPELL_REMAIN", {
     icon = addon.Artwork.condition["TOTEM_SPELL_REMAIN"],
     fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
     requiredFields = { "spell", "operator", "value" },
+    -- Checks that the saved fields of the TOTEM_SPELL_REMAIN condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid with a spell ID, an optional boolean ranked flag and a comparison.
     valid = function(_, value) return specific(value) and amount(value) end,
+    -- Decides whether an active totem of the chosen spell, in any slot, has remaining seconds that pass the comparison.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @param start number  The GetTime() reading taken when this evaluation pass began.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Delegates to findSpecific with the time comparison.
     evaluate = function(value, cache, start) return findSpecific(value,cache,start,true) end,
+    -- Builds the readable rule summary for the TOTEM_SPELL_REMAIN condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Readable summary with the spell link and the comparison.
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
         return string.format(L["%s {{!is|is not}} active where %s"], Functions.presentation.nullable(link, L["<totem>"]),
             Functions.presentation.compareString(value.operator, L["the remaining time"], string.format(L["%s seconds"], Functions.presentation.nullable(value.value))))
     end,
+    -- Builds the editor controls for the TOTEM_SPELL_REMAIN condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- widget builds a totem spell picker and an operator-and-seconds control; help explains both.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -293,6 +411,8 @@ addon:RegisterCondition("TOTEM_SPELL_REMAIN", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the TOTEM_SPELL_REMAIN condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Totem"] .. color.RESET .. " - " ..
                 L["The active totem to check. Unticked, Use this exact spell rank matches its localized name across ranks. Ticked, it requires the native spell ID; name-only observations are unavailable."]))

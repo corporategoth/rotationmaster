@@ -82,7 +82,7 @@ addon:RegisterCondition("ISSAME", {
         return Functions.cache.getCached(cache, addon.Platform.GetUnitIdentityObservation, addon.Platform, value.unit, value.otherunit)
     end,
     -- Builds the readable rule summary for the ISSAME condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     print = function(_, value)
@@ -90,7 +90,7 @@ addon:RegisterCondition("ISSAME", {
     end,
     -- Builds the editor controls for the ISSAME condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -143,7 +143,7 @@ addon:RegisterCondition("CLASS", {
         return observed == value.value
     end,
     -- Builds the readable rule summary for the CLASS condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     print = function(_, value)
@@ -152,7 +152,7 @@ addon:RegisterCondition("CLASS", {
     end,
     -- Builds the editor controls for the CLASS condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -224,7 +224,7 @@ addon:RegisterCondition("CLASS_GROUP", {
         return Functions.values.compare(value.operator,count,value.value)
     end,
     -- Builds the readable rule summary for the CLASS_GROUP condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     print = function(_, value)
@@ -234,7 +234,7 @@ addon:RegisterCondition("CLASS_GROUP", {
     end,
     -- Builds the editor controls for the CLASS_GROUP condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -326,7 +326,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
             return role == value.value
         end,
         -- Builds the readable rule summary for the ROLE condition.
-        -- @param _ any  Unused; the current specialization the engine passes.
+        -- @param _ any  Unused; the specialization the summary is printed for.
         -- @param value table  The saved condition fields.
         -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
         print = function(_, value)
@@ -336,7 +336,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
         end,
         -- Builds the editor controls for the ROLE condition's fields.
         -- @param parent table  The editor group the controls are added to.
-        -- @param spec any  The current specialization (addon.currentSpec).
+        -- @param spec any  The specialization the condition is being edited for.
         -- @param value table  The saved condition fields; the controls edit it in place.
         widget = function(parent, spec, value)
             local top = parent:GetUserData("top")
@@ -411,7 +411,7 @@ else
                 return role == value.value
             end,
             -- Builds the readable rule summary for the ROLE condition.
-            -- @param _ any  Unused; the current specialization the engine passes.
+            -- @param _ any  Unused; the specialization the summary is printed for.
             -- @param value table  The saved condition fields.
             -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
             print = function(_, value)
@@ -420,7 +420,7 @@ else
             end,
             -- Builds the editor controls for the ROLE condition's fields.
             -- @param parent table  The editor group the controls are added to.
-            -- @param spec any  The current specialization (addon.currentSpec).
+            -- @param spec any  The specialization the condition is being edited for.
             -- @param value table  The saved condition fields; the controls edit it in place.
             widget = function(parent, spec, value)
                 local top = parent:GetUserData("top")
@@ -516,7 +516,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or LE_EXPANSION_LEVEL_CURRENT >= 2) t
             return false
         end,
         -- Builds the readable rule summary for the GLYPH condition.
-        -- @param _ any  Unused; the current specialization the engine passes.
+        -- @param _ any  Unused; the specialization the summary is printed for.
         -- @param value table  The saved condition fields.
         -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
         print = function(_, value)
@@ -526,7 +526,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or LE_EXPANSION_LEVEL_CURRENT >= 2) t
         end,
         -- Builds the editor controls for the GLYPH condition's fields.
         -- @param parent table  The editor group the controls are added to.
-        -- @param spec any  The current specialization (addon.currentSpec).
+        -- @param spec any  The specialization the condition is being edited for.
         -- @param value table  The saved condition fields; the controls edit it in place.
         widget = function(parent, spec, value)
             local top = parent:GetUserData("top")
@@ -584,7 +584,7 @@ addon:RegisterCondition("CREATURE", {
         return addon:GetConditionCreatureTypeMatch(value.unit,value.value,cache)
     end,
     -- Builds the readable rule summary for the CREATURE condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     print = function(_, value)
@@ -593,7 +593,7 @@ addon:RegisterCondition("CREATURE", {
     end,
     -- Builds the editor controls for the CREATURE condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -662,7 +662,7 @@ addon:RegisterCondition("CLASSIFICATION", {
         return observed == value.value
     end,
     -- Builds the readable rule summary for the CLASSIFICATION condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     print = function(_, value)
@@ -671,7 +671,7 @@ addon:RegisterCondition("CLASSIFICATION", {
     end,
     -- Builds the editor controls for the CLASSIFICATION condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -754,7 +754,7 @@ addon:RegisterCondition("LEVEL", runtimeCondition('LEVEL', {
         return Functions.values.compare(value.operator, observed, level)
     end,
     -- Builds the readable rule summary for the LEVEL condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     print = function(_, value)
@@ -769,7 +769,7 @@ addon:RegisterCondition("LEVEL", runtimeCondition('LEVEL', {
     end,
     -- Builds the editor controls for the LEVEL condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -856,7 +856,7 @@ addon:RegisterCondition("GROUP", {
         return Functions.cache.getCached(cache, addon.Platform.GetUnitGroupMembership, addon.Platform, unit, value.raid)
     end,
     -- Builds the readable rule summary for the GROUP condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     print = function(_, value)
@@ -868,7 +868,7 @@ addon:RegisterCondition("GROUP", {
     end,
     -- Builds the editor controls for the GROUP condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -933,7 +933,7 @@ if MI2_GetMobData then
         return observation.runner
     end,
         -- Builds the readable rule summary for the RUNNER condition.
-        -- @param _ any  Unused; the current specialization the engine passes.
+        -- @param _ any  Unused; the specialization the summary is printed for.
         -- @param value table  The saved condition fields.
         -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
         print = function(_, value)
@@ -941,7 +941,7 @@ if MI2_GetMobData then
     end,
         -- Builds the editor controls for the RUNNER condition's fields.
         -- @param parent table  The editor group the controls are added to.
-        -- @param spec any  The current specialization (addon.currentSpec).
+        -- @param spec any  The specialization the condition is being edited for.
         -- @param value table  The saved condition fields; the controls edit it in place.
         widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -995,7 +995,7 @@ if MI2_GetMobData then
         return Functions.values.compare(value.operator,observation.ratio,value.value)
     end,
         -- Builds the readable rule summary for the RESIST condition.
-        -- @param _ any  Unused; the current specialization the engine passes.
+        -- @param _ any  Unused; the specialization the summary is printed for.
         -- @param value table  The saved condition fields.
         -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
         print = function(_, value)
@@ -1005,7 +1005,7 @@ if MI2_GetMobData then
     end,
         -- Builds the editor controls for the RESIST condition's fields.
         -- @param parent table  The editor group the controls are added to.
-        -- @param spec any  The current specialization (addon.currentSpec).
+        -- @param spec any  The specialization the condition is being edited for.
         -- @param value table  The saved condition fields; the controls edit it in place.
         widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -1084,7 +1084,7 @@ if MI2_GetMobData then
         return observation.hits < 1
     end,
         -- Builds the readable rule summary for the IMMUNE condition.
-        -- @param _ any  Unused; the current specialization the engine passes.
+        -- @param _ any  Unused; the specialization the summary is printed for.
         -- @param value table  The saved condition fields.
         -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
         print = function(_, value)
@@ -1099,7 +1099,7 @@ if MI2_GetMobData then
     end,
         -- Builds the editor controls for the IMMUNE condition's fields.
         -- @param parent table  The editor group the controls are added to.
-        -- @param spec any  The current specialization (addon.currentSpec).
+        -- @param spec any  The specialization the condition is being edited for.
         -- @param value table  The saved condition fields; the controls edit it in place.
         widget = function(parent, spec, value)
         local top = parent:GetUserData("top")

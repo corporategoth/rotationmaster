@@ -84,7 +84,7 @@ addon:RegisterCondition("PLAYER_STATE", {
         return Functions.cache.getCached(cache, addon.Platform.GetPlayerStateObservation, addon.Platform, value.state)
     end,
     -- Builds the readable rule summary for the PLAYER_STATE condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -94,7 +94,7 @@ addon:RegisterCondition("PLAYER_STATE", {
     end,
     -- Builds the editor controls for the PLAYER_STATE condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- widget builds the state dropdown; help draws the help page.

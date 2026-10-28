@@ -96,7 +96,7 @@ addon:RegisterCondition("PET_HAPPINESS", {
         return mood == value.value
     end,
     -- Builds the readable rule summary for the PET_HAPPINESS condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -106,7 +106,7 @@ addon:RegisterCondition("PET_HAPPINESS", {
     end,
     -- Builds the editor controls for the PET_HAPPINESS condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- widget builds the mood dropdown; help draws the help page.
@@ -171,7 +171,7 @@ addon:RegisterCondition("STAGGER", {
         return Functions.values.compare(value.operator, stagger, value.value)
     end,
     -- Builds the readable rule summary for the STAGGER condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -185,7 +185,7 @@ addon:RegisterCondition("STAGGER", {
     end,
     -- Builds the editor controls for the STAGGER condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- widget builds an operator-and-value control and the "as a percent of maximum health" checkbox; help draws the
@@ -276,7 +276,7 @@ addon:RegisterCondition("ECLIPSE", {
         return Functions.values.compare(value.operator, energy, value.value)
     end,
     -- Builds the readable rule summary for the ECLIPSE condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -289,7 +289,7 @@ addon:RegisterCondition("ECLIPSE", {
     end,
     -- Builds the editor controls for the ECLIPSE condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- widget builds the measure dropdown, the direction dropdown and the energy operator control (all three are always

@@ -126,12 +126,15 @@ local CLASS_IDS = {
 -- ============================================================================
 
 -- True for a positive whole number that could be a specialization ID.
+-- @param value any  The value to test.
+-- @return boolean  True when value is a number greater than 0, below math.huge, with no fractional part.
 local function specID(value)
     return type(value)=="number" and value>0 and value<math.huge and value%1==0
 end
 
--- The class a specialization belongs to: the table, else the client.
--- Returns the class token, or nil when neither knows the ID.
+-- Finds the class a specialization belongs to, from the SPECS table first, else from the client.
+-- @param id number  The specialization ID.
+-- @return string|nil  The class token; nil when neither the table nor the client knows the ID.
 local function specClass(id)
     local known=SPECS[id]
     if known then return known[1] end
@@ -139,9 +142,11 @@ local function specClass(id)
     return display and display.class
 end
 
--- The display name for a specialization ID, and its icon when the client supplies one. Retail's "Initial" entries read
--- "No specialization"; otherwise the client's own name wins, then the English table name, then a generic label. Returns
--- nil for something that is not a specialization ID.
+-- Builds the display name of a specialization ID, and its icon when the client supplies one.
+-- @param id any  The specialization ID; anything that is not one gives nil.
+-- @return string|nil  The name: "No specialization" for Retail's "Initial" entries, otherwise the client's own name,
+--     then the localized English table name, then a generic label; nil when id is not a specialization ID.
+-- @return string|number|nil  The icon, only when the client supplied one; nil otherwise.
 local function specName(id)
     if not specID(id) then return nil end
     local listed=SPECS[id]
@@ -153,15 +158,19 @@ local function specName(id)
     return string.format(L["specialization %d"],id)
 end
 
--- The player's class token, or nil when UnitClass fails or the value is hidden.
+-- Reads the player's class token.
+-- @return string|nil  The class token; nil when UnitClass fails or the value is hidden.
 local function playerClass()
     local ok,_,class=pcall(UnitClass,"player")
     if ok and addon.Platform:CanReadValue(class) and type(class)=="string" then return class end
 end
 
--- The specializations of one class for the editor: the client's own names
--- and icons where it has them, else the table.
--- Returns the choices (id to name, or to {text, icon}) and the ids in display order.
+-- Lists the specializations of one class for the editor, using the client's own names and icons where it has them, else
+-- the SPECS table.
+-- @param class string  The class token.
+-- @return table  The choices, keyed by specialization ID: the name, or {text=name,icon=icon} when the client supplies
+--     an icon.
+-- @return number[]  The specialization IDs in display order.
 local function classChoices(class)
     local choices,order={},{}
     local listed=CLASS_IDS[class] and addon.Platform.GetClassSpecializationChoices
@@ -183,13 +192,18 @@ end
 -- Name and class lookups
 -- ============================================================================
 
+-- Gets the display name of a specialization ID, without the icon.
+-- @param id any  The specialization ID.
+-- @return string|nil  The display name; nil when the value is not an ID.
+--
 -- For rotation specializations (Core/rotation_selection.lua, Core/imports.lua).
--- Returns the display name of a specialization ID, without the icon, or nil when the value is not an ID.
 function addon:GetSpecializationName(id)
     return (specName(id))
 end
 
--- Returns the class token that owns a specialization ID, or nil when the value is not an ID or the class is unknown.
+-- Gets the class token that owns a specialization ID.
+-- @param id any  The specialization ID.
+-- @return string|nil  The class token; nil when the value is not an ID or the class is unknown.
 function addon:GetSpecializationClassToken(id)
     if specID(id) then
         return specClass(id)
@@ -209,13 +223,22 @@ addon:RegisterCondition("SPECIALIZATION", {
     icon = addon.Artwork.condition["SPECIALIZATION"],
     requiredFields = { "spec" },
     fields = { spec = "number" },
+    -- Checks that the saved fields of the SPECIALIZATION condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid with a whole-number specialization ID.
     valid = function(_, value)
         return specID(value.spec)
     end,
-    -- Client support (Core/condition_support.lua): Forever has no
-    -- specializations, so one of your own class can never be read there;
-    -- another class's specialization is an ordinary false.
+    -- Reports whether the saved condition can work on this client.
+    -- @param value any  The saved condition fields; anything but a table with a valid spec gives nil.
+    -- @return string|nil  "specialization-unsupported" when the saved specialization belongs to your own class on
+    --     Forever, where it can never be read; nil otherwise.
+    --
+    -- Client support (Core/condition_support.lua): Forever has no specializations, so one of your own class can never
+    -- be read there; another class's specialization is an ordinary false.
     supported = function(value)
         if type(value) ~= "table" or not specID(value.spec) then return nil end
         if addon.Platform:GetClientFamily() ~= "forever" then return nil end
@@ -223,6 +246,12 @@ addon:RegisterCondition("SPECIALIZATION", {
         if class == nil or (canaccessvalue and not canaccessvalue(class)) then return nil end
         if specClass(value.spec) == class then return "specialization-unsupported" end
     end,
+    -- Decides whether the player's talent specialization is the chosen one; false for a specialization of another
+    -- class.
+    -- @param value table  The saved condition fields.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable: build-context-unavailable (the context module is absent), unknown-specialization (no class, or no
     -- tree for the ID on a tree client), class-unavailable, or the reason the observation gives. On tree clients the
     -- saved ID is mapped to its tree index; elsewhere the IDs are compared directly.
@@ -241,11 +270,21 @@ addon:RegisterCondition("SPECIALIZATION", {
         end
         return current == value.spec
     end,
+    -- Builds the readable rule summary for the SPECIALIZATION condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Summary line for the condition list.
     print = function(_, value)
         return string.format(L["your specialization {{!is|is not}} %s"],
             Functions.presentation.nullable((specName(value.spec)), L["<specialization>"]))
     end,
+    -- Builds the editor controls for the SPECIALIZATION condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor: a class dropdown that filters the specialization dropdown; changing the class clears the specialization.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -283,6 +322,9 @@ addon:RegisterCondition("SPECIALIZATION", {
         end
         parent:AddChild(specPicker)
     end,
+    -- Builds the help page for the SPECIALIZATION condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the general text, then the per-edition notes.
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Help.Conditions.SPECIALIZATION"]))
@@ -306,9 +348,11 @@ local loadoutSeeds = {
     { category = "fca4ff75-4085-458a-b5bf-27a6b52f2092", tag = "WEAPON_TYPE" },
 }
 
--- Adds each seeded tag to the profile's Switch picker list and its condition group, once: the flag
--- profile.loadoutConditionsSeeded is set afterwards and makes later calls do nothing. `db` is the AceDB object; the
--- first argument is the callback event name and is unused. A malformed profile is skipped rather than repaired.
+-- Adds each seeded loadout condition tag to the profile's Switch picker list and its condition group, once.
+-- @param _ any  Unused; the callback event name when called by AceDB.
+-- @param db table|nil  The AceDB object; a nil database or a malformed profile is skipped rather than repaired.
+--
+-- The flag profile.loadoutConditionsSeeded is set afterwards and makes later calls do nothing.
 function addon:InitializeLoadoutConditions(_, db)
     local profile = db and db.profile
 
@@ -316,6 +360,9 @@ function addon:InitializeLoadoutConditions(_, db)
         return
     end
 
+    -- Appends a tag to the list unless it is already there.
+    -- @param list any  The array of condition tags to extend; anything but a table is ignored.
+    -- @param tag string  The condition tag to add.
     local function append(list, tag)
         if type(list) ~= "table" then
             return
@@ -347,7 +394,10 @@ end
 local seedOwner = {}
 
 -- Seeds the current profile now and again whenever a profile is created, reset, switched or copied, so every profile
--- gets the loadout conditions exactly once. Called once from addon:init with the AceDB object.
+-- gets the loadout conditions exactly once.
+-- @param db table|nil  The AceDB object; anything without a RegisterCallback function is ignored.
+--
+-- Called once from addon:init with the AceDB object.
 function addon:InstallLoadoutConditions(db)
     if type(db) ~= "table" or type(db.RegisterCallback) ~= "function" then
         return

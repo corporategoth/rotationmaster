@@ -78,7 +78,7 @@ addon:RegisterCondition("PETSPELL_AVAIL", {
         return Functions.cache.getCached(cache, addon.Platform.IsSpellReady, addon.Platform, spellid, evalStart)
     end,
     -- Builds the readable rule summary for the PETSPELL_AVAIL condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -89,7 +89,7 @@ addon:RegisterCondition("PETSPELL_AVAIL", {
     end,
     -- Builds the editor controls for the PETSPELL_AVAIL condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor: the pet spell picker.
@@ -157,7 +157,7 @@ addon:RegisterCondition("PETSPELL_RANGE", {
         return range.applicable and range.inRange or false
     end,
     -- Builds the readable rule summary for the PETSPELL_RANGE condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -168,7 +168,7 @@ addon:RegisterCondition("PETSPELL_RANGE", {
     end,
     -- Builds the editor controls for the PETSPELL_RANGE condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor: the pet spell picker.
@@ -241,7 +241,7 @@ addon:RegisterCondition("PETSPELL_COOLDOWN", {
         return Functions.values.compare(value.operator, remain, value.value)
     end,
     -- Builds the readable rule summary for the PETSPELL_COOLDOWN condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -254,7 +254,7 @@ addon:RegisterCondition("PETSPELL_COOLDOWN", {
     end,
     -- Builds the editor controls for the PETSPELL_COOLDOWN condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor: the pet spell picker, then the operator and seconds.
@@ -333,7 +333,7 @@ addon:RegisterCondition("PETSPELL_REMAIN", {
         return Functions.values.compare(value.operator, remain, value.value)
     end,
     -- Builds the readable rule summary for the PETSPELL_REMAIN condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -346,7 +346,7 @@ addon:RegisterCondition("PETSPELL_REMAIN", {
     end,
     -- Builds the editor controls for the PETSPELL_REMAIN condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor: the pet spell picker, then the operator and seconds.
@@ -418,7 +418,7 @@ addon:RegisterCondition("PETSPELL_CHARGES", {
         return Functions.values.compare(value.operator, charges.currentCharges, value.value)
     end,
     -- Builds the readable rule summary for the PETSPELL_CHARGES condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -430,7 +430,7 @@ addon:RegisterCondition("PETSPELL_CHARGES", {
     end,
     -- Builds the editor controls for the PETSPELL_CHARGES condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor: the pet spell picker, then the operator and charge count.
@@ -518,7 +518,7 @@ addon:RegisterCondition("PETSPELL_HISTORY", {
         return false
     end,
     -- Builds the readable rule summary for the PETSPELL_HISTORY condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -532,7 +532,7 @@ addon:RegisterCondition("PETSPELL_HISTORY", {
     end,
     -- Builds the editor controls for the PETSPELL_HISTORY condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor: the pet spell picker, then the operator and cast count.
@@ -630,7 +630,7 @@ addon:RegisterCondition("PETSPELL_HISTORY_TIME", {
         return false
     end,
     -- Builds the readable rule summary for the PETSPELL_HISTORY_TIME condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -644,7 +644,7 @@ addon:RegisterCondition("PETSPELL_HISTORY_TIME", {
     end,
     -- Builds the editor controls for the PETSPELL_HISTORY_TIME condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor: the pet spell picker, then the operator and seconds.
@@ -719,7 +719,7 @@ addon:RegisterCondition("PETSPELL_ACTIVE", {
         return Functions.cache.getCached(cache, addon.Platform.IsCurrentSpell, addon.Platform, spellid)
     end,
     -- Builds the readable rule summary for the PETSPELL_ACTIVE condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -730,7 +730,7 @@ addon:RegisterCondition("PETSPELL_ACTIVE", {
     end,
     -- Builds the editor controls for the PETSPELL_ACTIVE condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor: the pet spell picker.

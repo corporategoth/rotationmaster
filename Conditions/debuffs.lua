@@ -80,7 +80,7 @@ addon:RegisterCondition("DEBUFF", runtimeCondition('DEBUFF', {
         return addon:EvaluateAuraCondition(value, cache, start, "HARMFUL", "present")
     end,
     -- Builds the readable rule summary for the DEBUFF condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -93,7 +93,7 @@ addon:RegisterCondition("DEBUFF", runtimeCondition('DEBUFF', {
     end,
     -- Builds the editor controls for the DEBUFF condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor: the unit picker, the Own Debuff checkbox, the spell name box and the rank choice.
@@ -176,7 +176,7 @@ addon:RegisterCondition("DEBUFF_REMAIN", {
         return addon:EvaluateAuraCondition(value, cache, start, "HARMFUL", "remaining")
     end,
     -- Builds the readable rule summary for the DEBUFF_REMAIN condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -192,7 +192,7 @@ addon:RegisterCondition("DEBUFF_REMAIN", {
     end,
     -- Builds the editor controls for the DEBUFF_REMAIN condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor: the DEBUFF controls, then the operator and seconds.
@@ -281,7 +281,7 @@ addon:RegisterCondition("DEBUFF_STACKS", {
         return addon:EvaluateAuraCondition(value, cache, start, "HARMFUL", "stacks")
     end,
     -- Builds the readable rule summary for the DEBUFF_STACKS condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -296,7 +296,7 @@ addon:RegisterCondition("DEBUFF_STACKS", {
     end,
     -- Builds the editor controls for the DEBUFF_STACKS condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor: the DEBUFF controls, then the operator and stack count.
@@ -384,7 +384,7 @@ addon:RegisterCondition("DISPELLABLE", {
         return addon:EvaluateAuraCondition(value, cache, start, "HARMFUL", "dispel")
     end,
     -- Builds the readable rule summary for the DISPELLABLE condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -402,7 +402,7 @@ addon:RegisterCondition("DISPELLABLE", {
     end,
     -- Builds the editor controls for the DISPELLABLE condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor: the unit picker, the debuff type dropdown, and the Own Debuff and Dispellable checkboxes.

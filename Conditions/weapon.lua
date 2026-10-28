@@ -43,12 +43,18 @@ addon.builtinCallbackBindings["Conditions/weapon.lua"] = {
 -- Observation helpers
 -- ============================================================================
 
--- Select the requested hand before interpreting observations. Lua's and/or
--- shorthand falls through to the other hand when the selected value is false.
--- The Platform reader is GetWeaponEnchantInfo, or the same tuple composed from
--- Retail's C_PaperDollInfo.GetTemporaryEnchantmentInfo where that exists.
--- Returns true, expiresMilliseconds, charges when the hand is enchanted, false when it is not, and nil, nil, nil and a
--- reason (missing-api, api-error, restricted-value, invalid-weapon-observation) when it cannot be read.
+-- Reads the temporary enchant of the weapon hand the saved fields select.
+-- @param value table  The saved condition fields; value.offhand selects the off hand instead of the main hand.
+-- @param cache table  The per-pass memo table the game call is cached in.
+-- @return boolean|nil  True when the hand is enchanted, false when it is not; nil when it cannot be read.
+-- @return number|nil  The enchant's remaining time in milliseconds, when the hand is enchanted.
+-- @return number|nil  The enchant's charges, when the hand is enchanted.
+-- @return string|nil  The reason code when the first value is nil ("missing-api", "api-error", "restricted-value" or
+--     "invalid-weapon-observation"); nil otherwise.
+--
+-- The requested hand is selected before the observations are interpreted; Lua's and/or shorthand falls through to the
+-- other hand when the selected value is false. The Platform reader is GetWeaponEnchantInfo, or the same tuple composed
+-- from Retail's C_PaperDollInfo.GetTemporaryEnchantmentInfo where that exists.
 local function enchantObservation(value, cache)
     local reader=GetWeaponEnchantInfo
     if C_PaperDollInfo and C_PaperDollInfo.GetTemporaryEnchantmentInfo then reader=addon.Platform.ComposedWeaponEnchantInfo end
@@ -65,16 +71,26 @@ local function enchantObservation(value, cache)
     return true,expires,charges
 end
 
--- Accepts one numeric weapon reading: returns it, or nil and a reason (restricted-value when hidden,
--- invalid-weapon-observation when it is not a finite, non-negative number).
+-- Accepts one numeric weapon reading.
+-- @param value any  The reading.
+-- @return number|nil  The reading itself; nil when it cannot be accepted.
+-- @return string|nil  The reason code when the first value is nil ("restricted-value" when hidden,
+--     "invalid-weapon-observation" when it is not a finite, non-negative number); nil otherwise.
 local function numericObservation(value)
     if not addon.Platform:CanReadValue(value) then return nil,"restricted-value" end
     if type(value)~="number" or value~=value or value<0 or value==math.huge then return nil,"invalid-weapon-observation" end
     return value
 end
 
--- The swing interval in seconds for the hand or the ranged weapon the condition selects. Returns the seconds, false
--- when there is no off-hand weapon (or no ranged attack), or nil and a reason when the speed is unreadable.
+-- Reads the swing interval in seconds for the hand or the ranged weapon the saved fields select.
+-- @param value table  The saved condition fields; reads ranged and offhand.
+-- @param cache table  The per-pass memo table the reads are cached in.
+-- @return number|boolean|nil  The swing interval in seconds, false when there is no off-hand weapon (or no ranged
+--     attack), or nil when the speed is unreadable.
+-- @return string|nil  The reason code when the first value is nil; nil otherwise.
+--
+-- Ranged: the Auto Shot or wand interval (UnitRangedDamage), false with no ranged attack; the melee hands read
+-- UnitAttackSpeed.
 local function swingSpeed(value, cache)
     -- Ranged: the Auto Shot or wand interval (UnitRangedDamage), false with no
     -- ranged attack; the melee hands read UnitAttackSpeed.
@@ -112,20 +128,40 @@ do
         description = L["Weapon Enchant Present"],
         icon = addon.Artwork.condition["WEAPON"],
         fields = { offhand = "boolean" },
+        -- Checks that the saved fields of the WEAPON condition are complete and in range.
+        -- @return boolean  True when the saved fields are complete and in range.
+        --
         -- Always valid: the only field is an optional checkbox.
         valid = function()
             return true
         end,
+        -- Decides whether the selected weapon hand carries a temporary enchant.
+        -- @param value table  The saved condition fields.
+        -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+        --     Functions.cache.getCached.
+        -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+        -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+        --
         -- Unavailable: missing-api, api-error, restricted-value or invalid-weapon-observation from the enchant read.
         evaluate = function(value, cache)
             local enchanted, _, _, reason=enchantObservation(value,cache)
             return enchanted,reason
         end,
+        -- Builds the readable rule summary for the WEAPON condition.
+        -- @param _ any  Unused; the specialization the summary is printed for.
+        -- @param value table  The saved condition fields.
+        -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+        --
         -- Summary line for the condition list.
         print = function(_, value)
             return string.format(L["Your %s weapon {{!is|is not}} enchanted"],
                     (value.offhand and L["off hand"] or L["main hand"]))
         end,
+        -- Builds the editor controls for the WEAPON condition's fields.
+        -- @param parent table  The editor group the controls are added to.
+        -- @param spec any  The specialization the condition is being edited for.
+        -- @param value table  The saved condition fields; the controls edit it in place.
+        --
         -- Editor: the Off Hand checkbox.
         widget = function(parent, spec, value)
             local top = parent:GetUserData("top")
@@ -142,6 +178,9 @@ do
             end)
             parent:AddChild(offhand)
         end,
+        -- Builds the help page for the WEAPON condition.
+        -- @param frame table  The help page container that text and example widgets are added to.
+        --
         -- Help page: what the Off Hand checkbox selects.
         help = function(frame)
             frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Off Hand"] .. color.RESET .. " - " ..
@@ -157,11 +196,24 @@ do
         description = L["Weapon Enchant Time Remaining"],
         icon = addon.Artwork.condition["WEAPON_REMAIN"],
         fields = { offhand = "boolean", operator = "string", value = "number" },
+        -- Checks that the saved fields of the WEAPON_REMAIN condition are complete and in range.
+        -- @param _ any  Unused; the current specialization the engine passes.
+        -- @param value table  The saved condition fields.
+        -- @return boolean  True when the saved fields are complete and in range.
+        --
         -- Valid with a listed operator and a non-negative number of seconds.
         valid = function(_, value)
             return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                     value.value ~= nil and value.value >= 0)
         end,
+        -- Compares the seconds left on the selected hand's temporary enchant with the configured number; false when the
+        -- hand has no enchant.
+        -- @param value table  The saved condition fields.
+        -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+        --     Functions.cache.getCached.
+        -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+        -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+        --
         -- Unavailable: any reason from the enchant read, or restricted-value or invalid-weapon-observation for the
         -- expiry.
         evaluate = function(value, cache)
@@ -172,12 +224,22 @@ do
             if duration==nil then return nil,why end
             return Functions.values.compare(value.operator,duration/1000,value.value)
         end,
+        -- Builds the readable rule summary for the WEAPON_REMAIN condition.
+        -- @param _ any  Unused; the specialization the summary is printed for.
+        -- @param value table  The saved condition fields.
+        -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+        --
         -- Summary line for the condition list.
         print = function(_, value)
             return Functions.presentation.compareString(value.operator,
                     string.format(L["the time remaining on your %s weapon buff"], (value.offhand and L["off hand"] or L["main hand"])),
                     string.format(L["%s seconds"], Functions.presentation.nullable(value.value)))
         end,
+        -- Builds the editor controls for the WEAPON_REMAIN condition's fields.
+        -- @param parent table  The editor group the controls are added to.
+        -- @param spec any  The specialization the condition is being edited for.
+        -- @param value table  The saved condition fields; the controls edit it in place.
+        --
         -- Editor: the Off Hand checkbox, then the operator and seconds.
         widget = function(parent, spec, value)
             local top = parent:GetUserData("top")
@@ -198,6 +260,9 @@ do
                     function() top:SetStatusText(funcs:print(root, spec)) end)
             parent:AddChild(operator_group)
         end,
+        -- Builds the help page for the WEAPON_REMAIN condition.
+        -- @param frame table  The help page container that text and example widgets are added to.
+        --
         -- Help page: the Off Hand checkbox, then the operator text.
         help = function(frame)
             frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Off Hand"] .. color.RESET .. " - " ..
@@ -219,11 +284,24 @@ do
         description = L["Weapon Enchant Stacks"],
         icon = addon.Artwork.condition["WEAPON_STACKS"],
         fields = { offhand = "boolean", operator = "string", value = "number" },
+        -- Checks that the saved fields of the WEAPON_STACKS condition are complete and in range.
+        -- @param _ any  Unused; the current specialization the engine passes.
+        -- @param value table  The saved condition fields.
+        -- @return boolean  True when the saved fields are complete and in range.
+        --
         -- Valid with a listed operator and a non-negative count.
         valid = function(_, value)
             return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                     value.value ~= nil and value.value >= 0)
         end,
+        -- Compares the charges (stacks) of the selected hand's temporary enchant with the configured number; false when
+        -- the hand has no enchant.
+        -- @param value table  The saved condition fields.
+        -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+        --     Functions.cache.getCached.
+        -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+        -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+        --
         -- Unavailable: any reason from the enchant read, or restricted-value or invalid-weapon-observation for the
         -- count.
         evaluate = function(value, cache)
@@ -234,12 +312,22 @@ do
             if count==nil then return nil,why end
             return Functions.values.compare(value.operator,count,value.value)
         end,
+        -- Builds the readable rule summary for the WEAPON_STACKS condition.
+        -- @param _ any  Unused; the specialization the summary is printed for.
+        -- @param value table  The saved condition fields.
+        -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+        --
         -- Summary line for the condition list.
         print = function(_, value)
             return Functions.presentation.compareString(value.operator,
                     string.format(L["the number of stacks of your %s weapon buff"], (value.offhand and L["off hand"] or L["main hand"])),
                     Functions.presentation.nullable(value.value))
         end,
+        -- Builds the editor controls for the WEAPON_STACKS condition's fields.
+        -- @param parent table  The editor group the controls are added to.
+        -- @param spec any  The specialization the condition is being edited for.
+        -- @param value table  The saved condition fields; the controls edit it in place.
+        --
         -- Editor: the Off Hand checkbox, then the operator and stack count.
         widget = function(parent, spec, value)
             local top = parent:GetUserData("top")
@@ -260,6 +348,9 @@ do
                     function() top:SetStatusText(funcs:print(root, spec)) end)
             parent:AddChild(operator_group)
         end,
+        -- Builds the help page for the WEAPON_STACKS condition.
+        -- @param frame table  The help page container that text and example widgets are added to.
+        --
         -- Help page: the Off Hand checkbox, then the operator text.
         help = function(frame)
             frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Off Hand"] .. color.RESET .. " - " ..
@@ -286,12 +377,25 @@ addon:RegisterCondition("SWING_TIME", {
     description = L["Weapon Swing Time"],
     icon = addon.Artwork.condition["SWING_TIME"],
     fields = { offhand = "boolean", ranged = "boolean", operator = "string", value = "number" },
+    -- Checks that the saved fields of the SWING_TIME condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid with a listed operator, a non-negative number of seconds, and not both offhand and ranged.
     valid = function(_, value)
         return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0 and (value.ranged == nil or type(value.ranged) == "boolean") and
                 not (value.ranged and value.offhand))
     end,
+    -- Compares the selected weapon's full attack interval in seconds with the configured number; false when the chosen
+    -- off-hand or ranged weapon does not exist.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable: missing-api, api-error, restricted-value, invalid-weapon-observation, or the reason from
     -- Platform:GetRangedSwingSpeed for the ranged weapon.
     evaluate = function(value, cache)
@@ -300,11 +404,21 @@ addon:RegisterCondition("SWING_TIME", {
         if speed==false then return false end
         return Functions.values.compare(value.operator,speed,value.value)
     end,
+    -- Builds the readable rule summary for the SWING_TIME condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Summary line for the condition list.
     print = function(_, value)
         return string.format(L["Your %s weapon %s"], (value.ranged and L["ranged"] or value.offhand and L["off hand"] or L["main hand"]),
                 Functions.presentation.compareString(value.operator, L["attack speed"], string.format(L["%s seconds"], Functions.presentation.nullable(value.value))))
     end,
+    -- Builds the editor controls for the SWING_TIME condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor: the Off Hand and Ranged checkboxes (ticking one clears the other), then the operator and seconds.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -338,6 +452,9 @@ addon:RegisterCondition("SWING_TIME", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the SWING_TIME condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the Off Hand and Ranged checkboxes, then the operator text.
     help = function(frame)
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Off Hand"] .. color.RESET .. " - " ..
@@ -360,12 +477,26 @@ addon:RegisterCondition("SWING_TIME_REMAIN", {
     description = L["Weapon Swing Time Remaining"],
     icon = addon.Artwork.condition["SWING_TIME_REMAIN"],
     fields = { offhand = "boolean", ranged = "boolean", operator = "string", value = "number" },
+    -- Checks that the saved fields of the SWING_TIME_REMAIN condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid with a listed operator, a non-negative number of seconds, and not both offhand and ranged.
     valid = function(_, value)
         return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0 and (value.ranged == nil or type(value.ranged) == "boolean") and
                 not (value.ranged and value.offhand))
     end,
+    -- Compares the seconds left until the selected weapon's next swing with the configured number; false for a missing
+    -- off-hand or ranged weapon.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @param evalStart number  The GetTime() reading taken when this evaluation pass began.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable: the same reasons as SWING_TIME. evalStart is the poll's time, which the last swing is measured from.
     evaluate = function(value, cache, evalStart)
         local speed,reason=swingSpeed(value,cache)
@@ -385,11 +516,21 @@ addon:RegisterCondition("SWING_TIME_REMAIN", {
         end
         return Functions.values.compare(value.operator,math.max(speed-math.max(evalStart-lastSwing,0),0),value.value)
     end,
+    -- Builds the readable rule summary for the SWING_TIME_REMAIN condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Summary line for the condition list.
     print = function(_, value)
         return string.format(L["Your %s weapon %s"], (value.ranged and L["ranged"] or value.offhand and L["off hand"] or L["main hand"]),
                 Functions.presentation.compareString(value.operator, L["swing time remaining"], string.format(L["%s seconds"], Functions.presentation.nullable(value.value))))
     end,
+    -- Builds the editor controls for the SWING_TIME_REMAIN condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor: the Off Hand and Ranged checkboxes (ticking one clears the other), then the operator and seconds.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -423,6 +564,9 @@ addon:RegisterCondition("SWING_TIME_REMAIN", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the SWING_TIME_REMAIN condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the Off Hand and Ranged checkboxes, then the operator text.
     help = function(frame)
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Off Hand"] .. color.RESET .. " - " ..

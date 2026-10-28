@@ -155,7 +155,7 @@ addon:RegisterCondition("BOSSMOD_ENCOUNTER", runtimeCondition('BOSSMOD_ENCOUNTER
         return id == value.encounter
     end,
     -- Builds the readable rule summary for the BOSSMOD_ENCOUNTER condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -168,7 +168,7 @@ addon:RegisterCondition("BOSSMOD_ENCOUNTER", runtimeCondition('BOSSMOD_ENCOUNTER
     end,
     -- Builds the editor controls for the BOSSMOD_ENCOUNTER condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- widget builds the encounter ID box and a line showing the current encounter; help draws the help page.
@@ -214,7 +214,7 @@ addon:RegisterCondition("BOSSMOD_STAGE", runtimeCondition('BOSSMOD_STAGE', {
         return Functions.values.compare(value.operator, stage, value.value)
     end,
     -- Builds the readable rule summary for the BOSSMOD_STAGE condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -224,7 +224,7 @@ addon:RegisterCondition("BOSSMOD_STAGE", runtimeCondition('BOSSMOD_STAGE', {
     end,
     -- Builds the editor controls for the BOSSMOD_STAGE condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- widget builds an operator-and-stage control and a line showing the current encounter; help draws the page.
@@ -273,7 +273,7 @@ addon:RegisterCondition("BOSSMOD_TIMER", runtimeCondition('BOSSMOD_TIMER', {
         return Functions.values.compare(value.operator, remaining, value.value)
     end,
     -- Builds the readable rule summary for the BOSSMOD_TIMER condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -285,7 +285,7 @@ addon:RegisterCondition("BOSSMOD_TIMER", runtimeCondition('BOSSMOD_TIMER', {
     end,
     -- Builds the editor controls for the BOSSMOD_TIMER condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- widget builds the spell ID box with a spell preview, an operator-and-seconds control and a line listing the

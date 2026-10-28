@@ -46,10 +46,15 @@ addon.builtinCallbackBindings["Conditions/spatial_stats.lua"] = {
 -- Shared readers
 -- ============================================================================
 
--- Reads one number for a unit by calling a native statistic API (UnitHealth, UnitHealthMax, UnitPower or UnitPowerMax)
--- through the evaluation cache; `power` true passes the Mana power type. Returns the number, or nil and a reason:
--- "missing-api", "api-error" (the call threw), "restricted-value" (secret) or "statistic-unavailable" (not a finite,
--- non-negative number).
+-- Reads one number for a unit by calling a native statistic API through the evaluation cache.
+-- @param cache table  The per-pass memo table the read is cached in.
+-- @param method function|nil  The native API to call (UnitHealth, UnitHealthMax, UnitPower or UnitPowerMax).
+-- @param unit string  The unit token to read.
+-- @param power boolean|nil  True to pass the Mana power type as a second argument.
+-- @return number|nil  The reading; nil when it cannot be read.
+-- @return string|nil  The reason code when the first value is nil ("missing-api", "api-error" when the call threw,
+--     "restricted-value" for a secret, or "statistic-unavailable" when it is not a finite, non-negative number); nil
+--     otherwise.
 local function observation(cache, method, unit, power)
     if type(method)~="function" then return nil,"missing-api" end
     local ok,current
@@ -61,10 +66,16 @@ local function observation(cache, method, unit, power)
     return current
 end
 
--- Returns the unit's health (its mana when `mana` is true) in the form a condition compares: the current value, or with
--- `percentage` the current value as 0 to 100 of the maximum (which must be positive), or with `deficit` the maximum
--- minus the current value; `percentage` wins when both are set. Returns nil and the reason from observation, or
--- "statistic-unavailable", when a read fails.
+-- Reads a unit's health (or mana) in the form a condition compares.
+-- @param cache table  The per-pass memo table the reads are cached in.
+-- @param unit string  The unit token to read.
+-- @param mana boolean|nil  True to read mana instead of health.
+-- @param percentage boolean|nil  True for the current value as 0 to 100 of the maximum (which must be positive); wins
+--     over deficit when both are set.
+-- @param deficit boolean|nil  True for the maximum minus the current value.
+-- @return number|nil  The current value, percentage or deficit; nil when a read fails.
+-- @return string|nil  The reason code when the first value is nil (the reason from observation, or
+--     "statistic-unavailable"); nil otherwise.
 local function statistic(cache, unit, mana, percentage, deficit)
     local method=UnitHealth;if mana then method=UnitPower end
     local current,reason=observation(cache,method,unit,mana)
@@ -84,9 +95,13 @@ local function statistic(cache, unit, mana, percentage, deficit)
     return current
 end
 
--- Reduces the numbers collected for the members in range to one by operation "average", "minimum" or "maximum".
--- Returns nil and "no-units-in-range" for an empty list, "statistic-unavailable" when the sum is not finite, or
--- "invalid-operation" for any other operation.
+-- Reduces the numbers collected for the members in range to one.
+-- @param values number[]  The readings, one per member in range.
+-- @param operation string  "average", "minimum" or "maximum".
+-- @return number|nil  The reduced number; nil when it cannot be computed.
+-- @return string|nil  The reason code when the first value is nil ("no-units-in-range" for an empty list,
+--     "statistic-unavailable" when the sum is not finite, or "invalid-operation" for any other operation); nil
+--     otherwise.
 local function aggregate(values, operation)
     if #values==0 then return nil,"no-units-in-range" end
     local value=values[1]
@@ -124,6 +139,11 @@ addon:RegisterCondition("PROXIMITY_HEALTH", {
         samegroup = "boolean",
         includepets = "boolean",
     },
+    -- Checks that the saved fields of the PROXIMITY_HEALTH condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Configuration check: every saved field must be present and in range for this condition.
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
@@ -132,6 +152,14 @@ addon:RegisterCondition("PROXIMITY_HEALTH", {
                 value.value ~= nil and type(value.value) == "number" and
                 value.distance ~= nil and value.distance >= 0)
     end,
+    -- Reduces the raw health of the members within the configured distance of the unit (average, minimum or maximum)
+    -- and compares it with the configured amount.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Collects one health reading per member in range (addon.proximity_eval drives the scan), aggregates them and
     -- compares. Unavailable if the scan did not complete, any reading failed, or the list is empty.
     evaluate = function(value, cache)
@@ -147,6 +175,11 @@ addon:RegisterCondition("PROXIMITY_HEALTH", {
         if v==nil then return nil,aggregateReason end
         return Functions.values.compare(value.operator, v, math.abs(value.value))
     end,
+    -- Builds the readable rule summary for the PROXIMITY_HEALTH condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary from a localized phrase; fields that are not yet set show placeholders. A negative amount is worded
     -- as a deficit where the condition accepts one.
     print = function(_, value)
@@ -166,6 +199,11 @@ addon:RegisterCondition("PROXIMITY_HEALTH", {
                     threshold = Functions.presentation.nullable(threshold),
                 })
     end,
+    -- Builds the editor controls for the PROXIMITY_HEALTH condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor controls: the unit selector, this condition's own comparison controls, then the shared distance, same
     -- group and include pets controls from addon.proximity_widgets.
     widget = function(parent, spec, value)
@@ -197,6 +235,9 @@ addon:RegisterCondition("PROXIMITY_HEALTH", {
 
         addon.proximity_widgets(top, root, funcs, parent, spec, value)
     end,
+    -- Builds the help page for the PROXIMITY_HEALTH condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the unit, this condition's own fields, the shared distance, same group and include pets text, and the
     -- note on when the whole condition is unavailable.
     help = function(frame)
@@ -246,6 +287,11 @@ addon:RegisterCondition("PROXIMITY_HEALTH_COUNT", {
         samegroup = "boolean",
         includepets = "boolean",
     },
+    -- Checks that the saved fields of the PROXIMITY_HEALTH_COUNT condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Configuration check: every saved field must be present and in range for this condition.
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
@@ -255,6 +301,14 @@ addon:RegisterCondition("PROXIMITY_HEALTH_COUNT", {
                 value.value ~= nil and value.value >= 0 and
                 value.distance ~= nil and value.distance >= 0)
     end,
+    -- Counts the members within the configured distance of the unit whose raw health passes the health comparison, and
+    -- compares the count with the configured number.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Counts members in range whose health passes the health comparison (addon.proximity_eval drives the scan), then
     -- compares the count. Unavailable if the scan did not complete or any reading failed.
     evaluate = function(value, cache)
@@ -270,6 +324,11 @@ addon:RegisterCondition("PROXIMITY_HEALTH_COUNT", {
 
         return Functions.values.compare(value.operator, count, value.value)
     end,
+    -- Builds the readable rule summary for the PROXIMITY_HEALTH_COUNT condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary from a localized phrase; fields that are not yet set show placeholders. A negative amount is worded
     -- as a deficit where the condition accepts one.
     print = function(_, value)
@@ -290,6 +349,11 @@ addon:RegisterCondition("PROXIMITY_HEALTH_COUNT", {
                     value = Functions.presentation.nullable(value.value),
                 })
     end,
+    -- Builds the editor controls for the PROXIMITY_HEALTH_COUNT condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor controls: the unit selector, this condition's own comparison controls, then the shared distance, same
     -- group and include pets controls from addon.proximity_widgets.
     widget = function(parent, spec, value)
@@ -311,6 +375,9 @@ addon:RegisterCondition("PROXIMITY_HEALTH_COUNT", {
 
         addon.proximity_widgets(top, root, funcs, parent, spec, value)
     end,
+    -- Builds the help page for the PROXIMITY_HEALTH_COUNT condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the unit, this condition's own fields, the shared distance, same group and include pets text, and the
     -- note on when the whole condition is unavailable.
     help = function(frame)
@@ -355,6 +422,11 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT", {
         samegroup = "boolean",
         includepets = "boolean",
     },
+    -- Checks that the saved fields of the PROXIMITY_HEALTHPCT condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Configuration check: every saved field must be present and in range for this condition.
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
@@ -363,6 +435,14 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT", {
                 value.value ~= nil and value.value >= 0.00 and value.value <= 1.00 and
                 value.distance ~= nil and value.distance >= 0)
     end,
+    -- Reduces the health percentage of the members within the configured distance of the unit (average, minimum or
+    -- maximum) and compares it with the configured fraction.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Collects one health percentage per member in range (addon.proximity_eval drives the scan), aggregates them and
     -- compares. Unavailable if the scan did not complete, any reading failed, or the list is empty.
     evaluate = function(value, cache)
@@ -378,6 +458,11 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT", {
         if v==nil then return nil,aggregateReason end
         return Functions.values.compare(value.operator, v, value.value * 100)
     end,
+    -- Builds the readable rule summary for the PROXIMITY_HEALTHPCT condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary from a localized phrase; fields that are not yet set show placeholders. A negative amount is worded
     -- as a deficit where the condition accepts one.
     print = function(_, value)
@@ -395,6 +480,11 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT", {
                     threshold = Functions.presentation.nullable(threshold),
                 })
     end,
+    -- Builds the editor controls for the PROXIMITY_HEALTHPCT condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor controls: the unit selector, this condition's own comparison controls, then the shared distance, same
     -- group and include pets controls from addon.proximity_widgets.
     widget = function(parent, spec, value)
@@ -426,6 +516,9 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT", {
 
         addon.proximity_widgets(top, root, funcs, parent, spec, value)
     end,
+    -- Builds the help page for the PROXIMITY_HEALTHPCT condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the unit, this condition's own fields, the shared distance, same group and include pets text, and the
     -- note on when the whole condition is unavailable.
     help = function(frame)
@@ -475,6 +568,11 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT_COUNT", {
         samegroup = "boolean",
         includepets = "boolean",
     },
+    -- Checks that the saved fields of the PROXIMITY_HEALTHPCT_COUNT condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Configuration check: every saved field must be present and in range for this condition.
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
@@ -484,6 +582,14 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT_COUNT", {
                 value.value ~= nil and value.value >= 0 and
                 value.distance ~= nil and value.distance >= 0)
     end,
+    -- Counts the members within the configured distance of the unit whose health percentage passes the comparison, and
+    -- compares the count with the configured number.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Counts members in range whose health percentage passes the comparison (addon.proximity_eval drives the scan),
     -- then compares the count. Unavailable if the scan did not complete or any reading failed.
     evaluate = function(value, cache)
@@ -498,6 +604,11 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT_COUNT", {
         if not complete then return nil,reason end
         return Functions.values.compare(value.operator, count, value.value)
     end,
+    -- Builds the readable rule summary for the PROXIMITY_HEALTHPCT_COUNT condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary from a localized phrase; fields that are not yet set show placeholders. A negative amount is worded
     -- as a deficit where the condition accepts one.
     print = function(_, value)
@@ -516,6 +627,11 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT_COUNT", {
                     value = Functions.presentation.nullable(value.value),
                 })
     end,
+    -- Builds the editor controls for the PROXIMITY_HEALTHPCT_COUNT condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor controls: the unit selector, this condition's own comparison controls, then the shared distance, same
     -- group and include pets controls from addon.proximity_widgets.
     widget = function(parent, spec, value)
@@ -537,6 +653,9 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT_COUNT", {
 
         addon.proximity_widgets(top, root, funcs, parent, spec, value)
     end,
+    -- Builds the help page for the PROXIMITY_HEALTHPCT_COUNT condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the unit, this condition's own fields, the shared distance, same group and include pets text, and the
     -- note on when the whole condition is unavailable.
     help = function(frame)
@@ -584,6 +703,11 @@ addon:RegisterCondition("PROXIMITY_MANA", {
         samegroup = "boolean",
         includepets = "boolean",
     },
+    -- Checks that the saved fields of the PROXIMITY_MANA condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Configuration check: every saved field must be present and in range for this condition.
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
@@ -592,6 +716,14 @@ addon:RegisterCondition("PROXIMITY_MANA", {
                 value.value ~= nil and type(value.value) == "number" and
                 value.distance ~= nil and value.distance >= 0)
     end,
+    -- Reduces the raw mana of the members within the configured distance of the unit (average, minimum or maximum) and
+    -- compares it with the configured amount.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Collects one mana reading per member in range (addon.proximity_eval drives the scan), aggregates them and
     -- compares. Unavailable if the scan did not complete, any reading failed, or the list is empty.
     evaluate = function(value, cache)
@@ -607,6 +739,11 @@ addon:RegisterCondition("PROXIMITY_MANA", {
         if v==nil then return nil,aggregateReason end
         return Functions.values.compare(value.operator, v, math.abs(value.value))
     end,
+    -- Builds the readable rule summary for the PROXIMITY_MANA condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary from a localized phrase; fields that are not yet set show placeholders. A negative amount is worded
     -- as a deficit where the condition accepts one.
     print = function(_, value)
@@ -626,6 +763,11 @@ addon:RegisterCondition("PROXIMITY_MANA", {
                     threshold = Functions.presentation.nullable(threshold),
                 })
     end,
+    -- Builds the editor controls for the PROXIMITY_MANA condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor controls: the unit selector, this condition's own comparison controls, then the shared distance, same
     -- group and include pets controls from addon.proximity_widgets.
     widget = function(parent, spec, value)
@@ -657,6 +799,9 @@ addon:RegisterCondition("PROXIMITY_MANA", {
 
         addon.proximity_widgets(top, root, funcs, parent, spec, value)
     end,
+    -- Builds the help page for the PROXIMITY_MANA condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the unit, this condition's own fields, the shared distance, same group and include pets text, and the
     -- note on when the whole condition is unavailable.
     help = function(frame)
@@ -706,6 +851,11 @@ addon:RegisterCondition("PROXIMITY_MANA_COUNT", {
         samegroup = "boolean",
         includepets = "boolean",
     },
+    -- Checks that the saved fields of the PROXIMITY_MANA_COUNT condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Configuration check: every saved field must be present and in range for this condition.
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
@@ -715,6 +865,14 @@ addon:RegisterCondition("PROXIMITY_MANA_COUNT", {
                 value.value ~= nil and value.value >= 0 and
                 value.distance ~= nil and value.distance >= 0)
     end,
+    -- Counts the members within the configured distance of the unit whose raw mana passes the mana comparison, and
+    -- compares the count with the configured number.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Counts members in range whose mana passes the mana comparison (addon.proximity_eval drives the scan), then
     -- compares the count. Unavailable if the scan did not complete or any reading failed.
     evaluate = function(value, cache)
@@ -730,6 +888,11 @@ addon:RegisterCondition("PROXIMITY_MANA_COUNT", {
 
         return Functions.values.compare(value.operator, count, value.value)
     end,
+    -- Builds the readable rule summary for the PROXIMITY_MANA_COUNT condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary from a localized phrase; fields that are not yet set show placeholders. A negative amount is worded
     -- as a deficit where the condition accepts one.
     print = function(_, value)
@@ -750,6 +913,11 @@ addon:RegisterCondition("PROXIMITY_MANA_COUNT", {
                     value = Functions.presentation.nullable(value.value),
                 })
     end,
+    -- Builds the editor controls for the PROXIMITY_MANA_COUNT condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor controls: the unit selector, this condition's own comparison controls, then the shared distance, same
     -- group and include pets controls from addon.proximity_widgets.
     widget = function(parent, spec, value)
@@ -771,6 +939,9 @@ addon:RegisterCondition("PROXIMITY_MANA_COUNT", {
 
         addon.proximity_widgets(top, root, funcs, parent, spec, value)
     end,
+    -- Builds the help page for the PROXIMITY_MANA_COUNT condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the unit, this condition's own fields, the shared distance, same group and include pets text, and the
     -- note on when the whole condition is unavailable.
     help = function(frame)
@@ -815,6 +986,11 @@ addon:RegisterCondition("PROXIMITY_MANAPCT", {
         samegroup = "boolean",
         includepets = "boolean",
     },
+    -- Checks that the saved fields of the PROXIMITY_MANAPCT condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Configuration check: every saved field must be present and in range for this condition.
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
@@ -823,6 +999,14 @@ addon:RegisterCondition("PROXIMITY_MANAPCT", {
                 value.value ~= nil and value.value >= 0.00 and value.value <= 1.00 and
                 value.distance ~= nil and value.distance >= 0)
     end,
+    -- Reduces the mana percentage of the members within the configured distance of the unit (average, minimum or
+    -- maximum) and compares it with the configured fraction.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Collects one mana percentage per member in range (addon.proximity_eval drives the scan), aggregates them and
     -- compares. Unavailable if the scan did not complete, any reading failed, or the list is empty.
     evaluate = function(value, cache)
@@ -838,6 +1022,11 @@ addon:RegisterCondition("PROXIMITY_MANAPCT", {
         if v==nil then return nil,aggregateReason end
         return Functions.values.compare(value.operator, v, value.value * 100)
     end,
+    -- Builds the readable rule summary for the PROXIMITY_MANAPCT condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary from a localized phrase; fields that are not yet set show placeholders. A negative amount is worded
     -- as a deficit where the condition accepts one.
     print = function(_, value)
@@ -855,6 +1044,11 @@ addon:RegisterCondition("PROXIMITY_MANAPCT", {
                     threshold = Functions.presentation.nullable(threshold),
                 })
     end,
+    -- Builds the editor controls for the PROXIMITY_MANAPCT condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor controls: the unit selector, this condition's own comparison controls, then the shared distance, same
     -- group and include pets controls from addon.proximity_widgets.
     widget = function(parent, spec, value)
@@ -886,6 +1080,9 @@ addon:RegisterCondition("PROXIMITY_MANAPCT", {
 
         addon.proximity_widgets(top, root, funcs, parent, spec, value)
     end,
+    -- Builds the help page for the PROXIMITY_MANAPCT condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the unit, this condition's own fields, the shared distance, same group and include pets text, and the
     -- note on when the whole condition is unavailable.
     help = function(frame)
@@ -935,6 +1132,11 @@ addon:RegisterCondition("PROXIMITY_MANAPCT_COUNT", {
         samegroup = "boolean",
         includepets = "boolean",
     },
+    -- Checks that the saved fields of the PROXIMITY_MANAPCT_COUNT condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Configuration check: every saved field must be present and in range for this condition.
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
@@ -944,6 +1146,14 @@ addon:RegisterCondition("PROXIMITY_MANAPCT_COUNT", {
                 value.value ~= nil and value.value >= 0 and
                 value.distance ~= nil and value.distance >= 0)
     end,
+    -- Counts the members within the configured distance of the unit whose mana percentage passes the comparison, and
+    -- compares the count with the configured number.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Counts members in range whose mana percentage passes the comparison (addon.proximity_eval drives the scan), then
     -- compares the count. Unavailable if the scan did not complete or any reading failed.
     evaluate = function(value, cache)
@@ -958,6 +1168,11 @@ addon:RegisterCondition("PROXIMITY_MANAPCT_COUNT", {
         if not complete then return nil,reason end
         return Functions.values.compare(value.operator, count, value.value)
     end,
+    -- Builds the readable rule summary for the PROXIMITY_MANAPCT_COUNT condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary from a localized phrase; fields that are not yet set show placeholders. A negative amount is worded
     -- as a deficit where the condition accepts one.
     print = function(_, value)
@@ -976,6 +1191,11 @@ addon:RegisterCondition("PROXIMITY_MANAPCT_COUNT", {
                     value = Functions.presentation.nullable(value.value),
                 })
     end,
+    -- Builds the editor controls for the PROXIMITY_MANAPCT_COUNT condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor controls: the unit selector, this condition's own comparison controls, then the shared distance, same
     -- group and include pets controls from addon.proximity_widgets.
     widget = function(parent, spec, value)
@@ -997,6 +1217,9 @@ addon:RegisterCondition("PROXIMITY_MANAPCT_COUNT", {
 
         addon.proximity_widgets(top, root, funcs, parent, spec, value)
     end,
+    -- Builds the help page for the PROXIMITY_MANAPCT_COUNT condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the unit, this condition's own fields, the shared distance, same group and include pets text, and the
     -- note on when the whole condition is unavailable.
     help = function(frame)

@@ -50,7 +50,7 @@ addon:RegisterCondition("BEYOND_MELEE", runtimeCondition('BEYOND_MELEE', {
         return addon.Platform:IsBeyondMeleeRange(value.unit)
     end,
     -- Builds the readable rule summary for the BEYOND_MELEE condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -61,7 +61,7 @@ addon:RegisterCondition("BEYOND_MELEE", runtimeCondition('BEYOND_MELEE', {
     ) return string.format(value.unit=="player" and L["%s {{!are|are not}} beyond melee range"] or L["%s {{!is|is not}} beyond melee range"],addon.units[value.unit] or L["<unit>"]) end,
     -- Builds the editor controls for the BEYOND_MELEE condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor control: the unit selector, which refreshes the status line on change.

@@ -81,7 +81,7 @@ addon:RegisterCondition("CHANNELING", runtimeCondition('CHANNELING', {
         return true
     end,
     -- Builds the readable rule summary for the CHANNELING condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -92,7 +92,7 @@ addon:RegisterCondition("CHANNELING", runtimeCondition('CHANNELING', {
     end,
     -- Builds the editor controls for the CHANNELING condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- widget builds the editor controls (a unit picker); help draws the help page.
@@ -152,7 +152,7 @@ addon:RegisterCondition("CHANNELING_SPELL", {
         return addon.Platform:MatchSpellIdentity(record.spellID, record.spellReason, record.name, value.spell, value.ranked == true)
     end,
     -- Builds the readable rule summary for the CHANNELING_SPELL condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -165,7 +165,7 @@ addon:RegisterCondition("CHANNELING_SPELL", {
     end,
     -- Builds the editor controls for the CHANNELING_SPELL condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- widget builds a unit picker, the spell box and, on clients with ranks, the exact-rank checkbox; help draws the
@@ -233,7 +233,7 @@ addon:RegisterCondition("CHANNELING_REMAIN", {
         return Functions.values.compare(value.operator,record.remainingSeconds,value.value)
     end,
     -- Builds the readable rule summary for the CHANNELING_REMAIN condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -245,7 +245,7 @@ addon:RegisterCondition("CHANNELING_REMAIN", {
     end,
     -- Builds the editor controls for the CHANNELING_REMAIN condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- widget builds a unit picker and an operator-and-seconds control; help draws the page.
@@ -314,7 +314,7 @@ addon:RegisterCondition("CHANNELING_PROGRESS", {
         return Functions.values.compare(value.operator,done,value.value)
     end,
     -- Builds the readable rule summary for the CHANNELING_PROGRESS condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -326,7 +326,7 @@ addon:RegisterCondition("CHANNELING_PROGRESS", {
     end,
     -- Builds the editor controls for the CHANNELING_PROGRESS condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- widget builds a unit picker and an operator-and-percent control; help draws the page.
@@ -388,7 +388,7 @@ addon:RegisterCondition("CHANNEL_INTERRUPTABLE", {
         return record.interruptible
     end,
     -- Builds the readable rule summary for the CHANNEL_INTERRUPTABLE condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -398,7 +398,7 @@ addon:RegisterCondition("CHANNEL_INTERRUPTABLE", {
     end,
     -- Builds the editor controls for the CHANNEL_INTERRUPTABLE condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- widget offers every unit except player and pet; help draws the page.

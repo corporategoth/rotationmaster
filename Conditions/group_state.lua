@@ -108,7 +108,7 @@ addon:RegisterCondition("GROUP_COUNT", {
         return Functions.values.compare(value.operator, count, value.value)
     end,
     -- Builds the readable rule summary for the GROUP_COUNT condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -134,7 +134,7 @@ addon:RegisterCondition("GROUP_COUNT", {
     end,
     -- Builds the editor controls for the GROUP_COUNT condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- widget builds the measure dropdown, the "as a percent of the group" checkbox and an operator-and-value control;

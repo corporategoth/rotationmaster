@@ -76,7 +76,7 @@ addon:RegisterCondition("ANYSPELL_AVAIL", {
         return Functions.cache.getCached(cache, addon.Platform.IsSpellReady, addon.Platform, spellid, evalStart)
     end,
     -- Builds the readable rule summary for the ANYSPELL_AVAIL condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -87,7 +87,7 @@ addon:RegisterCondition("ANYSPELL_AVAIL", {
     end,
     -- Builds the editor controls for the ANYSPELL_AVAIL condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- widget builds the spell picker (any spell, no specialization filter); help draws the help page.
@@ -149,7 +149,7 @@ addon:RegisterCondition("ANYSPELL_RANGE", {
         return range.applicable and range.inRange or false
     end,
     -- Builds the readable rule summary for the ANYSPELL_RANGE condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -160,7 +160,7 @@ addon:RegisterCondition("ANYSPELL_RANGE", {
     end,
     -- Builds the editor controls for the ANYSPELL_RANGE condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- widget builds the spell picker (any spell, no specialization filter); help draws the help page.
@@ -228,7 +228,7 @@ addon:RegisterCondition("ANYSPELL_COOLDOWN", {
         return Functions.values.compare(value.operator, remain, value.value)
     end,
     -- Builds the readable rule summary for the ANYSPELL_COOLDOWN condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -241,7 +241,7 @@ addon:RegisterCondition("ANYSPELL_COOLDOWN", {
     end,
     -- Builds the editor controls for the ANYSPELL_COOLDOWN condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- widget builds the spell picker (any spell) and an operator-and-seconds control; help draws the help page.
@@ -314,7 +314,7 @@ addon:RegisterCondition("ANYSPELL_REMAIN", {
         return Functions.values.compare(value.operator, remain, value.value)
     end,
     -- Builds the readable rule summary for the ANYSPELL_REMAIN condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -327,7 +327,7 @@ addon:RegisterCondition("ANYSPELL_REMAIN", {
     end,
     -- Builds the editor controls for the ANYSPELL_REMAIN condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- widget builds the spell picker (any spell) and an operator-and-seconds control; help draws the help page.
@@ -394,7 +394,7 @@ addon:RegisterCondition("ANYSPELL_CHARGES", {
         return Functions.values.compare(value.operator, charges.currentCharges, value.value)
     end,
     -- Builds the readable rule summary for the ANYSPELL_CHARGES condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -406,7 +406,7 @@ addon:RegisterCondition("ANYSPELL_CHARGES", {
     end,
     -- Builds the editor controls for the ANYSPELL_CHARGES condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- widget builds the spell picker (any spell) and an operator-and-charges control; help draws the help page.

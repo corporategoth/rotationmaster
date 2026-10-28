@@ -69,7 +69,7 @@ addon:RegisterCondition("ASSISTED_SUGGESTION", {
         return addon.Platform:IsAssistedSpellMatch(spellid, suggestion)
     end,
     -- Builds the readable rule summary for the ASSISTED_SUGGESTION condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -83,7 +83,7 @@ addon:RegisterCondition("ASSISTED_SUGGESTION", {
     end,
     -- Builds the editor controls for the ASSISTED_SUGGESTION condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- widget builds the spell picker (spells on the rotation's specialization); help draws the help page.
@@ -148,7 +148,7 @@ addon:RegisterCondition("ASSISTED_ROTATION_SPELL", {
         return Functions.cache.getCached(cache, addon.Platform.IsAssistedRotationSpell, addon.Platform, spellid)
     end,
     -- Builds the readable rule summary for the ASSISTED_ROTATION_SPELL condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -159,7 +159,7 @@ addon:RegisterCondition("ASSISTED_ROTATION_SPELL", {
     end,
     -- Builds the editor controls for the ASSISTED_ROTATION_SPELL condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- widget builds the spell picker (spells on the rotation's specialization); help draws the help page.

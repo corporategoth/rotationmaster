@@ -84,7 +84,7 @@ addon:RegisterCondition("COMBAT", runtimeCondition('COMBAT', {
         return Functions.cache.getCached(cache, addon.Platform.GetUnitFlagObservation, addon.Platform, value.unit, "combat")
     end,
     -- Builds the readable rule summary for the COMBAT condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -95,7 +95,7 @@ addon:RegisterCondition("COMBAT", runtimeCondition('COMBAT', {
     end,
     -- Builds the editor controls for the COMBAT condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor control: the unit selector.
@@ -187,7 +187,7 @@ addon:RegisterCondition("PET_NAME", {
         return record.name == value.value
     end,
     -- Builds the readable rule summary for the PET_NAME condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -197,7 +197,7 @@ addon:RegisterCondition("PET_NAME", {
     end,
     -- Builds the editor controls for the PET_NAME condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor control: a text box that stores the name when Enter is pressed.
@@ -355,7 +355,7 @@ addon:RegisterCondition("LOC_TYPE", {
         return false
     end,
     -- Builds the readable rule summary for the LOC_TYPE condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -366,7 +366,7 @@ addon:RegisterCondition("LOC_TYPE", {
     end,
     -- Builds the editor controls for the LOC_TYPE condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor controls: the control type dropdown and the seconds comparison.
@@ -460,7 +460,7 @@ addon:RegisterCondition("LOC_BLOCKED", {
         return false
     end,
     -- Builds the readable rule summary for the LOC_BLOCKED condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -471,7 +471,7 @@ addon:RegisterCondition("LOC_BLOCKED", {
     end,
     -- Builds the editor controls for the LOC_BLOCKED condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor controls: the blocked school dropdown and the seconds comparison.
@@ -589,7 +589,7 @@ addon:RegisterCondition("THREAT", {
         return observed >= value.threat - 1
     end,
     -- Builds the readable rule summary for the THREAT condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -605,7 +605,7 @@ addon:RegisterCondition("THREAT", {
     end,
     -- Builds the editor controls for the THREAT condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor controls: the unit selector (player and pet are left out of the list), then the threat level.
@@ -691,7 +691,7 @@ addon:RegisterCondition("THREAT_COUNT", {
         return Functions.values.compare(value.operator, count, value.value)
     end,
     -- Builds the readable rule summary for the THREAT_COUNT condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -704,7 +704,7 @@ addon:RegisterCondition("THREAT_COUNT", {
     end,
     -- Builds the editor controls for the THREAT_COUNT condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor controls: the threat level dropdown and the count comparison.
@@ -808,7 +808,7 @@ addon:RegisterCondition("FORM", runtimeCondition('FORM', {
         return form == value.value
     end,
     -- Builds the readable rule summary for the FORM condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -833,7 +833,7 @@ addon:RegisterCondition("FORM", runtimeCondition('FORM', {
     end,
     -- Builds the editor controls for the FORM condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor controls: a form icon and a dropdown of humanoid, the stance bar forms, the class's other forms on this
@@ -986,7 +986,7 @@ addon:RegisterCondition("ATTACKABLE", runtimeCondition('ATTACKABLE', {
         return Functions.cache.getCached(cache, addon.Platform.GetUnitAttackabilityObservation, addon.Platform, value.unit)
     end,
     -- Builds the readable rule summary for the ATTACKABLE condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -996,7 +996,7 @@ addon:RegisterCondition("ATTACKABLE", runtimeCondition('ATTACKABLE', {
     end,
     -- Builds the editor controls for the ATTACKABLE condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor control: the unit selector (player and pet are left out of the list).
@@ -1043,7 +1043,7 @@ addon:RegisterCondition("ENEMY", {
         return Functions.cache.getCached(cache, addon.Platform.GetUnitFlagObservation, addon.Platform, value.unit, "enemy")
     end,
     -- Builds the readable rule summary for the ENEMY condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -1053,7 +1053,7 @@ addon:RegisterCondition("ENEMY", {
     end,
     -- Builds the editor controls for the ENEMY condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor control: the unit selector (player and pet are left out of the list).
@@ -1124,7 +1124,7 @@ addon:RegisterCondition("COMBAT_HISTORY", {
         return false
     end,
     -- Builds the readable rule summary for the COMBAT_HISTORY condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -1138,7 +1138,7 @@ addon:RegisterCondition("COMBAT_HISTORY", {
     end,
     -- Builds the editor controls for the COMBAT_HISTORY condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor controls: the unit selector (limited to player, pet and target), the action type and the position.
@@ -1245,7 +1245,7 @@ addon:RegisterCondition("COMBAT_HISTORY_TIME", {
         return false
     end,
     -- Builds the readable rule summary for the COMBAT_HISTORY_TIME condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -1259,7 +1259,7 @@ addon:RegisterCondition("COMBAT_HISTORY_TIME", {
     end,
     -- Builds the editor controls for the COMBAT_HISTORY_TIME condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor controls: the unit selector (limited to player, pet and target), the action type and the seconds.
@@ -1347,7 +1347,7 @@ addon:RegisterCondition("TIME_IN_COMBAT", {
         return Functions.values.compare(value.operator,elapsed,value.value)
     end,
     -- Builds the readable rule summary for the TIME_IN_COMBAT condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -1357,7 +1357,7 @@ addon:RegisterCondition("TIME_IN_COMBAT", {
     end,
     -- Builds the editor controls for the TIME_IN_COMBAT condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor control: the seconds comparison.

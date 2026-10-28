@@ -82,7 +82,7 @@ addon:RegisterCondition("BUFF", runtimeCondition('BUFF', {
         return addon:EvaluateAuraCondition(value, cache, start, "HELPFUL", "present")
     end,
     -- Builds the readable rule summary for the BUFF condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -95,7 +95,7 @@ addon:RegisterCondition("BUFF", runtimeCondition('BUFF', {
     end,
     -- Builds the editor controls for the BUFF condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor: the unit picker, the Own Buff checkbox, the spell name box and the rank choice.
@@ -184,7 +184,7 @@ addon:RegisterCondition("BUFF_REMAIN", {
         return addon:EvaluateAuraCondition(value, cache, start, "HELPFUL", "remaining")
     end,
     -- Builds the readable rule summary for the BUFF_REMAIN condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -200,7 +200,7 @@ addon:RegisterCondition("BUFF_REMAIN", {
     end,
     -- Builds the editor controls for the BUFF_REMAIN condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor: the BUFF controls, then the operator and seconds.
@@ -289,7 +289,7 @@ addon:RegisterCondition("BUFF_STACKS", {
         return addon:EvaluateAuraCondition(value, cache, start, "HELPFUL", "stacks")
     end,
     -- Builds the readable rule summary for the BUFF_STACKS condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -304,7 +304,7 @@ addon:RegisterCondition("BUFF_STACKS", {
     end,
     -- Builds the editor controls for the BUFF_STACKS condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor: the BUFF controls, then the operator and stack count.
@@ -387,7 +387,7 @@ addon:RegisterCondition("STEALABLE", {
         return addon:EvaluateAuraCondition(value, cache, start, "HELPFUL", "stealable")
     end,
     -- Builds the readable rule summary for the STEALABLE condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -397,7 +397,7 @@ addon:RegisterCondition("STEALABLE", {
     end,
     -- Builds the editor controls for the STEALABLE condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor: the unit picker, without the player and pet entries.

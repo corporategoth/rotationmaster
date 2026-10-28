@@ -29,7 +29,7 @@ local function valid(_, value) return value.unit~=nil and Functions.values.isin(
 
 -- Builds the unit selector, which refreshes the status line on change; shared by DEAD and FRIENDLY.
 -- @param parent table  The editor group the selector is added to.
--- @param spec any  The current specialization (addon.currentSpec).
+-- @param spec any  The specialization the condition is being edited for.
 -- @param value table  The saved condition fields; the selector edits unit in place.
 local function widget(parent, spec, value)
     local top=parent:GetUserData('top')
@@ -59,7 +59,7 @@ addon:RegisterCondition('DEAD', {
         return Functions.cache.getCached(cache,addon.Platform.GetUnitStateObservation,addon.Platform,value.unit,'dead')
     end,
     -- Builds the readable rule summary for the DEAD condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -100,7 +100,7 @@ addon:RegisterCondition('FRIENDLY', {
         return Functions.cache.getCached(cache,addon.Platform.GetUnitStateObservation,addon.Platform,value.unit,'friendly')
     end,
     -- Builds the readable rule summary for the FRIENDLY condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --

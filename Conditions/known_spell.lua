@@ -51,7 +51,7 @@ addon:RegisterCondition("SPELL_KNOWN", runtimeCondition('SPELL_KNOWN', {
         return addon.Platform:IsSpellKnown(value.spell, value.pet)
     end,
     -- Builds the readable rule summary for the SPELL_KNOWN condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -65,7 +65,7 @@ addon:RegisterCondition("SPELL_KNOWN", runtimeCondition('SPELL_KNOWN', {
     end,
     -- Builds the editor controls for the SPELL_KNOWN condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor: a spell edit box that accepts an ID or a name, a label preview of the choice, and the pet checkbox.

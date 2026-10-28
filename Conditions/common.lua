@@ -198,6 +198,11 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update, sto
         spellIcon:SetText(initialSpell)
     end
 
+    -- Handles Enter in the icon box: stores the typed spell (as its ID or its name, per storeId) and refreshes the box
+    -- and tooltip, or clears the spell when the text is not a valid spell ID. Then calls update().
+    -- @param _ table  The icon widget; unused.
+    -- @param _ string  The event name; unused.
+    -- @param v any  The typed text, read as a spell ID.
     spellIcon:SetCallback("OnEnterPressed", function(_, _, v)
         v = tonumber(v)
 
@@ -247,6 +252,11 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update, sto
     spell:SetUserData("norank", not (storeId or value.ranked))
     spell:SetUserData("spec", spec)
 
+    -- Handles Enter in the name box: resolves the typed text to a spell, stores it (as its ID or its name, per storeId)
+    -- and refreshes the icon, or clears the spell when it is not valid. Then calls update().
+    -- @param _ table  The edit box widget; unused.
+    -- @param _ string  The event name; unused.
+    -- @param v any  The typed text, resolved with SpellData:ResolveSelection.
     spell:SetCallback("OnEnterPressed", function(_, _, v)
         local spellid = SpellData:ResolveSelection(v)
         local name = SpellData:SpellName(spellid, not storeId)
@@ -439,6 +449,11 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
     item:SetFullWidth(true)
     item:SetLabel(L["Item Set"])
 
+    -- Handles a choice in the item set dropdown: saves the chosen set name in value.item, an empty list for Custom, or
+    -- nil for no choice; enables or disables the edit button to match, refreshes the icon and calls update().
+    -- @param _ table  The dropdown widget; unused.
+    -- @param _ string  The event name; unused.
+    -- @param val string|nil  The chosen item set name, "" for Custom, or nil when nothing is chosen.
     item:SetCallback("OnValueChanged", function(_, _, val)
         if val ~= nil then
             if val == "" then
@@ -492,6 +507,9 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
 
     edit_button:SetUserData("cell", { alignV = "bottom" })
 
+    -- Handles a click on the edit button: hides the owning condition window and opens the item list popup for the
+    -- chosen item set (profile sets before global ones) or for the custom item list. Does nothing when the owner is
+    -- gone.
     edit_button:SetCallback("OnClick", function()
         if not ownerAlive() then
             return
@@ -592,6 +610,11 @@ function addon:Widget_SingleItemWidget(spec, editbox, value, isvalid, update)
     itemIcon:SetWidth(44)
     itemIcon:SetHeight(44)
 
+    -- Handles Enter in the icon box: stores the typed item ID in value.item, or clears it when the text is not a valid
+    -- item ID. Then refreshes the name box and calls update().
+    -- @param _ table  The icon widget; unused.
+    -- @param _ string  The event name; unused.
+    -- @param v any  The typed text, read as an item ID.
     itemIcon:SetCallback("OnEnterPressed", function(_, _, v)
         v = tonumber(v)
 
@@ -637,6 +660,11 @@ function addon:Widget_SingleItemWidget(spec, editbox, value, isvalid, update)
     item:SetLabel(L["Item"])
     item:SetUserData("spec", spec)
 
+    -- Handles Enter in the name box: resolves the typed item name or ID and stores it in value.item, or clears it when
+    -- it is not valid. Then refreshes the icon and calls update().
+    -- @param _ table  The edit box widget; unused.
+    -- @param _ string  The event name; unused.
+    -- @param v any  The typed item name or ID.
     item:SetCallback("OnEnterPressed", function(_, _, v)
         local itemid
 

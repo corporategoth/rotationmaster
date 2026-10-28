@@ -113,7 +113,7 @@ addon:RegisterCondition("EQUIPPED", {
         return addon:EvaluateItemCondition("EQUIPPED",value,cache,now)
     end,
     -- Builds the readable rule summary for the EQUIPPED condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -123,7 +123,7 @@ addon:RegisterCondition("EQUIPPED", {
     end,
     -- Builds the editor controls for the EQUIPPED condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor: the item picker.
@@ -178,7 +178,7 @@ addon:RegisterCondition("CARRYING", {
         return addon:EvaluateItemCondition("CARRYING",value,cache,now)
     end,
     -- Builds the readable rule summary for the CARRYING condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -192,7 +192,7 @@ addon:RegisterCondition("CARRYING", {
     end,
     -- Builds the editor controls for the CARRYING condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor: the item picker, then the operator and quantity.
@@ -253,7 +253,7 @@ addon:RegisterCondition("ITEM", {
         return addon:EvaluateItemCondition("ITEM",value,cache,now)
     end,
     -- Builds the readable rule summary for the ITEM condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -266,7 +266,7 @@ addon:RegisterCondition("ITEM", {
     end,
     -- Builds the editor controls for the ITEM condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor: the item picker and the Check If Not Carrying checkbox.
@@ -335,7 +335,7 @@ addon:RegisterCondition("ITEM_RANGE", {
         return addon:EvaluateItemCondition("ITEM_RANGE",value,cache,now)
     end,
     -- Builds the readable rule summary for the ITEM_RANGE condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -348,7 +348,7 @@ addon:RegisterCondition("ITEM_RANGE", {
     end,
     -- Builds the editor controls for the ITEM_RANGE condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor: the item picker and the Check If Not Carrying checkbox.
@@ -435,7 +435,7 @@ addon:RegisterCondition("ITEM_COOLDOWN", {
         return addon:EvaluateItemCondition("ITEM_COOLDOWN",value,cache,now)
     end,
     -- Builds the readable rule summary for the ITEM_COOLDOWN condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -455,7 +455,7 @@ addon:RegisterCondition("ITEM_COOLDOWN", {
     end,
     -- Builds the editor controls for the ITEM_COOLDOWN condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- Editor: the item picker, the optional trinket slot, the operator and seconds, and Check If Not Carrying.

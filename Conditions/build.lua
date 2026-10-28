@@ -130,7 +130,7 @@ addon:RegisterCondition("ACTION_CONTEXT", {
         return addon:GetActionContext() == value.context
     end,
     -- Builds the readable rule summary for the ACTION_CONTEXT condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -141,7 +141,7 @@ addon:RegisterCondition("ACTION_CONTEXT", {
     end,
     -- Builds the editor controls for the ACTION_CONTEXT condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- widget builds the action context dropdown; help explains each context.
@@ -207,7 +207,7 @@ addon:RegisterCondition("SET_PIECES", {
         return Functions.values.compare(value.operator, count, value.value)
     end,
     -- Builds the readable rule summary for the SET_PIECES condition.
-    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param _ any  Unused; the specialization the summary is printed for.
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     --
@@ -221,7 +221,7 @@ addon:RegisterCondition("SET_PIECES", {
     end,
     -- Builds the editor controls for the SET_PIECES condition's fields.
     -- @param parent table  The editor group the controls are added to.
-    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param spec any  The specialization the condition is being edited for.
     -- @param value table  The saved condition fields; the controls edit it in place.
     --
     -- widget builds a set ID box, a dropdown of the sets you are wearing and an operator-and-pieces control; help
@@ -315,7 +315,7 @@ do
             return id == value.enchant
         end,
         -- Builds the readable rule summary for the WEAPON_IMBUE condition.
-        -- @param _ any  Unused; the current specialization the engine passes.
+        -- @param _ any  Unused; the specialization the summary is printed for.
         -- @param value table  The saved condition fields.
         -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
         --
@@ -327,7 +327,7 @@ do
         end,
         -- Builds the editor controls for the WEAPON_IMBUE condition's fields.
         -- @param parent table  The editor group the controls are added to.
-        -- @param spec any  The current specialization (addon.currentSpec).
+        -- @param spec any  The specialization the condition is being edited for.
         -- @param value table  The saved condition fields; the controls edit it in place.
         --
         -- widget builds an off hand checkbox, an enchant ID box and a line showing the enchant currently on that hand;
