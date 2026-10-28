@@ -9,11 +9,12 @@ still have some; do not add more). No trailing whitespace, LF endings, a final n
 `tools/precommit_hygiene.py endings` and the whitespace hooks enforce this outside `Libs/`.
 
 **Spacing and line shape.** One statement per line, spaces around operators and after commas (`local x = value`,
-`a == b`, `{ key = value }`), lines wrapped at 120 columns, a blank line around every multi-line statement. A single
-plain guard clause (`if x then return end`) may stay on one line. `docs/dev/formatting.md` has the whole standard and
-`python3 tools/format_lua.py` applies it without changing what the file compiles to. Every authored file is formatted except the frozen Built In helper and callback bodies
-(`docs/dev/architecture.md`, "Byte-pinned text"), which keep their older compact style. Match the file you edit and run
-the formatter on code you write.
+`a == b`, `{ key = value }`), lines wrapped at 120 columns, a blank line around every multi-line statement. No block is
+written on one line: `if x then return end` is three lines. `docs/dev/formatting.md` has the whole standard and
+`python3 tools/format_lua.py` applies it without changing what the file compiles to; `tools/check --static` fails a file
+that is not laid out that way. The addon source, the tests and the repo's Lua tools are formatted, except the frozen Built In helper and callback bodies
+(`docs/dev/architecture.md`, "Byte-pinned text"), which keep their older compact style, the premade packs under
+`Modules/` and the exemptions listed in `docs/dev/formatting.md`. Match the file you edit and run the formatter on code you write.
 
 **File header.** `local addon_name,addon=...` (or `local _,addon=...` when the name is not needed), then
 `local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)` where text is shown. Platform files start

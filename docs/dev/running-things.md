@@ -20,7 +20,7 @@ touch `core.hooksPath`).
 
 | Command | What it does | Time |
 | --- | --- | --- |
-| `python3 tools/check --static` | Lua 5.1 syntax of every source, the real TOC/XML load graph, vendor hashes, literal localization keys, `locales.py check`, the pinned WoW static analysis against its baseline, Built In names, and the freshness of every generated file | about 20 s |
+| `python3 tools/check --static` | Lua 5.1 syntax of every source, the real TOC/XML load graph, vendor hashes, literal localization keys, `locales.py check`, the pinned WoW static analysis against its baseline, Built In names, the freshness of every generated file, and the layout of every formatted Lua file (`format_lua.py --check --tree`) | about 45 s |
 | `python3 tools/check` | The above plus every behavior suite on Lua 5.1 and LuaJIT and the Python checks; stops at the first failure | minutes |
 | `python3 tools/check_all.py` | The same command list, never stopping at the first failure; prints one line per command and the output of failures | minutes |
 | `python3 tools/check_all.py --runtime lua5.1` (or `luajit`, `python`) | Only the commands that use that runtime (CI runs the three as a matrix) | |

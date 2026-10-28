@@ -18,7 +18,8 @@ def main():
                 [sys.executable, 'tools/builtin_names.py', 'check'],
                 [sys.executable, 'tools/generate_builtin_sources.py'],
                 [sys.executable, 'tools/generate_artwork_catalog.py'],
-                [sys.executable, 'tools/generate_integration_projects.py']]
+                [sys.executable, 'tools/generate_integration_projects.py'],
+                [sys.executable, 'tools/format_lua.py', '--check', '--tree']]
     if not args.static:
         commands.extend([
             [sys.executable, 'tests/test_integration_projects.py'],
