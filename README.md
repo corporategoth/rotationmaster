@@ -71,8 +71,8 @@ tracker linked from the addon's TOC, on the [Discord](https://discord.gg/4aKZSpU
 ## License
 
 A modified MIT license, "MIT + Attribution" ([LICENSE](LICENSE)), Copyright 2018-2026 Preston A. Elder: use, copy, fork,
-modify and redistribute freely, but a derivative must keep the copyright notice and its credits or About pages,
-including in game, must acknowledge Rotation Master and its original author, PreZ. Versions up to 1.4.3e were plain MIT
+modify and redistribute freely, but a derivative's credits or About pages, including in game, must acknowledge
+Rotation Master and its original author, PreZ. Versions up to 1.4.3e were plain MIT
 and may continue to be used under it. Vendored libraries keep their own
 licenses (`Libs/UPSTREAM.json`, `Libs/Ace3-LICENSE.txt`); the monospace font is under the SIL OFL (`Fonts/OFL.txt`).
 Built In rotations written from the WowSims simulators' APLs carry the simulators' MIT notice in `THIRD_PARTY_NOTICES.md`,
