@@ -56,12 +56,16 @@ addon.actionContexts = {
 local actionContextOrder = { "player", "vehicle", "possession", "override", "petbattle" }
 
 -- True for a positive whole number (a set ID or an enchant ID).
+-- @param value any  The value to test.
+-- @return boolean  True when value is a number greater than 0, below math.huge, with no fractional part.
 local function wholeNumber(value)
     return type(value)=="number" and value>0 and value<math.huge and value%1==0
 end
 
--- Display label for an item set ID: its name and ID when the game exposes a name, otherwise "item set N". Returns nil
--- for something that is not a valid ID.
+-- Builds the display label for an item set ID.
+-- @param id any  The item set ID; anything but a positive whole number gives nil.
+-- @return string|nil  The set's name and ID when the game exposes a name, otherwise "item set N"; nil when id is not a
+--     valid ID.
 local function setLabel(id)
     if not wholeNumber(id) then return nil end
     local name=addon.GetItemSetName and addon:GetItemSetName(id)
@@ -69,13 +73,16 @@ local function setLabel(id)
     return string.format(L["item set %d"], id)
 end
 
--- Temporary weapon enchant: GetWeaponEnchantInfo returns has, expires,
--- charges, enchant ID for the main hand (1-4) and the off hand (5-8). The
+-- Reads the temporary weapon enchant ID on the hand chosen by the saved fields.
+-- @param value table  The saved condition fields; value.offhand selects the off hand instead of the main hand.
+-- @param cache table  The per-pass memo table the game call is cached in; the editor passes a throwaway table.
+-- @return number|boolean|nil  The temporary enchant ID on that hand, false when that hand has none, or nil when it
+--     cannot be read.
+-- @return string|nil  The reason code when the first value is nil ("missing-api", "api-error", "restricted-value" when
+--     the client hides the values, or "invalid-weapon-observation"); nil otherwise.
+--
+-- GetWeaponEnchantInfo returns has, expires, charges, enchant ID for the main hand (1-4) and the off hand (5-8). The
 -- Platform reader composes the same tuple from Retail's C_PaperDollInfo.
--- Returns the temporary enchant ID on the hand chosen by value.offhand, false when that hand has none, or nil and a
--- reason ("missing-api", "api-error", "restricted-value" when the client hides the values, or
--- "invalid-weapon-observation"). The game call is cached per poll through `cache`; the editor passes a throwaway
--- table.
 local function imbueObservation(value, cache)
     local reader = GetWeaponEnchantInfo
     if C_PaperDollInfo and C_PaperDollInfo.GetTemporaryEnchantmentInfo then reader = addon.Platform.ComposedWeaponEnchantInfo end
@@ -103,20 +110,40 @@ addon:RegisterCondition("ACTION_CONTEXT", {
     icon = addon.Artwork.condition["ACTION_CONTEXT"],
     requiredFields = { "context" },
     fields = { context = "string" },
+    -- Checks that the saved fields of the ACTION_CONTEXT condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid once one of the listed action contexts is chosen.
     valid = function(_, value)
         return value.context ~= nil and addon.actionContexts[value.context] ~= nil
     end,
+    -- Decides whether the bar you are acting through is the chosen action context.
+    -- @param value table  The saved condition fields.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable only when addon:GetActionContext does not exist; otherwise compares the current context.
     evaluate = function(value)
         if not addon.GetActionContext then return nil, "action-context-unavailable" end
         return addon:GetActionContext() == value.context
     end,
+    -- Builds the readable rule summary for the ACTION_CONTEXT condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Readable summary naming the chosen bar.
     print = function(_, value)
         return string.format(L["you {{!are|are not}} acting through %s"],
             Functions.presentation.nullable(addon.actionContexts[value.context], L["<action bar>"]))
     end,
+    -- Builds the editor controls for the ACTION_CONTEXT condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- widget builds the action context dropdown; help explains each context.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -135,6 +162,8 @@ addon:RegisterCondition("ACTION_CONTEXT", {
         end
         parent:AddChild(context)
     end,
+    -- Builds the help page for the ACTION_CONTEXT condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Matches the bar you are acting through: your own, a vehicle, a possessed (mind controlled) unit, an override bar, or a pet battle. Vehicles and override bars exist from Wrath, pet battles only on Retail."]))
         frame:AddChild(helpers.Gap())
@@ -154,11 +183,21 @@ addon:RegisterCondition("SET_PIECES", {
     icon = addon.Artwork.condition["SET_PIECES"],
     requiredFields = { "set", "operator", "value" },
     fields = { set = "number", operator = "string", value = "number" },
+    -- Checks that the saved fields of the SET_PIECES condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid with a set ID, a known operator and a finite, non-negative number.
     valid = function(_, value)
         return wholeNumber(value.set) and value.operator ~= nil and Functions.values.isin(addon.operators, value.operator)
             and type(value.value) == "number" and value.value >= 0 and value.value < math.huge
     end,
+    -- Compares the number of equipped pieces of the chosen item set with the configured number.
+    -- @param value table  The saved condition fields.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable ("build-context-unavailable", or the snapshot's own reason such as "item-data-pending") when the
     -- count cannot be known; a set with no equipped pieces counts 0.
     evaluate = function(value)
@@ -167,6 +206,11 @@ addon:RegisterCondition("SET_PIECES", {
         if count == nil then return nil, reason end
         return Functions.values.compare(value.operator, count, value.value)
     end,
+    -- Builds the readable rule summary for the SET_PIECES condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Readable summary naming the set and the comparison.
     print = function(_, value)
         return Summary.phrase(L["the number of {set} pieces you have equipped {comparison} {quantity}"], {
@@ -175,6 +219,11 @@ addon:RegisterCondition("SET_PIECES", {
             quantity = Functions.presentation.nullable(value.value, L["<quantity>"]),
         })
     end,
+    -- Builds the editor controls for the SET_PIECES condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- widget builds a set ID box, a dropdown of the sets you are wearing and an operator-and-pieces control; help
     -- explains the set ID and the count.
     widget = function(parent, spec, value)
@@ -218,6 +267,8 @@ addon:RegisterCondition("SET_PIECES", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the SET_PIECES condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Item Set ID"] .. color.RESET .. " - " ..
             L["The game's item set (for example a tier set). Sets you are wearing are offered in the list; the count is taken from your equipped items' metadata and stays unavailable while any of it is still loading."]))
@@ -241,22 +292,44 @@ do
         icon = addon.Artwork.condition["WEAPON_IMBUE"],
         requiredFields = { "enchant" },
         fields = { offhand = "boolean", enchant = "number" },
+        -- Checks that the saved fields of the WEAPON_IMBUE condition are complete and in range.
+        -- @param _ any  Unused; the current specialization the engine passes.
+        -- @param value table  The saved condition fields.
+        -- @return boolean  True when the saved fields are complete and in range.
+        --
         -- Valid with an enchant ID and, if present, a boolean off hand flag.
         valid = function(_, value)
             return wholeNumber(value.enchant) and (value.offhand == nil or type(value.offhand) == "boolean")
         end,
+        -- Decides whether the temporary enchant on the chosen weapon hand is the chosen enchant ID.
+        -- @param value table  The saved condition fields.
+        -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+        --     Functions.cache.getCached.
+        -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+        -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+        --
         -- Unavailable when the weapon enchant API is missing, errors, or returns hidden or malformed values.
         evaluate = function(value, cache)
             local id, reason = imbueObservation(value, cache)
             if id == nil then return nil, reason end
             return id == value.enchant
         end,
+        -- Builds the readable rule summary for the WEAPON_IMBUE condition.
+        -- @param _ any  Unused; the current specialization the engine passes.
+        -- @param value table  The saved condition fields.
+        -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+        --
         -- Readable summary naming the hand and the enchant ID.
         print = function(_, value)
             return string.format(L["your %s weapon {{!has|does not have}} temporary enchant %s"],
                 (value.offhand and L["off hand"] or L["main hand"]),
                 Functions.presentation.nullable(value.enchant, L["<enchant>"]))
         end,
+        -- Builds the editor controls for the WEAPON_IMBUE condition's fields.
+        -- @param parent table  The editor group the controls are added to.
+        -- @param spec any  The current specialization (addon.currentSpec).
+        -- @param value table  The saved condition fields; the controls edit it in place.
+        --
         -- widget builds an off hand checkbox, an enchant ID box and a line showing the enchant currently on that hand;
         -- help explains the enchant ID.
         widget = function(parent, spec, value)
@@ -291,6 +364,8 @@ do
                 or L["Currently: no temporary enchant"])
             parent:AddChild(label)
         end,
+        -- Builds the help page for the WEAPON_IMBUE condition.
+        -- @param frame table  The help page container that text and example widgets are added to.
         help = function(frame)
             frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Enchant ID"] .. color.RESET .. " - " ..
                 L["The temporary enchant on the weapon: a poison, oil, sharpening stone or weapon imbue. The current enchant ID of the selected hand is shown below the field."]))

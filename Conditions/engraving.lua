@@ -36,13 +36,18 @@ addon.builtinCallbackBindings["Conditions/engraving.lua"] = {
 -- ============================================================================
 
 -- True for a positive whole number below 2^31, the range of a rune or spell ID.
+-- @param value any  The value to test.
+-- @return boolean  True when value is a number in that range with no fractional part.
 local function identifier(value)
     return type(value) == "number" and value > 0 and value < 2147483648 and value % 1 == 0
 end
 
--- A readable label: the known rune's name, else the taught spell's name, else
--- the raw ID.
--- Returns nil when value names neither a rune nor a spell. Works for a character that does not know the rune.
+-- Builds a readable label for the saved rune: the known rune's name, else the taught spell's name, else the raw ID.
+-- @param value table  The saved condition fields; reads rune (a skillLineAbilityID) and spell (a spell the rune
+--     teaches).
+-- @return string|nil  The label; nil when value names neither a rune nor a spell.
+--
+-- Works for a character that does not know the rune.
 local function runeLabel(value)
     local known = platform.FindKnownRune and platform:FindKnownRune(value.rune, value.spell)
     if known and known.name then return known.name end
@@ -66,21 +71,41 @@ addon:RegisterCondition("RUNE_ENGRAVED", {
     description = L["Engraved Rune"],
     icon = addon.Artwork.condition["RUNE_ENGRAVED"],
     fields = { rune = "number", spell = "number" },
+    -- Checks that the saved fields of the RUNE_ENGRAVED condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid with exactly one of a rune ID or a spell ID.
     valid = function(_, value)
         if value.rune ~= nil then return identifier(value.rune) and value.spell == nil end
         return identifier(value.spell)
     end,
+    -- Decides whether the chosen rune is engraved on one of your equipped items.
+    -- @param value table  The saved condition fields.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Looks the rune or spell up in the cached engraved set.
     evaluate = function(value)
         if not addon.IsRuneEngraved then return nil, "build-context-unavailable" end
         return addon:IsRuneEngraved(value.rune, value.spell)
     end,
+    -- Builds the readable rule summary for the RUNE_ENGRAVED condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Readable summary naming the rune.
     print = function(_, value)
         return string.format(L["you {{!have|do not have}} the rune %s engraved"],
             Functions.presentation.nullable(runeLabel(value), L["<rune>"]))
     end,
+    -- Builds the editor controls for the RUNE_ENGRAVED condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- widget builds an equipment slot dropdown, a rune dropdown with its icon, and two boxes for entering a spell ID or
     -- rune ID by hand (entering one clears the other); with no known runes it says why instead. help draws the page.
     widget = function(parent, spec, value)
@@ -184,6 +209,8 @@ addon:RegisterCondition("RUNE_ENGRAVED", {
         manual(spellBox, "spell", "rune")
         manual(runeBox, "rune", "spell")
     end,
+    -- Builds the help page for the RUNE_ENGRAVED condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Matches when a Season of Discovery rune is engraved on one of your equipped items. Passive runes count too, which a known-spell test cannot see."]))
         frame:AddChild(helpers.Gap())

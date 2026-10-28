@@ -39,11 +39,24 @@ addon:RegisterCondition("ASSISTED_SUGGESTION", {
     description = L["Assisted Combat Suggestion"],
     icon = addon.Artwork.condition["ASSISTED_SUGGESTION"],
     fields = { spell = "number", ranked = "boolean" },
+    -- Checks that the saved fields of the ASSISTED_SUGGESTION condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid with no spell, or with a valid spell ID and an optional boolean ranked flag.
     valid = function(_, value)
         return (value.spell == nil or addon.IsConditionSpellID(value.spell))
             and (value.ranked == nil or type(value.ranked) == "boolean")
     end,
+    -- Decides whether Blizzard's Assisted Combat suggests the chosen spell (or, with no spell chosen, suggests
+    -- anything).
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable when Assisted Combat cannot be read at all; "nothing suggested" (false from the Platform) is a real
     -- false, checked before the spell ID is resolved.
     evaluate = function(value, cache)
@@ -55,6 +68,11 @@ addon:RegisterCondition("ASSISTED_SUGGESTION", {
         if not spellid then return nil, why or "spell-data-unavailable" end
         return addon.Platform:IsAssistedSpellMatch(spellid, suggestion)
     end,
+    -- Builds the readable rule summary for the ASSISTED_SUGGESTION condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Readable summary; says "a spell" when none is chosen, otherwise names it with a link.
     print = function(_, value)
         if value.spell == nil then
@@ -63,6 +81,11 @@ addon:RegisterCondition("ASSISTED_SUGGESTION", {
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
         return string.format(L["Assisted Combat {{!suggests|does not suggest}} %s"], Functions.presentation.nullable(link, L["<spell>"]))
     end,
+    -- Builds the editor controls for the ASSISTED_SUGGESTION condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- widget builds the spell picker (spells on the rotation's specialization); help draws the help page.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -75,6 +98,8 @@ addon:RegisterCondition("ASSISTED_SUGGESTION", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
     end,
+    -- Builds the help page for the ASSISTED_SUGGESTION condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Matches when Blizzard's Assisted Combat suggests this spell as the next cast. An override counts as its base spell, and the base spell as its override. With no spell chosen, matches whenever Assisted Combat suggests anything."]))
         frame:AddChild(helpers.Gap())
@@ -99,22 +124,44 @@ addon:RegisterCondition("ASSISTED_ROTATION_SPELL", {
     description = L["Assisted Combat Rotation Spell"],
     icon = addon.Artwork.condition["ASSISTED_ROTATION_SPELL"],
     fields = { spell = "number", ranked = "boolean" },
+    -- Checks that the saved fields of the ASSISTED_ROTATION_SPELL condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid with a valid spell ID and an optional boolean ranked flag.
     valid = function(_, value)
         return value.spell ~= nil and addon.IsConditionSpellID(value.spell)
             and (value.ranked == nil or type(value.ranked) == "boolean")
     end,
+    -- Decides whether the chosen spell is in this specialization's Assisted Combat rotation set.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable when the spell ID does not resolve or the Platform cannot read the rotation set.
     evaluate = function(value, cache)
         local spellid, why = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return nil, why or "spell-data-unavailable" end
         return Functions.cache.getCached(cache, addon.Platform.IsAssistedRotationSpell, addon.Platform, spellid)
     end,
+    -- Builds the readable rule summary for the ASSISTED_ROTATION_SPELL condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Readable summary with the spell link.
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
         return string.format(L["%s {{!is|is not}} in Blizzard's Assisted Combat rotation"], Functions.presentation.nullable(link, L["<spell>"]))
     end,
+    -- Builds the editor controls for the ASSISTED_ROTATION_SPELL condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- widget builds the spell picker (spells on the rotation's specialization); help draws the help page.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -127,6 +174,8 @@ addon:RegisterCondition("ASSISTED_ROTATION_SPELL", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
     end,
+    -- Builds the help page for the ASSISTED_ROTATION_SPELL condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Matches when this spell is one Blizzard's Assisted Combat can suggest for your current specialization. Its current override and its base spell count too. Use it to highlight what Assisted Combat leaves out, for example a cooldown that is not in the set."]))
         frame:AddChild(helpers.Gap())
@@ -150,21 +199,36 @@ addon:RegisterCondition("ASSISTED_AVAILABLE", {
     description = L["Assisted Combat Available"],
     icon = addon.Artwork.condition["ASSISTED_AVAILABLE"],
     fields = {},
+    -- Checks that the saved fields of the ASSISTED_AVAILABLE condition are complete and in range.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Nothing to configure, so always valid.
     valid = function()
         return true
     end,
-    -- Anything but a readable true counts as false; only an unreadable answer is unavailable
-    -- (default reason "assisted-unavailable").
+    -- Decides whether the game offers Assisted Combat to this character and specialization right now.
+    -- @param _ any  Unused; this condition has no fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
+    -- Anything but a readable true counts as false; only an unreadable answer is unavailable (default reason
+    -- "assisted-unavailable").
     evaluate = function(_, cache)
         local available, why = Functions.cache.getCached(cache, addon.Platform.GetAssistedCombatAvailability, addon.Platform)
         if available == nil then return nil, why or "assisted-unavailable" end
         return available == true
     end,
+    -- Builds the readable rule summary for the ASSISTED_AVAILABLE condition.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Readable summary; there are no fields to mention.
     print = function()
         return L["Assisted Combat {{!is|is not}} available"]
     end,
+    -- Builds the help page for the ASSISTED_AVAILABLE condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Matches when the game offers Blizzard's Assisted Combat for your character and current specialization. When it does not (for example a specialization Blizzard has no Assisted Combat rotation for, or a client that declares the API but does not offer the feature), this is false, so a branch can fall back to your own steps."]))
         frame:AddChild(helpers.Gap())

@@ -45,7 +45,9 @@ addon.builtinCallbackBindings["Conditions/edition_state.lua"] = {
 -- Shared helpers and lists
 -- ============================================================================
 
--- True when value carries a known operator and a finite, non-negative number to compare against.
+-- True when the saved fields carry a known operator and a finite, non-negative number to compare against.
+-- @param value table  The saved condition fields; reads operator and value.
+-- @return boolean  True when operator is one of addon.operators and value is a finite number of at least 0.
 local function validCompare(value)
     return value.operator ~= nil and Functions.values.isin(addon.operators, value.operator)
         and type(value.value) == "number" and value.value == value.value and value.value >= 0 and value.value < math.huge
@@ -70,10 +72,22 @@ addon:RegisterCondition("PET_HAPPINESS", {
     icon = addon.Artwork.condition["PET_HAPPINESS"],
     requiredFields = { "value" },
     fields = { value = "number" },
+    -- Checks that the saved fields of the PET_HAPPINESS condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid once one of the three moods is chosen.
     valid = function(_, value)
         return value.value ~= nil and Functions.values.isin(MOODS, value.value)
     end,
+    -- Decides whether your hunter pet's mood is the chosen one; false when you have no hunter pet.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- The Platform returns false (no hunter pet), the mood number, or nil and a reason.
     evaluate = function(value, cache)
         local mood, reason = Functions.cache.getCached(cache, addon.Platform.GetPetHappinessObservation, addon.Platform)
@@ -81,10 +95,20 @@ addon:RegisterCondition("PET_HAPPINESS", {
         if mood == false then return false end
         return mood == value.value
     end,
+    -- Builds the readable rule summary for the PET_HAPPINESS condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Readable summary naming the mood.
     print = function(_, value)
         return string.format(L["your pet {{!is|is not}} %s"], Functions.presentation.nullable(MOODS[value.value], L["<mood>"]))
     end,
+    -- Builds the editor controls for the PET_HAPPINESS condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- widget builds the mood dropdown; help draws the help page.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -103,6 +127,8 @@ addon:RegisterCondition("PET_HAPPINESS", {
         end
         parent:AddChild(mood)
     end,
+    -- Builds the help page for the PET_HAPPINESS condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Help.Conditions.PET_HAPPINESS"]))
     end,
@@ -121,16 +147,34 @@ addon:RegisterCondition("STAGGER", {
     icon = addon.Artwork.condition["STAGGER"],
     requiredFields = { "operator", "value" },
     fields = { operator = "string", value = "number", percent = "boolean" },
+    -- Checks that the saved fields of the STAGGER condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid with a known operator, a finite non-negative number and an optional boolean percent flag.
     valid = function(_, value)
         return validCompare(value) and (value.percent == nil or type(value.percent) == "boolean")
     end,
+    -- Compares the damage in your Stagger pool, or that pool as a percentage of maximum health, with the configured
+    -- number.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable when the Platform cannot read the Stagger amount (percent flag passed through).
     evaluate = function(value, cache)
         local stagger, reason = Functions.cache.getCached(cache, addon.Platform.GetStaggerObservation, addon.Platform, value.percent == true)
         if stagger == nil then return nil, reason end
         return Functions.values.compare(value.operator, stagger, value.value)
     end,
+    -- Builds the readable rule summary for the STAGGER condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Readable summary; says whether the number is a percentage of maximum health or a damage amount.
     print = function(_, value)
         if value.percent then
@@ -139,6 +183,11 @@ addon:RegisterCondition("STAGGER", {
         end
         return Functions.presentation.compareString(value.operator, L["the damage in your Stagger pool"], Functions.presentation.nullable(value.value))
     end,
+    -- Builds the editor controls for the STAGGER condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- widget builds an operator-and-value control and the "as a percent of maximum health" checkbox; help draws the
     -- help page.
     widget = function(parent, spec, value)
@@ -158,6 +207,8 @@ addon:RegisterCondition("STAGGER", {
         end)
         parent:AddChild(percent)
     end,
+    -- Builds the help page for the STAGGER condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Help.Conditions.STAGGER"]))
         frame:AddChild(helpers.Gap())
@@ -174,6 +225,7 @@ addon:RegisterCondition("STAGGER", {
 local ECLIPSE_MEASURES_ORDER = { "direction", "energy" }
 
 -- Returns the labels of the two Eclipse measures, keyed by measure name.
+-- @return table{direction=string,energy=string}  The localized labels for the "direction" and "energy" measures.
 local function eclipseMeasures()
     return { direction = L["Direction"], energy = L["Energy"] }
 end
@@ -187,8 +239,13 @@ addon:RegisterCondition("ECLIPSE", {
     icon = addon.Artwork.condition["ECLIPSE"],
     requiredFields = { "measure" },
     fields = { measure = "string", direction = "string", operator = "string", value = "number" },
-    -- Valid per measure: a direction needs a listed direction; energy needs a known operator and a number from -100
-    -- to 100.
+    -- Checks that the saved fields of the ECLIPSE condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
+    -- Valid per measure: a direction needs a listed direction; energy needs a known operator and a number from -100 to
+    -- 100.
     valid = function(_, value)
         if value.measure == "direction" then
             return value.direction ~= nil and Functions.values.isin(ECLIPSES, value.direction)
@@ -198,6 +255,14 @@ addon:RegisterCondition("ECLIPSE", {
         end
         return false
     end,
+    -- Decides whether the Eclipse bar is heading toward the chosen direction, or compares its energy with the
+    -- configured number, depending on the chosen measure.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Reads the direction or the energy from the same Platform observation; either is unavailable when the bar cannot
     -- be read, and a direction of "none" simply fails to match.
     evaluate = function(value, cache)
@@ -210,6 +275,11 @@ addon:RegisterCondition("ECLIPSE", {
         if energy == nil then return nil, reason end
         return Functions.values.compare(value.operator, energy, value.value)
     end,
+    -- Builds the readable rule summary for the ECLIPSE condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Readable summary for whichever measure is chosen.
     print = function(_, value)
         if value.measure == "energy" then
@@ -217,6 +287,11 @@ addon:RegisterCondition("ECLIPSE", {
         end
         return string.format(L["your Eclipse bar {{!is|is not}} heading toward %s"], Functions.presentation.nullable(ECLIPSES[value.direction], L["<Eclipse>"]))
     end,
+    -- Builds the editor controls for the ECLIPSE condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- widget builds the measure dropdown, the direction dropdown and the energy operator control (all three are always
     -- added); help draws the help page.
     widget = function(parent, spec, value)
@@ -252,6 +327,8 @@ addon:RegisterCondition("ECLIPSE", {
 
         parent:AddChild(operator)
     end,
+    -- Builds the help page for the ECLIPSE condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Help.Conditions.ECLIPSE"]))
         frame:AddChild(helpers.Gap())

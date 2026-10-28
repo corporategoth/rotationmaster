@@ -44,15 +44,19 @@ addon.builtinCallbackBindings["Conditions/item.lua"] = {
 -- Shared helpers
 -- ============================================================================
 
--- Help page body shared by every item condition: the item picker text and the note on how item sets are resolved.
+-- Fills a help page with the body shared by every item condition: the item picker text and the note on how item sets
+-- are resolved.
+-- @param frame table  The help page container that text widgets are added to.
 local function itemHelp(frame)
     addon.layout_condition_itemwidget_help(frame)
     frame:AddChild(helpers.Gap())
     frame:AddChild(helpers.CreateText(L["Item sets are checked in priority order. Bag counts use the first carried candidate, not the sum. Availability, range and cooldown checks use the first carried or equipped candidate. Missing or restricted observations stay unavailable, including under NOT."]))
 end
 
--- Describes an item reference for a summary line: a colored item set name (white for a profile set, cyan for a global
--- one), the first item's link or name plus a count of the others, or nil when the reference is invalid or empty.
+-- Describes an item reference for a summary line.
+-- @param items string|table|nil  An item set name, or a list of item IDs or names.
+-- @return string|nil  A colored item set name (white for a profile set, cyan for a global one), or the first item's
+--     link or name plus a count of the others; nil when the reference is invalid or empty.
 local function get_item_desc(items)
     if not addon:IsConditionItemReference(items) then return nil end
     local itemsets = addon.db.profile.itemsets
@@ -86,19 +90,42 @@ addon:RegisterCondition("EQUIPPED", {
     icon = addon.Artwork.condition["EQUIPPED"],
     requiredFields = { 'item' },
     fields = { item = { "string", { "string", "number" } } },
+    -- Checks that the saved fields of the EQUIPPED condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid with an item set name or a list of items.
     valid = function(_, value)
         return addon:IsConditionItemReference(value.item) and (value.notcarrying==nil or type(value.notcarrying)=="boolean")
     end,
+    -- Decides whether one of the referenced items is worn.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @param now number  The GetTime() reading taken when this evaluation pass began.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable: the reasons addon:EvaluateItemCondition returns (item-set-unavailable, a failed item or equipment
     -- read). now is the poll's time.
     evaluate = function(value, cache, now)
         return addon:EvaluateItemCondition("EQUIPPED",value,cache,now)
     end,
+    -- Builds the readable rule summary for the EQUIPPED condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Summary line for the condition list.
     print = function(_, value)
         return Literal.phrase(L["you {{!have|do not have}} {item} equipped"], {item = Functions.presentation.nullable(get_item_desc(value.item), L["<item>"])})
     end,
+    -- Builds the editor controls for the EQUIPPED condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor: the item picker.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -110,6 +137,9 @@ addon:RegisterCondition("EQUIPPED", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(icon_group)
     end,
+    -- Builds the help page for the EQUIPPED condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the shared item text.
     help = function(frame)
         itemHelp(frame)
@@ -124,16 +154,34 @@ addon:RegisterCondition("CARRYING", {
     icon = addon.Artwork.condition["CARRYING"],
     requiredFields = { 'item', 'operator', 'value' },
     fields = { item = { "string", { "string", "number" } }, operator = "string", value = "number" },
+    -- Checks that the saved fields of the CARRYING condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid with an item reference, a listed operator and a finite non-negative count.
     valid = function(_, value)
         return (addon:IsConditionItemReference(value.item) and
                 value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 type(value.value)=="number" and value.value>=0 and value.value<math.huge)
     end,
+    -- Compares how many of the first carried candidate item are in the bags with the configured count.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @param now number  The GetTime() reading taken when this evaluation pass began.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable: the reasons addon:EvaluateItemCondition returns (item-set-unavailable, a failed bag-count read).
     evaluate = function(value, cache, now)
         return addon:EvaluateItemCondition("CARRYING",value,cache,now)
     end,
+    -- Builds the readable rule summary for the CARRYING condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Summary line for the condition list.
     print = function(_, value)
         return Summary.phrase(L["the number of {item} you are carrying {comparison} {quantity}"], {
@@ -142,6 +190,11 @@ addon:RegisterCondition("CARRYING", {
             quantity = Functions.presentation.nullable(value.value, L["<quantity>"]),
         })
     end,
+    -- Builds the editor controls for the CARRYING condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor: the item picker, then the operator and quantity.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -157,6 +210,9 @@ addon:RegisterCondition("CARRYING", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the CARRYING condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the shared item text, then the operator text.
     help = function(frame)
         itemHelp(frame)
@@ -174,15 +230,33 @@ addon:RegisterCondition("ITEM", {
     icon = addon.Artwork.condition["ITEM"],
     requiredFields = { 'item' },
     fields = { item = { "string", { "string", "number" } }, notcarrying = "boolean" },
+    -- Checks that the saved fields of the ITEM condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid with an item reference and an optional notcarrying flag.
     valid = function(_, value)
         return addon:IsConditionItemReference(value.item) and (value.notcarrying==nil or type(value.notcarrying)=="boolean")
     end,
+    -- Decides whether the first carried or equipped candidate item can be used now.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @param now number  The GetTime() reading taken when this evaluation pass began.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable: the reasons addon:EvaluateItemCondition returns (invalid-time, a failed cooldown, level or global
     -- cooldown read, invalid-api-result).
     evaluate = function(value, cache, now)
         return addon:EvaluateItemCondition("ITEM",value,cache,now)
     end,
+    -- Builds the readable rule summary for the ITEM condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Summary line for the condition list.
     print = function(_, value)
         return Literal.phrase(L["{item} {{!is|is not}} available{carrying}"], {
@@ -190,6 +264,11 @@ addon:RegisterCondition("ITEM", {
             carrying = value.notcarrying and L[", even if you do not currently have one"] or "",
         })
     end,
+    -- Builds the editor controls for the ITEM condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor: the item picker and the Check If Not Carrying checkbox.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -211,6 +290,9 @@ addon:RegisterCondition("ITEM", {
         end)
         parent:AddChild(notcarring)
     end,
+    -- Builds the help page for the ITEM condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the shared item text, what availability means, then the Check If Not Carrying checkbox.
     help = function(frame)
         itemHelp(frame)
@@ -231,14 +313,32 @@ addon:RegisterCondition("ITEM_RANGE", {
     icon = addon.Artwork.condition["ITEM_RANGE"],
     requiredFields = { 'item' },
     fields = { item = { "string", { "string", "number" } }, notcarrying = "boolean" },
+    -- Checks that the saved fields of the ITEM_RANGE condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid with an item reference and an optional notcarrying flag.
     valid = function(_, value)
         return addon:IsConditionItemReference(value.item) and (value.notcarrying==nil or type(value.notcarrying)=="boolean")
     end,
+    -- Decides whether the current target is in range of the first carried or equipped candidate item.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @param now number  The GetTime() reading taken when this evaluation pass began.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable: the reasons addon:EvaluateItemCondition returns (a failed item id or range read).
     evaluate = function(value, cache, now)
         return addon:EvaluateItemCondition("ITEM_RANGE",value,cache,now)
     end,
+    -- Builds the readable rule summary for the ITEM_RANGE condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Summary line for the condition list.
     print = function(_, value)
         return Literal.phrase(L["{item} {{!is|is not}} in range{carrying}"], {
@@ -246,6 +346,11 @@ addon:RegisterCondition("ITEM_RANGE", {
             carrying = value.notcarrying and L[", even if you do not currently have one"] or "",
         })
     end,
+    -- Builds the editor controls for the ITEM_RANGE condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor: the item picker and the Check If Not Carrying checkbox.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -267,6 +372,9 @@ addon:RegisterCondition("ITEM_RANGE", {
         end)
         parent:AddChild(notcarring)
     end,
+    -- Builds the help page for the ITEM_RANGE condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the shared item text, then the Check If Not Carrying checkbox.
     help = function(frame)
         itemHelp(frame)
@@ -301,6 +409,11 @@ addon:RegisterCondition("ITEM_COOLDOWN", {
         operator = "string",
         value = "number",
     },
+    -- Checks that the saved fields of the ITEM_COOLDOWN condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid with a trinket slot or an item reference, a listed operator and a finite non-negative number of seconds.
     valid = function(_, value)
         local source
@@ -308,11 +421,24 @@ addon:RegisterCondition("ITEM_COOLDOWN", {
         return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 source and (value.notcarrying==nil or type(value.notcarrying)=="boolean") and type(value.value)=="number" and value.value>=0 and value.value<math.huge)
     end,
+    -- Compares the seconds left on the item's (or chosen trinket slot's) cooldown with the configured number.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @param now number  The GetTime() reading taken when this evaluation pass began.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable: the reasons addon:EvaluateItemCondition returns, including build-context-unavailable for a slot
     -- before the equipment snapshot exists. now is the poll's time.
     evaluate = function(value, cache, now)
         return addon:EvaluateItemCondition("ITEM_COOLDOWN",value,cache,now)
     end,
+    -- Builds the readable rule summary for the ITEM_COOLDOWN condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Summary line for the condition list; a trinket slot reads as "your Trinket n".
     print = function(_, value)
         if value.slot ~= nil then
@@ -327,6 +453,11 @@ addon:RegisterCondition("ITEM_COOLDOWN", {
             carrying = value.notcarrying and L[", even if you do not currently have one"] or "",
         })
     end,
+    -- Builds the editor controls for the ITEM_COOLDOWN condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor: the item picker, the optional trinket slot, the operator and seconds, and Check If Not Carrying.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -367,6 +498,9 @@ addon:RegisterCondition("ITEM_COOLDOWN", {
         end)
         parent:AddChild(notcarring)
     end,
+    -- Builds the help page for the ITEM_COOLDOWN condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the shared item text, the trinket slot, the operator text, then Check If Not Carrying.
     help = function(frame)
         itemHelp(frame)

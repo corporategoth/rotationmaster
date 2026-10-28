@@ -60,18 +60,38 @@ addon:RegisterCondition("ISSAME", {
     description = L["Is Same As"],
     icon = addon.Artwork.condition["ISSAME"],
     fields = { unit = "string", otherunit = "string" },
+    -- Checks that the saved fields of the ISSAME condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Both tokens must be known units.
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.otherunit ~= nil and Functions.values.isin(addon.units, value.otherunit))
     end,
+    -- Decides whether the two unit tokens name the same unit.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable (`nil, reason`) when the identity observation cannot be made this poll.
     evaluate = function(value, cache)
         return Functions.cache.getCached(cache, addon.Platform.GetUnitIdentityObservation, addon.Platform, value.unit, value.otherunit)
     end,
+    -- Builds the readable rule summary for the ISSAME condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     print = function(_, value)
         return string.format(Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} %s"], L["%s {{!is|is not}} %s"]), Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]), Functions.presentation.nullable(addon.units[value.otherunit], L["<unit>"]))
     end,
+    -- Builds the editor controls for the ISSAME condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -85,6 +105,8 @@ addon:RegisterCondition("ISSAME", {
             function() top:SetStatusText(funcs:print(root, spec)) end, "otherunit")
         parent:AddChild(otherunit)
     end,
+    -- Builds the help page for the ISSAME condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
     end,
@@ -96,11 +118,23 @@ addon:RegisterCondition("CLASS", {
     description = L["Class"],
     icon = addon.Artwork.condition["CLASS"],
     fields = { unit = "string", value = "string" },
+    -- Checks that the saved fields of the CLASS condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- A known unit and a class token the client has a name for.
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.value ~= nil and Functions.values.isin(LOCALIZED_CLASS_NAMES_MALE, value.value))
     end,
+    -- Decides whether the unit's class is the chosen class token; false when the unit does not exist.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable when the metadata observation is nil; a missing unit (observation false) is false.
     evaluate = function(value, cache)
         local observed,reason=Functions.cache.getCached(cache, addon.Platform.GetUnitMetadataObservation, addon.Platform, value.unit, "class")
@@ -108,10 +142,18 @@ addon:RegisterCondition("CLASS", {
         if observed==false then return false end
         return observed == value.value
     end,
+    -- Builds the readable rule summary for the CLASS condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     print = function(_, value)
         return string.format(L["%s class {{!is|is not}} %s"],
             Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"]), Functions.presentation.nullable(LOCALIZED_CLASS_NAMES_MALE[value.value], L["<class>"]))
     end,
+    -- Builds the editor controls for the CLASS condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -135,6 +177,8 @@ addon:RegisterCondition("CLASS", {
         end
         parent:AddChild(class)
     end,
+    -- Builds the help page for the CLASS condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
 
@@ -155,23 +199,43 @@ addon:RegisterCondition("CLASS_GROUP", {
     description = L["Class In Group"],
     icon = addon.Artwork.condition["CLASS_GROUP"],
     fields = { class = "string", operator = "string", value = "number", raid = "boolean" },
+    -- Checks that the saved fields of the CLASS_GROUP condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- A class token, a known operator and a non-negative count.
     valid = function(_, value)
         return (value.class ~= nil and Functions.values.isin(LOCALIZED_CLASS_NAMES_MALE, value.class) and
                 value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
+    -- Compares how many party (or raid) members have the chosen class with the configured number.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable when addon:GetClassGroupCount cannot complete the roster count.
     evaluate = function(value, cache)
         local count,reason=addon:GetClassGroupCount(cache,value.class,value.raid)
         if count==nil then return nil,reason end
         return Functions.values.compare(value.operator,count,value.value)
     end,
+    -- Builds the readable rule summary for the CLASS_GROUP condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     print = function(_, value)
         return Functions.presentation.compareString(value.operator, string.format(L["Number of %ss in the %s"],
                 Functions.presentation.nullable(LOCALIZED_CLASS_NAMES_MALE[value.class], L["<class>"]),
                 (value.raid and RAID or PARTY)), Functions.presentation.nullable(value.value))
     end,
+    -- Builds the editor controls for the CLASS_GROUP condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -205,6 +269,8 @@ addon:RegisterCondition("CLASS_GROUP", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the CLASS_GROUP condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Class"] .. color.RESET .. " - " ..
                 "The character class we are interested in."))
@@ -235,11 +301,23 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
         description = L["Role"],
         icon = addon.Artwork.condition["ROLE"],
         fields = { unit = "string", value = "string" },
+        -- Checks that the saved fields of the ROLE condition are complete and in range.
+        -- @param _ any  Unused; the current specialization the engine passes.
+        -- @param value table  The saved condition fields.
+        -- @return boolean  True when the saved fields are complete and in range.
+        --
         -- A known unit and a known role.
         valid = function(_, value)
             return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                     value.value ~= nil and Functions.values.isin(addon.roles, value.value))
         end,
+        -- Decides whether the unit's assigned group role is the chosen role (Retail); false when the unit has no role.
+        -- @param value table  The saved condition fields.
+        -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+        --     Functions.cache.getCached.
+        -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+        -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+        --
         -- Unavailable when the inspect role observation is nil; a unit with no role (observation false) is false.
         evaluate = function(value, cache)
             local role,reason=Functions.cache.getCached(cache, addon.Platform.GetInspectRoleObservation, addon.Platform, value.unit)
@@ -247,11 +325,19 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
             if role==false then return false end
             return role == value.value
         end,
+        -- Builds the readable rule summary for the ROLE condition.
+        -- @param _ any  Unused; the current specialization the engine passes.
+        -- @param value table  The saved condition fields.
+        -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
         print = function(_, value)
             return string.format(L["%s role {{!is|is not}} %s"],
                 Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"]),
                 Functions.presentation.nullable(addon.roles[value.value], L["<role>"]))
         end,
+        -- Builds the editor controls for the ROLE condition's fields.
+        -- @param parent table  The editor group the controls are added to.
+        -- @param spec any  The current specialization (addon.currentSpec).
+        -- @param value table  The saved condition fields; the controls edit it in place.
         widget = function(parent, spec, value)
             local top = parent:GetUserData("top")
             local root = top:GetUserData("root")
@@ -275,6 +361,8 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
             end
             parent:AddChild(role)
         end,
+        -- Builds the help page for the ROLE condition.
+        -- @param frame table  The help page container that text and example widgets are added to.
         help = function(frame)
             addon.layout_condition_unitwidget_help(frame)
 
@@ -299,20 +387,41 @@ else
             description = L["Role"],
             icon = addon.Artwork.condition["ROLE"],
             fields = { value = "string" },
+            -- Checks that the saved fields of the ROLE condition are complete and in range.
+            -- @param _ any  Unused; the current specialization the engine passes.
+            -- @param value table  The saved condition fields.
+            -- @return boolean  True when the saved fields are complete and in range.
+            --
             -- A known role.
             valid = function(_, value)
                 return value.value ~= nil and Functions.values.isin(addon.roles, value.value)
             end,
+            -- Decides whether the role of your active talent group is the chosen role (Wrath and later Classic).
+            -- @param value table  The saved condition fields.
+            -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+            --     Functions.cache.getCached.
+            -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be
+            --     decided.
+            -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+            --
             -- Unavailable when the talent group role observation is nil; addon.currentSpec picks the group.
             evaluate = function(value, cache)
                 local role,reason=Functions.cache.getCached(cache, addon.Platform.GetTalentGroupRoleObservation, addon.Platform, addon.currentSpec)
                 if role==nil then return nil,reason end
                 return role == value.value
             end,
+            -- Builds the readable rule summary for the ROLE condition.
+            -- @param _ any  Unused; the current specialization the engine passes.
+            -- @param value table  The saved condition fields.
+            -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
             print = function(_, value)
                 return string.format(L["%s role {{!is|is not}} %s"], addon.unitsPossessive.player,
                         Functions.presentation.nullable(addon.roles[value.value], L["<role>"]))
             end,
+            -- Builds the editor controls for the ROLE condition's fields.
+            -- @param parent table  The editor group the controls are added to.
+            -- @param spec any  The current specialization (addon.currentSpec).
+            -- @param value table  The saved condition fields; the controls edit it in place.
             widget = function(parent, spec, value)
                 local top = parent:GetUserData("top")
                 local root = top:GetUserData("root")
@@ -332,6 +441,8 @@ else
                 end
                 parent:AddChild(role)
             end,
+            -- Builds the help page for the ROLE condition.
+            -- @param frame table  The help page container that text and example widgets are added to.
             help = function(frame)
                 frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Role"] .. color.RESET .. " - " ..
                         "The role set for your active talent group."))
@@ -358,6 +469,11 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or LE_EXPANSION_LEVEL_CURRENT >= 2) t
         description = L["Glyph"],
         icon = addon.Artwork.condition["GLYPH"],
         fields = { item = "number" },
+        -- Checks that the saved fields of the GLYPH condition are complete and in range.
+        -- @param _ any  Unused; the current specialization the engine passes.
+        -- @param value table  The saved condition fields.
+        -- @return boolean  True when the saved fields are complete and in range.
+        --
         -- The item must be a glyph of your own class.
         valid = function(_, value)
             if value.item ~= nil then
@@ -366,6 +482,14 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or LE_EXPANSION_LEVEL_CURRENT >= 2) t
                 return false
             end
         end,
+        -- Decides whether the chosen glyph item is active in one of your glyph sockets, matched by the glyph's spell
+        -- name.
+        -- @param value table  The saved condition fields.
+        -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+        --     Functions.cache.getCached.
+        -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+        -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+        --
         -- Unavailable on any unreadable step; an incomplete socket snapshot never yields false.
         evaluate = function(value, cache)
             local item, itemReason = Functions.cache.getCached(cache, addon.Platform.GetGlyphItemInfo, addon.Platform, value.item, unit_class_num)
@@ -391,11 +515,19 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or LE_EXPANSION_LEVEL_CURRENT >= 2) t
             if not snapshot.complete then return nil, "glyph-socket-unavailable" end
             return false
         end,
+        -- Builds the readable rule summary for the GLYPH condition.
+        -- @param _ any  Unused; the current specialization the engine passes.
+        -- @param value table  The saved condition fields.
+        -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
         print = function(_, value)
             local info = value.item and addon.Platform:GetItemDisplayInfo(value.item) or nil
             local link = info and info.link or nil
             return string.format(L["you {{!have|do not have}} %s active"], Functions.presentation.nullable(link, L["<glyph>"]))
         end,
+        -- Builds the editor controls for the GLYPH condition's fields.
+        -- @param parent table  The editor group the controls are added to.
+        -- @param spec any  The current specialization (addon.currentSpec).
+        -- @param value table  The saved condition fields; the controls edit it in place.
         widget = function(parent, spec, value)
             local top = parent:GetUserData("top")
             local root = top:GetUserData("root")
@@ -408,6 +540,8 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or LE_EXPANSION_LEVEL_CURRENT >= 2) t
                     function() top:SetStatusText(funcs:print(root, spec)) end)
             parent:AddChild(item_group)
         end,
+        -- Builds the help page for the GLYPH condition.
+        -- @param frame table  The help page container that text and example widgets are added to.
         help = function(frame)
             frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Item"] .. color.RESET .. " - " ..
                 "The glyph, entered as its item ID or item name; the icon beside the field shows the glyph " ..
@@ -428,19 +562,39 @@ addon:RegisterCondition("CREATURE", {
     description = L["Creature Type"],
     icon = addon.Artwork.condition["CREATURE"],
     fields = { unit = "string", value = "string" },
+    -- Checks that the saved fields of the CREATURE condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- A known unit and a known creature type key.
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.value ~= nil and Functions.values.isin(addon.creatures, value.value))
     end,
+    -- Decides whether the unit's creature type is the chosen one, delegating to addon:GetConditionCreatureTypeMatch.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Delegates to the Core helper; unavailable cases are its `nil, reason`.
     evaluate = function(value, cache)
         return addon:GetConditionCreatureTypeMatch(value.unit,value.value,cache)
     end,
+    -- Builds the readable rule summary for the CREATURE condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     print = function(_, value)
         return string.format(L["%s creature type {{!is|is not}} %s"],
             Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"]), Functions.presentation.nullable(addon.creatures[value.value], L["<creature type>"]))
     end,
+    -- Builds the editor controls for the CREATURE condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -464,6 +618,8 @@ addon:RegisterCondition("CREATURE", {
         end
         parent:AddChild(class)
     end,
+    -- Builds the help page for the CREATURE condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
 
@@ -480,11 +636,24 @@ addon:RegisterCondition("CLASSIFICATION", {
     description = L["Unit Classification"],
     icon = addon.Artwork.condition["CLASSIFICATION"],
     fields = { unit = "string", value = "string" },
+    -- Checks that the saved fields of the CLASSIFICATION condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- A known unit and a known classification key.
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.value ~= nil and Functions.values.isin(addon.classifications, value.value))
     end,
+    -- Decides whether the unit's classification (normal, elite, boss, ...) is the chosen one; false when the unit does
+    -- not exist.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable when the metadata observation is nil; a missing unit (observation false) is false.
     evaluate = function(value, cache)
         local observed,reason=Functions.cache.getCached(cache, addon.Platform.GetUnitMetadataObservation, addon.Platform, value.unit, "classification")
@@ -492,10 +661,18 @@ addon:RegisterCondition("CLASSIFICATION", {
         if observed==false then return false end
         return observed == value.value
     end,
+    -- Builds the readable rule summary for the CLASSIFICATION condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     print = function(_, value)
         return string.format(L["%s classification {{!is|is not}} %s"],
                 Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"]), Functions.presentation.nullable(addon.classifications[value.value], L["<classification>"]))
     end,
+    -- Builds the editor controls for the CLASSIFICATION condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -519,6 +696,8 @@ addon:RegisterCondition("CLASSIFICATION", {
         end
         parent:AddChild(class)
     end,
+    -- Builds the help page for the CLASSIFICATION condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
 
@@ -540,12 +719,25 @@ addon:RegisterCondition("LEVEL", runtimeCondition('LEVEL', {
     description = L["Level"],
     icon = addon.Artwork.condition["LEVEL"],
     fields = { unit = "string", operator = "string", value = "number", relative = "boolean" },
+    -- Checks that the saved fields of the LEVEL condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- A known unit and operator; the value may be negative only when relative.
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and (value.relative or value.value >= 0))
     end,
+    -- Compares the unit's level with the configured number, or with an offset from your own level when relative; false
+    -- when the unit does not exist.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable cases are listed above; the level itself comes from addon:GetConditionUnitLevel.
     evaluate = function(value, cache)
         local observed,reason=addon:GetConditionUnitLevel(value.unit,cache)
@@ -561,6 +753,10 @@ addon:RegisterCondition("LEVEL", runtimeCondition('LEVEL', {
         end
         return Functions.values.compare(value.operator, observed, level)
     end,
+    -- Builds the readable rule summary for the LEVEL condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     print = function(_, value)
         local level = value.value
         if value.relative and value.value ~= nil then
@@ -571,6 +767,10 @@ addon:RegisterCondition("LEVEL", runtimeCondition('LEVEL', {
         return Functions.presentation.compareString(value.operator, Functions.presentation.playerize(value.unit, L["your level"], string.format(L["%s's level"],
                 Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))), Functions.presentation.nullable(level, L["<level>"]))
     end,
+    -- Builds the editor controls for the LEVEL condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -593,6 +793,8 @@ addon:RegisterCondition("LEVEL", runtimeCondition('LEVEL', {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the LEVEL condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
@@ -618,11 +820,23 @@ addon:RegisterCondition("GROUP", {
     description = L["In Group"],
     icon = addon.Artwork.condition["GROUP"],
     fields = { raid = "boolean", unit = "string" },
+    -- Checks that the saved fields of the GROUP condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- The unit may be absent, the announcement recipient or a known unit; it must be readable (not secret).
     valid = function(_, value)
         return addon.Platform:CanReadValue(value.unit) and
             (value.unit == nil or value.unit == "spellrecipient" or Functions.values.isin(addon.units, value.unit))
     end,
+    -- Decides whether the unit (or you, with no unit) is in your party or raid.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable cases are listed above; every unit value is checked with CanReadValue before it is used.
     evaluate = function(value, cache)
         local unit=value.unit
@@ -641,6 +855,10 @@ addon:RegisterCondition("GROUP", {
         elseif not Functions.values.isin(addon.units,unit) then return nil,"invalid-unit" end
         return Functions.cache.getCached(cache, addon.Platform.GetUnitGroupMembership, addon.Platform, unit, value.raid)
     end,
+    -- Builds the readable rule summary for the GROUP condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     print = function(_, value)
         if value.unit==nil or value.unit=="player" then
             return value.raid and L["you {{!are|are not}} in a raid"] or L["you {{!are|are not}} in a group"]
@@ -648,6 +866,10 @@ addon:RegisterCondition("GROUP", {
         local label=value.unit=="spellrecipient" and L["Spell recipient"] or Functions.presentation.nullable(addon.units[value.unit],L["<unit>"])
         return addon:CreateConditionSummaryPhrase(value.raid and L["{unit} {{!is|is not}} in a raid"] or L["{unit} {{!is|is not}} in a group"],{unit=label})
     end,
+    -- Builds the editor controls for the GROUP condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -668,6 +890,8 @@ addon:RegisterCondition("GROUP", {
         end)
         parent:AddChild(raid)
     end,
+    -- Builds the help page for the GROUP condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Help.GROUP.unit"]))
         frame:AddChild(helpers.CreateText(L["Help.GROUP.raid"]))
@@ -687,19 +911,38 @@ if MI2_GetMobData then
         description = L["Runner"],
         icon = addon.Artwork.condition["RUNNER"],
         fields = { unit = "string" },
+        -- Checks that the saved fields of the RUNNER condition are complete and in range.
+        -- @param _ any  Unused; the current specialization the engine passes.
+        -- @param value table  The saved condition fields.
+        -- @return boolean  True when the saved fields are complete and in range.
+        --
         -- A known unit.
         valid = function(_, value)
         return value.unit ~= nil and Functions.values.isin(addon.units, value.unit)
     end,
+        -- Decides whether MobInfo2 has recorded a low-health action (fleeing) for the unit's mob type.
+        -- @param value table  The saved condition fields.
+        -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+        --     Functions.cache.getCached.
+        -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+        -- @return string|nil  The reason code when the first value is nil; nil otherwise.
         evaluate = function(value, cache)
         local observation,reason=addon.Platform:GetMobInfo2Observation(value.unit,"runner",nil,cache)
         if observation==nil then return nil,reason end
         if not observation.exists or observation.recorded==false then return false end
         return observation.runner
     end,
+        -- Builds the readable rule summary for the RUNNER condition.
+        -- @param _ any  Unused; the current specialization the engine passes.
+        -- @param value table  The saved condition fields.
+        -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
         print = function(_, value)
         return string.format(L["%s {{!will|will not}} run"], Functions.presentation.nullable(addon.units[value.unit]), Functions.presentation.nullable(addon.units[value.otherunit]))
     end,
+        -- Builds the editor controls for the RUNNER condition's fields.
+        -- @param parent table  The editor group the controls are added to.
+        -- @param spec any  The current specialization (addon.currentSpec).
+        -- @param value table  The saved condition fields; the controls edit it in place.
         widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -709,6 +952,8 @@ if MI2_GetMobData then
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
     end,
+        -- Builds the help page for the RUNNER condition.
+        -- @param frame table  The help page container that text and example widgets are added to.
         help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
@@ -724,6 +969,11 @@ if MI2_GetMobData then
         description = L["Resistant"],
         icon = addon.Artwork.condition["RESIST"],
         fields = { unit = "string", school = "string", operator = "string", value = "number" },
+        -- Checks that the saved fields of the RESIST condition are complete and in range.
+        -- @param _ any  Unused; the current specialization the engine passes.
+        -- @param value table  The saved condition fields.
+        -- @return boolean  True when the saved fields are complete and in range.
+        --
         -- A known unit, school and operator, and a ratio between 0 and 1.
         valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit)) and
@@ -731,17 +981,32 @@ if MI2_GetMobData then
                (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator)) and
                (value.value ~= nil and value.value >= 0.00 and value.value <= 1.00)
     end,
+        -- Compares the unit's recorded resistance ratio (resists divided by hits) to the chosen damage school with the
+        -- configured number.
+        -- @param value table  The saved condition fields.
+        -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+        --     Functions.cache.getCached.
+        -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+        -- @return string|nil  The reason code when the first value is nil; nil otherwise.
         evaluate = function(value, cache)
         local observation,reason=addon.Platform:GetMobInfo2Observation(value.unit,"resist",value.school,cache)
         if observation==nil then return nil,reason end
         if not observation.exists or observation.recorded==false then return false end
         return Functions.values.compare(value.operator,observation.ratio,value.value)
     end,
+        -- Builds the readable rule summary for the RESIST condition.
+        -- @param _ any  Unused; the current specialization the engine passes.
+        -- @param value table  The saved condition fields.
+        -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
         print = function(_, value)
         return Functions.presentation.compareString(value.operator, string.format(L["%s resistance to %s"],
                 Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"]), Functions.presentation.nullable(addon.spell_schools[value.school], L["<school>"])),
                 Functions.presentation.nullable(value.value and value.value * 100 or nil) .. '%')
     end,
+        -- Builds the editor controls for the RESIST condition's fields.
+        -- @param parent table  The editor group the controls are added to.
+        -- @param spec any  The current specialization (addon.currentSpec).
+        -- @param value table  The saved condition fields; the controls edit it in place.
         widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -769,6 +1034,8 @@ if MI2_GetMobData then
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+        -- Builds the help page for the RESIST condition.
+        -- @param frame table  The help page container that text and example widgets are added to.
         help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
@@ -792,11 +1059,22 @@ if MI2_GetMobData then
         description = L["Immune"],
         icon = addon.Artwork.condition["IMMUNE"],
         fields = { unit = "string", school = "string", partial = "boolean" },
+        -- Checks that the saved fields of the IMMUNE condition are complete and in range.
+        -- @param _ any  Unused; the current specialization the engine passes.
+        -- @param value table  The saved condition fields.
+        -- @return boolean  True when the saved fields are complete and in range.
+        --
         -- A known unit and school.
         valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit)) and
                 (value.school ~= nil and Functions.values.isin(addon.spell_schools, value.school))
     end,
+        -- Decides whether MobInfo2 has recorded immunity of the unit's mob type to the chosen damage school.
+        -- @param value table  The saved condition fields.
+        -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+        --     Functions.cache.getCached.
+        -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+        -- @return string|nil  The reason code when the first value is nil; nil otherwise.
         evaluate = function(value, cache)
         local observation,reason=addon.Platform:GetMobInfo2Observation(value.unit,"immune",value.school,cache)
         if observation==nil then return nil,reason end
@@ -805,6 +1083,10 @@ if MI2_GetMobData then
         if observation.hits==nil then return nil,observation.hitsReason end
         return observation.hits < 1
     end,
+        -- Builds the readable rule summary for the IMMUNE condition.
+        -- @param _ any  Unused; the current specialization the engine passes.
+        -- @param value table  The saved condition fields.
+        -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
         print = function(_, value)
         local template
         if value.partial then
@@ -815,6 +1097,10 @@ if MI2_GetMobData then
         return string.format(template,
                 Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]), Functions.presentation.nullable(addon.spell_schools[value.school], L["<school>"]))
     end,
+        -- Builds the editor controls for the IMMUNE condition's fields.
+        -- @param parent table  The editor group the controls are added to.
+        -- @param spec any  The current specialization (addon.currentSpec).
+        -- @param value table  The saved condition fields; the controls edit it in place.
         widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -848,6 +1134,8 @@ if MI2_GetMobData then
         end)
         parent:AddChild(partial)
     end,
+        -- Builds the help page for the IMMUNE condition.
+        -- @param frame table  The help page container that text and example widgets are added to.
         help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())

@@ -17,6 +17,8 @@ local runtimeCondition = addon.CreateConditionRuntimeWitness and addon:CreateCon
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
 -- True for a positive whole-number spell ID; the same test as addon.IsConditionSpellID in Conditions/common.lua.
+-- @param value any  The value to test.
+-- @return boolean  True when value is a number greater than 0, below math.huge, with no fractional part.
 local function validID(value)
     return type(value) == "number" and value > 0 and value < math.huge and value % 1 == 0
 end
@@ -30,14 +32,29 @@ addon:RegisterCondition("SPELL_KNOWN", runtimeCondition('SPELL_KNOWN', {
     description = L["Spell Known"],
     icon = addon.Artwork.condition["SPELL_KNOWN"],
     fields = { spell = "number", pet = "boolean" },
+    -- Checks that the saved fields of the SPELL_KNOWN condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Accepts a positive integer spell ID and an absent or boolean `pet`.
     valid = function(_, value)
         return validID(value.spell) and (value.pet == nil or type(value.pet) == "boolean")
     end,
+    -- Decides whether the spell is in your spell book (the pet's, when the pet flag is set).
+    -- @param value table  The saved condition fields.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Passes the Platform answer through unchanged, so an unreadable state is `nil, reason` (unavailable), never false.
     evaluate = function(value)
         return addon.Platform:IsSpellKnown(value.spell, value.pet)
     end,
+    -- Builds the readable rule summary for the SPELL_KNOWN condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Readable summary; the spell shows as a placeholder until a valid ID is chosen.
     print = function(_, value)
         local label = L["<spell>"]
@@ -46,6 +63,11 @@ addon:RegisterCondition("SPELL_KNOWN", runtimeCondition('SPELL_KNOWN', {
         end
         return string.format(value.pet and L["Your pet {{!knows|does not know}} %s"] or L["You {{!know|do not know}} %s"], label)
     end,
+    -- Builds the editor controls for the SPELL_KNOWN condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor: a spell edit box that accepts an ID or a name, a label preview of the choice, and the pet checkbox.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -88,6 +110,9 @@ addon:RegisterCondition("SPELL_KNOWN", runtimeCondition('SPELL_KNOWN', {
         end)
         parent:AddChild(pet)
     end,
+    -- Builds the help page for the SPELL_KNOWN condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page text.
     help = function(frame)
         frame:AddChild(addon.help_funcs.CreateText(L["Check whether you or your pet know this exact spell ID. An unlearned spell is a valid condition that returns false, so the same rotation can adapt as you learn abilities. This does not check cooldown, resources, range, or whether the spell can currently be cast. Missing or restricted learned-state data stays unavailable under NOT."]))

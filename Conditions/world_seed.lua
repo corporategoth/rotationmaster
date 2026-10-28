@@ -43,7 +43,8 @@ local retiredTags = {
     RANGED_SWING_REMAIN = true,
 }
 
--- Removes every retired tag from list in place; ignores anything that is not a table.
+-- Removes every retired condition tag from the list in place.
+-- @param list any  The array of condition tags to clean; anything but a table is ignored.
 local function dropRetired(list)
     if type(list) ~= "table" then
         return
@@ -56,8 +57,11 @@ local function dropRetired(list)
     end
 end
 
--- Applies the seed to db's current profile: always strips retired tags, and appends the new tags once per profile
--- (guarded by profile.worldConditionsSeeded). The first argument is unused so it can serve as an AceDB-style callback.
+-- Applies the world-state condition seed to a database's current profile.
+-- @param _ any  Unused, so the function can serve as an AceDB-style callback.
+-- @param db table|nil  The AceDB database; a nil database or a profile that is not a table is left alone.
+--
+-- Always strips retired tags, and appends the new tags once per profile (guarded by profile.worldConditionsSeeded).
 function addon:InitializeWorldConditions(_, db)
     local profile = db and db.profile
 
@@ -77,7 +81,9 @@ function addon:InitializeWorldConditions(_, db)
         return
     end
 
-    -- Adds each tag missing from list to its end, preserving the user's order; a list that is not a table is skipped.
+    -- Adds each tag missing from the list to its end, preserving the user's order.
+    -- @param list any  The array of condition tags to extend; a list that is not a table is skipped.
+    -- @param tags string[]  The condition tags to add.
     local function append(list, tags)
         if type(list) ~= "table" then
             return
@@ -114,7 +120,8 @@ end
 local seedOwner = {}
 
 -- Seeds the current profile and re-seeds on every profile event that can bring in an unseeded profile (new, reset,
--- switched, copied). Does nothing if db is not an AceDB object.
+-- switched, copied).
+-- @param db table|nil  The AceDB database; does nothing if it is not an AceDB object.
 function addon:InstallWorldConditions(db)
     if type(db) ~= "table" or type(db.RegisterCallback) ~= "function" then
         return

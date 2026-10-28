@@ -13,8 +13,11 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 -- Spell widgets
 -- ============================================================================
 
--- True for a positive whole-number spell id. Portable condition fields contain ordinary saved data, never live
--- secrets.
+-- True for a positive whole-number spell ID.
+-- @param value any  The value to test.
+-- @return boolean  True when value is a number greater than 0, below math.huge, with no fractional part.
+--
+-- Portable condition fields contain ordinary saved data, never live secrets.
 function addon.IsConditionSpellID(value)
     return type(value) == "number" and value > 0 and value < math.huge and value % 1 == 0
 end
@@ -22,8 +25,13 @@ end
 -- Tooltip text shared by every rank checkbox.
 local RANK_TIP = L["Unticked, any rank of the spell matches. Ticked, only the rank you chose matches."]
 
--- Resolves a saved spell value to an id for display. On non-Retail clients and when not ranked, it maps to the
--- spell catalog's canonical id; returns the id, or nil and a reason if the catalog cannot answer.
+-- Resolves a saved spell value to an ID for display.
+-- @param spellid number|string|nil  The saved spell ID, or a spell name saved before IDs existed.
+-- @param ranked boolean|nil  True when the saved condition matches an exact spell rank.
+-- @return number|string|nil  On non-Retail clients when not ranked, the spell catalog's canonical ID, or nil when the
+--     catalog cannot answer; otherwise spellid unchanged.
+-- @return string|nil  The reason code when the catalog cannot answer ("spell-data-unavailable" if it gave none); nil
+--     otherwise.
 function addon:Widget_GetSpellId(spellid, ranked)
     if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
         if not ranked then
@@ -34,8 +42,11 @@ function addon:Widget_GetSpellId(spellid, ranked)
     return spellid
 end
 
--- Returns a chat link (with the rank appended when ranked and known) or a plain label for a spell value, or nil
--- for no spell.
+-- Builds a chat link, or a plain label, for a saved spell value.
+-- @param spellid number|string|nil  The saved spell ID or name; nil means no spell.
+-- @param ranked boolean|nil  True to append the spell's rank to the link when one is known.
+-- @return string|nil  The spell link with the rank appended when ranked and known, or a plain spell label when no link
+--     exists; nil when spellid is nil.
 function addon:Widget_GetSpellLink(spellid, ranked)
     if spellid ~= nil then
         if ranked then
@@ -54,8 +65,18 @@ function addon:Widget_GetSpellLink(spellid, ranked)
     return nil
 end
 
--- Spell picker: an icon box and a name edit box (and an exact-rank checkbox on clients with ranks) that write
--- value.spell as a spell id. nametoid converts typed text to an id and isvalid accepts or rejects it.
+-- Builds the spell picker: an icon box and a name edit box, plus an exact-rank checkbox on clients with ranks, that
+-- write value.spell as a spell ID.
+-- @param spec any  The editing context: the pet book type ("pet") selects the pet spell icon, anything else the player
+--     spell icon.
+-- @param editbox string  The kind of edit box to create (for example "Spell_EditBox").
+-- @param value table  The saved condition fields; spell, ranked and disabled are read and spell and ranked are written.
+-- @param nametoid function  Called as nametoid(text) to convert typed non-numeric text to a spell ID (nil when it
+--     matches none).
+-- @param isvalid function  Called as isvalid(id) to accept or reject a spell ID; returns a boolean.
+-- @param update function  Called with no arguments after every change so the caller re-validates and re-prints the
+--     condition.
+-- @return table  The condition group holding the icon, the edit box and, when shown, the rank checkbox.
 function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, update)
     local spell_group = addon:CreateConditionGroup()
     spell_group:SetLayout('RM-SpellField')
@@ -146,8 +167,16 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
     return spell_group
 end
 
--- Spell picker like Widget_SpellWidget, but with a labeled field and no rank checkbox. It stores the id when storeId
--- is set and the spell name otherwise.
+-- Builds a spell picker like Widget_SpellWidget, but with a labeled field and no rank checkbox.
+-- @param spec any  The editing context: the pet book type ("pet") selects the pet spell icon, anything else the player
+--     spell icon.
+-- @param editbox string  The kind of edit box to create (for example "Spell_EditBox").
+-- @param value table  The saved condition fields; spell and disabled are read and spell is written.
+-- @param isvalid function  Called as isvalid(id) to accept or reject a spell ID; returns a boolean.
+-- @param update function  Called with no arguments after every change so the caller re-validates and re-prints the
+--     condition.
+-- @param storeId boolean|nil  True to store the spell ID in value.spell; otherwise the spell name is stored.
+-- @return table  The condition group holding the icon and the labeled edit box.
 function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update, storeId)
     local spell_group = addon:CreateConditionGroup()
     spell_group:SetLayout("Table")
@@ -241,11 +270,15 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update, sto
     return spell_group
 end
 
--- Rank choice for an aura picked by ID. The checkbox reads "Use this exact
--- spell rank" like every other rank option, so it is the inverse of the stored
--- `anyrank`: unticked (anyrank=true) matches every rank, ticked (anyrank unset,
--- the meaning of every saved condition) matches only the chosen ID. Hidden on
--- clients without spell ranks; the stored value still applies there.
+-- Builds the rank choice for an aura picked by ID.
+-- @param value table  The saved condition fields; anyrank and disabled are read and anyrank is written.
+-- @param update function  Called with no arguments after every change so the caller re-validates and re-prints the
+--     condition.
+-- @return table|nil  The checkbox, or nil on clients without spell ranks (the stored value still applies there).
+--
+-- The checkbox reads "Use this exact spell rank" like every other rank option, so it is the inverse of the stored
+-- `anyrank`: unticked (anyrank=true) matches every rank, ticked (anyrank unset, the meaning of every saved condition)
+-- matches only the chosen ID.
 function addon:Widget_AuraRankWidget(value, update)
     if not self:ClientHasSpellRanks() then
         return nil
@@ -266,8 +299,11 @@ function addon:Widget_AuraRankWidget(value, update)
     return check
 end
 
--- Exact-rank choice for a spell picked by ID where any rank matches by
--- default (casts, channels). Hidden on clients without spell ranks.
+-- Builds the exact-rank choice for a spell picked by ID where any rank matches by default (casts, channels).
+-- @param value table  The saved condition fields; ranked and disabled are read and ranked is written.
+-- @param update function  Called with no arguments after every change so the caller re-validates and re-prints the
+--     condition.
+-- @return table|nil  The checkbox, or nil on clients without spell ranks.
 function addon:Widget_SpellRankWidget(value, update)
     if not self:ClientHasSpellRanks() then
         return nil
@@ -291,10 +327,20 @@ end
 -- Item widgets
 -- ============================================================================
 
--- Item set picker: an icon, a dropdown of item sets (or Custom) and an edit button that opens the item list popup.
--- Writes value.item as an item set id or as a list of items. top is the owning condition window, hidden while the
--- popup is open (nil when the widget is not inside one). The popup callbacks check that this widget and the
--- saved tables are still the live ones before writing, since either can be released while the popup is open.
+-- Builds the item set picker: an icon, a dropdown of item sets (or Custom) and an edit button that opens the item list
+-- popup.
+-- @param top table|nil  The owning condition window, hidden while the popup is open; nil when the widget is not inside
+--     one.
+-- @param editbox string  The kind of edit box the item list popup uses (for example "Inventory_EditBox").
+-- @param value table  The saved condition fields; item and disabled are read and item is written, as an item set name
+--     or as a list of items.
+-- @param isvalid function  Called as isvalid(item) to accept or reject an item; returns a boolean.
+-- @param update function  Called with no arguments after every change so the caller re-validates and re-prints the
+--     condition.
+-- @return table  The condition group holding the icon, the dropdown and the edit button.
+--
+-- The popup callbacks check that this widget and the saved tables are still the live ones before writing, since either
+-- can be released while the popup is open.
 function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
     local itemsets = addon.db.profile.itemsets
     local global_itemsets = addon.db.global.itemsets
@@ -303,6 +349,9 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
     local lease = item_group.rmLease
     local profile, global = addon.db.profile, addon.db.global
 
+    -- True while this item picker is still the live widget for the current profile.
+    -- @return boolean  True when the group is active, not releasing, still holds its original lease, and the profile
+    --     and global tables are the ones it started with.
     local function ownerAlive()
         return item_group.rmActive
             and item_group.rmLease == lease
@@ -311,6 +360,11 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
             and addon.db.global == global
     end
 
+    -- Releases the item list popup and brings the owning condition window back.
+    -- @param widget table  The popup widget to release.
+    --
+    -- Does nothing more when the picker is not inside a condition window (top is nil); the window is resumed through
+    -- its rmResumeFromChild when it has one, otherwise re-laid out and shown while the owner is alive.
     local function closePopup(widget)
         addon:ReleaseConditionWidget(widget)
 
@@ -329,6 +383,7 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
 
     local itemIcon = addon:CreateConditionIcon()
 
+    -- Refreshes the icon with the first item of the saved item set or item list, or clears it when there is none.
     local update_action_image = function()
         if value.item ~= nil then
             if type(value.item) == "string" then
@@ -406,6 +461,7 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
 
     item:SetDisabled(value.disabled)
 
+    -- Fills the dropdown with the item set list and selects the saved item set (or Custom for an item list).
     item.configure = function()
         local selects, sorted = addon:get_item_list(L["Custom"])
         item:SetList(selects, sorted)
@@ -441,6 +497,9 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
             return
         end
 
+        -- Refreshes the icon and any bound button after the popup edited the items, then calls update().
+        --
+        -- Does nothing when the owner is no longer alive.
         local edit_callback = function()
             if not ownerAlive() then
                 return
@@ -472,6 +531,9 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
 
                 local selected, expected, items = value.item, itemset, itemset.items
 
+                -- True while the item set the popup is editing is still the live one.
+                -- @return boolean  True when the owner is alive, the selected item set and its items table are
+                --     unchanged, and the stored entry is the same table.
                 local function current()
                     if not ownerAlive() or value.item ~= selected or expected.items ~= items then
                         return false
@@ -511,7 +573,14 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
     return item_group
 end
 
--- Single item picker: an icon box and a name edit box that write one item id or name to value.item.
+-- Builds the single item picker: an icon box and a name edit box that write one item ID or name to value.item.
+-- @param spec any  The editing context, stored as the edit box's "spec" user data.
+-- @param editbox string  The kind of edit box to create (for example "Glyph_EditBox").
+-- @param value table  The saved condition fields; item and disabled are read and item is written.
+-- @param isvalid function  Called as isvalid(item) to accept or reject an item ID or typed text; returns a boolean.
+-- @param update function  Called with no arguments after every change so the caller re-validates and re-prints the
+--     condition.
+-- @return table  The condition group holding the icon and the edit box.
 function addon:Widget_SingleItemWidget(spec, editbox, value, isvalid, update)
     local item_group = addon:CreateConditionGroup()
     item_group:SetLayout("Table")
@@ -599,8 +668,14 @@ end
 -- Operator widgets
 -- ============================================================================
 
--- Operator dropdown plus a numeric edit box labeled name. Stores into value[op_field or "operator"] and
--- value[val_field or "value"]; the returned group has a Refresh() for callers that fill the fields themselves.
+-- Builds an operator dropdown plus a numeric edit box.
+-- @param value table  The saved condition fields; the operator and number fields are read and written.
+-- @param name string  The label of the numeric edit box.
+-- @param update function  Called with no arguments after every change so the caller re-validates and re-prints the
+--     condition.
+-- @param op_field string|nil  The value field that holds the operator; nil means "operator".
+-- @param val_field string|nil  The value field that holds the number; nil means "value".
+-- @return table  The condition group, which has a Refresh() function for callers that fill the fields themselves.
 function addon:Widget_OperatorWidget(value, name, update, op_field, val_field)
     local operator_group = addon:CreateConditionGroup()
     operator_group:SetLayout("Table")
@@ -617,6 +692,7 @@ function addon:Widget_OperatorWidget(value, name, update, op_field, val_field)
 
     operator:SetDisabled(value.disabled)
 
+    -- Fills the operator dropdown with the comparison operators and selects the saved one.
     operator.configure = function()
         operator:SetList(addon.operators, addon.Functions.collections.keys(addon.operators))
         operator:SetValue(value[op_field or "operator"])
@@ -637,8 +713,10 @@ function addon:Widget_OperatorWidget(value, name, update, op_field, val_field)
     edit:SetDisabled(value.disabled)
     operator_group:AddChild(edit)
 
-    -- A caller that fills in the operator and value itself (picking a
-    -- talent supplies a default comparison) shows them with this.
+    -- Redraws the operator dropdown and the number box from the saved fields.
+    --
+    -- A caller that fills in the operator and value itself (picking a talent supplies a default comparison) shows them
+    -- with this.
     operator_group.Refresh = function()
         operator.configure()
         edit:SetText(value[val_field or "value"])
@@ -647,8 +725,14 @@ function addon:Widget_OperatorWidget(value, name, update, op_field, val_field)
     return operator_group
 end
 
--- Operator dropdown plus a 0 to 100 percent slider (stored as a 0 to 1 fraction), with the same field names as
--- Widget_OperatorWidget.
+-- Builds an operator dropdown plus a 0 to 100 percent slider, stored as a 0 to 1 fraction.
+-- @param value table  The saved condition fields; the operator and fraction fields are read and written.
+-- @param name string  The label of the slider.
+-- @param update function  Called with no arguments after every change so the caller re-validates and re-prints the
+--     condition.
+-- @param op_field string|nil  The value field that holds the operator; nil means "operator".
+-- @param val_field string|nil  The value field that holds the fraction; nil means "value".
+-- @return table  The condition group holding the dropdown and the slider.
 function addon:Widget_OperatorPercentWidget(value, name, update, op_field, val_field)
     local operator_group = addon:CreateConditionGroup()
     operator_group:SetLayout("Table")
@@ -665,6 +749,7 @@ function addon:Widget_OperatorPercentWidget(value, name, update, op_field, val_f
 
     operator:SetDisabled(value.disabled)
 
+    -- Fills the operator dropdown with the comparison operators and selects the saved one.
     operator.configure = function()
         operator:SetList(addon.operators, addon.Functions.collections.keys(addon.operators))
         operator:SetValue(value[op_field or "operator"])

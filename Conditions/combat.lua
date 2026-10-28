@@ -63,19 +63,41 @@ addon:RegisterCondition("COMBAT", runtimeCondition('COMBAT', {
     description = L["In Combat"],
     icon = addon.Artwork.condition["COMBAT"],
     fields = { unit = "string" },
+    -- Checks that the saved fields of the COMBAT condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Configuration check: unit must be one of the selectable unit tokens.
     valid = function(_, value)
         return value.unit ~= nil and Functions.values.isin(addon.units, value.unit);
     end,
+    -- Decides whether the unit is in combat.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Reads the combat flag once per poll through the evaluation cache. Unavailable when the flag is unreadable.
     evaluate = function(value, cache)
         return Functions.cache.getCached(cache, addon.Platform.GetUnitFlagObservation, addon.Platform, value.unit, "combat")
     end,
+    -- Builds the readable rule summary for the COMBAT condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary; the verb agrees with the player ("are") or another unit ("is").
     print = function(_, value)
         return string.format(Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} in combat"], L["%s {{!is|is not}} in combat"]),
             Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))
     end,
+    -- Builds the editor controls for the COMBAT condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor control: the unit selector.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -86,6 +108,8 @@ addon:RegisterCondition("COMBAT", runtimeCondition('COMBAT', {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
     end,
+    -- Builds the help page for the COMBAT condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
     end,
@@ -97,20 +121,36 @@ addon:RegisterCondition("PET", {
     description = L["Have Pet"],
     icon = addon.Artwork.condition["PET"],
     fields = {},
+    -- Checks that the saved fields of the PET condition are complete and in range.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Nothing to configure, so always valid.
     valid = function()
         return true
     end,
+    -- Decides whether the player's pet unit exists.
+    -- @param _ any  Unused; this condition has no fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Reads the pet's existence only (the name is not requested), once per poll.
     evaluate = function(_, cache)
         local record,reason=Functions.cache.getCached(cache, addon.Platform.GetPetObservation, addon.Platform, false)
         if not record then return nil,reason end
         return record.exists
     end,
+    -- Builds the readable rule summary for the PET condition.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary.
     print = function()
         return L["you {{!have|do not have}} a pet"]
     end,
+    -- Builds the help page for the PET condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: what existence of a pet does and does not imply.
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Matches when your pet unit exists. This does not check whether the pet is alive, in range or able to use an ability."] ))
@@ -123,10 +163,22 @@ addon:RegisterCondition("PET_NAME", {
     description = L["Have Named Pet"],
     icon = addon.Artwork.condition["PET_NAME"],
     fields = { value = "string" },
+    -- Checks that the saved fields of the PET_NAME condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Configuration check: a name must be set.
     valid = function(_, value)
         return value.value ~= nil
     end,
+    -- Decides whether the pet exists and its name equals the saved name exactly.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Reads the pet with its name (the second argument asks for it) once per poll.
     evaluate = function(value, cache)
         local record,reason=Functions.cache.getCached(cache, addon.Platform.GetPetObservation, addon.Platform, true)
@@ -134,10 +186,20 @@ addon:RegisterCondition("PET_NAME", {
         if not record.exists then return false end
         return record.name == value.value
     end,
+    -- Builds the readable rule summary for the PET_NAME condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary; shows <name> until a name is entered.
     print = function(_, value)
         return PetSummary.phrase(L["you {{!have|do not have}} a pet named {name}"], {name = Functions.presentation.nullable(value.value, L["<name>"])})
     end,
+    -- Builds the editor controls for the PET_NAME condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor control: a text box that stores the name when Enter is pressed.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -155,6 +217,8 @@ addon:RegisterCondition("PET_NAME", {
         end
         parent:AddChild(petname)
     end,
+    -- Builds the help page for the PET_NAME condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. NAME .. color.RESET .. " - " ..
             "The name of the pet you have summoned."))
@@ -167,18 +231,34 @@ addon:RegisterCondition("STEALTHED", runtimeCondition('STEALTHED', {
     description = L["Stealth"],
     icon = addon.Artwork.condition["STEALTHED"],
     fields = {},
+    -- Checks that the saved fields of the STEALTHED condition are complete and in range.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Nothing to configure, so always valid.
     valid = function()
         return true
     end,
+    -- Decides whether the game reports the player as stealthed.
+    -- @param _ any  Unused; this condition has no fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Reads the player's "stealthed" flag once per poll through the evaluation cache.
     evaluate = function(_, cache)
         return Functions.cache.getCached(cache, addon.Platform.GetPlayerFlagObservation, addon.Platform, "stealthed")
     end,
+    -- Builds the readable rule summary for the STEALTHED condition.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary.
     print = function()
         return L["you {{!are|are not}} stealthed"]
     end,
+    -- Builds the help page for the STEALTHED condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: what the flag does and does not test.
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Matches while the game reports your character as stealthed. It does not test whether an enemy can detect you."] ))
@@ -191,18 +271,34 @@ addon:RegisterCondition("INCONTROL", {
     description = L["In Control"],
     icon = addon.Artwork.condition["INCONTROL"],
     fields = {},
+    -- Checks that the saved fields of the INCONTROL condition are complete and in range.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Nothing to configure, so always valid.
     valid = function()
         return true
     end,
+    -- Decides whether the game reports that the player has full control of the character.
+    -- @param _ any  Unused; this condition has no fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Reads the player's "control" flag once per poll through the evaluation cache.
     evaluate = function(_, cache)
         return Functions.cache.getCached(cache, addon.Platform.GetPlayerFlagObservation, addon.Platform, "control")
     end,
+    -- Builds the readable rule summary for the INCONTROL condition.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary.
     print = function()
         return L["you {{!are|are not}} in control of your character"]
     end,
+    -- Builds the help page for the INCONTROL condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: what the flag does and does not guarantee.
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Matches when the game reports that you have full control of your character. This does not guarantee that a particular spell is usable."] ))
@@ -220,12 +316,25 @@ addon:RegisterCondition("LOC_TYPE", {
     description = L["Loss Of Control Type"],
     icon = addon.Artwork.condition["LOC_TYPE"],
     fields = { operator = "string", value = "number", loc_type = "string" },
+    -- Checks that the saved fields of the LOC_TYPE condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Configuration check: a known operator, a non-negative number of seconds and a known control type.
     valid = function(_, value)
         return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0.0 and
                 value.loc_type ~= nil and Functions.values.isin(addon.loc_types, value.loc_type))
     end,
+    -- Compares the seconds remaining on the first active loss-of-control effect of the chosen type with the configured
+    -- number.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Walks the active effects by index through the evaluation cache. Unavailable cases: the count or an effect is
     -- unreadable, or the matching effect has no readable remaining time.
     evaluate = function(value, cache)
@@ -245,11 +354,21 @@ addon:RegisterCondition("LOC_TYPE", {
         end
         return false
     end,
+    -- Builds the readable rule summary for the LOC_TYPE condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary: the time remaining on the chosen control type compared with the saved seconds.
     print = function(_, value)
         return Functions.presentation.compareString(value.operator, string.format(L["time remaining on %s"],
                 Functions.presentation.nullable(addon.loc_types[value.loc_type], L["<control type>"])), string.format(L["%s seconds"], Functions.presentation.nullable(value.value)))
     end,
+    -- Builds the editor controls for the LOC_TYPE condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor controls: the control type dropdown and the seconds comparison.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -272,6 +391,9 @@ addon:RegisterCondition("LOC_TYPE", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the LOC_TYPE condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the control type, then the seconds comparison.
     help = function(frame)
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Control Type"] .. color.RESET .. " - " ..
@@ -290,12 +412,25 @@ addon:RegisterCondition("LOC_BLOCKED", {
     description = L["Loss Of Control Blocked"],
     icon = addon.Artwork.condition["LOC_BLOCKED"],
     fields = { operator = "string", value = "number", school = "number" },
+    -- Checks that the saved fields of the LOC_BLOCKED condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Configuration check: a known operator, a non-negative number of seconds and a school from SCHOOL_STRINGS.
     valid = function(_, value)
         return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0.0 and
                 value.school ~= nil and Functions.values.isin(SCHOOL_STRINGS, value.school))
     end,
+    -- Compares the seconds remaining on the first active loss-of-control effect that locks out the chosen spell school
+    -- with the configured number.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Walks the active effects by index through the evaluation cache. Unavailable cases: the count or an effect is
     -- unreadable, the bit library or a mask result is missing, secret or not a finite whole number, or the blocking
     -- effect has no readable remaining time.
@@ -324,11 +459,21 @@ addon:RegisterCondition("LOC_BLOCKED", {
         end
         return false
     end,
+    -- Builds the readable rule summary for the LOC_BLOCKED condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary: the time remaining on the block of the chosen school compared with the saved seconds.
     print = function(_, value)
         return Functions.presentation.compareString(value.operator, string.format(L["time remaining on block of your %s abilities"],
             Functions.presentation.nullable(SCHOOL_STRINGS[value.school], L["<school>"])), string.format(L["%s seconds"], Functions.presentation.nullable(value.value)))
     end,
+    -- Builds the editor controls for the LOC_BLOCKED condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor controls: the blocked school dropdown and the seconds comparison.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -351,6 +496,9 @@ addon:RegisterCondition("LOC_BLOCKED", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the LOC_BLOCKED condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the blocked school, then the seconds comparison.
     help = function(frame)
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["School Blocked"] .. color.RESET .. " - " ..
@@ -372,20 +520,36 @@ addon:RegisterCondition("MOVING", runtimeCondition('MOVING', {
     description = L["Moving"],
     icon = addon.Artwork.condition["MOVING"],
     fields = {},
+    -- Checks that the saved fields of the MOVING condition are complete and in range.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Nothing to configure, so always valid.
     valid = function()
         return true
     end,
+    -- Decides whether the player's current movement speed is not zero.
+    -- @param _ any  Unused; this condition has no fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Reads the player's movement speed once per poll through the evaluation cache.
     evaluate = function(_, cache)
         local record,reason=Functions.cache.getCached(cache,addon.Platform.GetPlayerMovementObservation,addon.Platform)
         if not record then return nil,reason end
         return record.speed~=0
     end,
+    -- Builds the readable rule summary for the MOVING condition.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary.
     print = function()
         return L["you {{!are|are not}} moving"]
     end,
+    -- Builds the help page for the MOVING condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: what "moving" is based on.
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Matches while your character is moving, based on current movement speed. It does not test the movement of your target."] ))
@@ -399,11 +563,24 @@ addon:RegisterCondition("THREAT", {
     description = L["Threat"],
     icon = addon.Artwork.condition["THREAT"],
     fields = { unit = "string", threat = "number" },
+    -- Checks that the saved fields of the THREAT condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Configuration check: a selectable unit and a threat level from 1 to 4.
     valid = function(_, value)
         return value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                value.threat ~= nil and value.threat >= 1 and value.threat <= 4
     end,
+    -- Decides whether the player's threat on the unit is at least the chosen level; false when the unit does not exist
+    -- or is not an enemy.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Reads the threat status once per poll through the evaluation cache.
     evaluate = function(value, cache)
         local observed,reason=Functions.cache.getCached(cache, addon.Platform.GetUnitThreatObservation, addon.Platform, value.unit)
@@ -411,6 +588,11 @@ addon:RegisterCondition("THREAT", {
         if observed==false then return false end
         return observed >= value.threat - 1
     end,
+    -- Builds the readable rule summary for the THREAT condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary from addon.threatPredicates; level 1 uses the possessive unit names.
     print = function(_, value)
         local predicate = addon.threatPredicates[value.threat]
@@ -421,6 +603,11 @@ addon:RegisterCondition("THREAT", {
         local units = value.threat == 1 and addon.unitsPossessive or addon.units
         return string.format(predicate, Functions.presentation.nullable(units[value.unit], L["<unit>"]))
     end,
+    -- Builds the editor controls for the THREAT condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor controls: the unit selector (player and pet are left out of the list), then the threat level.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -443,6 +630,9 @@ addon:RegisterCondition("THREAT", {
         end
         parent:AddChild(val)
     end,
+    -- Builds the help page for the THREAT condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the unit, then each threat level and when it counts as reached.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
@@ -475,18 +665,36 @@ addon:RegisterCondition("THREAT_COUNT", {
     description = L["Threat Count"],
     icon = addon.Artwork.condition["THREAT_COUNT"],
     fields = { threat = "number", operator = "string", value = "number" },
+    -- Checks that the saved fields of the THREAT_COUNT condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Configuration check: a non-negative count, a known operator and a threat level from 1 to 4.
     valid = function(_, value)
         return value.value ~= nil and value.value >= 0 and
                 value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.threat ~= nil and value.threat >= 1 and value.threat <= 4
     end,
+    -- Compares the number of enemies on which the player has at least the chosen threat level with the configured
+    -- count.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Counts enemies at status threat-1 or higher, then compares. Unavailable when the count cannot be proven.
     evaluate = function(value, cache)
         local count,reason=addon:GetConditionThreatCount(value.threat-1,cache)
         if count==nil then return nil,reason end
         return Functions.values.compare(value.operator, count, value.value)
     end,
+    -- Builds the readable rule summary for the THREAT_COUNT condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary built from addon.threatCounts; a placeholder stands in for an unknown level.
     print = function(_, value)
         return Functions.presentation.compareString(value.operator,
@@ -494,6 +702,11 @@ addon:RegisterCondition("THREAT_COUNT", {
                         Functions.presentation.nullable(nil, L["<threat>"])),
                         Functions.presentation.nullable(value.value))
     end,
+    -- Builds the editor controls for the THREAT_COUNT condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor controls: the threat level dropdown and the count comparison.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -516,6 +729,9 @@ addon:RegisterCondition("THREAT_COUNT", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the THREAT_COUNT condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the threat levels, the count comparison and the nameplate distance limit.
     help = function(frame)
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Threat"] .. color.RESET .. " - " ..
@@ -555,6 +771,11 @@ addon:RegisterCondition("FORM", runtimeCondition('FORM', {
     description = L["Shapeshift Form"],
     icon = addon.Artwork.condition["FORM"],
     fields = { value = "number", form = "number" },
+    -- Checks that the saved fields of the FORM condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Configuration check: a whole-number form spell ID, or a slot from 0 to the player's number of forms (1 for a
     -- Shaman).
     valid = function(_, value)
@@ -565,6 +786,14 @@ addon:RegisterCondition("FORM", runtimeCondition('FORM', {
         end
         return value.value ~= nil and value.value >= 0 and value.value <= (character_class == "SHAMAN" and 1 or GetNumShapeshiftForms())
     end,
+    -- Decides whether the player is in the chosen shapeshift form, by form spell when one is saved and otherwise by
+    -- stance bar slot.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- A saved spell ID is matched against the active form's spell; a saved slot is matched against the active form
     -- index. Unavailable when the active form cannot be read.
     evaluate = function(value, cache)
@@ -578,6 +807,11 @@ addon:RegisterCondition("FORM", runtimeCondition('FORM', {
         if form==nil then return nil,reason end
         return form == value.value
     end,
+    -- Builds the readable rule summary for the FORM condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary naming the form by its spell, "humanoid form" for slot 0, or a placeholder when none is chosen.
     print = function(_, value)
         local form
@@ -597,6 +831,11 @@ addon:RegisterCondition("FORM", runtimeCondition('FORM', {
         end
         return string.format(L["you {{!are|are not}} in %s"], Functions.presentation.nullable(form, L["<form>"]))
     end,
+    -- Builds the editor controls for the FORM condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor controls: a form icon and a dropdown of humanoid, the stance bar forms, the class's other forms on this
     -- client and, for a condition saved by slot, that slot. The dropdown stores a spell ID or a slot number.
     widget = function(parent, spec, value)
@@ -702,6 +941,9 @@ addon:RegisterCondition("FORM", runtimeCondition('FORM', {
         end
         parent:AddChild(form)
     end,
+    -- Builds the help page for the FORM condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: what a form is, then how forms are chosen and when the result is unavailable.
     help = function(frame)
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Form"] .. color.RESET .. " - " ..
@@ -723,18 +965,40 @@ addon:RegisterCondition("ATTACKABLE", runtimeCondition('ATTACKABLE', {
     description = L["Attackable"],
     icon = addon.Artwork.condition["ATTACKABLE"],
     fields = { unit = "string" },
+    -- Checks that the saved fields of the ATTACKABLE condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Configuration check: unit must be one of the selectable unit tokens.
     valid = function(_, value)
         return value.unit ~= nil and Functions.values.isin(addon.units, value.unit);
     end,
+    -- Decides whether the player can attack the unit.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Reads the attackability once per poll through the evaluation cache.
     evaluate = function(value, cache)
         return Functions.cache.getCached(cache, addon.Platform.GetUnitAttackabilityObservation, addon.Platform, value.unit)
     end,
+    -- Builds the readable rule summary for the ATTACKABLE condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary; the verb agrees with the player ("are") or another unit ("is").
     print = function(_, value)
         return string.format(Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} attackable"], L["%s {{!is|is not}} attackable"]), Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))
     end,
+    -- Builds the editor controls for the ATTACKABLE condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor control: the unit selector (player and pet are left out of the list).
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -745,6 +1009,8 @@ addon:RegisterCondition("ATTACKABLE", runtimeCondition('ATTACKABLE', {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
     end,
+    -- Builds the help page for the ATTACKABLE condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
     end,
@@ -756,18 +1022,40 @@ addon:RegisterCondition("ENEMY", {
     description = L["Hostile"],
     icon = addon.Artwork.condition["ENEMY"],
     fields = { unit = "string" },
+    -- Checks that the saved fields of the ENEMY condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Configuration check: unit must be one of the selectable unit tokens.
     valid = function(_, value)
         return value.unit ~= nil and Functions.values.isin(addon.units, value.unit);
     end,
+    -- Decides whether the unit is an enemy of the player; false when it is not or does not exist.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Reads the enemy flag once per poll through the evaluation cache.
     evaluate = function(value, cache)
         return Functions.cache.getCached(cache, addon.Platform.GetUnitFlagObservation, addon.Platform, value.unit, "enemy")
     end,
+    -- Builds the readable rule summary for the ENEMY condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary; the verb agrees with the player ("are") or another unit ("is").
     print = function(_, value)
         return string.format(Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} an enemy"], L["%s {{!is|is not}} an enemy"]), Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))
     end,
+    -- Builds the editor controls for the ENEMY condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor control: the unit selector (player and pet are left out of the list).
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -778,6 +1066,8 @@ addon:RegisterCondition("ENEMY", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
     end,
+    -- Builds the help page for the ENEMY condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
     end,
@@ -797,6 +1087,11 @@ addon:RegisterCondition("COMBAT_HISTORY", {
     description = L["Combat Action History"],
     icon = addon.Artwork.condition["COMBAT_HISTORY"],
     fields = { unit = "string", action = "string", operator = "string", value = "number" },
+    -- Checks that the saved fields of the COMBAT_HISTORY condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Configuration check: a selectable unit, a known action, a known operator and a non-negative position.
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
@@ -804,6 +1099,12 @@ addon:RegisterCondition("COMBAT_HISTORY", {
                 value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
+    -- Decides whether an action of the chosen kind sits at a position in the unit's combat history that passes the
+    -- comparison.
+    -- @param value table  The saved condition fields.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Scans the unit's history by position. Takes no cache because the history is already in memory.
     evaluate = function(value)
         local unknown
@@ -822,6 +1123,11 @@ addon:RegisterCondition("COMBAT_HISTORY", {
         if unknown then return nil, "restricted-value" end
         return false
     end,
+    -- Builds the readable rule summary for the COMBAT_HISTORY condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary, phrased as a number of actions ago.
     print = function(_, value)
         local ago = addon.historyActionsAgo[value.operator]
@@ -830,6 +1136,11 @@ addon:RegisterCondition("COMBAT_HISTORY", {
                              ago and string.format(ago, Functions.presentation.nullable(value.value))
                              or Functions.presentation.nullable(nil, L["<operator>"]) .. " " .. string.format(L["%s actions ago"], Functions.presentation.nullable(value.value)))
     end,
+    -- Builds the editor controls for the COMBAT_HISTORY condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor controls: the unit selector (limited to player, pet and target), the action type and the position.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -856,6 +1167,9 @@ addon:RegisterCondition("COMBAT_HISTORY", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the COMBAT_HISTORY condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the unit, the action kind, and how far back the history reaches (by count).
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
@@ -880,6 +1194,11 @@ addon:RegisterCondition("COMBAT_HISTORY_TIME", {
     description = L["Combat Action History Time"],
     icon = addon.Artwork.condition["COMBAT_HISTORY_TIME"],
     fields = { unit = "string", action = "string", operator = "string", value = "number" },
+    -- Checks that the saved fields of the COMBAT_HISTORY_TIME condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Configuration check: a selectable unit, a known action, a known operator and a non-negative number of seconds.
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
@@ -887,6 +1206,14 @@ addon:RegisterCondition("COMBAT_HISTORY_TIME", {
                 value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
+    -- Decides whether an action of the chosen kind happened a number of seconds ago that passes the comparison.
+    -- @param value table  The saved condition fields.
+    -- @param _ any  Unused; the history is already in memory, so no cache is needed.
+    -- @param evalStart number  The GetTime() reading taken when this evaluation pass began; each entry's age is
+    --     measured against it.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Scans the unit's history, measuring each entry's age against evalStart (the pass's GetTime(), the third
     -- argument). Every number is checked for readability and finiteness before it is used in arithmetic.
     evaluate = function(value, _, evalStart)
@@ -917,6 +1244,11 @@ addon:RegisterCondition("COMBAT_HISTORY_TIME", {
         if unknown then return nil, "restricted-value" end
         return false
     end,
+    -- Builds the readable rule summary for the COMBAT_HISTORY_TIME condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary, phrased as a number of seconds ago.
     print = function(_, value)
         local ago = addon.historySecondsAgo[value.operator]
@@ -925,6 +1257,11 @@ addon:RegisterCondition("COMBAT_HISTORY_TIME", {
             ago and string.format(ago, Functions.presentation.nullable(value.value))
             or Functions.presentation.nullable(nil, L["<operator>"]) .. " " .. string.format(L["%s seconds ago"], Functions.presentation.nullable(value.value)))
     end,
+    -- Builds the editor controls for the COMBAT_HISTORY_TIME condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor controls: the unit selector (limited to player, pet and target), the action type and the seconds.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -951,6 +1288,9 @@ addon:RegisterCondition("COMBAT_HISTORY_TIME", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the COMBAT_HISTORY_TIME condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the unit, the action kind, and how far back the history reaches (by time).
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
@@ -976,10 +1316,23 @@ addon:RegisterCondition("TIME_IN_COMBAT", {
     description = L["Time Since Combat Start"],
     icon = addon.Artwork.condition["TIME_IN_COMBAT"],
     fields = { operator = "string", value = "number" },
+    -- Checks that the saved fields of the TIME_IN_COMBAT condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Configuration check: a known operator and a non-negative number of seconds.
     valid = function(_, value)
         return ( value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and value.value ~= nil and value.value >= 0)
     end,
+    -- Compares the seconds since the player entered combat with the configured number; false while out of combat.
+    -- @param value table  The saved condition fields.
+    -- @param _ any  Unused.
+    -- @param evalStart number  The GetTime() reading taken when this evaluation pass began; the elapsed time is
+    --     measured against it.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Elapsed time is evalStart (the pass's GetTime(), the third argument) minus the combat start.
     evaluate = function(value, _, evalStart)
         local start=addon.combatStart
@@ -993,10 +1346,20 @@ addon:RegisterCondition("TIME_IN_COMBAT", {
         if elapsed~=elapsed or elapsed>=math.huge or elapsed<=-math.huge then return nil,'invalid-combat-elapsed' end
         return Functions.values.compare(value.operator,elapsed,value.value)
     end,
+    -- Builds the readable rule summary for the TIME_IN_COMBAT condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary: "Time in combat" compared with the saved seconds.
     print = function(_, value)
         return Functions.presentation.compareString(value.operator,L["Time in combat"],string.format(L["%s seconds"],Functions.presentation.nullable(value.value)))
     end,
+    -- Builds the editor controls for the TIME_IN_COMBAT condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor control: the seconds comparison.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -1007,6 +1370,9 @@ addon:RegisterCondition("TIME_IN_COMBAT", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the TIME_IN_COMBAT condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: how the elapsed time is compared, with opener examples.
     help = function(frame)
         addon.layout_condition_operatorwidget_help(frame, L["Time Since Combat Start"], L["Seconds"],

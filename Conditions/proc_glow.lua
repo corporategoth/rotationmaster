@@ -39,11 +39,24 @@ addon:RegisterCondition("SPELL_GLOW", {
     icon = addon.Artwork.condition["SPELL_GLOW"],
     requiredFields = { "spell" },
     fields = { spell = "number", ranked = "boolean" },
+    -- Checks that the saved fields of the SPELL_GLOW condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Configuration check: spell must be a valid condition spell ID and ranked, when present, a Boolean.
     valid = function(_, value)
         return value.spell ~= nil and addon.IsConditionSpellID(value.spell)
             and (value.ranked == nil or type(value.ranked) == "boolean")
     end,
+    -- Decides whether the spell, or any of its base and override relatives, is showing the game's activation (proc)
+    -- glow.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Asks the glow reader about the spell and each relative through the evaluation cache. Unavailable cases: the spell
     -- cannot be resolved, or a relative's glow is unreadable while none of the others glows.
     evaluate = function(value, cache)
@@ -61,11 +74,21 @@ addon:RegisterCondition("SPELL_GLOW", {
         if reason then return nil, reason end
         return false
     end,
+    -- Builds the readable rule summary for the SPELL_GLOW condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary with a clickable spell link, or a placeholder while no spell is chosen.
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
         return string.format(L["%s {{!is|is not}} glowing with a proc"], Functions.presentation.nullable(link, L["<spell>"]))
     end,
+    -- Builds the editor controls for the SPELL_GLOW condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor control: the spell picker for the rotation's spec.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -78,6 +101,9 @@ addon:RegisterCondition("SPELL_GLOW", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
     end,
+    -- Builds the help page for the SPELL_GLOW condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the condition's own text, then the shared spell widget help.
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Help.Conditions.SPELL_GLOW"]))

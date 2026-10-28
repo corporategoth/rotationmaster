@@ -41,7 +41,8 @@ addon.builtinCallbackBindings["Conditions/group_state.lua"] = {
 -- What can be counted, in the order the editor lists it.
 local MEASURE_ORDER = { "size", "TANK", "HEALER", "DAMAGER", "dead" }
 
--- Returns the editor labels of the measures, keyed by measure name.
+-- Returns the editor labels of the group measures, keyed by measure name.
+-- @return table{size=string,TANK=string,HEALER=string,DAMAGER=string,dead=string}  The localized label of each measure.
 local function measureNames()
     return {
         size = L["Players in the group"], TANK = L["Tanks"], HEALER = L["Healers"], DAMAGER = L["Damage dealers"],
@@ -49,8 +50,10 @@ local function measureNames()
     }
 end
 
--- True when value carries a known operator and a finite, non-negative number to compare against (at most 100 when
--- value.percent is set).
+-- True when the saved fields carry a known operator and a finite, non-negative number to compare against.
+-- @param value table  The saved condition fields; reads operator, value and percent.
+-- @return boolean  True when operator is one of addon.operators and value is a finite number of at least 0, and at most
+--     100 when value.percent is set.
 local function validCompare(value)
     if value.operator == nil or not Functions.values.isin(addon.operators, value.operator) then return false end
     if type(value.value) ~= "number" or value.value ~= value.value or value.value < 0 or value.value >= math.huge then return false end
@@ -66,6 +69,11 @@ addon:RegisterCondition("GROUP_COUNT", {
     icon = addon.Artwork.condition["GROUP_COUNT"],
     requiredFields = { "measure", "operator", "value" },
     fields = { measure = "string", percent = "boolean", operator = "string", value = "number" },
+    -- Checks that the saved fields of the GROUP_COUNT condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid with a listed measure, a valid comparison, and a percent flag that is not set on "size" (the group is
     -- always 100 percent of itself).
     valid = function(_, value)
@@ -73,6 +81,14 @@ addon:RegisterCondition("GROUP_COUNT", {
             and (value.percent == nil or type(value.percent) == "boolean" and (value.percent ~= true or value.measure ~= "size"))
             and validCompare(value)
     end,
+    -- Compares the chosen group measure (players, tanks, healers, damage dealers or dead members) with the configured
+    -- number or percentage.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Asks the snapshot only for what the measure needs ("size", "roles" or "dead"), so a size check never calls the
     -- role or death APIs.
     evaluate = function(value, cache)
@@ -91,6 +107,11 @@ addon:RegisterCondition("GROUP_COUNT", {
         if value.percent then count = count / group.size * 100 end
         return Functions.values.compare(value.operator, count, value.value)
     end,
+    -- Builds the readable rule summary for the GROUP_COUNT condition.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Readable summary; the subject differs for a count of players and a percent of the group.
     print = function(_, value)
         local names, measure = measureNames(), value.measure
@@ -111,6 +132,11 @@ addon:RegisterCondition("GROUP_COUNT", {
         end
         return Functions.presentation.compareString(value.operator, subject, quantity)
     end,
+    -- Builds the editor controls for the GROUP_COUNT condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The current specialization (addon.currentSpec).
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- widget builds the measure dropdown, the "as a percent of the group" checkbox and an operator-and-value control;
     -- help draws the help page.
     widget = function(parent, spec, value)
@@ -144,6 +170,8 @@ addon:RegisterCondition("GROUP_COUNT", {
 
         parent:AddChild(addon:Widget_OperatorWidget(value, L["Value"], function() top:SetStatusText(funcs:print(root, spec)) end))
     end,
+    -- Builds the help page for the GROUP_COUNT condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Help.Conditions.GROUP_COUNT"]))
         frame:AddChild(helpers.Gap())
