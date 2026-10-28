@@ -27,7 +27,7 @@ local function custom(f,spec,name)
 end
 local function open(language,case,width)
     local f=T.new{level=10,specIndex=1};local a=f.addon
-    if language~='enUS' then f.env.GetLocale=function() return language end;f.load('Locales/'..language..'.lua') end
+    -- (The real-TOC fixture applies the client language only when it boots, so these passes measure English; the loop is kept for when it does not.)
     local id
     if case=='default' then id=f.env.DEFAULT
     elseif case=='mine' then id=custom(f,268,'Mine')

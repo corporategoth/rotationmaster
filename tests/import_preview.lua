@@ -274,7 +274,7 @@ local function perCharacter(text)
 end
 local function openWithLocale(name,model)
     local f,a=fixture()
-    if name~='enUS' then f.env.GetLocale=function() return name end;f.load('Locales/'..name..'.lua') end
+    f.language(name)
     if model then
         local make=a.CreateWorkbenchButton
         a.CreateWorkbenchButton=function(...)

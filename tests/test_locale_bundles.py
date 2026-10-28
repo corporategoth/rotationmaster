@@ -1,4 +1,4 @@
-"""Load-on-demand text bundles: every key complete in every language, one owner per key, a fresh index.
+"""Load-on-demand text bundles: every ID complete in every language, one owner per key, a fresh index.
 
 The Lua side (tests/text_bundles.lua) proves the runtime; this proves the files. The main catalog may carry
 untranslated keys (the game shows English); a bundle may not, because a translator who changes the main
@@ -64,7 +64,7 @@ class BundleTests(unittest.TestCase):
             self.assertIn('## LoadOnDemand: 1', toc, bundle.module)
             self.assertIn('## Dependencies: RotationMaster', toc, bundle.module)
             listed = [line.strip() for line in toc.splitlines() if line.strip().endswith('.lua')]
-            self.assertEqual(listed[0], 'enUS.lua', f'{bundle.module}: English must load first')
+            self.assertEqual(listed[-1], 'enUS.lua', f'{bundle.module}: English must load last, after the languages hand it their tables')
             for locale in L.LOCALES:
                 self.assertIn(f'{locale}.lua', listed, f'{bundle.module} does not list {locale}.lua')
                 self.assertTrue(bundle.path(locale).exists(), f'{bundle.module}/{locale}.lua is missing')

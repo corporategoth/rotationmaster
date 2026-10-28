@@ -17,7 +17,7 @@ local HEIGHT=420
 local function characters(text) local n=0;for _ in (text or ''):gmatch('[^\128-\191]') do n=n+1 end return n end
 local function open(language,id,width)
     local f,parent=fixture()
-    if language~='enUS' then f.env.GetLocale=function() return language end;f.load('Locales/'..language..'.lua') end
+    f.language(language)
     parent:SetSize(width,HEIGHT)
     local pane=assert(f.addon:CreateRotationEditor(parent,0,id))
     for _,frame in ipairs(f.nativeFrames) do

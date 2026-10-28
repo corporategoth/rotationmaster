@@ -376,7 +376,7 @@ test('a list row says kind, specialization and priority on one line at the narro
     local function width(text) local w=0;for char in (text or ''):gmatch('[%z\1-\127\194-\244][\128-\191]*') do w=w+(#char==1 and 6 or 7) end return w end
     for _,language in ipairs({'enUS','deDE','ruRU'}) do
         local f=T.new{level=10,specIndex=1};local a=f.addon
-        if language~='enUS' then f.env.GetLocale=function() return language end;f.load('Locales/'..language..'.lua') end
+        -- (The real-TOC fixture applies the client language only when it boots, so these passes measure English; the loop is kept for when it does not.)
         for _,id in ipairs({'rm.retail.monk.windwalker','rm.retail.monk.mistweaver'}) do assert(a:SetDefaultRotationEnabled(id,false)) end
         custom(f,268,'Mine',{specs={268,269,270},switch=COMBAT,priority=7})
         local host=f.env.CreateFrame('Frame');host:SetSize(800-24,500)

@@ -5,6 +5,10 @@
 local addon_name, addon = ...
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
+-- The longest list of translator names the page shows (bytes); the rest is an ellipsis. The credits block starts 460
+-- points down a 600-point page, so even a list this long wraps inside the page.
+local TRANSLATION_CREDIT_LIMIT = 480
+
 -- Reads one TOC field for this addon (Version, Author, X-License, ...); returns the localized 'Unknown' when the
 -- client API is missing, errors or the field is empty.
 local function metadata(key)
@@ -66,11 +70,21 @@ function addon:CreateSettingsLauncher()
     page.credits = label('GameFontHighlightSmall')
     page.credits:SetPoint('TOPLEFT', 24, -460)
 
-    page.credits:SetText(table.concat({
+    local credits = {
         L['License'] .. ': ' .. metadata('X-License'),
         L['Credits'] .. ': ' .. metadata('X-Credits'),
         L['Localizations'] .. ': ' .. metadata('X-Localizations'),
-    }, '\n'))
+    }
+    -- The human translators of the game's language, when it has any (never English): one more wrapped line, with the
+    -- list capped so it always fits the room under the other credits.
+    local translation = type(self.GetTranslationCredit) == 'function' and self:GetTranslationCredit(TRANSLATION_CREDIT_LIMIT) or nil
+
+    if translation then credits[#credits + 1] = translation end
+
+    -- Names and the line's own text may have no spaces (Chinese, Korean): let them wrap anywhere, inside the width.
+    if page.credits.SetNonSpaceWrap then page.credits:SetNonSpaceWrap(true) end
+
+    page.credits:SetText(table.concat(credits, '\n'))
 
     page.credits:SetWidth(592)
 

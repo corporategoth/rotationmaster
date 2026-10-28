@@ -909,7 +909,7 @@ test('Integrations lists actual editor providers and stages the preference with 
     local entries=a:ListLuaEditorProviders();assert(entries[#entries].value=='Example');local code=a:CreateWorkbenchLuaEditor(parent,function() end,function() return true end);assert(not code.syntax and code.provider=='native')
 end)
 test('icon picker preset labels all exist in the actual base locale',function()
-    local f=fixture();f.load('Locales/enUS.lua');local locale=setmetatable({}, {__index=function(_,key) assert(f.translations[key], 'Missing translation: '..key);return f.translations[key] end})
+    local f=fixture();local english=dofile('tests/fixtures/locale_entries.lua').english();local locale=setmetatable({}, {__index=function(_,key) assert(english[key], 'Missing translation: '..key);return english[key] end})
     f.libraries['AceLocale-3.0'].GetLocale=function() return locale end;f.load('UI/icon_picker.lua');local d=f.addon:ShowWorkbenchIconPicker(nil,function() end,function() return true end)
     assert(#d.categories>=4 and d.categories[3].icons[2].name==locale.Weapon)
 end)

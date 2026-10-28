@@ -46,7 +46,9 @@ class RankWording(unittest.TestCase):
     def test_every_locale_translates_the_shared_label(self):
         for name in ['enUS'] + LOCALES:
             text = (ROOT / f'Locales/{name}.lua').read_text(encoding='utf-8')
-            self.assertIn(f'L["{LABEL}"]', text, name)
+            # English holds [id] = "label"; a translation records the English it answers above its entry.
+            marker = f'= "{LABEL}",' if name == 'enUS' else f' English: {LABEL}\n'
+            self.assertIn(marker, text, name)
 
     def test_every_rank_surface_uses_the_shared_label(self):
         for rel in SURFACES + ['UI/rotation_fields.lua', 'UI/settings_announces.lua']:

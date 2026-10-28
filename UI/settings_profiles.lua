@@ -510,6 +510,10 @@ function addon:BuildAboutSettings(p)
         end
     end
 
+    local translation = type(addon.GetTranslationCredit) == 'function' and addon:GetTranslationCredit() or nil
+
+    if translation then p:Text(translation) end
+
     p:Heading(L['Links'])
 
     for _, entry in ipairs({ { 'X-Website', 'Website' }, { 'X-Discord', 'Discord' }, { 'X-Email', 'Email' } }) do

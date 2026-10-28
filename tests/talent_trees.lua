@@ -4,7 +4,7 @@ local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local corpus=dofile('tests/fixtures/default_corpus.lua')
 
 local function read(path)local h=assert(io.open(path,'rb'));local s=h:read('*a');h:close();return s end
-local enUS=read('Locales/enUS.lua')
+local enUS=dofile('tests/fixtures/locale_entries.lua').english()
 local function lookup(project,expansion,class)
     local f=F.new(project,expansion,class);f.load('Platform/talents.lua');return f
 end
@@ -21,7 +21,7 @@ test('every family lists three distinct trees per class, each with a locale key'
             local seen={}
             for _,name in ipairs(names) do
                 assert(not seen[name],key..' '..class..' repeats '..name);seen[name]=true
-                assert(enUS:find('L["TalentTree.'..name..'"] = "'..name..'"',1,true),'no locale key for tree name '..name)
+                assert(enUS['TalentTree.'..name]==name,'no locale key for tree name '..name)
             end
         end
         assert(classes==(key=='wrath' and 10 or key=='cata' and 10 or 9),key..' covers '..classes..' classes')

@@ -14,7 +14,7 @@ local pageFixture=assert(loadstring(pagePrefix..'\nreturn fixture','@offset-page
 local test,finish=F.suite()
 local function characters(text) local n=0;for _ in (text or ''):gmatch('[^\128-\191]') do n=n+1 end return n end
 local function language(f,name)
-    if name~='enUS' then f.env.GetLocale=function() return name end;f.load('Locales/'..name..'.lua') end
+    f.language(name)
 end
 -- Both inputs on one row, left and right halves of the space beside the pad, not overlapping, inside the pane.
 local function check(resolve,x,y,label,pad,limit)

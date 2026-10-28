@@ -14,7 +14,7 @@ local test,finish=F.suite()
 local NARROW,MIDDLE,WIDE=340-58,420,720
 
 local function language(f,name)
-    if name~='enUS' then f.env.GetLocale=function() return name end;f.load('Locales/'..name..'.lua') end
+    f.language(name)
 end
 local function editor(f,value,spec,width)
     local top=f.widget('top');top:SetUserData('root',value);top:SetUserData('funcs',{print=function() return 'Updated condition' end})

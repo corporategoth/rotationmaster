@@ -70,7 +70,7 @@ function T.new(o)
     env.C_Secrets={HasSecretRestrictions=function() return project==1 or project==18 end}
     env.GetTime=function() return state.clock end
     env.time=os.time
-    env.GetLocale=function() return 'enUS' end
+    env.GetLocale=function() return o.locale or 'enUS' end
     local BUILDS={[1]={'12.1.5','70575',120105},[18]={'12.0.5','70000',120005},[19]={'5.5.1','63000',50501},[5]={'2.5.5','65000',20505},[2]={'1.15.7','64000',11507}}
     local build=BUILDS[project] or BUILDS[1]
     env.GetBuildInfo=function() return build[1],build[2],'Oct 1 2026',build[3] end
@@ -242,7 +242,10 @@ function T.new(o)
     for _,line in ipairs(toc) do
         if line:match('^%s*#') or not line:find('%S') then
         elseif line=='embeds.xml' then for _,path in ipairs(xmlFiles('embeds.xml')) do clientLoad(path) end
-        elseif line=='locales.xml' then clientLoad('Locales/enUS.lua')
+        elseif line=='locales.xml' then
+            -- The game language's file first, then English, as locales.xml lists them (the other languages' files return at once).
+            if o.locale and o.locale~='enUS' then clientLoad('Locales/'..o.locale..'.lua') end
+            clientLoad('Locales/enUS.lua')
         elseif line:match('%.lua$') then clientLoad(line) end
     end
     -- Each library frame's update timers are not driven; AceTimer runs nothing by itself.
