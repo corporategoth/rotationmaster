@@ -9,12 +9,17 @@ local _, addon = ...
 -- Index
 -- ============================================================================
 
--- Returns the string key for a path of child positions ('' is the root).
+-- Returns the string key for a path of child positions.
+-- @param path number[]  The child positions from the root; empty for the root.
+-- @return string  The positions joined by '/' ('' is the root).
 local function key(path)
     return table.concat(path, '/')
 end
 
 -- Returns a new path that is the given path extended by one child position; the argument is not modified.
+-- @param path number[]  The path to extend.
+-- @param index number  The child position to append.
+-- @return number[]  The new path.
 local function childPath(path, index)
     local result = {}
 
@@ -26,11 +31,14 @@ local function childPath(path, index)
     return result
 end
 
--- Validation and baseline comparisons belong to a model revision, never a
--- viewport lease. Each node and each sibling name is processed once.
--- Returns the cached index for model.revision and baseline: nodes in pre-order, byKey, per-node `changed` and `invalid`
--- (propagated to ancestors) and the overall `dirty` flag. The index is stored on the model and rebuilt only when the
--- revision or the baseline changes.
+-- Returns the index of a schema model: its nodes with change and validity flags.
+-- @param model table  The schema model (root, revision); the index is cached in model.canvasIndex.
+-- @param baseline table|nil  The original root node to compare against; nil marks every node as changed.
+-- @return table  { revision, baseline, nodes = entry[] in pre-order, byKey = table<string, entry>, dirty = boolean },
+--   with per-node `changed` and `invalid` (propagated to ancestors).
+--
+-- Validation and baseline comparisons belong to a model revision, never a viewport lease. Each node and each sibling
+-- name is processed once. The index is stored on the model and rebuilt only when the revision or the baseline changes.
 function addon:GetFieldSchemaIndex(model, baseline)
     local cached = model.canvasIndex
 
@@ -103,16 +111,24 @@ end
 -- Scene layout
 -- ============================================================================
 
--- Lays the schema out top to bottom: one row per visible node (children of a folded node are skipped), the add-field
--- slots of each container, and a list of insertion gaps sorted by y. Returns the scene with its total height. `folded`
--- maps a node key to true. The walk is iterative so a deep schema cannot overflow the stack.
+-- Lays the schema out top to bottom in canvas coordinates.
+-- @param model table  The schema model.
+-- @param folded table  Maps a node key to true for each folded node, whose children are skipped.
+-- @param width number|nil  The canvas width; at least 340, default 700.
+-- @param baseline table|nil  The original root node, passed to GetFieldSchemaIndex.
+-- @return table  The scene { rows, byKey, gaps, width, height, index }: one row per visible node, the add-field slots
+--   of each container, and a list of insertion gaps sorted by y.
+--
+-- The walk is iterative so a deep schema cannot overflow the stack.
 function addon:BuildFieldSchemaScene(model, folded, width, baseline)
     local index = self:GetFieldSchemaIndex(model, baseline)
     local scene = { rows = {}, byKey = {}, gaps = {}, width = math.max(340, width or 700), index = index }
     local y = 4
     local stack = { { entry = index.byKey[''], next = 1, x = 0, width = scene.width, start = true } }
 
-    -- Records the drop target before child number `number` of the container being walked.
+    -- Records the drop target before a child position of the container being walked.
+    -- @param state table  The walk state of the container (entry, x, width).
+    -- @param number number  The child position the gap sits before.
     local function gap(state, number)
         scene.gaps[#scene.gaps + 1] = {
             path = state.entry.path,
@@ -202,8 +218,14 @@ end
 -- Viewport query
 -- ============================================================================
 
--- Returns the scene rows that intersect the vertical range top..bottom, in row order, together with their ancestors so
--- a container stays drawable when only a child is visible. Uses a binary search on row y, so it suits per-frame calls.
+-- Returns the scene rows that intersect a vertical range.
+-- @param scene table  The scene built by BuildFieldSchemaScene.
+-- @param top number  The top of the visible range, in canvas coordinates.
+-- @param bottom number  The bottom of the visible range, in canvas coordinates.
+-- @return table[]  The intersecting rows in row order, together with their ancestors so a container stays drawable when
+--   only a child is visible.
+--
+-- Uses a binary search on row y, so it suits per-frame calls.
 function addon:GetFieldSchemaViewport(scene, top, bottom)
     local rows = scene.rows
     local low, high = 1, #rows

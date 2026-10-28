@@ -13,8 +13,15 @@ local playerClassCacheKey = {}
 -- Unit identity and the original resource lookup
 -- ============================================================================
 
--- This whole identity gate is cached once per pass, independently of whether
--- its first query promotes a successful player class to the longterm cache.
+-- Reads the identity facts the POINT conditions need for a unit: whether it exists and its class.
+-- @param self table  The addon, whose Platform and longtermCache are used.
+-- @param unit string  The unit token to identify.
+-- @param key table  The private key under which the player's class is kept in the long-term cache.
+-- @return table|nil  The identity record ({ exists = boolean, class = string, ... }); nil when unavailable.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- This whole identity gate is cached once per pass, independently of whether its first query promotes a successful
+-- player class to the longterm cache.
 local function pointIdentity(self, unit, key)
     local platform=self.Platform
     local nativeClass=UnitClass
@@ -38,8 +45,14 @@ local function pointIdentity(self, unit, key)
     return record
 end
 
--- Original lookup, kept unchanged for saved Built In POINT copies that predate V2 (probe policy only). Returns the
--- Enum.PowerType number for the unit's class, or false when the unit does not exist, or `nil, reason`.
+-- Finds the Enum.PowerType the original POINT condition reads for a unit's class (probe policy only).
+-- @param unit string  The unit token (non-empty).
+-- @param cache table|nil  The evaluation-pass cache.
+-- @return number|boolean|nil  The Enum.PowerType number for the unit's class; false when the unit does not exist; nil
+--   when unavailable.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Original lookup, kept unchanged for saved Built In POINT copies that predate V2.
 function addon:GetConditionPointResource(unit, cache)
     local platform=self.Platform
     if platform:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
@@ -136,8 +149,15 @@ local editionPointPowers = {
 }
 
 -- Era and progression lookup: picks the power for the client edition, the unit's class and (for specialization tables)
--- the player's specialization index. Returns the Enum.PowerType number, nil and a reason, or the number plus nil and
--- the transport name 'power'.
+-- the player's specialization index.
+-- @param platform table  The Platform adapter.
+-- @param info table  The client info (family, expansion) from platform:GetClientInfo().
+-- @param unit string  The unit token; a specialization table only resolves for 'player'.
+-- @param class string  The unit's class token.
+-- @param cache table|nil  The evaluation-pass cache.
+-- @return number|nil  The Enum.PowerType number; nil when unavailable.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+-- @return string|nil  The transport name, always 'power' when a number is returned; nil otherwise.
 local function editionPointResource(platform, info, unit, class, cache)
     local family=info.family
     local map=editionPointPowers[family]
@@ -174,10 +194,17 @@ end
 -- Resource lookup V2
 -- ============================================================================
 
--- New Built In POINT copies may opt into the player/target transport; old sources keep the API above.
--- Under the restricted policy (Retail, Forever) only a power type Blizzard
--- flags never secret is selected (Platform/points.lua); its reads stay guarded.
--- Era and progression select per edition and specialization (above).
+-- Finds the Enum.PowerType the POINT condition reads for a unit, and the transport to read it with.
+-- @param unit string  The unit token (non-empty).
+-- @param cache table|nil  The evaluation-pass cache.
+-- @return number|boolean|nil  The Enum.PowerType number; false when the unit does not exist; nil when unavailable.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+-- @return string|nil  The transport: 'power', or 'target-combo' for the player's combo points on the TBC client; nil
+--   when the first return is not a number.
+--
+-- New Built In POINT copies may opt into the player/target transport; old sources keep the API above. Under the
+-- restricted policy (Retail, Forever) only a power type Blizzard flags never secret is selected (Platform/points.lua);
+-- its reads stay guarded. Era and progression select per edition and specialization (above).
 function addon:GetConditionPointResourceV2(unit, cache)
     local platform=self.Platform
     local info=platform:GetClientInfo()

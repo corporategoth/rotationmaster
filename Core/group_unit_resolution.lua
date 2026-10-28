@@ -5,14 +5,19 @@
 
 local _, addon = ...
 
--- Conditions name a unit by a token the game understands, or by one of the
--- group unit types in addon.groupUnitKinds (the group's main tank, assigned
--- healer, leader, ...). Those have no token of their own: the engine hands a
--- condition a copy of its value whose unit (and otherunit) is the real token
--- of whoever holds the assignment right now, so every unit-aware condition
--- works on them unchanged. Nobody holding it, or a member the game will not
--- read, is unavailable with the reason; it is never guessed.
--- One resolution per kind per evaluation (the evaluation's cache).
+-- Resolves the group unit kinds in a condition value to real unit tokens for one evaluation.
+-- @param value table  The condition value; its unit and otherunit fields may name a group unit kind.
+-- @param cache table|nil  The per-evaluation cache, so each kind is resolved once per evaluation.
+-- @return table|nil  The value itself when neither field is a group kind, otherwise a shallow copy whose unit and
+--   otherunit hold the real tokens; nil when a kind cannot be resolved.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Conditions name a unit by a token the game understands, or by one of the group unit types in addon.groupUnitKinds
+-- (the
+-- group's main tank, assigned healer, leader, ...). Those have no token of their own: the engine hands a condition a
+-- copy of its value whose unit (and otherunit) is the real token of whoever holds the assignment right now, so every
+-- unit-aware condition works on them unchanged. Nobody holding it, or a member the game will not read, is unavailable
+-- with the reason; it is never guessed.
 function addon:ResolveConditionUnits(value, cache)
     local kinds = self.groupUnitKinds
     local unit, other = value.unit, value.otherunit

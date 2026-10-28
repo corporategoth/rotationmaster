@@ -6,6 +6,10 @@
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- Trims whitespace from both ends of a string.
+-- @param s string  The text to trim.
+-- @return string  The trimmed text; empty when it holds only whitespace.
+--
 -- Linear trim: '^%s*(.-)%s*$' is quadratic on a long run of spaces in pasted text.
 local function trim(s)
     local a = s:find('%S')
@@ -17,9 +21,13 @@ local function trim(s)
     return s:sub(a, s:match('^.*()%S'))
 end
 
--- Parses the text a user pasted into the item set importer. Accepts either an encoded RM-ItemSet envelope or a plain
--- list of item ids and names separated by commas or newlines. Returns { name = ..., items = ... } (name is nil for a
--- plain list), or nil and the localized "Invalid item list." message when the size, shape or any item is out of bounds.
+-- Parses the text a user pasted into the item set importer into a candidate item set.
+-- @param text string  The pasted text: an encoded RM-ItemSet envelope or a plain list of item ids and names separated
+--   by commas or newlines; at most 131072 bytes.
+-- @param codec table  The codec object whose Decode(text) method decodes an envelope; supplied by the caller.
+-- @return table|nil  { name = string|nil, items = table }, where name is nil for a plain list; nil when the size, shape
+--   or any item is out of bounds.
+-- @return string|nil  The localized "Invalid item list." message when the first return is nil; nil otherwise.
 function addon:ParseItemSetImport(text, codec)
     if type(text) ~= 'string' or #text > 131072 then
         return nil, L['Invalid item list.']

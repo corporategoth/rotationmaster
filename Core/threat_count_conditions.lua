@@ -7,16 +7,27 @@
 
 local _, addon = ...
 
--- Checks that a threat value is readable and a finite number. Returns true, or false and a reason; NaN and infinities
--- are rejected so a comparison against the minimum can never silently misbehave.
+-- Checks that a threat value is readable and a finite number.
+-- @param platform table  The Platform adapter, used for CanReadValue.
+-- @param value any  The value to check.
+-- @return boolean  True when the value is readable and a finite number.
+-- @return string|nil  'restricted-value' or 'invalid-threat-count-number' when the first return is false; nil
+--   otherwise.
+--
+-- NaN and infinities are rejected so a comparison against the minimum can never silently misbehave.
 local function finite(platform, value)
     if not platform:CanReadValue(value) then return false,'restricted-value' end
     if type(value)~='number' or value~=value or value>=math.huge or value<=-math.huge then return false,'invalid-threat-count-number' end
     return true
 end
 
--- Reads object[key] defensively: returns the value, or nil and a reason when the object or value is restricted, the
--- object is not a table, or the index raises. Used for fields of the unit snapshot the addon itself keeps.
+-- Reads object[key] defensively; used for fields of the unit snapshot the addon itself keeps.
+-- @param platform table  The Platform adapter, used for CanReadValue.
+-- @param object any  The table to read from.
+-- @param key any  The key to read.
+-- @return any  The value; nil when the read failed.
+-- @return string|nil  The reason code when the object or value is restricted ('restricted-value'), the object is not a
+--   table ('invalid-unit-snapshot') or the index raises ('unit-snapshot-read-error'); nil otherwise.
 local function readField(platform, object, key)
     if not platform:CanReadValue(object) then return nil,'restricted-value' end
     if type(object)~='table' then return nil,'invalid-unit-snapshot' end
@@ -26,9 +37,14 @@ local function readField(platform, object, key)
     return value
 end
 
--- Returns how many tracked enemies have threat status at or above the minimum, or nil and a reason when any required
--- fact is unavailable. Count only observed membership, using current facts for the same identity.
--- Neither the snapshot nor the complete count is cached or changed here.
+-- Counts the tracked enemies whose threat status is at or above a minimum.
+-- @param minimum number  The lowest threat status that counts; must be a readable, finite number.
+-- @param cache table|nil  The evaluation-pass cache.
+-- @return number|nil  The number of qualifying enemies; nil when any required fact is unavailable.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Counts only observed membership, using current facts for the same identity. Neither the snapshot nor the complete
+-- count is cached or changed here. The restricted combat-data policy is delegated to GetConditionNameplateThreatCount.
 function addon:GetConditionThreatCount(minimum, cache)
     local platform=self.Platform
     local policy=platform:GetCombatDataPolicy()
@@ -75,15 +91,17 @@ function addon:GetConditionThreatCount(minimum, cache)
     return count
 end
 
--- Restricted-client branch of GetConditionThreatCount: counts nameplate units instead of GUID-keyed membership.
--- Returns the count, or nil and a reason. Restricted clients make an enemy NPC's GUID secret
--- (UnitGUID: SecretWhenUnitIdentityRestricted, "when the unit isn't
--- player-controlled or in the party/raid"), so the GUID-keyed snapshot above
--- cannot exist there. The nameplate unit tokens NAME_PLATE_UNIT_ADDED/REMOVED
--- report are kept instead (main.lua), and each is read live: a vanished token
--- reads absent, a reused one is the unit now on that plate. Threat between the
--- player and a nameplate is "generally not secret"
--- (SecretWhenUnitThreatStateRestricted); a secret reading is unavailable.
+-- Counts nameplate units at or above a threat minimum; the restricted-client branch of GetConditionThreatCount.
+-- @param minimum number  The lowest threat status that counts.
+-- @param cache table|nil  The evaluation-pass cache.
+-- @return number|nil  The number of qualifying nameplate units; nil when a required fact is unavailable.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Restricted clients make an enemy NPC's GUID secret (UnitGUID: SecretWhenUnitIdentityRestricted, "when the unit isn't
+-- player-controlled or in the party/raid"), so the GUID-keyed snapshot above cannot exist there. The nameplate unit
+-- tokens NAME_PLATE_UNIT_ADDED/REMOVED report are kept instead (main.lua), and each is read live: a vanished token
+-- reads absent, a reused one is the unit now on that plate. Threat between the player and a nameplate is "generally not
+-- secret" (SecretWhenUnitThreatStateRestricted); a secret reading is unavailable.
 function addon:GetConditionNameplateThreatCount(minimum, cache)
     local platform = self.Platform
     local units, why = readField(platform, self, 'nameplateUnits')

@@ -38,7 +38,9 @@ local HEX = 8
 -- Set by Locales/enUS.lua: true when a translation was applied. Unset (a harness that never loaded it) counts as translated.
 local englishGame = addon.localeIsTranslated == false
 
--- The 32-bit hash tools/locales.py computes for the index (h = h * 31 + byte, modulo 2^32).
+-- Computes the 32-bit hash tools/locales.py uses for the index (h = h * 31 + byte, modulo 2^32).
+-- @param value string  The key text.
+-- @return number  The hash.
 local function keyHash(value)
     local h = 0
 
@@ -49,7 +51,13 @@ local function keyHash(value)
     return h
 end
 
--- Binary search of a sorted key-hash string (8 hex digits per key); true when `wanted` is one of its keys.
+-- Searches a sorted key-hash string for a hash.
+-- @param keys string  The sorted key hashes, 8 hex digits per key.
+-- @param count number  How many keys the string holds.
+-- @param wanted number  The hash to look for.
+-- @return boolean  True when `wanted` is one of the keys.
+--
+-- Binary search.
 local function owns(keys, count, wanted)
     local low, high = 0, count - 1
 
@@ -69,8 +77,10 @@ local function owns(keys, count, wanted)
     return false
 end
 
--- Returns the bundle record that owns this key, or nil when it is a key of the main table or of no catalog. With
--- `loadingOnly` an English game only counts the keys whose English lives in the bundle.
+-- Finds the bundle that owns a key.
+-- @param key string  The English text key.
+-- @param loadingOnly boolean|nil  True to count, in an English game, only the keys whose English lives in the bundle.
+-- @return table|nil  The bundle record that owns the key; nil when it is a key of the main table or of no catalog.
 local function ownerOf(key, loadingOnly)
     local wanted = keyHash(key)
     local symbolic = loadingOnly and englishGame
@@ -86,8 +96,9 @@ local function ownerOf(key, loadingOnly)
     end
 end
 
--- Returns the add-on loader: the test override `addon.textBundleLoader`, else C_AddOns.LoadAddOn, else the older
--- LoadAddOn.
+-- Returns the add-on loader.
+-- @param self table  The addon, whose textBundleLoader test override is consulted.
+-- @return function  The test override `addon.textBundleLoader`, else C_AddOns.LoadAddOn, else the older LoadAddOn.
 local function loader(self)
     local custom = self.textBundleLoader
 
@@ -99,6 +110,8 @@ local function loader(self)
 end
 
 -- Moves everything a loaded bundle holds into the main table and lets go of the bundle's own table.
+-- @param bundle table  The bundle record; its translators are recorded on it.
+-- @param text table  The bundle's own AceLocale table, which is emptied.
 local function absorb(bundle, text)
     for key, value in pairs(text) do
         if type(key) == "string" then
@@ -126,8 +139,9 @@ local function absorb(bundle, text)
     end
 end
 
--- bundle.state: nil (never asked), "loaded" or "failed".
--- Loads the add-on of one bundle (once). Returns true when its text is available.
+-- Loads the add-on of one bundle (once).
+-- @param bundle table  The bundle record; bundle.state is nil (never asked), "loaded" or "failed".
+-- @return boolean  True when the bundle's text is available.
 local function attach(bundle)
     if bundle.state == "loaded" then
         return true
@@ -156,6 +170,12 @@ local function attach(bundle)
 end
 
 setmetatable(L, {
+    -- Answers a read of a key the main table lacks from the bundle that owns it.
+    -- @param self table  The locale table.
+    -- @param key any  The key being read.
+    -- @return string  The text; the key itself (the English text) when the bundle holds nothing for it or failed. Keys
+    --   no
+    --   bundle owns go to the original missing-key handler, whose result is returned.
     __index = function(self, key)
         if type(key) == "string" then
             local bundle = ownerOf(key, true)
@@ -184,7 +204,10 @@ setmetatable(L, {
     end,
 })
 
---- Loads a text bundle ahead of its first read, by id ("help", "conditions", ...). Returns true when it is available.
+-- Loads a text bundle ahead of its first read.
+-- @param id string  The bundle id ("help", "conditions", ...).
+-- @return boolean  True when the bundle is available.
+-- @return string|nil  'unknown-bundle' when no bundle has that id; nil otherwise.
 function addon:LoadTextBundle(id)
     for _, bundle in ipairs(bundles) do
         if bundle.id == id then
@@ -195,7 +218,10 @@ function addon:LoadTextBundle(id)
     return false, "unknown-bundle"
 end
 
---- Which bundle holds this English text, and whether it is loaded: nil for a key of the main table.
+-- Says which bundle holds this English text, and whether it is loaded.
+-- @param key any  The English text; a non-string gives nil.
+-- @return string|nil  The bundle id; nil for a key of the main table.
+-- @return string|nil  The bundle state: "idle", "loaded" or "failed"; nil when the first return is nil.
 function addon:GetTextBundleOf(key)
     local bundle = type(key) == "string" and ownerOf(key) or nil
 
@@ -204,7 +230,8 @@ function addon:GetTextBundleOf(key)
     end
 end
 
---- The state of every bundle: { id = "idle" | "loaded" | "failed" }, for diagnostics and tests.
+-- Returns the state of every bundle, for diagnostics and tests.
+-- @return table  { [bundleId] = "idle" | "loaded" | "failed" }.
 function addon:GetTextBundleStates()
     local states = {}
 
@@ -215,12 +242,16 @@ function addon:GetTextBundleStates()
     return states
 end
 
---- The display names of the human translators of the game's language, for the About page: every name the language's
---- files credit (the main file lists those of all catalogs), once each. Empty for English and while only an AI has
---- translated. The AI is named in the files' headers and never here.
+-- Returns the display names of the human translators of the game's language, for the About page.
+-- @return string[]  Every name the language's files credit (the main file lists those of all catalogs), once each;
+--   empty for English and while only an AI has translated.
+--
+-- The AI is named in the files' headers and never here.
 function addon:GetLocaleTranslators()
     local names, seen = {}, {}
 
+    -- Adds the names of a translator list to the result, skipping any already seen (case-insensitively).
+    -- @param list table|nil  The translator names; anything else is ignored.
     local function add(list)
         if type(list) ~= "table" then
             return
@@ -260,15 +291,19 @@ local LANGUAGE_NAMES = {
     zhTW = "繁體中文",
 }
 
--- The name of the game's language in that language, or its locale code for one this addon has no name for.
+-- Returns the name of the game's language in that language.
+-- @return string  The autonym, or the locale code for a language this addon has no name for.
 local function languageName()
     local code = rawget(_G, "GAME_LOCALE") or (type(GetLocale) == "function" and GetLocale()) or ""
     return LANGUAGE_NAMES[code] or code
 end
 
---- The About-page line crediting the human translators of the game's language, or nil when there are none (always for
---- English, and while only an AI has translated). `limit` caps the list's length in bytes: whole names are kept and
---- the rest is replaced by an ellipsis, so a long list can never run out of the room the page gives it.
+-- Builds the About-page line crediting the human translators of the game's language.
+-- @param limit number|nil  Caps the list's length in bytes: whole names are kept and the rest is replaced by an
+--   ellipsis, so a long list can never run out of the room the page gives it.
+-- @return string|nil  The credit line; nil when there are no human translators (always for English, and while only an
+--   AI
+--   has translated).
 function addon:GetTranslationCredit(limit)
     local names = self:GetLocaleTranslators()
 

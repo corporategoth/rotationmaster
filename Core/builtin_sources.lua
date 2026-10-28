@@ -6,9 +6,12 @@
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
--- Registers one Built In module's helpers (path is the module's file path, getter(alias) returns a live function).
+-- Registers one Built In module's helpers as read-only Built In functions, one per binding recorded for the module in
+-- the catalog.
+-- @param path string  The module's file path (for example "Core/level_conditions.lua").
+-- @param getter function  getter(alias) returns the live function for a binding alias.
+--
 -- The getter is always remembered; the registration itself is skipped when the catalog has no entry for the path.
--- Registers one Built In function per binding recorded for the module in the catalog.
 function addon:RegisterBuiltinSourceModule(path, getter)
     self.builtinSourceModules = self.builtinSourceModules or {}
     self.builtinSourceModules[path] = getter
@@ -70,8 +73,14 @@ for path, getter in pairs(addon.builtinSourceModules or {}) do
     addon:RegisterBuiltinSourceModule(path, getter)
 end
 
--- Returns a source table (callback code, bindings, parameters, fields) for the Built In condition id, or nil and a
--- reason when the catalog has no record, the condition is not registered or its source variant is unavailable.
+-- Rebuilds a Built In condition's callback source for display and cloning.
+-- @param id string  The Built In condition id.
+-- @return table|nil  The source table (description, icon, fields, bindings, parameters and one code string per custom
+--   condition callback); nil when unavailable.
+-- @return string|nil  The reason when the first return is nil ('builtin-source-unavailable',
+--   'builtin-source-variant-unavailable' or 'ambiguous-builtin-binding'); nil otherwise.
+--
+-- Unavailable means the catalog has no record, the condition is not registered or its source variant is unavailable.
 function addon:GetBuiltinConditionSource(id)
     local record = self.BuiltinSourceCatalog and self.BuiltinSourceCatalog.conditions[id]
     local definition = (self.conditionDefinitions or self.definitions or {})[id]
@@ -122,9 +131,12 @@ function addon:GetBuiltinConditionSource(id)
     return source
 end
 
--- Returns the source with leading and trailing blank lines and the common indentation removed.
--- Display only: never canonicalize Lua string contents or change a clone's
--- executable source merely to remove the containing Lua table's indentation.
+-- Returns source text with leading and trailing blank lines and the common indentation removed.
+-- @param source string|nil  The Lua source text; nil is treated as empty.
+-- @return string  The cleaned-up text.
+--
+-- Display only: never canonicalize Lua string contents or change a clone's executable source merely to remove the
+-- containing Lua table's indentation.
 function addon:FormatLuaSourceDisplay(source)
     local lines = {}
 

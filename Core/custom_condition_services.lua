@@ -120,8 +120,11 @@ for name in pairs(function_signatures) do
     addon.empty_condition[name] = code:sub(offset)
 end
 
--- Returns a copy of a saved custom condition for editing. Unless `preserveFormatting`, the generated boilerplate header
--- is stripped from each callback (user comments are kept) and the code is normalized for the editor.
+-- Returns a copy of a saved custom condition for editing.
+-- @param source table  The saved custom condition.
+-- @param preserveFormatting boolean|nil  True to return the copy untouched.
+-- @return table  The copy; unless `preserveFormatting`, the generated boilerplate header is stripped from each callback
+--   (user comments are kept) and the code is normalized for the editor.
 function addon:PrepareCustomConditionEditorSource(source, preserveFormatting)
     local result = self:CopySettingsData(source)
 
@@ -148,8 +151,12 @@ end
 -- Compiling and registering
 -- ============================================================================
 
--- Compiles one callback's source text into a function using the signature for `sel`; returns nil when it does not
--- compile. The chunk runs in the global environment with `addon` and `L` as locals.
+-- Compiles one callback's source text into a function.
+-- @param sel string  The callback name, which selects the signature (for example "evaluate").
+-- @param val string  The callback's source text.
+-- @return function|nil  The compiled function; nil when it does not compile.
+--
+-- The chunk runs in the global environment with `addon` and `L` as locals.
 local function compile_function(sel, val)
     local funcid = uuid()
 
@@ -182,6 +189,9 @@ end
 end
 
 -- Deep copy of a field schema table, cycle-safe through `seen`.
+-- @param value any  The value to copy; non-tables are returned as they are.
+-- @param seen table|nil  The copies made so far, keyed by original; callers leave it nil.
+-- @return any  The copy.
 local function copy_fields(value, seen)
     if type(value) ~= "table" then
         return value
@@ -203,8 +213,12 @@ local function copy_fields(value, seen)
     return copy
 end
 
--- Registers a saved custom condition under `key`. Uses addon:CompileCustomCondition when it exists, otherwise compiles
--- each callback itself; returns false when any callback does not compile, true after registering.
+-- Registers a saved custom condition under a tag.
+-- @param key string  The condition tag.
+-- @param condition table  The saved custom condition.
+-- @return boolean  True after registering; false when any callback does not compile.
+--
+-- Uses addon:CompileCustomCondition when it exists, otherwise compiles each callback itself.
 function addon:register_custom_condition(key, condition)
     if self.CompileCustomCondition then
         local compiled = self:CompileCustomCondition(key, condition, true)

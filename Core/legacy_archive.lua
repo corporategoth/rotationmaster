@@ -15,9 +15,12 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- through addon:PlanRotationAdoption / ApplyRotationAdoption, the same
 -- ownership code a single adoption uses, and the caller names the scope.
 
--- What the current profile and character still hold in the archive. Rows
--- without a body (orphan source components) are not rotations and are not
--- counted. Returns nil, reason while the rotation store is not ready.
+-- Counts what the current profile and character still hold in the archive of pre-2.0 rotations.
+-- @return table|nil  { total = number, profile = number, character = number }; nil while the rotation store is not
+--   ready.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
+--
+-- Rows without a body (orphan source components) are not rotations and are not counted.
 function addon:GetLegacyArchiveSummary()
     if not self.ListUnassignedRotations then
         return nil, 'missing-archive-reader'
@@ -41,9 +44,11 @@ function addon:GetLegacyArchiveSummary()
     return summary
 end
 
--- The one-time chat message: once per profile, and only while something is
--- waiting. Nothing is recorded when nothing was said, so a later archive
--- (an old profile imported or copied in) is still announced once.
+-- Prints the one-time chat message about the archive: once per profile, and only while something is waiting.
+-- @return boolean  True when the message was printed; false otherwise.
+--
+-- Nothing is recorded when nothing was said, so a later archive (an old profile imported or copied in) is still
+-- announced once.
 function addon:ShowLegacyArchiveNotice()
     local profile = self.db and self.db.profile
 
@@ -67,8 +72,10 @@ function addon:ShowLegacyArchiveNotice()
     return true
 end
 
--- The settings-window banner: shown while rotations wait, until the player
--- dismisses it. Dismissing hides the banner only; the archive stays.
+-- Returns the settings-window banner state: shown while rotations wait, until the player dismisses it.
+-- @return number|nil  How many rotations are waiting; nil when the banner is dismissed or nothing waits.
+--
+-- Dismissing hides the banner only; the archive stays.
 function addon:GetLegacyArchiveBanner()
     local profile = self.db and self.db.profile
 
@@ -95,13 +102,17 @@ function addon:DismissLegacyArchiveBanner()
     end
 end
 
--- Adopt every unassigned rotation that has a body, as `scope` ('class' or
--- 'character', exactly as a single adoption). options.spec limits it to one
--- specialization key of the archive. Each rotation is planned and applied
--- on its own, so a refusal (a collision, an invalid body) leaves the others
--- adopted and is reported, never forced. Returns
---   {adopted=n, skipped=n, failed={{spec=,id=,name=,reason=},...}, references={...}}
--- or nil, reason when the archive cannot be read.
+-- Adopts every unassigned rotation that has a body.
+-- @param scope string  The owner scope, 'class' or 'character', exactly as a single adoption.
+-- @param options table|nil  options.spec limits the adoption to one specialization key of the archive.
+-- @return table|nil  { adopted = number, skipped = number, failed = { { kind, spec, id, name, reason }, ... },
+--   references = table[] }; nil when the scope is invalid or the archive cannot be read.
+-- @return string|nil  The reason ('invalid-owner-scope' or the archive reader's reason) when the first return is nil;
+--   nil otherwise.
+--
+-- Each rotation is planned and applied on its own, so a refusal (a collision, an invalid body) leaves the others
+-- adopted
+-- and is reported, never forced.
 function addon:AdoptAllUnassignedRotations(scope, options)
     if scope ~= 'class' and scope ~= 'character' then
         return nil, 'invalid-owner-scope'

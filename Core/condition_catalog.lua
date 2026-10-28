@@ -17,8 +17,11 @@ local special = addon.conditionSpecials
 -- Picker groups and lists
 -- ============================================================================
 
--- Returns the id of the user-defined picker group that lists the condition tag, or "DEFAULT" when no group does (and
--- nil for a nil tag). Groups come from the current profile, so the answer follows the active profile.
+-- Finds the user-defined picker group that lists a condition tag.
+-- @param value string|nil  The condition tag.
+-- @return string|nil  The id of the group that lists the tag, or "DEFAULT" when no group does; nil for a nil tag.
+--
+-- Groups come from the current profile, so the answer follows the active profile.
 function addon:findConditionGroup(value)
     if not value then
         return nil
@@ -39,10 +42,15 @@ function addon:findConditionGroup(value)
     return "DEFAULT"
 end
 
--- Returns the ordered list of condition tags a picker shows for a group: "SWITCH" and "ANNOUNCEMENT" (the profile's
--- chosen subsets plus every special), "CUSTOM" (the user's custom conditions), "ALL", "DEFAULT" (conditions in no
--- group) or a group id. Unless nohide is set, conditions this client cannot support and user-disabled ones are left
--- out. store defaults to the live database; the list is rebuilt on every call and not cached.
+-- Returns the ordered list of condition tags a picker shows for a group.
+-- @param group string  "SWITCH" or "ANNOUNCEMENT" (the profile's chosen subsets plus every special), "CUSTOM" (the
+--   user's custom conditions), "ALL", "DEFAULT" (conditions in no group) or a group id.
+-- @param nohide boolean|nil  True to keep the conditions this client cannot support and the user-disabled ones.
+-- @param store table|nil  The database to read (profile and global); defaults to the live database.
+-- @return string[]  The condition tags in picker order.
+--
+-- Unless nohide is set, conditions this client cannot support and user-disabled ones are left out. The list is rebuilt
+-- on every call and not cached.
 function addon:listConditions(group, nohide, store)
     store = store or addon.db
     local profile = store.profile
@@ -165,8 +173,14 @@ end
 -- Describing a condition
 -- ============================================================================
 
--- Returns icon, description, help and field schema for a condition tag (special or registered), or nothing when the
--- tag is nil or unknown; callers use the empty result to tell whether a tag still exists.
+-- Describes a condition tag (special or registered) for the editor.
+-- @param type string|nil  The condition tag.
+-- @return string|number|nil  The condition's icon; nothing when the tag is nil or unknown.
+-- @return string|nil  The condition's description.
+-- @return string|function|nil  The help: "" for a special, otherwise the condition's help callback.
+-- @return table|nil  The condition's field schema.
+--
+-- Callers use the empty result to tell whether a tag still exists.
 function addon:describeCondition(type)
     if type ~= nil then
         if special[type] then
@@ -178,8 +192,12 @@ function addon:describeCondition(type)
     end
 end
 
--- Lets a condition draw its own extra widget into the editor pane. Does nothing for a condition without a widget
--- (the common case) or an unknown tag.
+-- Lets a condition draw its own extra widget into the editor pane.
+-- @param parent table  The container the widget is drawn into.
+-- @param spec number  The specialization ID or talent group in use.
+-- @param value table|nil  The condition value, whose `type` names the condition.
+--
+-- Does nothing for a condition without a widget (the common case) or an unknown tag.
 function addon:widgetCondition(parent, spec, value)
     if
         value ~= nil and value.type ~= nil and conditions[value.type] ~= nil and conditions[value.type].widget ~= nil
